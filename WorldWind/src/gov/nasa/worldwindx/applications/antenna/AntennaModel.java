@@ -433,7 +433,7 @@ public class AntennaModel extends AbstractShape
                 shapeData.texCoords.put((float) s).put(0);
 
                 // Scale and offset r per application's specifications. Use 0 if r is undefined at these coordinates.
-                double rScaled = r != null ? r * this.gainScale + this.gainOffset : 0;
+                double rScaled = r != null ? (r + this.gainOffset) * this.gainScale : 0;
 
                 double z = rScaled * Math.sin(t) * Math.cos(p);
                 double x = rScaled * Math.sin(t) * Math.sin(p);
