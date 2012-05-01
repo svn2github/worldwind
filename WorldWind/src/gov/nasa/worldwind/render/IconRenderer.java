@@ -272,9 +272,19 @@ public class IconRenderer
             Position pos = icon.getPosition();
             Vec4 iconPoint = null;
             if (pos.getElevation() < dc.getGlobe().getMaxElevation() && !this.isAlwaysUseAbsoluteElevation())
+            {
                 iconPoint = dc.getSurfaceGeometry().getSurfacePoint(icon.getPosition());
+            }
+
             if (iconPoint == null)
-                iconPoint = dc.getGlobe().computePointFromPosition(icon.getPosition());
+            {
+                Angle lat = pos.getLatitude();
+                Angle lon = pos.getLongitude();
+                double elevation = pos.getElevation();
+                if (!this.isAlwaysUseAbsoluteElevation())
+                    elevation += dc.getGlobe().getElevation(lat, lon);
+                iconPoint = dc.getGlobe().computePointFromPosition(lat, lon, elevation);
+            }
 
             double eyeDistance = icon.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(iconPoint);
 
