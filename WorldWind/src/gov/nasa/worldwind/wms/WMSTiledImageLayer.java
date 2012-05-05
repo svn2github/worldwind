@@ -285,8 +285,13 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
             throw new IllegalArgumentException(message);
         }
 
+        Level requestedLevel;
+        if ((levelNumber >= 0) && (levelNumber < this.getLevels().getNumLevels()))
+            requestedLevel = this.getLevels().getLevel(levelNumber);
+        else
+            requestedLevel = this.getLevels().getLastLevel();
         ComposeImageTile tile =
-            new ComposeImageTile(sector, mimeType, this.getLevels().getLastLevel(), canvasWidth, canvasHeight);
+            new ComposeImageTile(sector, mimeType, requestedLevel, canvasWidth, canvasHeight);
         try
         {
             if (image == null)

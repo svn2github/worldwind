@@ -187,7 +187,7 @@ public abstract class TiledImageLayer extends AbstractLayer
         this.detailHint = detailHint;
     }
 
-    protected LevelSet getLevels()
+    public LevelSet getLevels()
     {
         return levels;
     }
