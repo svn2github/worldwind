@@ -1167,6 +1167,7 @@ public abstract class AbstractShape extends WWObjectImpl
         // for this shape, e.g. if (mustApplyBlending...), it doesn't work with batch rendering because subsequent
         // shapes in the batch may have the feature enabled.
         attrMask |= GL.GL_CURRENT_BIT
+            | GL.GL_DEPTH_BUFFER_BIT
             | GL.GL_LINE_BIT | GL.GL_HINT_BIT // for outlines
             | GL.GL_COLOR_BUFFER_BIT // for blending
             | GL.GL_TRANSFORM_BIT // for texture
@@ -1348,6 +1349,9 @@ public abstract class AbstractShape extends WWObjectImpl
                 gl.glDisable(GL.GL_LIGHTING);
                 gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
             }
+
+            if (activeAttrs.getInteriorOpacity() < 1)
+                gl.glDepthMask(false);
         }
     }
 
