@@ -2172,9 +2172,6 @@ public class Path extends AbstractShape
                 pathData.renderedPath.position(pathData.renderedPath.position() + pathData.vertexStride - 3);
         }
 
-        if (minDistanceSquared == 0)
-            System.out.println();
-
         return Math.sqrt(minDistanceSquared);
     }
 
