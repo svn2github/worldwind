@@ -177,7 +177,7 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
             if (version == null || version.compareTo(MAX_VERSION) >= 0)
             {
                 this.wmsVersion = MAX_VERSION;
-                this.crs = "&crs=CRS:84";
+                this.crs = "&crs=EPSG:4326";
             }
             else
             {
