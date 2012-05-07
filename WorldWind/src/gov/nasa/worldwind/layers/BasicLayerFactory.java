@@ -68,7 +68,7 @@ public class BasicLayerFactory extends BasicFactory
     {
         String serviceName = caps.getServiceInformation().getServiceName();
         if (serviceName == null || !(serviceName.equalsIgnoreCase(OGCConstants.WMS_SERVICE_NAME)
-            || serviceName.equalsIgnoreCase("WMS")))
+            || serviceName.contains("WMS")))
         {
             String message = Logging.getMessage("WMS.NotWMSService", serviceName != null ? serviceName : "null");
             Logging.logger().severe(message);
