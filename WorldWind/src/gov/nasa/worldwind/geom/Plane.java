@@ -108,7 +108,7 @@ public final class Plane
     }
 
     /**
-     * Returs the plane distance.
+     * Returns the plane distance.
      *
      * @return the plane distance.
      */
