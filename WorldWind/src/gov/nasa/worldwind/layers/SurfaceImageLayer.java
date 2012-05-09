@@ -192,7 +192,7 @@ public class SurfaceImageLayer extends RenderableLayer
      * @throws IOException              if an error occurs reading the image file.
      * @throws WWRuntimeException       if the image type is unsupported.
      */
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     public void addImage(String imagePath, Sector sector) throws IOException, WWRuntimeException
     {
         AVList params = new AVListImpl();
@@ -290,7 +290,7 @@ public class SurfaceImageLayer extends RenderableLayer
      *
      * @param imagePath the path to the image file.
      * @param corners   the geographic location of the image's corners, specified in order of lower-left, lower-right,
-     *                  upper-right, lower-left.
+     *                  upper-right, upper-left.
      *
      * @throws IllegalArgumentException if the image path or sector is null.
      * @throws IOException              if an error occurs reading the image file.
@@ -330,7 +330,7 @@ public class SurfaceImageLayer extends RenderableLayer
      *                #removeImage(String)}.
      * @param image   the image to add.
      * @param corners the geographic location of the image's corners, specified in order of lower-left, lower-right,
-     *                upper-right, lower-left.
+     *                upper-right, upper-left.
      *
      * @throws IllegalArgumentException if the image path is null, the corners list is null, contains null values or
      *                                  fewer than four locations.
@@ -410,7 +410,7 @@ public class SurfaceImageLayer extends RenderableLayer
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     public int getNumImages()
     {
         int count = 0;
@@ -446,7 +446,7 @@ public class SurfaceImageLayer extends RenderableLayer
      *
      * @see ImageUtil#mergeImage(Sector, Sector, double, BufferedImage, BufferedImage)
      */
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     public BufferedImage composeImageForSector(Sector sector, int canvasWidth, int canvasHeight, double aspectRatio,
         BufferedImage image)
     {
