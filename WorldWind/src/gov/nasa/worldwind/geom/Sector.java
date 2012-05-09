@@ -390,12 +390,30 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         if (center.getLatitude().cos() > 0)
             halfDeltaLonRadians = halfDeltaLatRadians / center.getLatitude().cos();
 
+        double minLat = center.getLatitude().radians - halfDeltaLatRadians;
+        double maxLat = center.getLatitude().radians + halfDeltaLatRadians;
+
+        double minLon;
+        double maxLon;
+
+        if (minLat >= Angle.NEG90.radians && maxLat <= Angle.POS90.radians)
+        {
+            minLon = center.getLongitude().radians - halfDeltaLonRadians;
+            maxLon = center.getLongitude().radians + halfDeltaLonRadians;
+        }
+        else
+        {
+            // If the circle crosses the pole then it spans the full circle of longitude
+            minLon = Angle.NEG180.radians;
+            maxLon = Angle.POS180.radians;
+        }
+
         LatLon ll = new LatLon(
-            Angle.fromRadiansLatitude(center.getLatitude().radians - halfDeltaLatRadians),
-            Angle.normalizedLongitude(Angle.fromRadians(center.getLongitude().radians - halfDeltaLonRadians)));
+            Angle.fromRadiansLatitude(minLat),
+            Angle.normalizedLongitude(Angle.fromRadians(minLon)));
         LatLon ur = new LatLon(
-            Angle.fromRadiansLatitude(center.getLatitude().radians + halfDeltaLatRadians),
-            Angle.normalizedLongitude(Angle.fromRadians(center.getLongitude().radians + halfDeltaLonRadians)));
+            Angle.fromRadiansLatitude(maxLat),
+            Angle.normalizedLongitude(Angle.fromRadians(maxLon)));
 
         Iterable<? extends LatLon> locations = java.util.Arrays.asList(ll, ur);
 

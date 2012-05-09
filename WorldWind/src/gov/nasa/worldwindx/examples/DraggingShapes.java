@@ -110,6 +110,11 @@ public class DraggingShapes extends ApplicationTemplate
             shape.setAttributes(attrs);
             layer.addRenderable(shape);
 
+            // Surface circle over the North Pole
+            shape = new SurfaceCircle(LatLon.fromDegrees(90, 0), 1e6);
+            shape.setAttributes(attrs);
+            layer.addRenderable(shape);
+
             // Surface quadrilateral over the center of the United States.
             attrs = new BasicShapeAttributes();
             attrs.setInteriorMaterial(Material.ORANGE);

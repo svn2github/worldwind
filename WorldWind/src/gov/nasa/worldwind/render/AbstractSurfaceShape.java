@@ -33,7 +33,7 @@ import java.util.List;
  * default attributes are used. See {@link #DEFAULT_INTERIOR_MATERIAL}, {@link #DEFAULT_OUTLINE_MATERIAL}, and {@link
  * #DEFAULT_HIGHLIGHT_MATERIAL}.
  * <p/>
- * AbstractSurfaceShape extends from {@link gov.nasa.worldwind.render.AbstractSurfaceObject}, and therfore inherits
+ * AbstractSurfaceShape extends from {@link gov.nasa.worldwind.render.AbstractSurfaceObject}, and therefore inherits
  * AbstractSurfaceObject's batch rendering capabilities.
  *
  * @author dcollins
@@ -218,7 +218,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             null);
     }
 
-    @SuppressWarnings( {"unchecked"})
+    @SuppressWarnings({"unchecked"})
     public List<Sector> getSectors(DrawContext dc)
     {
         if (dc == null)
@@ -685,13 +685,18 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         for (List<LatLon> locations : geom)
         {
-            ArrayList<LatLon> drawLocations = new ArrayList<LatLon>(locations);
+            List<LatLon> drawLocations = new ArrayList<LatLon>(locations);
 
-            // If the locations cross the international dateline, then reflect the locations on the side opposite
-            // the SurfaceTileDrawContext's sector. This causes all locations to be positive or negative, and render
-            // correctly into a single non dateline-spanning geographic viewport.
-            if (LatLon.locationsCrossDateLine(drawLocations))
+            String pole = this.containsPole(drawLocations);
+            if (pole != null)
             {
+                drawLocations = this.cutAlongDateLine(drawLocations, pole, dc.getGlobe());
+            }
+            else if (LatLon.locationsCrossDateLine(drawLocations))
+            {
+                // If the locations cross the international dateline, then reflect the locations on the side opposite
+                // the SurfaceTileDrawContext's sector. This causes all locations to be positive or negative, and render
+                // correctly into a single non dateline-spanning geographic viewport.
                 boolean inWesternHemisphere = sdc.getSector().getMaxLongitude().degrees < 0;
 
                 for (int i = 0; i < drawLocations.size(); i++)
@@ -713,6 +718,141 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
             this.activeGeometry.add(drawLocations);
         }
+    }
+
+    /**
+     * Determine if a list of geographic locations encloses either the North or South pole.
+     *
+     * @param locations Locations to test.
+     *
+     * @return AVKey.NORTH if the North Pole is enclosed, AVKey.SOUTH if the South Pole is enclosed, or null if neither
+     *         pole is enclosed.
+     */
+    // TODO handle a shape that contains both poles.
+    protected String containsPole(List<LatLon> locations)
+    {
+        // Determine how many times the path crosses the date line. Shapes that include a pole will cross an odd number of times.
+        boolean containsPole = false;
+
+        double minLatitude = 90.0;
+        double maxLatitude = -90.0;
+
+        LatLon prev = null;
+        for (LatLon ll : locations)
+        {
+            if (prev != null && LatLon.locationsCrossDateline(prev, ll))
+                containsPole = !containsPole;
+
+            if (ll.latitude.degrees < minLatitude)
+                minLatitude = ll.latitude.degrees;
+
+            if (ll.latitude.degrees > maxLatitude)
+                maxLatitude = ll.latitude.degrees;
+
+            prev = ll;
+        }
+
+        if (!containsPole)
+            return null;
+
+        if (minLatitude > 0)
+            return AVKey.NORTH; // Entirely in Northern Hemisphere
+        else if (maxLatitude < 0)
+            return AVKey.SOUTH; // Entirely in Southern Hemisphere
+        else if (Math.abs(maxLatitude) >= Math.abs(minLatitude))
+            return AVKey.NORTH; // Spans equator, but more north than south
+        else
+            return AVKey.SOUTH;
+    }
+
+    /**
+     * Divide a list of locations that encloses a pole along the international date line. This method determines where
+     * the locations cross the date line, and inserts locations to the pole, and then back to the intersection position.
+     * This allows the shape to be "unrolled" when projected in a lat-lon projection.
+     *
+     * @param locations Locations to cut at date line. This list is not modified.
+     * @param pole      Pole contained by locations, either AVKey.NORTH or AVKey.SOUTH.
+     * @param globe     Current globe.
+     *
+     * @return New location list with locations added to correctly handle date line intersection.
+     */
+    protected List<LatLon> cutAlongDateLine(List<LatLon> locations, String pole, Globe globe)
+    {
+        // If the locations do not contain a pole, then there's nothing to do.
+        if (pole == null)
+            return locations;
+
+        List<LatLon> newLocations = new ArrayList<LatLon>(locations.size());
+
+        Angle poleLat = AVKey.NORTH.equals(pole) ? Angle.POS90 : Angle.NEG90;
+
+        LatLon pos = null;
+        for (LatLon posNext : locations)
+        {
+            if (pos != null)
+            {
+                newLocations.add(pos);
+                if (LatLon.locationsCrossDateline(pos, posNext))
+                {
+                    // Determine where the segment crosses the date line.
+                    LatLon separation = this.intersectionWithMeridian(pos, posNext, Angle.POS180, globe);
+                    double sign = Math.signum(pos.getLongitude().degrees);
+
+                    Angle lat = separation.getLatitude();
+                    Angle thisSideLon = Angle.POS180.multiply(sign);
+                    Angle otherSideLon = thisSideLon.multiply(-1);
+
+                    // Add locations that run from the intersection to the pole, then back to the intersection. Note
+                    // that the longitude changes sign when the path returns from the pole.
+                    //         . Pole
+                    //      2 ^ | 3
+                    //        | |
+                    //      1 | v 4
+                    // --->---- ------>
+                    newLocations.add(new LatLon(lat, thisSideLon));
+                    newLocations.add(new LatLon(poleLat, thisSideLon));
+                    newLocations.add(new LatLon(poleLat, otherSideLon));
+                    newLocations.add(new LatLon(lat, otherSideLon));
+                }
+            }
+            pos = posNext;
+        }
+        newLocations.add(pos);
+
+        return newLocations;
+    }
+
+    /**
+     * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
+     * intersecting a line in Cartesian space between the two positions with a plane through meridian. Thus, it is most
+     * suitable for working with positions that are fairly close together as the calculation does not take into account
+     * great circle or rhumb paths.
+     *
+     * @param p1       First position.
+     * @param p2       Second position.
+     * @param meridian Longitude line to intersect with.
+     * @param globe    Globe used to compute intersection.
+     *
+     * @return The intersection location along the meridian
+     */
+    protected LatLon intersectionWithMeridian(LatLon p1, LatLon p2, Angle meridian, Globe globe)
+    {
+        Vec4 pt1 = globe.computePointFromLocation(p1);
+        Vec4 pt2 = globe.computePointFromLocation(p2);
+
+        // Compute a plane through the origin, North Pole, and the desired meridian.
+        Vec4 northPole = globe.computePointFromLocation(new LatLon(Angle.POS90, meridian));
+        Vec4 pointOnEquator = globe.computePointFromLocation(new LatLon(Angle.ZERO, meridian));
+
+        Plane plane = Plane.fromPoints(northPole, pointOnEquator, Vec4.ZERO);
+
+        Vec4 intersectionPoint = plane.intersect(Line.fromSegment(pt1, pt2));
+        if (intersectionPoint == null)
+            return null;
+
+        Position intersectionPos = globe.computePositionFromPoint(intersectionPoint);
+
+        return new LatLon(intersectionPos.getLatitude(), meridian);
     }
 
     protected List<List<LatLon>> getActiveGeometry()
@@ -781,7 +921,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         return this.texture;
     }
 
-    @SuppressWarnings( {"unchecked"})
+    @SuppressWarnings({"unchecked"})
     protected List<List<LatLon>> getCachedGeometry(DrawContext dc, SurfaceTileDrawContext sdc)
     {
         if (dc == null)
@@ -1006,7 +1146,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
     }
 
-    @SuppressWarnings( {"StringEquality"})
+    @SuppressWarnings({"StringEquality"})
     protected void addIntermediateLocations(LatLon a, LatLon b, double edgeIntervalsPerDegree, List<LatLon> locations)
     {
         if (this.pathType != null && this.pathType == AVKey.GREAT_CIRCLE)
@@ -1424,7 +1564,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
 
         @Override
-        @SuppressWarnings( {"SimplifiableIfStatement"})
+        @SuppressWarnings({"SimplifiableIfStatement"})
         public boolean equals(Object o)
         {
             if (this == o)
