@@ -1422,7 +1422,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     @Override
     public String toString()
     {
-        java.lang.StringBuffer sb = new java.lang.StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("(");
         sb.append(this.minLatitude.toString());
         sb.append(", ");
