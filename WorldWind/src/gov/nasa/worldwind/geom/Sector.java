@@ -16,11 +16,11 @@ import java.awt.geom.*;
 import java.util.*;
 
 /**
- * <code>Sector</code> represents a rectangular reqion of latitude and longitude. The region is defined by four angles:
+ * <code>Sector</code> represents a rectangular region of latitude and longitude. The region is defined by four angles:
  * its minimum and maximum latitude, its minimum and maximum longitude. The angles are assumed to be normalized to +/-
  * 90 degrees latitude and +/- 180 degrees longitude. The minimums and maximums are relative to these ranges, e.g., -80
  * is less than 20. Behavior of the class is undefined for angles outside these ranges. Normalization is not performed
- * on the angles by this class, nor is it verifed by the class' methods. See {@link Angle} for a description of
+ * on the angles by this class, nor is it verified by the class' methods. See {@link Angle} for a description of
  * specifying angles. <p/> <code>Sector</code> instances are immutable. </p>
  *
  * @author Tom Gaskins
@@ -878,7 +878,24 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
                 maxHeight));
         }
 
-        if (sector.getDeltaLonDegrees() > 180)
+        // If the sector spans 360 degrees of longitude then is a band around the entire globe. (If one edge is a pole
+        // then the sector looks like a circle around the pole.) Add points at the min and max latitudes and longitudes
+        // 0, 180, 90, and -90 to capture full extent of the band.
+        if (sector.getDeltaLonDegrees() >= 360)
+        {
+            Angle minLat = sector.getMinLatitude();
+            points.add(globe.computePointFromPosition(minLat, Angle.ZERO, maxHeight));
+            points.add(globe.computePointFromPosition(minLat, Angle.POS90, maxHeight));
+            points.add(globe.computePointFromPosition(minLat, Angle.NEG90, maxHeight));
+            points.add(globe.computePointFromPosition(minLat, Angle.POS180, maxHeight));
+
+            Angle maxLat = sector.getMaxLatitude();
+            points.add(globe.computePointFromPosition(maxLat, Angle.ZERO, maxHeight));
+            points.add(globe.computePointFromPosition(maxLat, Angle.POS90, maxHeight));
+            points.add(globe.computePointFromPosition(maxLat, Angle.NEG90, maxHeight));
+            points.add(globe.computePointFromPosition(maxLat, Angle.POS180, maxHeight));
+        }
+        else if (sector.getDeltaLonDegrees() > 180)
         {
             // Need to compute more points to ensure the box encompasses the full sector.
             Angle cLon = sector.getCentroid().getLongitude();
