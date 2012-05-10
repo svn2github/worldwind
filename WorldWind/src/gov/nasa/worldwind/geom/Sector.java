@@ -386,9 +386,6 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         }
 
         double halfDeltaLatRadians = radius / globe.getRadiusAt(center);
-        double halfDeltaLonRadians = Math.PI * 2;
-        if (center.getLatitude().cos() > 0)
-            halfDeltaLonRadians = halfDeltaLatRadians / center.getLatitude().cos();
 
         double minLat = center.getLatitude().radians - halfDeltaLatRadians;
         double maxLat = center.getLatitude().radians + halfDeltaLatRadians;
@@ -396,10 +393,41 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         double minLon;
         double maxLon;
 
+        // If the circle does not cross a pole, then compute the max and min longitude.
         if (minLat >= Angle.NEG90.radians && maxLat <= Angle.POS90.radians)
         {
-            minLon = center.getLongitude().radians - halfDeltaLonRadians;
-            maxLon = center.getLongitude().radians + halfDeltaLonRadians;
+            // We want to find the maximum and minimum longitude values on the circle. We will start with equation 5-6
+            // from "Map Projections - A Working Manual", page 31, and solve for the value of Az that will maximize
+            // lon - lon0.
+            //
+            // Eq. 5-6:
+            // lon = lon0 + arctan( h(lat0, c, az) )
+            // h(lat0, c, az) = sin(c) sin(az) / (cos(lat0) cos(c) - sin(lat1) sin(c) cos(Az))
+            //
+            // Where (lat0, lon0) are the starting coordinates, c is the angular distance along the great circle from
+            // the starting coordinate, Az is the azimuth, and lon is the end position longitude. All values are in
+            // radians.
+            //
+            // lon - lon0 is maximized when h(lat0, c, Az) is maximized because arctan(x) -> 1 as x -> infinity.
+            //
+            // Taking the partial derivative of h with respect to Az we get:
+            // h'(Az) = (sin(c) cos(c) cos(lat0) cos(Az) - sin^2(c) sin(lat0)) / (cos(lat0) cos(c) - sin(lat0) sin(c) cos(Az))^2
+            //
+            // Setting h' = 0 to find maxima:
+            // 0 = sin(c) cos(c) cos(lat0) cos(Az) - sin^2(c) sin(lat0)
+            //
+            // And solving for Az:
+            // Az = arccos( tan(lat0) tan(c) )
+            //
+            // +/- Az are bearings from North that will give positions of max and min longitude.
+
+            double az = Math.acos(Math.tan(halfDeltaLatRadians) * Math.tan(center.latitude.radians));
+
+            LatLon east = LatLon.greatCircleEndPosition(center, az, halfDeltaLatRadians);
+            LatLon west = LatLon.greatCircleEndPosition(center, -az, halfDeltaLatRadians);
+
+            minLon = Math.min(east.longitude.radians, west.longitude.radians);
+            maxLon = Math.max(east.longitude.radians, west.longitude.radians);
         }
         else
         {
