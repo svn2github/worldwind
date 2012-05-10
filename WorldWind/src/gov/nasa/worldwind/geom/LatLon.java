@@ -482,8 +482,8 @@ public class LatLon
         //
         // The great circle is by definition centered about the Globe's origin. Therefore intersections with the
         // equator will be antipodal (exactly 180 degrees opposite each other), as will be the extreme latitudes.
-        // My observing the symmetry of a great circle, it is also apparent that the extreme latitudes will be 90
-        // degrees from either interseciton with the equator.
+        // By observing the symmetry of a great circle, it is also apparent that the extreme latitudes will be 90
+        // degrees from either intersection with the equator.
         //
         // d1 = c + 90
         // d2 = c - 90
@@ -533,7 +533,7 @@ public class LatLon
         double minLat = Angle.POS90.degrees;
         double maxLat = Angle.NEG90.degrees;
 
-        // Compute the min and max latitude and assocated locations from the arc endpoints.
+        // Compute the min and max latitude and associated locations from the arc endpoints.
         for (LatLon ll : java.util.Arrays.asList(begin, end))
         {
             if (minLat >= ll.getLatitude().degrees)
