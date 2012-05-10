@@ -125,6 +125,13 @@ public class SurfacePolylines extends AbstractSurfaceShape
         return null;
     }
 
+    /** {@inheritDoc} Overridden to treat the polylines as open paths rather than closed polygons. */
+    @Override
+    protected boolean canContainPole()
+    {
+        return false;
+    }
+
     protected void doMoveTo(Position oldReferencePosition, Position newReferencePosition)
     {
         for (int i = 0; i < this.buffer.size(); i++)

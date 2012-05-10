@@ -360,6 +360,11 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         return this.computeLocations(globe, this.intervals);
     }
 
+    /**
+     * {@inheritDoc} Overridden to use an algorithm specific to ellipse that is more efficient than the general
+     * algorithm used in the superclass.
+     */
+    @Override
     protected List<Sector> computeSectors(Globe globe)
     {
         // TODO: Compute a better fitting bounding sector for SurfaceEllipse.

@@ -241,11 +241,27 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
     }
 
+    /**
+     * Computes the bounding sectors for the shape. There will be more than one if the shape crosses the date line, but
+     * does not enclose a pole.
+     *
+     * @param dc Current draw context.
+     *
+     * @return Bounding sectors for the shape.
+     */
     protected List<Sector> computeSectors(DrawContext dc)
     {
         return this.computeSectors(dc.getGlobe());
     }
 
+    /**
+     * Computes the bounding sectors for the shape. There will be more than one if the shape crosses the date line, but
+     * does not enclose a pole.
+     *
+     * @param globe Current globe.
+     *
+     * @return Bounding sectors for the shape.
+     */
     protected List<Sector> computeSectors(Globe globe)
     {
         Iterable<? extends LatLon> locations = this.getLocations(globe);
@@ -254,7 +270,20 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         List<Sector> sectors = null;
 
-        if (LatLon.locationsCrossDateLine(locations))
+        String pole = this.containsPole(locations);
+        if (pole != null)
+        {
+            // If the shape contains a pole, then the bounding sector is defined by the shape's extreme latitude, the
+            // latitude of the pole, and the full range of longitude.
+            Sector s = Sector.boundingSector(locations);
+            if (AVKey.NORTH.equals(pole))
+                s = new Sector(s.getMinLatitude(), Angle.POS90, Angle.NEG180, Angle.POS180);
+            else
+                s = new Sector(Angle.NEG90, s.getMaxLatitude(), Angle.NEG180, Angle.POS180);
+
+            sectors = Arrays.asList(s);
+        }
+        else if (LatLon.locationsCrossDateLine(locations))
         {
             Sector[] array = Sector.splitBoundingSectors(locations);
             if (array != null && array.length == 2 && !isSectorEmpty(array[0]) && !isSectorEmpty(array[1]))
@@ -721,25 +750,49 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     }
 
     /**
-     * Determine if a list of geographic locations encloses either the North or South pole.
+     * Indicates whether the shape is a closed polygon that can enclose a pole, or an open path that cannot. This makes
+     * a difference when computing the bounding sector for a shape. For example, consider the positions (-100, 85), (0,
+     * 80), (100, 80). If these positions are treated as a closed polygon (a triangle over the North Pole) then the
+     * bounding sector is 80 to 90 lat, -180 to 180 lon. But if they are treated as an open path (a line wrapping
+     * partway around the pole) then the bounding sector is 80 to 85 lat, -100 to 100 lon.
+     *
+     * @return True if the shape is a closed polygon that can contain a pole, or false if it is treated as an open path
+     *         that cannot contain a pole.
+     */
+    protected boolean canContainPole()
+    {
+        return true;
+    }
+
+    /**
+     * Determine if a list of geographic locations encloses either the North or South pole. The list is treated as a
+     * closed loop. (If the first and last positions are not equal the loop will be closed for purposes of this
+     * computation.)
      *
      * @param locations Locations to test.
      *
      * @return AVKey.NORTH if the North Pole is enclosed, AVKey.SOUTH if the South Pole is enclosed, or null if neither
-     *         pole is enclosed.
+     *         pole is enclosed. Always returns null if {@link #canContainPole()} returns false.
      */
     // TODO handle a shape that contains both poles.
-    protected String containsPole(List<LatLon> locations)
+    protected String containsPole(Iterable<? extends LatLon> locations)
     {
+        if (!this.canContainPole())
+            return null;
+
         // Determine how many times the path crosses the date line. Shapes that include a pole will cross an odd number of times.
         boolean containsPole = false;
 
         double minLatitude = 90.0;
         double maxLatitude = -90.0;
 
+        LatLon first = null;
         LatLon prev = null;
         for (LatLon ll : locations)
         {
+            if (first == null)
+                first = ll;
+
             if (prev != null && LatLon.locationsCrossDateline(prev, ll))
                 containsPole = !containsPole;
 
@@ -752,9 +805,17 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             prev = ll;
         }
 
+        // Close the loop by connecting the last position to the first. If the loop is already closed then the following
+        // test will always fail, and will not affect the result.
+        if (first != null && LatLon.locationsCrossDateline(first, prev))
+            containsPole = !containsPole;
+
         if (!containsPole)
             return null;
 
+        // Determine which pole is enclosed. If the shape is entirely in one hemisphere, then assume that it encloses
+        // the pole in that hemisphere. Otherwise, assume that it encloses the pole that is closest to the shape's
+        // extreme latitude.
         if (minLatitude > 0)
             return AVKey.NORTH; // Entirely in Northern Hemisphere
         else if (maxLatitude < 0)
@@ -824,9 +885,9 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     /**
      * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
-     * intersecting a line in Cartesian space between the two positions with a plane through meridian. Thus, it is most
-     * suitable for working with positions that are fairly close together as the calculation does not take into account
-     * great circle or rhumb paths.
+     * intersecting a line in Cartesian space between the two positions with a plane through the meridian. Thus, it is
+     * most suitable for working with positions that are fairly close together as the calculation does not take into
+     * account great circle or rhumb paths.
      *
      * @param p1       First position.
      * @param p2       Second position.

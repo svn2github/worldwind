@@ -178,6 +178,13 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
         // Intentionally left blank; SurfacePolyline does not render an interior.
     }
 
+    /** {@inheritDoc} Overridden to treat the shape as an open path if the polyline is not closed. */
+    @Override
+    protected boolean canContainPole()
+    {
+        return this.isClosed();
+    }
+
     //**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//
