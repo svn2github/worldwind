@@ -400,7 +400,7 @@ public class Box implements Extent, Renderable
      * Returns the effective diameter of the box as if it were a sphere. The length returned is the square root of the
      * sum of the squares of axis lengths.
      *
-     * @return the effetive diameter of the box.
+     * @return the effective diameter of the box.
      */
     public double getDiameter()
     {
@@ -411,7 +411,7 @@ public class Box implements Extent, Renderable
      * Returns the effective radius of the box as if it were a sphere. The length returned is half the square root of
      * the sum of the squares of axis lengths.
      *
-     * @return the effetive radius of the box.
+     * @return the effective radius of the box.
      */
     public double getRadius()
     {
