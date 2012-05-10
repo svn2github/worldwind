@@ -11,7 +11,7 @@ import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
@@ -45,8 +45,8 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /** Default text effect (shadow). */
     public static final String DEFAULT_TEXT_EFFECT = AVKey.TEXT_EFFECT_SHADOW;
 
-    /** Label text. */
-    protected String text;
+    /** Text split into separate lines. */
+    protected String[] lines;
     /** The label's geographic position. */
     protected Position position;
     /** Offset from the geographic position at which to draw the label. */
@@ -94,8 +94,12 @@ public class TacticalGraphicLabel implements OrderedRenderable
     protected Point screenPoint;
     /** Rotation applied to the label. This is computed each frame based on the orientation position. */
     protected Angle rotation;
+    /** Height of a line of text, computed in {@link #computeBoundsIfNeeded(gov.nasa.worldwind.render.DrawContext)}. */
+    protected int lineHeight;
     /** Size of the label. */
     protected Rectangle2D bounds;
+    /** Cached bounds for each line of text. */
+    protected Rectangle2D[] lineBounds;
     /** Extent of the label on the screen. */
     protected Rectangle screenExtent;
     /** Distance from the eye point to the label's geographic location. */
@@ -108,6 +112,21 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /** Active layer. */
     protected Layer pickLayer;
 
+    /** Create a new empty label. */
+    public TacticalGraphicLabel()
+    {
+    }
+
+    /**
+     * Create a new label.
+     *
+     * @param text Label text.
+     */
+    public TacticalGraphicLabel(String text)
+    {
+        this.setText(text);
+    }
+
     /**
      * Indicates the text of this label.
      *
@@ -115,7 +134,20 @@ public class TacticalGraphicLabel implements OrderedRenderable
      */
     public String getText()
     {
-        return this.text;
+        if (this.lines != null)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < this.lines.length - 1; i++)
+            {
+                sb.append(this.lines[i]).append("\n");
+            }
+            sb.append(this.lines[this.lines.length - 1]);
+
+            return sb.toString();
+        }
+
+        return null;
     }
 
     /**
@@ -125,7 +157,11 @@ public class TacticalGraphicLabel implements OrderedRenderable
      */
     public void setText(String text)
     {
-        this.text = text;
+        if (text != null)
+            this.lines = text.split("\n");
+        else
+            this.lines = null;
+
         this.bounds = null; // Need to recompute
     }
 
@@ -600,17 +636,33 @@ public class TacticalGraphicLabel implements OrderedRenderable
      */
     protected void computeBoundsIfNeeded(DrawContext dc)
     {
-        // Compute bounds if they are not available. Computing text bounds is expensive, so only do this
+        // Do not compute bounds if they are available. Computing text bounds is expensive, so only do this
         // calculation if necessary.
-        if (this.bounds == null)
-        {
-            TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
-                this.getFont());
-            MultiLineTextRenderer mltr = new MultiLineTextRenderer(textRenderer);
-            mltr.setLineSpacing(this.getLineSpacing());
+        if (this.bounds != null)
+            return;
 
-            this.bounds = this.computeMultilineTextBounds(this.text, textRenderer);
+        TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
+            this.getFont());
+
+        int width = 0;
+        int maxLineHeight = 0;
+        this.lineBounds = new Rectangle2D[this.lines.length];
+
+        for (int i = 0; i < this.lines.length; i++)
+        {
+            Rectangle2D lineBounds = textRenderer.getBounds(lines[i]);
+            width = (int) Math.max(lineBounds.getWidth(), width);
+
+            double thisLineHeight = Math.abs(lineBounds.getY());
+            maxLineHeight = (int) Math.max(thisLineHeight, maxLineHeight);
+
+            this.lineBounds[i] = lineBounds;
         }
+        this.lineHeight = maxLineHeight;
+
+        // Compute final height using maxLineHeight and number of lines
+        this.bounds = new Rectangle(this.lines.length, maxLineHeight, width,
+            this.lines.length * maxLineHeight + this.lines.length * this.lineSpacing);
     }
 
     /**
@@ -793,7 +845,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
      */
     protected void makeOrderedRenderable(DrawContext dc)
     {
-        if (this.text == null || this.position == null)
+        if (this.lines == null || this.position == null)
             return;
 
         this.computeGeometryIfNeeded(dc);
@@ -840,16 +892,13 @@ public class TacticalGraphicLabel implements OrderedRenderable
     protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickSupport)
     {
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
-        MultiLineTextRenderer mltr = new MultiLineTextRenderer(textRenderer);
-        mltr.setLineSpacing(this.getLineSpacing());
-
         if (dc.isPickingMode())
         {
-            this.doPick(dc, mltr, pickSupport);
+            this.doPick(dc, pickSupport);
         }
         else
         {
-            this.drawText(dc, mltr);
+            this.drawText(dc, textRenderer);
         }
     }
 
@@ -904,14 +953,11 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * Draw labels for picking.
      *
      * @param dc          Current draw context.
-     * @param mltr        Text rendered used to draw the labels.
      * @param pickSupport the PickSupport instance to be used.
      */
-    protected void doPick(DrawContext dc, MultiLineTextRenderer mltr, PickSupport pickSupport)
+    protected void doPick(DrawContext dc, PickSupport pickSupport)
     {
         GL gl = dc.getGL();
-
-        mltr.setTextAlign(this.textAlign);
 
         Angle heading = this.rotation;
 
@@ -937,7 +983,43 @@ public class TacticalGraphicLabel implements OrderedRenderable
                 gl.glTranslated(-x, -y, 0);
             }
 
-            mltr.pick(this.text, x, y, mltr.getLineHeight(), dc, pickSupport, this.getPickedObject(), this.position);
+            for (int i = 0; i < this.lines.length; i++)
+            {
+                Rectangle2D bounds = this.lineBounds[i];
+                double width = bounds.getWidth();
+                double height = bounds.getHeight();
+
+                x = this.screenPoint.x;
+                if (this.textAlign.equals(AVKey.CENTER))
+                    x = x - (int) (width / 2.0);
+                else if (this.textAlign.equals(AVKey.RIGHT))
+                    x = x - (int) width;
+                y -= this.lineHeight;
+
+                Color color = dc.getUniquePickColor();
+                int colorCode = color.getRGB();
+                PickedObject po = new PickedObject(colorCode, this.getPickedObject(), this.position, false);
+                pickSupport.addPickableObject(po);
+
+                // Draw line rectangle
+                gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+
+                try
+                {
+                    gl.glBegin(GL.GL_POLYGON);
+                    gl.glVertex3d(x, y, 0);
+                    gl.glVertex3d(x + width - 1, y, 0);
+                    gl.glVertex3d(x + width - 1, y + height - 1, 0);
+                    gl.glVertex3d(x, y + height - 1, 0);
+                    gl.glVertex3d(x, y, 0);
+                }
+                finally
+                {
+                    gl.glEnd();
+                }
+
+                y -= this.lineSpacing;
+            }
         }
         finally
         {
@@ -949,16 +1031,15 @@ public class TacticalGraphicLabel implements OrderedRenderable
     }
 
     /**
-     * Draw the label's text. This method sets up the text renderer, and then calls {@link
-     * #doDrawText(gov.nasa.worldwind.render.MultiLineTextRenderer) doDrawText} to actually draw the text.
+     * Draw the label's text. This method sets up the text renderer, and then calls {@link #doDrawText(TextRenderer)
+     * doDrawText} to actually draw the text.
      *
-     * @param dc   Current draw context.
-     * @param mltr Text renderer.
+     * @param dc           Current draw context.
+     * @param textRenderer Text renderer.
      */
-    protected void drawText(DrawContext dc, MultiLineTextRenderer mltr)
+    protected void drawText(DrawContext dc, TextRenderer textRenderer)
     {
         GL gl = dc.getGL();
-        TextRenderer textRenderer = mltr.getTextRenderer();
 
         Angle heading = this.rotation;
 
@@ -990,11 +1071,11 @@ public class TacticalGraphicLabel implements OrderedRenderable
             textRenderer.begin3DRendering();
             try
             {
-                this.doDrawText(mltr);
+                this.doDrawText(textRenderer);
 
                 // Draw other labels that share the same text renderer configuration, if possible.
                 if (this.isEnableBatchRendering())
-                    this.drawBatchedText(dc, mltr);
+                    this.drawBatchedText(dc, textRenderer);
             }
             finally
             {
@@ -1032,7 +1113,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
         else if (AVKey.RIGHT.equals(textAlign))
             xAligned = x - (int) width;
 
-        // MultilineTextRenderer draws text top-down, so adjust y to compensate.
+        // We draw text top-down, so adjust y to compensate.
         int yAligned = (int) (y - height);
 
         // Apply insets
@@ -1067,13 +1148,10 @@ public class TacticalGraphicLabel implements OrderedRenderable
     /**
      * Draw the label's text. This method assumes that the text renderer context has already been set up.
      *
-     * @param mltr Text renderer to use.
+     * @param textRenderer renderer to use.
      */
-    protected void doDrawText(MultiLineTextRenderer mltr)
+    protected void doDrawText(TextRenderer textRenderer)
     {
-        TextRenderer textRenderer = mltr.getTextRenderer();
-        mltr.setTextAlign(this.textAlign);
-
         Color color = this.material.getDiffuse();
         Color backgroundColor = this.computeBackgroundColor(color);
         float opacity = (float) this.getOpacity();
@@ -1087,52 +1165,47 @@ public class TacticalGraphicLabel implements OrderedRenderable
             backgroundColor.getRGBColorComponents(compArray);
 
             textRenderer.setColor(compArray[0], compArray[1], compArray[2], opacity);
-            mltr.draw(this.text, x + 1, y - 1);
+            this.drawMultiLineText(textRenderer, x + 1, y - 1);
         }
 
         color.getRGBColorComponents(compArray);
         textRenderer.setColor(compArray[0], compArray[1], compArray[2], opacity);
-        mltr.draw(this.text, x, y);
+        this.drawMultiLineText(textRenderer, x, y);
     }
 
-    /**
-     * Get the bounds of a multi-line text string. Each newline character in the input string (\n) indicates the start
-     * of a new line.
-     *
-     * @param text         Text to find bounds of.
-     * @param textRenderer Text renderer to use to compute bounds.
-     *
-     * @return A rectangle that describes the node bounds. See com.sun.opengl.util.j2d.TextRenderer.getBounds for
-     *         information on how this rectangle should be interpreted.
-     */
-    protected Rectangle2D computeMultilineTextBounds(String text, TextRenderer textRenderer)
+    protected void drawMultiLineText(TextRenderer textRenderer, int x, int y)
     {
-        int width = 0;
-        int maxLineHeight = 0;
-        String[] lines = text.split("\n");
-
-        for (String line : lines)
+        if (this.lines == null)
         {
-            Rectangle2D lineBounds = textRenderer.getBounds(line);
-            width = (int) Math.max(lineBounds.getWidth(), width);
-
-            double thisLineHeight = Math.abs(lineBounds.getY());
-            maxLineHeight = (int) Math.max(thisLineHeight, maxLineHeight);
+            String msg = Logging.getMessage("nullValue.StringIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
         }
 
-        // Compute final height using maxLineHeight and number of lines
-        return new Rectangle(lines.length, maxLineHeight, width,
-            lines.length * maxLineHeight + lines.length * this.lineSpacing);
+        for (int i = 0; i < this.lines.length; i++)
+        {
+            String line = this.lines[i];
+            Rectangle2D bounds = this.lineBounds[i];
+
+            int xAligned = x;
+            if (this.textAlign.equals(AVKey.CENTER))
+                xAligned = x - (int) (bounds.getWidth() / 2);
+            else if (this.textAlign.equals(AVKey.RIGHT))
+                xAligned = x - (int) (bounds.getWidth());
+
+            y -= this.lineHeight;
+            textRenderer.draw3D(line, xAligned, y, 0, 1);
+            y -= this.lineSpacing;
+        }
     }
 
     /**
      * Draws this ordered renderable and all subsequent Label ordered renderables in the ordered renderable list. This
-     * method differs from {@link #drawBatchedText(gov.nasa.worldwind.render.DrawContext,
-     * gov.nasa.worldwind.render.MultiLineTextRenderer) drawBatchedText} in that this method re-initializes the text
-     * renderer to draw the next label, while {@code drawBatchedText} re-uses the active text renderer context. That is,
-     * {@code drawBatchedText} attempts to draw as many labels as possible that share same text renderer configuration
-     * as this label, and this method attempts to draw as many labels as possible regardless of the text renderer
-     * configuration of the subsequent labels.
+     * method differs from {@link #drawBatchedText(gov.nasa.worldwind.render.DrawContext, TextRenderer) drawBatchedText}
+     * in that this method re-initializes the text renderer to draw the next label, while {@code drawBatchedText}
+     * re-uses the active text renderer context. That is, {@code drawBatchedText} attempts to draw as many labels as
+     * possible that share same text renderer configuration as this label, and this method attempts to draw as many
+     * labels as possible regardless of the text renderer configuration of the subsequent labels.
      *
      * @param dc the current draw context.
      */
@@ -1181,10 +1254,10 @@ public class TacticalGraphicLabel implements OrderedRenderable
      * #drawBatched(gov.nasa.worldwind.render.DrawContext) drawBatched} in that this method reuses the active text
      * renderer context to draw as many labels as possible without switching text renderer state.
      *
-     * @param dc   the current draw context.
-     * @param mltr Text renderer used to draw the label.
+     * @param dc           the current draw context.
+     * @param textRenderer Text renderer used to draw the label.
      */
-    protected void drawBatchedText(DrawContext dc, MultiLineTextRenderer mltr)
+    protected void drawBatchedText(DrawContext dc, TextRenderer textRenderer)
     {
         // Draw as many as we can in a batch to save ogl state switching.
         Object nextItem = dc.peekOrderedRenderables();
@@ -1209,7 +1282,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
-                nextLabel.doDrawText(mltr);
+                nextLabel.doDrawText(textRenderer);
 
                 nextItem = dc.peekOrderedRenderables();
             }
