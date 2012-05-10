@@ -421,7 +421,16 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
             //
             // +/- Az are bearings from North that will give positions of max and min longitude.
 
-            double az = Math.acos(Math.tan(halfDeltaLatRadians) * Math.tan(center.latitude.radians));
+            // If halfDeltaLatRadians == 90 degrees, then tan is undefined. This can happen if the circle radius is one
+            // quarter of the globe diameter, and the circle is centered on the equator. tan(center lat) is always
+            // defined because the center lat is in the range -90 to 90 exclusive. If it were equal to 90, then the
+            // circle would cover a pole.
+            double az;
+            if (Math.abs(Angle.POS90.radians - halfDeltaLatRadians)
+                > 0.001) // Consider within 1/1000th of a radian to be equal
+                az = Math.acos(Math.tan(halfDeltaLatRadians) * Math.tan(center.latitude.radians));
+            else
+                az = Angle.POS90.radians;
 
             LatLon east = LatLon.greatCircleEndPosition(center, az, halfDeltaLatRadians);
             LatLon west = LatLon.greatCircleEndPosition(center, -az, halfDeltaLatRadians);
