@@ -896,11 +896,10 @@ public interface SymbologyConstants
     final String SHOW_ICON = "gov.nasa.worldwind.symbology.ShowIcon";
 
     /**
-     * Indicates whether to display a MIL-STD-2525 symbol's location. See MIL-STD-2525 section 5.3.4.10 (page 29), table
-     * IV (pages 22-24) and table XIV (pages 46-47). When used as a key, the corresponding value must be a boolean
-     * value. The value is <code>true</code> if the symbol's location should be displayed, and <code>false</code>
-     * otherwise.
+     * @deprecated Use {@link TacticalSymbol#setShowLocation(boolean)} to control the visibility of the location
+     *             modifier.
      */
+    @Deprecated
     final String SHOW_LOCATION = "gov.nasa.worldwind.symbology.ShowLocation";
 
     /**
