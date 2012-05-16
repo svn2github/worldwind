@@ -146,7 +146,7 @@ public class DTED
         int width = (Integer) metadata.getValue(AVKey.WIDTH);
         int height = (Integer) metadata.getValue(AVKey.HEIGHT);
 
-        int recordSize = REC_HEADER_SIZE + width * Short.SIZE / Byte.SIZE + REC_CHKSUM_SIZE;
+        int recordSize = REC_HEADER_SIZE + height * Short.SIZE / Byte.SIZE + REC_CHKSUM_SIZE;
 
         double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
         double nodata = (double) DTED_NODATA_VALUE;
@@ -177,8 +177,8 @@ public class DTED
                 raster.setDoubleAtPosition(y, x, elev);
             }
 
-            short hi = data.get(width + REC_CHKSUM_SIZE);
-            short lo = data.get(width + REC_CHKSUM_SIZE + 1);
+            short hi = data.get(height + REC_CHKSUM_SIZE);
+            short lo = data.get(height + REC_CHKSUM_SIZE + 1);
 
             int expectedChkSum = (0xFFFF & hi) << 16 | (0xFFFF & lo);
 
