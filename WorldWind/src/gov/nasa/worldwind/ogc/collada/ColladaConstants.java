@@ -6,8 +6,10 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-public class ColladaConstants
+public interface ColladaConstants
 {
     /** The Collada namespace URI. */
-    public static final String COLLADA_NAMESPACE = "http://www.collada.org/2005/11/COLLADASchema";
+    final String COLLADA_NAMESPACE = "http://www.collada.org/2005/11/COLLADASchema";
+    /** MIME type for Collada documents. */
+    final String COLLADA_MIME_TYPE = "model/collada+xml";
 }

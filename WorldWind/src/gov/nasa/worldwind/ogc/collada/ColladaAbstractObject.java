@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
+import gov.nasa.worldwind.util.xml.*;
 
 /**
  * Base class for Collada parser classes.
@@ -14,7 +14,7 @@ import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
  * @author pabercrombie
  * @version $Id$
  */
-public abstract class ColladaAbstractObject extends KMLAbstractObject
+public abstract class ColladaAbstractObject extends AbstractXMLEventParser
 {
     /**
      * Construct an instance.
@@ -24,5 +24,12 @@ public abstract class ColladaAbstractObject extends KMLAbstractObject
     protected ColladaAbstractObject(String namespaceURI)
     {
         super(namespaceURI);
+    }
+
+    @Override
+    public ColladaRoot getRoot()
+    {
+        XMLEventParser root = super.getRoot();
+        return root instanceof ColladaRoot ? (ColladaRoot) root : null;
     }
 }

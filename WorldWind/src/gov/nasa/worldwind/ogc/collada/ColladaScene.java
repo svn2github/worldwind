@@ -6,6 +6,8 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.render.DrawContext;
+
 /**
  * Represents the Collada <i>Scene</i> element and provides access to its contents.
  *
@@ -17,5 +19,12 @@ public class ColladaScene extends ColladaAbstractObject
     public ColladaScene(String ns)
     {
         super(ns);
+    }
+
+    public void render(DrawContext dc)
+    {
+        ColladaInstanceVisualScene sceneInstance = (ColladaInstanceVisualScene) this.getField("instance_visual_scene");
+        if (sceneInstance != null)
+            sceneInstance.render(dc);
     }
 }

@@ -6,19 +6,28 @@
 
 package gov.nasa.worldwind.ogc.kml.impl;
 
-import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.ogc.collada.ColladaRoot;
 import gov.nasa.worldwind.ogc.kml.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 {
-    protected final KMLModel model;
-    protected final KMLPlacemark parent;
-//    protected ColladaSceneShape shape;
+    protected KMLModel model;
+    protected KMLPlacemark parent;
+    protected AtomicReference<ColladaRoot> colladaRoot = new AtomicReference<ColladaRoot>();
+    /**
+     * Time, in milliseconds since the Epoch, at which this placemark's model resource was last retrieved. Initially
+     * <code>-1</code>, indicating that the resource has not been retrieved.
+     */
+    protected AtomicLong resourceRetrievalTime = new AtomicLong(-1);
 
     /**
      * Create an instance.
@@ -56,63 +65,6 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         this.model = (KMLModel) geom;
         this.parent = placemark;
     }
-//
-//    protected ColladaSceneShape createShape(DrawContext dc)
-//    {
-//        String address = this.model.getLink().getAddress(dc);
-//
-//        if (WWUtil.isEmpty(address))
-//            return null;
-//
-//        ColladaSceneShape shape = new ColladaSceneShape(new ColladaFilePathResolver()
-//        {
-//            public String resolveFilePath(String path) throws IOException
-//            {
-//                 return KMLModelPlacemarkImpl.this.model.getRoot().getSupportFilePath(path);
-//            }
-//        });
-//
-//        shape.setModelAddress(address);
-//
-//        KMLLocation location = this.model.getLocation();
-//        if (location != null)
-//        {
-//            Double lat = location.getLatitude();
-//            Double lon = location.getLongitude();
-//            Double alt = location.getAltitude();
-//            shape.setModelPosition(Position.fromDegrees(
-//                lat != null ? lat : 0, lon != null ? lon : 0, alt != null ? alt : 0));
-//        }
-//        else
-//        {
-//            shape.setModelPosition(Position.ZERO);
-//        }
-//
-//        KMLOrientation orientation = this.model.getOrientation();
-//        if (orientation != null)
-//        {
-//            if (orientation.getHeading() != null)
-//                shape.setHeading(Angle.fromDegrees(orientation.getHeading()));
-//            if (orientation.getTilt() != null)
-//                shape.setPitch(Angle.fromDegrees(orientation.getTilt()));
-//            if (orientation.getRoll() != null)
-//                shape.setRoll(Angle.fromDegrees(orientation.getRoll()));
-//        }
-//
-//        KMLScale scale = this.model.getScale();
-//        if (scale != null)
-//        {
-//            double x = scale.getX() != null ? scale.getX() : 1;
-//            double y = scale.getY() != null ? scale.getY() : 1;
-//            double z = scale.getZ() != null ? scale.getZ() : 1;
-//            shape.setModelScale(new Vec4(x, y, z));
-//        }
-//
-//        if (this.model.getResourceMap() != null)
-//            shape.setResourceMap(this.createResourceMap(this.model));
-//
-//        return shape;
-//    }
 
     protected Map<String, Object> createResourceMap(KMLModel model)
     {
@@ -144,84 +96,207 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         }
     }
 
+    /**
+     * Specifies the Collada resource referenced by this placemark, or <code>null</code> if this placemark has no
+     * resource.
+     *
+     * @param root the Collada resource referenced by this placemark. May be <code>null</code>.
+     */
+    protected void setColladaRoot(ColladaRoot root)
+    {
+        this.colladaRoot.set(root);
+    }
+
+    /**
+     * Indicates the Collada resource referenced by this placemark. This returns <code>null</code> if this placemark has
+     * no resource.
+     *
+     * @return this placemark's Collada resource, or <code>null</code> to indicate that this placemark has no resource.
+     *
+     * @see #setColladaRoot(gov.nasa.worldwind.ogc.collada.ColladaRoot)
+     */
+    protected ColladaRoot getColladaRoot()
+    {
+        return this.colladaRoot.get();
+    }
+
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
+        if (this.mustRetrieveResource())
+            this.requestResource(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)
     {
-//        if (this.model.getLink() == null)
-//            return;
-//
-//        String address = this.model.getLink().getAddress(dc);
-//        if (WWUtil.isEmpty(address))
-//            return;
-//
-//        if (this.shape == null || !this.shape.getModelAddress().equals(address))
-//        {
-//            ColladaSceneShape newShape = this.createShape(dc);
-//            this.shape = newShape;
-//        }
-//
-//        if (this.shape != null)
-//            this.shape.render(dc);
+        if (this.model.getLink() == null)
+            return;
+
+        String address = this.model.getLink().getAddress(dc);
+        if (WWUtil.isEmpty(address))
+            return;
+
+        ColladaRoot root = this.getColladaRoot();
+        if (root != null)
+        {
+            root.render(dc);
+        }
     }
-//
-//    Double latitude;
-//    Double longitude;
-//    Double altitude;
-//
-//    KMLRenderable linkedObject;
-//    boolean startedLoading = false;
-//    boolean needToFinishInit = true;
-//
-//    public void preRender(KMLTraversalContext tc, DrawContext dc)
-//    {
-//        if (!startedLoading && linkedObject == null)
-//        {
-//            KMLLink link = model.getLink();
-//            if (link != null)
-//            {
-//                startedLoading = true;
-//                final String address = link.getAddress(dc);
-//
-//                KMLRoot.executor.execute(new Runnable()
-//                {
-//                    public void run()
-//                    {
-//                        KMLRoot root = parent.getRoot();
-//                        Object linkedFile = root.resolveReference(address);
-//
-//                        KMLModel model = KMLModelPlacemarkImpl.this.model;
-//                        KMLLocation location = (KMLLocation) model.getField("Location");
-//
-//                        latitude = location.getLatitude();
-//                        longitude = location.getLongitude();
-//                        altitude = location.getAltitude();
-//
-//                        ((ColladaRoot) linkedFile).setPosition(latitude, longitude, altitude);
-//                        ((ColladaRoot) linkedFile).parseShape();
-//
-//                        linkedObject = (KMLRenderable) linkedFile;  // do this after all the preparsing is done
-//                    }
-//                });
-//            }
-//        }
-//
-//        if (needToFinishInit
-//            && linkedObject != null)  // if the worker thread is done we have stuff to do in the prerender thread.
-//        {
-//            needToFinishInit = false;
-//            //get the file url, then make a factory just like we do for kml- spin off a thread?
-//
-//            KMLModel model = this.model;
-//            KMLLocation location = (KMLLocation) model.getField("Location");
-//
-//            latitude = location.getLatitude();
-//            longitude = location.getLongitude();
-//            altitude = location.getAltitude();
-//
-//            ((ColladaRoot) linkedObject).setPosition(latitude, longitude, altitude);
-//        }
-//    }
+
+    /**
+     * Returns whether this placemark must retrieve its model resource. This always returns <code>false</code> if this
+     * placemark has no <code>KMLLink</code>.
+     *
+     * @return <code>true</code> if this placemark must retrieve its model resource, otherwise <code>false</code>.
+     */
+    protected boolean mustRetrieveResource()
+    {
+        KMLLink link = this.model.getLink();
+        if (link == null)
+            return false;
+
+        // The resource must be retrieved if the link has been updated since the resource was
+        // last retrieved, or if the resource has never been retrieved.
+        return this.getColladaRoot() == null || link.getUpdateTime() > this.resourceRetrievalTime.get();
+    }
+
+    /**
+     * Thread's off a task to determine whether the resource is local or remote and then retrieves it either from disk
+     * cache or a remote server.
+     *
+     * @param dc the current draw context.
+     */
+    protected void requestResource(DrawContext dc)
+    {
+        if (WorldWind.getTaskService().isFull())
+            return;
+
+        KMLLink link = this.model.getLink();
+        if (link == null)
+            return;
+
+        String address = link.getAddress(dc);
+        if (address != null)
+            address = address.trim();
+
+        if (WWUtil.isEmpty(address))
+            return;
+
+        WorldWind.getTaskService().addTask(new RequestTask(this, address));
+    }
+
+    /**
+     * Initiates a retrieval of the model referenced by this placemark. Once the resource is retrieved and loaded, this
+     * calls <code>{@link #setColladaRoot(ColladaRoot)}</code> to specify this link's new network resource, and sends an
+     * <code>{@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL}</code> property change event to this
+     * link's property change listeners.
+     * <p/>
+     * This does nothing if this <code>KMLNetworkLink</code> has no <code>KMLLink</code>.
+     *
+     * @param address the address of the resource to retrieve
+     */
+    protected void retrieveModel(String address) throws IOException, XMLStreamException
+    {
+        Object o = this.parent.getRoot().resolveReference(address);
+        ColladaRoot root = ColladaRoot.create(o);
+        if (root != null)
+        {
+            root.parse();
+
+            Position refPosition = this.model.getLocation().getPosition();
+            root.setPosition(refPosition);
+            root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+
+            this.setColladaRoot(root);
+            this.parent.getRoot().requestRedraw();
+        }
+    }
+
+    /** Attempts to find this model link resource file locally, and if that fails attempts to find it remotely. */
+    protected static class RequestTask implements Runnable
+    {
+        /** The link associated with this request. */
+        protected final KMLModelPlacemarkImpl placemark;
+        /** The resource's address. */
+        protected final String address;
+
+        /**
+         * Construct a request task for a specified network link resource.
+         *
+         * @param placemark the placemark for which to construct the request task.
+         * @param address   the address of the resource to request.
+         */
+        protected RequestTask(KMLModelPlacemarkImpl placemark, String address)
+        {
+            if (placemark == null)
+            {
+                String message = Logging.getMessage("nullValue.ObjectIsNull");
+                Logging.logger().severe(message);
+                throw new IllegalArgumentException(message);
+            }
+
+            if (address == null)
+            {
+                String message = Logging.getMessage("nullValue.PathIsNull");
+                Logging.logger().severe(message);
+                throw new IllegalArgumentException(message);
+            }
+
+            this.placemark = placemark;
+            this.address = address;
+        }
+
+        public void run()
+        {
+            if (Thread.currentThread().isInterrupted())
+                return; // the task was cancelled because it's a duplicate or for some other reason
+
+            try
+            {
+                this.placemark.retrieveModel(this.address);
+            }
+            catch (IOException e)
+            {
+                String message = Logging.getMessage("generic.ExceptionWhileReading", e.getMessage());
+                Logging.logger().warning(message);
+            }
+            catch (XMLStreamException e)
+            {
+                String message = Logging.getMessage("generic.ExceptionAttemptingToParseXml", e.getMessage());
+                Logging.logger().warning(message);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            RequestTask that = (RequestTask) o;
+
+            if (!this.address.equals(that.address))
+                return false;
+            //noinspection RedundantIfStatement
+            if (!this.placemark.equals(that.placemark))
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = placemark.hashCode();
+            result = 31 * result + address.hashCode();
+            return result;
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.address;
+        }
+    }
 }

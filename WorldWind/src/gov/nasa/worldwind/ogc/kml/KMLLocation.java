@@ -6,6 +6,8 @@
 
 package gov.nasa.worldwind.ogc.kml;
 
+import gov.nasa.worldwind.geom.Position;
+
 /**
  * Represents the KML <i>Location</i> element and provides access to its contents.
  *
@@ -37,5 +39,22 @@ public class KMLLocation extends KMLAbstractObject
     public Double getAltitude()
     {
         return (Double) this.getField("altitude");
+    }
+
+    /**
+     * Retrieves this location as a {@link Position}. Fields that are not set are treated as zero.
+     *
+     * @return Position object representing this location.
+     */
+    public Position getPosition()
+    {
+        Double lat = this.getLatitude();
+        Double lon = this.getLongitude();
+        Double alt = this.getAltitude();
+
+        return Position.fromDegrees(
+            lat != null ? lat : 0,
+            lon != null ? lon : 0,
+            alt != null ? alt : 0);
     }
 }

@@ -6,6 +6,8 @@
 
 package gov.nasa.worldwind.ogc.kml;
 
+import gov.nasa.worldwind.ogc.collada.ColladaConstants;
+
 /**
  * Defines constants used by the KML parser classes.
  *
@@ -34,7 +36,9 @@ public interface KMLConstants
     /** The mime type for KMZ documents. */
     final String KMZ_MIME_TYPE = "application/vnd.google-earth.kmz";
 
-    final String COLLADA_MIME_TYPE = "model/collada+xml";
+    /** @deprecated Use {@link ColladaConstants#COLLADA_MIME_TYPE}. */
+    @Deprecated
+    final String COLLADA_MIME_TYPE = ColladaConstants.COLLADA_MIME_TYPE;
 
     /** Most recent version of KML that WorldWind supports. */
     final String KML_VERSION = "2.2";
@@ -92,4 +96,5 @@ public interface KMLConstants
      * The KML view refresh mode <code>onChange</code>. Indicates that a resource referenced by a <code>KMLLink</code>
      * should refresh when the file containing the link is loaded, or when the link parameters change.
      */
-    final String ON_CHANGE = "onChange";}
+    final String ON_CHANGE = "onChange";
+}
