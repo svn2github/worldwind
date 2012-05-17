@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.kml.impl;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.ogc.collada.ColladaRoot;
+import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.ogc.kml.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
@@ -138,7 +138,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {
-            root.render(dc);
+            root.render(new ColladaTraversalContext(), dc);
         }
     }
 

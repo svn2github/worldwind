@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ import java.util.*;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaVisualScene extends ColladaAbstractObject implements Renderable
+public class ColladaVisualScene extends ColladaAbstractObject implements ColladaRenderable
 {
     protected List<ColladaNode> nodes = new ArrayList<ColladaNode>();
 
@@ -43,11 +43,19 @@ public class ColladaVisualScene extends ColladaAbstractObject implements Rendera
         }
     }
 
-    public void render(DrawContext dc)
+    public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         for (ColladaNode node : this.getNodes())
         {
-            node.render(dc);
+            node.preRender(tc, dc);
+        }
+    }
+
+    public void render(ColladaTraversalContext tc, DrawContext dc)
+    {
+        for (ColladaNode node : this.getNodes())
+        {
+            node.render(tc, dc);
         }
     }
 }

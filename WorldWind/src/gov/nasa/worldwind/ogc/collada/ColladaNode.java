@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.ogc.collada.impl.ColladaNodeShape;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 
 import java.util.*;
 
@@ -19,8 +19,15 @@ import java.util.*;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaNode extends ColladaAbstractObject implements Renderable
+public class ColladaNode extends ColladaAbstractObject implements ColladaRenderable
 {
+    /**
+     * Children of this node. Children may be ColladaNode (direct child of this node) or ColladaInstanceNode (reference
+     * to a node elsewhere in the current document, or another document).
+     */
+    protected List<ColladaRenderable> children;
+
+    /** Shapes used to render geometry in this node. */
     protected List<ColladaNodeShape> shapes;
 
     public ColladaNode(String ns)
@@ -28,66 +35,55 @@ public class ColladaNode extends ColladaAbstractObject implements Renderable
         super(ns);
     }
 
-    public void render(DrawContext dc)
+    public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
-        if (this.shapes == null)
+        if (this.children != null)
         {
-            this.shapes = this.createShapes();
-        }
-
-        for (ColladaNodeShape shape : this.shapes)
-        {
-            shape.render(dc);
+            for (ColladaRenderable node : this.children)
+            {
+                node.preRender(tc, dc);
+            }
         }
     }
 
-    protected List<ColladaNodeShape> createShapes()
+    public void render(ColladaTraversalContext tc, DrawContext dc)
     {
-        List<ColladaNodeShape> newShapes = new ArrayList<ColladaNodeShape>();
-
-        ColladaRoot root = this.getRoot();
-        ColladaLibraryGeometries geomLib = root.getGeometryLibrary();
-        ColladaLibraryMaterials libraryMaterials = root.getMaterialLibrary();
-        ColladaLibraryEffects libraryEffects = root.getEffectLibrary();
-        ColladaLibraryImages libraryImages = root.getImageLibrary();
-
-        ColladaInstanceGeometry geom = (ColladaInstanceGeometry) this.getField("instance_geometry");
-
-        String urlForGeom = (String) geom.getField("url");
-        ColladaBindMaterial bindMaterial = (ColladaBindMaterial) geom.getField("bind_material");
-        ColladaTechniqueCommon techniqueCommon = (ColladaTechniqueCommon) bindMaterial.getField("technique_common");
-        List<ColladaInstanceMaterial> materials = techniqueCommon.getMaterials();
-        String texture = null;
-
-        for (ColladaInstanceMaterial material : materials)
+        if (this.shapes == null && this.getInstanceGeometry() != null)
         {
-            String name = (String) material.getField("symbol");
-            ColladaMaterial materialA = libraryMaterials.getMaterialByName(name);
-            ColladaInstanceEffect effect = (ColladaInstanceEffect) materialA.getField("instance_effect");
-            ColladaEffect effectA = libraryEffects.getEffectByName((String) effect.getField("url"));
-            ColladaProfileCommon profileCommon = (ColladaProfileCommon) effectA.getField("profile_COMMON");
-            ColladaTechnique technique = (ColladaTechnique) profileCommon.getField("technique");
+            this.shapes = this.createShapes(this.getInstanceGeometry());
+        }
 
-            for (ColladaNewParam param : technique.getNewParams())
+        if (this.shapes != null)
+        {
+            for (ColladaNodeShape shape : this.shapes)
             {
-                if (param.hasField("surface"))
-                {
-                    ColladaSurface surface = (ColladaSurface) param.getField("surface");
-                    String imageURL = (String) surface.getField("init_from");
-                    ColladaImage image = libraryImages.getImageByName(imageURL);
-                    String imageURLB = (String) image.getField("init_from");
-
-                    texture = imageURLB;//getTextureFromImageSource( imageURLB);
-                }
-                else if (param.hasField("sampler2D"))
-                {
-                    // this may be more complicated later
-                }
+                shape.render(dc);
             }
         }
 
-        ColladaGeometry geomA = geomLib.getGeometryByID(urlForGeom);
-        ColladaMesh mesh = (ColladaMesh) geomA.getField("mesh");
+        if (this.children != null)
+        {
+            for (ColladaRenderable node : this.children)
+            {
+                node.render(tc, dc);
+            }
+        }
+    }
+
+    public ColladaInstanceGeometry getInstanceGeometry()
+    {
+        return (ColladaInstanceGeometry) this.getField("instance_geometry");
+    }
+
+    protected List<ColladaNodeShape> createShapes(ColladaInstanceGeometry geomInstance)
+    {
+        ColladaGeometry geometry = geomInstance.get();
+        if (geometry == null)
+            return null;
+
+        List<ColladaNodeShape> newShapes = new ArrayList<ColladaNodeShape>();
+
+        ColladaMesh mesh = geometry.getMesh();
 
         List<ColladaSource> sources = mesh.getSources();
         List<ColladaTriangles> triangles = mesh.getTriangles();
@@ -182,5 +178,21 @@ public class ColladaNode extends ColladaAbstractObject implements Renderable
         }
 
         return floats;
+    }
+
+    @Override
+    public void setField(String keyName, Object value)
+    {
+        if ("node".equals(keyName) || "instance_node".equals(keyName))
+        {
+            if (this.children == null)
+                this.children = new ArrayList<ColladaRenderable>();
+
+            this.children.add((ColladaRenderable) value);
+        }
+        else
+        {
+            super.setField(keyName, value);
+        }
     }
 }

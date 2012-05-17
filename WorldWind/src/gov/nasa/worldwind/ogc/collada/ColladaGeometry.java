@@ -18,4 +18,9 @@ public class ColladaGeometry extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaMesh getMesh()
+    {
+        return (ColladaMesh) this.getField("mesh");
+    }
 }

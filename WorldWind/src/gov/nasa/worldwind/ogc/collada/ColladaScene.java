@@ -14,17 +14,24 @@ import gov.nasa.worldwind.render.DrawContext;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaScene extends ColladaAbstractObject
+public class ColladaScene extends ColladaAbstractObject implements ColladaRenderable
 {
     public ColladaScene(String ns)
     {
         super(ns);
     }
 
-    public void render(DrawContext dc)
+    public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         ColladaInstanceVisualScene sceneInstance = (ColladaInstanceVisualScene) this.getField("instance_visual_scene");
         if (sceneInstance != null)
-            sceneInstance.render(dc);
+            sceneInstance.preRender(tc, dc);
+    }
+
+    public void render(ColladaTraversalContext tc, DrawContext dc)
+    {
+        ColladaInstanceVisualScene sceneInstance = (ColladaInstanceVisualScene) this.getField("instance_visual_scene");
+        if (sceneInstance != null)
+            sceneInstance.render(tc, dc);
     }
 }

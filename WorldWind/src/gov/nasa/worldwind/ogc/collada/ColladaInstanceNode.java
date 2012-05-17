@@ -9,28 +9,26 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.render.DrawContext;
 
 /**
- * Represents the Collada <i>Instance_Visual_Scene</i> element and provides access to its contents.
- *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaInstanceVisualScene extends ColladaAbstractInstance<ColladaVisualScene> implements ColladaRenderable
+public class ColladaInstanceNode extends ColladaAbstractInstance<ColladaNode> implements ColladaRenderable
 {
-    public ColladaInstanceVisualScene(String ns)
+    public ColladaInstanceNode(String ns)
     {
         super(ns);
     }
 
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
-        ColladaVisualScene instance = this.get();
+        ColladaNode instance = this.get();
         if (instance != null)
             instance.preRender(tc, dc);
     }
 
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
-        ColladaVisualScene instance = this.get();
+        ColladaNode instance = this.get();
         if (instance != null)
             instance.render(tc, dc);
     }

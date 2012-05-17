@@ -12,7 +12,7 @@ package gov.nasa.worldwind.ogc.collada;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaInstanceEffect extends ColladaAbstractObject
+public class ColladaInstanceEffect extends ColladaAbstractInstance<ColladaEffect>
 {
     public ColladaInstanceEffect(String ns)
     {

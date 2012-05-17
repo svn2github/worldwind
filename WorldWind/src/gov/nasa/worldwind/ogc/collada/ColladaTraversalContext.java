@@ -7,15 +7,9 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Instance_Material</i> element and provides access to its contents.
- *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaInstanceMaterial extends ColladaAbstractInstance<ColladaMaterial>
+public class ColladaTraversalContext
 {
-    public ColladaInstanceMaterial(String ns)
-    {
-        super(ns);
-    }
 }

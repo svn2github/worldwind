@@ -12,7 +12,7 @@ package gov.nasa.worldwind.ogc.collada;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaInstanceGeometry extends ColladaAbstractObject
+public class ColladaInstanceGeometry extends ColladaAbstractInstance<ColladaGeometry>
 {
     public ColladaInstanceGeometry(String ns)
     {

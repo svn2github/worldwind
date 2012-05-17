@@ -103,7 +103,6 @@ public class ColladaParserContext extends BasicXMLEventParserContext
     {
         this.parsers.put(new QName(ns, "unit"), new ColladaUnit(ns));
         this.parsers.put(new QName(ns, "material"), new ColladaMaterial(ns));
-        this.parsers.put(new QName(ns, "instance_effect"), new ColladaInstanceEffect(ns));
         this.parsers.put(new QName(ns, "technique"), new ColladaTechnique(ns));
         this.parsers.put(new QName(ns, "surface"), new ColladaSurface(ns));
         this.parsers.put(new QName(ns, "format"), new ColladaFormat(ns));
@@ -126,8 +125,6 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "color"), new ColladaColor(ns));
         this.parsers.put(new QName(ns, "geometry"), new ColladaGeometry(ns));
         this.parsers.put(new QName(ns, "vertices"), new ColladaVertices(ns));
-        this.parsers.put(new QName(ns, "instance_geometry"), new ColladaInstanceGeometry(ns));
-        this.parsers.put(new QName(ns, "instance_material"), new ColladaInstanceMaterial(ns));
         this.parsers.put(new QName(ns, "bind"), new ColladaBind(ns));
         this.parsers.put(new QName(ns, "node"), new ColladaNode(ns));
         this.parsers.put(new QName(ns, "bind_material"), new ColladaBindMaterial(ns));
@@ -137,12 +134,18 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "asset"), new ColladaAsset(ns));
         this.parsers.put(new QName(ns, "contributor"), new ColladaContributor(ns));
 
-        this.parsers.put(new QName(ns, "library_geometries"), new ColladaLibraryGeometries(ns));
-        this.parsers.put(new QName(ns, "library_effects"), new ColladaLibraryEffects(ns));
-        this.parsers.put(new QName(ns, "library_images"), new ColladaLibraryImages(ns));
-        this.parsers.put(new QName(ns, "library_materials"), new ColladaLibraryMaterials(ns));
-        this.parsers.put(new QName(ns, "library_visual_scenes"), new ColladaLibraryVisualScenes(ns));
+        this.parsers.put(new QName(ns, "library_geometries"), new ColladaLibrary<ColladaGeometry>(ns));
+        this.parsers.put(new QName(ns, "library_effects"), new ColladaLibrary<ColladaEffect>(ns));
+        this.parsers.put(new QName(ns, "library_images"), new ColladaLibrary<ColladaImage>(ns));
+        this.parsers.put(new QName(ns, "library_materials"), new ColladaLibrary<ColladaMaterial>(ns));
+        this.parsers.put(new QName(ns, "library_visual_scenes"), new ColladaLibrary<ColladaVisualScene>(ns));
+        this.parsers.put(new QName(ns, "library_nodes"), new ColladaLibrary<ColladaNode>(ns));
+
         this.parsers.put(new QName(ns, "instance_visual_scene"), new ColladaInstanceVisualScene(ns));
+        this.parsers.put(new QName(ns, "instance_geometry"), new ColladaInstanceGeometry(ns));
+        this.parsers.put(new QName(ns, "instance_material"), new ColladaInstanceMaterial(ns));
+        this.parsers.put(new QName(ns, "instance_effect"), new ColladaInstanceEffect(ns));
+        this.parsers.put(new QName(ns, "instance_node"), new ColladaInstanceNode(ns));
 
         this.parsers.put(new QName(ns, "visual_scene"), new ColladaVisualScene(ns));
         this.parsers.put(new QName(ns, "triangles"), new ColladaTriangles(ns));

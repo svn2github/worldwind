@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.ogc.collada.io.*;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.xml.*;
 
@@ -22,7 +22,7 @@ import java.io.*;
  * @version $Id$
  */
 // TODO handle URL document source
-public class ColladaRoot extends ColladaAbstractObject implements Renderable
+public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable
 {
     /** Reference to the KMLDoc representing the KML or KMZ file. */
     protected ColladaDoc colladaDoc;
@@ -306,42 +306,24 @@ public class ColladaRoot extends ColladaAbstractObject implements Renderable
         }
     }
 
-    public ColladaLibraryGeometries getGeometryLibrary()
-    {
-        return (ColladaLibraryGeometries) this.getField("library_geometries");
-    }
-
-    public ColladaLibraryMaterials getMaterialLibrary()
-    {
-        return (ColladaLibraryMaterials) this.getField("library_materials");
-    }
-
-    public ColladaLibraryEffects getEffectLibrary()
-    {
-        return (ColladaLibraryEffects) this.getField("library_effects");
-    }
-
-    public ColladaLibraryImages getImageLibrary()
-    {
-        return (ColladaLibraryImages) this.getField("library_images");
-    }
-
-    public ColladaLibraryVisualScenes getSceneLibrary()
-    {
-        return (ColladaLibraryVisualScenes) this.getField("library_visual_scenes");
-    }
-
     public ColladaScene getScene()
     {
         return (ColladaScene) this.getField("scene");
     }
 
-    public void render(DrawContext dc)
+    public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         // COLLADA doc contains at most one scene. See COLLADA spec pg 5-67.
         ColladaScene scene = this.getScene();
         if (scene != null)
-            scene.render(dc);
+            scene.preRender(tc, dc);
+    }
+
+    public void render(ColladaTraversalContext tc, DrawContext dc)
+    {
+        ColladaScene scene = this.getScene();
+        if (scene != null)
+            scene.render(tc, dc);
     }
 
     protected XMLEventParserContext getParserContext()
