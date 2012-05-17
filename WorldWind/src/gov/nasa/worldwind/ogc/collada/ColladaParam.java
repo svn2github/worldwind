@@ -17,4 +17,9 @@ public class ColladaParam extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public String getName()
+    {
+        return (String) this.getField("name");
+    }
 }

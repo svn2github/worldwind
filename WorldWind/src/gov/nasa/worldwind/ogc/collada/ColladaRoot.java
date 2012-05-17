@@ -60,6 +60,22 @@ public class ColladaRoot extends ColladaAbstractObject implements Renderable
         this.initialize();
     }
 
+    public ColladaRoot(InputStream docSource) throws IOException
+    {
+        super(ColladaConstants.COLLADA_NAMESPACE);
+
+        if (docSource == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.colladaDoc = new ColladaInputStream(docSource);
+
+        this.initialize();
+    }
+
     /**
      * Creates a Collada root for an untyped source. The source must be either a {@link File} or a {@link String}
      * identifying either a file path or a URL. Null is returned if the source type is not recognized.
@@ -90,7 +106,27 @@ public class ColladaRoot extends ColladaAbstractObject implements Renderable
             if (file.exists())
                 return new ColladaRoot(file);
         }
+        else if (docSource instanceof InputStream)
+            return new ColladaRoot((InputStream) docSource);
+
         return null;
+    }
+
+    public static ColladaRoot createAndParse(Object docSource) throws IOException, XMLStreamException
+    {
+        ColladaRoot colladaRoot = ColladaRoot.create(docSource);
+
+        if (colladaRoot == null)
+        {
+            String message = Logging.getMessage("generic.UnrecognizedSourceTypeOrUnavailableSource",
+                docSource.toString());
+            throw new IllegalArgumentException(message);
+        }
+
+        // Try with a namespace aware parser.
+        colladaRoot.parse();
+
+        return colladaRoot;
     }
 
     /**
@@ -139,6 +175,41 @@ public class ColladaRoot extends ColladaAbstractObject implements Renderable
     public void setAltitudeMode(int altitudeMode)
     {
         this.altitudeMode = altitudeMode;
+    }
+
+    public Object resolveReference(String link)
+    {
+        if (link == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            String[] linkParts = link.split("#");
+            String linkBase = linkParts[0];
+            String linkRef = linkParts.length > 1 ? linkParts[1] : null;
+
+            // See if it's a reference to an internal element.
+            if (WWUtil.isEmpty(linkBase) && !WWUtil.isEmpty(linkRef))
+                return this.getItemByID(linkRef);
+
+            // TODO handle external references
+
+            // If the reference was not resolved as a remote reference, look for a local element identified by the
+            // reference string. This handles the case of malformed internal references that omit the # sign at the
+            // beginning of the reference.
+            return this.getItemByID(link);
+        }
+        catch (Exception e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", link);
+            Logging.logger().warning(message);
+        }
+
+        return null;
     }
 
     /**
@@ -260,9 +331,15 @@ public class ColladaRoot extends ColladaAbstractObject implements Renderable
         return (ColladaLibraryVisualScenes) this.getField("library_visual_scenes");
     }
 
+    public ColladaScene getScene()
+    {
+        return (ColladaScene) this.getField("scene");
+    }
+
     public void render(DrawContext dc)
     {
-        ColladaScene scene = (ColladaScene) this.getField("scene");
+        // COLLADA doc contains at most one scene. See COLLADA spec pg 5-67.
+        ColladaScene scene = this.getScene();
         if (scene != null)
             scene.render(dc);
     }

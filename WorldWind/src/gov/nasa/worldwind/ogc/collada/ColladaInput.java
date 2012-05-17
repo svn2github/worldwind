@@ -23,4 +23,14 @@ public class ColladaInput extends ColladaAbstractObject
     {
         return Integer.parseInt((String) this.getField("offset"));
     }
+
+    public String getSource()
+    {
+        return (String) this.getField("source");
+    }
+
+    public String getSemantic()
+    {
+        return (String) this.getField("semantic");
+    }
 }

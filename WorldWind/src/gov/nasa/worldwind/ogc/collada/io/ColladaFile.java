@@ -12,7 +12,7 @@ import java.io.*;
 
 /**
  * @author pabercrombie
- * @version $Id
+ * @version $Id$
  */
 public class ColladaFile implements ColladaDoc
 {

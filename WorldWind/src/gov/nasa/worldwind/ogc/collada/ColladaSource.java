@@ -18,4 +18,14 @@ public class ColladaSource extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaAccessor getAccessor()
+    {
+        // Handles only the COLLADA Common profile
+        ColladaTechniqueCommon technique = (ColladaTechniqueCommon) this.getField("technique_common");
+        if (technique == null)
+            return null;
+
+        return (ColladaAccessor) technique.getField("accessor");
+    }
 }
