@@ -10,12 +10,13 @@ import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.symbology.TacticalSymbol;
+import gov.nasa.worldwind.symbology.*;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Test program that renders MIL-STD-2525C symbols with all combinations of graphic modifiers.
@@ -70,10 +71,32 @@ public class AllModifiers extends ApplicationTemplate
                     sb.replace(10, 12, mod);
                     String symbolId = sb.toString().toUpperCase();
 
-                    Position pos = Position.fromDegrees(lat, lon, 8000);
-                    TacticalSymbol symbol = new MilStd2525TacticalSymbol(symbolId, pos);
-                    symbol.setValue(AVKey.DISPLAY_NAME, symbolId);
-                    layer.addRenderable(symbol);
+                    this.addSymbol(symbolId, lat, lon, layer);
+                    lon += dLon;
+                }
+                lat += dLat;
+                lon = startLon;
+            }
+
+            // Add symbols with operation condition modifiers
+            sb = new StringBuilder(sidc);
+            for (String si : standardIdentities)
+            {
+                sb.setCharAt(1, si.charAt(0));
+
+                for (String mod : operationalCondition)
+                {
+                    sb.setCharAt(3, mod.charAt(0));
+                    String symbolId = sb.toString().toUpperCase();
+
+                    // Add a symbol with the "normal" operation condition modifier.
+                    this.addSymbol(symbolId, lat, lon, layer);
+                    lon += dLon;
+
+                    // Add another symbol using the alternate display.
+                    TacticalSymbol symbol = this.addSymbol(symbolId, lat, lon, layer);
+                    symbol.setModifier(SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE, true);
+                    symbol.setValue(AVKey.DISPLAY_NAME, symbolId + " (Alternate Operational Condition");
 
                     lon += dLon;
                 }
@@ -86,6 +109,17 @@ public class AllModifiers extends ApplicationTemplate
 
             // Update the layer panel to display the symbol layer.
             this.getLayerPanel().update(this.getWwd());
+        }
+
+        protected TacticalSymbol addSymbol(String sidc, double lat, double lon, RenderableLayer layer)
+        {
+            Position pos = Position.fromDegrees(lat, lon, 8000);
+            TacticalSymbol symbol = new MilStd2525TacticalSymbol(sidc, pos);
+            symbol.setValue(AVKey.DISPLAY_NAME, sidc);
+            symbol.setShowLocation(false);
+            layer.addRenderable(symbol);
+
+            return symbol;
         }
     }
 
@@ -103,6 +137,13 @@ public class AllModifiers extends ApplicationTemplate
         "f",
         "n",
         "h"
+    );
+
+    protected static List<String> operationalCondition = Arrays.asList(
+        "c", // Present, fully capable
+        "d", // Present, damaged
+        "x", // Present, destroyed
+        "f"  // Present, full to capacity
     );
 
     /** All modifiers codes from MIL-STD-2525C Table A-II, pg. 52. */

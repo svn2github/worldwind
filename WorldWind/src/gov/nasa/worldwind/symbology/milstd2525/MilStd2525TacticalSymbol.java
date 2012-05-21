@@ -463,10 +463,11 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
             this.addGlyph(dc, Offset.BOTTOM_CENTER, Offset.TOP_CENTER, modifierCode, null, LAYOUT_RELATIVE);
         }
 
-        if (SymbologyConstants.SCHEME_EMERGENCY_MANAGEMENT.equalsIgnoreCase(this.symbolCode.getScheme()))
+        if (this.mustUseAlternateOperationalCondition(modifiers))
         {
-            // Alternate Status/Operational Condition. Used by the Emergency Management scheme. Placed at the bottom of
-            // the symbol layout.
+            // Alternate Status/Operational Condition. Always used by the Emergency Management scheme (see MIL-STD-2525C
+            // spec section G.5.5.14, pg. 1030). May be used for other schemes if the OPERATIONAL_CONDITION_ALTERNATE
+            // modifier is set. Placed at the bottom of the symbol layout.
             modifierCode = this.getModifierCode(modifiers, SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE);
             if (modifierCode != null)
             {
@@ -484,6 +485,22 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
                 this.addGlyph(dc, Offset.CENTER, Offset.CENTER, modifierCode, null, null);
             }
         }
+    }
+
+    /**
+     * Indicates whether or not the symbol should be displayed using the alternate Operational Condition indicator
+     * described in MIL-STD-2525C spec Table III-2, pg. 19. The alternate display is always used for symbols in the
+     * Emergency Management scheme (see MIL-STD-2525C // spec section G.5.5.14, pg. 1030). It is be used for other
+     * symbols if the SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE modifier is set.
+     *
+     * @param modifiers Symbol modifiers.
+     *
+     * @return True if the symbol must use the alternate operational condition indicator.
+     */
+    protected boolean mustUseAlternateOperationalCondition(AVList modifiers)
+    {
+        return SymbologyConstants.SCHEME_EMERGENCY_MANAGEMENT.equalsIgnoreCase(this.symbolCode.getScheme())
+            || modifiers.hasKey(SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE);
     }
 
     @Override

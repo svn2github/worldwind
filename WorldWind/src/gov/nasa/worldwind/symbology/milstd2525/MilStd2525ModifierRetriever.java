@@ -75,11 +75,14 @@ public class MilStd2525ModifierRetriever extends AbstractIconRetriever
             throw new WWRuntimeException(msg);
         }
 
-        // Apply the correct color the modifier.
-        Color color = this.getColorFromParams(params);
-        if (color == null)
-            color = DEFAULT_COLOR;
-        this.multiply(image, color);
+        if (this.mustApplyColor(symbolId))
+        {
+            // Apply the correct color the modifier.
+            Color color = this.getColorFromParams(params);
+            if (color == null)
+                color = DEFAULT_COLOR;
+            this.multiply(image, color);
+        }
 
         return image;
     }
@@ -112,6 +115,19 @@ public class MilStd2525ModifierRetriever extends AbstractIconRetriever
     {
         return params.hasKey(SymbologyConstants.FEINT_DUMMY)
             || params.hasKey(SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE);
+    }
+
+    /**
+     * Indicates whether or not color must be applied to the modifier. Color is applied to all modifiers except for
+     * alternate Operational Condition modifiers, which have their own color.
+     *
+     * @param symbolId Modifier id.
+     *
+     * @return True if color must be applied to the modifier.
+     */
+    protected boolean mustApplyColor(String symbolId)
+    {
+        return !SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE_ALL.contains(symbolId.toUpperCase());
     }
 
     protected Integer chooseBestFittingWidth(AVList params)
