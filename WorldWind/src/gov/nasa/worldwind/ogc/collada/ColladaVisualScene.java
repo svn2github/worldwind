@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
 import java.util.*;

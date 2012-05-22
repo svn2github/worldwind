@@ -9,19 +9,20 @@ package gov.nasa.worldwind.ogc.collada.impl;
 import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.ogc.collada.ColladaTriangles;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.GL;
 import java.nio.*;
-import java.util.*;
+import java.util.List;
 
 /**
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaNodeShape extends AbstractGeneralShape
+public class ColladaTriangleMesh extends AbstractGeneralShape
 {
     /**
      * This class holds globe-specific data for this shape. It's managed via the shape-data cache in {@link
@@ -44,23 +45,6 @@ public class ColladaNodeShape extends AbstractGeneralShape
         protected Vec4 referenceCenter;
     }
 
-    static class SourceData
-    {
-        private float[] floatData;
-        private int inputOffset;
-
-        public SourceData(float[] floatData, int inputOffset)
-        {
-            this.floatData = floatData;
-            this.inputOffset = inputOffset;
-        }
-    }
-
-    // TODO: not sure sources is the best way to specify geometry
-    protected Map<String, SourceData> sources = new HashMap<String, SourceData>();
-    protected int[] elementsFromPElement;
-    protected int numberOfElements;
-
     /**
      * The vertex data buffer for this shape data. The first half contains vertex coordinates, the second half contains
      * normals.
@@ -73,15 +57,23 @@ public class ColladaNodeShape extends AbstractGeneralShape
     /** The indices identifying the shape's vertices in the vertex buffer. */
     protected IntBuffer vertexIndexBuffer;
 
-    public void addSource(String semantic, int inputOffset, float[] floatData)
-    {
-        this.sources.put(semantic, new SourceData(floatData, inputOffset));
-    }
+    protected ColladaTriangles colladaGeometry;
 
-    public void setElements(int inNumberOfElements, int[] intData)
+    /**
+     * Create a triangle mesh shape.
+     *
+     * @param geometry COLLADA element that defines geometry for this shape.
+     */
+    public ColladaTriangleMesh(ColladaTriangles geometry)
     {
-        this.numberOfElements = inNumberOfElements;
-        this.elementsFromPElement = intData;
+        if (geometry == null)
+        {
+            String message = Logging.getMessage("nullValue.ObjectIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalStateException(message);
+        }
+
+        this.colladaGeometry = geometry;
     }
 
     @Override
@@ -124,13 +116,13 @@ public class ColladaNodeShape extends AbstractGeneralShape
     @Override
     protected boolean mustApplyLighting(DrawContext dc, ShapeAttributes activeAttrs)
     {
-        return super.mustApplyLighting(dc, activeAttrs) && this.sources.containsKey("NORMAL");
+        return super.mustApplyLighting(dc, activeAttrs) && this.colladaGeometry.getNormalAccessor() != null;
     }
 
     @Override
     protected boolean mustCreateNormals(DrawContext dc, ShapeAttributes activeAttrs)
     {
-        return super.mustCreateNormals(dc, activeAttrs) && this.sources.containsKey("NORMAL");
+        return super.mustCreateNormals(dc, activeAttrs) && this.colladaGeometry.getNormalAccessor() != null;
     }
 
     @Override
@@ -265,13 +257,14 @@ public class ColladaNodeShape extends AbstractGeneralShape
 
     protected void createGeometry(DrawContext dc)
     {
-        // hard coded for sample data, move to loops and hashmaps
-        SourceData vertexSource = this.sources.get("VERTEX");
+        int size = this.colladaGeometry.getVertexAccessor().size();
 
-        int size = vertexSource.floatData.length;
+        // Capture the position at which normals buffer starts (in case there are normals)
+        this.normalBufferPosition = size;
+
         if (this.mustCreateNormals(dc))
         {
-            size += (this.numberOfElements * 3);
+            size += (this.colladaGeometry.getCount() * 3);
         }
 
         if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
@@ -279,10 +272,7 @@ public class ColladaNodeShape extends AbstractGeneralShape
         else
             this.coordBuffer = BufferUtil.newFloatBuffer(size);
 
-        // Capture the position position at which normals buffer starts (in case there are normals)
-        this.normalBufferPosition = vertexSource.floatData.length;
-
-        this.coordBuffer.put(vertexSource.floatData);
+        this.colladaGeometry.getVertexAccessor().fillBuffer(this.coordBuffer);
     }
 
     protected void fillVBO(DrawContext dc)
@@ -328,55 +318,23 @@ public class ColladaNodeShape extends AbstractGeneralShape
     /** Create this shape's vertex normals. */
     protected void createNormals()
     {
-        SourceData normalSource = this.sources.get("NORMAL");
-
         this.coordBuffer.position(this.normalBufferPosition);
         this.normalBuffer = this.coordBuffer.slice();
 
-        int vertsPerTri = 3;
-        int normalOffset = normalSource.inputOffset;
-
-        float[] normals = normalSource.floatData;
-        int sourcesStride = this.sources.size();
-        for (int i = 0; i < this.numberOfElements; i++)
-        {
-            int index1 = i * (vertsPerTri * sourcesStride);
-            int index2 = index1 + (sourcesStride);
-            int index3 = index1 + (2 * sourcesStride);
-
-            this.normalBuffer.put(normals[3 * this.elementsFromPElement[index1 + normalOffset]]);
-            this.normalBuffer.put(normals[3 * this.elementsFromPElement[index2 + normalOffset]]);
-            this.normalBuffer.put(normals[3 * this.elementsFromPElement[index3 + normalOffset]]);
-        }
+        this.colladaGeometry.getNormals(this.normalBuffer);
     }
 
     protected void fillIndexBuffers()
     {
         int vertsPerTri = 3;
 
-        SourceData vertexSource = this.sources.get("VERTEX");
-
-        int vertexOffset = (vertexSource != null) ? vertexSource.inputOffset : 0;
-        if (vertexSource == null)
-            return;
-
-        int size = this.numberOfElements * vertsPerTri;
+        int size = this.colladaGeometry.getCount() * vertsPerTri;
         if (this.vertexIndexBuffer == null || this.vertexIndexBuffer.capacity() < size)
             this.vertexIndexBuffer = BufferUtil.newIntBuffer(size);
         else
             this.vertexIndexBuffer.clear();
 
-        int sourcesStride = this.sources.size();
-        for (int i = 0; i < this.numberOfElements; i++)
-        {
-            int index1 = i * (vertsPerTri * sourcesStride);
-            int index2 = index1 + (sourcesStride);
-            int index3 = index1 + (2 * sourcesStride);
-
-            this.vertexIndexBuffer.put(this.elementsFromPElement[index1 + vertexOffset]);
-            this.vertexIndexBuffer.put(this.elementsFromPElement[index2 + vertexOffset]);
-            this.vertexIndexBuffer.put(this.elementsFromPElement[index3 + vertexOffset]);
-        }
+        this.colladaGeometry.getVertexIndices(this.vertexIndexBuffer);
     }
 
     /**

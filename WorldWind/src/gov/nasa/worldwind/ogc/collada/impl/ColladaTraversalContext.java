@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwind.ogc.collada;
+package gov.nasa.worldwind.ogc.collada.impl;
 
 /**
  * @author pabercrombie

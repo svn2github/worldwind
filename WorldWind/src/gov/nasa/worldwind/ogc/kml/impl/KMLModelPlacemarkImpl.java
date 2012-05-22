@@ -8,7 +8,8 @@ package gov.nasa.worldwind.ogc.kml.impl;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.ogc.collada.*;
+import gov.nasa.worldwind.ogc.collada.ColladaRoot;
+import gov.nasa.worldwind.ogc.collada.impl.ColladaTraversalContext;
 import gov.nasa.worldwind.ogc.kml.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
@@ -18,6 +19,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 
+/**
+ * @author pabercrombie
+ * @version $Id$
+ */
 public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 {
     protected KMLModel model;
@@ -207,6 +212,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
             root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
 
             this.setColladaRoot(root);
+            this.resourceRetrievalTime.set(System.currentTimeMillis());
             this.parent.getRoot().requestRedraw();
         }
     }

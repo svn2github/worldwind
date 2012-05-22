@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.collada;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.ogc.collada.impl.ColladaNodeShape;
+import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
 import java.util.*;
@@ -28,7 +28,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     protected List<ColladaRenderable> children;
 
     /** Shapes used to render geometry in this node. */
-    protected List<ColladaNodeShape> shapes;
+    protected List<ColladaTriangleMesh> shapes;
 
     public ColladaNode(String ns)
     {
@@ -55,7 +55,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
 
         if (this.shapes != null)
         {
-            for (ColladaNodeShape shape : this.shapes)
+            for (ColladaTriangleMesh shape : this.shapes)
             {
                 shape.render(dc);
             }
@@ -75,23 +75,21 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         return (ColladaInstanceGeometry) this.getField("instance_geometry");
     }
 
-    protected List<ColladaNodeShape> createShapes(ColladaInstanceGeometry geomInstance)
+    protected List<ColladaTriangleMesh> createShapes(ColladaInstanceGeometry geomInstance)
     {
         ColladaGeometry geometry = geomInstance.get();
         if (geometry == null)
             return null;
 
-        List<ColladaNodeShape> newShapes = new ArrayList<ColladaNodeShape>();
-
         ColladaMesh mesh = geometry.getMesh();
+        if (mesh == null)
+            return null;
 
-        List<ColladaSource> sources = mesh.getSources();
-        List<ColladaTriangles> triangles = mesh.getTriangles();
-        List<ColladaVertices> vertices = mesh.getVertices();
+        List<ColladaTriangleMesh> newShapes = new ArrayList<ColladaTriangleMesh>();
 
-        for (ColladaTriangles triangle : triangles)
+        for (ColladaTriangles triangle : mesh.getTriangles())
         {
-            ColladaNodeShape shape = new ColladaNodeShape();
+            ColladaTriangleMesh shape = new ColladaTriangleMesh(triangle);
             shape.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
 //            shape.setTexture(colladaRootFile, texture);
 
@@ -102,82 +100,9 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
             shape.setAltitudeMode(this.getRoot().getAltitudeMode());
 
             newShapes.add(shape);
-
-            int count = Integer.parseInt((String) triangle.getField("count"));
-
-            List<ColladaInput> inputs = triangle.getInputs();
-            for (ColladaInput input : inputs)
-            {
-                String semantic = (String) input.getField("semantic");
-                ColladaSource sourceForInput = getSourceFromInput(input, sources, vertices);
-                int inputOffset = input.getOffset();
-
-                float[] floatData = getFloatArrayFromString((String) ((ColladaFloatArray) sourceForInput.
-                    getField("float_array")).getField("CharactersContent"));
-
-                shape.addSource(semantic, inputOffset, floatData);
-            }
-
-            ColladaP elementsList = (ColladaP) triangle.getField("p");
-
-            int[] intData = getIntArrayFromString((String) elementsList.getField("CharactersContent"));
-            shape.setElements(count, intData);
         }
 
         return newShapes;
-    }
-
-    protected ColladaSource getSourceFromInput(ColladaInput input, List<ColladaSource> sources,
-        List<ColladaVertices> inVertices)
-    {
-        String name = ((String) input.getField("source")).substring(1);
-
-        for (ColladaVertices vertices : inVertices)           // probably need to have a usage object- since we arent preserving field "smeantic" in Vertices
-        {
-            if (vertices.getField("id").equals(name))
-            {
-                ColladaInput inputA = (ColladaInput) vertices.getField("input");
-                name = ((String) inputA.getField("source")).substring(1);
-                break;
-            }
-        }
-
-        for (ColladaSource source : sources)
-        {
-            if (source.getField("id").equals(name))
-            {
-                return source;
-            }
-        }
-        return null;
-    }
-
-    protected int[] getIntArrayFromString(String floatArrayString)
-    {
-        String[] arrayOfNumbers = floatArrayString.split(" ");
-        int[] ints = new int[arrayOfNumbers.length];
-
-        int i = 0;
-        for (String s : arrayOfNumbers)
-        {
-            ints[i++] = Integer.parseInt(s);
-        }
-
-        return ints;
-    }
-
-    protected float[] getFloatArrayFromString(String floatArrayString)
-    {
-        String[] arrayOfNumbers = floatArrayString.split(" ");
-        float[] floats = new float[arrayOfNumbers.length];
-
-        int i = 0;
-        for (String s : arrayOfNumbers)
-        {
-            floats[i++] = Float.parseFloat(s);
-        }
-
-        return floats;
     }
 
     @Override
