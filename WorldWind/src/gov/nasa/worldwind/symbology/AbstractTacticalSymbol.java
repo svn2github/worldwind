@@ -1104,6 +1104,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
     {
         Font previousFont = this.activeAttrs.getTextModifierFont();
         Double previousScale = this.activeAttrs.getScale();
+        Double previousOpacity = this.activeAttrs.getOpacity();
 
         if (this.isHighlighted())
         {
@@ -1131,13 +1132,28 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         // If the font has changed since the last frame, then the layout needs to be recomputed since text may be a
         // different size.
         Font newFont = this.activeAttrs.getTextModifierFont();
-        if (newFont != null && !newFont.equals(previousFont))
+        if (newFont != null && !newFont.equals(previousFont)
+            || (newFont == null && previousFont != null))
+        {
             this.reset();
+        }
+
+        // Opacity does not directly affect layout, but each label stores the opacity in its material. If the opacity
+        // has changed, then recreate the labels.
+        Double newOpacity = this.activeAttrs.getOpacity();
+        if ((newOpacity != null && !newOpacity.equals(previousOpacity))
+            || (newOpacity == null && previousOpacity != null))
+        {
+            this.reset();
+        }
 
         // If the scale has changed then the layout needs to be recomputed.
         Double newScale = this.activeAttrs.getScale();
-        if (newScale != null && !newScale.equals(previousScale))
+        if (newScale != null && !newScale.equals(previousScale)
+            || (newScale == null && previousScale != null))
+        {
             this.reset();
+        }
     }
 
     protected TacticalSymbolAttributes getActiveAttributes()
