@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.ogc.collada.impl.*;
@@ -17,6 +18,7 @@ import gov.nasa.worldwind.util.xml.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
+import java.net.URL;
 
 /**
  * @author pabercrombie
@@ -25,7 +27,7 @@ import java.io.*;
 // TODO handle URL document source
 public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable
 {
-    /** Reference to the KMLDoc representing the KML or KMZ file. */
+    /** Reference to the ColladaDoc representing the COLLADA file. */
     protected ColladaDoc colladaDoc;
     /** The event reader used to parse the document's XML. */
     protected XMLEventReader eventReader;
@@ -36,6 +38,30 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     protected Position position;
     protected int altitudeMode;
+
+    /**
+     * Create a new <code>ColladaRoot</code> for a {@link ColladaDoc} instance. A ColladaDoc represents COLLADA files
+     * from either files or input streams.
+     *
+     * @param docSource the ColladaDoc instance representing the COLLADA document.
+     *
+     * @throws IllegalArgumentException if the document source is null.
+     * @throws IOException              if an error occurs while reading the COLLADA document.
+     */
+    public ColladaRoot(ColladaDoc docSource) throws IOException
+    {
+        super(ColladaConstants.COLLADA_NAMESPACE);
+
+        if (docSource == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.colladaDoc = docSource;
+        this.initialize();
+    }
 
     /**
      * Create a new <code>ColladaRoot</code> for a {@link File}.
@@ -72,7 +98,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
             throw new IllegalArgumentException(message);
         }
 
-        this.colladaDoc = new ColladaInputStream(docSource);
+        this.colladaDoc = new ColladaInputStream(docSource, null);
 
         this.initialize();
     }
@@ -124,7 +150,6 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
             throw new IllegalArgumentException(message);
         }
 
-        // Try with a namespace aware parser.
         colladaRoot.parse();
 
         return colladaRoot;
@@ -197,7 +222,29 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
             if (WWUtil.isEmpty(linkBase) && !WWUtil.isEmpty(linkRef))
                 return this.getItemByID(linkRef);
 
-            // TODO handle external references
+            // Interpret the path relative to the current document.
+            String path = this.getSupportFilePath(linkBase);
+            if (path == null)
+                path = linkBase;
+
+            // See if it's an already found and parsed COLLADA file.
+            Object o = WorldWind.getSessionCache().get(path);
+            if (o != null && o instanceof ColladaRoot)
+                return linkRef != null ? ((ColladaRoot) o).getItemByID(linkRef) : o;
+
+            URL url = WWIO.makeURL(path);
+            if (url == null)
+            {
+                // See if the reference can be resolved to a local file.
+                o = this.resolveLocalReference(path, linkRef);
+            }
+
+            // If we didn't find a local file, treat it as a remote reference.
+            if (o == null)
+                o = this.resolveRemoteReference(path, linkRef);
+
+            if (o != null)
+                return o;
 
             // If the reference was not resolved as a remote reference, look for a local element identified by the
             // reference string. This handles the case of malformed internal references that omit the # sign at the
@@ -211,6 +258,179 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         }
 
         return null;
+    }
+
+    /**
+     * Resolves a reference to a local element identified by address and identifier, where {@code linkBase} identifies a
+     * document, including the current document, and {@code linkRef} is the id of the desired element.
+     * <p/>
+     * If {@code linkBase} refers to a local COLLADA file and {@code linkRef} is non-null, the return value is the
+     * element identified by {@code linkRef}. If {@code linkRef} is null, the return value is a parsed {@link
+     * ColladaRoot} for the COLLADA file identified by {@code linkBase}. Otherwise, {@code linkBase} is returned.
+     *
+     * @param linkBase the address of the document containing the requested element.
+     * @param linkRef  the element's identifier.
+     *
+     * @return the requested element, or null if the element is not found.
+     *
+     * @throws IllegalArgumentException if the address is null.
+     */
+    protected Object resolveLocalReference(String linkBase, String linkRef)
+    {
+        if (linkBase == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            File file = new File(linkBase);
+
+            if (!file.exists())
+                return null;
+
+            // Determine whether the file is a COLLADA document. If not, just return the file path.
+            if (!WWIO.isContentType(file, ColladaConstants.COLLADA_MIME_TYPE))
+                return file.toURI().toString();
+
+            // Attempt to open and parse the COLLADA file.
+            ColladaRoot refRoot = ColladaRoot.createAndParse(file);
+            // An exception is thrown if parsing fails, so no need to check for null.
+
+            // Add the parsed file to the session cache so it doesn't have to be parsed again.
+            WorldWind.getSessionCache().put(linkBase, refRoot);
+
+            // Now check the newly opened COLLADA file for the referenced item, if a reference was specified.
+            if (linkRef != null)
+                return refRoot.getItemByID(linkRef);
+            else
+                return refRoot;
+        }
+        catch (Exception e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", linkBase + "/" + linkRef);
+            Logging.logger().warning(message);
+            return null;
+        }
+    }
+
+    /**
+     * Resolves a reference to a remote element identified by address and identifier, where {@code linkBase} identifies
+     * a remote document, and {@code linkRef} is the id of the desired element. This method retrieves resources
+     * asynchronously using the {@link gov.nasa.worldwind.cache.FileStore}.
+     * <p/>
+     * The return value is null if the file is not yet available in the FileStore. If {@code linkBase} refers to a
+     * COLLADA file and {@code linkRef} is non-null, the return value is the element identified by {@code linkRef}. If
+     * {@code linkBase} refers to a COLLADA file and {@code linkRef} is null, the return value is a parsed {@link
+     * ColladaRoot} for the COLLADA file identified by {@code linkBase}. Otherwise the return value is a {@link URL} to
+     * the file in the file cache.
+     *
+     * @param linkBase the address of the document containing the requested element.
+     * @param linkRef  the element's identifier.
+     *
+     * @return URL to the requested file, parsed ColladaRoot, or COLLADA element. Returns null if the document is not
+     *         yet available in the FileStore.
+     *
+     * @throws IllegalArgumentException if the {@code linkBase} is null.
+     */
+    public Object resolveRemoteReference(String linkBase, String linkRef)
+    {
+        if (linkBase == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            // See if it's in the cache. If not, requestFile will start another thread to retrieve it and return null.
+            URL url = WorldWind.getDataFileStore().requestFile(linkBase);
+            if (url == null)
+                return null;
+
+            // It's in the cache. If it's a COLLADA file try to parse it so we can search for the specified reference.
+            // If it's not COLLADA, just return the url for the cached file.
+            String contentType = WorldWind.getDataFileStore().getContentType(linkBase);
+            if (contentType == null)
+            {
+                String suffix = WWIO.getSuffix(linkBase.split(";")[0]); // strip of trailing garbage
+                if (!WWUtil.isEmpty(suffix))
+                    contentType = WWIO.makeMimeTypeForSuffix(suffix);
+            }
+
+            if (!this.canParseContentType(contentType))
+                return url;
+
+            // If the file is a COLLADA document, attempt to open it. We can't open it as a File with createAndParse
+            // because the ColladaRoot that will be created needs to have the remote address in order to resolve any
+            // relative references within it.
+            ColladaRoot refRoot = this.parseCachedColladaFile(url, linkBase);
+
+            // Add the parsed file to the session cache so it doesn't have to be parsed again.
+            WorldWind.getSessionCache().put(linkBase, refRoot);
+
+            // Now check the newly opened COLLADA file for the referenced item, if a reference was specified.
+            if (linkRef != null)
+                return refRoot.getItemByID(linkRef);
+            else
+                return refRoot;
+        }
+        catch (Exception e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", linkBase + "/" + linkRef);
+            Logging.logger().warning(message);
+            return null;
+        }
+    }
+
+    /**
+     * Determines if a MIME type can be parsed as COLLADA. Parsable types are the COLLADA MIME type, as well as
+     * "text/plain" and "text/xml".
+     *
+     * @param mimeType Type to test. May be null.
+     *
+     * @return {@code true} if {@code mimeType} can be parsed as COLLADA.
+     */
+    protected boolean canParseContentType(String mimeType)
+    {
+        return ColladaConstants.COLLADA_MIME_TYPE.equals(mimeType)
+            || "text/plain".equals(mimeType) || "text/xml".equals(mimeType);
+    }
+
+    /**
+     * Open and parse the specified file expressed as a file: URL..
+     *
+     * @param url      the URL of the file to open, expressed as a URL with a scheme of "file".
+     * @param linkBase the original address of the document if the file is a retrieved and cached file.
+     *
+     * @return A {@code ColladaRoot} representing the file's COLLADA contents.
+     *
+     * @throws IOException        if an I/O error occurs during opening and parsing.
+     * @throws XMLStreamException if a server parsing error is encountered.
+     */
+    protected ColladaRoot parseCachedColladaFile(URL url, String linkBase)
+        throws IOException, XMLStreamException
+    {
+        ColladaDoc colladaDoc;
+
+        InputStream refStream = url.openStream();
+
+        colladaDoc = new ColladaInputStream(refStream, WWIO.makeURI(linkBase));
+
+        try
+        {
+            ColladaRoot refRoot = new ColladaRoot(colladaDoc);
+            refRoot.parse(); // also closes the URL's stream
+            return refRoot;
+        }
+        catch (XMLStreamException e)
+        {
+            refStream.close(); // parsing failed, so explicitly close the stream
+            throw e;
+        }
     }
 
     /**
@@ -256,8 +476,8 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     }
 
     /**
-     * Starts document parsing. This method initiates parsing of the KML document and returns when the full document has
-     * been parsed.
+     * Starts document parsing. This method initiates parsing of the COLLADA document and returns when the full document
+     * has been parsed.
      *
      * @param args optional arguments to pass to parsers of sub-elements.
      *
@@ -342,5 +562,10 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     public Object getItemByID(String id)
     {
         return id != null ? this.getParserContext().getIdTable().get(id) : null;
+    }
+
+    public String getSupportFilePath(String link) throws IOException
+    {
+        return this.getColladaDoc().getSupportFilePath(link);
     }
 }

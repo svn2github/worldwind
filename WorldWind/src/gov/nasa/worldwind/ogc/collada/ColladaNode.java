@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
@@ -85,13 +84,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         if (mesh == null)
             return null;
 
-        List<ColladaTriangleMesh> newShapes = new ArrayList<ColladaTriangleMesh>();
+        ColladaBindMaterial bindMaterial = geomInstance.getBindMaterial();
 
+        List<ColladaTriangleMesh> newShapes = new ArrayList<ColladaTriangleMesh>();
         for (ColladaTriangles triangle : mesh.getTriangles())
         {
-            ColladaTriangleMesh shape = new ColladaTriangleMesh(triangle);
-            shape.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-//            shape.setTexture(colladaRootFile, texture);
+            ColladaTriangleMesh shape = new ColladaTriangleMesh(triangle, bindMaterial);
 
             shape.setModelPosition(this.getRoot().getPosition());
             shape.setHeading(Angle.ZERO); // TODO

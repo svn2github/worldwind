@@ -18,4 +18,21 @@ public class ColladaInstanceMaterial extends ColladaAbstractInstance<ColladaMate
     {
         super(ns);
     }
+
+    public String getTarget()
+    {
+        return (String) this.getField("target");
+    }
+
+    public String getSymbol()
+    {
+        return (String) this.getField("symbol");
+    }
+
+    /** Instance_material uses a "target" attribute instead of the "url" attribute used by other instance elements. */
+    @Override
+    public String getUrl()
+    {
+        return this.getTarget();
+    }
 }

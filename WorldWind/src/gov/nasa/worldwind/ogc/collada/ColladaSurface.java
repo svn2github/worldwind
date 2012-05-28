@@ -18,4 +18,9 @@ public class ColladaSurface extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public String getInitFrom()
+    {
+        return (String) this.getField("init_from");
+    }
 }

@@ -34,6 +34,11 @@ public class ColladaTriangles extends ColladaAbstractObject
         return Integer.parseInt((String) this.getField("count"));
     }
 
+    public String getMaterial()
+    {
+        return (String) this.getField("material");
+    }
+
     public ColladaAccessor getVertexAccessor()
     {
         String vertexUri = null;
@@ -86,10 +91,28 @@ public class ColladaTriangles extends ColladaAbstractObject
         return (source != null) ? source.getAccessor() : null;
     }
 
+    public ColladaAccessor getTexCoordAccessor()
+    {
+        String sourceUri = null;
+        for (ColladaInput input : this.getInputs())
+        {
+            if ("TEXCOORD".equals(input.getSemantic()))
+            {
+                sourceUri = input.getSource();
+                break;
+            }
+        }
+
+        if (sourceUri == null)
+            return null;
+
+        ColladaSource source = (ColladaSource) this.getRoot().resolveReference(sourceUri);
+        return (source != null) ? source.getAccessor() : null;
+    }
+
     public void getNormals(FloatBuffer buffer)
     {
         // TODO don't allocate temp buffers here
-        IntBuffer indices = IntBuffer.allocate(this.getCount());
 
         ColladaAccessor accessor = this.getNormalAccessor();
         int normalCount = accessor.size();
@@ -97,12 +120,61 @@ public class ColladaTriangles extends ColladaAbstractObject
         FloatBuffer normals = FloatBuffer.allocate(normalCount);
         accessor.fillBuffer(normals);
 
+        IntBuffer indices = IntBuffer.allocate(this.getCount());
         this.getIndices("NORMAL", indices);
 
         indices.rewind();
         while (indices.hasRemaining())
         {
-            buffer.put(normals.get(indices.get()));
+            int i = indices.get();
+            buffer.put(normals.get(i));
+            buffer.put(normals.get(i + 1));
+            buffer.put(normals.get(i + 2));
+        }
+    }
+
+    public void getTextureCoordinates(FloatBuffer buffer)
+    {
+        // TODO don't allocate temp buffers here
+
+        ColladaAccessor accessor = this.getTexCoordAccessor();
+        int count = accessor.size();
+
+        FloatBuffer texCoords = FloatBuffer.allocate(count * 2);
+        accessor.fillBuffer(texCoords);
+
+        IntBuffer indices = IntBuffer.allocate(this.getCount() * 3);
+        this.getIndices("TEXCOORD", indices);
+
+        indices.rewind();
+        while (indices.hasRemaining())
+        {
+            int i = indices.get() * 2;
+            buffer.put(texCoords.get(i));
+            buffer.put(texCoords.get(i + 1));
+        }
+    }
+
+    public void getVertices(FloatBuffer buffer)
+    {
+        // TODO don't allocate temp buffers here
+
+        ColladaAccessor accessor = this.getVertexAccessor();
+        int count = accessor.size();
+
+        FloatBuffer vertexCoords = FloatBuffer.allocate(count * 3);
+        accessor.fillBuffer(vertexCoords);
+
+        IntBuffer indices = IntBuffer.allocate(this.getCount() * 3);
+        this.getIndices("VERTEX", indices);
+
+        indices.rewind();
+        while (indices.hasRemaining())
+        {
+            int i = indices.get() * 3;
+            buffer.put(vertexCoords.get(i));
+            buffer.put(vertexCoords.get(i + 1));
+            buffer.put(vertexCoords.get(i + 2));
         }
     }
 

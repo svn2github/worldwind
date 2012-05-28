@@ -18,4 +18,9 @@ public class ColladaMaterial extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaInstanceEffect getInstanceEffect()
+    {
+        return (ColladaInstanceEffect) this.getField("instance_effect");
+    }
 }

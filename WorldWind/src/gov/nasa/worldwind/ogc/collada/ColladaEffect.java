@@ -12,10 +12,16 @@ package gov.nasa.worldwind.ogc.collada;
  * @author pabercrombie
  * @version $Id$
  */
+// TODO handle params declared outside of profile_COMMON
 public class ColladaEffect extends ColladaAbstractObject
 {
     public ColladaEffect(String ns)
     {
         super(ns);
+    }
+
+    public ColladaProfileCommon getProfileCommon()
+    {
+        return (ColladaProfileCommon) this.getField("profile_COMMON");
     }
 }

@@ -35,4 +35,23 @@ public class ColladaFile implements ColladaDoc
     {
         return new FileInputStream(this.colladaFile);
     }
+
+    /** {@inheritDoc} */
+    public String getSupportFilePath(String path)
+    {
+        if (path == null)
+        {
+            String message = Logging.getMessage("nullValue.FilePathIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        File pathFile = new File(path);
+        if (pathFile.isAbsolute())
+            return null;
+
+        pathFile = new File(this.colladaFile.getParentFile(), path);
+
+        return pathFile.exists() ? pathFile.getPath() : null;
+    }
 }

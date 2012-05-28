@@ -12,4 +12,9 @@ public class ColladaBindMaterial extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaTechniqueCommon getTechniqueCommon()
+    {
+        return (ColladaTechniqueCommon) this.getField("technique_common");
+    }
 }

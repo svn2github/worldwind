@@ -18,4 +18,9 @@ public class ColladaInstanceGeometry extends ColladaAbstractInstance<ColladaGeom
     {
         super(ns);
     }
+
+    public ColladaBindMaterial getBindMaterial()
+    {
+        return (ColladaBindMaterial) this.getField("bind_material");
+    }
 }
