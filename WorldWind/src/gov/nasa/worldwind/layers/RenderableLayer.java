@@ -12,6 +12,9 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * The <code>RenderableLayer</code> class manages a collection of {@link gov.nasa.worldwind.render.Renderable} objects
  * for rendering, picking, and disposal.
@@ -22,8 +25,8 @@ import gov.nasa.worldwind.util.Logging;
  */
 public class RenderableLayer extends AbstractLayer
 {
-    private java.util.Collection<Renderable> renderables = new java.util.concurrent.ConcurrentLinkedQueue<Renderable>();
-    private Iterable<Renderable> renderablesOverride;
+    protected Collection<Renderable> renderables = new ConcurrentLinkedQueue<Renderable>();
+    protected Iterable<Renderable> renderablesOverride;
     protected PickSupport pickSupport = new PickSupport();
 
     /** Creates a new <code>RenderableLayer</code> with a null <code>delegateOwner</code> */
