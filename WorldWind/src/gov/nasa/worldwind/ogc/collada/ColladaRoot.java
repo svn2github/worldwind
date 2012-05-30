@@ -39,6 +39,8 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     protected Position position;
     protected int altitudeMode;
 
+    protected ColladaResourceResolver resourceResolver;
+
     /**
      * Create a new <code>ColladaRoot</code> for a {@link ColladaDoc} instance. A ColladaDoc represents COLLADA files
      * from either files or input streams.
@@ -201,6 +203,16 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     public void setAltitudeMode(int altitudeMode)
     {
         this.altitudeMode = altitudeMode;
+    }
+
+    public ColladaResourceResolver getResourceResolver()
+    {
+        return this.resourceResolver;
+    }
+
+    public void setResourceResolver(ColladaResourceResolver resourceResolver)
+    {
+        this.resourceResolver = resourceResolver;
     }
 
     public Object resolveReference(String link)
@@ -566,6 +578,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     public String getSupportFilePath(String link) throws IOException
     {
-        return this.getColladaDoc().getSupportFilePath(link);
+        String filePath = null;
+
+        // Use the resource resolver to find the file.
+        ColladaResourceResolver resolver = this.getResourceResolver();
+        if (resolver != null)
+            filePath = resolver.resolveFilePath(link);
+
+        // If the resolver failed to find the file then attempt to resolve the reference relative to the document.
+        if (filePath == null)
+            filePath = this.getColladaDoc().getSupportFilePath(link);
+
+        return filePath;
     }
 }

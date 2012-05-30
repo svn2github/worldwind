@@ -135,34 +135,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         if (myEffect == null)
             return null;
 
-        ColladaProfileCommon profile = myEffect.getProfileCommon();
-        if (profile == null)
-            return null;
-
-        ColladaTechnique technique = profile.getTechnique();
-        if (technique == null)
-            return null;
-
-        for (ColladaNewParam param : technique.getNewParams())
-        {
-            if (param.hasField("surface"))
-            {
-                ColladaSurface surface = (ColladaSurface) param.getField("surface");
-                String imageRef = surface.getInitFrom();
-
-                Object o = this.colladaGeometry.getRoot().resolveReference(imageRef);
-                if (o instanceof ColladaImage)
-                {
-                    return ((ColladaImage) o).getInitFrom();
-                }
-            }
-            else if (param.hasField("sampler2D"))
-            {
-                // TODO
-            }
-        }
-
-        return null;
+        return myEffect.getImageRef();
     }
 
     @Override
@@ -179,7 +152,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         if (!this.intersectsFrustum(dc))
             return false;
 
-        this.createFullGeometry(dc);
+        if (this.coordBuffer == null)
+            this.createFullGeometry(dc);
 
         return true;
     }
@@ -241,7 +215,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     {
         GL gl = dc.getGL();
 
-        if (!dc.isPickingMode() && mustApplyTexture(dc) && this.textureCoordsBuffer != null
+        if (!dc.isPickingMode()
+            && this.textureCoordsBuffer != null
             && this.getTexture().bind(dc)) // bind initiates retrieval
         {
             this.getTexture().applyInternalTransform(dc);

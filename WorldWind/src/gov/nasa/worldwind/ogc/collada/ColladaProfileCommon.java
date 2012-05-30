@@ -36,7 +36,7 @@ public class ColladaProfileCommon extends ColladaAbstractObject
     @Override
     public void setField(String keyName, Object value)
     {
-        if ("newParam".equals(keyName))
+        if ("newparam".equals(keyName))
         {
             this.newParams.add((ColladaNewParam) value);
         }

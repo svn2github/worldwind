@@ -8,14 +8,15 @@ package gov.nasa.worldwind.ogc.kml.impl;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.ogc.collada.ColladaRoot;
+import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.ogc.collada.impl.ColladaTraversalContext;
 import gov.nasa.worldwind.ogc.kml.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.*;
  * @author pabercrombie
  * @version $Id$
  */
-public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
+public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable, ColladaResourceResolver
 {
     protected KMLModel model;
     protected KMLPlacemark parent;
@@ -147,6 +148,36 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         }
     }
 
+    /** Resolve COLLADA references relative to the COLLADA document. {@inheritDoc}. */
+    public String resolveFilePath(String path) throws IOException
+    {
+        KMLLink link = this.model.getLink();
+
+        // If the reference is relative then it needs to be resolved relative to the .dae file (not the root kml file).
+        // The COLLADA document may be contained in a KMZ archive. Normally references in a KMZ are resolved relative
+        // to the root of the archive. However, Model references are an exception.
+        // See https://developers.google.com/kml/documentation/kmzarchives
+        // and https://developers.google.com/kml/documentation/kmlreference#model
+        File f = new File(path);
+        if (!f.isAbsolute() && link != null && link.getHref() != null)
+        {
+            try
+            {
+                URI base = new URI(null, link.getHref(), null);
+                URI ref = new URI(null, path, null);
+
+                path = base.resolve(ref).getPath();
+            }
+            catch (URISyntaxException ignored)
+            {
+                // Ignored
+            }
+        }
+
+        Object o = this.parent.getRoot().resolveReference(path);
+        return (o instanceof String) ? (String) o : null;
+    }
+
     /**
      * Returns whether this placemark must retrieve its model resource. This always returns <code>false</code> if this
      * placemark has no <code>KMLLink</code>.
@@ -210,6 +241,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
             Position refPosition = this.model.getLocation().getPosition();
             root.setPosition(refPosition);
             root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+            root.setResourceResolver(this);
 
             this.setColladaRoot(root);
             this.resourceRetrievalTime.set(System.currentTimeMillis());
