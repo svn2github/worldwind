@@ -16,6 +16,7 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class manages the conversion and timing of image data to a JOGL Texture, and provides an interface for binding
@@ -30,7 +31,7 @@ public class TextureTile extends Tile implements SurfaceTile
     private volatile TextureData textureData; // if non-null, then must be converted to a Texture
     private TextureTile fallbackTile = null; // holds texture to use if own texture not available
     protected boolean hasMipmapData = false;
-    protected long updateTime = 0;
+    protected AtomicLong updateTime = new AtomicLong(0);
 
     /**
      * Returns the memory cache used to cache tiles for this class and its subclasses, initializing the cache if it
@@ -157,6 +158,11 @@ public class TextureTile extends Tile implements SurfaceTile
         return this.getTexture(tc) != null || this.getTextureData() != null;
     }
 
+    public long getUpdateTime()
+    {
+        return this.updateTime.get();
+    }
+    
     public boolean isTextureExpired()
     {
         return this.isTextureExpired(this.getLevel().getExpiryTime());
@@ -164,7 +170,7 @@ public class TextureTile extends Tile implements SurfaceTile
 
     public boolean isTextureExpired(long expiryTime)
     {
-        return this.updateTime > 0 && this.updateTime < expiryTime;
+        return this.updateTime.get() > 0 && this.updateTime.get() < expiryTime;
     }
 
     public void setTexture(GpuResourceCache tc, Texture texture)
@@ -177,7 +183,7 @@ public class TextureTile extends Tile implements SurfaceTile
         }
 
         tc.put(this.getTileKey(), texture);
-        this.updateTime = System.currentTimeMillis();
+        this.updateTime.set(System.currentTimeMillis());
 
         // No more need for texture data; allow garbage collector and memory cache to reclaim it.
         // This also signals that new texture data has been converted.
