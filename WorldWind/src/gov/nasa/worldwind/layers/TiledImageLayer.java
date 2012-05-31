@@ -661,7 +661,7 @@ public abstract class TiledImageLayer extends AbstractLayer
             // non-zero expiry time has been set for the layer. If none has been set, the expiry times of the layer's
             // individual levels are used, but only for images in the local file cache, not textures in memory. This is
             // to avoid incurring the overhead of checking expiration of in-memory textures, a very rarely used feature.
-            if (this.getExpiryTime() > 0 && this.getExpiryTime() < System.currentTimeMillis())
+            if (this.getExpiryTime() > 0 && this.getExpiryTime() <= System.currentTimeMillis())
                 this.checkTextureExpiration(dc, this.currentTiles);
 
             this.currentTiles.clear();
