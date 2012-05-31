@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.collada;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.ogc.collada.io.*;
 import gov.nasa.worldwind.render.DrawContext;
@@ -544,8 +544,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return (ColladaScene) this.getField("scene");
     }
 
+    public ColladaAsset getAsset()
+    {
+        return (ColladaAsset) this.getField("asset");
+    }
+
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
+        // Apply scaling factor to convert file units to meters.
+        double scale = this.getScale();
+        tc.multiplyMatrix(Matrix.fromScale(scale));
+
         // COLLADA doc contains at most one scene. See COLLADA spec pg 5-67.
         ColladaScene scene = this.getScene();
         if (scene != null)
@@ -554,9 +563,32 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
+        // Apply scaling factor to convert file units to meters.
+        double scale = this.getScale();
+        tc.multiplyMatrix(Matrix.fromScale(scale));
+
         ColladaScene scene = this.getScene();
         if (scene != null)
             scene.render(tc, dc);
+    }
+
+    /**
+     * Indicates the scale defined by the asset/unit element. This scale converts the document's units to meters.
+     *
+     * @return Scale for this document, or 1.0 if no scale is defined.
+     */
+    protected double getScale()
+    {
+        Double scale = null;
+
+        ColladaAsset asset = this.getAsset();
+        if (asset != null)
+        {
+            ColladaUnit unit = asset.getUnit();
+            if (unit != null)
+                scale = unit.getMeter();
+        }
+        return (scale != null) ? scale : 1.0;
     }
 
     protected XMLEventParserContext getParserContext()

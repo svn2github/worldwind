@@ -105,7 +105,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
             this.shapeDataCache.addEntry(this.currentData);
         }
 
-        ((ShapeData) this.currentData).renderMatrix = tc.peekMatrix();
+        ShapeData current = (ShapeData) this.currentData;
+        current.renderMatrix = tc.peekMatrix();
 
         this.render(dc);
     }
@@ -479,34 +480,21 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
     {
         ShapeData current = (ShapeData) this.getCurrent();
 
-        // TODO cache this value
-//        if (current.referenceCenter == null)
-//        {
+        // TODO cache some of these computations
         current.referenceCenter = this.computeReferenceCenter(dc);
-//        }
         Position refPosition = dc.getGlobe().computePositionFromPoint(current.referenceCenter);
 
         Matrix matrix = dc.getGlobe().computeSurfaceOrientationAtPosition(refPosition);
 
-        if (current.renderMatrix == null)     // just cache my local stuff for now
-        {
-            Matrix matrixLocal = Matrix.IDENTITY;
+        if (this.heading != null)
+            matrix = matrix.multiply(Matrix.fromRotationZ(Angle.POS360.subtract(this.heading)));
 
-            if (this.heading != null)
-                matrixLocal = matrixLocal.multiply(Matrix.fromRotationZ(Angle.POS360.subtract(this.heading)));
+        if (this.pitch != null)
+            matrix = matrix.multiply(Matrix.fromRotationX(this.pitch));
 
-            if (this.pitch != null)
-                matrixLocal = matrixLocal.multiply(Matrix.fromRotationX(this.pitch));
+        if (this.roll != null)
+            matrix = matrix.multiply(Matrix.fromRotationY(this.roll));
 
-            if (this.roll != null)
-                matrixLocal = matrixLocal.multiply(Matrix.fromRotationY(this.roll));
-
-            matrixLocal = matrixLocal.multiply(current.renderMatrix);
-
-            current.renderMatrix = matrixLocal;
-        }
-
-        matrix = matrix.multiply(current.renderMatrix);
-        return matrix;
+        return matrix.multiply(current.renderMatrix);
     }
 }

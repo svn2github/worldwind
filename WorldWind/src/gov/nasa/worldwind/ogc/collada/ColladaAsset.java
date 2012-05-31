@@ -18,4 +18,9 @@ public class ColladaAsset extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaUnit getUnit()
+    {
+        return (ColladaUnit) this.getField("unit");
+    }
 }
