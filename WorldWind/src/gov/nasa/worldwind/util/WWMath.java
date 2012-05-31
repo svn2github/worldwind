@@ -9,6 +9,7 @@ import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 
 import java.awt.*;
@@ -1540,5 +1541,197 @@ public class WWMath
         }
 
         return points;
+    }
+
+    /**
+     * Create positions that describe lines parallel to a control line.
+     *
+     * @param controlPositions List of positions along the control line. Must be greater than 1.
+     * @param leftPositions    List to receive positions on the left line.
+     * @param rightPositions   List to receive positions on the right line.
+     * @param distance         Distance from the center line to the left and right lines.
+     * @param globe            Globe used to compute positions.
+     *
+     * @throws IllegalArgumentException if any of the lists are null, the number of control positions is less than 2, or
+     *                                  the globe is null.
+     */
+    public static void generateParallelLines(List<Position> controlPositions, List<Position> leftPositions,
+        List<Position> rightPositions, double distance, Globe globe)
+    {
+        if (controlPositions == null || leftPositions == null || rightPositions == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionsListIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (controlPositions.size() < 2)
+        {
+            String message = Logging.getMessage("generic.LengthIsInvalid");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (globe == null)
+        {
+            String message = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        // Starting at the start of the line, take points three at a time. B is the current control point, A is the next
+        // point in the line, and C is the previous point. We need to a find a vector that bisects angle ABC.
+        //       B
+        //       ---------> C
+        //      /
+        //     /
+        //    /
+        // A /
+
+        Iterator<? extends Position> iterator = controlPositions.iterator();
+
+        Position posB = iterator.next();
+        Position posA = iterator.next();
+
+        // Compute points, ignoring elevation. We will project the path onto the surface of the globe, compute the
+        // parallel points on the surface, and then raise the points to the correct elevation.
+        Vec4 ptA = globe.computePointFromLocation(posA);
+        Vec4 ptB = globe.computePointFromLocation(posB);
+        Vec4 ptC;
+
+        // We'll keep track of the offset used to compute parallel points as we go through the list. We need this
+        // to handle cases where the position list contains sequential co-located points.
+        Vec4 prevOffset = null;
+
+        // Compute side points at the start of the line.
+        prevOffset = generateParallelPoints(ptB, null, ptA, leftPositions, rightPositions, distance,
+            posB.getElevation(), globe, prevOffset);
+
+        double prevElevation;
+        while (iterator.hasNext())
+        {
+            prevElevation = posA.getElevation();
+            posA = iterator.next();
+
+            ptC = ptB;
+            ptB = ptA;
+            ptA = globe.computePointFromLocation(posA);
+
+            prevOffset = generateParallelPoints(ptB, ptC, ptA, leftPositions, rightPositions, distance,
+                prevElevation, globe, prevOffset);
+        }
+
+        // Compute side points at the end of the line.
+        generateParallelPoints(ptA, ptB, null, leftPositions, rightPositions, distance, posA.getElevation(),
+            globe, prevOffset);
+    }
+
+    /**
+     * Compute points on either side of a line segment. This method requires a point on the line, and either a next
+     * point, previous point, or both.
+     *
+     * @param point          Center point about which to compute side points.
+     * @param prev           Previous point on the line. May be null if {@code next} is non-null.
+     * @param next           Next point on the line. May be null if {@code prev} is non-null.
+     * @param leftPositions  Left position will be added to this list.
+     * @param rightPositions Right position will be added to this list.
+     * @param distance       Distance from the center line to the left and right lines.
+     * @param elevation      Elevation at which to place the generated positions.
+     * @param globe          Globe used to compute positions.
+     * @param previousOffset Offset vector from a previous call to this method. May be null.
+     *
+     * @return Offset vector that should be passed back to this method on the next call for a list of positions. (Used
+     *         to generate parallel points when a position list contains sequential co-located positions.)
+     *
+     * @throws IllegalArgumentException if the necessary point, previous or next references are null, either the left or
+     *                                  right position list is null, or the globe is null.
+     */
+    public static Vec4 generateParallelPoints(Vec4 point, Vec4 prev, Vec4 next, List<Position> leftPositions,
+        List<Position> rightPositions, double distance, double elevation, Globe globe, Vec4 previousOffset)
+    {
+        if ((point == null) || (prev == null && next == null))
+        {
+            String message = Logging.getMessage("nullValue.PointIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (leftPositions == null || rightPositions == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionsListIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (globe == null)
+        {
+            String message = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Vec4 offset;
+        Vec4 normal = globe.computeSurfaceNormalAtPoint(point);
+
+        // Compute vector in the direction backward along the line.
+        Vec4 backward = (prev != null) ? prev.subtract3(point) : point.subtract3(next);
+
+        // Compute a vector perpendicular to segment BC, and the globe normal vector.
+        Vec4 perpendicular = backward.cross3(normal);
+
+        // If the current point is co-located with either the next or prev points, then reuse the previously computed offset.
+        if (point.equals(prev) || (point.equals(next)) && previousOffset != null)
+        {
+            offset = previousOffset;
+        }
+        // If both next and previous points are supplied then calculate the angle that bisects the angle current, next, prev.
+        else if (next != null && prev != null && !Vec4.areColinear(prev, point, next))
+        {
+            // Compute vector in the forward direction.
+            Vec4 forward = next.subtract3(point);
+
+            // Calculate the vector that bisects angle ABC.
+            offset = forward.normalize3().add3(backward.normalize3());
+            offset = offset.normalize3();
+
+            // Determine the length of the offset vector that will keep the left and right lines parallel to the control
+            // line.
+            Angle theta = backward.angleBetween3(offset);
+
+            // If the angle is less than 1/10 of a degree than treat this segment as if it were linear.
+            double length;
+            if (theta.degrees > 0.1)
+                length = distance / theta.sin();
+            else
+                length = distance;
+
+            // Compute the scalar triple product of the vector BC, the normal vector, and the offset vector to
+            // determine if the offset points to the left or the right of the control line.
+            double tripleProduct = perpendicular.dot3(offset);
+            if (tripleProduct < 0)
+            {
+                offset = offset.multiply3(-1);
+            }
+
+            offset = offset.multiply3(length);
+        }
+        else
+        {
+            offset = perpendicular.normalize3();
+            offset = offset.multiply3(distance);
+        }
+
+        // Determine the left and right points by applying the offset.
+        Vec4 ptRight = point.add3(offset);
+        Vec4 ptLeft = point.subtract3(offset);
+
+        // Convert cartesian points to geographic.
+        Position posLeft = new Position(globe.computePositionFromPoint(ptLeft), elevation);
+        Position posRight = new Position(globe.computePositionFromPoint(ptRight), elevation);
+
+        leftPositions.add(posLeft);
+        rightPositions.add(posRight);
+
+        return offset;
     }
 }
