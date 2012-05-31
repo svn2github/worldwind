@@ -18,4 +18,14 @@ public class ColladaNewParam extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaSampler2D getSampler2D()
+    {
+        return (ColladaSampler2D) this.getField("sampler2D");
+    }
+
+    public ColladaSurface getSurface()
+    {
+        return (ColladaSurface) this.getField("surface");
+    }
 }

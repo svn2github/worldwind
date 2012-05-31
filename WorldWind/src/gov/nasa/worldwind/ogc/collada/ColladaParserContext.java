@@ -111,6 +111,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "profile_COMMON"), new ColladaProfileCommon(ns));
         this.parsers.put(new QName(ns, "newparam"), new ColladaNewParam(ns));
         this.parsers.put(new QName(ns, "phong"), new ColladaPhong(ns));
+        this.parsers.put(new QName(ns, "lambert"), new ColladaLambert(ns));
         this.parsers.put(new QName(ns, "diffuse"), new ColladaDiffuse(ns));
         this.parsers.put(new QName(ns, "mesh"), new ColladaMesh(ns));
         this.parsers.put(new QName(ns, "technique_COMMON"), new ColladaTechniqueCommon(ns));

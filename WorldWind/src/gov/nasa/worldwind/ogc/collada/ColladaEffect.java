@@ -6,18 +6,14 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import java.util.*;
-
 /**
  * Represents the Collada <i>Effect</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaEffect extends ColladaAbstractObject
+public class ColladaEffect extends ColladaAbstractParamContainer
 {
-    protected List<ColladaNewParam> newParams = new ArrayList<ColladaNewParam>();
-
     public ColladaEffect(String ns)
     {
         super(ns);
@@ -28,73 +24,83 @@ public class ColladaEffect extends ColladaAbstractObject
         return (ColladaProfileCommon) this.getField("profile_COMMON");
     }
 
-    public List<ColladaNewParam> getNewParams()
-    {
-        return this.newParams;
-    }
-
     public String getImageRef()
     {
-        ColladaProfileCommon profile;
-        ColladaTechnique technique = null;
+        ColladaProfileCommon profile = this.getProfileCommon();
+        if (profile == null)
+            return null;
 
-        profile = this.getProfileCommon();
-        if (profile != null)
-            technique = profile.getTechnique();
+        ColladaTechnique technique = profile.getTechnique();
+        if (technique == null)
+            return null;
 
-        String imageRef = null;
+        ColladaAbstractShader shader = technique.getShader();
+        if (shader == null)
+            return null;
 
-        // Look for image ref in technique params.
-        if (technique != null)
-            imageRef = this.findImageRef(technique.getNewParams());
+        ColladaDiffuse diffuse = shader.getDiffuse();
+        if (diffuse == null)
+            return null;
 
+        ColladaTexture texture = diffuse.getTexture();
+        if (texture == null)
+            return null;
+
+        String imageRef = this.getImageRef(texture);
         if (imageRef == null)
-        {
-            // Look for image ref in profile_COMMON
-            if (profile != null)
-                imageRef = this.findImageRef(profile.getNewParams());
+            return null;
 
-            // Look for image ref in effect params
-            if (imageRef == null)
-                imageRef = this.findImageRef(this.getNewParams());
-        }
+        // imageRef identifiers an <image> element (may be external). This element will give us the filename.
+        Object o = this.getRoot().resolveReference(imageRef);
+        if (o instanceof ColladaImage)
+            return ((ColladaImage) o).getInitFrom();
 
-        return imageRef;
-    }
-
-    @Override
-    public void setField(String keyName, Object value)
-    {
-        if ("newparam".equals(keyName))
-        {
-            this.newParams.add((ColladaNewParam) value);
-        }
-        else
-        {
-            super.setField(keyName, value);
-        }
-    }
-
-    protected String findImageRef(List<ColladaNewParam> params)
-    {
-        for (ColladaNewParam param : params)
-        {
-            if (param.hasField("surface"))
-            {
-                ColladaSurface surface = (ColladaSurface) param.getField("surface");
-                String imageRef = surface.getInitFrom();
-
-                Object o = this.getRoot().resolveReference(imageRef);
-                if (o instanceof ColladaImage)
-                {
-                    return ((ColladaImage) o).getInitFrom();
-                }
-            }
-            else if (param.hasField("sampler2D"))
-            {
-                // TODO
-            }
-        }
         return null;
+    }
+
+    protected String getImageRef(ColladaTexture texture)
+    {
+        String sid = texture.getTexture();
+
+        ColladaNewParam param = this.getParam(sid);
+        if (param == null)
+            return null;
+
+        ColladaSampler2D sampler = param.getSampler2D();
+        if (sampler == null)
+            return null;
+
+        ColladaSource source = sampler.getSource();
+        if (source == null)
+            return null;
+
+        sid = source.getCharacters();
+        if (sid == null)
+            return null;
+
+        param = this.getParam(sid);
+        if (param == null)
+            return null;
+
+        ColladaSurface surface = param.getSurface();
+        if (surface != null)
+            return surface.getInitFrom();
+
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ColladaNewParam getParam(String sid)
+    {
+        ColladaNewParam param = super.getParam(sid);
+        if (param != null)
+            return param;
+
+        ColladaProfileCommon profile = this.getProfileCommon();
+        if (profile == null)
+            return null;
+
+        return profile.getParam(sid);
     }
 }

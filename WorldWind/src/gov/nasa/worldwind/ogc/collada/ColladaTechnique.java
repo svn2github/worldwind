@@ -6,38 +6,30 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import java.util.*;
-
 /**
  * Represents the Collada <i>Technique</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaTechnique extends ColladaAbstractObject
+public class ColladaTechnique extends ColladaAbstractParamContainer
 {
-    protected List<ColladaNewParam> params = new ArrayList<ColladaNewParam>();
-
     public ColladaTechnique(String ns)
     {
         super(ns);
     }
 
-    public List<ColladaNewParam> getNewParams()
+    public ColladaAbstractShader getShader()
     {
-        return this.params;
-    }
+        Object o = this.getField("lambert");
+        if (o != null)
+            return (ColladaAbstractShader) o;
 
-    @Override
-    public void setField(String keyName, Object value)
-    {
-        if (keyName.equals("newparam"))
-        {
-            this.params.add((ColladaNewParam) value);
-        }
-        else
-        {
-            super.setField(keyName, value);
-        }
+        o = this.getField("phong");
+        if (o != null)
+            return (ColladaAbstractShader) o;
+
+        // TODO handle other shaders
+        return null;
     }
 }

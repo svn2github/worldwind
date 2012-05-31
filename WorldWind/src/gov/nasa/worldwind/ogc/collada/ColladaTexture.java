@@ -18,4 +18,9 @@ public class ColladaTexture extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public String getTexture()
+    {
+        return (String) this.getField("texture");
+    }
 }

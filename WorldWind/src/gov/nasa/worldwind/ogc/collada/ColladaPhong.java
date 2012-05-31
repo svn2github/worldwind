@@ -12,7 +12,7 @@ package gov.nasa.worldwind.ogc.collada;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaPhong extends ColladaAbstractObject
+public class ColladaPhong extends ColladaAbstractShader
 {
     public ColladaPhong(String ns)
     {

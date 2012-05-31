@@ -18,4 +18,14 @@ public class ColladaDiffuse extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaTexture getTexture()
+    {
+        return (ColladaTexture) this.getField("texture");
+    }
+
+    public ColladaColor getColor()
+    {
+        return (ColladaColor) this.getField("color");
+    }
 }

@@ -6,18 +6,14 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import java.util.*;
-
 /**
  * Represents the Collada <i>Profile_COMMON</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaProfileCommon extends ColladaAbstractObject
+public class ColladaProfileCommon extends ColladaAbstractParamContainer
 {
-    protected List<ColladaNewParam> newParams = new ArrayList<ColladaNewParam>();
-
     public ColladaProfileCommon(String ns)
     {
         super(ns);
@@ -28,21 +24,18 @@ public class ColladaProfileCommon extends ColladaAbstractObject
         return (ColladaTechnique) this.getField("technique");
     }
 
-    public List<ColladaNewParam> getNewParams()
-    {
-        return this.newParams;
-    }
-
+    /** {@inheritDoc} */
     @Override
-    public void setField(String keyName, Object value)
+    public ColladaNewParam getParam(String sid)
     {
-        if ("newparam".equals(keyName))
-        {
-            this.newParams.add((ColladaNewParam) value);
-        }
-        else
-        {
-            super.setField(keyName, value);
-        }
+        ColladaNewParam param = super.getParam(sid);
+        if (param != null)
+            return param;
+
+        ColladaTechnique technique = this.getTechnique();
+        if (technique == null)
+            return null;
+
+        return technique.getParam(sid);
     }
 }

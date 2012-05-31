@@ -18,4 +18,9 @@ public class ColladaSampler2D extends ColladaAbstractObject
     {
         super(ns);
     }
+
+    public ColladaSource getSource()
+    {
+        return (ColladaSource) this.getField("source");
+    }
 }
