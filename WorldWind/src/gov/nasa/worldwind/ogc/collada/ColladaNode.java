@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
@@ -29,6 +29,9 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     /** Shapes used to render geometry in this node. */
     protected List<ColladaTriangleMesh> shapes;
 
+    /** Transform matrix for this node. */
+    protected Matrix matrix;
+
     public ColladaNode(String ns)
     {
         super(ns);
@@ -36,36 +39,75 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
 
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
-        if (this.children != null)
-        {
-            for (ColladaRenderable node : this.children)
-            {
-                node.preRender(tc, dc);
-            }
-        }
-    }
-
-    public void render(ColladaTraversalContext tc, DrawContext dc)
-    {
+        // Create shapes for this node, if necessary
         if (this.shapes == null && this.getInstanceGeometry() != null)
         {
             this.shapes = this.createShapes(this.getInstanceGeometry());
         }
 
-        if (this.shapes != null)
+        Matrix matrix = this.getMatrix();
+        try
         {
-            for (ColladaTriangleMesh shape : this.shapes)
+            if (matrix != null)
             {
-                shape.render(dc);
+                tc.pushMatrix();
+                tc.multiplyMatrix(matrix);
+            }
+
+            if (this.shapes != null)
+            {
+                for (ColladaTriangleMesh shape : this.shapes)
+                {
+                    shape.preRender(tc, dc);
+                }
+            }
+
+            if (this.children != null)
+            {
+                for (ColladaRenderable node : this.children)
+                {
+                    node.preRender(tc, dc);
+                }
             }
         }
-
-        if (this.children != null)
+        finally
         {
-            for (ColladaRenderable node : this.children)
+            if (matrix != null)
+                tc.popMatrix();
+        }
+    }
+
+    public void render(ColladaTraversalContext tc, DrawContext dc)
+    {
+        Matrix matrix = this.getMatrix();
+        try
+        {
+            if (matrix != null)
             {
-                node.render(tc, dc);
+                tc.pushMatrix();
+                tc.multiplyMatrix(matrix);
             }
+
+            if (this.shapes != null)
+            {
+                for (ColladaTriangleMesh shape : this.shapes)
+                {
+                    shape.render(tc, dc);
+                }
+            }
+
+            if (this.children != null)
+            {
+                for (ColladaRenderable node : this.children)
+                {
+                    node.render(tc, dc);
+                }
+            }
+        }
+        finally
+        {
+            if (matrix != null)
+                tc.popMatrix();
         }
     }
 
@@ -117,5 +159,38 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         {
             super.setField(keyName, value);
         }
+    }
+
+    protected Matrix getMatrix()
+    {
+        if (this.matrix != null)
+            return this.matrix;
+
+        // TODO a node can have more than one matrix
+        ColladaMatrix matrix = (ColladaMatrix) this.getField("matrix");
+        if (matrix == null)
+            return null;
+
+        String matrixAsString = matrix.getCharacters();
+        String linesCleaned = matrixAsString.replaceAll("\n", " ");
+
+        double[] doubles = this.parseDoubleArray(linesCleaned);
+
+        this.matrix = Matrix.fromArray(doubles, 0, true);
+        return this.matrix;
+    }
+
+    double[] parseDoubleArray(String doubleArrayString)
+    {
+        String[] arrayOfNumbers = doubleArrayString.trim().split("\\s+");
+        double[] doubles = new double[arrayOfNumbers.length];
+
+        int i = 0;
+        for (String s : arrayOfNumbers)
+        {
+            doubles[i++] = Double.parseDouble(s);
+        }
+
+        return doubles;
     }
 }

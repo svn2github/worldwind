@@ -130,17 +130,16 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
     {
         if (this.mustRetrieveResource())
             this.requestResource(dc);
+
+        ColladaRoot root = this.getColladaRoot();
+        if (root != null)
+        {
+            root.preRender(new ColladaTraversalContext(), dc);
+        }
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)
     {
-        if (this.model.getLink() == null)
-            return;
-
-        String address = this.model.getLink().getAddress(dc);
-        if (WWUtil.isEmpty(address))
-            return;
-
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {

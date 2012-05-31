@@ -22,7 +22,7 @@ import java.util.List;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaTriangleMesh extends AbstractGeneralShape
+public class ColladaTriangleMesh extends AbstractGeneralShape implements ColladaRenderable
 {
     /**
      * This class holds globe-specific data for this shape. It's managed via the shape-data cache in {@link
@@ -89,6 +89,25 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     public List<Intersection> intersect(Line line, Terrain terrain) throws InterruptedException
     {
         return null; // TODO
+    }
+
+    public void preRender(ColladaTraversalContext tc, DrawContext dc)
+    {
+        // Do nothing
+    }
+
+    public void render(ColladaTraversalContext tc, DrawContext dc)
+    {
+        this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
+        if (this.currentData == null)
+        {
+            this.currentData = this.createCacheEntry(dc);
+            this.shapeDataCache.addEntry(this.currentData);
+        }
+
+        ((ShapeData) this.currentData).renderMatrix = tc.peekMatrix();
+
+        this.render(dc);
     }
 
     @Override
@@ -304,7 +323,6 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         matrix = matrix.multiply(this.computeRenderMatrix(dc));
 
         GL gl = dc.getGL();
-
         gl.glMatrixMode(GL.GL_MODELVIEW);
 
         double[] matrixArray = new double[16];
@@ -482,6 +500,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
 
             if (this.roll != null)
                 matrixLocal = matrixLocal.multiply(Matrix.fromRotationY(this.roll));
+
+            matrixLocal = matrixLocal.multiply(current.renderMatrix);
 
             current.renderMatrix = matrixLocal;
         }

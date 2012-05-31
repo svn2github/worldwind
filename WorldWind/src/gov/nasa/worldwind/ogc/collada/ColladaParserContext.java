@@ -6,10 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.ogc.kml.gx.GXParserContext;
 import gov.nasa.worldwind.util.xml.BasicXMLEventParserContext;
-import gov.nasa.worldwind.util.xml.atom.AtomParserContext;
-import gov.nasa.worldwind.util.xml.xal.XALParserContext;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -96,7 +93,6 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         super.initializeParsers();
 
         this.initializeParsers(ColladaConstants.COLLADA_NAMESPACE);
-        this.initializeCompanionParsers();
     }
 
     protected void initializeParsers(String ns)
@@ -127,6 +123,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "vertices"), new ColladaVertices(ns));
         this.parsers.put(new QName(ns, "bind"), new ColladaBind(ns));
         this.parsers.put(new QName(ns, "node"), new ColladaNode(ns));
+        this.parsers.put(new QName(ns, "matrix"), new ColladaMatrix(ns));
         this.parsers.put(new QName(ns, "bind_material"), new ColladaBindMaterial(ns));
         this.parsers.put(new QName(ns, "scene"), new ColladaScene(ns));
 
@@ -154,12 +151,5 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.addDoubleParsers(ns, DoubleFields);
         this.addIntegerParsers(ns, IntegerFields);
         this.addBooleanParsers(ns, BooleanFields);
-    }
-
-    protected void initializeCompanionParsers()
-    {
-        this.parsers.putAll(GXParserContext.getDefaultParsers());
-        this.parsers.putAll(AtomParserContext.getDefaultParsers());
-        this.parsers.putAll(XALParserContext.getDefaultParsers());
     }
 }
