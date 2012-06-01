@@ -117,10 +117,10 @@ public class ColladaTriangles extends ColladaAbstractObject
         ColladaAccessor accessor = this.getNormalAccessor();
         int normalCount = accessor.size();
 
-        FloatBuffer normals = FloatBuffer.allocate(normalCount);
+        FloatBuffer normals = FloatBuffer.allocate(normalCount * 3);
         accessor.fillBuffer(normals);
 
-        IntBuffer indices = IntBuffer.allocate(this.getCount());
+        IntBuffer indices = IntBuffer.allocate(this.getCount() * 3);
         this.getIndices("NORMAL", indices);
 
         indices.rewind();

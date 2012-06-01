@@ -180,7 +180,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         return this.matrix;
     }
 
-    double[] parseDoubleArray(String doubleArrayString)
+    protected double[] parseDoubleArray(String doubleArrayString)
     {
         String[] arrayOfNumbers = doubleArrayString.trim().split("\\s+");
         double[] doubles = new double[arrayOfNumbers.length];

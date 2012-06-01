@@ -108,6 +108,14 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         ShapeData current = (ShapeData) this.currentData;
         current.renderMatrix = tc.peekMatrix();
 
+        ShapeAttributes a = this.getAttributes();
+        if (a == null || a.isUnresolved())
+        {
+            a = this.createAttributes();
+            if (a != null)
+                this.setAttributes(a);
+        }
+
         this.render(dc);
     }
 
@@ -251,7 +259,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         }
         else
         {
-            dc.getGL().glDisable(GL.GL_TEXTURE_2D);
+            gl.glDisable(GL.GL_TEXTURE_2D);
             gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
         }
 
@@ -277,6 +285,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
 
         if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
             gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBuffer.rewind());
+
+        gl.glDepthFunc(GL.GL_LEQUAL);
 
         FloatBuffer vb = this.coordBuffer;
         gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, vb.rewind());
@@ -377,7 +387,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
 
         if (this.mustCreateNormals(dc))
         {
-            size += (this.colladaGeometry.getCount() * VERTS_PER_TRI);
+            size += (this.colladaGeometry.getCount() * VERTS_PER_TRI * COORDS_PER_VERT);
         }
 
         if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
@@ -496,5 +506,56 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
             matrix = matrix.multiply(Matrix.fromRotationY(this.roll));
 
         return matrix.multiply(current.renderMatrix);
+    }
+
+    protected ShapeAttributes createAttributes()
+    {
+        ShapeAttributes attrs = this.getInitialAttributes();
+
+        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
+        if (techniqueCommon == null)
+            return null;
+
+        String materialSource = this.colladaGeometry.getMaterial();
+        if (materialSource == null)
+            return null;
+
+        ColladaInstanceMaterial myMaterialInstance = null;
+        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
+        {
+            if (materialSource.equals(material.getSymbol()))
+            {
+                myMaterialInstance = material;
+                break;
+            }
+        }
+
+        if (myMaterialInstance == null)
+            return null;
+
+        // Attempt to resolve the instance. The material may not be immediately available.
+        ColladaMaterial myMaterial = myMaterialInstance.get();
+        if (myMaterial == null)
+            return null;
+
+        ColladaInstanceEffect myEffectInstance = myMaterial.getInstanceEffect();
+        if (myEffectInstance == null)
+            return null;
+
+        // Attempt to resolve effect. The effect may not be immediately available.
+        ColladaEffect myEffect = myEffectInstance.get();
+        if (myEffect == null)
+            return null;
+
+        Material material = myEffect.getMaterial();
+        if (material != null)
+            attrs.setInteriorMaterial(material);
+
+        return attrs;
+    }
+
+    protected ShapeAttributes getInitialAttributes()
+    {
+        return new BasicShapeAttributes(defaultAttributes);
     }
 }

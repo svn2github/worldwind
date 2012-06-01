@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.util.xml.BasicXMLEventParserContext;
+import gov.nasa.worldwind.util.xml.*;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -39,6 +39,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
     protected static final String[] DoubleFields = new String[]
         {
             "revision",
+            "float"
         };
 
     /** The names of elements that contain merely integer data and can be parsed by a generic integer parser. */
@@ -112,7 +113,6 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "newparam"), new ColladaNewParam(ns));
         this.parsers.put(new QName(ns, "phong"), new ColladaPhong(ns));
         this.parsers.put(new QName(ns, "lambert"), new ColladaLambert(ns));
-        this.parsers.put(new QName(ns, "diffuse"), new ColladaDiffuse(ns));
         this.parsers.put(new QName(ns, "mesh"), new ColladaMesh(ns));
         this.parsers.put(new QName(ns, "technique_COMMON"), new ColladaTechniqueCommon(ns));
         this.parsers.put(new QName(ns, "technique_common"), new ColladaTechniqueCommon(ns));
@@ -127,6 +127,19 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "matrix"), new ColladaMatrix(ns));
         this.parsers.put(new QName(ns, "bind_material"), new ColladaBindMaterial(ns));
         this.parsers.put(new QName(ns, "scene"), new ColladaScene(ns));
+
+        XMLEventParser parser = new ColladaTextureOrColor(ns);
+        this.parsers.put(new QName(ns, "emission"), parser);
+        this.parsers.put(new QName(ns, "ambient"), parser);
+        this.parsers.put(new QName(ns, "diffuse"), parser);
+        this.parsers.put(new QName(ns, "specular"), parser);
+        this.parsers.put(new QName(ns, "transparent"), parser);
+
+        parser = new ColladaFloatOrParam(ns);
+        this.parsers.put(new QName(ns, "shininess"), parser);
+        this.parsers.put(new QName(ns, "reflectivity"), parser);
+        this.parsers.put(new QName(ns, "transparency"), parser);
+        this.parsers.put(new QName(ns, "index_of_refraction"), parser);
 
         this.parsers.put(new QName(ns, "image"), new ColladaImage(ns));
         this.parsers.put(new QName(ns, "asset"), new ColladaAsset(ns));
@@ -147,6 +160,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
 
         this.parsers.put(new QName(ns, "visual_scene"), new ColladaVisualScene(ns));
         this.parsers.put(new QName(ns, "triangles"), new ColladaTriangles(ns));
+        this.parsers.put(new QName(ns, "extra"), new ColladaExtra(ns));
 
         this.addStringParsers(ns, StringFields);
         this.addDoubleParsers(ns, DoubleFields);

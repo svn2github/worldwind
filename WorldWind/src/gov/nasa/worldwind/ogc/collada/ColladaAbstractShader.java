@@ -22,8 +22,23 @@ public class ColladaAbstractShader extends ColladaAbstractObject
         super(namespaceURI);
     }
 
-    public ColladaDiffuse getDiffuse()
+    public ColladaTextureOrColor getEmission()
     {
-        return (ColladaDiffuse) this.getField("diffuse");
+        return (ColladaTextureOrColor) this.getField("emission");
+    }
+
+    public ColladaTextureOrColor getAmbient()
+    {
+        return (ColladaTextureOrColor) this.getField("ambient");
+    }
+
+    public ColladaTextureOrColor getDiffuse()
+    {
+        return (ColladaTextureOrColor) this.getField("diffuse");
+    }
+
+    public ColladaTextureOrColor getSpecular()
+    {
+        return (ColladaTextureOrColor) this.getField("specular");
     }
 }
