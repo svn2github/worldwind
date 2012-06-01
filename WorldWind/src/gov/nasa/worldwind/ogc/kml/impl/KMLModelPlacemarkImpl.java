@@ -35,6 +35,8 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
      */
     protected AtomicLong resourceRetrievalTime = new AtomicLong(-1);
 
+    protected Map<String, String> resourceMap;
+
     /**
      * Create an instance.
      *
@@ -70,36 +72,27 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 
         this.model = (KMLModel) geom;
         this.parent = placemark;
+
+        this.resourceMap = this.createResourceMap(this.model);
     }
 
-    protected Map<String, Object> createResourceMap(KMLModel model)
+    protected Map<String, String> createResourceMap(KMLModel model)
     {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, String> map = new HashMap<String, String>();
 
-        for (KMLAlias alias : model.getResourceMap().getAliases())
+        KMLResourceMap resourceMap = model.getResourceMap();
+        if (resourceMap == null)
+            return Collections.emptyMap();
+
+        for (KMLAlias alias : resourceMap.getAliases())
         {
-            if (alias != null && !WWUtil.isEmpty(alias.getSourceRef()))
+            if (alias != null && !WWUtil.isEmpty(alias.getSourceRef()) && !WWUtil.isEmpty(alias.getTargetHref()))
             {
-                String targetHref = this.formAliasTarget(model, alias);
-                if (!WWUtil.isEmpty(targetHref))
-                    map.put(alias.getSourceRef(), targetHref);
+                map.put(alias.getSourceRef(), alias.getTargetHref());
             }
         }
 
-        return map.size() > 0 ? map : null;
-    }
-
-    protected String formAliasTarget(KMLModel model, KMLAlias alias)
-    {
-        try
-        {
-            String targetHref = model.getRoot().getSupportFilePath(alias.getTargetHref());
-            return !WWUtil.isEmpty(targetHref) ? targetHref : alias.getTargetHref();
-        }
-        catch (IOException e)
-        {
-            return alias.getTargetHref();
-        }
+        return map.size() > 0 ? map : Collections.<String, String>emptyMap();
     }
 
     /**
@@ -147,16 +140,25 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         }
     }
 
-    /** Resolve COLLADA references relative to the COLLADA document. {@inheritDoc}. */
+    /**
+     * Resolve COLLADA references relative to the COLLADA document. If the reference is relative then it will resolved
+     * relative to the .dae file, not the kml file. If the COLLADA document may be contained in a KMZ archive the
+     * resources will be resolved relative to the .dae file within the archive. Normally references in a KMZ are
+     * resolved relative to the root of the archive, but Model references are an exception. See
+     * https://developers.google.com/kml/documentation/kmzarchives and https://developers.google.com/kml/documentation/kmlreference#model
+     * <p/>
+     * {@inheritDoc}.
+     */
     public String resolveFilePath(String path) throws IOException
     {
         KMLLink link = this.model.getLink();
 
-        // If the reference is relative then it needs to be resolved relative to the .dae file (not the root kml file).
-        // The COLLADA document may be contained in a KMZ archive. Normally references in a KMZ are resolved relative
-        // to the root of the archive. However, Model references are an exception.
-        // See https://developers.google.com/kml/documentation/kmzarchives
-        // and https://developers.google.com/kml/documentation/kmlreference#model
+        // Check the resource map to see if an alias is defined for this resource.
+        String alias = this.resourceMap.get(path);
+        if (alias != null)
+            path = alias;
+
+        // If the path is relative then resolve it relative to the COLLADA file.
         File f = new File(path);
         if (!f.isAbsolute() && link != null && link.getHref() != null)
         {
