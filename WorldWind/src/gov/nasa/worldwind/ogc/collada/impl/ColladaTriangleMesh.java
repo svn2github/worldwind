@@ -15,6 +15,7 @@ import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.GL;
+import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.List;
 
@@ -24,6 +25,35 @@ import java.util.List;
  */
 public class ColladaTriangleMesh extends AbstractGeneralShape implements ColladaRenderable
 {
+    public static class ColladaOrderedRenderable implements OrderedRenderable
+    {
+        protected ColladaTriangleMesh mesh;
+        protected double eyeDistance;
+        protected Matrix renderMatrix;
+
+        public ColladaOrderedRenderable(ColladaTriangleMesh mesh, Matrix renderMatrix, double eyeDistance)
+        {
+            this.mesh = mesh;
+            this.eyeDistance = eyeDistance;
+            this.renderMatrix = renderMatrix;
+        }
+
+        public double getDistanceFromEye()
+        {
+            return this.eyeDistance;
+        }
+
+        public void pick(DrawContext dc, Point pickPoint)
+        {
+            this.mesh.pick(dc, pickPoint);
+        }
+
+        public void render(DrawContext dc)
+        {
+            this.mesh.render(dc, this.renderMatrix);
+        }
+    }
+
     /**
      * This class holds globe-specific data for this shape. It's managed via the shape-data cache in {@link
      * gov.nasa.worldwind.render.AbstractShape.AbstractShapeData}.
@@ -119,6 +149,27 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         this.render(dc);
     }
 
+    /**
+     * Invoked by {@link ColladaOrderedRenderable} to render the mesh in a given orientation during ordered rendering.
+     *
+     * @param dc     Current draw context.
+     * @param matrix Matrix to be multiply with the current modelview matrix to orient the mesh.
+     */
+    protected void render(DrawContext dc, Matrix matrix)
+    {
+        this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
+        if (this.currentData == null)
+        {
+            this.currentData = this.createCacheEntry(dc);
+            this.shapeDataCache.addEntry(this.currentData);
+        }
+
+        ShapeData current = (ShapeData) this.currentData;
+        current.renderMatrix = matrix;
+
+        this.render(dc);
+    }
+
     @Override
     protected boolean mustApplyTexture(DrawContext dc)
     {
@@ -164,6 +215,15 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
             return null;
 
         return myEffect.getImageRef();
+    }
+
+    @Override
+    protected void addOrderedRenderable(DrawContext dc)
+    {
+        ShapeData current = (ShapeData) this.getCurrent();
+        ColladaOrderedRenderable or = new ColladaOrderedRenderable(this, current.renderMatrix,
+            current.getEyeDistance());
+        dc.addOrderedRenderable(or);
     }
 
     @Override
@@ -254,8 +314,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
 
             gl.glTexCoordPointer(TEX_COORDS_PER_TRI, GL.GL_FLOAT, 0, this.textureCoordsBuffer.rewind());
 
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_BORDER);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_BORDER);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
         }
         else
         {
@@ -299,7 +359,6 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         GL gl = dc.getGL();
 
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-
         gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, 0);
 
         if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
