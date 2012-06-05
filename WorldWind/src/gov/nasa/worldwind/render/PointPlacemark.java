@@ -78,6 +78,7 @@ public class PointPlacemark extends WWObjectImpl
     protected boolean enableBatchRendering = true;
     protected boolean enableBatchPicking = true;
     protected Object delegateOwner;
+    protected boolean clipToHorizon = true;
 
     // Values computed once per frame and reused during the frame as needed.
     protected long frameNumber = -1; // identifies frame used to calculate these values
@@ -405,6 +406,16 @@ public class PointPlacemark extends WWObjectImpl
         this.enableBatchPicking = enableBatchPicking;
     }
 
+    public boolean isClipToHorizon()
+    {
+        return clipToHorizon;
+    }
+
+    public void setClipToHorizon(boolean clipToHorizon)
+    {
+        this.clipToHorizon = clipToHorizon;
+    }
+
     /**
      * Indicates whether a point should be drawn when the active texture is null.
      *
@@ -492,10 +503,13 @@ public class PointPlacemark extends WWObjectImpl
             this.frameNumber = dc.getFrameTimeStamp();
         }
 
-        // Don't draw if beyond the horizon.
-        double horizon = dc.getView().getHorizonDistance();
-        if (this.eyeDistance > horizon)
-            return;
+        if (this.isClipToHorizon())
+        {
+            // Don't draw if beyond the horizon.
+            double horizon = dc.getView().getHorizonDistance();
+            if (this.eyeDistance > horizon)
+                return;
+        }
 
         if (this.intersectsFrustum(dc) || this.isDrawLine(dc))
             dc.addOrderedRenderable(this); // add the image ordered renderable
