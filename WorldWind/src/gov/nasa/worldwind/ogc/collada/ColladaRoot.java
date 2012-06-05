@@ -18,13 +18,12 @@ import gov.nasa.worldwind.util.xml.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 
 /**
  * @author pabercrombie
  * @version $Id$
  */
-// TODO handle URL document source
 public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable
 {
     /** Reference to the ColladaDoc representing the COLLADA file. */
@@ -89,6 +88,23 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.initialize();
     }
 
+    public ColladaRoot(URL docSource) throws IOException
+    {
+        super(ColladaConstants.COLLADA_NAMESPACE);
+
+        if (docSource == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        URLConnection conn = docSource.openConnection();
+        this.colladaDoc = new ColladaInputStream(conn.getInputStream(), WWIO.makeURI(docSource));
+
+        this.initialize();
+    }
+
     public ColladaRoot(InputStream docSource) throws IOException
     {
         super(ColladaConstants.COLLADA_NAMESPACE);
@@ -129,14 +145,24 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         {
             return new ColladaRoot((File) docSource);
         }
+        else if (docSource instanceof URL)
+        {
+            return new ColladaRoot((URL) docSource);
+        }
         else if (docSource instanceof String)
         {
             File file = new File((String) docSource);
             if (file.exists())
                 return new ColladaRoot(file);
+
+            URL url = WWIO.makeURL(docSource);
+            if (url != null)
+                return new ColladaRoot(url);
         }
         else if (docSource instanceof InputStream)
+        {
             return new ColladaRoot((InputStream) docSource);
+        }
 
         return null;
     }

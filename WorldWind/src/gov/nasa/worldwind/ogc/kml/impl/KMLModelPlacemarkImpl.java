@@ -234,20 +234,21 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
     protected void retrieveModel(String address) throws IOException, XMLStreamException
     {
         Object o = this.parent.getRoot().resolveReference(address);
-        ColladaRoot root = ColladaRoot.create(o);
-        if (root != null)
-        {
-            root.parse();
+        if (o == null)
+            return;
 
-            Position refPosition = this.model.getLocation().getPosition();
-            root.setPosition(refPosition);
-            root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
-            root.setResourceResolver(this);
+        ColladaRoot root = ColladaRoot.createAndParse(o);
+        if (root == null)
+            return;
 
-            this.setColladaRoot(root);
-            this.resourceRetrievalTime.set(System.currentTimeMillis());
-            this.parent.getRoot().requestRedraw();
-        }
+        Position refPosition = this.model.getLocation().getPosition();
+        root.setPosition(refPosition);
+        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+        root.setResourceResolver(this);
+
+        this.setColladaRoot(root);
+        this.resourceRetrievalTime.set(System.currentTimeMillis());
+        this.parent.getRoot().requestRedraw();
     }
 
     /** Attempts to find this model link resource file locally, and if that fails attempts to find it remotely. */
