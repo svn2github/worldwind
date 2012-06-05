@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.examples;
+package gov.nasa.worldwind.util;
 
 import java.util.*;
 import java.util.regex.*;

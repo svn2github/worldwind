@@ -6,9 +6,9 @@ package gov.nasa.worldwind.util.layertree;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.ogc.kml.*;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.tree.*;
-import gov.nasa.worldwindx.examples.EntityMap;
+import gov.nasa.worldwind.util.EntityMap;
 
 /**
  * A <code>TreeNode</code> that represents a KML feature defined by a <code>{@link
