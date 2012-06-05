@@ -131,40 +131,38 @@ public class ColladaAccessor extends ColladaAbstractObject
             return false; // Source not available
 
         // TODO: COLLADA spec says source can be a non-COLLADA document (pg 5-5)
-        if (!(o instanceof ColladaAbstractObject))
+        if (!(o instanceof ColladaFloatArray))
             return false;
 
-        Scanner scanner = new Scanner(((ColladaAbstractObject) o).getCharacters());
+        float[] floats = ((ColladaFloatArray) o).getFloats();
+        if (floats == null)
+            return false;
 
         // Skip values before the start offset
-        for (int i = 0; i < this.getOffset(); i++)
-        {
-            scanner.next();
-        }
+        int index = this.getOffset();
 
+        int strideSkip = 0;
         int stride = this.getStride();
-        for (int i = 0; i < this.getCount() && scanner.hasNext(); i++)
+        if (stride > this.params.size())
+            strideSkip = stride - this.params.size();
+
+        for (int i = 0; i < this.getCount() && index < floats.length; i++)
         {
             for (ColladaParam param : this.params)
             {
-                if (!scanner.hasNext())
+                if (index >= floats.length)
                     break;
 
                 // Parse the next value and add to the buffer. Skip unnamed parameters.
                 // See COLLADA spec pg 5-5.
                 if (!WWUtil.isEmpty(param.getName()))
-                    buffer.put(scanner.nextFloat());
-                else
-                    scanner.next();
+                    buffer.put(floats[index]);
+
+                index += 1;
             }
 
-            // Skip elements up to the stride. Has no effect if stride <= param count.
-            int j = 0;
-            while (scanner.hasNext() && j < stride - this.params.size())
-            {
-                scanner.next();
-                j += 1;
-            }
+            // Skip elements up to the stride.
+            index += strideSkip;
         }
 
         return true;
