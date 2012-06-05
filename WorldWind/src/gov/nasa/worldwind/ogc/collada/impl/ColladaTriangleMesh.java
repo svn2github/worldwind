@@ -23,37 +23,8 @@ import java.util.List;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaTriangleMesh extends AbstractGeneralShape implements ColladaRenderable
+public class ColladaTriangleMesh extends AbstractGeneralShape
 {
-    public static class ColladaOrderedRenderable implements OrderedRenderable
-    {
-        protected ColladaTriangleMesh mesh;
-        protected double eyeDistance;
-        protected Matrix renderMatrix;
-
-        public ColladaOrderedRenderable(ColladaTriangleMesh mesh, Matrix renderMatrix, double eyeDistance)
-        {
-            this.mesh = mesh;
-            this.eyeDistance = eyeDistance;
-            this.renderMatrix = renderMatrix;
-        }
-
-        public double getDistanceFromEye()
-        {
-            return this.eyeDistance;
-        }
-
-        public void pick(DrawContext dc, Point pickPoint)
-        {
-            this.mesh.pick(dc, pickPoint);
-        }
-
-        public void render(DrawContext dc)
-        {
-            this.mesh.render(dc, this.renderMatrix);
-        }
-    }
-
     /**
      * This class holds globe-specific data for this shape. It's managed via the shape-data cache in {@link
      * gov.nasa.worldwind.render.AbstractShape.AbstractShapeData}.
@@ -121,23 +92,10 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         return null; // TODO
     }
 
-    public void preRender(ColladaTraversalContext tc, DrawContext dc)
+    /** {@inheritDoc} */
+    @Override
+    public void render(DrawContext dc)
     {
-        // Do nothing
-    }
-
-    public void render(ColladaTraversalContext tc, DrawContext dc)
-    {
-        this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
-        if (this.currentData == null)
-        {
-            this.currentData = this.createCacheEntry(dc);
-            this.shapeDataCache.addEntry(this.currentData);
-        }
-
-        ShapeData current = (ShapeData) this.currentData;
-        current.renderMatrix = tc.peekMatrix();
-
         ShapeAttributes a = this.getAttributes();
         if (a == null || a.isUnresolved())
         {
@@ -146,16 +104,16 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
                 this.setAttributes(a);
         }
 
-        this.render(dc);
+        super.render(dc);
     }
 
     /**
-     * Invoked by {@link ColladaOrderedRenderable} to render the mesh in a given orientation during ordered rendering.
+     * Render the mesh in a given orientation.
      *
      * @param dc     Current draw context.
      * @param matrix Matrix to be multiply with the current modelview matrix to orient the mesh.
      */
-    protected void render(DrawContext dc, Matrix matrix)
+    public void render(DrawContext dc, Matrix matrix)
     {
         this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
         if (this.currentData == null)
@@ -168,6 +126,30 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
         current.renderMatrix = matrix;
 
         this.render(dc);
+    }
+
+    public void pick(DrawContext dc, Point pickPoint, Matrix matrix)
+    {
+        // This method is called only when ordered renderables are being drawn.
+
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.pickSupport.clearPickList();
+        try
+        {
+            this.pickSupport.beginPicking(dc);
+            this.render(dc, matrix);
+        }
+        finally
+        {
+            this.pickSupport.endPicking(dc);
+            this.pickSupport.resolvePick(dc, pickPoint, this.pickLayer);
+        }
     }
 
     @Override
@@ -220,10 +202,10 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
     @Override
     protected void addOrderedRenderable(DrawContext dc)
     {
-        ShapeData current = (ShapeData) this.getCurrent();
-        ColladaOrderedRenderable or = new ColladaOrderedRenderable(this, current.renderMatrix,
-            current.getEyeDistance());
-        dc.addOrderedRenderable(or);
+        // Do not add an ordered renderable for the triangle mesh. This object is rendered by
+        // ColladaNode, which handles adding the ordered renderable. Many COLLADA models, especially
+        // those created by SketchUp, include multiple shapes with the same geometry but different
+        // materials. Treating these as separate ordered renderables can lead to z-fighting problems.
     }
 
     @Override
@@ -345,8 +327,6 @@ public class ColladaTriangleMesh extends AbstractGeneralShape implements Collada
 
         if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
             gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBuffer.rewind());
-
-        gl.glDepthFunc(GL.GL_LEQUAL);
 
         FloatBuffer vb = this.coordBuffer;
         gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, vb.rewind());
