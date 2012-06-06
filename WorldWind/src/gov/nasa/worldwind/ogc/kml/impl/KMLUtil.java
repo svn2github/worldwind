@@ -183,6 +183,17 @@ public class KMLUtil
             if (pos != null)
                 positions.add(computeAltitude(globe, pos, kmlPoint.getAltitudeMode()));
         }
+        else if (geometry instanceof KMLModel)
+        {
+            KMLModel model = (KMLModel) geometry;
+            KMLLocation location = model.getLocation();
+            if (location != null)
+            {
+                Position pos = location.getPosition();
+                if (pos != null)
+                    positions.add(computeAltitude(globe, pos, model.getAltitudeMode()));
+            }
+        }
         else if (geometry instanceof KMLLineString) // Also handles KMLLinearRing, since KMLLineString is a subclass of KMLLinearRing
         {
             KMLLineString lineString = (KMLLineString) geometry;
