@@ -128,7 +128,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
 
             for (ColladaTriangleMesh shape : this.getShapes())
             {
-                shape.render(dc);
+                shape.render(dc, tc.peekMatrix());
             }
 
             for (ColladaRenderable node : this.getChildren())

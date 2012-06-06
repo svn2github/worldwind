@@ -9,6 +9,7 @@ package gov.nasa.worldwind.ogc.collada.impl;
 import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.Terrain;
@@ -17,12 +18,15 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.GL;
 import java.awt.*;
 import java.nio.FloatBuffer;
+import java.util.*;
 import java.util.List;
 
 /**
  * @author pabercrombie
  * @version $Id$
  */
+// TODO extent computation does not work if a shape is rendered multiple times with different
+// TODO transforms. Might be better to compute extent of entire node.
 public class ColladaTriangleMesh extends AbstractGeneralShape
 {
     /**
@@ -215,15 +219,13 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         this.createMinimalGeometry(dc, (ShapeData) this.getCurrent());
 
         // If the shape is less that a pixel in size, don't render it.
-        // TODO compute model extent
-//        if (this.getCurrent().getExtent() == null || dc.isSmall(this.getExtent(), 1))
-//            return false;
+        if (this.getCurrent().getExtent() == null || dc.isSmall(this.getExtent(), 1))
+            return false;
 
         if (!this.intersectsFrustum(dc))
             return false;
 
-        if (this.coordBuffer == null)
-            this.createFullGeometry(dc);
+        this.createFullGeometry(dc);
 
         return true;
     }
@@ -395,26 +397,60 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
             return;
         shapeData.setReferencePoint(refPt);
 
-//        computeExtent(dc);  // TODO: compute the model's extent
-
         shapeData.setEyeDistance(this.computeEyeDistance(dc, shapeData));
         shapeData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
         shapeData.setVerticalExaggeration(dc.getVerticalExaggeration());
+
+        if (this.coordBuffer == null)
+            this.createGeometry(dc);
+
+        if (shapeData.getExtent() == null)
+            shapeData.setExtent(this.computeExtent(dc));
+    }
+
+    protected Extent computeExtent(DrawContext dc)
+    {
+        // Compute a bounding box around the vertices in this shape.
+        this.coordBuffer.rewind();
+        Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer), 3);
+
+        // Compute the corners of the bounding box and transform with the active transform matrix.
+        Vec4[] corners = box.getCorners();
+        Matrix matrix = this.computeRenderMatrix(dc);
+        for (int i = 0; i < corners.length; i++)
+        {
+            corners[i] = corners[i].transformBy3(matrix);
+        }
+
+        // Compute the bounding box around the transformed corners.
+        box = Box.computeBoundingBox(Arrays.asList(corners));
+
+        Vec4 centerPoint = this.getCurrentData().getReferencePoint();
+
+        return box != null ? box.translate(centerPoint) : null;
     }
 
     protected void createFullGeometry(DrawContext dc)
     {
-        this.createGeometry(dc);
-
-        if (this.mustCreateNormals(dc))
-            this.createNormals();
+        if (this.mustCreateNormals(dc, this.getActiveAttributes()))
+        {
+            if (this.normalBuffer == null)
+                this.createNormals();
+        }
         else
+        {
             this.normalBuffer = null;
+        }
 
         if (this.mustApplyTexture(dc))
-            this.createTexCoords();
+        {
+            if (this.textureCoordsBuffer == null)
+                this.createTexCoords();
+        }
         else
+        {
             this.textureCoordsBuffer = null;
+        }
     }
 
     protected void createGeometry(DrawContext dc)
