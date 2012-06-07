@@ -183,7 +183,12 @@ public interface WorldWindow extends AVList
     PickedObjectList getObjectsInSelectionBox();
 
     /**
-     * Returns the GPU Resource used by this World Window.
+     * Returns the GPU Resource used by this World Window. This method is for internal use only.
+     * <p/>
+     * Note: Applications do not need to interact with the GPU resource cache. It is self managed. Modifying it in any
+     * way will cause significant problems such as excessive memory usage or application crashes. The only reason to use
+     * the GPU resource cache is to request management of GPU resources within implementations of shapes or layers. And
+     * then access should be only through the draw context only.
      *
      * @return The GPU Resource cache used by this World Window.
      */
