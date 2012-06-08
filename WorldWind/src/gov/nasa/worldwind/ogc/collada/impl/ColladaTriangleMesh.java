@@ -452,9 +452,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
                 // Apply new material if necessary
                 if (!nextMaterial.equals(activeMaterial))
                 {
-                    this.activeAttributes.setInteriorMaterial(nextMaterial);
-                    this.prepareToDrawInterior(dc, this.activeAttributes, defaultAttributes);
-                    activeMaterial = geometry.material;
+                    this.applyMaterial(dc, nextMaterial);
+                    activeMaterial = nextMaterial;
                 }
 
                 if (!dc.isPickingMode()
@@ -527,6 +526,25 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         finally
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+        }
+    }
+
+    protected void applyMaterial(DrawContext dc, Material material)
+    {
+        GL gl = dc.getGL();
+        ShapeAttributes activeAttrs = this.getActiveAttributes();
+        double opacity = activeAttrs.getInteriorOpacity();
+
+        // We don't need to enable or disable lighting; that's handled by super.prepareToDrawInterior.
+        if (this.mustApplyLighting(dc, activeAttrs))
+        {
+            material.apply(gl, GL.GL_FRONT_AND_BACK, (float) opacity);
+        }
+        else
+        {
+            Color sc = material.getDiffuse();
+            gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
+                (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
         }
     }
 
