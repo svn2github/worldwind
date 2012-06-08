@@ -28,7 +28,6 @@ import java.util.List;
  */
 // TODO extent computation does not handle nodes that are rendered multiple times with different transforms
 // TODO use drawElements instead of drawArrays
-// TODO use one large buffer instead of several small buffers
 public class ColladaTriangleMesh extends AbstractGeneralShape
 {
     /**
@@ -90,34 +89,26 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     {
         protected ColladaTriangles colladaGeometry;
 
-        protected FloatBuffer coordBuffer;
-        /** The slice of the <code>coordBuffer</code> that contains normals. */
-        protected FloatBuffer normalBuffer;
-        /** The index of the first normal in the <code>coordBuffer</code>. */
-        protected int normalBufferPosition;
-        /** Texture coordinates. */
-        protected FloatBuffer textureCoordsBuffer;
+        /** Offset (in vertices) into the coord, normal, and texcoord buffers of this coordinates for this geometry. */
+        protected int offset = -1;
 
+        /** Texture applied to this geometry. */
         protected WWTexture texture;
-
+        /** Material applied to this geometry. */
         protected Material material;
-
-        protected final Object vboCacheKey = new Object();
 
         public Geometry(ColladaTriangles triangles)
         {
             this.colladaGeometry = triangles;
-        }
-
-        public Object getVboCacheKey()
-        {
-            return this.vboCacheKey;
         }
     }
 
     protected static final int VERTS_PER_TRI = 3;
     protected static final int TEX_COORDS_PER_TRI = 2;
     protected static final int COORDS_PER_VERT = 3;
+
+    /** Total number of triangles in this mesh. Equal to the sum of the triangles in each geometry. */
+    protected int triCount;
 
     /**
      * The vertex data buffer for this shape data. The first half contains vertex coordinates, the second half contains
@@ -126,6 +117,15 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     protected ColladaBindMaterial bindMaterial;
 
     protected List<Geometry> geometries;
+
+    /** Vertex coordinates for all geometries in this shape. */
+    protected FloatBuffer coordBuffer;
+    /** The slice of the <code>coordBuffer</code> that contains normals. */
+    protected FloatBuffer normalBuffer;
+    /** The index of the first normal in the <code>coordBuffer</code>. */
+    protected int normalBufferPosition;
+    /** Texture coordinates for all geometries in this shape. */
+    protected FloatBuffer textureCoordsBuffer;
 
     protected OGLStackHandler oglStackHandler = new OGLStackHandler();
 
@@ -147,6 +147,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         for (ColladaTriangles triangles : geometries)
         {
             this.geometries.add(new Geometry(triangles));
+            this.triCount += triangles.getCount();
         }
 
         this.bindMaterial = bindMaterial;
@@ -380,12 +381,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     @Override
     protected boolean isOrderedRenderableValid(DrawContext dc)
     {
-        for (Geometry geometry : this.geometries)
-        {
-            if (geometry.coordBuffer != null)
-                return true;
-        }
-        return false;
+        return this.coordBuffer != null;
     }
 
     @Override
@@ -398,11 +394,6 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     protected AbstractShapeData createCacheEntry(DrawContext dc)
     {
         return new ShapeData(dc, this);
-    }
-
-    protected int[] getVboIds(DrawContext dc, Geometry geometry)
-    {
-        return (int[]) dc.getGpuResourceCache().get(geometry.getVboCacheKey());
     }
 
     /**
@@ -443,6 +434,16 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
             // need to change it if different geometry elements use different materials.
             Material activeMaterial = defaultMaterial;
 
+            int[] vboIds = null;
+            if (this.shouldUseVBOs(dc))
+                vboIds = this.getVboIds(dc);
+
+            if (vboIds == null)
+            {
+                FloatBuffer vb = this.coordBuffer;
+                gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, vb.rewind());
+            }
+
             boolean texturesEnabled = false;
             for (Geometry geometry : this.geometries)
             {
@@ -472,7 +473,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
                     gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
                     gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
 
-                    gl.glTexCoordPointer(TEX_COORDS_PER_TRI, GL.GL_FLOAT, 0, geometry.textureCoordsBuffer.rewind());
+                    gl.glTexCoordPointer(TEX_COORDS_PER_TRI, GL.GL_FLOAT, 0, this.textureCoordsBuffer.rewind());
                 }
                 else if (texturesEnabled)
                 {
@@ -481,18 +482,10 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
                     texturesEnabled = false;
                 }
 
-                if (this.shouldUseVBOs(dc))
-                {
-                    int[] vboIds = this.getVboIds(dc, geometry);
-                    if (vboIds != null)
-                        this.doDrawInteriorVBO(dc, geometry, vboIds);
-                    else
-                        this.doDrawInteriorVA(dc, geometry);
-                }
+                if (vboIds != null)
+                    this.doDrawInteriorVBO(dc, geometry, vboIds);
                 else
-                {
                     this.doDrawInteriorVA(dc, geometry);
-                }
             }
         }
         finally
@@ -504,36 +497,36 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     protected void doDrawInteriorVA(DrawContext dc, Geometry geometry)
     {
         GL gl = dc.getGL();
+        if (geometry.offset == -1)
+            return;
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc) && geometry.normalBuffer != null)
-            gl.glNormalPointer(GL.GL_FLOAT, 0, geometry.normalBuffer.rewind());
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
+            gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBuffer.rewind());
 
-        FloatBuffer vb = geometry.coordBuffer;
-        gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, vb.rewind());
-
-        gl.glDrawArrays(GL.GL_TRIANGLES, 0, geometry.colladaGeometry.getCount() * VERTS_PER_TRI);
+        gl.glDrawArrays(GL.GL_TRIANGLES, geometry.offset, geometry.colladaGeometry.getCount() * VERTS_PER_TRI);
     }
 
     protected void doDrawInteriorVBO(DrawContext dc, Geometry geometry, int[] vboIds)
     {
         GL gl = dc.getGL();
+        if (geometry.offset == -1)
+            return;
 
         try
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
             gl.glVertexPointer(VERTS_PER_TRI, GL.GL_FLOAT, 0, 0);
 
-            if (!dc.isPickingMode() && this.mustApplyLighting(dc) && geometry.normalBuffer != null)
+            if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
             {
-                gl.glNormalPointer(GL.GL_FLOAT, 0, geometry.normalBufferPosition * BufferUtil.SIZEOF_FLOAT);
+                gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBufferPosition * BufferUtil.SIZEOF_FLOAT);
             }
 
-            gl.glDrawArrays(GL.GL_TRIANGLES, 0, geometry.colladaGeometry.getCount() * VERTS_PER_TRI);
+            gl.glDrawArrays(GL.GL_TRIANGLES, geometry.offset, geometry.colladaGeometry.getCount() * VERTS_PER_TRI);
         }
         finally
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
-            gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
         }
     }
 
@@ -592,34 +585,35 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
 
     protected void createGeometry(DrawContext dc)
     {
+        int size = this.triCount * VERTS_PER_TRI * COORDS_PER_VERT;
+
+        // Capture the position at which normals buffer starts (in case there are normals)
+        this.normalBufferPosition = size;
+
+        if (this.mustCreateNormals(dc))
+        {
+            size += (this.triCount * VERTS_PER_TRI * COORDS_PER_VERT);
+        }
+
+        if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
+            this.coordBuffer.clear();
+        else
+            this.coordBuffer = BufferUtil.newFloatBuffer(size);
+
         for (Geometry geometry : this.geometries)
         {
-            if (geometry.coordBuffer != null)
-                continue;
-
-            int size = geometry.colladaGeometry.getCount() * VERTS_PER_TRI * COORDS_PER_VERT;
-
-            // Capture the position at which normals buffer starts (in case there are normals)
-            geometry.normalBufferPosition = size;
-
-            if (this.mustCreateNormals(dc))
-            {
-                size += (geometry.colladaGeometry.getCount() * VERTS_PER_TRI * COORDS_PER_VERT);
-            }
-
-            if (geometry.coordBuffer != null && geometry.coordBuffer.capacity() >= size)
-                geometry.coordBuffer.clear();
-            else
-                geometry.coordBuffer = BufferUtil.newFloatBuffer(size);
-
-            geometry.colladaGeometry.getVertices(geometry.coordBuffer);
+            geometry.offset = this.coordBuffer.position() / VERTS_PER_TRI;
+            geometry.colladaGeometry.getVertices(this.coordBuffer);
         }
     }
 
     protected void createFullGeometry(DrawContext dc)
     {
-        this.createNormals(dc);
-        this.createTexCoords();
+        if (this.normalBuffer == null && this.mustCreateNormals(dc))
+            this.createNormals();
+
+        if (this.textureCoordsBuffer == null && this.mustApplyTexture(dc))
+            this.createTexCoords();
 
         for (Geometry geometry : this.geometries)
         {
@@ -634,18 +628,15 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         List<Vec4> extrema = new ArrayList<Vec4>();
         Matrix matrix = this.computeRenderMatrix(dc);
 
-        for (Geometry geometry : this.geometries)
-        {
-            // Compute a bounding box around the vertices in this shape.
-            geometry.coordBuffer.rewind();
-            box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(geometry.coordBuffer), COORDS_PER_VERT);
+        // Compute a bounding box around the vertices in this shape.
+        this.coordBuffer.rewind();
+        box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer), COORDS_PER_VERT);
 
-            // Compute the corners of the bounding box and transform with the active transform matrix.
-            Vec4[] corners = box.getCorners();
-            for (Vec4 corner : corners)
-            {
-                extrema.add(corner.transformBy3(matrix));
-            }
+        // Compute the corners of the bounding box and transform with the active transform matrix.
+        Vec4[] corners = box.getCorners();
+        for (Vec4 corner : corners)
+        {
+            extrema.add(corner.transformBy3(matrix));
         }
 
         if (extrema.isEmpty())
@@ -660,41 +651,37 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     }
 
     /** Create this shape's vertex normals. */
-    protected void createNormals(DrawContext dc)
+    protected void createNormals()
     {
+        this.coordBuffer.position(this.normalBufferPosition);
+        this.normalBuffer = this.coordBuffer.slice();
+
         for (Geometry geometry : this.geometries)
         {
-            if (!this.mustCreateNormals(dc, this.activeAttributes))
-            {
-                geometry.normalBuffer = null;
-                continue;
-            }
-
-            geometry.coordBuffer.position(geometry.normalBufferPosition);
-            geometry.normalBuffer = geometry.coordBuffer.slice();
-
-            geometry.colladaGeometry.getNormals(geometry.normalBuffer);
+            geometry.colladaGeometry.getNormals(this.normalBuffer);
         }
     }
 
     protected void createTexCoords()
     {
+        int size = this.triCount * VERTS_PER_TRI * TEX_COORDS_PER_TRI;
+
+        if (this.textureCoordsBuffer != null && this.textureCoordsBuffer.capacity() >= size)
+            this.textureCoordsBuffer.clear();
+        else
+            this.textureCoordsBuffer = BufferUtil.newFloatBuffer(size);
+
         for (Geometry geometry : this.geometries)
         {
-            if (!this.mustApplyTexture(geometry))
+            if (this.mustApplyTexture(geometry))
             {
-                geometry.textureCoordsBuffer = null;
-                continue;
+                geometry.colladaGeometry.getTextureCoordinates(this.textureCoordsBuffer);
             }
-
-            int size = geometry.colladaGeometry.getCount() * VERTS_PER_TRI * TEX_COORDS_PER_TRI;
-
-            if (geometry.textureCoordsBuffer != null && geometry.textureCoordsBuffer.capacity() >= size)
-                geometry.textureCoordsBuffer.clear();
             else
-                geometry.textureCoordsBuffer = BufferUtil.newFloatBuffer(size);
-
-            geometry.colladaGeometry.getTextureCoordinates(geometry.textureCoordsBuffer);
+            {
+                int thisSize = geometry.colladaGeometry.getCount() * VERTS_PER_TRI * TEX_COORDS_PER_TRI;
+                this.textureCoordsBuffer.position(this.textureCoordsBuffer.position() + thisSize);
+            }
         }
     }
 
@@ -703,26 +690,22 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         GL gl = dc.getGL();
         ShapeData shapeData = (ShapeData) getCurrentData();
 
+        int[] vboIds = this.getVboIds(dc);
+        if (vboIds == null)
+        {
+            int size = this.coordBuffer.limit() * BufferUtil.SIZEOF_FLOAT;
+
+            vboIds = new int[1];
+            gl.glGenBuffers(vboIds.length, vboIds, 0);
+            dc.getGpuResourceCache().put(shapeData.getVboCacheKey(), vboIds, GpuResourceCache.VBO_BUFFERS,
+                size);
+        }
+
         try
         {
-            for (Geometry geometry : this.geometries)
-            {
-                int[] vboIds = (int[]) dc.getGpuResourceCache().get(geometry.getVboCacheKey());
-                if (vboIds == null)
-                {
-                    int size = geometry.coordBuffer.limit() * BufferUtil.SIZEOF_FLOAT;
-
-                    vboIds = new int[1];
-                    gl.glGenBuffers(vboIds.length, vboIds, 0);
-                    dc.getGpuResourceCache().put(shapeData.getVboCacheKey(), vboIds, GpuResourceCache.VBO_BUFFERS,
-                        size);
-                }
-
-                FloatBuffer vb = geometry.coordBuffer;
-                gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-                gl.glBufferData(GL.GL_ARRAY_BUFFER, vb.limit() * BufferUtil.SIZEOF_FLOAT, vb.rewind(),
-                    GL.GL_STATIC_DRAW);
-            }
+            FloatBuffer vb = this.coordBuffer;
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+            gl.glBufferData(GL.GL_ARRAY_BUFFER, vb.limit() * BufferUtil.SIZEOF_FLOAT, vb.rewind(), GL.GL_STATIC_DRAW);
         }
         finally
         {
