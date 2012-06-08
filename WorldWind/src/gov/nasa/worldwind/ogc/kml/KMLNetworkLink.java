@@ -165,6 +165,23 @@ public class KMLNetworkLink extends KMLAbstractContainer implements PropertyChan
         return networkResource.get();
     }
 
+    /**
+     * {@inheritDoc} Overridden to apply region culling according to the same rules as in KMLAbstractFeature. This
+     * prevents retrieving network links in inactive regions.
+     */
+    @Override
+    protected boolean isFeatureActive(KMLTraversalContext tc, DrawContext dc)
+    {
+        if (this.getVisibility() != null && !this.getVisibility())
+            return false;
+
+        KMLRegion region = this.getRegion();
+        if (region == null)
+            region = tc.peekRegion();
+
+        return region == null || region.isActive(tc, dc);
+    }
+
     protected boolean hasNetworkLinkControl()
     {
         return this.getRoot().getNetworkLinkControl() != null;
