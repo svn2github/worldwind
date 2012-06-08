@@ -57,6 +57,10 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
     protected boolean featureFetched = false;
     protected KMLAbstractFeature feature;
 
+    /** Flag to indicate that the network link control element has been fetched from the hash map. */
+    protected boolean linkControlFetched = false;
+    protected KMLNetworkLinkControl networkLinkControl;
+
     /**
      * Creates a KML root for an untyped source. The source must be either a {@link File}, a {@link URL}, a {@link
      * InputStream}, or a {@link String} identifying either a file path or a URL. For all types other than
@@ -1055,7 +1059,13 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
      */
     public KMLNetworkLinkControl getNetworkLinkControl()
     {
-        return (KMLNetworkLinkControl) this.getField("NetworkLinkControl");
+        if (!linkControlFetched)
+        {
+            this.networkLinkControl = (KMLNetworkLinkControl) this.getField("NetworkLinkControl");
+            this.linkControlFetched = true;
+        }
+
+        return this.networkLinkControl;
     }
 
     /**

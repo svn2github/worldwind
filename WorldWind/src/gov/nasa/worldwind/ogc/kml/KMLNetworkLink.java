@@ -56,6 +56,12 @@ public class KMLNetworkLink extends KMLAbstractContainer implements PropertyChan
     protected boolean invalidTarget;
 
     /**
+     * Cache the root of this network link. Accessing the root by climbing up a deep network link tree can be a
+     * performance bottleneck.
+     */
+    protected KMLRoot root;
+
+    /**
      * Construct an instance.
      *
      * @param namespaceURI the qualifying namespace URI. May be null to indicate no namespace qualification.
@@ -89,6 +95,16 @@ public class KMLNetworkLink extends KMLAbstractContainer implements PropertyChan
         {
             networkResource.onMessage(msg);
         }
+    }
+
+    /** {@inheritDoc} Overridden to cache the root instead of climbing the parse tree each time. */
+    @Override
+    public KMLRoot getRoot()
+    {
+        if (root == null)
+            this.root = super.getRoot();
+
+        return this.root;
     }
 
     public Boolean getRefreshVisibility()

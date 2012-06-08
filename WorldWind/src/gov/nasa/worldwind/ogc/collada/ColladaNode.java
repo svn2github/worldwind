@@ -33,6 +33,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     /** Transform matrix for this node. */
     protected Matrix matrix;
 
+    /**
+     * Flag to indicate that the node has an instance_geometry element. This flag avoids unnecessary look ups in the
+     * field map for models that contain a large number of nodes without geometry.
+     */
+    protected boolean hasGeometry = true;
+
     public ColladaNode(String ns)
     {
         super(ns);
@@ -46,9 +52,13 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         // Create shapes for this node, if necessary
-        if (this.shape == null && this.getInstanceGeometry() != null)
+        if (this.shape == null && this.hasGeometry)
         {
-            this.shape = this.createShape(this.getInstanceGeometry());
+            ColladaInstanceGeometry geometry = this.getInstanceGeometry();
+            if (geometry != null)
+                this.shape = this.createShape(this.getInstanceGeometry());
+            else
+                this.hasGeometry = false;
         }
 
         List<ColladaRenderable> children = this.getChildren();
@@ -58,7 +68,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         Matrix matrix = this.getMatrix();
         try
         {
-            if (matrix != null)
+            if (matrix != null && matrix != Matrix.IDENTITY)
             {
                 tc.pushMatrix();
                 tc.multiplyMatrix(matrix);
@@ -71,7 +81,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
         finally
         {
-            if (matrix != null)
+            if (matrix != null && matrix != Matrix.IDENTITY)
                 tc.popMatrix();
         }
     }
@@ -81,7 +91,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         Matrix matrix = this.getMatrix();
         try
         {
-            if (matrix != null)
+            if (matrix != null && matrix != Matrix.IDENTITY)
             {
                 tc.pushMatrix();
                 tc.multiplyMatrix(matrix);
@@ -97,7 +107,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
         finally
         {
-            if (matrix != null)
+            if (matrix != null && matrix != Matrix.IDENTITY)
                 tc.popMatrix();
         }
     }
@@ -154,7 +164,11 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         // TODO a node can have more than one matrix
         ColladaMatrix matrix = (ColladaMatrix) this.getField("matrix");
         if (matrix == null)
-            return null;
+        {
+            // Set matrix to identity so that we won't look for it again.
+            this.matrix = Matrix.IDENTITY;
+            return this.matrix;
+        }
 
         String matrixAsString = matrix.getCharacters();
         String linesCleaned = matrixAsString.replaceAll("\n", " ");

@@ -14,6 +14,10 @@ package gov.nasa.worldwind.ogc.kml;
  */
 public class KMLModel extends KMLAbstractGeometry
 {
+    /** Flag to indicate that the link has been fetched from the hash map. */
+    protected boolean linkFetched = false;
+    protected KMLLink link;
+
     /**
      * Construct an instance.
      *
@@ -46,7 +50,12 @@ public class KMLModel extends KMLAbstractGeometry
 
     public KMLLink getLink()
     {
-        return (KMLLink) this.getField("Link");
+        if (!this.linkFetched)
+        {
+            this.link = (KMLLink) this.getField("Link");
+            this.linkFetched = true;
+        }
+        return this.link;
     }
 
     public KMLResourceMap getResourceMap()

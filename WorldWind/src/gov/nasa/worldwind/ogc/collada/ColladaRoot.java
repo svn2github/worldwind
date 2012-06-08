@@ -38,6 +38,14 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     protected Position position;
     protected int altitudeMode;
 
+    /** Flag to indicate that the scene has been retrieved from the hash map. */
+    protected boolean sceneFetched = false;
+    protected ColladaScene scene;
+
+    /** Flag to indicate that the scale has been computed. */
+    protected boolean scaleFetched = false;
+    protected double scale;
+
     protected ColladaResourceResolver resourceResolver;
 
     /**
@@ -567,7 +575,12 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     public ColladaScene getScene()
     {
-        return (ColladaScene) this.getField("scene");
+        if (!this.sceneFetched)
+        {
+            this.scene = (ColladaScene) this.getField("scene");
+            this.sceneFetched = true;
+        }
+        return this.scene;
     }
 
     public ColladaAsset getAsset()
@@ -598,12 +611,22 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
             scene.render(tc, dc);
     }
 
+    protected double getScale()
+    {
+        if (!this.scaleFetched)
+        {
+            this.scale = this.computeScale();
+            this.scaleFetched = true;
+        }
+        return this.scale;
+    }
+
     /**
      * Indicates the scale defined by the asset/unit element. This scale converts the document's units to meters.
      *
      * @return Scale for this document, or 1.0 if no scale is defined.
      */
-    protected double getScale()
+    protected double computeScale()
     {
         Double scale = null;
 

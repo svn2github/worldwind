@@ -577,7 +577,8 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         shapeData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
         shapeData.setVerticalExaggeration(dc.getVerticalExaggeration());
 
-        this.createGeometry(dc);
+        if (this.coordBuffer == null)
+            this.createGeometry(dc);
 
         if (shapeData.getExtent() == null)
             shapeData.setExtent(this.computeExtent(dc));
@@ -764,11 +765,11 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
     {
         ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
         if (techniqueCommon == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         String materialSource = geometry.colladaGeometry.getMaterial();
         if (materialSource == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         ColladaInstanceMaterial myMaterialInstance = null;
         for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
@@ -781,21 +782,21 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
         }
 
         if (myMaterialInstance == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         // Attempt to resolve the instance. The material may not be immediately available.
         ColladaMaterial myMaterial = myMaterialInstance.get();
         if (myMaterial == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         ColladaInstanceEffect myEffectInstance = myMaterial.getInstanceEffect();
         if (myEffectInstance == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         // Attempt to resolve effect. The effect may not be immediately available.
         ColladaEffect myEffect = myEffectInstance.get();
         if (myEffect == null)
-            return null;
+            return DEFAULT_INTERIOR_MATERIAL;
 
         return myEffect.getMaterial();
     }

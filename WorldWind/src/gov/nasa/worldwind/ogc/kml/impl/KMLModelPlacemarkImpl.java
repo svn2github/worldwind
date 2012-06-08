@@ -37,6 +37,8 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 
     protected Map<String, String> resourceMap;
 
+    protected ColladaTraversalContext colladaTraversalContext = new ColladaTraversalContext();
+
     /**
      * Create an instance.
      *
@@ -127,7 +129,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {
-            root.preRender(new ColladaTraversalContext(), dc);
+            root.preRender(this.colladaTraversalContext, dc);
         }
     }
 
@@ -136,7 +138,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {
-            root.render(new ColladaTraversalContext(), dc);
+            root.render(this.colladaTraversalContext, dc);
         }
     }
 
