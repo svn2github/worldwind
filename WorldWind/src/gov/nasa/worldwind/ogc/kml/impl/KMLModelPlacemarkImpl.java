@@ -129,6 +129,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {
+            this.colladaTraversalContext.reset();
             root.preRender(this.colladaTraversalContext, dc);
         }
     }
@@ -138,6 +139,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = this.getColladaRoot();
         if (root != null)
         {
+            this.colladaTraversalContext.reset();
             root.render(this.colladaTraversalContext, dc);
         }
     }

@@ -86,4 +86,11 @@ public class ColladaTraversalContext
         Matrix top = this.popMatrix();
         this.pushMatrix(top.multiply(m));
     }
+
+    /** Reset the context so that it may be used for a fresh traversal. */
+    public void reset()
+    {
+        this.matrixStack.clear();
+        this.pushMatrix(Matrix.IDENTITY);
+    }
 }

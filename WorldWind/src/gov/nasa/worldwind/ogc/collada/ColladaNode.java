@@ -122,9 +122,14 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         if (mesh == null)
             return null;
 
+        List<ColladaTriangles> triangles = mesh.getTriangles();
+        if (WWUtil.isEmpty(triangles))
+            return null;
+        // TODO support lines geometry
+
         ColladaBindMaterial bindMaterial = geomInstance.getBindMaterial();
 
-        ColladaTriangleMesh newShape = new ColladaTriangleMesh(mesh.getTriangles(), bindMaterial);
+        ColladaTriangleMesh newShape = new ColladaTriangleMesh(triangles, bindMaterial);
 
         newShape.setModelPosition(this.getRoot().getPosition());
         newShape.setHeading(Angle.ZERO); // TODO
