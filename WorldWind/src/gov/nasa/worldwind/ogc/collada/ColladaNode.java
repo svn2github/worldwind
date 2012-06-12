@@ -26,41 +26,22 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
      * to a node elsewhere in the current document, or another document).
      */
     protected List<ColladaRenderable> children;
+    /** Geometries defined in this node. */
+    protected List<ColladaInstanceGeometry> geometries;
 
     /** Shape used to render geometry in this node. */
-    protected ColladaTriangleMesh shape;
+    protected List<ColladaTriangleMesh> shapes;
 
     /** Transform matrix for this node. */
     protected Matrix matrix;
-
-    /**
-     * Flag to indicate that the node has an instance_geometry element. This flag avoids unnecessary look ups in the
-     * field map for models that contain a large number of nodes without geometry.
-     */
-    protected boolean hasGeometry = true;
 
     public ColladaNode(String ns)
     {
         super(ns);
     }
 
-    public ColladaInstanceGeometry getInstanceGeometry()
-    {
-        return (ColladaInstanceGeometry) this.getField("instance_geometry");
-    }
-
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
-        // Create shapes for this node, if necessary
-        if (this.shape == null && this.hasGeometry)
-        {
-            ColladaInstanceGeometry geometry = this.getInstanceGeometry();
-            if (geometry != null)
-                this.shape = this.createShape(this.getInstanceGeometry());
-            else
-                this.hasGeometry = false;
-        }
-
         List<ColladaRenderable> children = this.getChildren();
         if (WWUtil.isEmpty(children))
             return;
@@ -74,7 +55,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
                 tc.multiplyMatrix(matrix);
             }
 
-            for (ColladaRenderable node : this.getChildren())
+            for (ColladaRenderable node : children)
             {
                 node.preRender(tc, dc);
             }
@@ -88,6 +69,10 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
 
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
+        // Create shapes for this node, if necessary
+        if (this.shapes == null)
+            this.shapes = this.createShapes();
+
         Matrix matrix = this.getMatrix();
         try
         {
@@ -97,8 +82,11 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
                 tc.multiplyMatrix(matrix);
             }
 
-            if (this.shape != null)
-                this.shape.render(dc, tc.peekMatrix());
+            Matrix traversalMatrix = tc.peekMatrix();
+            for (ColladaTriangleMesh shape : this.shapes)
+            {
+                shape.render(dc, traversalMatrix);
+            }
 
             for (ColladaRenderable node : this.getChildren())
             {
@@ -110,6 +98,21 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
             if (matrix != null && matrix != Matrix.IDENTITY)
                 tc.popMatrix();
         }
+    }
+
+    protected List<ColladaTriangleMesh> createShapes()
+    {
+        if (WWUtil.isEmpty(this.geometries))
+            return Collections.emptyList();
+
+        List<ColladaTriangleMesh> shapes = new ArrayList<ColladaTriangleMesh>();
+        for (ColladaInstanceGeometry geometry : this.geometries)
+        {
+            ColladaTriangleMesh shape = this.createShape(geometry);
+            if (shape != null)
+                shapes.add(shape);
+        }
+        return shapes;
     }
 
     protected ColladaTriangleMesh createShape(ColladaInstanceGeometry geomInstance)
@@ -149,6 +152,13 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
                 this.children = new ArrayList<ColladaRenderable>();
 
             this.children.add((ColladaRenderable) value);
+        }
+        else if ("instance_geometry".equals(keyName))
+        {
+            if (this.geometries == null)
+                this.geometries = new ArrayList<ColladaInstanceGeometry>();
+
+            this.geometries.add((ColladaInstanceGeometry) value);
         }
         else
         {
