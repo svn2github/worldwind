@@ -450,7 +450,7 @@ public class ColladaTriangleMesh extends AbstractGeneralShape
                 Material nextMaterial = geometry.material != null ? geometry.material : defaultMaterial;
 
                 // Apply new material if necessary
-                if (!nextMaterial.equals(activeMaterial))
+                if (!dc.isPickingMode() && !nextMaterial.equals(activeMaterial))
                 {
                     this.applyMaterial(dc, nextMaterial);
                     activeMaterial = nextMaterial;
