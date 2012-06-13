@@ -40,6 +40,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         super(ns);
     }
 
+    /** {@inheritDoc} */
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         List<ColladaRenderable> children = this.getChildren();
@@ -67,6 +68,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
     }
 
+    /** {@inheritDoc} */
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
         // Create shapes for this node, if necessary
@@ -100,6 +102,11 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
     }
 
+    /**
+     * Create shapes to render this node.
+     *
+     * @return List shapes. The list may be empty, but will never be null.
+     */
     protected List<ColladaMeshShape> createShapes()
     {
         if (WWUtil.isEmpty(this.geometries))
@@ -113,6 +120,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         return shapes;
     }
 
+    /**
+     * Create shapes for a geometry.
+     *
+     * @param geomInstance Geometry for which to create shapes.
+     * @param shapes       List to collect the new shapes.
+     */
     protected void createShapesForGeometry(ColladaInstanceGeometry geomInstance, List<ColladaMeshShape> shapes)
     {
         ColladaGeometry geometry = geomInstance.get();
@@ -127,21 +140,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
 
         ColladaRoot root = this.getRoot();
         Position position = root.getPosition();
-        Angle heading = Angle.ZERO; // TODO
-        Angle pitch = Angle.ZERO;
-        Angle roll = Angle.ZERO;
-        int altitudeMode = root.getAltitudeMode();
 
         List<ColladaTriangles> triangles = mesh.getTriangles();
         if (!WWUtil.isEmpty(triangles))
         {
             ColladaMeshShape newShape = ColladaMeshShape.createTriangleMesh(triangles, bindMaterial);
-
             newShape.setModelPosition(position);
-            newShape.setHeading(heading);
-            newShape.setPitch(heading);
-            newShape.setRoll(heading);
-            newShape.setAltitudeMode(altitudeMode);
 
             shapes.add(newShape);
         }
@@ -150,12 +154,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         if (!WWUtil.isEmpty(lines))
         {
             ColladaMeshShape newShape = ColladaMeshShape.createLineMesh(lines, bindMaterial);
-
             newShape.setModelPosition(position);
-            newShape.setHeading(heading);
-            newShape.setPitch(pitch);
-            newShape.setRoll(roll);
-            newShape.setAltitudeMode(altitudeMode);
 
             shapes.add(newShape);
         }
@@ -184,6 +183,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
     }
 
+    /**
+     * Indicates the children of this node. Children may be other node elements contained directly within this node, or
+     * other nodes referenced indirectly by a instance_node element.
+     *
+     * @return List of children. The list may be empty, but will never be null.
+     */
     protected List<ColladaRenderable> getChildren()
     {
         return this.children != null ? this.children : Collections.<ColladaRenderable>emptyList();

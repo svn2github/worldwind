@@ -7,7 +7,7 @@
 package gov.nasa.worldwind.ogc.kml.impl;
 
 import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.ogc.collada.impl.ColladaTraversalContext;
 import gov.nasa.worldwind.ogc.kml.*;
@@ -105,6 +105,9 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
      */
     protected void setColladaRoot(ColladaRoot root)
     {
+        if (root != null)
+            this.configureColladaRoot(root);
+
         this.colladaRoot.set(root);
     }
 
@@ -121,6 +124,52 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         return this.colladaRoot.get();
     }
 
+    /**
+     * Apply the model's position, orientation, and scale to a COLLADA root.
+     *
+     * @param root COLLADA root to configure.
+     */
+    protected void configureColladaRoot(ColladaRoot root)
+    {
+        root.setResourceResolver(this);
+
+        Position refPosition = this.model.getLocation().getPosition();
+        root.setPosition(refPosition);
+        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+
+        KMLOrientation orientation = this.model.getOrientation();
+        if (orientation != null)
+        {
+            Double d = orientation.getHeading();
+            if (d != null)
+                root.setHeading(Angle.fromDegrees(d));
+
+            d = orientation.getTilt();
+            if (d != null)
+                root.setPitch(Angle.fromDegrees(-d));
+
+            d = orientation.getRoll();
+            if (d != null)
+                root.setRoll(Angle.fromDegrees(-d));
+        }
+
+        KMLScale scale = this.model.getScale();
+        if (scale != null)
+        {
+            Double x = scale.getX();
+            Double y = scale.getY();
+            Double z = scale.getZ();
+
+            Vec4 modelScale = new Vec4(
+                x != null ? x : 1.0,
+                y != null ? y : 1.0,
+                z != null ? z : 1.0);
+
+            root.setModelScale(modelScale);
+        }
+    }
+
+    /** {@inheritDoc} */
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
         if (this.mustRetrieveResource())
@@ -134,6 +183,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         }
     }
 
+    /** {@inheritDoc} */
     public void render(KMLTraversalContext tc, DrawContext dc)
     {
         ColladaRoot root = this.getColladaRoot();
@@ -244,11 +294,6 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         ColladaRoot root = ColladaRoot.createAndParse(o);
         if (root == null)
             return;
-
-        Position refPosition = this.model.getLocation().getPosition();
-        root.setPosition(refPosition);
-        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
-        root.setResourceResolver(this);
 
         this.setColladaRoot(root);
         this.resourceRetrievalTime.set(System.currentTimeMillis());

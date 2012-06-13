@@ -35,8 +35,28 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     /** The parser context for the document. */
     protected ColladaParserContext parserContext;
 
+    /** This shape's geographic location. The altitude is relative to this shapes altitude mode. */
     protected Position position;
-    protected int altitudeMode;
+    /**
+     * This shape's altitude mode. May be one of {@link WorldWind#CLAMP_TO_GROUND}, {@link
+     * WorldWind#RELATIVE_TO_GROUND}, or {@link WorldWind#ABSOLUTE}.
+     */
+    protected int altitudeMode = WorldWind.CLAMP_TO_GROUND;
+
+    /** This shape's heading, positive values are clockwise from north. Null is an allowed value. */
+    protected Angle heading;
+    /**
+     * This shape's pitch (often called tilt), its rotation about the model's X axis. Positive values are clockwise.
+     * Null is an allowed value.
+     */
+    protected Angle pitch;
+    /**
+     * This shape's roll, its rotation about the model's Y axis. Positive values are clockwise. Null is an allowed
+     * Value.
+     */
+    protected Angle roll;
+    /** A scale to apply to the model. Null is an allowed value. */
+    protected Vec4 modelScale;
 
     /** Flag to indicate that the scene has been retrieved from the hash map. */
     protected boolean sceneFetched = false;
@@ -45,6 +65,12 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     /** Flag to indicate that the scale has been computed. */
     protected boolean scaleFetched = false;
     protected double scale;
+
+    /**
+     * Transform matrix computed from the document's scale and orientation. This matrix is computed and cached during
+     * when the document is rendered.
+     */
+    protected Matrix matrix;
 
     protected ColladaResourceResolver resourceResolver;
 
@@ -212,11 +238,23 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return this.colladaDoc;
     }
 
+    /**
+     * Indicates this shape's geographic position.
+     *
+     * @return this shape's geographic position. The position's altitude is relative to this shape's altitude mode.
+     */
     public Position getPosition()
     {
         return this.position;
     }
 
+    /**
+     * Specifies this shape's geographic position. The position's altitude is relative to this shape's altitude mode.
+     *
+     * @param position this shape's geographic position.
+     *
+     * @throws IllegalArgumentException if the position is null.
+     */
     public void setPosition(Position position)
     {
         if (position == null)
@@ -229,14 +267,122 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.position = position;
     }
 
+    /**
+     * Returns this shape's altitude mode.
+     *
+     * @return this shape's altitude mode.
+     *
+     * @see #setAltitudeMode(int)
+     */
     public int getAltitudeMode()
     {
         return this.altitudeMode;
     }
 
+    /**
+     * Specifies this shape's altitude mode, one of {@link WorldWind#ABSOLUTE}, {@link WorldWind#RELATIVE_TO_GROUND} or
+     * {@link WorldWind#CLAMP_TO_GROUND}.
+     * <p/>
+     * Note: If the altitude mode is unrecognized, {@link WorldWind#ABSOLUTE} is used.
+     * <p/>
+     * Note: Subclasses may recognize additional altitude modes or may not recognize the ones described above.
+     *
+     * @param altitudeMode the altitude mode. The default value is {@link WorldWind#ABSOLUTE}.
+     */
     public void setAltitudeMode(int altitudeMode)
     {
         this.altitudeMode = altitudeMode;
+    }
+
+    /**
+     * Indicates this shape's heading, its rotation clockwise from north.
+     *
+     * @return this shape's heading, or null if no heading has been specified.
+     */
+    public Angle getHeading()
+    {
+        return this.heading;
+    }
+
+    /**
+     * Specifies this shape's heading, its rotation clockwise from north.
+     *
+     * @param heading this shape's heading. May be null.
+     */
+    public void setHeading(Angle heading)
+    {
+        this.heading = heading;
+        this.reset();
+    }
+
+    /**
+     * Indicates this shape's pitch -- often referred to as tilt -- the angle to rotate this shape's model about its X
+     * axis.
+     *
+     * @return this shape's pitch, or null if no pitch has been specified. Positive values are clockwise as observed
+     *         looking along the model's X axis toward the model's origin.
+     */
+    public Angle getPitch()
+    {
+        return this.pitch;
+    }
+
+    /**
+     * Specifies this shape's pitch -- often referred to as tilt -- the angle to rotate this shape's model about its X
+     * axis.
+     *
+     * @param pitch this shape's pitch. Positive values are clockwise as observed looking along the model's X axis
+     *              toward the model's origin. May be null.
+     */
+    public void setPitch(Angle pitch)
+    {
+        this.pitch = pitch;
+        this.reset();
+    }
+
+    /**
+     * Indicates this shape's roll, the angle to rotate this shape's model about its Y axis.
+     *
+     * @return this shape's roll, or null if no roll has been specified. Positive values are clockwise as observed
+     *         looking along the model's Y axis toward the origin.
+     */
+    public Angle getRoll()
+    {
+        return this.roll;
+    }
+
+    /**
+     * Specifies this shape's roll, the angle to rotate this shape's model about its Y axis.
+     *
+     * @param roll this shape's roll. May be null. Positive values are clockwise as observed looking along the model's Y
+     *             axis toward the origin.
+     */
+    public void setRoll(Angle roll)
+    {
+        this.roll = roll;
+        this.reset();
+    }
+
+    /**
+     * Indicates this shape's scale, if any.
+     *
+     * @return this shape's scale, or null if no scale has been specified.
+     */
+    public Vec4 getModelScale()
+    {
+        return this.modelScale;
+    }
+
+    /**
+     * Specifies this shape's scale. The scale is applied to the shape's model definition in the model's coordinate
+     * system prior to oriented and positioning the model.
+     *
+     * @param modelScale this shape's scale. May be null, in which case no scaling is applied.
+     */
+    public void setModelScale(Vec4 modelScale)
+    {
+        this.modelScale = modelScale;
+        this.reset();
     }
 
     public ColladaResourceResolver getResourceResolver()
@@ -590,9 +736,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
-        // Apply scaling factor to convert file units to meters.
-        double scale = this.getScale();
-        tc.multiplyMatrix(Matrix.fromScale(scale));
+        tc.multiplyMatrix(this.getMatrix());
 
         // COLLADA doc contains at most one scene. See COLLADA spec pg 5-67.
         ColladaScene scene = this.getScene();
@@ -602,13 +746,44 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
-        // Apply scaling factor to convert file units to meters.
-        double scale = this.getScale();
-        tc.multiplyMatrix(Matrix.fromScale(scale));
+        tc.multiplyMatrix(this.getMatrix());
 
         ColladaScene scene = this.getScene();
         if (scene != null)
             scene.render(tc, dc);
+    }
+
+    /**
+     * Indicates the transform matrix applied to this document.
+     *
+     * @return Transform matrix.
+     */
+    protected Matrix getMatrix()
+    {
+        // If the matrix has already been computed then just return the cached value.
+        if (this.matrix != null)
+            return this.matrix;
+
+        Matrix m = Matrix.IDENTITY;
+
+        if (this.heading != null)
+            m = m.multiply(Matrix.fromRotationZ(Angle.POS360.subtract(this.heading)));
+
+        if (this.pitch != null)
+            m = m.multiply(Matrix.fromRotationX(this.pitch));
+
+        if (this.roll != null)
+            m = m.multiply(Matrix.fromRotationY(this.roll));
+
+        // Apply scaling factor to convert file units to meters.
+        double scale = this.getScale();
+        m = m.multiply(Matrix.fromScale(scale));
+
+        if (this.modelScale != null)
+            m = m.multiply(Matrix.fromScale(this.modelScale));
+
+        this.matrix = m;
+        return m;
     }
 
     protected double getScale()
@@ -638,6 +813,11 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
                 scale = unit.getMeter();
         }
         return (scale != null) ? scale : 1.0;
+    }
+
+    protected void reset()
+    {
+        this.matrix = null;
     }
 
     protected XMLEventParserContext getParserContext()

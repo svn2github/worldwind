@@ -8,8 +8,8 @@ package gov.nasa.worldwind.ogc.collada.impl;
 
 import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.cache.GpuResourceCache;
-import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.*;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
@@ -777,8 +777,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
      * @param dc the current draw context
      *
      * @return the modelview transform for this shape.
-     *
-     * @throws IllegalArgumentException if draw context is null or the referencePoint is null
      */
     protected Matrix computeRenderMatrix(DrawContext dc)
     {
@@ -789,16 +787,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
         Position refPosition = dc.getGlobe().computePositionFromPoint(current.referenceCenter);
 
         Matrix matrix = dc.getGlobe().computeSurfaceOrientationAtPosition(refPosition);
-
-        if (this.heading != null)
-            matrix = matrix.multiply(Matrix.fromRotationZ(Angle.POS360.subtract(this.heading)));
-
-        if (this.pitch != null)
-            matrix = matrix.multiply(Matrix.fromRotationX(this.pitch));
-
-        if (this.roll != null)
-            matrix = matrix.multiply(Matrix.fromRotationY(this.roll));
-
         return matrix.multiply(current.renderMatrix);
     }
 
