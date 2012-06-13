@@ -160,6 +160,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
 
         this.parsers.put(new QName(ns, "visual_scene"), new ColladaVisualScene(ns));
         this.parsers.put(new QName(ns, "triangles"), new ColladaTriangles(ns));
+        this.parsers.put(new QName(ns, "lines"), new ColladaLines(ns));
         this.parsers.put(new QName(ns, "extra"), new ColladaExtra(ns));
 
         this.addStringParsers(ns, StringFields);

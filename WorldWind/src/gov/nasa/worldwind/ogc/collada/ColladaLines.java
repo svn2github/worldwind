@@ -7,14 +7,14 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Triangles</i> element and provides access to its contents.
+ * Represents the Collada <i>Lines</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaTriangles extends ColladaAbstractGeometry
+public class ColladaLines extends ColladaAbstractGeometry
 {
-    public ColladaTriangles(String ns)
+    public ColladaLines(String ns)
     {
         super(ns);
     }
@@ -22,6 +22,6 @@ public class ColladaTriangles extends ColladaAbstractGeometry
     @Override
     protected int getVerticesPerShape()
     {
-        return 3;
+        return 2;
     }
 }

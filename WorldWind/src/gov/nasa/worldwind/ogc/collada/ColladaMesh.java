@@ -17,8 +17,11 @@ import java.util.*;
 public class ColladaMesh extends ColladaAbstractObject
 {
     protected List<ColladaSource> sources = new ArrayList<ColladaSource>();
-    protected List<ColladaTriangles> triangles = new ArrayList<ColladaTriangles>();
     protected List<ColladaVertices> vertices = new ArrayList<ColladaVertices>();
+
+    // Most meshes contain either triangles or lines. Lazily allocate these lists.
+    protected List<ColladaTriangles> triangles;
+    protected List<ColladaLines> lines;
 
     public ColladaMesh(String ns)
     {
@@ -32,7 +35,12 @@ public class ColladaMesh extends ColladaAbstractObject
 
     public List<ColladaTriangles> getTriangles()
     {
-        return this.triangles;
+        return this.triangles != null ? this.triangles : Collections.<ColladaTriangles>emptyList();
+    }
+
+    public List<ColladaLines> getLines()
+    {
+        return this.lines != null ? this.lines : Collections.<ColladaLines>emptyList();
     }
 
     public List<ColladaVertices> getVertices()
@@ -53,28 +61,21 @@ public class ColladaMesh extends ColladaAbstractObject
         }
         else if (keyName.equals("triangles"))
         {
+            if (this.triangles == null)
+                this.triangles = new ArrayList<ColladaTriangles>();
+
             this.triangles.add((ColladaTriangles) value);
+        }
+        else if (keyName.equals("lines"))
+        {
+            if (this.lines == null)
+                this.lines = new ArrayList<ColladaLines>();
+
+            this.lines.add((ColladaLines) value);
         }
         else
         {
             super.setField(keyName, value);
-        }
-    }
-
-    @Override
-    public Object getField(String keyName)
-    {
-        if (keyName.equals("source"))
-        {
-            return this.sources.get(0);
-        }
-        else if (keyName.equals("triangles"))
-        {
-            return this.triangles.get(0);
-        }
-        else
-        {
-            return super.getField(keyName);
         }
     }
 }

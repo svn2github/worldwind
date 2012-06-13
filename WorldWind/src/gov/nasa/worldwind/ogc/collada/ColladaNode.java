@@ -30,7 +30,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     protected List<ColladaInstanceGeometry> geometries;
 
     /** Shape used to render geometry in this node. */
-    protected List<ColladaTriangleMesh> shapes;
+    protected List<ColladaMeshShape> shapes;
 
     /** Transform matrix for this node. */
     protected Matrix matrix;
@@ -83,7 +83,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
             }
 
             Matrix traversalMatrix = tc.peekMatrix();
-            for (ColladaTriangleMesh shape : this.shapes)
+            for (ColladaMeshShape shape : this.shapes)
             {
                 shape.render(dc, traversalMatrix);
             }
@@ -100,47 +100,65 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         }
     }
 
-    protected List<ColladaTriangleMesh> createShapes()
+    protected List<ColladaMeshShape> createShapes()
     {
         if (WWUtil.isEmpty(this.geometries))
             return Collections.emptyList();
 
-        List<ColladaTriangleMesh> shapes = new ArrayList<ColladaTriangleMesh>();
+        List<ColladaMeshShape> shapes = new ArrayList<ColladaMeshShape>();
         for (ColladaInstanceGeometry geometry : this.geometries)
         {
-            ColladaTriangleMesh shape = this.createShape(geometry);
-            if (shape != null)
-                shapes.add(shape);
+            this.createShapesForGeometry(geometry, shapes);
         }
         return shapes;
     }
 
-    protected ColladaTriangleMesh createShape(ColladaInstanceGeometry geomInstance)
+    protected void createShapesForGeometry(ColladaInstanceGeometry geomInstance, List<ColladaMeshShape> shapes)
     {
         ColladaGeometry geometry = geomInstance.get();
         if (geometry == null)
-            return null;
+            return;
 
         ColladaMesh mesh = geometry.getMesh();
         if (mesh == null)
-            return null;
-
-        List<ColladaTriangles> triangles = mesh.getTriangles();
-        if (WWUtil.isEmpty(triangles))
-            return null;
-        // TODO support lines geometry
+            return;
 
         ColladaBindMaterial bindMaterial = geomInstance.getBindMaterial();
 
-        ColladaTriangleMesh newShape = new ColladaTriangleMesh(triangles, bindMaterial);
+        ColladaRoot root = this.getRoot();
+        Position position = root.getPosition();
+        Angle heading = Angle.ZERO; // TODO
+        Angle pitch = Angle.ZERO;
+        Angle roll = Angle.ZERO;
+        int altitudeMode = root.getAltitudeMode();
 
-        newShape.setModelPosition(this.getRoot().getPosition());
-        newShape.setHeading(Angle.ZERO); // TODO
-        newShape.setPitch(Angle.ZERO);
-        newShape.setRoll(Angle.ZERO);
-        newShape.setAltitudeMode(this.getRoot().getAltitudeMode());
+        List<ColladaTriangles> triangles = mesh.getTriangles();
+        if (!WWUtil.isEmpty(triangles))
+        {
+            ColladaMeshShape newShape = ColladaMeshShape.createTriangleMesh(triangles, bindMaterial);
 
-        return newShape;
+            newShape.setModelPosition(position);
+            newShape.setHeading(heading);
+            newShape.setPitch(heading);
+            newShape.setRoll(heading);
+            newShape.setAltitudeMode(altitudeMode);
+
+            shapes.add(newShape);
+        }
+
+        List<ColladaLines> lines = mesh.getLines();
+        if (!WWUtil.isEmpty(lines))
+        {
+            ColladaMeshShape newShape = ColladaMeshShape.createLineMesh(lines, bindMaterial);
+
+            newShape.setModelPosition(position);
+            newShape.setHeading(heading);
+            newShape.setPitch(pitch);
+            newShape.setRoll(roll);
+            newShape.setAltitudeMode(altitudeMode);
+
+            shapes.add(newShape);
+        }
     }
 
     @Override
