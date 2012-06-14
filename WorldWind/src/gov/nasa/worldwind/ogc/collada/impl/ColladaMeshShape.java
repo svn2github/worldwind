@@ -23,6 +23,12 @@ import java.util.*;
 import java.util.List;
 
 /**
+ * Shape to render a COLLADA line or triangle mesh. An instance of this shape can render any number of {@link
+ * ColladaLines} or {@link ColladaTriangles}, but a single instance cannot render both lines and triangles. New
+ * instances are created by {@link #createTriangleMesh(java.util.List, gov.nasa.worldwind.ogc.collada.ColladaBindMaterial)
+ * createTriangleMesh} and {@link #createLineMesh(java.util.List, gov.nasa.worldwind.ogc.collada.ColladaBindMaterial)
+ * createLineMesh}.
+ *
  * @author pabercrombie
  * @version $Id$
  */
@@ -36,8 +42,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
      */
     public static class ColladaOrderedRenderable implements OrderedRenderable
     {
+        /** Shape to render. */
         protected ColladaMeshShape mesh;
+        /** Distance from the eye to the shape's reference position. */
         protected double eyeDistance;
+        /** Transform applied to this instance of the mesh. */
         protected Matrix renderMatrix;
 
         public ColladaOrderedRenderable(ColladaMeshShape mesh, Matrix renderMatrix, double eyeDistance)
@@ -84,7 +93,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         protected Vec4 referenceCenter;
     }
 
-    /** Geometry and attributes of a COLLADA Triangles element. */
+    /** Geometry and attributes of a COLLADA {@code triangles} or {@code lines} element. */
     protected static class Geometry
     {
         protected ColladaAbstractGeometry colladaGeometry;
@@ -103,24 +112,24 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
-    protected static final int TEX_COORDS_PER_VERT = 2;
-    protected static final int COORDS_PER_VERT = 3;
-
+    /** OpenGL element type for this shape (GL.GL_LINES or GL.GL_TRIANGLES). */
     protected int elementType;
+    /** Number of vertices per shape. Two in the case of a line mesh, three in the case of a triangle mesh. */
     protected int vertsPerShape;
 
     /** Total number of shapes (lines or triangles) in this mesh. Equal to the sum of the shapes in each geometry. */
     protected int shapeCount;
 
+    /** Material applied to this mesh. */
+    protected ColladaBindMaterial bindMaterial;
+
+    /** Geometry objects that describe different parts of the mesh. */
+    protected List<Geometry> geometries;
+
     /**
      * The vertex data buffer for this shape data. The first half contains vertex coordinates, the second half contains
      * normals.
      */
-    protected ColladaBindMaterial bindMaterial;
-
-    protected List<Geometry> geometries;
-
-    /** Vertex coordinates for all geometries in this shape. */
     protected FloatBuffer coordBuffer;
     /** The slice of the <code>coordBuffer</code> that contains normals. */
     protected FloatBuffer normalBuffer;
@@ -134,27 +143,46 @@ public class ColladaMeshShape extends AbstractGeneralShape
     /**
      * Create a triangle mesh shape.
      *
-     * @param geometries COLLADA elements that defines geometry for this shape.
+     * @param geometries   COLLADA elements that defines geometry for this shape. Must contain at least one element.
+     * @param bindMaterial Material applied to the mesh. May be null.
      */
     public static ColladaMeshShape createTriangleMesh(List<ColladaTriangles> geometries,
         ColladaBindMaterial bindMaterial)
     {
-        return new ColladaMeshShape(geometries, bindMaterial, GL.GL_TRIANGLES, 3);
+        ColladaMeshShape shape = new ColladaMeshShape(geometries);
+
+        shape.bindMaterial = bindMaterial;
+        shape.elementType = GL.GL_TRIANGLES;
+        shape.vertsPerShape = 3;
+
+        return shape;
     }
 
     /**
      * Create a line mesh shape.
      *
-     * @param geometries COLLADA elements that defines geometry for this shape.
+     * @param geometries   COLLADA elements that defines geometry for this shape. Must contain at least one element.
+     * @param bindMaterial Material applied to the mesh. May be null.
      */
     public static ColladaMeshShape createLineMesh(List<ColladaLines> geometries,
         ColladaBindMaterial bindMaterial)
     {
-        return new ColladaMeshShape(geometries, bindMaterial, GL.GL_LINES, 2);
+        ColladaMeshShape shape = new ColladaMeshShape(geometries);
+
+        shape.bindMaterial = bindMaterial;
+        shape.elementType = GL.GL_LINES;
+        shape.vertsPerShape = 2;
+
+        return shape;
     }
 
-    protected ColladaMeshShape(List<? extends ColladaAbstractGeometry> geometries, ColladaBindMaterial bindMaterial,
-        int elementType, int vertsPerShape)
+    /**
+     * Create an instance of the shape.
+     *
+     * @param geometries Geometries to render. All geometries must be of the same type (either {@link ColladaTriangles}
+     *                   or {@link ColladaLines}.
+     */
+    protected ColladaMeshShape(List<? extends ColladaAbstractGeometry> geometries)
     {
         if (WWUtil.isEmpty(geometries))
         {
@@ -169,10 +197,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
             this.geometries.add(new Geometry(geometry));
             this.shapeCount += geometry.getCount();
         }
-
-        this.bindMaterial = bindMaterial;
-        this.vertsPerShape = vertsPerShape;
-        this.elementType = elementType;
     }
 
     @Override
@@ -424,7 +448,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
             if (vboIds == null)
             {
                 FloatBuffer vb = this.coordBuffer;
-                gl.glVertexPointer(COORDS_PER_VERT, GL.GL_FLOAT, 0, vb.rewind());
+                gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, vb.rewind());
             }
 
             boolean texturesEnabled = false;
@@ -455,7 +479,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
                     gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
                     gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
 
-                    gl.glTexCoordPointer(TEX_COORDS_PER_VERT, GL.GL_FLOAT, 0, this.textureCoordsBuffer.rewind());
+                    gl.glTexCoordPointer(ColladaAbstractGeometry.TEX_COORDS_PER_VERTEX, GL.GL_FLOAT, 0,
+                        this.textureCoordsBuffer.rewind());
                 }
                 else if (texturesEnabled)
                 {
@@ -497,7 +522,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         try
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-            gl.glVertexPointer(COORDS_PER_VERT, GL.GL_FLOAT, 0, 0);
+            gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, 0);
 
             if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
             {
@@ -588,14 +613,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
     protected void createGeometry(DrawContext dc)
     {
-        int size = this.shapeCount * this.vertsPerShape * COORDS_PER_VERT;
+        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
 
         // Capture the position at which normals buffer starts (in case there are normals)
         this.normalBufferPosition = size;
 
         if (this.mustCreateNormals(dc))
         {
-            size += (this.shapeCount * this.vertsPerShape * COORDS_PER_VERT);
+            size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX);
         }
 
         if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
@@ -633,7 +658,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         // Compute a bounding box around the vertices in this shape.
         this.coordBuffer.rewind();
-        box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer), COORDS_PER_VERT);
+        box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer),
+            ColladaAbstractGeometry.COORDS_PER_VERTEX);
 
         // Compute the corners of the bounding box and transform with the active transform matrix.
         Vec4[] corners = box.getCorners();
@@ -661,13 +687,22 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         for (Geometry geometry : this.geometries)
         {
-            geometry.colladaGeometry.getNormals(this.normalBuffer);
+            if (geometry.colladaGeometry.getNormalAccessor() != null)
+            {
+                geometry.colladaGeometry.getNormals(this.normalBuffer);
+            }
+            else
+            {
+                int thisSize = geometry.colladaGeometry.getCount() * this.vertsPerShape
+                    * ColladaAbstractGeometry.COORDS_PER_VERTEX;
+                this.normalBuffer.position(this.normalBuffer.position() + thisSize);
+            }
         }
     }
 
     protected void createTexCoords()
     {
-        int size = this.shapeCount * this.vertsPerShape * TEX_COORDS_PER_VERT;
+        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
 
         if (this.textureCoordsBuffer != null && this.textureCoordsBuffer.capacity() >= size)
             this.textureCoordsBuffer.clear();
@@ -683,7 +718,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
             }
             else
             {
-                int thisSize = geometry.colladaGeometry.getCount() * this.vertsPerShape * TEX_COORDS_PER_VERT;
+                int thisSize = geometry.colladaGeometry.getCount() * this.vertsPerShape
+                    * ColladaAbstractGeometry.TEX_COORDS_PER_VERTEX;
                 this.textureCoordsBuffer.position(this.textureCoordsBuffer.position() + thisSize);
             }
         }

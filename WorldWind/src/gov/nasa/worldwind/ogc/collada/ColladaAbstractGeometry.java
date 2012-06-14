@@ -25,13 +25,25 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
      */
     public static final String DEFAULT_TEX_COORD_SEMANTIC = "TEXCOORD";
 
-    protected static final int COORDS_PER_VERTEX = 3;
-    protected static final int TEX_COORDS_PER_VERTEX = 2;
+    /** Number of coordinates per vertex. */
+    public static final int COORDS_PER_VERTEX = 3;
+    /** Number of texture coordinates per vertex. */
+    public static final int TEX_COORDS_PER_VERTEX = 2;
 
     protected List<ColladaInput> inputs = new ArrayList<ColladaInput>();
 
+    /**
+     * Indicates the number of vertices per shape in the geometry.
+     *
+     * @return The number of vertices in each shape.
+     */
     protected abstract int getVerticesPerShape();
 
+    /**
+     * Create a new instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaAbstractGeometry(String ns)
     {
         super(ns);
@@ -158,7 +170,7 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
         indices.rewind();
         while (indices.hasRemaining())
         {
-            int i = indices.get();
+            int i = indices.get() * COORDS_PER_VERTEX;
             buffer.put(normals.get(i));
             buffer.put(normals.get(i + 1));
             buffer.put(normals.get(i + 2));
