@@ -68,6 +68,7 @@ public class KMLParserContext extends BasicXMLEventParserContext
             "viewFormat",
             "viewRefreshMode",
             "when",
+            "DocumentSource"
         };
 
     /** The names of elements that contain merely double data and can be parsed by a generic double parser. */

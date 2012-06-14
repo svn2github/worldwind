@@ -47,6 +47,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         {
             "drawOrder",
             "meter",
+            "double_sided" // Not part of core COLLADA spec, but included in most SketchUp models.
         };
 
     /**
