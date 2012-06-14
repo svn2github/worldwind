@@ -90,6 +90,12 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
 
         protected Matrix renderMatrix;
+        /**
+         * Matrix to orient the shape on the surface of the globe. Cached result of {@link
+         * gov.nasa.worldwind.globes.Globe#computeSurfaceOrientationAtPosition(gov.nasa.worldwind.geom.Position)}
+         * evaluated at the reference position.
+         */
+        protected Matrix surfaceOrientationMatrix;
         protected Vec4 referenceCenter;
     }
 
@@ -329,6 +335,10 @@ public class ColladaMeshShape extends AbstractGeneralShape
             && this.getTexture(geometry) != null;
     }
 
+    /**
+     * {@inheritDoc} Overridden because this shape uses {@link ColladaOrderedRenderable} to represent this drawn
+     * instance of the mesh in the ordered renderable queue.
+     */
     @Override
     protected void addOrderedRenderable(DrawContext dc)
     {
@@ -339,6 +349,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         dc.addOrderedRenderable(or);
     }
 
+    /**
+     * Draw the shape as an OrderedRenderable, using the specified transform matrix.
+     *
+     * @param dc             Current draw context.
+     * @param pickCandidates Pick candidates for this frame.
+     * @param matrix         Transform matrix to apply before trying shape. m
+     */
     protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates, Matrix matrix)
     {
         ShapeData current = (ShapeData) this.getCurrent();
@@ -501,6 +518,12 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    /**
+     * Draw one geometry in the mesh interior using vertex arrays.
+     *
+     * @param dc       Current draw context.
+     * @param geometry Geometry to draw.
+     */
     protected void doDrawInteriorVA(DrawContext dc, Geometry geometry)
     {
         GL gl = dc.getGL();
@@ -513,6 +536,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
         gl.glDrawArrays(this.elementType, geometry.offset, geometry.colladaGeometry.getCount() * this.vertsPerShape);
     }
 
+    /**
+     * Draw one geometry in the mesh interior using vertex buffer objects.
+     *
+     * @param dc       Current draw context.
+     * @param geometry Geometry to draw.
+     * @param vboIds   Array of vertex buffer identifiers. The first element of the array identifies the buffer that
+     *                 contains vertex coordinates and normal vectors.
+     */
     protected void doDrawInteriorVBO(DrawContext dc, Geometry geometry, int[] vboIds)
     {
         GL gl = dc.getGL();
@@ -780,12 +811,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
     {
         ShapeData current = (ShapeData) this.getCurrent();
 
-        // TODO cache some of these computations
-        current.referenceCenter = this.computeReferenceCenter(dc);
-        Position refPosition = dc.getGlobe().computePositionFromPoint(current.referenceCenter);
+        if (current.referenceCenter == null || current.isExpired(dc))
+        {
+            current.referenceCenter = this.computeReferenceCenter(dc);
 
-        Matrix matrix = dc.getGlobe().computeSurfaceOrientationAtPosition(refPosition);
-        return matrix.multiply(current.renderMatrix);
+            Position refPosition = dc.getGlobe().computePositionFromPoint(current.referenceCenter);
+            current.surfaceOrientationMatrix = dc.getGlobe().computeSurfaceOrientationAtPosition(refPosition);
+        }
+        return current.surfaceOrientationMatrix.multiply(current.renderMatrix);
     }
 
     //////////////////////////////////////////////////////////////////////
