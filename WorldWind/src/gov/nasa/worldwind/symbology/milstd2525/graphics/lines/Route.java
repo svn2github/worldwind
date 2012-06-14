@@ -55,6 +55,7 @@ public class Route extends AbstractMilStd2525TacticalGraphic implements Tactical
             TacGrpSidc.C2GM_AVN_LNE_ACDR,
             TacGrpSidc.C2GM_AVN_LNE_MRR,
             TacGrpSidc.C2GM_AVN_LNE_SAAFR,
+            TacGrpSidc.C2GM_AVN_LNE_UAR,
             TacGrpSidc.C2GM_AVN_LNE_LLTR);
     }
 
