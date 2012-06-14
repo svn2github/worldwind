@@ -225,7 +225,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
      */
     protected void initialize() throws IOException
     {
-        this.eventStream = this.getColladaDoc().getInputStream(); // TODO maybe wrap in buffered input stream
+        this.eventStream = new BufferedInputStream(this.getColladaDoc().getInputStream());
         this.eventReader = this.createReader(this.eventStream);
         if (this.eventReader == null)
             throw new WWRuntimeException(Logging.getMessage("XML.UnableToOpenDocument", this.getColladaDoc()));

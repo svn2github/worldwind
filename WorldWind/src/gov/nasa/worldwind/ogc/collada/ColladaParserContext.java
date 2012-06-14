@@ -163,6 +163,21 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "lines"), new ColladaLines(ns));
         this.parsers.put(new QName(ns, "extra"), new ColladaExtra(ns));
 
+        // The following elements are valid COLLADA markup, but are not used by World Wind.
+        parser = new ColladaUnsupported(ns);
+        this.parsers.put(new QName(ns, "library_cameras"), parser);
+        this.parsers.put(new QName(ns, "instance_camera"), parser);
+        this.parsers.put(new QName(ns, "camera"), parser);
+        this.parsers.put(new QName(ns, "lookat"), parser);
+        this.parsers.put(new QName(ns, "optics"), parser);
+        this.parsers.put(new QName(ns, "perspective"), parser);
+        this.parsers.put(new QName(ns, "orthographic"), parser);
+        this.parsers.put(new QName(ns, "znear"), parser);
+        this.parsers.put(new QName(ns, "zfar"), parser);
+        this.parsers.put(new QName(ns, "xfov"), parser);
+        this.parsers.put(new QName(ns, "yfov"), parser);
+        this.parsers.put(new QName(ns, "aspect_ratio"), parser);
+
         this.addStringParsers(ns, StringFields);
         this.addDoubleParsers(ns, DoubleFields);
         this.addIntegerParsers(ns, IntegerFields);
