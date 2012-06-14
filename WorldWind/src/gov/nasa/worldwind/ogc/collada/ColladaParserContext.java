@@ -127,6 +127,7 @@ public class ColladaParserContext extends BasicXMLEventParserContext
         this.parsers.put(new QName(ns, "node"), new ColladaNode(ns));
         this.parsers.put(new QName(ns, "matrix"), new ColladaMatrix(ns));
         this.parsers.put(new QName(ns, "bind_material"), new ColladaBindMaterial(ns));
+        this.parsers.put(new QName(ns, "bind_vertex_input"), new ColladaBindVertexInput(ns));
         this.parsers.put(new QName(ns, "scene"), new ColladaScene(ns));
 
         XMLEventParser parser = new ColladaTextureOrColor(ns);

@@ -28,7 +28,7 @@ public class ColladaEffect extends ColladaAbstractParamContainer
         return (ColladaProfileCommon) this.getField("profile_COMMON");
     }
 
-    public String getImageRef()
+    public ColladaTexture getTexture()
     {
         ColladaProfileCommon profile = this.getProfileCommon();
         if (profile == null)
@@ -46,51 +46,7 @@ public class ColladaEffect extends ColladaAbstractParamContainer
         if (diffuse == null)
             return null;
 
-        ColladaTexture texture = diffuse.getTexture();
-        if (texture == null)
-            return null;
-
-        String imageRef = this.getImageRef(texture);
-        if (imageRef == null)
-            return null;
-
-        // imageRef identifiers an <image> element (may be external). This element will give us the filename.
-        Object o = this.getRoot().resolveReference(imageRef);
-        if (o instanceof ColladaImage)
-            return ((ColladaImage) o).getInitFrom();
-
-        return null;
-    }
-
-    protected String getImageRef(ColladaTexture texture)
-    {
-        String sid = texture.getTexture();
-
-        ColladaNewParam param = this.getParam(sid);
-        if (param == null)
-            return null;
-
-        ColladaSampler2D sampler = param.getSampler2D();
-        if (sampler == null)
-            return null;
-
-        ColladaSource source = sampler.getSource();
-        if (source == null)
-            return null;
-
-        sid = source.getCharacters();
-        if (sid == null)
-            return null;
-
-        param = this.getParam(sid);
-        if (param == null)
-            return null;
-
-        ColladaSurface surface = param.getSurface();
-        if (surface != null)
-            return surface.getInitFrom();
-
-        return null;
+        return diffuse.getTexture();
     }
 
     public Material getMaterial()

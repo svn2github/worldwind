@@ -6,6 +6,8 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.util.Logging;
+
 import java.nio.*;
 import java.util.*;
 
@@ -17,6 +19,12 @@ import java.util.*;
  */
 public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
 {
+    /**
+     * Default semantic that identifies texture coordinates. Used the a file does not specify the semantic using a
+     * <i>bind_vertex_input</i> element.
+     */
+    public static final String DEFAULT_TEX_COORD_SEMANTIC = "TEXCOORD";
+
     protected static final int COORDS_PER_VERTEX = 3;
     protected static final int TEX_COORDS_PER_VERTEX = 2;
 
@@ -96,12 +104,23 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
         return (source != null) ? source.getAccessor() : null;
     }
 
-    public ColladaAccessor getTexCoordAccessor()
+    /**
+     * Indicates the accessor for texture coordinates.
+     *
+     * @param semantic Semantic that identifies the texture coordinates. May be null, in which case the semantic
+     *                 "TEXCOORD" is used.
+     *
+     * @return The texture coordinates accessor, or null if the accessor cannot be resolved.
+     */
+    public ColladaAccessor getTexCoordAccessor(String semantic)
     {
+        if (semantic == null)
+            semantic = DEFAULT_TEX_COORD_SEMANTIC;
+
         String sourceUri = null;
         for (ColladaInput input : this.getInputs())
         {
-            if ("TEXCOORD".equals(input.getSemantic()))
+            if (semantic.equals(input.getSemantic()))
             {
                 sourceUri = input.getSource();
                 break;
@@ -117,6 +136,13 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
 
     public void getNormals(FloatBuffer buffer)
     {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         // TODO don't allocate temp buffers here
 
         ColladaAccessor accessor = this.getNormalAccessor();
@@ -139,11 +165,21 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
         }
     }
 
-    public void getTextureCoordinates(FloatBuffer buffer)
+    public void getTextureCoordinates(FloatBuffer buffer, String semantic)
     {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         // TODO don't allocate temp buffers here
 
-        ColladaAccessor accessor = this.getTexCoordAccessor();
+        if (semantic == null)
+            semantic = DEFAULT_TEX_COORD_SEMANTIC;
+
+        ColladaAccessor accessor = this.getTexCoordAccessor(semantic);
         int count = accessor.size();
 
         FloatBuffer texCoords = FloatBuffer.allocate(count);
@@ -151,7 +187,7 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
 
         int vertsPerShape = this.getVerticesPerShape();
         IntBuffer indices = IntBuffer.allocate(this.getCount() * vertsPerShape);
-        this.getIndices("TEXCOORD", indices);
+        this.getIndices(semantic, indices);
 
         indices.rewind();
         while (indices.hasRemaining())
@@ -164,6 +200,13 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
 
     public void getVertices(FloatBuffer buffer)
     {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         // TODO don't allocate temp buffers here
 
         ColladaAccessor accessor = this.getVertexAccessor();

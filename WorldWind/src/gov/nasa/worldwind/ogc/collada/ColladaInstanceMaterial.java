@@ -6,6 +6,8 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import java.util.*;
+
 /**
  * Represents the Collada <i>Instance_Material</i> element and provides access to its contents.
  *
@@ -14,6 +16,8 @@ package gov.nasa.worldwind.ogc.collada;
  */
 public class ColladaInstanceMaterial extends ColladaAbstractInstance<ColladaMaterial>
 {
+    protected List<ColladaBindVertexInput> bindVertexInputs = new ArrayList<ColladaBindVertexInput>();
+
     public ColladaInstanceMaterial(String ns)
     {
         super(ns);
@@ -34,5 +38,29 @@ public class ColladaInstanceMaterial extends ColladaAbstractInstance<ColladaMate
     public String getUrl()
     {
         return this.getTarget();
+    }
+
+    /**
+     * Indicates the <i>bind_vertex_input</i> element.
+     *
+     * @return The bind_vertex_input elements, if present. Otherwise null.
+     */
+    public List<ColladaBindVertexInput> getBindVertexInputs()
+    {
+        return this.bindVertexInputs;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setField(String keyName, Object value)
+    {
+        if ("bind_vertex_input".equals(keyName))
+        {
+            this.bindVertexInputs.add((ColladaBindVertexInput) value);
+        }
+        else
+        {
+            super.setField(keyName, value);
+        }
     }
 }

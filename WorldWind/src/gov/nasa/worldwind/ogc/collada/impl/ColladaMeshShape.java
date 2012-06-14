@@ -300,48 +300,9 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
     protected boolean mustApplyTexture(Geometry geometry)
     {
-        return geometry.colladaGeometry.getTexCoordAccessor() != null
+        String semantic = this.getTexCoordSemantic(geometry);
+        return geometry.colladaGeometry.getTexCoordAccessor(semantic) != null
             && this.getTexture(geometry) != null;
-    }
-
-    protected String getTextureSource(ColladaAbstractGeometry colladaGeometry)
-    {
-        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
-        if (techniqueCommon == null)
-            return null;
-
-        String materialSource = colladaGeometry.getMaterial();
-        if (materialSource == null)
-            return null;
-
-        ColladaInstanceMaterial myMaterialInstance = null;
-        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
-        {
-            if (materialSource.equals(material.getSymbol()))
-            {
-                myMaterialInstance = material;
-                break;
-            }
-        }
-
-        if (myMaterialInstance == null)
-            return null;
-
-        // Attempt to resolve the instance. The material may not be immediately available.
-        ColladaMaterial myMaterial = myMaterialInstance.get();
-        if (myMaterial == null)
-            return null;
-
-        ColladaInstanceEffect myEffectInstance = myMaterial.getInstanceEffect();
-        if (myEffectInstance == null)
-            return null;
-
-        // Attempt to resolve effect. The effect may not be immediately available.
-        ColladaEffect myEffect = myEffectInstance.get();
-        if (myEffect == null)
-            return null;
-
-        return myEffect.getImageRef();
     }
 
     @Override
@@ -717,7 +678,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
         {
             if (this.mustApplyTexture(geometry))
             {
-                geometry.colladaGeometry.getTextureCoordinates(this.textureCoordsBuffer);
+                String semantic = this.getTexCoordSemantic(geometry);
+                geometry.colladaGeometry.getTextureCoordinates(this.textureCoordsBuffer, semantic);
             }
             else
             {
@@ -790,28 +752,21 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return matrix.multiply(current.renderMatrix);
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // Materials and textures
+    //////////////////////////////////////////////////////////////////////
+
+    /**
+     * Indicates the material applied to a geometry.
+     *
+     * @param geometry Geometry for which to find material.
+     *
+     * @return Material to apply to the geometry. If the COLLADA document does not define a material, this method return
+     *         a default material.
+     */
     protected Material getMaterial(Geometry geometry)
     {
-        if (this.bindMaterial == null)
-            return DEFAULT_INTERIOR_MATERIAL;
-
-        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
-        if (techniqueCommon == null)
-            return DEFAULT_INTERIOR_MATERIAL;
-
-        String materialSource = geometry.colladaGeometry.getMaterial();
-        if (materialSource == null)
-            return DEFAULT_INTERIOR_MATERIAL;
-
-        ColladaInstanceMaterial myMaterialInstance = null;
-        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
-        {
-            if (materialSource.equals(material.getSymbol()))
-            {
-                myMaterialInstance = material;
-                break;
-            }
-        }
+        ColladaInstanceMaterial myMaterialInstance = this.getInstanceMaterial(geometry);
 
         if (myMaterialInstance == null)
             return DEFAULT_INTERIOR_MATERIAL;
@@ -831,5 +786,213 @@ public class ColladaMeshShape extends AbstractGeneralShape
             return DEFAULT_INTERIOR_MATERIAL;
 
         return myEffect.getMaterial();
+    }
+
+    /**
+     * Indicates the <i>instance_material</i> element for a geometry.
+     *
+     * @param geometry Geometry for which to find material.
+     *
+     * @return Material for the specified geometry, or null if the material cannot be resolved.
+     */
+    protected ColladaInstanceMaterial getInstanceMaterial(Geometry geometry)
+    {
+        if (this.bindMaterial == null)
+            return null;
+
+        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
+        if (techniqueCommon == null)
+            return null;
+
+        String materialSource = geometry.colladaGeometry.getMaterial();
+        if (materialSource == null)
+            return null;
+
+        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
+        {
+            if (materialSource.equals(material.getSymbol()))
+                return material;
+        }
+        return null;
+    }
+
+    /**
+     * Indicates the semantic that identifies texture coordinates. This may be specified for each material using a
+     * <i>bind_vertex_input</i> element.
+     *
+     * @param geometry Geometry for which to find semantic.
+     *
+     * @return The semantic string that identifies the texture coordinates, or null if the geometry does not define the
+     *         semantic.
+     */
+    protected String getTexCoordSemantic(Geometry geometry)
+    {
+        ColladaEffect effect = this.getEffect(geometry.colladaGeometry);
+        if (effect == null)
+            return null;
+
+        ColladaTexture texture = effect.getTexture();
+        if (texture == null)
+            return null;
+
+        String texcoord = texture.getTexCoord();
+        if (texcoord == null)
+            return null;
+
+        ColladaInstanceMaterial instanceMaterial = this.getInstanceMaterial(geometry);
+        String inputSemantic = null;
+
+        // Search bind_vertex_input to find the semantic that identifies the texture coords.
+        for (ColladaBindVertexInput bind : instanceMaterial.getBindVertexInputs())
+        {
+            if (texcoord.equals(bind.getSemantic()))
+                inputSemantic = bind.getInputSemantic();
+        }
+
+        return inputSemantic;
+    }
+
+    /**
+     * Indicates the source (file path or URL) of the texture applied to a geometry.
+     *
+     * @param geometry Geometry for which to find texture source.
+     *
+     * @return The source of the texture, or null if it cannot be resolved.
+     */
+    protected String getTextureSource(ColladaAbstractGeometry geometry)
+    {
+        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
+        if (techniqueCommon == null)
+            return null;
+
+        String materialSource = geometry.getMaterial();
+        if (materialSource == null)
+            return null;
+
+        ColladaInstanceMaterial myMaterialInstance = null;
+        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
+        {
+            if (materialSource.equals(material.getSymbol()))
+            {
+                myMaterialInstance = material;
+                break;
+            }
+        }
+
+        if (myMaterialInstance == null)
+            return null;
+
+        // Attempt to resolve the instance. The material may not be immediately available.
+        ColladaMaterial myMaterial = myMaterialInstance.get();
+        if (myMaterial == null)
+            return null;
+
+        ColladaInstanceEffect myEffectInstance = myMaterial.getInstanceEffect();
+        if (myEffectInstance == null)
+            return null;
+
+        // Attempt to resolve effect. The effect may not be immediately available.
+        ColladaEffect myEffect = myEffectInstance.get();
+        if (myEffect == null)
+            return null;
+
+        ColladaTexture texture = myEffect.getTexture();
+        if (texture == null)
+            return null;
+
+        String imageRef = this.getImageRef(myEffect, texture);
+        if (imageRef == null)
+            return null;
+
+        // imageRef identifiers an <image> element (may be external). This element will give us the filename.
+        Object o = geometry.getRoot().resolveReference(imageRef);
+        if (o instanceof ColladaImage)
+            return ((ColladaImage) o).getInitFrom();
+
+        return null;
+    }
+
+    /**
+     * Indicates the reference string for an image. The image reference identifies an <i>image</i> element in this, or
+     * another COLLADA file. For example, "#myImage".
+     *
+     * @param effect  Effect that defines the texture.
+     * @param texture Texture for which to find the image reference.
+     *
+     * @return The image reference, or null if it cannot be resolved.
+     */
+    protected String getImageRef(ColladaEffect effect, ColladaTexture texture)
+    {
+        String sid = texture.getTexture();
+
+        ColladaNewParam param = effect.getParam(sid);
+        if (param == null)
+            return null;
+
+        ColladaSampler2D sampler = param.getSampler2D();
+        if (sampler == null)
+            return null;
+
+        ColladaSource source = sampler.getSource();
+        if (source == null)
+            return null;
+
+        sid = source.getCharacters();
+        if (sid == null)
+            return null;
+
+        param = effect.getParam(sid);
+        if (param == null)
+            return null;
+
+        ColladaSurface surface = param.getSurface();
+        if (surface != null)
+            return surface.getInitFrom();
+
+        return null;
+    }
+
+    /**
+     * Indicates the effect applied to a geometry.
+     *
+     * @param geometry Geometry for which to find effect.
+     *
+     * @return Effect applied to the specified geometry, or null if no effect is defined, or the effect is not
+     *         available.
+     */
+    protected ColladaEffect getEffect(ColladaAbstractGeometry geometry)
+    {
+        ColladaTechniqueCommon techniqueCommon = this.bindMaterial.getTechniqueCommon();
+        if (techniqueCommon == null)
+            return null;
+
+        String materialSource = geometry.getMaterial();
+        if (materialSource == null)
+            return null;
+
+        ColladaInstanceMaterial myMaterialInstance = null;
+        for (ColladaInstanceMaterial material : techniqueCommon.getMaterials())
+        {
+            if (materialSource.equals(material.getSymbol()))
+            {
+                myMaterialInstance = material;
+                break;
+            }
+        }
+
+        if (myMaterialInstance == null)
+            return null;
+
+        // Attempt to resolve the instance. The material may not be immediately available.
+        ColladaMaterial myMaterial = myMaterialInstance.get();
+        if (myMaterial == null)
+            return null;
+
+        ColladaInstanceEffect myEffectInstance = myMaterial.getInstanceEffect();
+        if (myEffectInstance == null)
+            return null;
+
+        // Attempt to resolve effect. The effect may not be immediately available.
+        return myEffectInstance.get();
     }
 }

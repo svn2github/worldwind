@@ -6,31 +6,31 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.util.xml.*;
-
 /**
- * Base class for Collada parser classes.
+ * Represents the Collada <i>Bind_Vertex_Input</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
-public abstract class ColladaAbstractObject extends AbstractXMLEventParser
+public class ColladaBindVertexInput extends ColladaAbstractObject
 {
     /**
      * Construct an instance.
      *
      * @param namespaceURI the qualifying namespace URI. May be null to indicate no namespace qualification.
      */
-    protected ColladaAbstractObject(String namespaceURI)
+    public ColladaBindVertexInput(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    /** {@inheritDoc} Overridden to return ColladaRoot instead of a XMLEventParser. */
-    @Override
-    public ColladaRoot getRoot()
+    public String getSemantic()
     {
-        XMLEventParser root = super.getRoot();
-        return root instanceof ColladaRoot ? (ColladaRoot) root : null;
+        return (String) this.getField("semantic");
+    }
+
+    public String getInputSemantic()
+    {
+        return (String) this.getField("input_semantic");
     }
 }

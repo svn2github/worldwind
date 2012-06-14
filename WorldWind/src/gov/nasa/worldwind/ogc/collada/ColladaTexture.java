@@ -19,8 +19,23 @@ public class ColladaTexture extends ColladaAbstractObject
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>texture</i> attribute.
+     *
+     * @return The <i>texture</i> attribute, or null the attribute is not set.
+     */
     public String getTexture()
     {
         return (String) this.getField("texture");
+    }
+
+    /**
+     * Indicates the value of the <i>texcoord</i> attribute.
+     *
+     * @return The <i>texcoord</i> attribute, or null the attribute is not set.
+     */
+    public String getTexCoord()
+    {
+        return (String) this.getField("texcoord");
     }
 }
