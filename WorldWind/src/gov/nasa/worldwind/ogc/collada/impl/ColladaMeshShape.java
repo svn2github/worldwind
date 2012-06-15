@@ -32,7 +32,6 @@ import java.util.List;
  * @author pabercrombie
  * @version $Id$
  */
-// TODO extent computation does not handle nodes that are rendered multiple times with different transforms
 // TODO use drawElements instead of drawArrays
 public class ColladaMeshShape extends AbstractGeneralShape
 {
@@ -242,7 +241,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
 
         ShapeData current = (ShapeData) this.currentData;
+        boolean matrixChanged = matrix != current.renderMatrix;
         current.renderMatrix = matrix;
+
+        // Update the extent if the transform matrix has changed since the last time the shape was rendered. The shape
+        // may be rendered multiple times within a single frame with different transforms.
+        if (current.getExtent() == null || matrixChanged)
+            currentData.setExtent(this.computeExtent(dc));
 
         this.render(dc);
     }
@@ -683,31 +688,29 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
     protected Extent computeExtent(DrawContext dc)
     {
-        Box box;
-        List<Vec4> extrema = new ArrayList<Vec4>();
-        Matrix matrix = this.computeRenderMatrix(dc);
+        if (this.coordBuffer == null)
+            return null;
 
         // Compute a bounding box around the vertices in this shape.
         this.coordBuffer.rewind();
-        box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer),
+        Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(this.coordBuffer),
             ColladaAbstractGeometry.COORDS_PER_VERTEX);
 
+        Matrix matrix = this.computeRenderMatrix(dc);
+
         // Compute the corners of the bounding box and transform with the active transform matrix.
+        List<Vec4> extrema = new ArrayList<Vec4>();
         Vec4[] corners = box.getCorners();
         for (Vec4 corner : corners)
         {
-            extrema.add(corner.transformBy3(matrix));
+            extrema.add(corner.transformBy4(matrix));
         }
 
         if (extrema.isEmpty())
             return null;
 
         // Compute the bounding box around the transformed corners.
-        box = Box.computeBoundingBox(extrema);
-
-        Vec4 centerPoint = this.getCurrentData().getReferencePoint();
-
-        return box != null ? box.translate(centerPoint) : null;
+        return Box.computeBoundingBox(extrema);
     }
 
     /** Create this shape's vertex normals. */
