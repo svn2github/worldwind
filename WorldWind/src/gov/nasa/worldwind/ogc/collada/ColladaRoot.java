@@ -11,7 +11,7 @@ import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.ogc.collada.io.*;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.xml.*;
 
@@ -24,7 +24,7 @@ import java.net.*;
  * @author pabercrombie
  * @version $Id$
  */
-public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable
+public class ColladaRoot extends ColladaAbstractObject implements ColladaRenderable, Highlightable
 {
     /** Reference to the ColladaDoc representing the COLLADA file. */
     protected ColladaDoc colladaDoc;
@@ -65,6 +65,9 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     /** Flag to indicate that the scale has been computed. */
     protected boolean scaleFetched = false;
     protected double scale;
+
+    /** Indicates whether or not the COLLADA model is highlighted. */
+    protected boolean highlighted;
 
     /**
      * Transform matrix computed from the document's scale and orientation. This matrix is computed and cached during
@@ -393,6 +396,18 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
     public void setResourceResolver(ColladaResourceResolver resourceResolver)
     {
         this.resourceResolver = resourceResolver;
+    }
+
+    /** {@inheritDoc} */
+    public boolean isHighlighted()
+    {
+        return this.highlighted;
+    }
+
+    /** {@inheritDoc} Setting root COLLADA root highlighted causes all parts of the COLLADA model to highlight. */
+    public void setHighlighted(boolean highlighted)
+    {
+        this.highlighted = highlighted;
     }
 
     public Object resolveReference(String link)

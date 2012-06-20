@@ -84,9 +84,13 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
                 tc.multiplyMatrix(matrix);
             }
 
+            // Apply the root highlight state to shapes in this node.
+            boolean highlighted = this.getRoot().isHighlighted();
+
             Matrix traversalMatrix = tc.peekMatrix();
             for (ColladaMeshShape shape : this.shapes)
             {
+                shape.setHighlighted(highlighted);
                 shape.render(dc, traversalMatrix);
             }
 
@@ -146,6 +150,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         {
             ColladaMeshShape newShape = ColladaMeshShape.createTriangleMesh(triangles, bindMaterial);
             newShape.setModelPosition(position);
+            newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
         }
@@ -155,6 +160,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         {
             ColladaMeshShape newShape = ColladaMeshShape.createLineMesh(lines, bindMaterial);
             newShape.setModelPosition(position);
+            newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
         }
