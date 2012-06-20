@@ -11,7 +11,6 @@ import junit.framework.TestCase;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 
 /**
  * @author pabercrombie
@@ -137,10 +136,9 @@ public class ColladaAccessorTest extends TestCase
         ColladaRoot root = ColladaRoot.createAndParse(WWIO.getInputStreamFromString(doc));
         ColladaAccessor accessor = (ColladaAccessor) root.resolveReference("#accessor");
 
-        FloatBuffer buffer = FloatBuffer.allocate(accessor.size());
-        accessor.fillBuffer(buffer);
+        float[] actual = accessor.getFloats();
 
-        assertArrayEquals(expected, buffer.array());
+        assertArrayEquals(expected, actual);
     }
 
     protected boolean assertArrayEquals(float[] expected, float[] actual)

@@ -6,12 +6,11 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.xml.XMLEventParserContext;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.*;
-import java.nio.FloatBuffer;
 import java.util.*;
 
 /**
@@ -102,41 +101,25 @@ public class ColladaAccessor extends ColladaAbstractObject
      * Copies this accessor's content to a buffer. This method begins writing data at the buffer's current position, and
      * continues until the accessor is out of data.
      *
-     * @param buffer Buffer to fill. Must have remaining capacity at least equal to {@link #size()}.
-     *
-     * @return True if the buffer was filled successfully. False if the data source cannot be accessed.
+     * @return Array of floats. May return null if the data source is not available.
      */
-    public boolean fillBuffer(FloatBuffer buffer)
+    public float[] getFloats()
     {
-        if (buffer == null)
-        {
-            String message = Logging.getMessage("nullValue.BufferIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (buffer.remaining() < this.size())
-        {
-            String message = Logging.getMessage("generic.BufferOverflow", buffer.remaining(), this.size());
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
         String source = this.getSource();
         if (source == null)
-            return false;
+            return null;
 
         Object o = this.getRoot().resolveReference(source);
         if (o == null)
-            return false; // Source not available
+            return null; // Source not available
 
         // TODO: COLLADA spec says source can be a non-COLLADA document (pg 5-5)
         if (!(o instanceof ColladaFloatArray))
-            return false;
+            return null;
 
         float[] floats = ((ColladaFloatArray) o).getFloats();
         if (floats == null)
-            return false;
+            return null;
 
         // Skip values before the start offset
         int index = this.getOffset();
@@ -145,6 +128,9 @@ public class ColladaAccessor extends ColladaAbstractObject
         int stride = this.getStride();
         if (stride > this.params.size())
             strideSkip = stride - this.params.size();
+
+        float[] result = new float[this.size()];
+        int ri = 0;
 
         for (int i = 0; i < this.getCount() && index < floats.length; i++)
         {
@@ -156,7 +142,7 @@ public class ColladaAccessor extends ColladaAbstractObject
                 // Parse the next value and add to the buffer. Skip unnamed parameters.
                 // See COLLADA spec pg 5-5.
                 if (!WWUtil.isEmpty(param.getName()))
-                    buffer.put(floats[index]);
+                    result[ri++] = floats[index];
 
                 index += 1;
             }
@@ -165,7 +151,7 @@ public class ColladaAccessor extends ColladaAbstractObject
             index += strideSkip;
         }
 
-        return true;
+        return result;
     }
 
     /** {@inheritDoc} */

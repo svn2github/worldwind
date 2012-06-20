@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.collada;
 
 import gov.nasa.worldwind.util.Logging;
 
-import java.nio.*;
+import java.nio.FloatBuffer;
 import java.util.*;
 
 /**
@@ -30,6 +30,7 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
     /** Number of texture coordinates per vertex. */
     public static final int TEX_COORDS_PER_VERTEX = 2;
 
+    /** Inputs for the geometry. Inputs provide the geometry with vertices, texture coordinates, etc. */
     protected List<ColladaInput> inputs = new ArrayList<ColladaInput>();
 
     /**
@@ -49,19 +50,143 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
         super(ns);
     }
 
+    /**
+     * Indicates the inputs that provide vertices, textures coordinates, etc. to the geometry.
+     *
+     * @return Inputs to the geometry.
+     */
     public List<ColladaInput> getInputs()
     {
         return this.inputs;
     }
 
+    /**
+     * Indicates the number of shapes (lines or triangles) in the geometry.
+     *
+     * @return The number of shapes in the geometry.
+     */
     public int getCount()
     {
         return Integer.parseInt((String) this.getField("count"));
     }
 
+    /**
+     * Indicates the identifier for the material applied to this geometry.
+     *
+     * @return The material applied to this geometry. May be null.
+     */
     public String getMaterial()
     {
         return (String) this.getField("material");
+    }
+
+    /**
+     * Retrieves the coordinates of vertices in this geometry.
+     *
+     * @param buffer Buffer to receive coordinates.
+     */
+    public void getVertices(FloatBuffer buffer)
+    {
+        this.getFloatFromAccessor(buffer, this.getVertexAccessor(), "VERTEX", COORDS_PER_VERTEX);
+    }
+
+    /**
+     * Retrieves normal vectors in this geometry.
+     *
+     * @param buffer Buffer to receive coordinates.
+     */
+    public void getNormals(FloatBuffer buffer)
+    {
+        this.getFloatFromAccessor(buffer, this.getNormalAccessor(), "NORMAL", COORDS_PER_VERTEX);
+    }
+
+    /**
+     * Retrieves the texture coordinates of vertices in this geometry.
+     *
+     * @param buffer   Buffer to receive coordinates.
+     * @param semantic String to identify which input holds the texture coordinates. May be null, in which case the
+     *                 "TEXCOORD" is used.
+     */
+    public void getTextureCoordinates(FloatBuffer buffer, String semantic)
+    {
+        if (semantic == null)
+            semantic = DEFAULT_TEX_COORD_SEMANTIC;
+
+        this.getFloatFromAccessor(buffer, this.getTexCoordAccessor(semantic), semantic, TEX_COORDS_PER_VERTEX);
+    }
+
+    /**
+     * Retrieve numbers from an accessor.
+     *
+     * @param buffer          Buffer to receive floats.
+     * @param accessor        Accessor that will provide floats.
+     * @param semantic        Semantic that identifiers the set of indices to use (for example, "VERTEX" or "NORMAL").
+     * @param floatsPerVertex Number of floats to read for each vertex.
+     */
+    protected void getFloatFromAccessor(FloatBuffer buffer, ColladaAccessor accessor, String semantic,
+        int floatsPerVertex)
+    {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int vertsPerShape = this.getVerticesPerShape();
+        int indexCount = this.getCount() * vertsPerShape;
+
+        if (buffer.remaining() < indexCount * floatsPerVertex)
+        {
+            String msg = Logging.getMessage("generic.BufferSize");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int[] indices = this.getIndices(semantic);
+        float[] vertexCoords = accessor.getFloats();
+
+        for (int i : indices)
+        {
+            buffer.put(vertexCoords, i * floatsPerVertex, floatsPerVertex);
+        }
+    }
+
+    protected int[] getIndices(String semantic)
+    {
+        ColladaInput input = null;
+        for (ColladaInput in : this.getInputs())
+        {
+            if (semantic.equals(in.getSemantic()))
+            {
+                input = in;
+                break;
+            }
+        }
+        if (input == null)
+            return null;
+
+        ColladaP primitives = (ColladaP) this.getField("p");
+
+        int vertsPerShape = this.getVerticesPerShape();
+        int offset = input.getOffset();
+
+        int[] intData = primitives.getIndices();
+
+        int[] result = new int[this.getCount() * vertsPerShape];
+        int ri = 0;
+
+        int sourcesStride = this.getInputs().size();
+        for (int i = 0; i < this.getCount(); i++)
+        {
+            for (int j = 0; j < vertsPerShape; j++)
+            {
+                int index = i * (vertsPerShape * sourcesStride) + j * sourcesStride;
+                result[ri++] = intData[index + offset];
+            }
+        }
+
+        return result;
     }
 
     public ColladaAccessor getVertexAccessor()
@@ -146,154 +271,7 @@ public abstract class ColladaAbstractGeometry extends ColladaAbstractObject
         return (source != null) ? source.getAccessor() : null;
     }
 
-    public void getNormals(FloatBuffer buffer)
-    {
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.BufferIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // TODO don't allocate temp buffers here
-
-        ColladaAccessor accessor = this.getNormalAccessor();
-        int normalCount = accessor.size();
-
-        FloatBuffer normals = FloatBuffer.allocate(normalCount);
-        accessor.fillBuffer(normals);
-
-        int vertsPerShape = this.getVerticesPerShape();
-        IntBuffer indices = IntBuffer.allocate(this.getCount() * vertsPerShape);
-        this.getIndices("NORMAL", indices);
-
-        indices.rewind();
-        while (indices.hasRemaining())
-        {
-            int i = indices.get() * COORDS_PER_VERTEX;
-            buffer.put(normals.get(i));
-            buffer.put(normals.get(i + 1));
-            buffer.put(normals.get(i + 2));
-        }
-    }
-
-    public void getTextureCoordinates(FloatBuffer buffer, String semantic)
-    {
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.BufferIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // TODO don't allocate temp buffers here
-
-        if (semantic == null)
-            semantic = DEFAULT_TEX_COORD_SEMANTIC;
-
-        ColladaAccessor accessor = this.getTexCoordAccessor(semantic);
-        int count = accessor.size();
-
-        FloatBuffer texCoords = FloatBuffer.allocate(count);
-        accessor.fillBuffer(texCoords);
-
-        int vertsPerShape = this.getVerticesPerShape();
-        IntBuffer indices = IntBuffer.allocate(this.getCount() * vertsPerShape);
-        this.getIndices(semantic, indices);
-
-        indices.rewind();
-        while (indices.hasRemaining())
-        {
-            int i = indices.get() * TEX_COORDS_PER_VERTEX;
-            buffer.put(texCoords.get(i));
-            buffer.put(texCoords.get(i + 1));
-        }
-    }
-
-    public void getVertices(FloatBuffer buffer)
-    {
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.BufferIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // TODO don't allocate temp buffers here
-
-        ColladaAccessor accessor = this.getVertexAccessor();
-        int count = accessor.size();
-
-        FloatBuffer vertexCoords = FloatBuffer.allocate(count);
-        accessor.fillBuffer(vertexCoords);
-
-        int vertsPerShape = this.getVerticesPerShape();
-
-        IntBuffer indices = IntBuffer.allocate(this.getCount() * vertsPerShape);
-        this.getIndices("VERTEX", indices);
-
-        indices.rewind();
-        while (indices.hasRemaining())
-        {
-            int i = indices.get() * COORDS_PER_VERTEX;
-            buffer.put(vertexCoords.get(i));
-            buffer.put(vertexCoords.get(i + 1));
-            buffer.put(vertexCoords.get(i + 2));
-        }
-    }
-
-    public void getVertexIndices(IntBuffer buffer)
-    {
-        this.getIndices("VERTEX", buffer);
-    }
-
-    protected void getIndices(String semantic, IntBuffer buffer)
-    {
-        ColladaInput input = null;
-        for (ColladaInput in : this.getInputs())
-        {
-            if (semantic.equals(in.getSemantic()))
-            {
-                input = in;
-                break;
-            }
-        }
-        if (input == null)
-            return;
-
-        ColladaP primitives = (ColladaP) this.getField("p");
-
-        int offset = input.getOffset();
-
-        int[] intData = this.getIntArrayFromString((String) primitives.getField("CharactersContent"));
-
-        int vertsPerShape = this.getVerticesPerShape();
-
-        int sourcesStride = this.getInputs().size();
-        for (int i = 0; i < this.getCount(); i++)
-        {
-            for (int j = 0; j < vertsPerShape; j++)
-            {
-                int index = i * (vertsPerShape * sourcesStride) + j * sourcesStride;
-                buffer.put(intData[index + offset]);
-            }
-        }
-    }
-
-    protected int[] getIntArrayFromString(String floatArrayString)
-    {
-        String[] arrayOfNumbers = floatArrayString.split(" ");
-        int[] ints = new int[arrayOfNumbers.length];
-
-        int i = 0;
-        for (String s : arrayOfNumbers)
-        {
-            ints[i++] = Integer.parseInt(s);
-        }
-
-        return ints;
-    }
-
+    /** {@inheritDoc} */
     @Override
     public void setField(String keyName, Object value)
     {
