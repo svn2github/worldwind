@@ -209,7 +209,7 @@ public class Route extends AbstractMilStd2525TacticalGraphic implements Tactical
         {
             for (TacticalGraphic child : this.children)
             {
-                child.setAttributes(attributes);
+                child.setHighlightAttributes(attributes);
             }
         }
     }
