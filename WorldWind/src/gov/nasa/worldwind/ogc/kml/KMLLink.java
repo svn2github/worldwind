@@ -46,10 +46,6 @@ public class KMLLink extends KMLAbstractObject
     /** Scheduled task that will update the when it runs. Used to implement {@code onInterval} refresh mode. */
     protected ScheduledFuture refreshTask;
 
-    /** Flag to indicate that the refresh mode has been fetched from the hash map. */
-    protected boolean refreshModeFetched = false;
-    protected String refreshMode;
-
     /**
      * Construct an instance.
      *
@@ -67,12 +63,7 @@ public class KMLLink extends KMLAbstractObject
 
     public String getRefreshMode()
     {
-        if (!this.refreshModeFetched)
-        {
-            this.refreshMode = (String) this.getField("refreshMode");
-            this.refreshModeFetched = true;
-        }
-        return this.refreshMode;
+        return (String) this.getField("refreshMode");
     }
 
     public Double getRefreshInterval()
