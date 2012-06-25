@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Asset</i> element and provides access to its contents.
+ * Represents the COLLADA <i>asset</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaAsset extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaAsset(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the {@code unit} element.
+     *
+     * @return This Asset's unit field, or null if no unit is set.
+     */
     public ColladaUnit getUnit()
     {
         return (ColladaUnit) this.getField("unit");

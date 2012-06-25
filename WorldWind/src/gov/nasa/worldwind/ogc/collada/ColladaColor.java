@@ -7,13 +7,18 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Color</i> element and provides access to its contents.
+ * Represents the COLLADA <i>color</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaColor extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaColor(String ns)
     {
         super(ns);

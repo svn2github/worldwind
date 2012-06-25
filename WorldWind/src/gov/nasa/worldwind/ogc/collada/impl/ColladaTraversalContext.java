@@ -12,14 +12,18 @@ import gov.nasa.worldwind.util.Logging;
 import java.util.Stack;
 
 /**
+ * Context to keep track of state while a COLLADA document is traversed. The traversal context keeps track of the
+ * transform matrix stack that determines how COLLADA nodes are rendered.
+ *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaTraversalContext
 {
+    /** Transform matrix stack. */
     protected Stack<Matrix> matrixStack = new Stack<Matrix>();
 
-    /** Create a new traversal context. */
+    /** Create a new traversal context. The traversal matrix stack initially contains one element: the identity matrix. */
     public ColladaTraversalContext()
     {
         this.matrixStack = new Stack<Matrix>();

@@ -6,7 +6,7 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Image</i> element and provides access to its contents.
+ * Represents the COLLADA <i>image</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$

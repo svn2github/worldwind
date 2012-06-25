@@ -16,6 +16,7 @@ import java.util.*;
  */
 public class ColladaAbstractParamContainer extends ColladaAbstractObject
 {
+    /** Named <i>newparam</i> elements in the container. */
     protected Map<String, ColladaNewParam> newParams;
 
     /**
@@ -43,6 +44,7 @@ public class ColladaAbstractParamContainer extends ColladaAbstractObject
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setField(String keyName, Object value)
     {

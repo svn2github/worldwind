@@ -7,7 +7,7 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Input</i> element and provides access to its contents.
+ * Represents the COLLADA <i>input</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$

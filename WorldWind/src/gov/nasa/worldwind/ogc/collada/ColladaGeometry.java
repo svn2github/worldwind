@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Geometry</i> element and provides access to its contents.
+ * Represents the COLLADA <i>geometry</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaGeometry extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaGeometry(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the mesh contained by this geometry.
+     *
+     * @return The mesh element, or null if none is set.
+     */
     public ColladaMesh getMesh()
     {
         return (ColladaMesh) this.getField("mesh");

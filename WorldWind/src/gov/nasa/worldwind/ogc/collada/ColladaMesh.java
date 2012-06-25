@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Mesh</i> element and provides access to its contents.
+ * Represents the COLLADA <i>mesh</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$

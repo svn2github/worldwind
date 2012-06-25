@@ -7,13 +7,18 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Material</i> element and provides access to its contents.
+ * Represents the COLLADA <i>material</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaMaterial extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaMaterial(String ns)
     {
         super(ns);

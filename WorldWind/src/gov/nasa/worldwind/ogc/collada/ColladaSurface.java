@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Surface</i> element and provides access to its contents.
+ * Represents the COLLADA <i>surface</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaSurface extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaSurface(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the <i>init_from</i> field of this surface.
+     *
+     * @return The <i>init_from</i> field, or null if it is not set.
+     */
     public String getInitFrom()
     {
         return (String) this.getField("init_from");

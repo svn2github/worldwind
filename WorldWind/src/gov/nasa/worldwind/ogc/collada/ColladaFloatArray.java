@@ -13,25 +13,37 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
 /**
- * Represents the Collada <i>Float_Array</i> element and provides access to its contents.
+ * Represents the COLLADA <i>float_array</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaFloatArray extends ColladaAbstractObject
 {
+    /** Floats parsed from this element. */
     protected float[] floats;
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaFloatArray(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the float array contained in this element.
+     *
+     * @return Floats contained in this element. May return an empty array, but will not return null.
+     */
     public float[] getFloats()
     {
-        return this.floats;
+        return (this.floats != null) ? this.floats : new float[0];
     }
 
+    /** {@inheritDoc} Overridden to parse character content into a float[]. */
     @Override
     public Object parse(XMLEventParserContext ctx, XMLEvent event, Object... args) throws XMLStreamException
     {
@@ -50,6 +62,13 @@ public class ColladaFloatArray extends ColladaAbstractObject
         return this;
     }
 
+    /**
+     * Parse a string of floats into an array.
+     *
+     * @param floatArrayString String of floats separated by whitespace.
+     *
+     * @return Array of parsed floats.
+     */
     protected float[] parseFloats(String floatArrayString)
     {
         String[] arrayOfNumbers = floatArrayString.split(" ");

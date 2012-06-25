@@ -11,23 +11,39 @@ import gov.nasa.worldwind.render.Material;
 import java.awt.*;
 
 /**
- * Represents the Collada <i>Effect</i> element and provides access to its contents.
+ * Represents the COLLADA <i>effect</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaEffect extends ColladaAbstractParamContainer
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaEffect(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>profile_COMMON</i> field.
+     *
+     * @return The value of the <i>profile_COMMON</i> field, or null if the field is not set.
+     */
     public ColladaProfileCommon getProfileCommon()
     {
         return (ColladaProfileCommon) this.getField("profile_COMMON");
     }
 
+    /**
+     * Indicates the <i>texture</i> specified by this <i>effect</i>. The texture is specified by the <i>diffuse</i>
+     * field of the shader specified by the <i>profile_COMMON</i> element.
+     *
+     * @return The texture specified by this effect, or null if the texture cannot be resolved.
+     */
     public ColladaTexture getTexture()
     {
         ColladaProfileCommon profile = this.getProfileCommon();
@@ -49,6 +65,12 @@ public class ColladaEffect extends ColladaAbstractParamContainer
         return diffuse.getTexture();
     }
 
+    /**
+     * Indicates the material specified by this effect. Material is specified by the shader in the <i>profile_COMMON</i>
+     * element.
+     *
+     * @return The material for this effect, or null if the material cannot be resolved.
+     */
     public Material getMaterial()
     {
         ColladaProfileCommon profile = this.getProfileCommon();

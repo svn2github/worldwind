@@ -13,7 +13,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
 /**
- * Represents the Collada <i>P</i> element and provides access to its contents.
+ * Represents the COLLADA <i>p</i> element and provides access to its contents. The <i>p</i> element is a sort of
+ * indirect index that determines how vertices, normals, and texture coordinates are read from the <i>input</i>s. This
+ * tutorial is helpful for understanding how the <i>p</i> element relates to COLLADA geometry: <a
+ * href="http://www.wazim.com/Collada_Tutorial_1.htm" target="_blank">http://www.wazim.com/Collada_Tutorial_1.htm</a>.
  *
  * @author pabercrombie
  * @version $Id$

@@ -7,18 +7,29 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Source</i> element and provides access to its contents.
+ * Represents the COLLADA <i>source</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaSource extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaSource(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>accessor</i> field of the <i>technique_common</i> field.
+     *
+     * @return The value of the <i>accessor</i> field, or null if either the <i>accessor</i> or <i>technique_common</i>
+     *         is not set.
+     */
     public ColladaAccessor getAccessor()
     {
         // Handles only the COLLADA Common profile

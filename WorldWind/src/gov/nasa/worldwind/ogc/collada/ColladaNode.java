@@ -14,7 +14,7 @@ import gov.nasa.worldwind.util.WWUtil;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Node</i> element and provides access to its contents.
+ * Represents the COLLADA <i>node</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
@@ -35,6 +35,11 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
     /** Transform matrix for this node. */
     protected Matrix matrix;
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaNode(String ns)
     {
         super(ns);
@@ -200,6 +205,11 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         return this.children != null ? this.children : Collections.<ColladaRenderable>emptyList();
     }
 
+    /**
+     * Indicates the transform matrix specified in this node.
+     *
+     * @return The matrix specified in this node. Returns the identity matrix if the node does not specify a matrix.
+     */
     protected Matrix getMatrix()
     {
         if (this.matrix != null)
@@ -223,6 +233,13 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         return this.matrix;
     }
 
+    /**
+     * Parse a string of doubles into a double[].
+     *
+     * @param doubleArrayString String of doubles, separated by whitespace.
+     *
+     * @return Parsed double[]
+     */
     protected double[] parseDoubleArray(String doubleArrayString)
     {
         String[] arrayOfNumbers = doubleArrayString.trim().split("\\s+");

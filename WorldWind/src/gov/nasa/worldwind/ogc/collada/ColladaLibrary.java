@@ -13,7 +13,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.util.*;
 
 /**
- * Represents the Collada Library element and provides access to its contents. This class can be used for any library
+ * Represents the COLLADA Library element and provides access to its contents. This class can be used for any library
  * element (library_nodes, library_effects, etc.) by specifying a generic parameter that defines the parser for the
  * elements in the library. For example new ColladaLibrary&lt;ColladaNode&gt;(ns) creates a library of ColladaNodes.
  *
@@ -30,6 +30,11 @@ public class ColladaLibrary<T> extends ColladaAbstractObject
     /** Elements in the library. */
     protected List<T> elements = new ArrayList<T>();
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaLibrary(String ns)
     {
         super(ns);

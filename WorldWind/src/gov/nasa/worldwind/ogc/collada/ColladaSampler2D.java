@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Sampler2D</i> element and provides access to its contents.
+ * Represents the COLLADA <i>sampler2D</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaSampler2D extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaSampler2D(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>source</i> field.
+     *
+     * @return The value of the <i>source</i> field, or null if the field is not set.
+     */
     public ColladaSource getSource()
     {
         return (ColladaSource) this.getField("source");

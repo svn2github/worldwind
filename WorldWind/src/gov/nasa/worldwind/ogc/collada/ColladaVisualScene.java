@@ -12,25 +12,37 @@ import gov.nasa.worldwind.render.DrawContext;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Visual_Scene</i> element and provides access to its contents.
+ * Represents the COLLADA <i>visual_scene</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaVisualScene extends ColladaAbstractObject implements ColladaRenderable
 {
+    /** Nodes in this scene. */
     protected List<ColladaNode> nodes = new ArrayList<ColladaNode>();
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaVisualScene(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the nodes in the scene.
+     *
+     * @return List of nodes. May return an empty list, but never returns null.
+     */
     public List<ColladaNode> getNodes()
     {
         return this.nodes;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setField(String keyName, Object value)
     {
@@ -44,6 +56,7 @@ public class ColladaVisualScene extends ColladaAbstractObject implements Collada
         }
     }
 
+    /** {@inheritDoc} Renders all nodes in this scene. */
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         for (ColladaNode node : this.getNodes())
@@ -52,6 +65,7 @@ public class ColladaVisualScene extends ColladaAbstractObject implements Collada
         }
     }
 
+    /** {@inheritDoc} Renders all nodes in this scene. */
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
         for (ColladaNode node : this.getNodes())

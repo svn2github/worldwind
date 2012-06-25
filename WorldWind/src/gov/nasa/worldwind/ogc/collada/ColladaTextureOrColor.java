@@ -9,23 +9,38 @@ package gov.nasa.worldwind.ogc.collada;
 import java.awt.*;
 
 /**
- * Represents the Collada <i>Diffuse</i> element and provides access to its contents.
+ * Represents a COLLADA <i>texture</i> or <i>color</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaTextureOrColor extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaTextureOrColor(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>texture</i> field.
+     *
+     * @return The value of the texture field, or null if the field is not set.
+     */
     public ColladaTexture getTexture()
     {
         return (ColladaTexture) this.getField("texture");
     }
 
+    /**
+     * Indicates the value of the <i>color</i> field.
+     *
+     * @return The value of the color field, or null if the field is not set.
+     */
     public Color getColor()
     {
         ColladaColor color = (ColladaColor) this.getField("color");
@@ -43,6 +58,13 @@ public class ColladaTextureOrColor extends ColladaAbstractObject
         return new Color(r, g, b, a);
     }
 
+    /**
+     * Parse a string of floats into a float[]
+     *
+     * @param floatArrayString String of floats, separated by whitespace.
+     *
+     * @return Parsed float[].
+     */
     protected float[] parseFloatArray(String floatArrayString)
     {
         String[] arrayOfNumbers = floatArrayString.trim().split("\\s+");

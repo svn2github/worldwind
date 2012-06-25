@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.util.xml.*;
 
 /**
- * Base class for Collada parser classes.
+ * Base class for COLLADA parser classes.
  *
  * @author pabercrombie
  * @version $Id$

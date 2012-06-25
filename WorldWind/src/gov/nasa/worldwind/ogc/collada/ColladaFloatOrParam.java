@@ -7,6 +7,8 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
+ * Represents either a floating point number, or a <i>param</i> element.
+ *
  * @author pabercrombie
  * @version $Id$
  */

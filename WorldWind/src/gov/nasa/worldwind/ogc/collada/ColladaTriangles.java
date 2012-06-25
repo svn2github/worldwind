@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Triangles</i> element and provides access to its contents.
+ * Represents the COLLADA <i>triangles</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaTriangles extends ColladaAbstractGeometry
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaTriangles(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the number of vertices for each triangle.
+     *
+     * @return Three
+     */
     @Override
     protected int getVerticesPerShape()
     {

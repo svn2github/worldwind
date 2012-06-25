@@ -10,7 +10,7 @@ import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
 /**
- * Represents the Collada <i>Scene</i> element and provides access to its contents.
+ * Represents the COLLADA <i>scene</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
@@ -19,13 +19,24 @@ public class ColladaScene extends ColladaAbstractObject implements ColladaRender
 {
     /** Flag to indicate that the scene has been fetched from the hash map. */
     protected boolean sceneFetched = false;
+    /** Cached value of the <i>instance_visual_scene</i> field. */
     protected ColladaInstanceVisualScene instanceVisualScene;
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaScene(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the value of the <i>instance_visual_scene</i> field.
+     *
+     * @return The value of the <i>instance_visual_scene</i> field, or null if the field is not set.
+     */
     protected ColladaInstanceVisualScene getInstanceVisualScene()
     {
         if (!this.sceneFetched)
@@ -36,6 +47,7 @@ public class ColladaScene extends ColladaAbstractObject implements ColladaRender
         return this.instanceVisualScene;
     }
 
+    /** {@inheritDoc} */
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         ColladaInstanceVisualScene sceneInstance = this.getInstanceVisualScene();
@@ -43,6 +55,7 @@ public class ColladaScene extends ColladaAbstractObject implements ColladaRender
             sceneInstance.preRender(tc, dc);
     }
 
+    /** {@inheritDoc} */
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
         ColladaInstanceVisualScene sceneInstance = this.getInstanceVisualScene();

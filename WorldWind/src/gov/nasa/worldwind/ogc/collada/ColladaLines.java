@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Lines</i> element and provides access to its contents.
+ * Represents the COLLADA <i>lines</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaLines extends ColladaAbstractGeometry
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaLines(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the number of vertices per line.
+     *
+     * @return Two
+     */
     @Override
     protected int getVerticesPerShape()
     {

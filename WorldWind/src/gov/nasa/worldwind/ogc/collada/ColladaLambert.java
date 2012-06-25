@@ -7,6 +7,8 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
+ * Represents the COLLADA Lambert shader element and provides access to its contents.
+ *
  * @author pabercrombie
  * @version $Id$
  */

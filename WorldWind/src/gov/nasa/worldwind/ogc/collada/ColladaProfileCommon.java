@@ -7,18 +7,28 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Profile_COMMON</i> element and provides access to its contents.
+ * Represents the COLLADA <i>profile_COMMON</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaProfileCommon extends ColladaAbstractParamContainer
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaProfileCommon(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the <i>technique</i> field of this profile.
+     *
+     * @return The value of the <i>technique</i> field, or null if the field is not set.
+     */
     public ColladaTechnique getTechnique()
     {
         return (ColladaTechnique) this.getField("technique");

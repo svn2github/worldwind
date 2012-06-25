@@ -7,6 +7,8 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
+ * Represents the COLLADA <i>extra</i> element, and provides access to its contents.
+ *
  * @author pabercrombie
  * @version $Id$
  */

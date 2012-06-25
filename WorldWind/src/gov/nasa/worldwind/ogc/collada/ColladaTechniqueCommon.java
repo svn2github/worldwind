@@ -9,25 +9,37 @@ package gov.nasa.worldwind.ogc.collada;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Technique_Common</i> element and provides access to its contents.
+ * Represents the COLLADA <i>technique_common</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaTechniqueCommon extends ColladaAbstractObject
 {
+    /** Materials contained by this technique. */
     protected List<ColladaInstanceMaterial> materials = new ArrayList<ColladaInstanceMaterial>();
 
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaTechniqueCommon(String ns)
     {
         super(ns);
     }
 
+    /**
+     * Indicates the materials contained by this technique.
+     *
+     * @return List of materials. May return an empty list, but never returns null.
+     */
     public List<ColladaInstanceMaterial> getMaterials()
     {
         return this.materials;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setField(String keyName, Object value)
     {

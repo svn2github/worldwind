@@ -9,13 +9,18 @@ package gov.nasa.worldwind.ogc.collada;
 import gov.nasa.worldwind.util.WWUtil;
 
 /**
- * Represents the Collada <i>Unit</i> element and provides access to its contents.
+ * Represents the COLLADA <i>Unit</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaUnit extends ColladaAbstractObject
 {
+    /**
+     * Construct an instance.
+     *
+     * @param ns the qualifying namespace URI. May be null to indicate no namespace qualification.
+     */
     public ColladaUnit(String ns)
     {
         super(ns);

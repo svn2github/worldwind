@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+/** Constants related to COLLADA documents. */
 public interface ColladaConstants
 {
     /** The Collada namespace URI. */

@@ -14,7 +14,7 @@ import javax.xml.stream.events.*;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Accessor</i> element and provides access to its contents.
+ * Represents the COLLADA <i>accessor</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$

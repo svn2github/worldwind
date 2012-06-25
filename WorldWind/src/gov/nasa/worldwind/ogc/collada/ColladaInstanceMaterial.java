@@ -9,7 +9,7 @@ package gov.nasa.worldwind.ogc.collada;
 import java.util.*;
 
 /**
- * Represents the Collada <i>Instance_Material</i> element and provides access to its contents.
+ * Represents the COLLADA <i>instance_material</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$

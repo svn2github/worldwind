@@ -7,6 +7,8 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
+ * Base class for COLLADA shaders.
+ *
  * @author pabercrombie
  * @version $Id$
  */
@@ -22,21 +24,41 @@ public class ColladaAbstractShader extends ColladaAbstractObject
         super(namespaceURI);
     }
 
+    /**
+     * Indicates the shader's emission parameter.
+     *
+     * @return The emission parameter, or null if none is set.
+     */
     public ColladaTextureOrColor getEmission()
     {
         return (ColladaTextureOrColor) this.getField("emission");
     }
 
+    /**
+     * Indicates the shader's ambient parameter.
+     *
+     * @return The ambient parameter, or null if none is set.
+     */
     public ColladaTextureOrColor getAmbient()
     {
         return (ColladaTextureOrColor) this.getField("ambient");
     }
 
+    /**
+     * Indicates the shader's diffuse parameter.
+     *
+     * @return The diffuse parameter, or null if none is set.
+     */
     public ColladaTextureOrColor getDiffuse()
     {
         return (ColladaTextureOrColor) this.getField("diffuse");
     }
 
+    /**
+     * Indicates the shader's specular parameter.
+     *
+     * @return The specular parameter, or null if none is set.
+     */
     public ColladaTextureOrColor getSpecular()
     {
         return (ColladaTextureOrColor) this.getField("specular");

@@ -21,6 +21,9 @@ import java.io.*;
 import java.net.*;
 
 /**
+ * Parses a COLLADA document and provides access to its contents. Instructions for parsing COLLADA files and streams are
+ * given in the Description section of {@link gov.nasa.worldwind.ogc.collada}.
+ *
  * @author pabercrombie
  * @version $Id$
  */
@@ -75,6 +78,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
      */
     protected Matrix matrix;
 
+    /** Resource resolver to resolve relative file paths. */
     protected ColladaResourceResolver resourceResolver;
 
     /**
@@ -125,6 +129,14 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.initialize();
     }
 
+    /**
+     * Create a new <code>ColladaRoot</code> for a {@link URL}.
+     *
+     * @param docSource the URL of the document.
+     *
+     * @throws IllegalArgumentException if the document source is null.
+     * @throws IOException              if an error occurs while reading the Collada document.
+     */
     public ColladaRoot(URL docSource) throws IOException
     {
         super(ColladaConstants.COLLADA_NAMESPACE);
@@ -160,9 +172,9 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     /**
      * Creates a Collada root for an untyped source. The source must be either a {@link File} or a {@link String}
-     * identifying either a file path or a URL. Null is returned if the source type is not recognized.
+     * identifying either a file path or a {@link URL}. Null is returned if the source type is not recognized.
      *
-     * @param docSource either a {@link File} or a {@link String} identifying a file path or URL.
+     * @param docSource either a {@link File} or a {@link String} identifying a file path or {@link URL}.
      *
      * @return a new {@link ColladaRoot} for the specified source, or null if the source type is not supported.
      *
@@ -204,6 +216,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return null;
     }
 
+    /**
+     * Creates and parses a Collada root for an untyped source. The source must be either a {@link File} or a {@link
+     * String} identifying either a file path or a {@link URL}. Null is returned if the source type is not recognized.
+     *
+     * @param docSource either a {@link File} or a {@link String} identifying a file path or {@link URL}.
+     *
+     * @return a new {@link ColladaRoot} for the specified source, or null if the source type is not supported.
+     *
+     * @throws IllegalArgumentException if the source is null.
+     * @throws IOException              if an error occurs while reading the source.
+     */
     public static ColladaRoot createAndParse(Object docSource) throws IOException, XMLStreamException
     {
         ColladaRoot colladaRoot = ColladaRoot.create(docSource);
@@ -236,6 +259,11 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.parserContext = this.createParserContext(this.eventReader);
     }
 
+    /**
+     * Indicates the document that is the source of this root.
+     *
+     * @return The source of the COLLADA content.
+     */
     protected ColladaDoc getColladaDoc()
     {
         return this.colladaDoc;
@@ -388,11 +416,21 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.reset();
     }
 
+    /**
+     * Indicates the resource resolver used to resolve relative file paths.
+     *
+     * @return The resource resolver, or null if none is set.
+     */
     public ColladaResourceResolver getResourceResolver()
     {
         return this.resourceResolver;
     }
 
+    /**
+     * Specifies a resource resolver to resolve relative file paths.
+     *
+     * @param resourceResolver New resource resolver. May be null.
+     */
     public void setResourceResolver(ColladaResourceResolver resourceResolver)
     {
         this.resourceResolver = resourceResolver;
@@ -734,6 +772,11 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         }
     }
 
+    /**
+     * Indicates the <i>scene</i> contained in this document.
+     *
+     * @return The COLLADA <i>scene</i>, or null if there is no scene.
+     */
     public ColladaScene getScene()
     {
         if (!this.sceneFetched)
@@ -744,11 +787,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return this.scene;
     }
 
+    /**
+     * Indicates the <i>asset</i> field of this document.
+     *
+     * @return The <i>asset</i> field, or null if the field has not been set.
+     */
     public ColladaAsset getAsset()
     {
         return (ColladaAsset) this.getField("asset");
     }
 
+    /** {@inheritDoc} Renders the scene contained in this document. */
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         tc.multiplyMatrix(this.getMatrix());
@@ -759,6 +808,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
             scene.preRender(tc, dc);
     }
 
+    /** {@inheritDoc} Renders the scene contained in this document. */
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
         tc.multiplyMatrix(this.getMatrix());
@@ -801,6 +851,12 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return m;
     }
 
+    /**
+     * Indicates the scale factored applied to this document. The scale is specified by the
+     * <code>asset</code>/<code>unit</code> element.
+     *
+     * @return Scale applied to the document. Returns 1.0 if the document does not specify a scale.
+     */
     protected double getScale()
     {
         if (!this.scaleFetched)
@@ -830,11 +886,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return (scale != null) ? scale : 1.0;
     }
 
+    /** Clear cached values. Values will be recomputed the next time this document is rendered. */
     protected void reset()
     {
         this.matrix = null;
     }
 
+    /**
+     * Indicates the parser context used by this document.
+     *
+     * @return The parser context used to parse the document.
+     */
     protected XMLEventParserContext getParserContext()
     {
         return this.parserContext;
@@ -852,6 +914,17 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         return id != null ? this.getParserContext().getIdTable().get(id) : null;
     }
 
+    /**
+     * Determines the path of a supporting file (such an image). If a resource resolver has been specified, the resource
+     * resolver will be invoked to determine the file path. Otherwise, the path will be resolved relative to the COLLADA
+     * document's file path or URL.
+     *
+     * @param link Relative path to resolve.
+     *
+     * @return Absolute path of the resource, or null if the resource cannot be resolved.
+     *
+     * @throws IOException If an error occurs while attempting to resolve the resource.
+     */
     public String getSupportFilePath(String link) throws IOException
     {
         String filePath = null;

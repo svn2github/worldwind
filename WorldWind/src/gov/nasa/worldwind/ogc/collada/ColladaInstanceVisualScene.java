@@ -10,7 +10,7 @@ import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
 /**
- * Represents the Collada <i>Instance_Visual_Scene</i> element and provides access to its contents.
+ * Represents the COLLADA <i>instance_visual_scene</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
@@ -22,6 +22,7 @@ public class ColladaInstanceVisualScene extends ColladaAbstractInstance<ColladaV
         super(ns);
     }
 
+    /** {@inheritDoc} Renders the target of the instance pointer, if the target can be resolved. */
     public void preRender(ColladaTraversalContext tc, DrawContext dc)
     {
         ColladaVisualScene instance = this.get();
@@ -29,6 +30,7 @@ public class ColladaInstanceVisualScene extends ColladaAbstractInstance<ColladaV
             instance.preRender(tc, dc);
     }
 
+    /** {@inheritDoc} Renders the target of the instance pointer, if the target can be resolved. */
     public void render(ColladaTraversalContext tc, DrawContext dc)
     {
         ColladaVisualScene instance = this.get();

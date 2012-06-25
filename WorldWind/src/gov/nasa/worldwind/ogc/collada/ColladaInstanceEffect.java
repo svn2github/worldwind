@@ -7,7 +7,7 @@
 package gov.nasa.worldwind.ogc.collada;
 
 /**
- * Represents the Collada <i>Instance_Effect</i> element and provides access to its contents.
+ * Represents the COLLADA <i>instance_effect</i> element and provides access to its contents.
  *
  * @author pabercrombie
  * @version $Id$
