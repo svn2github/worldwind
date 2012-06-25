@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.pick.PickSupport;

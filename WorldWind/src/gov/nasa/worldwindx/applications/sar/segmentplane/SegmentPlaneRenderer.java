@@ -5,7 +5,6 @@ All Rights Reserved.
 package gov.nasa.worldwindx.applications.sar.segmentplane;
 
 import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;

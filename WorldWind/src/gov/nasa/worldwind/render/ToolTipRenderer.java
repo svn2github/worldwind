@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.GL;

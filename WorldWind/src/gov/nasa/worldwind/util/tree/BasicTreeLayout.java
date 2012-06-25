@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.util.tree;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import com.sun.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.avlist.*;

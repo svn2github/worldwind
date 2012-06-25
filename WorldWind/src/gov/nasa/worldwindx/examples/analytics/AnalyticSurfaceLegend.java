@@ -4,16 +4,15 @@ All Rights Reserved.
 */
 package gov.nasa.worldwindx.examples.analytics;
 
-import com.sun.opengl.util.j2d.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
-import java.text.*;
-import java.util.*;
+import java.text.Format;
+import java.util.ArrayList;
 
 /**
  * @author dcollins
