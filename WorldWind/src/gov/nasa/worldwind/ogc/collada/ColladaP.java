@@ -74,13 +74,14 @@ public class ColladaP extends ColladaAbstractObject
      */
     protected int[] parseInts(String intArrayString)
     {
-        String[] arrayOfNumbers = intArrayString.split(" ");
+        String[] arrayOfNumbers = intArrayString.split("\\s");
         int[] ints = new int[arrayOfNumbers.length];
 
         int i = 0;
         for (String s : arrayOfNumbers)
         {
-            ints[i++] = Integer.parseInt(s);
+            if (!WWUtil.isEmpty(s))
+                ints[i++] = Integer.parseInt(s);
         }
 
         return ints;

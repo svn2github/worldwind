@@ -71,13 +71,14 @@ public class ColladaFloatArray extends ColladaAbstractObject
      */
     protected float[] parseFloats(String floatArrayString)
     {
-        String[] arrayOfNumbers = floatArrayString.split(" ");
+        String[] arrayOfNumbers = floatArrayString.split("\\s");
         float[] ary = new float[arrayOfNumbers.length];
 
         int i = 0;
         for (String s : arrayOfNumbers)
         {
-            ary[i++] = Float.parseFloat(s);
+            if (!WWUtil.isEmpty(s))
+                ary[i++] = Float.parseFloat(s);
         }
 
         return ary;
