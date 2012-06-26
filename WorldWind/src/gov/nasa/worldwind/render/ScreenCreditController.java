@@ -22,13 +22,13 @@ public class ScreenCreditController implements Renderable, SelectListener, Dispo
 {
     private int creditWidth = 32;
     private int creditHeight = 32;
-    private int leftMargin = 200;
-    private int bottomMargin = 1;
+    private int leftMargin = 240;
+    private int bottomMargin = 10;
     private int separation = 10;
     private double baseOpacity = 0.5;
     private double highlightOpacity = 1;
     private WorldWindow wwd;
-    private boolean enabled;
+    private boolean enabled = true;
 
     public ScreenCreditController(WorldWindow wwd)
     {
