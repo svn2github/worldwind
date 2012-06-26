@@ -89,13 +89,21 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
                 tc.multiplyMatrix(matrix);
             }
 
-            // Apply the root highlight state to shapes in this node.
-            boolean highlighted = this.getRoot().isHighlighted();
+            ColladaRoot root = this.getRoot();
+
+            // Apply the current root position and highlight state to shapes in this node. Do this every frame so that
+            // the node will pickup changes in the root's state.
+            boolean highlighted = root.isHighlighted();
+            int altitudeMode = root.getAltitudeMode();
+            Position position = root.getPosition();
 
             Matrix traversalMatrix = tc.peekMatrix();
             for (ColladaMeshShape shape : this.shapes)
             {
+                shape.setModelPosition(position);
+                shape.setAltitudeMode(altitudeMode);
                 shape.setHighlighted(highlighted);
+
                 shape.render(dc, traversalMatrix);
             }
 
@@ -146,16 +154,12 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
             return;
 
         ColladaBindMaterial bindMaterial = geomInstance.getBindMaterial();
-
         ColladaRoot root = this.getRoot();
-        Position position = root.getPosition();
 
         List<ColladaTriangles> triangles = mesh.getTriangles();
         if (!WWUtil.isEmpty(triangles))
         {
             ColladaMeshShape newShape = ColladaMeshShape.createTriangleMesh(triangles, bindMaterial);
-            newShape.setModelPosition(position);
-            newShape.setAltitudeMode(root.getAltitudeMode());
             newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
@@ -165,8 +169,6 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         if (!WWUtil.isEmpty(lines))
         {
             ColladaMeshShape newShape = ColladaMeshShape.createLineMesh(lines, bindMaterial);
-            newShape.setModelPosition(position);
-            newShape.setAltitudeMode(root.getAltitudeMode());
             newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
