@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.render;
 
+import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;

@@ -4,6 +4,7 @@ All Rights Reserved.
 */
 package gov.nasa.worldwindx.applications.sar.render;
 
+import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwindx.applications.sar.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;

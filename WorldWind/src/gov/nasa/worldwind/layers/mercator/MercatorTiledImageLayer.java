@@ -5,6 +5,7 @@
  */
 package gov.nasa.worldwind.layers.mercator;
 
+import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;

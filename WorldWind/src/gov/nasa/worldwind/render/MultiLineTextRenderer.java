@@ -5,12 +5,13 @@
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Position;
+import com.sun.opengl.util.j2d.*;
+import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;

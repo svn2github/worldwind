@@ -6,6 +6,7 @@ All Rights Reserved.
 */
 package gov.nasa.worldwindx.examples.util;
 
+import com.sun.opengl.util.j2d.TextRenderer;
 import com.sun.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.layers.AbstractLayer;
