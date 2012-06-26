@@ -28,18 +28,19 @@ import java.util.List;
  * instances are created by {@link #createTriangleMesh(java.util.List, gov.nasa.worldwind.ogc.collada.ColladaBindMaterial)
  * createTriangleMesh} and {@link #createLineMesh(java.util.List, gov.nasa.worldwind.ogc.collada.ColladaBindMaterial)
  * createLineMesh}.
+ * <p/>
+ * This shape supports only COLLADA line and triangle geometries.
  *
  * @author pabercrombie
  * @version $Id$
  */
-// TODO use drawElements instead of drawArrays
 public class ColladaMeshShape extends AbstractGeneralShape
 {
     /**
      * Class to represent an instance of the mesh to be drawn as an ordered renderable. We can't use the mesh itself as
      * the ordered renderable because it may be drawn multiple times with different transforms.
      */
-    public static class ColladaOrderedRenderable implements OrderedRenderable
+    public static class OrderedMeshShape implements OrderedRenderable
     {
         /** Shape to render. */
         protected ColladaMeshShape mesh;
@@ -48,7 +49,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
         /** Transform applied to this instance of the mesh. */
         protected Matrix renderMatrix;
 
-        public ColladaOrderedRenderable(ColladaMeshShape mesh, Matrix renderMatrix, double eyeDistance)
+        /**
+         * Create a new ordered renderable.
+         *
+         * @param mesh         Mesh shape to render.
+         * @param renderMatrix Transform matrix to apply when rendering the shape.
+         * @param eyeDistance  Distance from the eye position to the shape's reference position.
+         */
+        public OrderedMeshShape(ColladaMeshShape mesh, Matrix renderMatrix, double eyeDistance)
         {
             this.mesh = mesh;
             this.eyeDistance = eyeDistance;
@@ -111,6 +119,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
         /** Material applied to this geometry. */
         protected Material material;
 
+        /**
+         * Create a new geometry instance.
+         *
+         * @param geometry COLLADA geometry to render.
+         */
         public Geometry(ColladaAbstractGeometry geometry)
         {
             this.colladaGeometry = geometry;
@@ -142,8 +155,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
     protected int normalBufferPosition;
     /** Texture coordinates for all geometries in this shape. */
     protected FloatBuffer textureCoordsBuffer;
-
-    protected OGLStackHandler oglStackHandler = new OGLStackHandler();
 
     /**
      * Create a triangle mesh shape.
@@ -204,11 +215,24 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * COLLADA shapes do not support intersection tests because the shape may be rendered multiple times with different
+     * transform matrices. It's not possible to determine intersection without the transform matrix applied when the
+     * shape is rendered.
+     *
+     * @return Always returns {@code null}.
+     */
     @Override
     public List<Intersection> intersect(Line line, Terrain terrain) throws InterruptedException
     {
-        return null; // TODO
+        return null;
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // Rendering
+    //////////////////////////////////////////////////////////////////////
 
     @Override
     protected OGLStackHandler beginDrawing(DrawContext dc, int attrMask)
@@ -277,8 +301,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
     }
 
     /**
-     * {@inheritDoc} Overridden because ColladaMeshShape uses ColladaOrderedRenderable instead of adding itself to the
-     * ordered renderable queue.
+     * {@inheritDoc} Overridden because ColladaMeshShape uses OrderedMeshShape instead of adding itself to the ordered
+     * renderable queue.
      */
     @Override
     protected void drawBatched(DrawContext dc)
@@ -288,9 +312,9 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         if (!dc.isPickingMode())
         {
-            while (nextItem != null && nextItem.getClass() == ColladaOrderedRenderable.class)
+            while (nextItem != null && nextItem.getClass() == OrderedMeshShape.class)
             {
-                ColladaOrderedRenderable or = (ColladaOrderedRenderable) nextItem;
+                OrderedMeshShape or = (OrderedMeshShape) nextItem;
                 ColladaMeshShape shape = or.mesh;
                 if (!shape.isEnableBatchRendering())
                     break;
@@ -306,7 +330,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
             super.drawBatched(dc);
             while (nextItem != null && nextItem.getClass() == this.getClass())
             {
-                ColladaOrderedRenderable or = (ColladaOrderedRenderable) nextItem;
+                OrderedMeshShape or = (OrderedMeshShape) nextItem;
                 ColladaMeshShape shape = or.mesh;
                 if (!shape.isEnableBatchRendering() || !shape.isEnableBatchPicking())
                     break;
@@ -320,73 +344,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
                 nextItem = dc.peekOrderedRenderables();
             }
         }
-    }
-
-    @Override
-    protected boolean mustApplyTexture(DrawContext dc)
-    {
-        for (Geometry geometry : this.geometries)
-        {
-            if (this.mustApplyTexture(geometry))
-                return true;
-        }
-        return false;
-    }
-
-    protected boolean mustApplyTexture(Geometry geometry)
-    {
-        String semantic = this.getTexCoordSemantic(geometry);
-        return geometry.colladaGeometry.getTexCoordAccessor(semantic) != null
-            && this.getTexture(geometry) != null;
-    }
-
-    /**
-     * {@inheritDoc} Overridden because this shape uses {@link ColladaOrderedRenderable} to represent this drawn
-     * instance of the mesh in the ordered renderable queue.
-     */
-    @Override
-    protected void addOrderedRenderable(DrawContext dc)
-    {
-        ShapeData current = (ShapeData) this.getCurrent();
-
-        double eyeDistance = this.computeEyeDistance(dc);
-        OrderedRenderable or = new ColladaOrderedRenderable(this, current.renderMatrix, eyeDistance);
-        dc.addOrderedRenderable(or);
-    }
-
-    /**
-     * Draw the shape as an OrderedRenderable, using the specified transform matrix.
-     *
-     * @param dc             Current draw context.
-     * @param pickCandidates Pick candidates for this frame.
-     * @param matrix         Transform matrix to apply before trying shape. m
-     */
-    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates, Matrix matrix)
-    {
-        ShapeData current = (ShapeData) this.getCurrent();
-        current.renderMatrix = matrix;
-
-        super.doDrawOrderedRenderable(dc, pickCandidates);
-    }
-
-    /**
-     * Computes the minimum distance between this shape and the eye point.
-     * <p/>
-     * A {@link gov.nasa.worldwind.render.AbstractShape.AbstractShapeData} must be current when this method is called.
-     *
-     * @param dc the current draw context.
-     *
-     * @return the minimum distance from the shape to the eye point.
-     */
-    protected double computeEyeDistance(DrawContext dc)
-    {
-        Vec4 eyePoint = dc.getView().getEyePoint();
-
-        Vec4 refPt = this.computePoint(dc.getTerrain(), this.getModelPosition());
-        if (refPt != null)
-            return refPt.distanceTo3(eyePoint);
-
-        return 0;
     }
 
     @Override
@@ -407,10 +364,33 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return true;
     }
 
+    /**
+     * {@inheritDoc} Overridden because this shape uses {@link gov.nasa.worldwind.ogc.collada.impl.ColladaMeshShape.OrderedMeshShape}
+     * to represent this drawn instance of the mesh in the ordered renderable queue.
+     */
     @Override
-    protected boolean isOrderedRenderableValid(DrawContext dc)
+    protected void addOrderedRenderable(DrawContext dc)
     {
-        return this.coordBuffer != null;
+        ShapeData current = (ShapeData) this.getCurrent();
+
+        double eyeDistance = this.computeEyeDistance(dc);
+        OrderedRenderable or = new OrderedMeshShape(this, current.renderMatrix, eyeDistance);
+        dc.addOrderedRenderable(or);
+    }
+
+    /**
+     * Draw the shape as an OrderedRenderable, using the specified transform matrix.
+     *
+     * @param dc             Current draw context.
+     * @param pickCandidates Pick candidates for this frame.
+     * @param matrix         Transform matrix to apply before trying shape. m
+     */
+    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates, Matrix matrix)
+    {
+        ShapeData current = (ShapeData) this.getCurrent();
+        current.renderMatrix = matrix;
+
+        super.doDrawOrderedRenderable(dc, pickCandidates);
     }
 
     @Override
@@ -420,41 +400,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
     }
 
     @Override
-    protected AbstractShapeData createCacheEntry(DrawContext dc)
-    {
-        return new ShapeData(dc, this);
-    }
-
-    /**
-     * Indicates the texture applied to this shape.
-     *
-     * @return The texture that must be applied to the shape, or null if there is no texture, or the texture is not
-     *         available.
-     */
-    protected WWTexture getTexture(Geometry geometry)
-    {
-        if (geometry.texture != null)
-            return geometry.texture;
-
-        String source = this.getTextureSource(geometry.colladaGeometry);
-        if (source != null)
-        {
-            Object o = geometry.colladaGeometry.getRoot().resolveReference(source);
-            if (o != null)
-                geometry.texture = new LazilyLoadedTexture(o);
-        }
-
-        return geometry.texture;
-    }
-
-    @Override
     protected void doDrawInterior(DrawContext dc)
     {
         GL gl = dc.getGL();
 
+        OGLStackHandler stackHandler = new OGLStackHandler();
         try
         {
-            this.oglStackHandler.pushModelview(gl);
+            stackHandler.pushModelview(gl);
             this.setModelViewMatrix(dc);
 
             Material defaultMaterial = this.activeAttributes.getInteriorMaterial();
@@ -519,7 +472,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
         finally
         {
-            this.oglStackHandler.pop(gl);
+            stackHandler.pop(gl);
         }
     }
 
@@ -574,25 +527,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
-    protected void applyMaterial(DrawContext dc, Material material)
-    {
-        GL gl = dc.getGL();
-        ShapeAttributes activeAttrs = this.getActiveAttributes();
-        double opacity = activeAttrs.getInteriorOpacity();
-
-        // We don't need to enable or disable lighting; that's handled by super.prepareToDrawInterior.
-        if (this.mustApplyLighting(dc, activeAttrs))
-        {
-            material.apply(gl, GL.GL_FRONT_AND_BACK, (float) opacity);
-        }
-        else
-        {
-            Color sc = material.getDiffuse();
-            gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
-                (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
-        }
-    }
-
     /**
      * Called during drawing to set the modelview matrix to apply the correct position, scale and orientation for this
      * shape.
@@ -619,6 +553,22 @@ public class ColladaMeshShape extends AbstractGeneralShape
         double[] matrixArray = new double[16];
         matrix.toArray(matrixArray, 0, false);
         gl.glLoadMatrixd(matrixArray, 0);
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // Geometry creation
+    //////////////////////////////////////////////////////////////////////
+
+    @Override
+    protected boolean isOrderedRenderableValid(DrawContext dc)
+    {
+        return this.coordBuffer != null;
+    }
+
+    @Override
+    protected AbstractShapeData createCacheEntry(DrawContext dc)
+    {
+        return new ShapeData(dc, this);
     }
 
     /**
@@ -804,6 +754,26 @@ public class ColladaMeshShape extends AbstractGeneralShape
     }
 
     /**
+     * Computes the minimum distance between this shape and the eye point.
+     * <p/>
+     * A {@link gov.nasa.worldwind.render.AbstractShape.AbstractShapeData} must be current when this method is called.
+     *
+     * @param dc the current draw context.
+     *
+     * @return the minimum distance from the shape to the eye point.
+     */
+    protected double computeEyeDistance(DrawContext dc)
+    {
+        Vec4 eyePoint = dc.getView().getEyePoint();
+
+        Vec4 refPt = this.computePoint(dc.getTerrain(), this.getModelPosition());
+        if (refPt != null)
+            return refPt.distanceTo3(eyePoint);
+
+        return 0;
+    }
+
+    /**
      * Computes the transform to use during rendering to orient the model.
      *
      * @param dc the current draw context
@@ -827,6 +797,65 @@ public class ColladaMeshShape extends AbstractGeneralShape
     //////////////////////////////////////////////////////////////////////
     // Materials and textures
     //////////////////////////////////////////////////////////////////////
+
+    @Override
+    protected boolean mustApplyTexture(DrawContext dc)
+    {
+        for (Geometry geometry : this.geometries)
+        {
+            if (this.mustApplyTexture(geometry))
+                return true;
+        }
+        return false;
+    }
+
+    protected boolean mustApplyTexture(Geometry geometry)
+    {
+        String semantic = this.getTexCoordSemantic(geometry);
+        return geometry.colladaGeometry.getTexCoordAccessor(semantic) != null
+            && this.getTexture(geometry) != null;
+    }
+
+    /**
+     * Indicates the texture applied to this shape.
+     *
+     * @return The texture that must be applied to the shape, or null if there is no texture, or the texture is not
+     *         available.
+     */
+    protected WWTexture getTexture(Geometry geometry)
+    {
+        if (geometry.texture != null)
+            return geometry.texture;
+
+        String source = this.getTextureSource(geometry.colladaGeometry);
+        if (source != null)
+        {
+            Object o = geometry.colladaGeometry.getRoot().resolveReference(source);
+            if (o != null)
+                geometry.texture = new LazilyLoadedTexture(o);
+        }
+
+        return geometry.texture;
+    }
+
+    protected void applyMaterial(DrawContext dc, Material material)
+    {
+        GL gl = dc.getGL();
+        ShapeAttributes activeAttrs = this.getActiveAttributes();
+        double opacity = activeAttrs.getInteriorOpacity();
+
+        // We don't need to enable or disable lighting; that's handled by super.prepareToDrawInterior.
+        if (this.mustApplyLighting(dc, activeAttrs))
+        {
+            material.apply(gl, GL.GL_FRONT_AND_BACK, (float) opacity);
+        }
+        else
+        {
+            Color sc = material.getDiffuse();
+            gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
+                (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
+        }
+    }
 
     /**
      * Indicates the material applied to a geometry.
