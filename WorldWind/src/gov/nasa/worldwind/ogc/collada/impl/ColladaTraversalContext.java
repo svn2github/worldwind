@@ -92,7 +92,7 @@ public class ColladaTraversalContext
     }
 
     /** Reset the context so that it may be used for a fresh traversal. */
-    public void reset()
+    public void initialize()
     {
         this.matrixStack.clear();
         this.pushMatrix(Matrix.IDENTITY);
