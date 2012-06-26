@@ -143,6 +143,9 @@ public class RectangularTarget extends AbstractRectangularGraphic
     @Override
     protected void determineLabelPositions(DrawContext dc)
     {
-        this.labels.get(0).setPosition(new Position(this.quad.getCenter(), 0));
+        if (!WWUtil.isEmpty(this.labels))
+        {
+            this.labels.get(0).setPosition(new Position(this.quad.getCenter(), 0));
+        }
     }
 }

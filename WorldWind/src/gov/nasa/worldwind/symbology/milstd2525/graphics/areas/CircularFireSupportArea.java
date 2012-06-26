@@ -162,6 +162,9 @@ public class CircularFireSupportArea extends AbstractCircularGraphic
     @Override
     protected void determineLabelPositions(DrawContext dc)
     {
+        if (WWUtil.isEmpty(this.labels))
+            return;
+
         this.labels.get(0).setPosition(new Position(this.circle.getCenter(), 0));
 
         Position center = new Position(this.circle.getCenter(), 0);

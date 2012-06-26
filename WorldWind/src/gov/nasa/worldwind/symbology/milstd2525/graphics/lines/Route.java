@@ -14,7 +14,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.symbology.*;
 import gov.nasa.worldwind.symbology.milstd2525.*;
 import gov.nasa.worldwind.symbology.milstd2525.graphics.TacGrpSidc;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
 import java.util.*;
@@ -445,7 +445,16 @@ public class Route extends AbstractMilStd2525TacticalGraphic implements Tactical
             // Add a label if this is not the last control point
             if (iterator.hasNext())
             {
-                this.addLabel(this.getGraphicLabel() + " " + this.getText());
+                StringBuilder sb = new StringBuilder();
+                sb.append(this.getGraphicLabel());
+
+                String text = this.getText();
+                if (!WWUtil.isEmpty(text))
+                {
+                    sb.append(" ");
+                    sb.append(text);
+                }
+                this.addLabel(sb.toString());
             }
         }
     }

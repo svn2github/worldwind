@@ -57,8 +57,13 @@ public class RoutePoint extends AbstractCircularGraphic implements TacticalPoint
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getGraphicLabel());
-        sb.append("\n");
-        sb.append(this.getText());
+
+        String text = this.getText();
+        if (!WWUtil.isEmpty(text))
+        {
+            sb.append("\n");
+            sb.append(this.getText());
+        }
 
         return sb.toString();
     }
