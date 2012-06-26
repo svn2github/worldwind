@@ -96,7 +96,7 @@ public class ColladaViewer extends ApplicationTemplate
             {
                 final ColladaRoot colladaRoot = ColladaRoot.createAndParse(this.colladaSource);
                 colladaRoot.setPosition(this.position);
-                colladaRoot.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                colladaRoot.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
 
                 // Schedule a task on the EDT to add the parsed document to a layer
                 SwingUtilities.invokeLater(new Runnable()
@@ -116,14 +116,26 @@ public class ColladaViewer extends ApplicationTemplate
 
     public static void main(String[] args)
     {
-        Configuration.setValue(AVKey.INITIAL_LATITUDE, 40.010078163592645);
+        Configuration.setValue(AVKey.INITIAL_LATITUDE, 40.028);
         Configuration.setValue(AVKey.INITIAL_LONGITUDE, -105.27284091410579);
-        Configuration.setValue(AVKey.INITIAL_ALTITUDE, 2400);
+        Configuration.setValue(AVKey.INITIAL_ALTITUDE, 4000);
+        Configuration.setValue(AVKey.INITIAL_PITCH, 50);
 
-        //noinspection UnusedDeclaration
         final AppFrame af = (AppFrame) start("World Wind COLLADA Viewer", AppFrame.class);
+
+        new WorkerThread(new File("testData/collada/collada.dae"),
+            Position.fromDegrees(40.009993372683, -105.272774533734, 300), af).start();
 
         new WorkerThread(new File("testData/collada/cu_macky/CU Macky.dae"),
             Position.fromDegrees(40.009993372683, -105.272774533734), af).start();
+
+        new WorkerThread(new File("testData/collada/cube_triangulate.dae"),
+            Position.fromDegrees(40.00986517881996, -105.26917924394284, 100), af).start();
+
+        new WorkerThread(new File("testData/collada/sphere_triangulate.dae"),
+            Position.fromDegrees(40.007243654661075, -105.27016308578999, 100), af).start();
+
+        new WorkerThread(new File("testData/collada/duck_triangulate.dae"),
+            Position.fromDegrees(40.00779229910037, -105.27494931422459, 100), af).start();
     }
 }

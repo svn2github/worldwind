@@ -155,6 +155,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         {
             ColladaMeshShape newShape = ColladaMeshShape.createTriangleMesh(triangles, bindMaterial);
             newShape.setModelPosition(position);
+            newShape.setAltitudeMode(root.getAltitudeMode());
             newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
@@ -165,6 +166,7 @@ public class ColladaNode extends ColladaAbstractObject implements ColladaRendera
         {
             ColladaMeshShape newShape = ColladaMeshShape.createLineMesh(lines, bindMaterial);
             newShape.setModelPosition(position);
+            newShape.setAltitudeMode(root.getAltitudeMode());
             newShape.setDelegateOwner(root);
 
             shapes.add(newShape);
