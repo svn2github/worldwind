@@ -396,7 +396,7 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         return event.isCharacters() ? event.asCharacters().getData() : null;
     }
 
-    @SuppressWarnings( {"SimplifiableIfStatement"})
+    @SuppressWarnings({"SimplifiableIfStatement"})
     public boolean isSameName(QName qa, QName qb)
     {
         if (qa.equals(qb))
@@ -414,7 +414,7 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         return false;
     }
 
-    @SuppressWarnings( {"SimplifiableIfStatement"})
+    @SuppressWarnings({"SimplifiableIfStatement"})
     public boolean isSameAttributeName(QName qa, QName qb)
     {
         return qa != null && qb != null && qa.getLocalPart() != null && qa.getLocalPart().equals(qb.getLocalPart());
@@ -535,6 +535,7 @@ public class BasicXMLEventParserContext extends AVListImpl implements XMLEventPa
         return this.getDefaultNamespaceURI() != null && this.getDefaultNamespaceURI().equals(namespaceURI);
     }
 
+    @Deprecated
     public void resolveInternalReferences(String referenceName, String fieldName, AbstractXMLEventParser parser)
     {
         if (parser == null || !parser.hasFields())

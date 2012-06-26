@@ -235,7 +235,11 @@ public interface XMLEventParserContext extends AVList
      *                      gov.nasa.worldwind.util.xml.AbstractXMLEventParser#getField(javax.xml.namespace.QName)}
      *                      method with the <code>fieldName</code> specified here as the name argument.
      * @param parser        the parser whose references to resolve.
+     *
+     * @deprecated Reference resolution is handled by parsers specific to a certain document type. For example, {@link
+     *             gov.nasa.worldwind.ogc.kml.KMLRoot} handles resolution of references in KML files.
      */
+    @Deprecated
     void resolveInternalReferences(String referenceName, String fieldName, AbstractXMLEventParser parser);
 
     /**
