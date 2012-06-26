@@ -9,6 +9,8 @@ package gov.nasa.worldwind.ogc.collada.io;
 import java.io.*;
 
 /**
+ * Represents the source of a COLLADA document, and provides access to the document's content.
+ *
  * @author pabercrombie
  * @version $Id$
  */

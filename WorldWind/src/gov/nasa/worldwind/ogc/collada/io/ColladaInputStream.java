@@ -12,6 +12,8 @@ import java.io.*;
 import java.net.URI;
 
 /**
+ * Represents a COLLADA document read from an input stream.
+ *
  * @author pabercrombie
  * @version $Id$
  */

@@ -11,13 +11,21 @@ import gov.nasa.worldwind.util.Logging;
 import java.io.*;
 
 /**
+ * Represents a COLLADA document read from a file.
+ *
  * @author pabercrombie
  * @version $Id$
  */
 public class ColladaFile implements ColladaDoc
 {
+    /** File from which COLLADA content is read. */
     protected File colladaFile;
 
+    /**
+     * Create a new instance from a file.
+     *
+     * @param file COLLADA file from which to read content.
+     */
     public ColladaFile(File file)
     {
         if (file == null)

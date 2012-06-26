@@ -21,13 +21,18 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 
 /**
+ * Class to load and render a COLLADA model as the geometry of a KML Placemark.
+ *
  * @author pabercrombie
  * @version $Id$
  */
 public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable, ColladaResourceResolver
 {
+    /** Model rendered by this class. */
     protected KMLModel model;
+    /** Placemark that contains the model. */
     protected KMLPlacemark parent;
+    /** Reference to the COLLADA root that contains the parsed COLLADA file. */
     protected AtomicReference<ColladaRoot> colladaRoot = new AtomicReference<ColladaRoot>();
     /**
      * Time, in milliseconds since the Epoch, at which this placemark's model resource was last retrieved. Initially
@@ -35,8 +40,13 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
      */
     protected AtomicLong resourceRetrievalTime = new AtomicLong(-1);
 
+    /**
+     * Map specified by the KML Model's ResourceMap element. The map relates relative references within the COLLADA file
+     * to paths relative to the KML document.
+     */
     protected Map<String, String> resourceMap;
 
+    /** Traversal context for rendering the ColladaRoot. */
     protected ColladaTraversalContext colladaTraversalContext = new ColladaTraversalContext();
 
     /**
@@ -78,6 +88,13 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         this.resourceMap = this.createResourceMap(this.model);
     }
 
+    /**
+     * Build the resource map from the KML Model's <i>ResourceMap</i> element.
+     *
+     * @param model Model from which to create the resource map.
+     *
+     * @return Map that relates relative paths in the COLLADA document to paths relative to the KML document.
+     */
     protected Map<String, String> createResourceMap(KMLModel model)
     {
         Map<String, String> map = new HashMap<String, String>();
