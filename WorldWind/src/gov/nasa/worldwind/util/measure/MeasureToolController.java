@@ -7,7 +7,7 @@ package gov.nasa.worldwind.util.measure;
 
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.PickedObjectList;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
@@ -356,17 +356,20 @@ public class MeasureToolController extends MouseAdapter
     @SuppressWarnings({"UnusedDeclaration"})
     protected void doMoved(PositionEvent event)
     {
-        if (this.active && rubberBandTarget != null && measureTool.getWwd().getCurrentPosition() != null)
+        if (this.active && rubberBandTarget != null && this.measureTool.getWwd().getObjectsAtCurrentPosition() != null
+            && this.measureTool.getWwd().getObjectsAtCurrentPosition().getTerrainObject() != null)
         {
             if (!isFreeHand() || (!measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_PATH)
                     && !measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_POLYGON)))
             {
                 // Rubber band - Move control point and update shape
                 Position lastPosition = rubberBandTarget.getPosition();
-                rubberBandTarget.setPosition(new Position(measureTool.getWwd().getCurrentPosition(), 0));
+                PickedObjectList pol = measureTool.getWwd().getObjectsAtCurrentPosition();
+                PickedObject to = pol.getTerrainObject();
+                rubberBandTarget.setPosition(new Position(to.getPosition(), 0));
                 measureTool.moveControlPoint(rubberBandTarget);
                 measureTool.firePropertyChange(MeasureTool.EVENT_POSITION_REPLACE,
-                        lastPosition, rubberBandTarget.getPosition());
+                    lastPosition, rubberBandTarget.getPosition());
                 measureTool.getWwd().redraw();
             }
             else

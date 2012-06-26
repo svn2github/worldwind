@@ -1166,6 +1166,7 @@ public class MeasureTool extends AVListImpl implements Disposable
             int positionIndex = (Integer) point.getValue(CONTROL_TYPE_LOCATION_INDEX);
             // Update positions
             Position surfacePosition = computeSurfacePosition(point.getPosition());
+            surfacePosition = new Position(point.getPosition(), surfacePosition.getAltitude());
             positions.set(positionIndex, surfacePosition);
             // Update last pos too if polygon and first pos changed
             if (measureShapeType.equals(SHAPE_POLYGON) && positions.size() > 2 && positionIndex == 0)
