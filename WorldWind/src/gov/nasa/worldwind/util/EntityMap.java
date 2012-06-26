@@ -36,19 +36,33 @@ public class EntityMap
      */
     public static String replaceAll(String source)
     {
-        for (String entity = getNextEntity(source); entity != null; entity = getNextEntity(source))
+        int regionStart = 0;
+        for (String entity = getNextEntity(source, regionStart); entity != null;
+            entity = getNextEntity(source, regionStart))
         {
             String replacement = EntityMap.get(entity);
             if (replacement == null)
+            {
+                regionStart += entity.length();
                 continue;
+            }
 
             source = source.replace(entity, replacement);
+            regionStart += replacement.length();
         }
 
         return source;
     }
 
-    protected static String getNextEntity(String source)
+    /**
+     * Search a string for the next occurrence of an entity.
+     *
+     * @param source      String to search.
+     * @param regionStart Position in the string at which to start searching.
+     *
+     * @return The entity that was matched, or {@code null} if no entity could be matched.
+     */
+    protected static String getNextEntity(String source, int regionStart)
     {
         if (source == null)
             return null;
@@ -56,6 +70,8 @@ public class EntityMap
         for (Pattern pattern : patterns)
         {
             Matcher matcher = pattern.matcher(source);
+            matcher.region(regionStart, source.length());
+
             if (matcher.find())
                 return matcher.group();
         }
@@ -78,12 +94,6 @@ public class EntityMap
 
         return map.get(key.toLowerCase());
     }
-//
-//    public static void main(String[] args)
-//    {
-//        String result = checkAndReplace("&copy;");
-//        System.out.println(result);
-//    }
 
 // Mappings taken from
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/named-character-references.html#named-character-references
