@@ -92,7 +92,7 @@ public class EntityMap
         if (key == null)
             return null;
 
-        return map.get(key.toLowerCase());
+        return map.get(key);
     }
 
 // Mappings taken from
@@ -1309,7 +1309,6 @@ public class EntityMap
         "&lagran;",
         "&lambda;",
         "&lang;",
-        "&lang;",
         "&langd;",
         "&langle;",
         "&lap;",
@@ -1793,7 +1792,6 @@ public class EntityMap
         "&racute;",
         "&radic;",
         "&raemptyv;",
-        "&rang;",
         "&rang;",
         "&rangd;",
         "&range;",
@@ -3463,7 +3461,6 @@ public class EntityMap
             "\u2329",
             "\u27e8",
             "\u2991",
-            "\u27e8",
             "\u2a85",
             "\u00ab",
             "\u21c7",
@@ -3949,7 +3946,6 @@ public class EntityMap
             "\u27e9",
             "\u2992",
             "\u29a5",
-            "\u27e9",
             "\u00bb",
             "\u21c9",
             "\u2192",
@@ -4409,7 +4405,7 @@ public class EntityMap
     {
         for (int i = 0; i < entityKeys.length; i++)
         {
-            map.put(entityKeys[i].toLowerCase(), entityReplacements[i]);
+            map.put(entityKeys[i], entityReplacements[i]);
         }
     }
 }

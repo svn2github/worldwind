@@ -27,6 +27,19 @@ public class EntityMapTest
         TestCase.assertEquals(expected, actual);
     }
 
+    /** Test replacement of each entity in EntityMap. */
+    @Test
+    public void testAllReplacements() throws IllegalAccessException
+    {
+        for (int i = 0; i < EntityMap.entityKeys.length; i++)
+        {
+            String expected = EntityMap.entityReplacements[i];
+            String actual = EntityMap.replaceAll(EntityMap.entityKeys[i]);
+
+            TestCase.assertEquals("Failed entity replacement: " + EntityMap.entityKeys[i], expected, actual);
+        }
+    }
+
     /** Test with a missing entity. (Missing entity should NOT be replaced.) */
     @Test
     public void testMissingEntity()
