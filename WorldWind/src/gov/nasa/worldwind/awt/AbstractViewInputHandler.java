@@ -371,10 +371,9 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         PickedObjectList pickedObjects = this.wwd.getObjectsAtCurrentPosition();
         if (pickedObjects != null)
         {
-            PickedObject top =  pickedObjects.getTopPickedObject();
-            if (top != null && top.isTerrain())
+            if (pickedObjects.getTerrainObject() != null)
             {
-                return top.getPosition();
+                return pickedObjects.getTerrainObject().getPosition();
             }
         }
         return null;
