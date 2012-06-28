@@ -96,13 +96,18 @@ public class ColladaMeshShape extends AbstractGeneralShape
             super(dc, shape);
         }
 
-        protected Matrix renderMatrix;
         /**
          * Matrix to orient the shape on the surface of the globe. Cached result of {@link
          * gov.nasa.worldwind.globes.Globe#computeSurfaceOrientationAtPosition(gov.nasa.worldwind.geom.Position)}
          * evaluated at the reference position.
          */
         protected Matrix surfaceOrientationMatrix;
+        /**
+         * Transform matrix to apply when rendering the shape. This matrix is determined by the COLLADA traversal
+         * matrix, and {@link #surfaceOrientationMatrix}.
+         */
+        protected Matrix renderMatrix;
+        /** Cached reference center for the shape. */
         protected Vec4 referenceCenter;
     }
 
@@ -276,6 +281,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         this.render(dc);
     }
 
+    /**
+     * Pick the mesh in a given orientation.
+     *
+     * @param dc        Current draw context.
+     * @param pickPoint Current pick point.
+     * @param matrix    Matrix to multiply with the current modelview matrix to orient the mesh.
+     */
     public void pick(DrawContext dc, Point pickPoint, Matrix matrix)
     {
         // This method is called only when ordered renderables are being drawn.
@@ -346,7 +358,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
-    @Override
+    /** {@inheritDoc} */
     protected boolean doMakeOrderedRenderable(DrawContext dc)
     {
         // Do the minimum necessary to determine the model's reference point, extent and eye distance.
@@ -393,12 +405,14 @@ public class ColladaMeshShape extends AbstractGeneralShape
         super.doDrawOrderedRenderable(dc, pickCandidates);
     }
 
+    /** {@inheritDoc} Does nothing, all drawing is performed by {@link #doDrawInterior(gov.nasa.worldwind.render.DrawContext)}. */
     @Override
     protected void doDrawOutline(DrawContext dc)
     {
         // Do nothing. All drawing is performed in doDrawInterior
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void doDrawInterior(DrawContext dc)
     {
@@ -559,13 +573,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
     // Geometry creation
     //////////////////////////////////////////////////////////////////////
 
-    @Override
+    /** {@inheritDoc} */
     protected boolean isOrderedRenderableValid(DrawContext dc)
     {
         return this.coordBuffer != null;
     }
 
-    @Override
+    /** {@inheritDoc} */
     protected AbstractShapeData createCacheEntry(DrawContext dc)
     {
         return new ShapeData(dc, this);
@@ -591,36 +605,17 @@ public class ColladaMeshShape extends AbstractGeneralShape
         shapeData.setVerticalExaggeration(dc.getVerticalExaggeration());
 
         if (this.coordBuffer == null)
-            this.createGeometry(dc);
+            this.createVertexCoords(dc);
 
         if (shapeData.getExtent() == null)
             shapeData.setExtent(this.computeExtent(dc));
     }
 
-    protected void createGeometry(DrawContext dc)
-    {
-        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
-
-        // Capture the position at which normals buffer starts (in case there are normals)
-        this.normalBufferPosition = size;
-
-        if (this.mustCreateNormals(dc))
-        {
-            size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX);
-        }
-
-        if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
-            this.coordBuffer.clear();
-        else
-            this.coordBuffer = BufferUtil.newFloatBuffer(size);
-
-        for (Geometry geometry : this.geometries)
-        {
-            geometry.offset = this.coordBuffer.position() / this.vertsPerShape;
-            geometry.colladaGeometry.getVertices(this.coordBuffer);
-        }
-    }
-
+    /**
+     * Create full geometry for the shape, including normals and texture coordinates.
+     *
+     * @param dc Current draw context.
+     */
     protected void createFullGeometry(DrawContext dc)
     {
         if (this.normalBuffer == null && this.mustCreateNormals(dc))
@@ -636,6 +631,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    /**
+     * Compute the shape's extent, using the active orientation matrix.
+     *
+     * @param dc Current draw context.
+     *
+     * @return The spatial extent of the shape, or null if the extent cannot be determined.
+     */
     protected Extent computeExtent(DrawContext dc)
     {
         if (this.coordBuffer == null)
@@ -663,7 +665,36 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return Box.computeBoundingBox(extrema);
     }
 
-    /** Create this shape's vertex normals. */
+    /**
+     * Create the shape's vertex coordinates. The coordinates are stored in {@link #coordBuffer}.
+     *
+     * @param dc Current draw context.
+     */
+    protected void createVertexCoords(DrawContext dc)
+    {
+        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
+
+        // Capture the position at which normals buffer starts (in case there are normals)
+        this.normalBufferPosition = size;
+
+        if (this.mustCreateNormals(dc))
+        {
+            size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX);
+        }
+
+        if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
+            this.coordBuffer.clear();
+        else
+            this.coordBuffer = BufferUtil.newFloatBuffer(size);
+
+        for (Geometry geometry : this.geometries)
+        {
+            geometry.offset = this.coordBuffer.position() / this.vertsPerShape;
+            geometry.colladaGeometry.getVertices(this.coordBuffer);
+        }
+    }
+
+    /** Create this shape's vertex normals. The normals are stored in {@link #normalBuffer}. */
     protected void createNormals()
     {
         this.coordBuffer.position(this.normalBufferPosition);
@@ -684,6 +715,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    /** Create this shape's texture coordinates. The texture coordinates are stored in {@link #textureCoordsBuffer}. */
     protected void createTexCoords()
     {
         int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
@@ -709,6 +741,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
     }
 
+    /** {@inheritDoc} */
     protected void fillVBO(DrawContext dc)
     {
         GL gl = dc.getGL();
@@ -798,6 +831,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
     // Materials and textures
     //////////////////////////////////////////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return True if any geometry in this shape includes a texture.
+     */
     @Override
     protected boolean mustApplyTexture(DrawContext dc)
     {
@@ -809,6 +847,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return false;
     }
 
+    /**
+     * Indicates whether or not a texture must be applied to a geometry.
+     *
+     * @param geometry Geometry to test.
+     *
+     * @return True if the specified geometry includes a texture.
+     */
     protected boolean mustApplyTexture(Geometry geometry)
     {
         String semantic = this.getTexCoordSemantic(geometry);
@@ -838,6 +883,12 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return geometry.texture;
     }
 
+    /**
+     * Apply a material to the active draw context.
+     *
+     * @param dc       Current draw context.
+     * @param material Material to apply.
+     */
     protected void applyMaterial(DrawContext dc, Material material)
     {
         GL gl = dc.getGL();

@@ -63,10 +63,12 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
 
     /** Flag to indicate that the scene has been retrieved from the hash map. */
     protected boolean sceneFetched = false;
+    /** Cached COLLADA scene. */
     protected ColladaScene scene;
 
     /** Flag to indicate that the scale has been computed. */
     protected boolean scaleFetched = false;
+    /** Scale applied to the model. Determined by the COLLADA/asset/unit element. */
     protected double scale;
 
     /** Indicates whether or not the COLLADA model is highlighted. */
@@ -154,6 +156,14 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.initialize();
     }
 
+    /**
+     * Create a new <code>ColladaRoot</code> for a {@link InputStream}.
+     *
+     * @param docSource the URL of the document.
+     *
+     * @throws IllegalArgumentException if the document source is null.
+     * @throws IOException              if an error occurs while reading the Collada document.
+     */
     public ColladaRoot(InputStream docSource) throws IOException
     {
         super(ColladaConstants.COLLADA_NAMESPACE);
@@ -448,6 +458,21 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
         this.highlighted = highlighted;
     }
 
+    /**
+     * Resolves a reference to a local or remote file or element. If the link refers to an element in the current
+     * document, this method returns that element. If the link refers to a remote document, this method will initiate
+     * asynchronous retrieval of the document, and return a URL of the downloaded document in the file cache, if it is
+     * available locally. If the link identifies a COLLADA document, the document will be returned as a parsed
+     * ColladaRoot.
+     *
+     * @param link the address of the document or element to resolve. This may be a full URL, a URL fragment that
+     *             identifies an element in the current document ("#myElement"), or a URL and a fragment identifier
+     *             ("http://server.com/model.dae#myElement").
+     *
+     * @return the requested element, or null if the element is not found.
+     *
+     * @throws IllegalArgumentException if the address is null.
+     */
     public Object resolveReference(String link)
     {
         if (link == null)
