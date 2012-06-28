@@ -253,6 +253,9 @@ public class ColladaMeshShape extends AbstractGeneralShape
             ogsh.pushTextureIdentity(dc.getGL());
         }
 
+        // Some SketchUp models do not render correctly without backface culling.
+        dc.getGL().glEnable(GL.GL_CULL_FACE);
+
         return ogsh;
     }
 
