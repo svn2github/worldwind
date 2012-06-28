@@ -150,16 +150,18 @@ public class ColladaMeshShape extends AbstractGeneralShape
     protected List<Geometry> geometries;
 
     /**
-     * The vertex data buffer for this shape data. The first half contains vertex coordinates, the second half contains
-     * normals.
+     * The vertex data buffer for this shape data. The first part contains vertex coordinates, the second part contains
+     * normals, and the third part contains texture coordinates.
      */
     protected FloatBuffer coordBuffer;
-    /** The slice of the <code>coordBuffer</code> that contains normals. */
+    /** The slice of the {@link #coordBuffer} that contains normals. */
     protected FloatBuffer normalBuffer;
-    /** The index of the first normal in the <code>coordBuffer</code>. */
+    /** The index of the first normal in the {@link #coordBuffer}. */
     protected int normalBufferPosition;
     /** Texture coordinates for all geometries in this shape. */
     protected FloatBuffer textureCoordsBuffer;
+    /** The index of the first texture coordinate in the {@link #coordBuffer}. */
+    protected int texCoordBufferPosition;
 
     /**
      * Create a triangle mesh shape.
@@ -676,10 +678,16 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         // Capture the position at which normals buffer starts (in case there are normals)
         this.normalBufferPosition = size;
-
         if (this.mustCreateNormals(dc))
         {
             size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX);
+        }
+
+        // Capture the position at which texture coordinate buffer starts (in case that textures are applied)
+        this.texCoordBufferPosition = size;
+        if (this.mustApplyTexture(dc))
+        {
+            size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.TEX_COORDS_PER_VERTEX);
         }
 
         if (this.coordBuffer != null && this.coordBuffer.capacity() >= size)
@@ -718,12 +726,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
     /** Create this shape's texture coordinates. The texture coordinates are stored in {@link #textureCoordsBuffer}. */
     protected void createTexCoords()
     {
-        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
-
-        if (this.textureCoordsBuffer != null && this.textureCoordsBuffer.capacity() >= size)
-            this.textureCoordsBuffer.clear();
-        else
-            this.textureCoordsBuffer = BufferUtil.newFloatBuffer(size);
+        this.coordBuffer.position(this.texCoordBufferPosition);
+        this.textureCoordsBuffer = this.coordBuffer.slice();
 
         for (Geometry geometry : this.geometries)
         {
