@@ -103,6 +103,38 @@ public class ForwardEdgeOfBattleArea extends AbstractMilStd2525TacticalGraphic
         }
 
         /**
+         * Specifies this graphic's Status/Operational Condition field. A graphic's Status defines whether the
+         * represented object exists at the time the symbol was generated, or is anticipated to exist in the future.
+         * Additionally, a graphic's Status can define its operational condition. The recognized values are <ul>
+         * <li>STATUS_ANTICIPATED</li> <li>STATUS_SUSPECTED</li> <li>STATUS_PRESENT</li> <li>STATUS_KNOWN</li> </ul>.
+         *
+         * @param status the new value for the Status/Operational Condition field.
+         *
+         * @throws IllegalArgumentException if the specified value is <code>null</code> or is not one of the accepted
+         *                                  status values.
+         */
+        public void setStatus(String status)
+        {
+            if (status == null)
+            {
+                String msg = Logging.getMessage("nullValue.StringIsNull");
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            if (!SymbologyConstants.STATUS_ALL.contains(status.toUpperCase()))
+            {
+                String msg = Logging.getMessage("Symbology.InvalidStatus", status);
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            SymbolCode code = new SymbolCode(this.symbolCode);
+            code.setStatus(status);
+            this.symbolCode = code.toString();
+        }
+
+        /**
          * Indicates the text in the label.
          *
          * @return The string "FEBA".
@@ -188,6 +220,15 @@ public class ForwardEdgeOfBattleArea extends AbstractMilStd2525TacticalGraphic
             return Arrays.asList(position1, position2);
         else
             return Collections.emptyList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setStatus(String value)
+    {
+        super.setStatus(value);
+        this.symbol1.setStatus(value);
+        this.symbol2.setStatus(value);
     }
 
     /** {@inheritDoc} */
