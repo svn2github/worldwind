@@ -34,6 +34,16 @@ public class ColladaProfileCommon extends ColladaAbstractParamContainer
         return (ColladaTechnique) this.getField("technique");
     }
 
+    /**
+     * Indicates the <i>extra</i> field of this profile.
+     *
+     * @return The value of the <i>technique</i> field, or null if the field is not set.
+     */
+    public ColladaExtra getExtra()
+    {
+        return (ColladaExtra) this.getField("extra");
+    }
+
     /** {@inheritDoc} */
     @Override
     public ColladaNewParam getParam(String sid)

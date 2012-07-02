@@ -42,4 +42,14 @@ public class ColladaTechnique extends ColladaAbstractParamContainer
         // TODO handle other shaders
         return null;
     }
+
+    /**
+     * Indicates the value of the <i>profile</i> field.
+     *
+     * @return The value of the profile field, or null if the field is not set.
+     */
+    public String getProfile()
+    {
+        return (String) this.getField("profile");
+    }
 }

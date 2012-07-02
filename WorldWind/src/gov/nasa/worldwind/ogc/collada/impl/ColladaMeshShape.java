@@ -114,6 +114,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
     /** Geometry and attributes of a COLLADA {@code triangles} or {@code lines} element. */
     protected static class Geometry
     {
+        /** Collada element that defines this geometry. */
         protected ColladaAbstractGeometry colladaGeometry;
 
         /** Offset (in vertices) into the coord, normal, and texcoord buffers of this coordinates for this geometry. */
@@ -123,6 +124,15 @@ public class ColladaMeshShape extends AbstractGeneralShape
         protected WWTexture texture;
         /** Material applied to this geometry. */
         protected Material material;
+
+        /**
+         * Indicates whether or not the geometry is double sided. If double sided, the geometry must be rendered with
+         * backface culling disabled. This property is determined by the presence of a technique for the "GOOGLEEARTH"
+         * profile that includes a <i>double_sided</i> field.
+         *
+         * @see ColladaMeshShape#isDoubleSided(gov.nasa.worldwind.ogc.collada.ColladaAbstractGeometry)
+         */
+        protected boolean doubleSided;
 
         /**
          * Create a new geometry instance.
@@ -252,9 +262,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
             // texture matrix stack is popped from OGLStackHandler.pop(), in the finally block below.
             ogsh.pushTextureIdentity(dc.getGL());
         }
-
-        // Some SketchUp models do not render correctly without backface culling.
-        dc.getGL().glEnable(GL.GL_CULL_FACE);
 
         return ogsh;
     }
@@ -446,6 +453,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
             }
 
             boolean texturesEnabled = false;
+            boolean cullingEnabled = false;
             for (Geometry geometry : this.geometries)
             {
                 Material nextMaterial = geometry.material != null ? geometry.material : defaultMaterial;
@@ -481,6 +489,19 @@ public class ColladaMeshShape extends AbstractGeneralShape
                     gl.glDisable(GL.GL_TEXTURE_2D);
                     gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
                     texturesEnabled = false;
+                }
+
+                // If this geometry is double sided, then backface culling must be disabled. Otherwise backface culling
+                // must be enabled, because some SketchUp models will not render correctly without it.
+                if (geometry.doubleSided && cullingEnabled)
+                {
+                    gl.glDisable(GL.GL_CULL_FACE);
+                    cullingEnabled = false;
+                }
+                else if (!geometry.doubleSided && !cullingEnabled)
+                {
+                    gl.glEnable(GL.GL_CULL_FACE);
+                    cullingEnabled = true;
                 }
 
                 if (vboIds != null)
@@ -633,6 +654,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
         {
             if (geometry.material == null)
                 geometry.material = this.getMaterial(geometry);
+
+            geometry.doubleSided = this.isDoubleSided(geometry.colladaGeometry);
         }
     }
 
@@ -1158,5 +1181,37 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         // Attempt to resolve effect. The effect may not be immediately available.
         return myEffectInstance.get();
+    }
+
+    /**
+     * Indicates whether or not a geometry is double sided. A geometry is double sided if its <i>effect</i> element
+     * contains a <i>technique</i> for the profile "GOOGLEEARTH", and the technique includes a <i>double_sided</i>
+     * field. The <i>double_sided</i> field is not part of the COLLADA specification, but many COLLADA models packaged
+     * in KML include the element.
+     *
+     * @param geometry Geometry to test.
+     *
+     * @return True if the geometry is marked as double sided. Otherwise false.
+     */
+    protected boolean isDoubleSided(ColladaAbstractGeometry geometry)
+    {
+        ColladaEffect effect = this.getEffect(geometry);
+        if (effect == null)
+            return false;
+
+        ColladaProfileCommon profile = effect.getProfileCommon();
+        if (profile == null)
+            return false;
+
+        ColladaExtra extra = profile.getExtra();
+        if (extra == null)
+            return false;
+
+        ColladaTechnique technique = (ColladaTechnique) extra.getField("technique");
+        if (technique == null || !"GOOGLEEARTH".equals(technique.getProfile()))
+            return false;
+
+        Integer i = (Integer) technique.getField("double_sided");
+        return i != null && i == 1;
     }
 }
