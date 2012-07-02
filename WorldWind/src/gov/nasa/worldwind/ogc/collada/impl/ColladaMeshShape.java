@@ -1063,6 +1063,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
         if (imageRef == null)
             return null;
 
+        // imageRef identifiers an <image> element in this or another document. If the string doesn't already contain a
+        // # then treat the entire string as a fragment identifier in the current document.
+        if (!imageRef.contains("#"))
+            imageRef = "#" + imageRef;
+
         // imageRef identifiers an <image> element (may be external). This element will give us the filename.
         Object o = geometry.getRoot().resolveReference(imageRef);
         if (o instanceof ColladaImage)

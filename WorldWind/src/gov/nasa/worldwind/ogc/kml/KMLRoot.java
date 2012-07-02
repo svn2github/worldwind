@@ -822,6 +822,10 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
                 refRoot = this.parseCachedKMLFile(url, linkBase, contentType, false);
             }
 
+            // If the file could not be parsed as KML, then just return the URL.
+            if (refRoot == null)
+                return url;
+
             // Add the parsed file to the session cache so it doesn't have to be parsed again.
             WorldWind.getSessionCache().put(linkBase, refRoot);
 
@@ -967,7 +971,7 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
         try
         {
             KMLRoot refRoot = new KMLRoot(kmlDoc, namespaceAware);
-            refRoot.parse(); // also closes the URL's stream
+            refRoot = refRoot.parse(); // also closes the URL's stream
             return refRoot;
         }
         catch (XMLStreamException e)
@@ -1006,7 +1010,7 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
                     return this;
                 }
                 // Allow the document to start without a <kml> element. There are many such files around.
-                else if (event.isStartElement())
+                else if (event.isStartElement() && ctx.getParser(event) != null)
                 {
                     this.doParseEventContent(ctx, event, args);
                     return this;

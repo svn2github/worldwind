@@ -247,7 +247,10 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
         }
 
         Object o = this.parent.getRoot().resolveReference(path);
-        return (o instanceof String) ? (String) o : null;
+        if (o instanceof URL || o instanceof String)
+            return o.toString();
+
+        return null;
     }
 
     /**
