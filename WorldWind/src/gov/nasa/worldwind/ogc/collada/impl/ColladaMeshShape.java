@@ -158,6 +158,8 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
     /** Geometry objects that describe different parts of the mesh. */
     protected List<Geometry> geometries;
+    /** Cache of shape extents computed for different transform matrices. */
+    protected Map<Matrix, Extent> extentCache = new HashMap<Matrix, Extent>();
 
     /**
      * The vertex data buffer for this shape data. The first part contains vertex coordinates, the second part contains
@@ -282,13 +284,19 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
 
         ShapeData current = (ShapeData) this.currentData;
-        boolean matrixChanged = matrix != current.renderMatrix;
         current.renderMatrix = matrix;
 
-        // Update the extent if the transform matrix has changed since the last time the shape was rendered. The shape
-        // may be rendered multiple times within a single frame with different transforms.
-        if (current.getExtent() == null || matrixChanged)
-            currentData.setExtent(this.computeExtent(dc));
+        // Update current extent from cached extents. This must be done on each call to render because the same shape
+        // may be drawn multiple times during a single frame with different transforms. Attempt to calculate the extent
+        // if not available in the cache. It may not be possible to calculate the extent if the shape geometry has not
+        // been built, in which case the extent will be computed by createMinimalGeometry.
+        Extent extent = this.extentCache.get(matrix);
+        if (extent == null || current.isExpired(dc))
+        {
+            extent = this.computeExtent(dc);
+            this.extentCache.put(matrix, extent);
+        }
+        current.setExtent(extent);
 
         this.render(dc);
     }
@@ -634,7 +642,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
             this.createVertexCoords(dc);
 
         if (shapeData.getExtent() == null)
-            shapeData.setExtent(this.computeExtent(dc));
+        {
+            Extent extent = this.computeExtent(dc);
+            this.extentCache.put(shapeData.renderMatrix, extent);
+            shapeData.setExtent(extent);
+        }
     }
 
     /**
