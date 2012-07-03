@@ -290,13 +290,16 @@ public class ColladaMeshShape extends AbstractGeneralShape
         // may be drawn multiple times during a single frame with different transforms. Attempt to calculate the extent
         // if not available in the cache. It may not be possible to calculate the extent if the shape geometry has not
         // been built, in which case the extent will be computed by createMinimalGeometry.
-        Extent extent = this.extentCache.get(matrix);
-        if (extent == null || current.isExpired(dc))
+        if (this.extentCache.size() > 1)
         {
-            extent = this.computeExtent(dc);
-            this.extentCache.put(matrix, extent);
+            Extent extent = this.extentCache.get(matrix);
+            if (extent == null)
+            {
+                extent = this.computeExtent(dc);
+                this.extentCache.put(matrix, extent);
+            }
+            current.setExtent(extent);
         }
-        current.setExtent(extent);
 
         this.render(dc);
     }
@@ -381,6 +384,9 @@ public class ColladaMeshShape extends AbstractGeneralShape
     /** {@inheritDoc} */
     protected boolean doMakeOrderedRenderable(DrawContext dc)
     {
+        // Clear cached extents because we are creating new geometry.
+        this.extentCache.clear();
+
         // Do the minimum necessary to determine the model's reference point, extent and eye distance.
         this.createMinimalGeometry(dc, (ShapeData) this.getCurrent());
 
