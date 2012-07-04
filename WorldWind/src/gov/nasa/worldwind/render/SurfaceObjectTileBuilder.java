@@ -1069,13 +1069,9 @@ public class SurfaceObjectTileBuilder
             minDistance = d5;
 
         // Compute the cell size as a function of the tile's latitude delta in meters and the tile builder's target tile
-        // density in texels. We use the target density instead of the tile's actual density to ensure that tiles
-        // smaller than the target density are split according to the same metric. Smaller tiles are used when the
-        // viewport dimension is smaller than the target density. In this case, using the same metric to split tiles
-        // avoids creating a large number of tiles for a small viewport, while still rendering sharp lines and edges in
-        // the smaller viewport.
+        // density in texels.
         double cellSize = tile.getSector().getDeltaLatRadians() * dc.getGlobe().getRadius()
-            / (double) this.tileDimension.height;
+            / (double) this.currentTileDimension.height;
 
         return Math.log10(minDistance) < (this.getSplitScale() + Math.log10(cellSize));
     }
