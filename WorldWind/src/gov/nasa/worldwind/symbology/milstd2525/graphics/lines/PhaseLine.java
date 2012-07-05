@@ -48,6 +48,7 @@ public class PhaseLine extends AbstractMilStd2525TacticalGraphic
             TacGrpSidc.C2GM_OFF_LNE_LD,
             TacGrpSidc.C2GM_OFF_LNE_LDLC,
             TacGrpSidc.C2GM_OFF_LNE_PLD,
+            TacGrpSidc.C2GM_SPL_LNE_REL,
             TacGrpSidc.FSUPP_LNE_C2LNE_NFL
         );
     }
