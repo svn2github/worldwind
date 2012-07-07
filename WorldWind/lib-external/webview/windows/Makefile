@@ -1,5 +1,5 @@
 ############################################################################
-# Copyright (C) 2001, 2010 United States Government as represented by
+# Copyright (C) 2001, 2012 United States Government as represented by
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #
@@ -64,6 +64,13 @@ all: $(TARGET)
 dir:
 	if not exist $(OUTPUTDIR) mkdir $(OUTPUTDIR)
 
+# No need to define an explicit compilation rule. We use the predefined rule that compiles .cpp files using
+# the options set in CPPFLAGS and the cl compiler. See http://msdn.microsoft.com/en-us/library/cx06ysxh%28v=vs.71%29.aspx
+# for more info.
+
+# Target to create the DLL. Link the object files, and invoke the manifest tool (mt.exe) to embed a manifest in the
+# DLL. Windows requires a manifest to load the library. See http://msdn.microsoft.com/en-us/library/ms235542%28v=vs.80%29.aspx
+# for more information on manifests.
 $(TARGET): dir $(OBJECTS)
 	link /nologo $(OUTPUTDIR)\*.obj /out:$(OUTPUTDIR)\$(TARGET) $(LFLAGS) $(LIBS)
 	mt.exe /outputresource:"$(OUTPUTDIR)\$(TARGET);#2" /nologo /manifest "$(OUTPUTDIR)\$(MANIFEST)"
