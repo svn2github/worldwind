@@ -3,6 +3,8 @@
     <words>
       <w>accessor</w>
       <w>accessors</w>
+      <w>aerialway</w>
+      <w>aeroway</w>
       <w>altitudinal</w>
       <w>anaglyph</w>
       <w>antialias</w>
@@ -61,9 +63,11 @@
       <w>jpeg</w>
       <w>jvm's</w>
       <w>kronenfeld</w>
+      <w>landuse</w>
       <w>latlons</w>
       <w>level's</w>
       <w>loxodrome</w>
+      <w>maki</w>
       <w>measurer</w>
       <w>metadata</w>
       <w>modelview</w>
@@ -92,6 +96,7 @@
       <w>prims</w>
       <w>println</w>
       <w>proj</w>
+      <w>proto</w>
       <w>quadric</w>
       <w>quadtree</w>
       <w>rasterized</w>
