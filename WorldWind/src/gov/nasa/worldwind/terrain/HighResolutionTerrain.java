@@ -277,48 +277,13 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         this.geometryCache.setCapacity(Math.max(size, (long) 1e6));
     }
 
-    /**
-     * Computes the Cartesian, model-coordinate point of a position on the terrain.
-     * <p/>
-     * This operation fails with a {@link gov.nasa.worldwind.exception.WWTimeoutException} if a timeout has been
-     * specified and it is exceeded during the operation.
-     *
-     * @param position the position.
-     *
-     * @return the Cartesian, model-coordinate point of the specified position, or null if the specified position does
-     *         not exist within this instance's sector or if the operation is interrupted.
-     *
-     * @throws IllegalArgumentException if the position is null.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                                  if the current timeout is exceeded while retrieving terrain data.
-     * @throws gov.nasa.worldwind.exception.WWRuntimeException
-     *                                  if the operation is interrupted.
-     * @see #setTimeout(Long)
-     */
+    /** {@inheritDoc} */
     public Vec4 getSurfacePoint(Position position)
     {
         return this.getSurfacePoint(position.getLatitude(), position.getLongitude(), position.getAltitude());
     }
 
-    /**
-     * Computes the Cartesian, model-coordinate point of a location on the terrain.
-     * <p/>
-     * This operation fails with a {@link gov.nasa.worldwind.exception.WWTimeoutException} if a timeout has been
-     * specified and it is exceeded during the operation.
-     *
-     * @param latitude     the location's latitude.
-     * @param longitude    the location's longitude.
-     * @param metersOffset the location's distance above the terrain.
-     *
-     * @return the Cartesian, model-coordinate point of the specified location, or null if the specified location does
-     *         not exist within this instance's sector or if the operation is interrupted.
-     *
-     * @throws IllegalArgumentException if the latitude or longitude are null.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                                  if the current timeout is exceeded while retrieving terrain data.
-     * @throws WWRuntimeException       if the operation is interrupted.
-     * @see #setTimeout(Long)
-     */
+    /** {@inheritDoc} */
     public Vec4 getSurfacePoint(Angle latitude, Angle longitude, double metersOffset)
     {
         if (latitude == null || longitude == null)
@@ -356,7 +321,6 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
             throw new IllegalArgumentException(msg);
         }
 
-        // TODO: Why isn't this just getting the elevation directly from the elevation model?
         Vec4 pt = this.getSurfacePoint(location.getLatitude(), location.getLongitude(), 0);
         if (pt == null)
             return null;
@@ -366,26 +330,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         return p.distanceTo3(pt) * (pt.getLength3() >= p.getLength3() ? 1 : -1);
     }
 
-    /**
-     * Computes the intersections of a line with the terrain. The line is specified by two positions. All intersection
-     * points are returned.
-     * <p/>
-     * This operation fails with a {@link gov.nasa.worldwind.exception.WWTimeoutException} if a timeout has been
-     * specified and it is exceeded during the operation.
-     *
-     * @param pA the line's first position.
-     * @param pB the line's second position.
-     *
-     * @return an array of Cartesian model-coordinate intersection points, or null if no intersections occur or the
-     *         operation is interrupted.
-     *
-     * @throws IllegalArgumentException if either position is null.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *
-     * @throws WWRuntimeException       if the operation is interrupted. if the current timeout is exceeded while
-     *                                  retrieving terrain data.
-     * @see #setTimeout(Long)
-     */
+    /** {@inheritDoc} */
     public Intersection[] intersect(Position pA, Position pB)
     {
         if (pA == null || pB == null)
@@ -872,15 +817,15 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         {
             actualResolution = this.globe.getElevations(sector, latlons, targetResolution, elevations);
             // Uncomment the two lines below if you want to watch the resolution converge
-//                System.out.printf("Target resolution = %s, Actual resolution = %s\n",
-//                    Double.toString(targetResolution), Double.toString(actualResolution));
+//            System.out.printf("Target resolution = %s, Actual resolution = %s\n",
+//                Double.toString(targetResolution), Double.toString(actualResolution));
 
             if (actualResolution <= targetResolution)
                 break;
 
             // Give the system a chance to retrieve data from the disk cache or the server. Also catches interrupts
             // and throws interrupt exceptions.
-            Thread.sleep(5);
+            Thread.sleep(this.timeout == null ? 5L : Math.min(this.timeout, 5L));
 
             Long timeout = this.getTimeout();
             if (this.startTime.get() != null && timeout != null)
@@ -1259,23 +1204,23 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
                 int status = Triangle.intersectTriangles(triangle, triA, iVerts);
                 if (status == 1)
                 {
-                    intersections.add(new Vec4[]{iVerts[0], iVerts[1]});
+                    intersections.add(new Vec4[] {iVerts[0], iVerts[1]});
 //                    intersections.add(new Vec4[] {triA[0], triA[1], triA[2], triA[0]});
                 }
                 else if (status == 0)
                 {
-                    intersections.add(new Vec4[]{triA[0], triA[1], triA[2]});
+                    intersections.add(new Vec4[] {triA[0], triA[1], triA[2]});
                 }
 
                 status = Triangle.intersectTriangles(triangle, triB, iVerts);
                 if (status == 1)
                 {
-                    intersections.add(new Vec4[]{iVerts[0], iVerts[1]});
+                    intersections.add(new Vec4[] {iVerts[0], iVerts[1]});
 //                    intersections.add(new Vec4[] {triB[0], triB[1], triB[2], triB[0]});
                 }
                 else if (status == 0)
                 {
-                    intersections.add(new Vec4[]{triB[0], triB[1], triB[2]});
+                    intersections.add(new Vec4[] {triB[0], triB[1], triB[2]});
                 }
             }
         }
@@ -1297,7 +1242,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @throws InterruptedException if the operation is interrupted before it completes.
      */
     public void intersectTriangle(Vec4[] triangleCoordinates, Position[] trianglePositions,
-                                  List<Position[]> intersectPositionsOut) throws InterruptedException
+        List<Position[]> intersectPositionsOut) throws InterruptedException
     {
         // Get the tiles intersecting the specified sector. Compute the sector from geographic coordinates.
         Sector sector = Sector.boundingSector(Arrays.asList(trianglePositions));
@@ -1379,6 +1324,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         List<RectTile> tiles = this.getIntersectingTiles(sector);
 
         // Find the min and max elevation among the tiles.
+
+        this.startTime.set(System.currentTimeMillis());
 
         Position[] extremes = new Position[2];
 
