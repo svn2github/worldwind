@@ -267,6 +267,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
 
     final String OFFLINE_MODE = "gov.nasa.worldwind.avkey.OfflineMode";
     final String OPACITY = "gov.nasa.worldwind.avkey.Opacity";
+    final String OSM_LAYER_CACHE_SIZE = "gov.nasa.worldwind.avkey.OpenStreetMapLayerCacheSize";
     /**
      * Indicates an object's position in a series. When used as a key, the corresponding value must be an {@link
      * Integer} object indicating the ordinal.
