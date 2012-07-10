@@ -15,6 +15,13 @@ import gov.nasa.worldwind.util.*;
 import java.util.List;
 
 /**
+ * Defines a globe modeled as an <a href="http://mathworld.wolfram.com/Ellipsoid.html" target="_blank">ellipsoid</a>.
+ * This globe uses a Cartesian coordinate system in which the Y axis points to the north pole. The Z axis points to the
+ * intersection of the prime meridian and the equator, in the equatorial plane. The X axis completes a right-handed
+ * coordinate system, and is 90 degrees east of the Z axis and also in the equatorial plane. Sea level is at z = zero.
+ * By default the origin of the coordinate system lies at the center of the globe, but can be set to a different point
+ * when the globe is constructed.
+ *
  * @author Tom Gaskins
  * @version $Id$
  */
@@ -27,6 +34,15 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
     private ElevationModel elevationModel;
     private Tessellator tessellator;
 
+    /**
+     * Create a new globe. The globe's center point will be (0, 0, 0). The globe will be tessellated using tessellator
+     * defined by the {@link AVKey#TESSELLATOR_CLASS_NAME} configuration parameter.
+     *
+     * @param equatorialRadius Radius of the globe at the equator.
+     * @param polarRadius      Radius of the globe at the poles.
+     * @param es               Square of the globe's eccentricity.
+     * @param em               Elevation model. May be null.
+     */
     public EllipsoidalGlobe(double equatorialRadius, double polarRadius, double es, ElevationModel em)
     {
         this.equatorialRadius = equatorialRadius;
@@ -37,6 +53,16 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         this.tessellator = (Tessellator) WorldWind.createConfigurationComponent(AVKey.TESSELLATOR_CLASS_NAME);
     }
 
+    /**
+     * Create a new globe, and set the position of the globe's center. The globe will be tessellated using tessellator
+     * defined by the {@link AVKey#TESSELLATOR_CLASS_NAME} configuration parameter.
+     *
+     * @param equatorialRadius Radius of the globe at the equator.
+     * @param polarRadius      Radius of the globe at the poles.
+     * @param es               Square of the globe's eccentricity.
+     * @param em               Elevation model. May be null.
+     * @param center           Cartesian coordinates of the globe's center point.
+     */
     public EllipsoidalGlobe(double equatorialRadius, double polarRadius, double es, ElevationModel em, Vec4 center)
     {
         this.equatorialRadius = equatorialRadius;
@@ -82,7 +108,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             return this.globe;
         }
 
-        @SuppressWarnings( {"RedundantIfStatement"})
+        @SuppressWarnings({"RedundantIfStatement"})
         @Override
         public boolean equals(Object o)
         {
@@ -373,6 +399,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 
     public boolean intersects(Line line)
     {
+        //noinspection SimplifiableIfStatement
         if (line == null)
             return false;
 
@@ -714,7 +741,16 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 //        return Position.fromRadians(lat, lon, elevation);
 //    }
 
-    @SuppressWarnings( {"SuspiciousNameCombination"})
+    /**
+     * Compute the geographic position to corresponds to a Cartesian point.
+     *
+     * @param cart Cartesian point to convert to geographic.
+     *
+     * @return The geographic position of {@code cart}.
+     *
+     * @see #geodeticToCartesian(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)
+     */
+    @SuppressWarnings({"SuspiciousNameCombination"})
     protected Position cartesianToGeodetic(Vec4 cart)
     {
         // Contributed by Nathan Kronenfeld. Integrated 1/24/2011. Brings this calculation in line with Vermeille's
@@ -996,6 +1032,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
      */
     public boolean isPointAboveElevation(Vec4 point, double elevation)
     {
+        //noinspection SimplifiableIfStatement
         if (point == null)
             return false;
 

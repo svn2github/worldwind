@@ -8,6 +8,9 @@ package gov.nasa.worldwind.globes;
 import gov.nasa.worldwind.avlist.AVKey;
 
 /**
+ * Defines a model of the Earth projected onto a plane. The Earth's radius as defined by the <a
+ * href="http://en.wikipedia.org/wiki/World_Geodetic_System" target="_blank">World Geodetic System</a> (WGS84).
+ *
  * @author Tom Gaskins
  * @version $Id$
  */

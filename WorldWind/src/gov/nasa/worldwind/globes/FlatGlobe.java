@@ -6,25 +6,48 @@
 package gov.nasa.worldwind.globes;
 
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.util.Logging;
 
 /**
- * Defines a Globe represented as a projection onto a plane. The projection type is modifiable.
+ * Defines a globe represented as a projection onto a plane. The projection type is modifiable. The default projection
+ * is Mercator. New projections may be added by extending this class and overriding {@link
+ * #geodeticToCartesian(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double) geodeticToCartesian}
+ * {@link #cartesianToGeodetic(gov.nasa.worldwind.geom.Vec4) cartesianToGeodetic}.
+ * <p/>
+ * This globe uses a Cartesian coordinate system in the world plane is located at the origin and has UNIT-Z as normal.
+ * The Y axis points to the north pole. The Z axis points up. The X axis completes a right-handed coordinate system, and
+ * points east. Latitude and longitude zero are at the origin on y and x respectively. Sea level is at z = zero.
  *
  * @author Patrick Murris
  * @version $Id$
  */
 public class FlatGlobe extends EllipsoidalGlobe
 {
+    /**
+     * <a href="http://en.wikipedia.org/wiki/Plate_carr%C3%A9e_projection" target="_blank">Latitude/Longitude</a>
+     * projection. Also known as the geographic projection, the equirectangular projection, or the Plate Carree
+     * projection.
+     */
     public final static String PROJECTION_LAT_LON = "gov.nasa.worldwind.globes.projectionLatLon";
+    /** <a href="http://en.wikipedia.org/wiki/Mercator_projection" target="_blank">Mercator</a> projection. */
     public final static String PROJECTION_MERCATOR = "gov.nasa.worldwind.globes.projectionMercator";
+    /** <a href="http://en.wikipedia.org/wiki/Sinusoidal_projection" target="_blank">Sinusoidal</a> projection. */
     public final static String PROJECTION_SINUSOIDAL = "gov.nasa.worldwind.globes.projectionSinusoidal";
     public final static String PROJECTION_MODIFIED_SINUSOIDAL =
         "gov.nasa.worldwind.globes.projectionModifiedSinusoidal";
 
     private String projection = PROJECTION_MERCATOR;
 
+    /**
+     * Create a new globe. The globe will use the Mercator projection. The projection can be changed using {@link
+     * #setProjection(String)}.
+     *
+     * @param equatorialRadius Radius of the globe at the equator.
+     * @param polarRadius      Radius of the globe at the poles.
+     * @param es               Square of the globe's eccentricity.
+     * @param em               Elevation model. May be null.
+     */
     public FlatGlobe(double equatorialRadius, double polarRadius, double es, ElevationModel em)
     {
         super(equatorialRadius, polarRadius, es, em);
@@ -119,6 +142,12 @@ public class FlatGlobe extends EllipsoidalGlobe
         return getMaximumRadius();
     }
 
+    /**
+     * Set the projection used to project the globe onto a plane.
+     *
+     * @param projection New projection. One of {@link #PROJECTION_LAT_LON}, {@link #PROJECTION_MERCATOR}, {@link
+     *                   #PROJECTION_SINUSOIDAL}, or {@link #PROJECTION_MODIFIED_SINUSOIDAL}.
+     */
     public void setProjection(String projection)
     {
         if (projection == null)
@@ -135,6 +164,13 @@ public class FlatGlobe extends EllipsoidalGlobe
         this.setTessellator(null);
     }
 
+    /**
+     * Indicates the projection used to project the globe onto a plane. The default projection is Mercator.
+     *
+     * @return The active projection.
+     *
+     * @see #setProjection(String)
+     */
     public String getProjection()
     {
         return this.projection;
@@ -286,8 +322,8 @@ public class FlatGlobe extends EllipsoidalGlobe
     /**
      * Maps a position to a flat world Cartesian coordinates. The world plane is located at the origin and has UNIT-Z as
      * normal. The Y axis points to the north pole. The Z axis points up. The X axis completes a right-handed coordinate
-     * system, and points east. Latitude and longitude zero are at the origine on y and x respectively. Sea level is at
-     * z = zero.
+     * system, and points east. Latitude and longitude zero are at the origin on y and x respectively. Sea level is at z
+     * = zero.
      *
      * @param latitude        the latitude of the position.
      * @param longitude       the longitude of the position.
@@ -462,6 +498,7 @@ public class FlatGlobe extends EllipsoidalGlobe
      */
     public boolean isPointAboveElevation(Vec4 point, double elevation)
     {
+        //noinspection SimplifiableIfStatement
         if (point == null)
             return false;
 
