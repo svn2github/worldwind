@@ -11,7 +11,7 @@ import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.Logging;
 
 /**
- * Class with static methods for datum transformation.  Curently shifts between NAD27 and WGS84. Other shifts will be
+ * Class with static methods for datum transformation.  Currently shifts between NAD27 and WGS84. Other shifts will be
  * added as needed.
  *
  * @author jparsons

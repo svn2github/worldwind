@@ -12,7 +12,7 @@ import java.nio.*;
 import java.util.*;
 
 /**
- * Provides operations on trinagles.
+ * Provides operations on triangles.
  *
  * @author Eric Dalgliesh 30/11/2006
  * @version $Id$
@@ -1080,8 +1080,8 @@ public class Triangle
     }
 
     protected static TriangleIntersection compute_intervals_isectline(Vec4[] v, double vv0, double vv1, double vv2,
-                                                                      double d0, double d1, double d2,
-                                                                      double d0d1, double d0d2)
+        double d0, double d1, double d2,
+        double d0d1, double d0d2)
     {
         if (d0d1 > 0) // D0, D1 are on the same side, D2 on the other or on the plane
             return intersect(v[2], v[0], v[1], vv2, vv0, vv1, d2, d0, d1);
@@ -1098,7 +1098,7 @@ public class Triangle
     }
 
     protected static TriangleIntersection intersect(Vec4 v0, Vec4 v1, Vec4 v2, double vv0, double vv1, double vv2,
-                                                    double d0, double d1, double d2)
+        double d0, double d1, double d2)
     {
         TriangleIntersection intersection = new TriangleIntersection();
 
@@ -1123,7 +1123,7 @@ public class Triangle
         int i0;
         int i1;
 
-        double[] a = new double[]{Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)};
+        double[] a = new double[] {Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)};
         if (a[0] > a[1]) // X > Y
         {
             if (a[0] > a[2])
@@ -1152,13 +1152,13 @@ public class Triangle
         }
 
         // Test all edges of triangle 1 against the edges of triangle 2.
-        double[] v0 = new double[]{v[0].x, v[0].y, v[0].z};
-        double[] v1 = new double[]{v[1].x, v[1].y, v[1].z};
-        double[] v2 = new double[]{v[2].x, v[2].y, v[2].z};
+        double[] v0 = new double[] {v[0].x, v[0].y, v[0].z};
+        double[] v1 = new double[] {v[1].x, v[1].y, v[1].z};
+        double[] v2 = new double[] {v[2].x, v[2].y, v[2].z};
 
-        double[] u0 = new double[]{u[0].x, u[0].y, u[0].z};
-        double[] u1 = new double[]{u[1].x, u[1].y, u[1].z};
-        double[] u2 = new double[]{u[2].x, u[2].y, u[2].z};
+        double[] u0 = new double[] {u[0].x, u[0].y, u[0].z};
+        double[] u1 = new double[] {u[1].x, u[1].y, u[1].z};
+        double[] u2 = new double[] {u[2].x, u[2].y, u[2].z};
 
         boolean tf = triangleEdgeTest(v0, v1, u0, u1, u2, i0, i1);
         if (tf)
@@ -1181,7 +1181,7 @@ public class Triangle
     }
 
     protected static boolean triangleEdgeTest(double[] v0, double[] v1, double[] u0, double[] u1, double[] u2, int i0,
-                                              int i1)
+        int i1)
     {
         double ax = v1[i0] - v0[i0];
         double ay = v1[i1] - v0[i1];
