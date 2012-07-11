@@ -49,6 +49,7 @@ public class BasicArea extends AbstractMilStd2525TacticalGraphic implements PreR
             TacGrpSidc.C2GM_GNL_ARS_EZ,
             TacGrpSidc.C2GM_GNL_ARS_LZ,
             TacGrpSidc.C2GM_GNL_ARS_PZ,
+            TacGrpSidc.C2GM_GNL_ARS_DRPZ,
             TacGrpSidc.C2GM_DEF_ARS_EMTARA);
     }
 
