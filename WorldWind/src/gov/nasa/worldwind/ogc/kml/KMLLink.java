@@ -138,6 +138,22 @@ public class KMLLink extends KMLAbstractObject
     }
 
     /**
+     * Schedule an asynchronous task to mark the link updated at some time in the future. Calling this method will
+     * cancel an previously scheduled update.
+     *
+     * @param time Time, in milliseconds since the Epoch, at which to update the link.
+     */
+    public void scheduleRefresh(long time)
+    {
+        // If there is already a task running, cancel it
+        if (this.refreshTask != null)
+            this.refreshTask.cancel(false);
+
+        long refreshDelay = time - System.currentTimeMillis();
+        this.refreshTask = this.scheduleDelayedTask(new RefreshTask(), refreshDelay, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * Schedule a task to refresh the link if the refresh mode requires it. In the case of an {@code onInterval} and
      * {@code onExpire} refresh modes, this method schedules a task to update the link after the refresh interval
      * elapses, but only if such a task has not already been scheduled (only one refresh task is active at a time).
@@ -195,11 +211,11 @@ public class KMLLink extends KMLAbstractObject
 
     protected Long computeExpiryRefreshTime()
     {
+        // Expiration specified by HTTP header is handled by KMLNetworkLink. Only consider expiration in a
+        // NetworkLinkControl block here.
         KMLNetworkLinkControl linkControl = this.getRoot().getNetworkLinkControl();
         if (linkControl != null && linkControl.getExpires() != null)
             return WWUtil.parseTimeString(linkControl.getExpires());
-
-        // TODO: Compute expiry time from HTTP headers
 
         return null;
     }
@@ -405,6 +421,7 @@ public class KMLLink extends KMLAbstractObject
             if (!WWUtil.isEmpty(s))
             {
                 Sector viewBounds = this.computeVisibleBounds(dc);
+                //noinspection ConstantConditions
                 s = s.replaceAll("\\[bboxWest\\]", Double.toString(viewBounds.getMinLongitude().degrees));
                 s = s.replaceAll("\\[bboxSouth\\]", Double.toString(viewBounds.getMinLatitude().degrees));
                 s = s.replaceAll("\\[bboxEast\\]", Double.toString(viewBounds.getMaxLongitude().degrees));
@@ -462,6 +479,7 @@ public class KMLLink extends KMLAbstractObject
             String clientName = Configuration.getStringValue(AVKey.NAME, Version.getVersionName());
             String clientVersion = Configuration.getStringValue(AVKey.VERSION, Version.getVersionNumber());
 
+            //noinspection ConstantConditions
             s = s.replaceAll("\\[clientVersion\\]", clientVersion);
             s = s.replaceAll("\\[kmlVersion\\]", KMLConstants.KML_VERSION);
             s = s.replaceAll("\\[clientName\\]", clientName);

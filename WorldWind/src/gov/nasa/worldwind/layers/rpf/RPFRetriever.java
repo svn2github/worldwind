@@ -7,12 +7,11 @@ package gov.nasa.worldwind.layers.rpf;
 
 import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.formats.dds.*;
-import gov.nasa.worldwind.retrieve.RetrievalPostProcessor;
-import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.formats.dds.DDSCompressor;
+import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.Logging;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,6 +102,16 @@ class RPFRetriever extends WWObjectImpl implements Retriever
     public final String getContentType()
     {
         return this.contentType;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return Always returns zero (no expiration).
+     */
+    public long getExpirationTime()
+    {
+        return 0;
     }
 
     public long getSubmitTime()
@@ -211,7 +220,7 @@ class RPFRetriever extends WWObjectImpl implements Retriever
         {
             setState(RETRIEVER_STATE_ERROR);
             Logging.logger().log(Level.SEVERE,
-                    Logging.getMessage("URLRetriever.ErrorAttemptingToRetrieve", this.url.toString()), e);
+                Logging.getMessage("URLRetriever.ErrorAttemptingToRetrieve", this.url.toString()), e);
         }
         finally
         {
@@ -299,7 +308,7 @@ class RPFRetriever extends WWObjectImpl implements Retriever
             return false;
 
         final RPFRetriever that = (RPFRetriever) o;
-        
+
         // Retrievers are considered identical if they are for the same URL. This convention is used by the
         // retrieval service to filter out duplicate retreival requests.
         return !(url != null ? !url.toString().contentEquals(that.url.toString()) : that.url != null);

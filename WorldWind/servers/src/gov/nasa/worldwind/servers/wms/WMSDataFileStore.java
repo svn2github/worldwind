@@ -50,7 +50,14 @@ public class WMSDataFileStore extends AbstractFileStore
     public String getContentType(String address)
     {
         // TODO garakl
-        // this method must bee implemented in the AbstractFileStore class, not in the BasicDataFileStore
+        // this method must be implemented in the AbstractFileStore class, not in the BasicDataFileStore
+        throw new WWRuntimeException(Logging.getMessage("generic.UnsupportedOperation"));
+    }
+
+    /** {@inheritDoc} Not yet supported by this implementation. */
+    public long getExpirationTime(String address)
+    {
+        // TODO
         throw new WWRuntimeException(Logging.getMessage("generic.UnsupportedOperation"));
     }
 
@@ -58,7 +65,7 @@ public class WMSDataFileStore extends AbstractFileStore
     public void removeFile(String address)
     {
         // TODO garakl
-        // this method must bee implemented in the AbstractFileStore class, not in the BasicDataFileStore
+        // this method must be implemented in the AbstractFileStore class, not in the BasicDataFileStore
         throw new WWRuntimeException(Logging.getMessage("generic.UnsupportedOperation"));
     }
 
@@ -66,7 +73,7 @@ public class WMSDataFileStore extends AbstractFileStore
     public URL requestFile(String address)
     {
         // TODO garakl
-        // this method must bee implemented in the AbstractFileStore class, not in the BasicDataFileStore
+        // this method must be implemented in the AbstractFileStore class, not in the BasicDataFileStore
         throw new WWRuntimeException(Logging.getMessage("generic.UnsupportedOperation"));
     }
 
@@ -74,7 +81,7 @@ public class WMSDataFileStore extends AbstractFileStore
     public URL requestFile(String address, boolean cacheRemoteFile)
     {
         // TODO garakl
-        // this method must bee implemented in the AbstractFileStore class, not in the BasicDataFileStore
+        // this method must be implemented in the AbstractFileStore class, not in the BasicDataFileStore
         throw new WWRuntimeException(Logging.getMessage("generic.UnsupportedOperation"));
     }
 }

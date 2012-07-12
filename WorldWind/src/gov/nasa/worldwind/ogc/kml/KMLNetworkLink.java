@@ -400,6 +400,12 @@ public class KMLNetworkLink extends KMLAbstractContainer implements PropertyChan
         if (o instanceof KMLRoot)
         {
             this.setNetworkResource((KMLRoot) o);
+
+            // Check for an expiration time set through a HTTP header.
+            long expiration = this.getRoot().getExpiration(address);
+            if (expiration != 0)
+                this.getLinkOrUrl().scheduleRefresh(expiration);
+
             this.getRoot().firePropertyChange(AVKey.RETRIEVAL_STATE_SUCCESSFUL, null, KMLNetworkLink.this);
         }
         // Anything other than a KMLRoot is not a valid link target

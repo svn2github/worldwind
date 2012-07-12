@@ -15,8 +15,9 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.*;
 import java.util.logging.Level;
+import java.util.regex.*;
 import java.util.zip.*;
 
 /**
@@ -37,6 +38,7 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
     protected volatile int contentLength = 0;
     protected AtomicInteger contentLengthRead = new AtomicInteger(0);
     protected volatile String contentType;
+    protected AtomicLong expiration = new AtomicLong(0);
     protected volatile ByteBuffer byteBuffer;
     protected volatile URLConnection connection;
     protected final URL url;
@@ -119,6 +121,16 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
     public final String getContentType()
     {
         return this.contentType;
+    }
+
+    /**
+     * {@inheritDoc} Expiration time is determined by either the Expires header, or the max-age directive of the
+     * Cache-Control header. Cache-Control has priority if both headers are specified (see section 14.9.3 of the <a
+     * href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html" target="_blank">HTTP Specification</a>).
+     */
+    public long getExpirationTime()
+    {
+        return this.expiration.get();
     }
 
     public final ByteBuffer getBuffer()
@@ -400,6 +412,15 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
                 return null;
             }
 
+            // Read the expiration time from either the Cache-Control header or the Expires header. Cache-Control has
+            // priority if both headers are specified. See section 14.9.3 of the HTTP Specification:
+            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+            long expiration = this.getCacheControlExpiration(connection);
+            if (expiration != 0)
+                this.expiration.set(expiration);
+            else
+                this.expiration.set(connection.getExpiration());
+
             // The legacy WW servers send data with application/zip as the content type, and the retrieval initiator is
             // expected to know what type the unzipped content is. This is a kludge, but we have to deal with it. So
             // automatically unzip the content if the content type is application/zip.
@@ -528,6 +549,31 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
             buffer.flip();
 
         return buffer;
+    }
+
+    /**
+     * Indicates the expiration time specified by by the max-age directive of the Cache-Control header.
+     *
+     * @param connection Connection for which to determine expiration time.
+     *
+     * @return Expiration time (in milliseconds since the Epoch) specified by the Cache-Control header. Zero indicates
+     *         that the is no expiration time. Returns zero if there is no Cache-Control header, or the header does not
+     *         contain a max-age directive.
+     */
+    protected long getCacheControlExpiration(URLConnection connection)
+    {
+        String cacheControl = connection.getHeaderField("cache-control");
+        if (cacheControl == null)
+            return 0;
+
+        Pattern pattern = Pattern.compile("max-age=(\\d+)");
+        Matcher matcher = pattern.matcher(cacheControl);
+        if (matcher.find())
+        {
+            Long maxAgeSec = WWUtil.makeLong(matcher.group(1));
+            return maxAgeSec != null ? maxAgeSec * 1000 + System.currentTimeMillis() : 0;
+        }
+        return 0;
     }
 
     @Override

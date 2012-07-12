@@ -930,6 +930,40 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
     }
 
     /**
+     * Returns the expiration time of a file retrieved by {@link #resolveReference(String) resolveReference} or {@link
+     * #resolveNetworkLink(String, boolean, long) resolveNetworkLink}.
+     *
+     * @param link the address of the file (the same address as was previously passed to resolveReference). If null,
+     *             zero is returned.
+     *
+     * @return The expiration time of the file, in milliseconds since the Epoch (January 1, 1970, 00:00:00 GMT). Zero
+     *         indicates that there is no expiration time. Returns zero if te resource identified by {@code link} has
+     *         not been retrieved.
+     */
+    public long getExpiration(String link)
+    {
+        try
+        {
+            if (link == null)
+                return 0;
+
+            // Interpret the path relative to the current document.
+            String path = this.getSupportFilePath(link);
+            if (path == null)
+                path = link;
+
+            return WorldWind.getDataFileStore().getExpirationTime(path);
+        }
+        catch (IOException e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", link);
+            Logging.logger().warning(message);
+        }
+
+        return 0;
+    }
+
+    /**
      * Determines if a MIME type can be parsed as KML or KMZ. Parsable types are the KML and KMZ MIME types, as well as
      * "text/plain" and "text/xml".
      *

@@ -182,6 +182,15 @@ public class BasicDataFileStore extends AbstractFileStore
         return entry != null ? entry.contentType : null;
     }
 
+    public long getExpirationTime(String address)
+    {
+        if (address == null)
+            return 0;
+
+        DBEntry entry = (DBEntry) this.db.getObject(address);
+        return entry != null ? entry.expiration : 0;
+    }
+
     /** Holds information for entries in the cache database. */
     protected static class DBEntry implements Cacheable
     {
@@ -191,6 +200,7 @@ public class BasicDataFileStore extends AbstractFileStore
 
         protected String name;
         protected String contentType;
+        protected long expiration;
         protected URL localUrl;
         protected long lastUpdateTime;
         protected int state;
@@ -260,10 +270,14 @@ public class BasicDataFileStore extends AbstractFileStore
         DBEntry entry = (DBEntry) this.db.getObject(address);
         if (entry != null)
         {
-            if (entry.state == DBEntry.LOCAL) // Check here for HTTP expiration
+            long now = System.currentTimeMillis();
+            boolean expired = entry.expiration != 0 && now > entry.expiration;
+
+            // Return the resource if it is local and has not expired.
+            if (entry.state == DBEntry.LOCAL && !expired)
                 return entry.localUrl;
 
-            if (entry.state == DBEntry.PENDING && (System.currentTimeMillis() - entry.lastUpdateTime <= TIMEOUT))
+            if (entry.state == DBEntry.PENDING && (now - entry.lastUpdateTime <= TIMEOUT))
                 return null;
         }
 
@@ -497,7 +511,8 @@ public class BasicDataFileStore extends AbstractFileStore
         protected boolean saveBuffer() throws IOException
         {
             boolean tf = super.saveBuffer();
-            BasicDataFileStore.this.updateEntry(this.address, this.localFileUrl);
+            BasicDataFileStore.this.updateEntry(this.address, this.localFileUrl,
+                this.getRetriever().getExpirationTime());
             return tf;
         }
 
@@ -534,8 +549,10 @@ public class BasicDataFileStore extends AbstractFileStore
      *
      * @param address      the name used to identify the file in the cache.
      * @param localFileUrl the path to the local copy of the file.
+     * @param expiration   time (in milliseconds since the Epoch) at which this entry expires, or zero to indicate that
+     *                     there is no expiration time.
      */
-    protected synchronized void updateEntry(String address, URL localFileUrl)
+    protected synchronized void updateEntry(String address, URL localFileUrl, long expiration)
     {
         DBEntry entry = (DBEntry) this.db.getObject(address);
         if (entry == null)
@@ -544,6 +561,7 @@ public class BasicDataFileStore extends AbstractFileStore
         entry.state = DBEntry.LOCAL;
         entry.localUrl = localFileUrl;
         entry.contentType = WWIO.makeMimeTypeForSuffix(WWIO.getSuffix(localFileUrl.getPath()));
+        entry.expiration = expiration;
         entry.lastUpdateTime = System.currentTimeMillis();
     }
 

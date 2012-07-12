@@ -22,7 +22,7 @@ import java.util.logging.Level;
  */
 public class LocalRasterServerRetriever extends WWObjectImpl implements Retriever
 {
-//    protected AVList params;
+    //    protected AVList params;
     protected RetrievalPostProcessor postProcessor;
 
     protected RasterServer server = null;
@@ -83,6 +83,16 @@ public class LocalRasterServerRetriever extends WWObjectImpl implements Retrieve
     {
         Object o = this.getValue(AVKey.IMAGE_FORMAT);
         return (WWUtil.isEmpty(o)) ? null : (String) o;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return Always returns zero (no expiration).
+     */
+    public long getExpirationTime()
+    {
+        return 0;
     }
 
     public long getSubmitTime()

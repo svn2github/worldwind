@@ -112,9 +112,9 @@ public interface FileStore extends WWObject
     java.io.File newFile(String fileName);
 
     /**
-     * Remove an entry from the file store. This method removes files that were added to the file store by
-     * {@link #requestFile(String)}. The {@code address} passed to this method must be the same as the address string
-     * that was passed to {@code requestFile} when the file was added.
+     * Remove an entry from the file store. This method removes files that were added to the file store by {@link
+     * #requestFile(String)}. The {@code address} passed to this method must be the same as the address string that was
+     * passed to {@code requestFile} when the file was added.
      *
      * @param address file address of the entry to remove. This must be the same string as was passed to {@link
      *                #requestFile(String)}.
@@ -185,6 +185,16 @@ public interface FileStore extends WWObject
      * @return the mime type describing the cached file's contents. Null is returned if the specified address is null.
      */
     String getContentType(String address);
+
+    /**
+     * Returns the expiration time of a cached file.
+     *
+     * @param address the file's address. If null, zero is returned.
+     *
+     * @return The expiration time of the file, in milliseconds since the Epoch (January 1, 1970, 00:00:00 GMT). Zero
+     *         indicates that there is no expiration time.
+     */
+    long getExpirationTime(String address);
 
     /**
      * Requests a file. If the file exists locally, including as a resource on the classpath, this returns a

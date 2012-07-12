@@ -33,6 +33,14 @@ public interface Retriever extends WWObject, java.util.concurrent.Callable<Retri
 
     String getContentType();
 
+    /**
+     * Indicates the expiration time of the resource retrieved by this Retriever.
+     *
+     * @return The expiration time of the resource, in milliseconds since the Epoch (January 1, 1970, 00:00:00 GMT).
+     *         Zero indicates that there is no expiration time.
+     */
+    long getExpirationTime();
+
     long getSubmitTime();
 
     void setSubmitTime(long submitTime);
