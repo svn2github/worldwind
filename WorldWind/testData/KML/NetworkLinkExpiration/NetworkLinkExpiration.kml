@@ -5,7 +5,9 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
         <name>NetworkLink Expiration Test Suite</name>
-        <description>The label of each placemark should update every 5 seconds.</description>
+        <description>The label of each placemark should update every 5 seconds. NetworkLinkControl requires that the
+            client and server clocks be synchronized.
+        </description>
         <open>1</open>
 
         <NetworkLink>
@@ -13,7 +15,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires.php
+                    http://worldwind.arc.nasa.gov/java/NetworkLinkExpiration/NetworkLinkExpiration_expires.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
@@ -24,7 +26,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_max_age.php
+                    http://worldwind.arc.nasa.gov/java/NetworkLinkExpiration/NetworkLinkExpiration_max_age.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
@@ -35,7 +37,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_max_age.php
+                    http://worldwind.arc.nasa.gov/java/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_max_age.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
@@ -46,7 +48,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_link_control.php
+                    http://worldwind.arc.nasa.gov/java/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_link_control.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>

@@ -412,14 +412,7 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
                 return null;
             }
 
-            // Read the expiration time from either the Cache-Control header or the Expires header. Cache-Control has
-            // priority if both headers are specified. See section 14.9.3 of the HTTP Specification:
-            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-            long expiration = this.getCacheControlExpiration(connection);
-            if (expiration != 0)
-                this.expiration.set(expiration);
-            else
-                this.expiration.set(connection.getExpiration());
+            this.expiration.set(this.getExpiration(connection));
 
             // The legacy WW servers send data with application/zip as the content type, and the retrieval initiator is
             // expected to know what type the unzipped content is. This is a kludge, but we have to deal with it. So
@@ -552,28 +545,45 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
     }
 
     /**
-     * Indicates the expiration time specified by by the max-age directive of the Cache-Control header.
+     * Indicates the expiration time specified by either the Expires header or the max-age directive of the
+     * Cache-Control header. If both are present, then Cache-Control is given priority (See section 14.9.3 of the HTTP
+     * Specification: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html).
+     * <p/>
+     * If both the Expires and Date headers are present then the expiration time is calculated as current time +
+     * (expires - date). This helps guard against clock skew between the client and server.
      *
-     * @param connection Connection for which to determine expiration time.
+     * @param connection Connection for which to get expiration time.
      *
-     * @return Expiration time (in milliseconds since the Epoch) specified by the Cache-Control header. Zero indicates
-     *         that the is no expiration time. Returns zero if there is no Cache-Control header, or the header does not
-     *         contain a max-age directive.
+     * @return The expiration time, in milliseconds since the Epoch, specified by the HTTP headers, or zero if there is
+     *         no expiration time.
      */
-    protected long getCacheControlExpiration(URLConnection connection)
+    protected long getExpiration(URLConnection connection)
     {
+        // Read the expiration time from either the Cache-Control header or the Expires header. Cache-Control has
+        // priority if both headers are specified.
         String cacheControl = connection.getHeaderField("cache-control");
-        if (cacheControl == null)
-            return 0;
-
-        Pattern pattern = Pattern.compile("max-age=(\\d+)");
-        Matcher matcher = pattern.matcher(cacheControl);
-        if (matcher.find())
+        if (cacheControl != null)
         {
-            Long maxAgeSec = WWUtil.makeLong(matcher.group(1));
-            return maxAgeSec != null ? maxAgeSec * 1000 + System.currentTimeMillis() : 0;
+            Pattern pattern = Pattern.compile("max-age=(\\d+)");
+            Matcher matcher = pattern.matcher(cacheControl);
+            if (matcher.find())
+            {
+                Long maxAgeSec = WWUtil.makeLong(matcher.group(1));
+                if (maxAgeSec != null)
+                    return maxAgeSec * 1000 + System.currentTimeMillis();
+            }
         }
-        return 0;
+
+        // If the Cache-Control header is not present, or does not contain max-age, then look for the Expires header.
+        // If the Date header is also present then compute the expiration time based on the server reported response
+        // time. This helps guard against clock skew between client and server.
+        long expiration = connection.getExpiration();
+        long date = connection.getDate();
+
+        if (date > 0 && expiration > date)
+            return System.currentTimeMillis() + (expiration - date);
+
+        return expiration;
     }
 
     @Override
