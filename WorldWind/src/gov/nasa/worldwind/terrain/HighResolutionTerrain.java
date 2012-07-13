@@ -390,9 +390,52 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
             for (RectTile tile : tiles)
             {
                 this.makeVerts(tile);
+            }
+        }
+        catch (InterruptedException e)
+        {
+            throw new WWRuntimeException(e);
+        }
+        finally
+        {
+            this.startTime.set(null); // signals that no operation is active
+        }
+    }
 
-                if (this.geometryCache.getFreeCapacity() < (long) 10e3) // cache is full so stop caching
-                    return;
+
+    /**
+     * Cause the tiles used by subsequent intersection calculations to be cached so that they are available immediately
+     * to those subsequent calculations.
+     * <p/>
+     * Pre-caching is unnecessary and is useful only when it can occur before the intersection calculations are needed.
+     * It will incur extra overhead otherwise. The normal intersection calculations cause the same caching.
+     *
+     * @param sector the sector for which to cache elevation data.
+     *
+     * @throws IllegalArgumentException if the specified sector is null.
+     * @throws WWRuntimeException       if the operation is interrupted. if the current timeout is exceeded while
+     *                                  retrieving terrain data.
+     */
+    public void cacheIntersectingTiles(Sector sector)
+    {
+        if (sector == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        try
+        {
+            this.startTime.set(System.currentTimeMillis());
+
+            List<RectTile> tiles = this.getIntersectingTiles(sector);
+            if (tiles == null)
+                return;
+
+            for (RectTile tile : tiles)
+            {
+                this.makeVerts(tile);
             }
         }
         catch (InterruptedException e)
@@ -595,7 +638,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         if (pA.getLatitude().equals(pB.getLatitude()) && pA.getLongitude().equals(pB.getLongitude()))
             return null;
 
-        Line line = new Line(ptA, ptB.subtract3(ptA).normalize3());
+        Line line = new Line(ptA, ptB.subtract3(ptA));
 
         Intersection[] hits;
         ArrayList<Intersection> list = new ArrayList<Intersection>();
