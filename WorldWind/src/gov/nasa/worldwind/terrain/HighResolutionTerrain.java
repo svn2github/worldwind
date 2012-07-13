@@ -367,10 +367,10 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param pB the line's second position.
      *
      * @throws IllegalArgumentException if either position is null.
-     * @throws WWRuntimeException       if the operation is interrupted. if the current timeout is exceeded while
+     * @throws InterruptedException       if the operation is interrupted. if the current timeout is exceeded while
      *                                  retrieving terrain data.
      */
-    public void cacheIntersectingTiles(Position pA, Position pB)
+    public void cacheIntersectingTiles(Position pA, Position pB) throws InterruptedException
     {
         if (pA == null || pB == null)
         {
@@ -392,10 +392,6 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
                 this.makeVerts(tile);
             }
         }
-        catch (InterruptedException e)
-        {
-            throw new WWRuntimeException(e);
-        }
         finally
         {
             this.startTime.set(null); // signals that no operation is active
@@ -413,10 +409,10 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param sector the sector for which to cache elevation data.
      *
      * @throws IllegalArgumentException if the specified sector is null.
-     * @throws WWRuntimeException       if the operation is interrupted. if the current timeout is exceeded while
+     * @throws InterruptedException       if the operation is interrupted. if the current timeout is exceeded while
      *                                  retrieving terrain data.
      */
-    public void cacheIntersectingTiles(Sector sector)
+    public void cacheIntersectingTiles(Sector sector) throws InterruptedException
     {
         if (sector == null)
         {
@@ -437,10 +433,6 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
             {
                 this.makeVerts(tile);
             }
-        }
-        catch (InterruptedException e)
-        {
-            throw new WWRuntimeException(e);
         }
         finally
         {
