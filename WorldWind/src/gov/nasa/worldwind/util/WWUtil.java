@@ -1017,7 +1017,7 @@ public class WWUtil
             return Logging.getMessage("generic.Unknown");
         }
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         String message = t.getMessage();
         if (!WWUtil.isEmpty(message))
@@ -1099,71 +1099,48 @@ public class WWUtil
         try
         {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:sszzzzz");
-            Long t = df.parse(timeString).getTime();
-            return t;
+            return df.parse(timeString).getTime();
         }
-        catch (ParseException e)
+        catch (ParseException ignored)
         {
         }
 
         try
         {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-            Long t = df.parse(timeString).getTime();
-            return t;
+            return df.parse(timeString).getTime();
         }
-        catch (ParseException e)
+        catch (ParseException ignored)
         {
         }
 
         try
         {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            Long t = df.parse(timeString).getTime();
-            return t;
+            return df.parse(timeString).getTime();
         }
-        catch (ParseException e)
+        catch (ParseException ignored)
         {
         }
 
         try
         {
             DateFormat df = new SimpleDateFormat("yyyy-MM");
-            Long t = df.parse(timeString).getTime();
-            return t;
+            return df.parse(timeString).getTime();
         }
-        catch (ParseException e)
+        catch (ParseException ignored)
         {
         }
 
         try
         {
             DateFormat df = new SimpleDateFormat("yyyy");
-            Long t = df.parse(timeString).getTime();
-            return t;
+            return df.parse(timeString).getTime();
         }
-        catch (ParseException e)
+        catch (ParseException ignored)
         {
         }
 
         return null;
     }
-//
-//    public static void main(String[] args)
-//    {
-//        Long time = parseTimeString("1997");
-//        System.out.println(time);
-//
-//        time = parseTimeString("1997-07");
-//        System.out.println(time);
-//
-//        time = parseTimeString("1997-07-01");
-//        System.out.println(time);
-//
-//        time = parseTimeString("1997-07-01T07:30:15Z");
-//        System.out.println(time);
-//
-//        time = parseTimeString("1997-07-01T07:30:15+03:00");
-//        System.out.println(time);
-//    }
 }
