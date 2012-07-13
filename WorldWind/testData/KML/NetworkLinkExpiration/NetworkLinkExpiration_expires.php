@@ -17,6 +17,10 @@ header("Content-Type: application/vnd.google-earth.kml+xml");
 header("Expires: $expires");
 ?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
+    <!-- Set a minRefreshPeriod to keep the link from updating immediately if the server clock is behind the client clock. -->
+    <NetworkLinkControl>
+        <minRefreshPeriod>4</minRefreshPeriod>
+    </NetworkLinkControl>
     <Document>
         <Placemark>
             <name><?php print date("H:i:s") ?></name>

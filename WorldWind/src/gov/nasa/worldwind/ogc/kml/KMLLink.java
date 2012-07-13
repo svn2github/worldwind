@@ -138,19 +138,27 @@ public class KMLLink extends KMLAbstractObject
     }
 
     /**
-     * Schedule an asynchronous task to mark the link updated at some time in the future. Calling this method will
-     * cancel an previously scheduled update.
+     * Specifies the time at which the linked resource expires. If the link's update mode is onExpire, the link will
+     * mark itself updated at this time.
      *
-     * @param time Time, in milliseconds since the Epoch, at which to update the link.
+     * @param time Time, in milliseconds since the Epoch, at which the link expires. Zero indicates no expiration.
      */
-    public void scheduleRefresh(long time)
+    public void setExpirationTime(long time)
     {
-        // If there is already a task running, cancel it
-        if (this.refreshTask != null)
-            this.refreshTask.cancel(false);
+        // If the refresh mode is onExpire, schedule a task to update the link at the expiration time. Otherwise
+        // we don't care about the expiration.
+        if (KMLConstants.ON_EXPIRE.equals(this.getRefreshMode()))
+        {
+            // If there is already a task running, cancel it
+            if (this.refreshTask != null)
+                this.refreshTask.cancel(false);
 
-        long refreshDelay = time - System.currentTimeMillis();
-        this.refreshTask = this.scheduleDelayedTask(new RefreshTask(), refreshDelay, TimeUnit.MILLISECONDS);
+            if (time != 0)
+            {
+                long refreshDelay = time - System.currentTimeMillis();
+                this.refreshTask = this.scheduleDelayedTask(new RefreshTask(), refreshDelay, TimeUnit.MILLISECONDS);
+            }
+        }
     }
 
     /**
@@ -185,14 +193,11 @@ public class KMLLink extends KMLAbstractObject
     {
         Long refreshTime = null;
 
+        // Only handle onInterval here. onExpire is handled by KMLNetworkLink when the network resource is retrieved.
         if (KMLConstants.ON_INTERVAL.equals(this.getRefreshMode()))
         {
             Double ri = this.getRefreshInterval();
             refreshTime = ri != null ? this.updateTime.get() + (long) (ri * 1000d) : null;
-        }
-        else if (KMLConstants.ON_EXPIRE.equals(this.getRefreshMode()))
-        {
-            refreshTime = this.computeExpiryRefreshTime();
         }
 
         if (refreshTime == null)
@@ -207,17 +212,6 @@ public class KMLLink extends KMLAbstractObject
         }
 
         return refreshTime;
-    }
-
-    protected Long computeExpiryRefreshTime()
-    {
-        // Expiration specified by HTTP header is handled by KMLNetworkLink. Only consider expiration in a
-        // NetworkLinkControl block here.
-        KMLNetworkLinkControl linkControl = this.getRoot().getNetworkLinkControl();
-        if (linkControl != null && linkControl.getExpires() != null)
-            return WWUtil.parseTimeString(linkControl.getExpires());
-
-        return null;
     }
 
     /**

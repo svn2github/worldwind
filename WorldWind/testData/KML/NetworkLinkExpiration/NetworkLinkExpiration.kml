@@ -13,7 +13,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://pabercrombie.com/ww/kml/NetworkLinkExpiration_expires.php
+                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
@@ -24,7 +24,7 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://pabercrombie.com/ww/kml/NetworkLinkExpiration_max_age.php
+                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_max_age.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
@@ -35,7 +35,18 @@
             <open>1</open>
             <Link>
                 <href>
-                    http://pabercrombie.com/ww/kml/NetworkLinkExpiration_expires_and_max_age.php
+                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_max_age.php
+                </href>
+                <refreshMode>onExpire</refreshMode>
+            </Link>
+        </NetworkLink>
+
+        <NetworkLink>
+            <name>Cache-Control and NetworkLinkControl</name>
+            <open>1</open>
+            <Link>
+                <href>
+                    http://worldwind.arc.nasa.gov/temp/NetworkLinkExpiration/NetworkLinkExpiration_expires_and_link_control.php
                 </href>
                 <refreshMode>onExpire</refreshMode>
             </Link>
