@@ -263,6 +263,13 @@ public class ColladaMeshShape extends AbstractGeneralShape
             // Push an identity texture matrix. This prevents drawSides() from leaking GL texture matrix state. The
             // texture matrix stack is popped from OGLStackHandler.pop(), in the finally block below.
             ogsh.pushTextureIdentity(dc.getGL());
+
+            if (this.mustApplyLighting(dc))
+            {
+                // We apply a scale transform on the modelview matrix, so the normal vectors must be re-normalized
+                // before lighting is computed.
+                dc.getGL().glEnable(GL.GL_NORMALIZE);
+            }
         }
 
         return ogsh;
