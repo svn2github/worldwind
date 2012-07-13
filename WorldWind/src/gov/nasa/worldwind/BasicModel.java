@@ -151,12 +151,7 @@ public class BasicModel extends WWObjectImpl implements Model
         this.firePropertyChange(AVKey.GLOBE, old, this.globe);
     }
 
-    /**
-     * Specifies the model's layers.
-     *
-     * @param layers the model's new layers. May be null, in which case the current layers will be detached from the
-     *               model.
-     */
+    /** {@inheritDoc} */
     public void setLayers(LayerList layers)
     {
         // don't raise an exception if layers == null. In that case, we are disassociating the model from any layer set
@@ -171,82 +166,55 @@ public class BasicModel extends WWObjectImpl implements Model
         this.firePropertyChange(AVKey.LAYERS, old, this.layers);
     }
 
+    /** {@inheritDoc} */
     public Globe getGlobe()
     {
         return this.globe;
     }
 
+    /** {@inheritDoc} */
     public LayerList getLayers()
     {
         return this.layers;
     }
 
-    /**
-     * Specifies whether to display as wireframe the interior geometry of the tessellated globe surface.
-     *
-     * @param show true causes the geometry to be shown, false, the default, does not.
-     */
+    /** {@inheritDoc} */
     public void setShowWireframeInterior(boolean show)
     {
         this.showWireframeInterior = show;
     }
 
-    /**
-     * Specifies whether to display as wireframe the exterior geometry of the tessellated globe surface.
-     *
-     * @param show true causes the geometry to be shown, false, the default, does not.
-     */
+    /** {@inheritDoc} */
     public void setShowWireframeExterior(boolean show)
     {
         this.showWireframeExterior = show;
     }
 
-    /**
-     * Indicates whether the globe surface's interior geometry is to be drawn.
-     *
-     * @return true if it is to be drawn, otherwise false.
-     */
+    /** {@inheritDoc} */
     public boolean isShowWireframeInterior()
     {
         return this.showWireframeInterior;
     }
 
-    /**
-     * Indicates whether the globe surface's exterior geometry is to be drawn.
-     *
-     * @return true if it is to be drawn, otherwise false.
-     */
+    /** {@inheritDoc} */
     public boolean isShowWireframeExterior()
     {
         return this.showWireframeExterior;
     }
 
-    /**
-     * Indicates whether the bounding volumes of the tessellated globe's surface geometry should be displayed.
-     *
-     * @return true if the bounding volumes are to be drawn, otherwise false.
-     */
+    /** {@inheritDoc} */
     public boolean isShowTessellationBoundingVolumes()
     {
         return showTessellationBoundingVolumes;
     }
 
-    /**
-     * Specifies whether the bounding volumes of the globes tessellated surface geometry is to be drawn.
-     *
-     * @param showTessellationBoundingVolumes
-     *         true if the bounding volumes should be drawn, false, the default, if not.
-     */
+    /** {@inheritDoc} */
     public void setShowTessellationBoundingVolumes(boolean showTessellationBoundingVolumes)
     {
         this.showTessellationBoundingVolumes = showTessellationBoundingVolumes;
     }
 
-    /**
-     * Returns the bounding sphere in Cartesian world coordinates of the model.
-     *
-     * @return the model's bounding sphere in Cartesian coordinates, or null if the extent cannot be determined.
-     */
+    /** {@inheritDoc} */
     public Extent getExtent()
     {
         // See if the layers have it.
@@ -276,7 +244,7 @@ public class BasicModel extends WWObjectImpl implements Model
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * This implementation forwards the message each layer in the model.
      *
      * @param msg The message that was received.
