@@ -19,6 +19,7 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.GL;
 import javax.xml.stream.*;
 import java.awt.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -34,12 +35,16 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
  * specified, default attributes are used. See {@link #getDefaultAttributes()}.
  * <p/>
  * This class implements and extends the functionality of a KML <i>Point</i>.
+ * <p/>
+ * Point placemarks can participate in global text decluttering by setting their decluttering-enabled flag to {@code
+ * true}. See {@link #setEnableDecluttering(boolean)}. The default for this flag is {@code false}. When participating in
+ * decluttering, only the point placemark's label is considered when determining interference with other text.
  *
  * @author tag
  * @version $Id$
  */
 public class PointPlacemark extends WWObjectImpl
-    implements OrderedRenderable, Locatable, Movable, Highlightable, Exportable
+    implements OrderedRenderable, Locatable, Movable, Highlightable, Exportable, Declutterable
 {
     /** The scale to use when highlighting if no highlight attributes are specified. */
     protected static final Double DEFAULT_HIGHLIGHT_SCALE = 1.3;
@@ -79,6 +84,7 @@ public class PointPlacemark extends WWObjectImpl
     protected boolean enableBatchPicking = true;
     protected Object delegateOwner;
     protected boolean clipToHorizon = true;
+    protected boolean enableDecluttering = false;
 
     // Values computed once per frame and reused during the frame as needed.
     protected long frameNumber = -1; // identifies frame used to calculate these values
@@ -89,6 +95,8 @@ public class PointPlacemark extends WWObjectImpl
     protected double dx; // offsets needed to position image relative to the placemark position
     protected double dy;
     protected Layer pickLayer; // shape's layer when ordered renderable was created
+    protected Rectangle2D labelBounds; // cached label bounds
+    protected Font boundsFont; // the font associated with the cached label bounds
 
     protected PickSupport pickSupport = new PickSupport();
 
@@ -406,14 +414,49 @@ public class PointPlacemark extends WWObjectImpl
         this.enableBatchPicking = enableBatchPicking;
     }
 
+    /**
+     * Indicates whether this placemark is shown if it is beyond the horizon.
+     *
+     * @return the value of the clip-to-horizon flag. {@code true} if horizon clipping is enabled, otherwise {@code
+     *         false}. The default value is {@code true}.
+     */
     public boolean isClipToHorizon()
     {
         return clipToHorizon;
     }
 
+    /**
+     * Specifies whether this placemark is shown if it is beyond the horizon.
+     *
+     * @param clipToHorizon {@code true} if this placemark should not be shown when beyond the horizon, otherwise {@code
+     *                      false}.
+     */
     public void setClipToHorizon(boolean clipToHorizon)
     {
         this.clipToHorizon = clipToHorizon;
+    }
+
+    /**
+     * Indicates whether this placemark participates in global text decluttering.
+     *
+     * @return {@code true} if this placemark participates in global text decluttering, otherwise false. The default
+     *         value is {@code false}. Only the placemark's label is considered during decluttering.
+     */
+    public boolean isEnableDecluttering()
+    {
+        return enableDecluttering;
+    }
+
+    /**
+     * Specifies whether this placemark participates in globe text decluttering.
+     *
+     * @param enableDecluttering {@code true} if the placemark participates in global text decluttering, otherwise
+     *                           {@code false}. The default value is {@code false}. Only the placemark lable is
+     *                           considered during decluttering.
+     */
+    public void setEnableDecluttering(boolean enableDecluttering)
+    {
+        this.enableDecluttering = enableDecluttering;
     }
 
     /**
@@ -609,7 +652,7 @@ public class PointPlacemark extends WWObjectImpl
         {
             this.doDrawOrderedRenderable(dc, this.pickSupport);
 
-            if (this.isEnableBatchRendering())
+            if (this.isEnableBatchRendering() && !this.isEnableDecluttering())
                 this.drawBatched(dc);
         }
         finally
@@ -817,11 +860,75 @@ public class PointPlacemark extends WWObjectImpl
     /**
      * Determines if the placemark label will be rendered.
      *
-     * @return True if the label must be drawn. This implementation always returns true.
+     * @return True if the label must be drawn.
      */
     protected boolean mustDrawLabel()
     {
-        return true;
+        return this.labelText != null;
+    }
+
+    @Override
+    public Rectangle2D getBounds(DrawContext dc)
+    {
+        return this.getLabelBounds(dc);
+    }
+
+    /**
+     * Determines the screen coordinate boundaries of this placemark's label.
+     *
+     * @param dc the current draw context.
+     *
+     * @return the label bounds, in lower-left origin screen coordinates.
+     */
+    protected Rectangle2D getLabelBounds(DrawContext dc)
+    {
+        if (this.labelText == null)
+            return null;
+
+        double x = (float) (this.screenPoint.x + this.dx);
+        double y = (float) (this.screenPoint.y + this.dy);
+
+        Double imageScale = this.getActiveAttributes().getScale();
+        Offset os = this.getActiveAttributes().getLabelOffset();
+        if (os == null)
+            os = DEFAULT_LABEL_OFFSET_IF_UNSPECIFIED;
+
+        double w = this.activeTexture != null ? this.activeTexture.getWidth(dc) : 1;
+        double h = this.activeTexture != null ? this.activeTexture.getHeight(dc) : 1;
+        Point.Double offset = os.computeOffset(w, h, imageScale, imageScale);
+        x += offset.x;
+        y += offset.y;
+
+        Font font = this.getActiveAttributes().getLabelFont();
+        if (font == null)
+            font = PointPlacemarkAttributes.DEFAULT_LABEL_FONT;
+
+        Rectangle2D bounds;
+        if (this.labelBounds != null && font == this.boundsFont)
+        {
+            bounds = new Rectangle.Double(x, y, this.labelBounds.getWidth(), this.labelBounds.getHeight());
+        }
+        else
+        {
+            TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
+            bounds = textRenderer.getBounds(this.labelText);
+            this.boundsFont = font;
+        }
+
+        Double labelScale = this.getActiveAttributes().getLabelScale();
+        if (labelScale != null)
+        {
+            double tw = labelScale * bounds.getWidth();
+            double th = labelScale * bounds.getHeight();
+
+            bounds = new Rectangle2D.Double(x, y, tw, th);
+        }
+        else
+        {
+            bounds = new Rectangle2D.Double(x, y, bounds.getWidth(), bounds.getHeight());
+        }
+
+        return this.labelBounds = bounds;
     }
 
     /**

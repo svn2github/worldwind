@@ -19,6 +19,7 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import java.awt.*;
+import java.awt.geom.*;
 import java.nio.*;
 import java.util.*;
 import java.util.List;
@@ -90,6 +91,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     protected Collection<Throwable> renderingExceptions;
     protected Dimension pickPointFrustumDimension = new Dimension(3, 3);
     protected LightingModel standardLighting = new BasicLightingModel();
+    protected DeclutteringTextRenderer declutteringTextRenderer = new DeclutteringTextRenderer();
 
     protected static class OrderedRenderableEntry
     {
@@ -627,6 +629,11 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         this.isOrderedRenderingMode = tf;
     }
 
+    public DeclutteringTextRenderer getDeclutteringTextRenderer()
+    {
+        return declutteringTextRenderer;
+    }
+
     public void addOrderedRenderable(OrderedRenderable orderedRenderable)
     {
         if (null == orderedRenderable)
@@ -669,6 +676,43 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         OrderedRenderableEntry ore = this.orderedRenderables.poll();
 
         return ore != null ? ore.or : null;
+    }
+
+    @Override
+    public void applyDeclutterFilter()
+    {
+        ClutterFilter clutterFilter = new ClutterFilter();
+
+        // Collect all the active declutterables.
+        ArrayList<OrderedRenderableEntry> declutterableArray = new ArrayList<OrderedRenderableEntry>();
+        for (OrderedRenderableEntry ore : this.orderedRenderables)
+        {
+            if (ore.or instanceof Declutterable && ((Declutterable) ore.or).isEnableDecluttering())
+                declutterableArray.add(ore);
+        }
+
+        // Sort the declutterables front-to-back.
+        Collections.sort(declutterableArray, new Comparator<OrderedRenderableEntry>()
+        {
+            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
+            {
+                double eA = orA.distanceFromEye;
+                double eB = orB.distanceFromEye;
+
+                return eA < eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
+            }
+        });
+
+        // Remove eliminated ordered renderables from the priority queue.
+        for (OrderedRenderableEntry ore : declutterableArray)
+        {
+            Rectangle2D bounds = ((Declutterable) ore.or).getBounds(this);
+
+            if (clutterFilter.intersects(bounds))
+                orderedRenderables.remove(ore);
+
+            clutterFilter.addRegion(bounds);
+        }
     }
 
     /** {@inheritDoc} */

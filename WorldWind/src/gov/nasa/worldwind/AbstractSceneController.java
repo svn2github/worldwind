@@ -714,6 +714,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         // Pick against the deferred/ordered renderables.
         dc.setOrderedRenderingMode(true);
+        dc.applyDeclutterFilter();
         while (dc.peekOrderedRenderables() != null)
         {
             dc.pollOrderedRenderables().pick(dc, dc.getPickPoint());
@@ -802,6 +803,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
             // Draw the deferred/ordered renderables.
             dc.setOrderedRenderingMode(true);
+            dc.applyDeclutterFilter();
             while (dc.peekOrderedRenderables() != null)
             {
                 try

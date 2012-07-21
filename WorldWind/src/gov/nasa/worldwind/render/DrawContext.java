@@ -970,4 +970,16 @@ public interface DrawContext extends WWObject, Disposable
      * @throws IllegalArgumentException if the position is null.
      */
     Vec4 computePointFromPosition(Position position, int altitudeMode);
+
+    /**
+     * Returns the draw context's decluttering text renderer.
+     *
+     * @return the decluttering text renderer.
+     */
+    DeclutteringTextRenderer getDeclutteringTextRenderer();
+
+    /**
+     * Filter overlapping text from the ordered renderable list.
+     */
+    void applyDeclutterFilter();
 }

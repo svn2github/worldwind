@@ -31,7 +31,7 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
     protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(64);
     protected Vec4 referencePoint;
     protected final Object fileLock = new Object();
-    protected boolean cullNames = false;
+    protected boolean cullNames = true; // this flag is no longer used. placenames participate in global decluttering
 
     public static final double LEVEL_A = 0x1 << 25; // 33,554 km
     public static final double LEVEL_B = 0x1 << 24; // 16,777 km
@@ -99,15 +99,24 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
         }
     }
 
+    /**
+     * @return not in use
+     *
+     * @deprecated This flag no longer has any effect. Placenames participate in global decluttering.
+     */
     public boolean isCullNames()
     {
         return cullNames;
     }
 
+    /**
+     * @param cullNames not used
+     *
+     * @deprecated This flag no longer has any effect. Placenames participate in global decluttering.
+     */
     public void setCullNames(boolean cullNames)
     {
         this.cullNames = cullNames;
-        placeNameRenderer.setCullTextEnabled(cullNames);
     }
 
     public final PlaceNameServiceSet getPlaceNameServiceSet()
@@ -522,8 +531,6 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
     // ============== Rendering ======================= //
     // ============== Rendering ======================= //
 
-    protected final GeographicTextRenderer placeNameRenderer = new GeographicTextRenderer();
-
     @Override
     protected void doRender(DrawContext dc)
     {
@@ -606,7 +613,7 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
             if (placeNameChunk.numEntries > 0)
             {
                 Iterable<GeographicText> renderIter = placeNameChunk.makeIterable(dc);
-                this.placeNameRenderer.render(dc, renderIter);
+                dc.getDeclutteringTextRenderer().render(dc, renderIter);
             }
             return;
         }
@@ -976,7 +983,7 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
             return newArray;
         }
 
-        @SuppressWarnings( {"StringEquality"})
+        @SuppressWarnings({"StringEquality"})
         public void characters(char ch[], int start, int length)
         {
             if (!this.inBeginEndPair)
