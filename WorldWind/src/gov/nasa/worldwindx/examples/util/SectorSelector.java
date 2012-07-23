@@ -637,6 +637,7 @@ public class SectorSelector extends WWObjectImpl
             interiorAttrs.setInteriorMaterial(new Material(Color.WHITE));
             interiorAttrs.setInteriorOpacity(0.1);
             this.setAttributes(interiorAttrs);
+            this.setHighlightAttributes(interiorAttrs);
 
             // Setup default border rendering attributes. Note that the border rendering attributes are configured
             // so that only the SurfaceSector's outline is rendered.
