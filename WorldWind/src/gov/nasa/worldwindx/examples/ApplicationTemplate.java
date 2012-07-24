@@ -90,6 +90,12 @@ public class ApplicationTemplate
             this.initialize(true, true, false);
         }
 
+        public AppFrame(Dimension size)
+        {
+            this.canvasSize = size;
+            this.initialize(true, true, false);
+        }
+
         public AppFrame(boolean includeStatusBar, boolean includeLayerPanel, boolean includeStatsPanel)
         {
             this.initialize(includeStatusBar, includeLayerPanel, includeStatsPanel);
