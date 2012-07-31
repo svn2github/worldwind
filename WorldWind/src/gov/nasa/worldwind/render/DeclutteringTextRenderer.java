@@ -59,7 +59,7 @@ public class DeclutteringTextRenderer
      * @param dc           the current draw context.
      * @param textIterable a collection of text shapes to add to the ordered-renderable list.
      */
-    public void render(DrawContext dc, Iterable<GeographicText> textIterable)
+    public void render(DrawContext dc, Iterable<? extends GeographicText> textIterable)
     {
         if (dc == null)
         {
@@ -82,7 +82,7 @@ public class DeclutteringTextRenderer
         if (surfaceGeometry == null)
             return;
 
-        Iterator<GeographicText> iterator = textIterable.iterator();
+        Iterator<? extends GeographicText> iterator = textIterable.iterator();
         if (!iterator.hasNext())
             return;
 
@@ -223,7 +223,7 @@ public class DeclutteringTextRenderer
             if (textBounds == null)
                 return null;
 
-            Point.Float drawPoint = computeDrawPoint(textBounds, screenPoint);
+            Point.Float drawPoint = this.computeDrawPoint(textBounds, screenPoint);
 
             if (drawPoint != null)
             {
