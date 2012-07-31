@@ -262,6 +262,16 @@ public class SurfaceText extends AbstractSurfaceObject implements GeographicText
         }
     }
 
+    public double getTextSize()
+    {
+        return this.textSizeInMeters;
+    }
+
+    public void setTextSize(double meters)
+    {
+        this.textSizeInMeters = meters;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void preRender(DrawContext dc)
