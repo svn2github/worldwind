@@ -356,7 +356,7 @@ public class FireSupportLine extends AbstractMilStd2525TacticalGraphic
      *
      * @param dc Current draw context.
      *
-     * @return Returns the path's start position, and position, and length (non-terrain following) as a three element
+     * @return Returns the path's start position, end position, and length (non-terrain following) as a three element
      *         array: [Position start, Position end, Double length].
      */
     protected Object[] computePathLength(DrawContext dc)

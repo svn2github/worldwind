@@ -140,7 +140,7 @@ public class TacticalGraphicUtil
         double thisDistance = 0;
 
         pos2 = iterator.next();
-        pt2 = globe.computePointFromPosition(pos2);
+        pt2 = globe.computePointFromLocation(pos2);
 
         while (iterator.hasNext() && length < distance)
         {
