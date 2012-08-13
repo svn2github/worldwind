@@ -105,16 +105,31 @@ public class MilStd2525GraphicFactory implements TacticalGraphicFactory
     }
 
     /**
-     * Associate an implementation class with one or more function IDs.
+     * Specifies the class that the factory will instantiate for a given symbol identifier. This will override the
+     * default implementation class, and can be used to customize the behavior of the factory without needing to extend
+     * the class.
      *
-     * @param clazz       Class that implements one or more tactical graphics.
-     * @param functionIds Function IDs of the graphics implemented by {@code clazz}.
+     * @param sidc  Masked symbol identifier.
+     * @param clazz Implementation class. This class must have a constructor that accepts a string argument.
+     *
+     * @see gov.nasa.worldwind.symbology.milstd2525.SymbolCode#toMaskedString()
      */
-    protected void mapClass(Class clazz, List<String> functionIds)
+    public void setImplementationClass(String sidc, Class clazz)
     {
-        for (String functionId : functionIds)
+        this.classMap.put(sidc, clazz);
+    }
+
+    /**
+     * Associate an implementation class with one or more symbol identifiers.
+     *
+     * @param clazz Class that implements one or more tactical graphics.
+     * @param ids   Masked symbol IDs of the graphics implemented by {@code clazz}.
+     */
+    protected void mapClass(Class clazz, List<String> ids)
+    {
+        for (String sidc : ids)
         {
-            this.classMap.put(functionId, clazz);
+            this.classMap.put(sidc, clazz);
         }
     }
 
