@@ -286,7 +286,7 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
         this.currentLabels.clear();
 
         Font font = this.getActiveAttributes().getTextModifierFont();
-        List<LabelLayout> allLayouts = defaultLayouts.get(this.symbolCode.toMaskedString());
+        List<LabelLayout> allLayouts = this.getLayouts(this.symbolCode.toMaskedString());
 
         for (LabelLayout layout : allLayouts)
         {
@@ -318,6 +318,18 @@ public class TacticalGraphicSymbol extends AbstractTacticalSymbol
                 this.layoutLabel(dc, font, layout.offsets.get(0), value.toString(), mode);
             }
         }
+    }
+
+    /**
+     * Indicates the label layouts designed to a particular graphic.
+     *
+     * @param sidc Symbol ID to for which to determine layout.
+     *
+     * @return List of label layouts for the specified symbol.
+     */
+    protected List<LabelLayout> getLayouts(String sidc)
+    {
+        return defaultLayouts.get(sidc);
     }
 
     @Override
