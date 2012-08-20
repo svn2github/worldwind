@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--$Id$-->
+<!--This file may contain both "exclude" and "attribute" elements. Exclude elements indicate that OSM nodes and/or-->
+<!--ways of the specified key and optional value should be excluded from display. An example key is "highway" and-->
+<!--an example value is "motorway". The value is optional. If no value is specified then the exclude element applies-->
+<!--to all OSM nodes and/or ways containing the specified key. Assignment of attributes is similar. Additionally, the-->
+<!--applicability of the exclude or attribute element can be limited to either nodes or ways by specifying which as-->
+<!--the element's "featureType". This enables nodes and ways to have different attributes and exclusion even if they-->
+<!--have the same key and value. See the entries below for examples. A special key, "default", can be used to set the-->
+<!--default attributes for all nodes and/or ways. An element with this key would be specified at the beginning of the-->
+<!--configuration file so that its fields would be the defaults for all subsequent attributes. See below for an-->
+<!--example.-->
+<!---->
+<!--Attributes have a "level" field, but this field applies only during OSM data installation. Changing the level-->
+<!--field has no effect once data has been installed. The level field indicates the relative importance of the node-->
+<!--or way type. Higher numbered nodes and ways are shown when the view is closer to the surface. The levels range-->
+<!--from 0 to 7, with 7 appropriate for the most finely detailed data. That level is not shown until the view is very-->
+<!--close to the surface.-->
+<!---->
+<!--Attribute directives are cumulative. Only those fields specified in the attribute element are set in the-->
+<!--attribute bundle for the specified key and value. For example, all fields can be set for a key of "highway",-->
+<!--then subsequent attribute directives for "highway" / "motorway" may set only the width or color, etc. for-->
+<!--highways that are motorways and leave the other fields with the values set by the original "highway" element.-->
+<attributes xmlns="http://gov.nasa.worldwind.openstreetmap.attributes/1.0">
+    <!--Node exclusions-->
+    <exclude featureType="node" key="building" flag="true"/>
+    <!--Way exclusions-->
+    <exclude featureType="way" key="amenity" flag="true"/>
+    <exclude featureType="way" key="boundary" flag="true"/>
+    <exclude featureType="way" key="building" flag="true"/>
+    <exclude featureType="way" key="craft" flag="true"/>
+    <exclude featureType="way" key="emergency" flag="true"/>
+    <exclude featureType="way" key="geological" flag="true"/>
+    <exclude featureType="way" key="historic" flag="true"/>
+    <exclude featureType="way" key="landuse" flag="true"/>
+    <!--<exclude featureType="way" key="leisure" flag="true"/>-->
+    <exclude featureType="way" key="man_made" flag="true"/>
+    <exclude featureType="way" key="natural" value="coastline" flag="true"/>
+    <exclude featureType="way" key="office" flag="true"/>
+    <exclude featureType="way" key="place" value="island" flag="true"/>
+    <exclude featureType="way" key="shop" flag="true"/>
+    <!--<exclude featureType="way" key="sport" flag="true"/>-->
+    <exclude featureType="way" key="boundary" flag="true"/>
+    <!--Attributes-->
+    <attribute key="default" featureType="node">
+        <level>7</level>
+        <labelColor>FFFFFFFF</labelColor>
+        <markerColor>FFFFFFFF</markerColor>
+        <font>Arial-BOLD-10</font>
+    </attribute>
+    <attribute key="default" featureType="way">
+        <level>7</level>
+        <labelColor>FFFFFFFF</labelColor>
+        <interiorColor>AAAAAAFF</interiorColor>
+        <outlineColor>FFFFFFFF</outlineColor>
+        <markerColor>FFFFFFFF</markerColor>
+        <width>3</width>
+        <font>Arial-BOLD-10</font>
+    </attribute>
+    <!-- AMENITY -->
+    <attribute key="amenity" value="school">
+        <iconPath>images/green-light/school-24.png</iconPath>
+    </attribute>
+    <attribute key="amenity" value="college">
+        <iconPath>images/green-light/college-24.png</iconPath>
+    </attribute>
+    <!-- HIGHWAY -->
+    <attribute key="highway" value="motorway">
+        <interiorColor>809BC0FF</interiorColor>
+        <outlineColor>444F5FFF</outlineColor>
+        <width>12</width>
+    </attribute>
+    <attribute key="highway" value="motorway_link">
+        <interiorColor>00738CFF</interiorColor>
+        <outlineColor>004351FF</outlineColor>
+        <width>5</width>
+    </attribute>
+    <attribute key="highway" value="trunk">
+        <interiorColor>7FC97FFF</interiorColor>
+        <outlineColor>5B7F5BFF</outlineColor>
+        <width>10</width>
+    </attribute>
+    <attribute key="highway" value="trunk_link">
+        <interiorColor>7FC97FFF</interiorColor>
+        <outlineColor>5B7F5BFF</outlineColor>
+        <width>8</width>
+    </attribute>
+    <attribute key="highway" value="primary">
+        <interiorColor>E46D71FF</interiorColor>
+        <outlineColor>474747FF</outlineColor>
+        <width>8</width>
+    </attribute>
+    <attribute key="highway" value="primary_link">
+        <interiorColor>E46D71FF</interiorColor>
+        <outlineColor>474747FF</outlineColor>
+        <width>8</width>
+    </attribute>
+    <attribute key="highway" value="secondary">
+        <interiorColor>FDBF6FFF</interiorColor>
+        <outlineColor>AEAEAEFF</outlineColor>
+        <width>6</width>
+    </attribute>
+    <attribute key="highway" value="secondary_link">
+        <interiorColor>FDBF6FFF</interiorColor>
+        <outlineColor>AEAEAEFF</outlineColor>
+        <width>5</width>
+    </attribute>
+    <attribute key="highway" value="tertiary">
+        <interiorColor>FCFA74FF</interiorColor>
+        <outlineColor>949264FF</outlineColor>
+        <width>4</width>
+    </attribute>
+    <attribute key="highway" value="tertiary_link">
+        <interiorColor>FCFA74FF</interiorColor>
+        <outlineColor>949264FF</outlineColor>
+        <width>3</width>
+    </attribute>
+    <attribute key="highway" value="living_street">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>FFFFFFFF</outlineColor>
+        <width>2</width>
+    </attribute>
+    <attribute key="highway" value="pedestrian">
+        <interiorColor>F8F49AFF</interiorColor>
+        <outlineColor>D9D9D9FF</outlineColor>
+        <width>2</width>
+    </attribute>
+    <attribute key="highway" value="residential">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>AEAEAEFF</outlineColor>
+        <width>3</width>
+    </attribute>
+    <attribute key="highway" value="unclassified">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>BBBBBBFF</outlineColor>
+        <width>2</width>
+    </attribute>
+    <attribute key="highway" value="service">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>AEAEAEFF</outlineColor>
+        <width>3</width>
+    </attribute>
+    <attribute key="highway" value="track">
+        <interiorColor>E0B58AFF</interiorColor>
+        <outlineColor>E0B58AFF</outlineColor>
+        <width>2</width>
+    </attribute>
+    <attribute key="highway" value="bus_guideway">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>BBBBBBFF</outlineColor>
+        <width>2</width>
+    </attribute>
+    <attribute key="highway" value="raceway">
+        <interiorColor>BBBBCCFF</interiorColor>
+        <outlineColor>BBBBCCFF</outlineColor>
+        <width>3</width>
+    </attribute>
+    <attribute key="highway" value="road">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>BBBBBBFF</outlineColor>
+        <width>3</width>
+    </attribute>
+    <attribute key="highway" value="path">
+        <interiorColor>DCA972FF</interiorColor>
+        <outlineColor>DCA972FF</outlineColor>
+        <width>1</width>
+    </attribute>
+    <attribute key="highway" value="footway">
+        <interiorColor>DCA972FF</interiorColor>
+        <outlineColor>DCA972FF</outlineColor>
+        <width>1</width>
+    </attribute>
+    <attribute key="highway" value="cycleway">
+        <interiorColor>D1EAD1FF</interiorColor>
+        <outlineColor>D1EAD1FF</outlineColor>
+        <width>1</width>
+    </attribute>
+    <attribute key="highway" value="bridleway">
+        <interiorColor>74B873FF</interiorColor>
+        <outlineColor>74B873FF</outlineColor>
+        <width>1</width>
+    </attribute>
+    <attribute key="highway" value="steps">
+        <interiorColor>FFFFFFFF</interiorColor>
+        <outlineColor>BBBBBBFF</outlineColor>
+        <width>1</width>
+    </attribute>
+    <!--LEISURE-->
+    <attribute key="leisure" value="park">
+        <labelColor>00FF00FF</labelColor>
+        <interiorColor>228B22FF</interiorColor>
+        <outlineColor>228B22FF</outlineColor>
+    </attribute>
+    <attribute key="leisure" value="nature_reserve">
+        <labelColor>00FF00FF</labelColor>
+        <interiorColor>228B22FF</interiorColor>
+        <outlineColor>228B22FF</outlineColor>
+    </attribute>
+    <!-- NATURAL -->
+    <attribute key="natural">
+        <labelColor>00FF00FF</labelColor>
+        <interiorColor>228B22FF</interiorColor>
+        <outlineColor>228B22FF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="beach">
+        <labelColor>EDCA5CFF</labelColor>
+        <interiorColor>EDCA5CFF</interiorColor>
+        <outlineColor>EDCA5CFF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="peak">
+        <labelColor>C7AF86FF</labelColor>
+        <interiorColor>C7AF86FF</interiorColor>
+        <outlineColor>C7AF86FF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="water">
+        <labelColor>B7D7F0FF</labelColor>
+        <interiorColor>64C8FAFF</interiorColor>
+        <outlineColor>64C8FAFF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="bay">
+        <labelColor>B7D7F0FF</labelColor>
+        <interiorColor>64C8FAFF</interiorColor>
+        <outlineColor>64C8FAFF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="spring">
+        <labelColor>B7D7F0FF</labelColor>
+        <interiorColor>64C8FAFF</interiorColor>
+        <outlineColor>64C8FAFF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="wetland">
+        <labelColor>B8860BFF</labelColor>
+        <interiorColor>EEDD82FF</interiorColor>
+        <outlineColor>EEDD82FF</outlineColor>
+    </attribute>
+    <attribute key="natural" value="glacier">
+        <labelColor>DEECECFF</labelColor>
+        <interiorColor>DEECECFF</interiorColor>
+        <outlineColor>DEECECFF</outlineColor>
+    </attribute>
+    <!--PLACE-->
+    <attribute key="place">
+        <labelColor>FFFFFFFF</labelColor>
+        <font>Arial-BOLD-14</font>
+    </attribute>
+    <attribute key="place" value="continent">
+        <level>0</level>
+    </attribute>
+    <attribute key="place" value="country">
+        <level>1</level>
+    </attribute>
+    <attribute key="place" value="region">
+        <level>2</level>
+    </attribute>
+    <attribute key="place" value="state">
+        <level>3</level>
+    </attribute>
+    <attribute key="place" value="county">
+        <level>4</level>
+        <font>Arial-BOLD-13</font>
+    </attribute>
+    <attribute key="place" value="island">
+        <level>5</level>
+        <font>Arial-BOLD-13</font>
+    </attribute>
+    <attribute key="place" value="locality">
+        <level>5</level>
+        <font>Arial-BOLD-10</font>
+    </attribute>
+    <attribute key="place" value="city">
+        <level>5</level>
+        <font>Arial-BOLD-13</font>
+    </attribute>
+    <attribute key="place" value="town">
+        <level>6</level>
+        <font>Arial-BOLD-11</font>
+    </attribute>
+    <attribute key="place" value="village">
+        <level>6</level>
+        <font>Arial-BOLD-11</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <attribute key="place" value="hamlet">
+        <level>7</level>
+        <font>Arial-BOLD-11</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <attribute key="place" value="suburb">
+        <level>7</level>
+        <font>Arial-BOLD-11</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <attribute key="place" value="neighbourhood">
+        <level>7</level>
+        <font>Arial-BOLD-11</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <attribute key="place" value="farm">
+        <level>7</level>
+        <font>Arial-BOLD-10</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <attribute key="place" value="isolated_dwelling">
+        <level>7</level>
+        <font>Arial-BOLD-10</font>
+        <interiorColor>00FFFFFF</interiorColor>
+    </attribute>
+    <!--WATERWAY-->
+    <attribute key="waterway">
+        <interiorColor>64C8FAFF</interiorColor>
+        <outlineColor>64C8FAFF</outlineColor>
+    </attribute>
+</attributes>
