@@ -1,0 +1,35 @@
+// See https://developers.google.com/protocol-buffers/docs/javatutorial for a tutorial on proto buffers.
+// To compile this file, get the Google protocol buffer compiler and use the following command line:
+// protoc --java_out="." osm_node.proto
+// This creates a Java class that you can then put in the source.
+
+package gov.nasa.worldwindx.examples.openstreetmap;
+
+option java_outer_classname = "OSMNodeProto";
+
+message Tag
+{
+    required string key = 1;
+    optional string value = 2;
+}
+
+message Node
+{
+    required string id = 1;
+    required float lat = 2;
+    required float lon = 3;
+    repeated Tag tags = 4;
+}
+
+message Location
+{
+    required float lat = 1;
+    required float lon = 2;
+}
+
+message Way
+{
+    required string id = 1;
+    repeated Location locations = 2;
+    repeated Tag tags = 3;
+}

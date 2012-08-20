@@ -280,6 +280,9 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String ORDINAL_LIST = "gov.nasa.worldwind.avkey.OrdinalList";
     final String ORIGIN = "gov.nasa.worldwind.avkey.Origin";
 
+    final String OSM_LABEL_INTERVAL = "gov.nasa.worldwind.avkey.OSMLabelInterval";
+    final String OSM_LANE_WIDTH = "gov.nasa.worldwind.avkey.OSMLaneWidth";
+
     final String OVERVIEW_FILE_NAME = "gov.nasa.worldwind.avkey.Overview.FileName";
 
     final String PARENT_LAYER_NAME = "gov.nasa.worldwind.avkey.ParentLayerName";
