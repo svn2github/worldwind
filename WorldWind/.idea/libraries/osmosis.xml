@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="osmosis">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/osmparser.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
