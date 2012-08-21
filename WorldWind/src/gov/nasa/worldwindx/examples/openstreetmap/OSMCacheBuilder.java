@@ -601,37 +601,4 @@ public class OSMCacheBuilder implements Sink
             }
         }
     }
-
-    protected static final String WASHINGTON = "/Users/tag/ww/Osmosis/Data/washington.osm.pbf";
-    protected static final String US_PACIFIC = "/Users/tag/ww/Osmosis/Data/us-pacific.osm.pbf";
-    protected static final String HAWAII = "/Users/tag/ww/Osmosis/Data/hawaii.osm.pbf";
-    protected static final String OREGON = "/Users/tag/ww/Osmosis/Data/oregon.osm.pbf";
-    protected static final String CALIFORNIA = "/Users/tag/ww/Osmosis/Data/california.osm.pbf";
-
-    public static void main(String[] args)
-    {
-        try
-        {
-            Object o = WWIO.getFileOrResourceAsStream("config/Earth/OSMAttributes.xml", OSMCacheBuilder.class);
-            if (o instanceof Exception)
-            {
-                ((Exception) o).printStackTrace();
-                return;
-            }
-
-            long start = System.currentTimeMillis();
-            OSMCacheBuilder cacheBuilder = new OSMCacheBuilder((InputStream) o);
-            cacheBuilder.loadFromFile(new File(CALIFORNIA));
-            long end = System.currentTimeMillis();
-
-            System.out.printf("Num nodes %d, persisted %d. Num ways %d, persisted %d, time %d seconds\n",
-                cacheBuilder.getNumNodes(), cacheBuilder.getNumPersistedNodes(),
-                cacheBuilder.getNumWays(), cacheBuilder.getNumPersistedWays(),
-                (end - start) / 1000);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
 }
