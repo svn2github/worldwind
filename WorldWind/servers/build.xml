@@ -27,6 +27,7 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
+                <pathelement location="osmparser.jar"/>
             </classpath>
         </javac>
     </target>
