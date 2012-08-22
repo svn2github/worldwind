@@ -490,12 +490,48 @@ public class Configuration // Singleton
     /**
      * Returns the path to the operating system's temp directory.
      *
-     * @return the absolute path to the operating system's tempopory directory.
+     * @return the absolute path to the operating system's temporary directory.
      */
     public static String getSystemTempDirectory()
     {
         String dir = System.getProperty("java.io.tmpdir");
         return (dir != null) ? dir : ".";
+    }
+
+    /**
+     * Returns the path to the current user's application data directory. The path returned depends on the operating
+     * system on which the Java Virtual Machine is running. The following table provides the path for all supported
+     * operating systems:
+     * <p/>
+     * <table> <tr><th>Operating System</th><th>Path</th></tr> <tr><td>Mac OS X</td><td>~/Library/Application
+     * Support</td></tr> <tr><td>Windows</td><td>~\\Application Data</td></tr> <tr><td>Linux, Unix,
+     * Solaris</td><td>~/</td></tr> </table>
+     *
+     * @return the absolute path to the current user's application data directory.
+     */
+    public static String getCurrentUserAppDataDirectory()
+    {
+        if (isMacOS())
+        {
+            // Return a path that Mac OS X has designated for app-specific data and support files. See the following URL
+            // for details:
+            // http://developer.apple.com/library/mac/#documentation/FileManagement/Conceptual/FileSystemProgrammingGUide/MacOSXDirectories/MacOSXDirectories.html#//apple_ref/doc/uid/TP40010672-CH10-SW1
+            return getUserHomeDirectory() + "/Library/Application Support";
+        }
+        else if (isWindowsOS())
+        {
+            return getUserHomeDirectory() + "\\Application Data";
+        }
+        else if (isLinuxOS() || isUnixOS() || isSolarisOS())
+        {
+            return getUserHomeDirectory();
+        }
+        else
+        {
+            String msg = Logging.getMessage("generic.UnknownOperatingSystem");
+            Logging.logger().fine(msg);
+            return null;
+        }
     }
 
     /**
