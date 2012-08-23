@@ -21,9 +21,6 @@
         <property name="sun.java2d.noddraw" value="true"/>
         <!-- Add worldwind.jar to the class path. All World Wind applications depend on this JAR file. -->
         <jar href="worldwind.jar"/>
-        <!-- Add osmparser.jar to the class path. All World Wind applications that use the Open Street Map capability
-             depend on this JAR file. -->
-        <jar href="osmparser.jar"/>
         <!-- Add gdal.jar to the class path. World Wind must include the GDAL JAR file on its class path, even if the
              GDAL native libraries are not used. We include the GDAL JAR file at the GDAL webstart site to avoid a
              version conflict should the application choose to include the GDAL JNLP file in order to use the GDAL
