@@ -249,6 +249,17 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return null;
     }
 
+    /** {@inheritDoc} Overridden to invalidate cached geometry when the model position is changed. */
+    @Override
+    public void setModelPosition(Position modelPosition)
+    {
+        if (modelPosition != this.modelPosition)
+        {
+            this.modelPosition = modelPosition;
+            this.reset();
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Rendering
     //////////////////////////////////////////////////////////////////////
