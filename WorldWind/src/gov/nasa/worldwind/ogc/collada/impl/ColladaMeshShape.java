@@ -474,11 +474,10 @@ public class ColladaMeshShape extends AbstractGeneralShape
             // need to change it if different geometry elements use different materials.
             Material activeMaterial = defaultMaterial;
 
-            int[] vboIds = null;
-            if (this.shouldUseVBOs(dc))
-                vboIds = this.getVboIds(dc);
-
-            if (vboIds == null)
+            // When drawing with vertex arrays we can bind the vertex buffer once. When using vertex buffer objects
+            // we need to check to make sure that the vbo is available each time through the loop because loading
+            // textures may force vbos out of the cache (see loop below).
+            if (!this.shouldUseVBOs(dc))
             {
                 FloatBuffer vb = this.coordBuffer;
                 gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, vb.rewind());
@@ -534,6 +533,19 @@ public class ColladaMeshShape extends AbstractGeneralShape
                 {
                     gl.glEnable(GL.GL_CULL_FACE);
                     cullingEnabled = true;
+                }
+
+                // Look up VBO IDs each time through the loop because binding a texture may bump a VBO out of the cache.
+                // If VBOs are not used, the vertex array is bound once, before the loop.
+                int[] vboIds = null;
+                if (this.shouldUseVBOs(dc))
+                {
+                    vboIds = this.getVboIds(dc);
+                    if (vboIds == null)
+                    {
+                        FloatBuffer vb = this.coordBuffer;
+                        gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, vb.rewind());
+                    }
                 }
 
                 if (vboIds != null)
