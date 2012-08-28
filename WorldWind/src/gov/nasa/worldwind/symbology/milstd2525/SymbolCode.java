@@ -612,7 +612,7 @@ public class SymbolCode extends AVListImpl
         else if (SymbologyConstants.INSTALLATION.equalsIgnoreCase(modifierKey)
             && SymbologyConstants.INSTALLATION_ALL.contains(uppercaseValue))
         {
-            return uppercaseValue;
+            return SymbologyConstants.INSTALLATION_NORMAL;
         }
         else if (SymbologyConstants.MOBILITY.equalsIgnoreCase(modifierKey)
             && SymbologyConstants.MOBILITY_ALL.contains(uppercaseValue))
@@ -1153,8 +1153,10 @@ public class SymbolCode extends AVListImpl
         String firstChar = value.substring(0, 1).toUpperCase();
         String secondChar = value.substring(1, 2).toUpperCase();
 
-        return (UNUSED_POSITION_CODE.equals(firstChar) || SymbologyConstants.MODIFIER_CODE_ALL_UEI.contains(firstChar))
-            && SymbologyConstants.ECHELON_ALL.contains(secondChar.toUpperCase());
+        return (UNUSED_POSITION_CODE.equals(firstChar) && SymbologyConstants.ECHELON_ALL.contains(secondChar))
+            || (SymbologyConstants.MODIFIER_CODE_ALL_UEI.contains(firstChar) && UNUSED_POSITION_CODE.equals(secondChar))
+            || (SymbologyConstants.MODIFIER_CODE_ALL_UEI.contains(firstChar)
+            && SymbologyConstants.ECHELON_ALL.contains(secondChar));
     }
 
     /**
