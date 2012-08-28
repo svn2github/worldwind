@@ -31,11 +31,11 @@ public class ShapeAttributesTest
 
         static
         {
-            exampleAttributes.setUnresolved(true);
-            exampleAttributes.setDrawInterior(false);
-            exampleAttributes.setDrawOutline(false);
+            exampleAttributes.setUnresolved(true); // set unresolved to true; it is false by default.
+            exampleAttributes.setDrawInterior(false); // set drawInterior to false; it is true by default.
+            exampleAttributes.setDrawOutline(false); // set drawOutline to false; it is true by default.
             exampleAttributes.setEnableAntialiasing(false);
-            exampleAttributes.setEnableLighting(false);
+            exampleAttributes.setEnableLighting(true); // set enableLighting to true; it is false by default.
             exampleAttributes.setInteriorMaterial(Material.RED);
             exampleAttributes.setOutlineMaterial(Material.GREEN);
             exampleAttributes.setInteriorOpacity(0.5);

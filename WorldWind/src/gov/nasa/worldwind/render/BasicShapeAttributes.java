@@ -378,6 +378,8 @@ public class BasicShapeAttributes implements ShapeAttributes
 
         rs.addStateValueAsBoolean(so, "enableAntialiasing", this.isEnableAntialiasing());
 
+        rs.addStateValueAsBoolean(so, "enableLighting", this.isEnableLighting());
+
         this.getInteriorMaterial().getRestorableState(rs, rs.addStateObject(so, "interiorMaterial"));
 
         this.getOutlineMaterial().getRestorableState(rs, rs.addStateObject(so, "outlineMaterial"));
@@ -419,6 +421,10 @@ public class BasicShapeAttributes implements ShapeAttributes
         b = rs.getStateValueAsBoolean(so, "enableAntialiasing");
         if (b != null)
             this.setEnableAntialiasing(b);
+
+        b = rs.getStateValueAsBoolean(so, "enableLighting");
+        if (b != null)
+            this.setEnableLighting(b);
 
         RestorableSupport.StateObject mo = rs.getStateObject(so, "interiorMaterial");
         if (mo != null)
