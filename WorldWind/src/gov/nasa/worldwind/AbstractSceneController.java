@@ -77,6 +77,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     protected Collection<SurfaceTile> surfaceObjectTiles = new ArrayList<SurfaceTile>();
     /** The display name for the surface object tile count performance statistic. */
     protected static final String SURFACE_OBJECT_TILE_COUNT_NAME = "Surface Object Tiles";
+    protected ClutterFilter clutterFilter = new BasicClutterFilter();
+//    protected Map<String, GroupingFilter> groupingFilters = new HashMap<String, GroupingFilter>();
 
     public AbstractSceneController()
     {
@@ -293,6 +295,86 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         this.glRuntimeCaps = capabilities;
     }
 
+    @Override
+    public ClutterFilter getClutterFilter()
+    {
+        return clutterFilter;
+    }
+
+    @Override
+    public void setClutterFilter(ClutterFilter clutterFilter)
+    {
+        this.clutterFilter = clutterFilter;
+    }
+//
+//    @Override
+//    public GroupingFilter getGroupingFilter(String filterName)
+//    {
+//        if (WWUtil.isEmpty(filterName))
+//        {
+//            String msg = Logging.getMessage("nullValue.OrderedRenderable"); // TODO: proper log message
+//            Logging.logger().warning(msg);
+//            return null;
+//        }
+//
+//        return this.dc.getGroupingFilter(filterName);
+//    }
+//
+//    @Override
+//    public void addGroupingFilter(String filterName, GroupingFilter filter)
+//    {
+//        if (WWUtil.isEmpty(filterName))
+//        {
+//            String msg = Logging.getMessage("nullValue.OrderedRenderable"); // TODO: proper log message
+//            Logging.logger().warning(msg);
+//            return;
+//        }
+//
+//        if (filter == null)
+//        {
+//            String msg = Logging.getMessage("nullValue.OrderedRenderable"); // TODO: proper log message
+//            Logging.logger().warning(msg);
+//            return; // benign event
+//        }
+//
+//        this.groupingFilters.put(filterName, filter);
+//    }
+//
+//    @Override
+//    public void removeGroupingFilter(String filterName)
+//    {
+//        if (WWUtil.isEmpty(filterName))
+//        {
+//            String msg = Logging.getMessage("nullValue.OrderedRenderable"); // TODO: proper log message
+//            Logging.logger().warning(msg);
+//            return;
+//        }
+//
+//        this.groupingFilters.remove(filterName);
+//    }
+//
+//    @Override
+//    public void removeAllGroupingFilters()
+//    {
+//        this.groupingFilters.clear();
+//    }
+//
+//    protected void resetGroupingFilters()
+//    {
+//        if (this.getView() == null)
+//            return;
+//
+//        Rectangle2D vp = this.getView().getViewport();
+//        if (vp == null)
+//            return;
+//
+//        for (GroupingFilter filter : this.groupingFilters.values())
+//        {
+//            filter.clear();
+//            filter.setDimensions((int) vp.getWidth(), (int) vp.getHeight());
+//        }
+//    }
+
     public int repaint()
     {
         this.frameTime = System.currentTimeMillis();
@@ -362,6 +444,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         dc.setPickPoint(this.pickPoint);
         dc.setPickRectangle(this.pickRect);
         dc.setViewportCenterScreenPoint(this.getViewportCenter(dc));
+        dc.setClutterFilter(this.getClutterFilter());
+//        dc.setGroupingFilters(this.groupingFilters);
 
         long frameTimeStamp = System.currentTimeMillis();
         dc.setFrameTimeStamp(frameTimeStamp);
@@ -432,6 +516,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     {
         if (dc.getView() != null)
             dc.getView().apply(dc);
+//
+//        this.resetGroupingFilters();
     }
 
     protected void createPickFrustum(DrawContext dc)
@@ -714,7 +800,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         // Pick against the deferred/ordered renderables.
         dc.setOrderedRenderingMode(true);
-        dc.applyDeclutterFilter();
+//        dc.applyGroupingFilters();
+        dc.applyClutterFilter();
         while (dc.peekOrderedRenderables() != null)
         {
             dc.pollOrderedRenderables().pick(dc, dc.getPickPoint());
@@ -803,7 +890,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
             // Draw the deferred/ordered renderables.
             dc.setOrderedRenderingMode(true);
-            dc.applyDeclutterFilter();
+//            dc.applyGroupingFilters();
+            dc.applyClutterFilter();
             while (dc.peekOrderedRenderables() != null)
             {
                 try

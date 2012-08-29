@@ -19,7 +19,6 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import java.awt.*;
-import java.awt.geom.*;
 import java.nio.*;
 import java.util.*;
 import java.util.List;
@@ -92,6 +91,8 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     protected Dimension pickPointFrustumDimension = new Dimension(3, 3);
     protected LightingModel standardLighting = new BasicLightingModel();
     protected DeclutteringTextRenderer declutteringTextRenderer = new DeclutteringTextRenderer();
+    protected ClutterFilter clutterFilter;
+//    protected Map<String, GroupingFilter> groupingFilters;
 
     protected static class OrderedRenderableEntry
     {
@@ -677,11 +678,67 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
         return ore != null ? ore.or : null;
     }
+//
+//    public void applyDeclutterFilter2()
+//    {
+//        // Collect all the active declutterables.
+//        ArrayList<OrderedRenderableEntry> declutterableArray = new ArrayList<OrderedRenderableEntry>();
+//        for (OrderedRenderableEntry ore : this.orderedRenderables)
+//        {
+//            if (ore.or instanceof Declutterable && ((Declutterable) ore.or).isEnableDecluttering())
+//                declutterableArray.add(ore);
+//        }
+//
+//        // Sort the declutterables front-to-back.
+//        Collections.sort(declutterableArray, new Comparator<OrderedRenderableEntry>()
+//        {
+//            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
+//            {
+//                double eA = orA.distanceFromEye;
+//                double eB = orB.distanceFromEye;
+//
+//                return eA < eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
+//            }
+//        });
+//
+//        if (declutterableArray.size() == 0)
+//            return;
+//
+//        // Remove eliminated ordered renderables from the priority queue.
+//        ClutterFilter clutterFilter = new ClutterFilter();
+//
+//        for (OrderedRenderableEntry ore : declutterableArray)
+//        {
+//            Rectangle2D bounds = ((Declutterable) ore.or).getBounds(this);
+//
+//            Rectangle2D intersectingRegion = clutterFilter.intersects(bounds);
+//            if (intersectingRegion != null)
+//                clutterFilter.addShape(intersectingRegion, (Declutterable) ore.or);
+//            else if (bounds != null)
+//                clutterFilter.addShape(bounds, (Declutterable) ore.or);
+//
+//            orderedRenderables.remove(ore);
+//        }
+//
+//        clutterFilter.render(this);
+//    }
 
     @Override
-    public void applyDeclutterFilter()
+    public void setClutterFilter(ClutterFilter filter)
     {
-        ClutterFilter clutterFilter = new ClutterFilter();
+        this.clutterFilter = filter;
+    }
+
+    @Override
+    public ClutterFilter getClutterFilter()
+    {
+        return this.clutterFilter;
+    }
+
+    public void applyClutterFilter()
+    {
+        if (this.getClutterFilter() == null)
+            return;
 
         // Collect all the active declutterables.
         ArrayList<OrderedRenderableEntry> declutterableArray = new ArrayList<OrderedRenderableEntry>();
@@ -703,16 +760,22 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             }
         });
 
-        // Remove eliminated ordered renderables from the priority queue.
+        if (declutterableArray.size() == 0)
+            return;
+
+         // Prepare the declutterable list for the filter and remove eliminated ordered renderables from the renderable
+        // list. The clutter filter will add those it wants displayed back to the list, or it will add some other
+        // representation.
+        List<Declutterable> declutterables = new ArrayList<Declutterable>(declutterableArray.size());
         for (OrderedRenderableEntry ore : declutterableArray)
         {
-            Rectangle2D bounds = ((Declutterable) ore.or).getBounds(this);
+            declutterables.add((Declutterable) ore.or);
 
-            if (clutterFilter.intersects(bounds))
-                orderedRenderables.remove(ore);
-
-            clutterFilter.addRegion(bounds);
+            orderedRenderables.remove(ore);
         }
+
+        // Tell the filter to apply itself and draw whatever it draws.
+        this.getClutterFilter().apply(this, declutterables);
     }
 
     /** {@inheritDoc} */
@@ -733,6 +796,37 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     {
         return this.orderedSurfaceRenderables;
     }
+//
+//    @Override
+//    public void setGroupingFilters(Map<String, GroupingFilter> filters)
+//    {
+//        this.groupingFilters = filters;
+//    }
+//
+//    protected static final String DEFAULT_GROUPING_FILTER_NAME = "Default";
+//
+//    @Override
+//    public GroupingFilter getGroupingFilter(String filterName)
+//    {
+//        if (filterName == null)
+//        {
+//            GroupingFilter filter = this.groupingFilters.get(DEFAULT_GROUPING_FILTER_NAME);
+//            if (filter == null)
+//                this.groupingFilters.put(DEFAULT_GROUPING_FILTER_NAME, new GroupingFilter());
+//
+//            return filter;
+//        }
+//
+//        return this.groupingFilters.get(filterName);
+//    }
+//
+//    public void applyGroupingFilters()
+//    {
+//        for (GroupingFilter filter : this.groupingFilters.values())
+//        {
+//            filter.apply(this);
+//        }
+//    }
 
     public void drawUnitQuad()
     {

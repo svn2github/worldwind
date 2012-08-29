@@ -6,56 +6,24 @@
 
 package gov.nasa.worldwind.util;
 
-import java.awt.geom.*;
-import java.util.*;
+import gov.nasa.worldwind.render.*;
+
+import java.util.List;
 
 /**
  * Provides a mechanism to track the screen region of rendered items and determine whether that region overlaps with
- * regions already rendered. This filter is used by global text decluttering.
+ * regions already rendered. Used by global text decluttering.
  *
  * @author tag
  * @version $Id$
  */
-public class ClutterFilter
+public interface ClutterFilter
 {
-    /** Holds the rectangles of the regions already drawn. */
-    protected List<Rectangle2D> rectList = new ArrayList<Rectangle2D>();
-
     /**
-     * Adds a region to this filter to denote that the region has been rendered to and should not be rendered to again.
+     * Applies the filter for a specified list of {@link Declutterable} shapes.
      *
-     * @param rect the region to add.
+     * @param dc     the current draw context.
+     * @param shapes the shapes to declutter.
      */
-    public void addRegion(Rectangle2D rect)
-    {
-        if (rect == null)
-        {
-            String msg = Logging.getMessage("nullValue.RectangleIsNull");
-            Logging.logger().fine(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.rectList.add(rect);
-    }
-
-    /**
-     * Indicates whether a specified region intersects a region in the filter.
-     *
-     * @param rectangle the region to test.
-     *
-     * @return true if the region intersects one or more other regions in the filter, otherwise false.
-     */
-    public boolean intersects(Rectangle2D rectangle)
-    {
-        if (rectangle == null)
-            return false;
-
-        for (Rectangle2D rect : this.rectList)
-        {
-            if (rectangle.intersects(rect))
-                return true;
-        }
-
-        return false;
-    }
+    void apply(DrawContext dc, List<Declutterable> shapes);
 }

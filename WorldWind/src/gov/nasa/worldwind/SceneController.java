@@ -9,7 +9,7 @@ import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
-import gov.nasa.worldwind.util.PerformanceStatistic;
+import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
 import java.util.*;
@@ -250,4 +250,26 @@ public interface SceneController extends WWObject, Disposable
      * @throws IllegalArgumentException if the capabilities are null.
      */
     void setGLRuntimeCapabilities(GLRuntimeCapabilities capabilities);
+//
+//    GroupingFilter getGroupingFilter(String filterName);
+//
+//    void addGroupingFilter(String filterName, GroupingFilter filter);
+//
+//    void removeGroupingFilter(String filterName);
+//
+//    void removeAllGroupingFilters();
+
+    /**
+     * Returns the current clutter filter.
+     *
+     * @return the current clutter filter. May be null, in which case decluttering is not performed.
+     */
+    ClutterFilter getClutterFilter();
+
+    /**
+     * Specifies the clutter filter to use.
+     *
+     * @param clutterFilter the clutter filter to use. May be null to indicate no decluttering.
+     */
+    void setClutterFilter(ClutterFilter clutterFilter);
 }

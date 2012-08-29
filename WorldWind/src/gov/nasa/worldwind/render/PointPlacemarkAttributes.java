@@ -56,7 +56,7 @@ public class PointPlacemarkAttributes implements Exportable
     /** The default label offset. This value is appropriate for the default image. */
     public static final Offset DEFAULT_LABEL_OFFSET = new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION);
     /** The default font to use for the placemark's label. */
-    protected static final Font DEFAULT_LABEL_FONT = Font.decode(
+    public static final Font DEFAULT_LABEL_FONT = Font.decode(
     Configuration.getStringValue("gov.nasa.worldwind.render.PointPlacemarkAttributes.DefaultLabelFont",
         "Arial-BOLD-14"));
     /** The default label color. */

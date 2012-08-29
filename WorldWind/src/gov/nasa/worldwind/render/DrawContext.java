@@ -978,8 +978,26 @@ public interface DrawContext extends WWObject, Disposable
      */
     DeclutteringTextRenderer getDeclutteringTextRenderer();
 
+    /** Filter overlapping text from the ordered renderable list. */
+    void applyClutterFilter();
+//
+//    void applyGroupingFilters();
+//
+//    GroupingFilter getGroupingFilter(String filterName);
+//
+//    void setGroupingFilters(Map<String, GroupingFilter> filters);
+
     /**
-     * Filter overlapping text from the ordered renderable list.
+     * Specifies the clutter filter to use. May be null to indicate no decluttering.
+     *
+     * @param filter the clutter filter.
      */
-    void applyDeclutterFilter();
+    void setClutterFilter(ClutterFilter filter);
+
+    /**
+     * Returns the current clutter filter.
+     *
+     * @return the current clutter filter.
+     */
+    ClutterFilter getClutterFilter();
 }
