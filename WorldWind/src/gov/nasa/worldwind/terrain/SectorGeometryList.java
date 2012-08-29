@@ -319,8 +319,9 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
             throw new IllegalArgumentException(msg);
         }
 
-        for (SectorGeometry sg : this)
+        for (int i = 0; i < this.size(); i++)
         {
+            SectorGeometry sg = this.get(i);
             if (sg.getSector().contains(latitude, longitude))
             {
                 Vec4 point = sg.getSurfacePoint(latitude, longitude, metersOffset);
