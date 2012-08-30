@@ -652,7 +652,7 @@ public class PointPlacemark extends WWObjectImpl
         {
             this.doDrawOrderedRenderable(dc, this.pickSupport);
 
-            if (this.isEnableBatchRendering() && !this.isEnableDecluttering())
+            if (this.isEnableBatchRendering())
                 this.drawBatched(dc);
         }
         finally
