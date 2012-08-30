@@ -616,7 +616,7 @@ public class Triangle
         if (triangleType == GL.GL_TRIANGLES)
             return Triangle.intersectTriangles(line, vertices, indices);
         else if (triangleType == GL.GL_TRIANGLE_STRIP)
-            return Triangle.intersectTriFan(line, vertices, indices);
+            return Triangle.intersectTriStrip(line, vertices, indices);
         else if (triangleType == GL.GL_TRIANGLE_FAN)
             return Triangle.intersectTriFan(line, vertices, indices);
 
