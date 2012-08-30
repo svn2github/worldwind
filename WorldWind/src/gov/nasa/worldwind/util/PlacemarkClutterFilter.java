@@ -42,10 +42,12 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 this.addShape(intersectingRegion, shape);
             else if (bounds != null)
             {
-                double w = 1.5 * bounds.getWidth();
-                double h = 1.5 * bounds.getHeight();
-                double x = bounds.getX() - 0.25 * bounds.getWidth();
-                double y = bounds.getY() - 0.25 * bounds.getHeight();
+                // Double the size of the capturing rectangle in order to grab more than it otherwise would. This
+                // reduces the clutter caused by the decluttered representations themselves.
+                double w = 2 * bounds.getWidth();
+                double h = 2 * bounds.getHeight();
+                double x = bounds.getX() - 0.5 * bounds.getWidth();
+                double y = bounds.getY() - 0.5 * bounds.getHeight();
                 this.addShape(new Rectangle.Double(x, y, w, h), shape);
             }
         }
@@ -54,6 +56,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
         this.clear();
     }
 
+    /** Release all the resources used in the most recent filter application. */
     protected void clear()
     {
         this.rectList.clear();
@@ -211,7 +214,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 // The label is drawn using a parallel projection.
                 gl.glOrtho(0d, dc.getView().getViewport().width, 0d, dc.getView().getViewport().height, -1d, 1d);
 
-                // Compute the startng point of the line.
+                // Compute the starting point of the line.
                 Position position = this.placemark.getReferencePosition();
                 Vec4 point = dc.computePointFromPosition(position, this.placemark.getAltitudeMode());
                 Vec4 startPoint = dc.getView().project(point);
@@ -229,6 +232,14 @@ public class PlacemarkClutterFilter implements ClutterFilter
 
                 // Compute the end point of the line.
                 Vec4 endPoint = new Vec4(textPoint.x + bounds.getWidth(), textPoint.y, textPoint.z);
+                dx = endPoint.x - startPoint.x;
+                dy = endPoint.y() - startPoint.y;
+                double d1 = dx * dx + dy * dy;
+                dx = textPoint.x - startPoint.x;
+                dy = textPoint.y - startPoint.y;
+                double d2 = dx * dx + dy * dy;
+                if (d2 < d1)
+                    endPoint = textPoint;
                 this.drawDeclutterLine(dc, startPoint, endPoint);
             }
             finally
