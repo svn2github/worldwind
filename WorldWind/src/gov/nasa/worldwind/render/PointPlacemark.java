@@ -913,6 +913,7 @@ public class PointPlacemark extends WWObjectImpl
             TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
             bounds = textRenderer.getBounds(this.labelText);
             this.boundsFont = font;
+            this.labelBounds = bounds;
         }
 
         Double labelScale = this.getActiveAttributes().getLabelScale();
@@ -928,7 +929,7 @@ public class PointPlacemark extends WWObjectImpl
             bounds = new Rectangle2D.Double(x, y, bounds.getWidth(), bounds.getHeight());
         }
 
-        return this.labelBounds = bounds;
+        return bounds;
     }
 
     /**
