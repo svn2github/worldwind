@@ -28,6 +28,9 @@ public class KMLScreenImageImpl extends ScreenImage implements KMLRenderable
 
     protected final KMLScreenOverlay parent;
 
+    /** Indicates the time at which the image source was specified. */
+    protected long iconRetrievalTime;
+
     /**
      * Create an screen image.
      *
@@ -102,11 +105,45 @@ public class KMLScreenImageImpl extends ScreenImage implements KMLRenderable
         // No pre-rendering
     }
 
+    /**
+     * Indicates whether or not the image source needs to be resolved. The source needs to be resolved when the KMLIcon
+     * is updated.
+     *
+     * @return True if the image source must be resolved.
+     */
     protected boolean mustResolveHref()
     {
-        return this.getImageSource() == null
-            && this.parent.getIcon() != null
-            && this.parent.getIcon().getHref() != null;
+        KMLIcon icon = this.parent.getIcon();
+        //noinspection SimplifiableIfStatement
+        if (icon == null || icon.getHref() == null)
+            return false;
+
+        // Resolve the reference if the image hasn't been retrieved, or if the link has expired.
+        return this.getImageSource() == null || icon.getUpdateTime() > this.iconRetrievalTime;
+    }
+
+    /**
+     * Resolve the HREF in this overlay's Icon element against the KML root.
+     *
+     * @return The resolved path to the image source.
+     */
+    protected String resolveHref()
+    {
+        // The icon reference may be to a support file within a KMZ file, so check for that. If it's not, then just
+        // let the normal ScreenImage code resolve the reference.
+        String href = this.parent.getIcon().getHref();
+        String localAddress = null;
+        try
+        {
+            localAddress = this.parent.getRoot().getSupportFilePath(href);
+        }
+        catch (IOException e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", href);
+            Logging.logger().warning(message);
+        }
+
+        return localAddress != null ? localAddress : href;
     }
 
     /** {@inheritDoc} */
@@ -114,24 +151,38 @@ public class KMLScreenImageImpl extends ScreenImage implements KMLRenderable
     {
         if (this.mustResolveHref()) // resolve the href to either a local file or a remote URL
         {
-            // The icon reference may be to a support file within a KMZ file, so check for that. If it's not, then just
-            // let the normal ScreenImage code resolve the reference.
-            String href = this.parent.getIcon().getHref();
-            String localAddress = null;
-            try
-            {
-                localAddress = this.parent.getRoot().getSupportFilePath(href);
-            }
-            catch (IOException e)
-            {
-                String message = Logging.getMessage("generic.UnableToResolveReference", href);
-                Logging.logger().warning(message);
-            }
+            String path = this.resolveHref();
 
-            this.setImageSource((localAddress != null ? localAddress : href));
+            // Evict the resource from the file store if there is a cached resource older than the icon update time.
+            // This prevents fetching a stale resource out of the cache when the Icon is updated.
+            this.parent.getRoot().evictIfExpired(path, this.iconRetrievalTime);
+
+            this.setImageSource(path);
         }
 
         this.render(dc);
+    }
+
+    /**
+     * {@inheritDoc} Overridden to set the link expiration time based on HTTP headers after the image has been
+     * retrieved.
+     */
+    protected BasicWWTexture initializeTexture()
+    {
+        BasicWWTexture ret = super.initializeTexture();
+        if (this.texture != null)
+        {
+            this.iconRetrievalTime = System.currentTimeMillis();
+
+            String path = this.resolveHref();
+
+            // Query the KMLRoot for the expiration time.
+            long expiration = this.parent.getRoot().getExpiration(path);
+
+            // Set the Icon's expiration. This has no effect if the refreshMode is not onExpire.
+            this.parent.getIcon().setExpirationTime(expiration);
+        }
+        return ret;
     }
 
     /**

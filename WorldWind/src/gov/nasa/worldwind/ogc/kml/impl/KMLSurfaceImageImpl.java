@@ -12,9 +12,10 @@ import gov.nasa.worldwind.ogc.kml.gx.GXLatLongQuad;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author pabercrombie
@@ -25,6 +26,11 @@ public class KMLSurfaceImageImpl extends SurfaceImage implements KMLRenderable
     protected KMLGroundOverlay parent;
 
     protected boolean attributesResolved;
+
+    /** Indicates that the source texture has been resolved and loaded. */
+    protected boolean textureResolved;
+    /** Indicates the time at which the image source was specified. */
+    protected long iconRetrievalTime;
 
     /**
      * Flag to indicate the rotation must be applied to the SurfaceImage. Rotation is applied the first time that the
@@ -100,19 +106,31 @@ public class KMLSurfaceImageImpl extends SurfaceImage implements KMLRenderable
     {
         if (this.mustResolveHref()) // resolve the href to either a local file or a remote URL
         {
-            // The icon reference may be to a support file within a KMZ file, so check for that. If it's not, then just
-            // let the normal SurfaceImage code resolve the reference.
-            String href = this.parent.getIcon().getHref();
-            String localAddress = null;
-            try
-            {
-                localAddress = this.parent.getRoot().getSupportFilePath(href);
-            }
-            catch (IOException ignored)
-            {
-            }
+            String path = this.resolveHref();
 
-            this.setImageSource((localAddress != null ? localAddress : href), this.getCorners());
+            // Evict the resource from the file store if there is a cached resource older than the icon update time.
+            // This prevents fetching a stale resource out of the cache when the Icon is updated.
+            this.parent.getRoot().evictIfExpired(path, this.iconRetrievalTime);
+
+            this.setImageSource(path, this.getCorners());
+            this.iconRetrievalTime = System.currentTimeMillis();
+            this.textureResolved = false;
+        }
+
+        // Set the Icon's expiration time the first time that the image is rendered after the texture has been retrieved.
+        // The expiration time comes from the HTTP headers, so we can't do this until the resource is available.
+        boolean mustSetExpiration = !this.textureResolved && this.sourceTexture != null
+            && this.sourceTexture.isTextureCurrent(dc);
+        if (mustSetExpiration)
+        {
+            String path = this.resolveHref();
+
+            // Query the KMLRoot for the expiration time.
+            long expiration = this.parent.getRoot().getExpiration(path);
+
+            // Set the Icon's expiration. This has no effect if the refreshMode is not onExpire.
+            this.parent.getIcon().setExpirationTime(expiration);
+            this.textureResolved = true;
         }
 
         // Apply rotation the first time the overlay is rendered
@@ -125,11 +143,43 @@ public class KMLSurfaceImageImpl extends SurfaceImage implements KMLRenderable
         super.preRender(dc);
     }
 
+    /**
+     * Indicates whether or not the image source needs to be resolved. The source needs to be resolved when the KMLIcon
+     * is updated.
+     *
+     * @return True if the image source must be resolved.
+     */
     protected boolean mustResolveHref()
     {
-        return this.getImageSource() == null
-            && this.parent.getIcon() != null
-            && this.parent.getIcon().getHref() != null;
+        KMLIcon icon = this.parent.getIcon();
+        //noinspection SimplifiableIfStatement
+        if (icon == null || icon.getHref() == null)
+            return false;
+
+        // Resolve the reference if the image hasn't been retrieved, or if the link has expired.
+        return this.getImageSource() == null || icon.getUpdateTime() > this.iconRetrievalTime;
+    }
+
+    /**
+     * Resolve the HREF in this overlay's Icon element against the KML root.
+     *
+     * @return The resolved path to the image source.
+     */
+    protected String resolveHref()
+    {
+        // The icon reference may be to a support file within a KMZ file, so check for that. If it's not, then just
+        // let the normal SurfaceImage code resolve the reference.
+        String href = this.parent.getIcon().getHref();
+        String localAddress = null;
+        try
+        {
+            localAddress = this.parent.getRoot().getSupportFilePath(href);
+        }
+        catch (IOException ignored)
+        {
+        }
+
+        return localAddress != null ? localAddress : href;
     }
 
     /** {@inheritDoc} */

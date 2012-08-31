@@ -29,6 +29,11 @@ public class KMLPointPlacemarkImpl extends PointPlacemark implements KMLRenderab
     protected boolean highlightAttributesResolved = false;
     protected boolean normalAttributesResolved = false;
 
+    /** Indicates the time at which the image source was specified. */
+    protected long iconRetrievalTime;
+    /** Indicates the time at which the highlight image source was specified. */
+    protected long highlightIconRetrievalTime;
+
     public static final double DEFAULT_LABEL_SCALE_THRESHOLD = 1.0;
     /**
      * Placemark labels with a scale less than this threshold will only be drawn when the placemark is highlighted. This
@@ -162,6 +167,80 @@ public class KMLPointPlacemarkImpl extends PointPlacemark implements KMLRenderab
         }
 
         this.render(dc);
+    }
+
+    protected void determineActiveAttributes()
+    {
+        super.determineActiveAttributes();
+
+        if (this.mustRefreshIcon())
+        {
+            String path = this.getActiveAttributes().getImageAddress();
+
+            if (!WWUtil.isEmpty(path))
+            {
+                // Evict the resource from the file store if there is a cached resource older than the icon update
+                // time. This prevents fetching a stale resource out of the cache when the Icon is updated.
+                boolean highlighted = this.isHighlighted();
+                this.parent.getRoot().evictIfExpired(path,
+                    highlighted ? this.highlightIconRetrievalTime : this.iconRetrievalTime);
+                this.textures.remove(path);
+            }
+        }
+    }
+
+    /**
+     * Indicates whether or not the icon resource has expired.
+     *
+     * @return True if the icon has expired and must be refreshed.
+     */
+    protected boolean mustRefreshIcon()
+    {
+        String mode;
+        long retrievalTime;
+
+        if (this.isHighlighted())
+        {
+            mode = KMLConstants.HIGHLIGHT;
+            retrievalTime = this.highlightIconRetrievalTime;
+        }
+        else
+        {
+            mode = KMLConstants.NORMAL;
+            retrievalTime = this.iconRetrievalTime;
+        }
+
+        KMLIconStyle iconStyle = (KMLIconStyle) this.parent.getSubStyle(new KMLIconStyle(null), mode);
+        KMLIcon icon = iconStyle.getIcon();
+        return icon != null && icon.getUpdateTime() > retrievalTime;
+    }
+
+    /**
+     * {@inheritDoc} Overridden to set the expiration time of the placemark's icon based on the HTTP headers of the
+     * linked resource.
+     */
+    protected WWTexture initializeTexture(String address)
+    {
+        WWTexture texture = super.initializeTexture(address);
+        if (texture != null)
+        {
+            // Query the KMLRoot for the expiration time.
+            long expiration = this.parent.getRoot().getExpiration(address);
+
+            // Set the Icon's expiration. This has no effect if the refreshMode is not onExpire.
+            String mode = this.isHighlighted() ? KMLConstants.HIGHLIGHT : KMLConstants.NORMAL;
+            KMLIconStyle iconStyle = (KMLIconStyle) this.parent.getSubStyle(new KMLIconStyle(null), mode);
+            KMLIcon icon = iconStyle.getIcon();
+            if (icon != null)
+                icon.setExpirationTime(expiration);
+
+            if (this.isHighlighted())
+                this.highlightIconRetrievalTime = System.currentTimeMillis();
+            else
+                this.iconRetrievalTime = System.currentTimeMillis();
+        }
+
+        return texture;
     }
 
     /** {@inheritDoc} */

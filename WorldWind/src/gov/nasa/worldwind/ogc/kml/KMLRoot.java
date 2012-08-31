@@ -930,6 +930,37 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
     }
 
     /**
+     * Check a cached resource for expiration. If the resource is expired, evict it from the cache.
+     *
+     * @param link           Link that identifies the resource to check for expiration. This is the same link that was
+     *                       passed to resolveReference to retrieve the resource.
+     * @param expirationTime Time at which the resource expires, in milliseconds since the Epoch. If the current system
+     *                       time is greater than the expiration time, then the resource will be evicted.
+     */
+    public void evictIfExpired(String link, long expirationTime)
+    {
+        try
+        {
+            URL url = WorldWind.getDataFileStore().requestFile(link, false);
+            if (url != null)
+            {
+                // Check the file's modification time against the link update time. If the file was last modified
+                // earlier than the link update time then we need to remove the cached file from the file store,
+                // and start a new file retrieval.
+                File file = new File(url.toURI());
+
+                if (file.lastModified() < expirationTime)
+                    WorldWind.getDataFileStore().removeFile(link);
+            }
+        }
+        catch (URISyntaxException e)
+        {
+            String message = Logging.getMessage("generic.UnableToResolveReference", link);
+            Logging.logger().warning(message);
+        }
+    }
+
+    /**
      * Returns the expiration time of a file retrieved by {@link #resolveReference(String) resolveReference} or {@link
      * #resolveNetworkLink(String, boolean, long) resolveNetworkLink}.
      *
