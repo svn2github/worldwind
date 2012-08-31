@@ -105,7 +105,7 @@ public interface GpuResourceCache
     int getNumObjects();
 
     /**
-     * Inticates this cache's capacity in bytes.
+     * Indicates this cache's capacity in bytes.
      *
      * @return this cache's capacity in bytes.
      */
