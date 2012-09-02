@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2012 United States Government as represented by the Administrator of the
+    National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Build file for World Wind Android. Compiles the World Wind Android source, builds the World Wind Android library,
+    and creates the World Wind Android documentation. The default target is 'build'.
+
+    $Id$
+-->
+<project name="worldwind.android" default="build" basedir=".">
+
+    <description>
+        Build file for World Wind Android. Compiles the World Wind Android source, builds the World Wind Android
+        library, and creates the World Wind Android documentation. The default target is 'build'.
+        Use 'ant -p' to view a list of targets.
+    </description>
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android build properties -->
+    <!--***********************************************************************************************-->
+
+    <!-- Attempt to get the Android SDK path from the ANDROID_HOME environment variable. This does nothing if the
+         ANDROID_HOME environment variable is undefined. -->
+    <property environment="env"/>
+    <condition property="android.home.dir" value="${env.ANDROID_HOME}">
+        <isset property="env.ANDROID_HOME"/>
+    </condition>
+
+    <!-- Get the build properties from an external file named build.properties in the same folder as this file. -->
+    <property file="build.properties"/>
+
+    <!-- Fail if the Android SDK path is not specified, and print a message indicating how to resolve this issue. -->
+    <fail unless="android.home.dir">
+        Android SDK path is not configured.
+
+        The Android SDK path is not configured. Either set the ANDROID_HOME environment variable, or set the
+        android.home.dir build property in WorldWind/build.properties. The value must be an absolute path to the Android
+        SDK folder, and must not end with a trailing slash.
+    </fail>
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android build targets -->
+    <!--***********************************************************************************************-->
+
+    <!--
+        Compiles the World Wind Android source, builds the World Wind Android library, and creates the World Wind
+        Android documentation.
+    -->
+    <target name="build"
+            depends="worldwind.android.compile, worldwind.android.library, worldwind.android.docs"
+            description="Compiles the World Wind Android source, builds the World Wind Android library, and creates the World Wind Android documentation. (default)"/>
+
+    <!--
+        Removes all files and directories created by the 'build' target.
+    -->
+    <target name="clean"
+            depends="clean.worldwind.android.compile, clean.worldwind.android.library, clean.worldwind.android.docs"
+            description="Removes all files and directories created by the 'build' target."/>
+
+    <!--
+        Compiles all World Wind Android sources in to their corresponding class files. We configure the javac task
+        parameters 'source' and 'target' in order to explicitly control the Java compiler version used to build World
+        Wind classes. Without these parameters, the javac task would use the most recent compiler available on the
+        current machine, and the Java compiler version used to build WorldWind classes would be unpredictable. For this
+        reason, the Apache ANT manual strongly recommends specifying the 'source' and 'target' parameters. See the
+        following link for more detail: http://ant.apache.org/manual/CoreTasks/javac.html
+
+        The Java compiler version used by the javac task is defined by the build parameter 'jdk.version'. This parameter
+        is defined in the file 'build.properties', and must be set to "1.5" to be compatible with Android 3.1.
+    -->
+    <target name="worldwind.android.compile"
+            description="Compiles all World Wind Android sources in to their corresponding class files.">
+        <mkdir dir="${worldwind.android.classes.dir}"/>
+        <javac srcdir="${worldwind.android.src.dir}"
+               destdir="${worldwind.android.classes.dir}"
+               source="${java.target}"
+               target="${java.target}"
+               fork="true"
+               includeantruntime="false"
+               memoryMaximumSize="512m">
+            <classpath>
+                <pathelement location="${android.jarfile}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.android.compile target.
+    -->
+    <target name="clean.worldwind.android.compile">
+        <delete dir="${worldwind.android.classes.dir}"/>
+    </target>
+
+    <!--
+        Builds the World Wind Android documentation. Includes API documentation for all classes in the World Wind
+        package gov.nasa.worldwind.
+    -->
+    <target name="worldwind.android.docs"
+            description="Builds the World Wind Android documentation.">
+        <mkdir dir="${worldwind.android.api.dir}"/>
+        <javadoc destdir="${worldwind.android.api.dir}"
+                 overview="${worldwind.android.src.dir}/overview.html"
+                 windowtitle="NASA World Wind Android"
+                 doctitle="NASA World Wind Android API"
+                 header="NASA World Wind Android"
+                 splitindex="true" protected="true" nodeprecated="true" version="false" author="false" use="true"
+                 maxmemory="512m">
+            <packageset dir="${worldwind.android.src.dir}" defaultexcludes="yes">
+                <include name="gov/nasa/worldwind/**"/>
+            </packageset>
+            <classpath>
+                <pathelement location="${android.jarfile}"/>
+            </classpath>
+            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
+            <!-- Link to the Android docs using linkoffline because developer.android.com does not include the
+                 package-list file. Javadoc needs to read the package list from the local copy of the documentation. -->
+            <link offline="true" href="http://developer.android.com/reference/"
+                  packagelistloc="${android.home.dir}/docs/reference"/>
+        </javadoc>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.android.docs target.
+    -->
+    <target name="clean.worldwind.android.docs">
+        <delete dir="${worldwind.android.docs.dir}"/>
+    </target>
+
+    <!--
+        Builds the World Wind Android library. Includes all classes in the World Wind package gov.nasa.worldwind.
+        Excludes files added by Subversion, and files added by the operating system. The resultant library file is
+        dependent on android.jar, but since that dependency is implied we do not include android.jar on the class path.
+    -->
+    <target name="worldwind.android.library"
+            depends="worldwind.android.compile"
+            description="Builds the World Wind Android library.">
+        <jar jarfile="${worldwind.android.library.file}">
+            <!-- Include the World Wind package gov.nasa.worldwind. -->
+            <fileset dir="${worldwind.android.classes.dir}">
+                <include name="gov/nasa/worldwind/**/*.class"/>
+                <type type="file"/>
+            </fileset>
+            <!-- Include the MessageStrings properties files, and all resource files under the config, images, and
+                 shaders packages. We include the entire config, images, and shaders packages rather than defining
+                 patterns for resource file extensions for two reasons: (a) this avoids packaging unnecessary resources
+                 in the Jar file, and (b) this ensures that anything added to these packages is included without
+                 requiring changes to this build target. -->
+            <fileset dir="${worldwind.android.src.dir}">
+                <include name="gov/nasa/worldwind/util/**/*.properties"/>
+                <include name="config/**"/>
+                <include name="images/**"/>
+                <include name="shaders/**"/>
+                <type type="file"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.android.library target.
+    -->
+    <target name="clean.worldwind.android.library">
+        <delete file="${worldwind.android.library.file}"/>
+    </target>
+
+    <!--
+        Builds the World Wind Android SDK.
+    -->
+    <target name="worldwind.android.sdk"
+            depends="clean.worldwind.android.sdk, build"
+            description="Builds the World Wind Android SDK.">
+        <mkdir dir="${worldwind.android.sdk.dir}/"/>
+        <copy todir="${worldwind.android.sdk.dir}">
+            <fileset dir="${basedir}">
+                <include name=".classpath"/>
+                <include name=".project"/>
+                <include name=".settings/**"/>
+                <include name="*.iml"/>
+                <include name="*.properties"/>
+                <include name="*.xml"/>
+                <include name="src/**"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${worldwind.android.out.dir}">
+                <include name="*.jar"/>
+                <include name="doc/**"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.android.sdk target.
+    -->
+    <target name="clean.worldwind.android.sdk">
+        <delete dir="${worldwind.android.sdk.dir}"/>
+    </target>
+
+</project>

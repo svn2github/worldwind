@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                                    4
+    Copyright (C) 2012 United States Government as represented by the Administrator of the
+    National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Build file for the World Wind Android SDK.
+
+    $Id$
+-->
+<project name="worldwind.sdk" default="build" basedir=".">
+
+    <description>
+        Build file for the World Wind Android SDK.
+    </description>
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android SDK build properties -->
+    <!--***********************************************************************************************-->
+
+    <property file="build.properties"/>
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android SDK build targets -->
+    <!--***********************************************************************************************-->
+
+    <!--
+        Builds the World Wind Android library and the World Wind Android examples.
+    -->
+    <target name="build"
+            description="Builds the World Wind Android library and the World Wind Android examples. (default)">
+        <ant target="build" dir="${worldwind.android.project}" inheritall="false"/>
+        <ant target="build" dir="${worldwind.android.examples.project}" inheritall="false"/>
+    </target>
+
+    <!--
+        Removes all files and directories created by the 'build' target.
+    -->
+    <target name="clean"
+            description="Removes all files and directories created by the 'build' target.">
+        <ant target="clean" dir="${worldwind.android.project}" inheritall="false"/>
+        <ant target="clean" dir="${worldwind.android.examples.project}" inheritall="false"/>
+    </target>
+
+    <!--
+        Builds the World Wind Android SDK and the World Wind Android documentation. Includes the World Wind Android
+        library, the World Wind Android documentation, and the World Wind Android examples.
+    -->
+    <target name="worldwind.sdk"
+            depends="clean.worldwind.sdk"
+            description="Builds the World Wind Android SDK and the World Wind Android documentation.">
+        <!-- Build the World Wind Android SDK in a staging directory. -->
+        <mkdir dir="${worldwind.sdk.dir}"/>
+        <copy todir="${worldwind.sdk.dir}">
+            <fileset dir="${basedir}">
+                <include name=".idea/**"/>
+                <include name="*.properties"/>
+                <include name="*.txt"/>
+                <include name="*.xml"/>
+                <!-- Exclude files added by the Bamboo build server. -->
+                <exclude name="**/build-number*"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+        <ant dir="${worldwind.android.project}" target="worldwind.android.sdk" inheritall="false">
+            <property name="worldwind.android.sdk.dir" location="${worldwind.sdk.dir}/${worldwind.android.project}"/>
+        </ant>
+        <ant dir="${worldwind.android.examples.project}" target="worldwind.android.examples.sdk" inheritall="false">
+            <property name="worldwind.android.examples.sdk.dir"
+                      location="${worldwind.sdk.dir}/${worldwind.android.examples.project}"/>
+        </ant>
+        <!-- Build the World Wind Android SDK documentation in a staging directory. -->
+        <mkdir dir="${worldwind.sdk.docs.dir}"/>
+        <ant dir="${worldwind.android.project}" target="worldwind.android.docs" inheritall="false">
+            <property name="worldwind.android.out.dir" location="${worldwind.sdk.docs.dir}"/>
+        </ant>
+        <!-- Create the World Wind Android SDK archive. -->
+        <zip destfile="${worldwind.sdk.archive}">
+            <fileset dir="${worldwind.sdk.dir}"/>
+        </zip>
+        <!-- Create the World Wind Android documentation archive. -->
+        <zip destfile="${worldwind.sdk.docs.archive}">
+            <fileset dir="${worldwind.sdk.docs.dir}"/>
+        </zip>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.sdk build target.
+    -->
+    <target name="clean.worldwind.sdk">
+        <delete dir="${worldwind.sdk.dir}"/>
+        <delete file="${worldwind.sdk.archive}"/>
+        <delete dir="${worldwind.sdk.docs.dir}"/>
+        <delete file="${worldwind.sdk.docs.archive}"/>
+    </target>
+
+    <!--
+        Releases the World Wind Android SDK and World Wind Android API documentation for a specified version or daily
+        build.
+    -->
+    <target name="worldwind.sdk.release"
+            depends="worldwind.sdk"
+            description="Releases the World Wind Android SDK and World Wind Android API documentation for a specified version or daily build.">
+        <!-- Copy the World Wind Android SDK archive to the release folder. -->
+        <mkdir dir="${worldwind.sdk.release.builds.dir}"/>
+        <copy file="${worldwind.sdk.archive}" todir="${worldwind.sdk.release.builds.dir}"/>
+        <!-- Copy the World Wind Android API documentation archive to the release folder. -->
+        <mkdir dir="${worldwind.sdk.release.docs.dir}"/>
+        <copy file="${worldwind.sdk.docs.archive}" todir="${worldwind.sdk.release.docs.dir}"/>
+        <!-- Copy the World Wind Android API documentation to the release folder, removing the existing content first. -->
+        <delete dir="${worldwind.sdk.release.api.dir}"/>
+        <mkdir dir="${worldwind.sdk.release.api.dir}"/>
+        <copy todir="${worldwind.sdk.release.api.dir}">
+            <fileset dir="${worldwind.sdk.api.dir}"/>
+        </copy>
+    </target>
+
+</project>

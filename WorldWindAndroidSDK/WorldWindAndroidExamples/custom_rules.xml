@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2012 United States Government as represented by the Administrator of the
+    National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Customized build targets for the World Wind Android examples. The targets in this file extend or override targets
+    in the World Wind Android examples build file, which is created and maintained by the Android SDK tools.
+
+    $Id$
+-->
+<project name="custom_rules" basedir=".">
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android build properties -->
+    <!--***********************************************************************************************-->
+
+    <property file="ant.properties"/>
+
+    <!--***********************************************************************************************-->
+    <!-- World Wind Android build targets -->
+    <!--***********************************************************************************************-->
+
+    <!--
+        Builds the World Wind Android examples application and its dependencies.
+    -->
+    <target name="build"
+            depends="worldwind.android.library, worldwind.android.examples.app"
+            description="Builds the World Wind Android examples application and its dependencies."/>
+
+    <!--
+        Executes before the main Android build file's clean target. Extends the main clean target to remove additional
+        files and directories created by custom targets in this build file.
+    -->
+    <target name="-pre-clean"
+            depends="clean.worldwind.android.library, clean.worldwind.android.examples.app"/>
+
+    <!--
+        Copies the World Wind Android examples application package to the project's base directory. The custom ANT
+        properties used here are available when this build file is included with the main Android build file.
+    -->
+    <target name="-copy-package">
+        <if>
+            <condition>
+                <resourceexists>
+                    <file file="${out.final.file}"/>
+                </resourceexists>
+            </condition>
+            <then>
+                <copy file="${out.final.file}" todir="${worldwind.android.examples.out.dir}"/>
+            </then>
+        </if>
+    </target>
+
+    <!--
+        Builds the World Wind Android examples application. This builds the application in release mode if the keystore
+        path and keystore passwords are specified. Otherwise, this builds the World Wind examples application in debug
+        mode. The custom ANT tasks used here are available when this build file is included with the main Android build
+        file.
+    -->
+    <target name="worldwind.android.examples.app">
+        <if>
+            <condition>
+                <and>
+                    <isset property="has.keystore"/>
+                    <isset property="has.password"/>
+                </and>
+            </condition>
+            <then>
+                <antcall>
+                    <target name="release"/>
+                    <target name="-copy-package"/>
+                </antcall>
+            </then>
+            <else>
+                <antcall>
+                    <target name="debug"/>
+                    <target name="-copy-package"/>
+                </antcall>
+            </else>
+        </if>
+    </target>
+
+    <!--
+        Removes all files and folders created by the worldwind.android.examples.app target.
+    -->
+    <target name="clean.worldwind.android.examples.app">
+        <delete>
+            <fileset dir="${worldwind.android.examples.out.dir}" includes="*.apk"/>
+        </delete>
+    </target>
+
+    <!--
+        Builds the World Wind Android library and places it in the application's libs folder. The custom ANT properties
+        used here are available when this build file is included with the main Android build file.
+    -->
+    <target name="worldwind.android.library">
+        <mkdir dir="${jar.libs.absolute.dir}"/>
+        <ant dir="../WorldWindAndroid" inheritall="false">
+            <property name="worldwind.android.out.dir" value="${jar.libs.absolute.dir}"/>
+            <target name="worldwind.android.library"/>
+            <target name="clean.worldwind.android.compile"/>
+        </ant>
+    </target>
+
+    <!--
+        Removes all files and folders created by the worldwind.android.library target. The custom ANT properties used
+        here are available when this build file is included with the main Android build file.
+    -->
+    <target name="clean.worldwind.android.library">
+        <ant dir="../WorldWindAndroid" inheritall="false">
+            <property name="worldwind.android.out.dir" value="${jar.libs.absolute.dir}"/>
+            <target name="clean.worldwind.android.library"/>
+        </ant>
+    </target>
+
+    <!--
+        Builds the World Wind Android examples SDK.
+    -->
+    <target name="worldwind.android.examples.sdk"
+            depends="clean.worldwind.android.examples.sdk, build"
+            description="Builds the World Wind Android examples SDK.">
+        <mkdir dir="${worldwind.android.examples.sdk.dir}/"/>
+        <copy todir="${worldwind.android.examples.sdk.dir}">
+            <fileset dir="${basedir}">
+                <include name=".classpath"/>
+                <include name=".project"/>
+                <include name=".settings/**"/>
+                <include name="*.iml"/>
+                <include name="*.launch"/>
+                <include name="*.properties"/>
+                <include name="*.txt"/>
+                <include name="*.xml"/>
+                <include name="res/**"/>
+                <include name="src/**"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${worldwind.android.examples.out.dir}">
+                <include name="*.apk"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!--
+        Removes all files and directories created by the worldwind.android.examples.sdk target.
+    -->
+    <target name="clean.worldwind.android.examples.sdk">
+        <delete dir="${worldwind.android.examples.sdk.dir}"/>
+    </target>
+
+</project>
