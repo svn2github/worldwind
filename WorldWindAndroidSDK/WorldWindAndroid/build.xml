@@ -36,8 +36,8 @@
         Android SDK path is not configured.
 
         The Android SDK path is not configured. Either set the ANDROID_HOME environment variable, or set the
-        android.home.dir build property in WorldWind/build.properties. The value must be an absolute path to the Android
-        SDK folder, and must not end with a trailing slash.
+        android.home.dir build property in WorldWindAndroid/build.properties. The value must be an absolute path to the
+        Android SDK folder, and must not end with a trailing slash.
     </fail>
 
     <!--***********************************************************************************************-->
