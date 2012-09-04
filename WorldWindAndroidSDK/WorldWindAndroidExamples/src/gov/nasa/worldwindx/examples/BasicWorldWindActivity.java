@@ -22,7 +22,7 @@ import java.io.File;
  * @author dcollins
  * @version $Id$
  */
-public class WorldWindowActivity extends Activity
+public class BasicWorldWindActivity extends Activity
 {
     static
     {

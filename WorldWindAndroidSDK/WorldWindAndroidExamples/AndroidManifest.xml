@@ -35,7 +35,7 @@
         availability changes itself. This ensures that the application is not shut down and restarted due to either of
         these changes.
         -->
-        <activity android:name=".WorldWindowActivity"
+        <activity android:name=".BasicWorldWindActivity"
                   android:label="@string/main_activity_name"
                   android:launchMode="singleTask"
                   android:configChanges="orientation|keyboardHidden">
