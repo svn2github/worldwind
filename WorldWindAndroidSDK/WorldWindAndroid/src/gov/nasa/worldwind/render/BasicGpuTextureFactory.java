@@ -8,7 +8,7 @@ package gov.nasa.worldwind.render;
 import android.graphics.*;
 import android.opengl.*;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.dds.DDSTextureReader;
@@ -201,10 +201,6 @@ public class BasicGpuTextureFactory implements GpuTextureFactory
     {
         Bitmap bitmap = data.getBitmapData().bitmap;
 
-        Boolean generateMipmap = params != null ? (Boolean) params.getValue(AVKey.GENERATE_MIPMAP) : null;
-        if (generateMipmap == null)
-            generateMipmap = DEFAULT_GENERATE_MIPMAP;
-
         int[] texture = new int[1];
         try
         {
@@ -219,16 +215,14 @@ public class BasicGpuTextureFactory implements GpuTextureFactory
             // OpenGL ES provides support for non-power-of-two textures, including its associated mipmaps, provided that
             // the s and t wrap modes are both GL_CLAMP_TO_EDGE.
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                generateMipmap ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 
-            if (generateMipmap)
-                GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
         catch (Exception e)
         {
@@ -244,7 +238,7 @@ public class BasicGpuTextureFactory implements GpuTextureFactory
             data.getSizeInBytes(), this.createVerticalFlipTransform());
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected GpuTexture doCreateFromCompressedData(DrawContext dc, GpuTextureData data, AVList params) throws Exception
     {
         int format = data.getCompressedData().format;
@@ -291,7 +285,7 @@ public class BasicGpuTextureFactory implements GpuTextureFactory
             data.getSizeInBytes(), this.createVerticalFlipTransform());
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected Matrix createVerticalFlipTransform()
     {
         // Android places its graphics coordinate origin in the upper left corner, with the y axis pointing down. This

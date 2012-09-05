@@ -226,10 +226,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (b != null)
             this.setNetworkRetrievalEnabled(b);
 
-        b = (Boolean) params.getValue(AVKey.USE_MIP_MAPS);
-        if (b != null)
-            this.setUseMipMaps(b);
-
         b = (Boolean) params.getValue(AVKey.USE_TRANSPARENT_TEXTURES);
         if (b != null)
             this.setUseTransparentTextures(b);
@@ -1030,7 +1026,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         rs.addStateValueAsDouble(context, "Layer.MaxActiveAltitude", this.getMaxActiveAltitude());
         rs.addStateValueAsBoolean(context, "Layer.NetworkRetrievalEnabled", this.isNetworkRetrievalEnabled());
         rs.addStateValueAsString(context, "Layer.Name", this.getName());
-        rs.addStateValueAsBoolean(context, "TiledImageLayer.UseMipMaps", this.isUseMipMaps());
         rs.addStateValueAsBoolean(context, "TiledImageLayer.UseTransparentTextures", this.isUseTransparentTextures());
 
         RestorableSupport.StateObject so = rs.addStateObject(context, "avlist");
@@ -1092,10 +1087,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         String s = rs.getStateValueAsString(context, "Layer.Name");
         if (s != null)
             this.setName(s);
-
-        b = rs.getStateValueAsBoolean(context, "TiledImageLayer.UseMipMaps");
-        if (b != null)
-            this.setUseMipMaps(b);
 
         b = rs.getStateValueAsBoolean(context, "TiledImageLayer.UseTransparentTextures");
         if (b != null)

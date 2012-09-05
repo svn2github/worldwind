@@ -52,7 +52,6 @@ public interface AVKey
 
     final String GET_CAPABILITIES_URL = "gov.nasa.worldwind.avkey.GetCapabilitiesURL";
     final String GET_MAP_URL = "gov.nasa.worldwind.avkey.GetMapURL";
-    final String GENERATE_MIPMAP = "gov.nasa.worldwind.avkey.GenerateMipmap";
     final String GLOBE = "gov.nasa.worldwind.avkey.Globe";
     final String GLOBE_CLASS_NAME = "gov.nasa.worldwind.avkey.GlobeClassName";
     final String GPU_RESOURCE_CACHE_SIZE = "gov.nasa.worldwind.avkey.GpuResourceCacheSize";
@@ -164,7 +163,6 @@ public interface AVKey
     final String URL_PROXY_PORT = "gov.nasa.worldwind.avkey.UrlProxyPort";
     final String URL_PROXY_TYPE = "gov.nasa.worldwind.avkey.UrlProxyType";
     final String URL_READ_TIMEOUT = "gov.nasa.worldwind.avkey.URLReadTimeout";
-    final String USE_MIP_MAPS = "gov.nasa.worldwind.avkey.UseMipMaps";
     final String USE_TRANSPARENT_TEXTURES = "gov.nasa.worldwind.avkey.UseTransparentTextures";
 
     final String VERTICAL_EXAGGERATION = "gov.nasa.worldwind.avkey.VerticalExaggeration";
