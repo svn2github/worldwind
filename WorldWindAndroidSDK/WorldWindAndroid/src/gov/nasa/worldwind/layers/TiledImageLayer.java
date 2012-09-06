@@ -9,7 +9,6 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
@@ -25,22 +24,17 @@ import java.util.concurrent.PriorityBlockingQueue;
 // TODO: apply layer opacity during rendering
 public abstract class TiledImageLayer extends AbstractLayer implements Tile.TileFactory
 {
-    protected static final double DEFAULT_DETAIL_HINT_ORIGIN = 2.8;
-    protected static final int DEFAULT_REQUEST_QUEUE_SIZE = 200;
-
     protected LevelSet levels;
-    protected double detailHintOrigin = DEFAULT_DETAIL_HINT_ORIGIN;
+    protected double detailHintOrigin = 2.8; // the default detail hint origin
     protected double detailHint;
     protected List<Tile> topLevelTiles = new ArrayList<Tile>();
     protected GpuTextureFactory textureFactory;
-
     protected String tileCountName;
 
     // Stuff computed each frame
     protected List<GpuTextureTile> currentTiles = new ArrayList<GpuTextureTile>();
     protected GpuTextureTile currentAncestorTile;
-    protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(
-        DEFAULT_REQUEST_QUEUE_SIZE);
+    protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(200);
 
     abstract protected void requestTile(DrawContext dc, GpuTextureTile tile);
 
@@ -118,12 +112,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     protected LevelSet getLevels()
     {
         return levels;
-    }
-
-    @Override
-    public boolean isMultiResolution()
-    {
-        return this.getLevels() != null && this.getLevels().getNumLevels() > 1;
     }
 
     /**
@@ -409,49 +397,7 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
     protected boolean needToSubdivide(DrawContext dc, GpuTextureTile tile)
     {
-        return tile.mustSubdivide(dc, this.getDetailFactor());
-    }
-
-    @Override
-    public Double getMinEffectiveAltitude(Double radius)
-    {
-        if (radius == null)
-            radius = Earth.WGS84_EQUATORIAL_RADIUS;
-
-        // Get the cell size for the highest-resolution level.
-        double texelSize = this.getLevels().getLastLevel().getTexelSize();
-        double cellHeight = radius * texelSize;
-
-        // Compute altitude associated with the cell height at which it would switch if it had higher-res levels.
-        return cellHeight * Math.pow(10, this.getDetailFactor());
-    }
-
-    @Override
-    public Double getMaxEffectiveAltitude(Double radius)
-    {
-        if (radius == null)
-            radius = Earth.WGS84_EQUATORIAL_RADIUS;
-
-        // Find first non-empty level. Compute altitude at which it comes into effect.
-        for (int i = 0; i < this.getLevels().getLastLevel().getLevelNumber(); i++)
-        {
-            if (this.levels.isLevelEmpty(i))
-                continue;
-
-            // Compute altitude associated with the cell height at which it would switch if it had a lower-res level.
-            // That cell height is twice that of the current lowest-res level.
-            double texelSize = this.levels.getLevel(i).getTexelSize();
-            double cellHeight = 2 * radius * texelSize;
-
-            return cellHeight * Math.pow(10, this.getDetailFactor());
-        }
-
-        return null;
-    }
-
-    protected double getDetailFactor()
-    {
-        return this.detailHintOrigin + this.detailHint;
+        return tile.mustSubdivide(dc, this.detailHintOrigin + this.detailHint);
     }
 
     protected void updateTileExtent(DrawContext dc, GpuTextureTile tile)

@@ -106,16 +106,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         this.maxActiveAltitude = maxActiveAltitude;
     }
 
-    public Double getMinEffectiveAltitude(Double radius)
-    {
-        return null;
-    }
-
-    public Double getMaxEffectiveAltitude(Double radius)
-    {
-        return null;
-    }
-
     public double getScale()
     {
         Object o = this.getValue(AVKey.MAP_SCALE);
@@ -317,16 +307,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
     }
 
     protected abstract void doRender(DrawContext dc);
-
-    public boolean isAtMaxResolution()
-    {
-        return !this.isMultiResolution();
-    }
-
-    public boolean isMultiResolution()
-    {
-        return false;
-    }
 
     public String getRestorableState()
     {

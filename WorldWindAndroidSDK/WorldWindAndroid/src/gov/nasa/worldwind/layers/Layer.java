@@ -112,22 +112,6 @@ public interface Layer extends WWObject, Disposable, Restorable
     void pick(DrawContext dc, Point pickPoint);
 
     /**
-     * Indicates whether the most recent rendering of the layer rendered the highest resolution imagery or other data
-     * available. Some layers do not track resolution. For those layers this value will always be <code>true</code>.
-     * Typically such layers also return <code>false</code> from {@link #isMultiResolution}.
-     *
-     * @return <code>true</code> if the layer is at maximum resolution, otherwise <code>false</code>.
-     */
-    boolean isAtMaxResolution();
-
-    /**
-     * Indicates whether the layer provides multiple resolutions of imagery or other data.
-     *
-     * @return <code>true</code> if the layer provides multiple resolutions, else <code>false</code>.
-     */
-    boolean isMultiResolution();
-
-    /**
      * Returns the map scale, in terms of the ratio of 1 to the value returned, e.g., 1:24000.
      *
      * @return the map scale.
@@ -217,26 +201,4 @@ public interface Layer extends WWObject, Disposable, Restorable
      * @return <code>true</code> if the layer is active, <code>false</code> otherwise.
      */
     boolean isLayerActive(DrawContext dc);
-
-    /**
-     * Indicates the altitude above which this layer likely has low value or is not expected to be active. This value is
-     * independent of the maximum active altitude, {@link #setMaxActiveAltitude(double)} and does not reflect it.
-     *
-     * @param radius the radius of the {@link gov.nasa.worldwind.globes.Globe} the layer is associated with. May be
-     *               null, in which case the Earth's equatorial radius is used, {@link gov.nasa.worldwind.globes.Earth#WGS84_EQUATORIAL_RADIUS}.
-     *
-     * @return the layer's maximum effective altitude.
-     */
-    Double getMaxEffectiveAltitude(Double radius);
-
-    /**
-     * Indicates the altitude below which this layer likely has low value or is not expected to be active. This value is
-     * independent of the minimum active altitude, {@link #setMinActiveAltitude(double)} and does not reflect it.
-     *
-     * @param radius the radius of the {@link gov.nasa.worldwind.globes.Globe} the layer is associated with. May be
-     *               null, in which case the Earth's equatorial radius is used, {@link gov.nasa.worldwind.globes.Earth#WGS84_EQUATORIAL_RADIUS}.
-     *
-     * @return the layer's minimum effective altitude.
-     */
-    Double getMinEffectiveAltitude(Double radius);
 }
