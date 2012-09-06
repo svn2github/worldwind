@@ -175,41 +175,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         return altitude >= this.minActiveAltitude && altitude <= this.maxActiveAltitude;
     }
 
-    public void preRender(DrawContext dc)
-    {
-        if (!this.enabled)
-            return; // Don't check for arg errors if we're disabled
-
-        if (null == dc)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (null == dc.getGlobe())
-        {
-            String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (null == dc.getView())
-        {
-            String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (!this.isLayerActive(dc))
-            return;
-
-        if (!this.isLayerInView(dc))
-            return;
-
-        this.doPreRender(dc);
-    }
-
     /**
      * @param dc the current draw context
      *
@@ -298,11 +263,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
     }
 
     public void dispose() // override if disposal is a supported operation
-    {
-    }
-
-    @SuppressWarnings( {"UnusedParameters"})
-    protected void doPreRender(DrawContext dc)
     {
     }
 

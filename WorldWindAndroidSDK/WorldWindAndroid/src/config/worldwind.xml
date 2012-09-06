@@ -29,7 +29,7 @@
               value="gov.nasa.worldwind.cache.BasicMemoryCacheSet"/>
     <Property name="gov.nasa.worldwind.avkey.RetrievalServiceClassName"
               value="gov.nasa.worldwind.retrieve.BasicRetrievalService"/>
-    <Property name="gov.nasa.worldwind.avkey.SceneControllerClassName" value="gov.nasa.worldwind.BasicSceneController"/>
+    <Property name="gov.nasa.worldwind.avkey.SceneControllerClassName" value="gov.nasa.worldwind.SceneController"/>
     <Property name="gov.nasa.worldwind.avkey.NetworkStatusClassName"
               value="gov.nasa.worldwind.util.BasicNetworkStatus"/>
     <Property name="gov.nasa.worldwind.avkey.TaskServiceClassName" value="gov.nasa.worldwind.util.BasicTaskService"/>
