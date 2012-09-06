@@ -14,12 +14,11 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.concurrent.*;
 
 /**
  * @author pabercrombie
@@ -154,13 +153,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
 
     protected final Object fileLock = new Object();
 
-    // Layer resource properties.
-    protected ScheduledExecutorService resourceRetrievalService;
-    protected AbsentResourceList absentResources;
-    protected static final int RESOURCE_ID_OGC_CAPABILITIES = 1;
-    protected static final int DEFAULT_MAX_RESOURCE_ATTEMPTS = 3;
-    protected static final int DEFAULT_MIN_RESOURCE_CHECK_INTERVAL = (int) 6e5; // 10 minutes
-
     public BasicTiledImageLayer(LevelSet levelSet)
     {
         super(levelSet);
@@ -216,13 +208,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
             this.setValue(AVKey.TRANSPARENCY_COLORS, params.getValue(AVKey.TRANSPARENCY_COLORS));
 
         this.setValue(AVKey.CONSTRUCTION_PARAMETERS, params.copy());
-
-        // If any resources should be retrieved for this Layer, start a task to retrieve those resources, and initialize
-        // this Layer once those resources are retrieved.
-        if (this.isRetrieveResources())
-        {
-            this.startResourceRetrieval();
-        }
     }
 
     /** Overridden to cancel periodic non-tile resource retrieval tasks scheduled by this Layer. */
@@ -230,10 +215,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     public void dispose()
     {
         super.dispose();
-
-        // Stop any scheduled non-tile resource retrieval tasks. Resource retrievals are performed in a separate thread,
-        // and are unnecessary once the Layer is disposed.
-        this.stopResourceRetrieval();
     }
 
     protected static AVList getParamsFromDocument(Element domElement, AVList params)
@@ -610,203 +591,5 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     protected DownloadPostProcessor createDownloadPostProcessor(GpuTextureTile tile)
     {
         return new DownloadPostProcessor(tile, this, this.getDataFileStore());
-    }
-
-    //**************************************************************//
-    //********************  Non-Tile Resource Retrieval  ***********//
-    //**************************************************************//
-
-    /**
-     * Retrieves any non-tile resources associated with this Layer, either online or in the local filesystem, and
-     * initializes properties of this Layer using those resources. This returns a key indicating the retrieval state:
-     * {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL} indicates the retrieval succeeded, {@link
-     * gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} indicates the retrieval failed with errors, and
-     * <code>null</code> indicates the retrieval state is unknown. This method may invoke blocking I/O operations, and
-     * therefore should not be executed from the rendering thread.
-     *
-     * @return {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL} if the retrieval succeeded, {@link
-     *         gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} if the retrieval failed with errors, and
-     *         <code>null</code> if the retrieval state is unknown.
-     */
-    protected String retrieveResources()
-    {
-        // This Layer has no construction parameters, so there is no description of what to retrieve. Return a key
-        // indicating the resources have been successfully retrieved, though there is nothing to retrieve.
-        AVList params = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (params == null)
-        {
-            String message = Logging.getMessage("nullValue.ConstructionParametersIsNull");
-            Logging.warning(message);
-            return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
-        }
-
-        // This Layer has no OGC Capabilities URL in its construction parameters. Return a key indicating the resources
-        // have been successfully retrieved, though there is nothing to retrieve.
-        URL url = DataConfigurationUtils.getOGCGetCapabilitiesURL(params);
-        if (url == null)
-        {
-            String message = Logging.getMessage("nullValue.CapabilitiesURLIsNull");
-            Logging.warning(message);
-            return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
-        }
-
-        // The OGC Capabilities resource is marked as absent. Return null indicating that the retrieval was not
-        // successful, and we should try again later.
-        if (this.absentResources.isResourceAbsent(RESOURCE_ID_OGC_CAPABILITIES))
-            return null;
-
-        // TODO: implement OGC Capabilities parsing on Android
-
-        return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
-    }
-
-    /**
-     * Returns a boolean value indicating if this Layer should retrieve any non-tile resources, either online or in the
-     * local filesystem, and initialize itself using those resources.
-     *
-     * @return <code>true</code> if this Layer should retrieve any non-tile resources, and <code>false</code>
-     *         otherwise.
-     */
-    protected boolean isRetrieveResources()
-    {
-        AVList params = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (params == null)
-            return false;
-
-        Boolean b = (Boolean) params.getValue(AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE);
-        return b != null && b;
-    }
-
-    /**
-     * Starts retrieving non-tile resources associated with this Layer in a non-rendering thread. By default, this
-     * schedules a task immediately to retrieve those resources, and then every 10 seconds thereafter until the
-     * retrieval succeeds.
-     * <p/>
-     * If this method is invoked while any non-tile resource tasks are running or pending, this cancels any pending
-     * tasks (but allows any running tasks to finish).
-     */
-    protected void startResourceRetrieval()
-    {
-        // Configure an AbsentResourceList with the specified number of max retrieval attempts, and the smallest
-        // possible min attempt interval. We specify a small attempt interval because the resource retrieval service
-        // itself schedules the attempts at our specified interval. We therefore want to bypass AbsentResourceLists's
-        // internal timing scheme.
-        this.absentResources = new AbsentResourceList(DEFAULT_MAX_RESOURCE_ATTEMPTS, 1);
-
-        // Stop any pending resource retrieval tasks.
-        if (this.resourceRetrievalService != null)
-            this.resourceRetrievalService.shutdown();
-
-        // Schedule a task to retrieve non-tile resources immediately, then at intervals thereafter.
-        Runnable task = this.createResourceRetrievalTask();
-        String taskName = Logging.getMessage("layers.TiledImageLayer.ResourceRetrieverThreadName", this.getName());
-        this.resourceRetrievalService = DataConfigurationUtils.createResourceRetrievalService(taskName);
-        this.resourceRetrievalService.scheduleAtFixedRate(task, 0,
-            DEFAULT_MIN_RESOURCE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    /** Cancels any pending non-tile resource retrieval tasks, and allows any running tasks to finish. */
-    protected void stopResourceRetrieval()
-    {
-        if (this.resourceRetrievalService != null)
-        {
-            this.resourceRetrievalService.shutdownNow();
-            this.resourceRetrievalService = null;
-        }
-    }
-
-    /**
-     * Returns a Runnable task which retrieves any non-tile resources associated with a specified Layer in it's run
-     * method. This task is used by the Layer to schedule periodic resource checks. If the task's run method throws an
-     * Exception, it will no longer be scheduled for execution. By default, this returns a reference to a new {@link
-     * ResourceRetrievalTask}.
-     *
-     * @return Runnable who's run method retrieves non-tile resources.
-     */
-    protected Runnable createResourceRetrievalTask()
-    {
-        return new ResourceRetrievalTask(this);
-    }
-
-    /** ResourceRetrievalTask retrieves any non-tile resources associated with this Layer in it's run method. */
-    protected static class ResourceRetrievalTask implements Runnable
-    {
-        protected BasicTiledImageLayer layer;
-
-        /**
-         * Constructs a new ResourceRetrievalTask, but otherwise does nothing.
-         *
-         * @param layer the BasicTiledImageLayer who's non-tile resources should be retrieved in the run method.
-         *
-         * @throws IllegalArgumentException if the layer is null.
-         */
-        public ResourceRetrievalTask(BasicTiledImageLayer layer)
-        {
-            if (layer == null)
-            {
-                String message = Logging.getMessage("nullValue.LayerIsNull");
-                Logging.error(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            this.layer = layer;
-        }
-
-        /**
-         * Returns the layer who's non-tile resources are retrieved by this ResourceRetrievalTask
-         *
-         * @return the layer who's non-tile resources are retrieved.
-         */
-        @SuppressWarnings("UnusedDeclaration")
-        public BasicTiledImageLayer getLayer()
-        {
-            return this.layer;
-        }
-
-        /**
-         * Retrieves any non-tile resources associated with the specified Layer, and cancels any pending retrieval tasks
-         * if the retrieval succeeds, or if an exception is thrown during retrieval.
-         */
-        public void run()
-        {
-            try
-            {
-                if (this.layer.isEnabled())
-                    this.retrieveResources();
-            }
-            catch (Throwable t)
-            {
-                this.handleUncaughtException(t);
-            }
-        }
-
-        /**
-         * Invokes {@link BasicTiledImageLayer#retrieveResources()}, and cancels any pending retrieval tasks if the call
-         * returns {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL}.
-         */
-        protected void retrieveResources()
-        {
-            String state = this.layer.retrieveResources();
-
-            if (state != null && state.equals(AVKey.RETRIEVAL_STATE_SUCCESSFUL))
-            {
-                this.layer.stopResourceRetrieval();
-            }
-        }
-
-        /**
-         * Logs a message describing the uncaught exception thrown during a call to run, and cancels any pending
-         * retrieval tasks.
-         *
-         * @param t the uncaught exception.
-         */
-        protected void handleUncaughtException(Throwable t)
-        {
-            String message = Logging.getMessage("layers.TiledImageLayer.ExceptionRetrievingResources",
-                this.layer.getName());
-            Logging.verbose(message, t);
-
-            this.layer.stopResourceRetrieval();
-        }
     }
 }

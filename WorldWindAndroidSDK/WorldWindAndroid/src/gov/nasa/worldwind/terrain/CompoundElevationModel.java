@@ -482,24 +482,6 @@ public class CompoundElevationModel extends AbstractElevationModel
         }
     }
 
-    @Override
-    public double getLocalDataAvailability(Sector sector, Double targetResolution)
-    {
-        int models = 0;
-        double availability = 0;
-
-        for (ElevationModel em : this.elevationModels)
-        {
-            if (em.intersects(sector) >= 0)
-            {
-                availability += em.getLocalDataAvailability(sector, targetResolution);
-                models++;
-            }
-        }
-
-        return models > 0 ? availability / models : 1d;
-    }
-
     public double getElevations(Sector sector, int numLat, int numLon, double targetResolution, double[] buffer)
     {
         if (sector == null)

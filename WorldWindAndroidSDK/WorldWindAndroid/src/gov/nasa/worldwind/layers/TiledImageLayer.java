@@ -493,11 +493,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         // LevelSet properties.
         DataConfigurationUtils.getLevelSetConfigParams(domElement, params);
 
-        // Service properties.
-        WWXML.checkAndSetStringParam(domElement, params, AVKey.SERVICE_NAME, "Service/@serviceName", xpath);
-        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE,
-            "RetrievePropertiesFromService", xpath);
-
         // Image format properties.
         WWXML.checkAndSetStringParam(domElement, params, AVKey.IMAGE_FORMAT, "ImageFormat", xpath);
         WWXML.checkAndSetUniqueStringsParam(domElement, params, AVKey.AVAILABLE_IMAGE_FORMATS,

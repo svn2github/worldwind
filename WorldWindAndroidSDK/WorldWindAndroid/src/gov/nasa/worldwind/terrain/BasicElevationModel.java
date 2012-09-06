@@ -21,7 +21,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.*;
 import java.util.*;
-import java.util.concurrent.*;
 
 // Implementation notes, not for API doc:
 //
@@ -61,12 +60,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     protected int extremesLevel = -1;
     protected short[] extremes = null;
     protected MemoryCache extremesLookupCache;
-    // Model resource properties.
-    protected ScheduledExecutorService resourceRetrievalService;
-    protected AbsentResourceList absentResources;
-    protected static final int RESOURCE_ID_OGC_CAPABILITIES = 1;
-    protected static final int DEFAULT_MAX_RESOURCE_ATTEMPTS = 3;
-    protected static final int DEFAULT_MIN_RESOURCE_CHECK_INTERVAL = (int) 6e5; // 10 minutes
 
     public BasicElevationModel(AVList params)
     {
@@ -126,28 +119,12 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         this.memoryCache = this.createMemoryCache(ElevationTile.class.getName());
 
         this.setValue(AVKey.CONSTRUCTION_PARAMETERS, params.copy());
-
-        // If any resources should be retrieved for this ElevationModel, start a task to retrieve those resources, and
-        // initialize this ElevationModel once those resources are retrieved.
-        if (this.isRetrieveResources())
-        {
-            this.startResourceRetrieval();
-            WorldWind.addPropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
-        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent)
     {
-        if (this.isRetrieveResources() && propertyChangeEvent.getPropertyName().equals(WorldWind.SHUTDOWN_EVENT))
-            BasicElevationModel.this.stopResourceRetrieval();
-
         super.propertyChange(propertyChangeEvent);
-    }
-
-    public BasicElevationModel(Document dom, AVList params)
-    {
-        this(dom.getDocumentElement(), params);
     }
 
     public BasicElevationModel(Element domElement, AVList params)
@@ -159,7 +136,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     public void dispose()
     {
         WorldWind.removePropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
-        this.stopResourceRetrieval();
     }
 
     @Override
@@ -224,16 +200,13 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         return this.levels;
     }
 
-    protected Map<TileKey, ElevationTile> getLevelZeroTiles()
-    {
-        return levelZeroTiles;
-    }
-
+    @SuppressWarnings("UnusedDeclaration")
     protected int getExtremesLevel()
     {
         return extremesLevel;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     protected short[] getExtremes()
     {
         return extremes;
@@ -289,11 +262,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         this.detailHint = hint;
     }
 
-    public String getElevationDataType()
-    {
-        return this.elevationDataType;
-    }
-
     public void setElevationDataType(String dataType)
     {
         if (dataType == null)
@@ -304,11 +272,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
 
         this.elevationDataType = dataType;
-    }
-
-    public String getElevationDataByteOrder()
-    {
-        return this.elevationDataByteOrder;
     }
 
     public void setByteOrder(String byteOrder)
@@ -539,13 +502,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             Logging.error("ElevationModel.ExceptionReadingElevationFile", url.toString());
             throw e;
         }
-    }
-
-    @SuppressWarnings( {"UnusedParameters"})
-    protected static ByteBuffer convertImageToElevations(ByteBuffer buffer, String contentType) throws IOException
-    {
-        // TODO need to implement for Android
-        return null;
     }
 
     // *** Bulk download ***
@@ -867,6 +823,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             }
         }
 
+        @SuppressWarnings("UnusedDeclaration")
         protected double[] getExtremes(Angle latitude, Angle longitude)
         {
             if (latitude == null || longitude == null)
@@ -1585,7 +1542,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             elevations = new Elevations(this, tiles.last().getLevel().getTexelSize());
 
             // Compute the elevation extremes now that the sector is fully resolved
-            if (tiles != null && tiles.size() > 0)
+            if (tiles.size() > 0)
             {
                 elevations.tiles = tiles;
                 double[] extremes = elevations.getExtremes(requestedSector);
@@ -1732,175 +1689,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     }
 
     //**************************************************************//
-    //********************  Non-Tile Resource Retrieval  ***********//
-    //**************************************************************//
-
-    /**
-     * Retrieves any non-tile resources associated with this ElevationModel, either online or in the local filesystem,
-     * and initializes properties of this ElevationModel using those resources. This returns a key indicating the
-     * retrieval state: {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL} indicates the retrieval
-     * succeeded, {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} indicates the retrieval failed with
-     * errors, and <code>null</code> indicates the retrieval state is unknown. This method may invoke blocking I/O
-     * operations, and therefore should not be executed from the rendering thread.
-     *
-     * @return {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL} if the retrieval succeeded, {@link
-     *         gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_ERROR} if the retrieval failed with errors, and
-     *         <code>null</code> if the retrieval state is unknown.
-     */
-    protected String retrieveResources()
-    {
-        // TODO implement retrieval of resources for Android
-        return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
-    }
-
-    /**
-     * Returns a boolean value indicating if this ElevationModel should retrieve any non-tile resources, either online
-     * or in the local filesystem, and initialize itself using those resources.
-     *
-     * @return <code>true</code> if this ElevationModel should retrieve any non-tile resources, and <code>false</code>
-     *         otherwise.
-     */
-    protected boolean isRetrieveResources()
-    {
-        AVList params = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (params == null)
-            return false;
-
-        Boolean b = (Boolean) params.getValue(AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE);
-        return b != null && b;
-    }
-
-    /**
-     * Starts retrieving non-tile resources associated with this ElevationModel in a non-rendering thread. By default,
-     * this schedules a task immediately to retrieve those resources, and then every 10 seconds thereafter until the
-     * retrieval succeeds.
-     * <p/>
-     * If this method is invoked while any non-tile resource tasks are running or pending, this cancels any pending
-     * tasks (but allows any running tasks to finish).
-     */
-    protected void startResourceRetrieval()
-    {
-        // Configure an AbsentResourceList with the specified number of max retrieval attempts, and the smallest
-        // possible min attempt interval. We specify a small attempt interval because the resource retrieval service
-        // itself schedules the tasks at our specified interval. We therefore want to bypass AbsentResourceLists's
-        // internal timing scheme.
-        this.absentResources = new AbsentResourceList(DEFAULT_MAX_RESOURCE_ATTEMPTS, 1);
-
-        // Stop any pending resource retrieval tasks.
-        if (this.resourceRetrievalService != null)
-            this.resourceRetrievalService.shutdown();
-
-        // Schedule a task to retrieve non-tile resources immediately, then at intervals thereafter.
-        Runnable task = this.createResourceRetrievalTask();
-        String taskName = Logging.getMessage("BasicElevationModel.ResourceRetrieverThreadName", this.getName());
-        this.resourceRetrievalService = DataConfigurationUtils.createResourceRetrievalService(taskName);
-        this.resourceRetrievalService.scheduleAtFixedRate(task, 0,
-            DEFAULT_MIN_RESOURCE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    /** Cancels any pending non-tile resource retrieval tasks, and allows any running tasks to finish. */
-    protected void stopResourceRetrieval()
-    {
-        if (this.resourceRetrievalService != null)
-        {
-            this.resourceRetrievalService.shutdownNow();
-            this.resourceRetrievalService = null;
-        }
-    }
-
-    /**
-     * Returns a Runnable task which retrieves any non-tile resources associated with a specified ElevationModel in it's
-     * run method. This task is used by the ElevationModel to schedule periodic resource checks. If the task's run
-     * method throws an Exception, it will no longer be scheduled for execution. By default, this returns a reference to
-     * a new {@link ResourceRetrievalTask}.
-     *
-     * @return Runnable who's run method retrieves non-tile resources.
-     */
-    protected Runnable createResourceRetrievalTask()
-    {
-        return new ResourceRetrievalTask(this);
-    }
-
-    /** ResourceRetrievalTask retrieves any non-tile resources associated with this ElevationModel in it's run method. */
-    protected static class ResourceRetrievalTask implements Runnable
-    {
-        protected BasicElevationModel em;
-
-        /**
-         * Constructs a new ResourceRetrievalTask, but otherwise does nothing.
-         *
-         * @param em the BasicElevationModel who's non-tile resources should be retrieved in the run method.
-         *
-         * @throws IllegalArgumentException if the elevation model is null.
-         */
-        public ResourceRetrievalTask(BasicElevationModel em)
-        {
-            if (em == null)
-            {
-                String message = Logging.getMessage("nullValue.ElevationModelIsNull");
-                Logging.error(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            this.em = em;
-        }
-
-        /**
-         * Returns the elevation model who's non-tile resources are retrieved by this ResourceRetrievalTask
-         *
-         * @return the elevation model who's non-tile resources are retireved.
-         */
-        public BasicElevationModel getElevationModel()
-        {
-            return this.em;
-        }
-
-        /**
-         * Retrieves any non-tile resources associated with the specified ElevationModel, and cancels any pending
-         * retrieval tasks if the retrieval succeeds, or if an exception is thrown during retrieval.
-         */
-        public void run()
-        {
-            try
-            {
-                this.retrieveResources();
-            }
-            catch (Throwable t)
-            {
-                this.handleUncaughtException(t);
-            }
-        }
-
-        /**
-         * Invokes {@link BasicElevationModel#retrieveResources()}, and cancels any pending retrieval tasks if the call
-         * returns {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL}.
-         */
-        protected void retrieveResources()
-        {
-            String state = this.em.retrieveResources();
-
-            if (state != null && state.equals(AVKey.RETRIEVAL_STATE_SUCCESSFUL))
-            {
-                this.em.stopResourceRetrieval();
-            }
-        }
-
-        /**
-         * Logs a message describing the uncaught exception thrown during a call to run, and cancels any pending
-         * retrieval tasks.
-         *
-         * @param t the uncaught exception.
-         */
-        protected void handleUncaughtException(Throwable t)
-        {
-            String message = Logging.getMessage("BasicElevationModel.ExceptionRetrievingResources", this.em.getName());
-            Logging.verbose(message, t);
-
-            this.em.stopResourceRetrieval();
-        }
-    }
-
-    //**************************************************************//
     //********************  Configuration  *************************//
     //**************************************************************//
 
@@ -1950,8 +1738,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         // Service properties.
         WWXML.checkAndSetStringParam(domElement, params, AVKey.SERVICE_NAME, "Service/@serviceName", xpath);
-        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE,
-            "RetrievePropertiesFromService", xpath);
 
         // Image format properties.
         WWXML.checkAndSetStringParam(domElement, params, AVKey.IMAGE_FORMAT, "ImageFormat", xpath);
@@ -1988,93 +1774,5 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.ELEVATION_MIN, "ExtremeElevations/@min", xpath);
 
         return params;
-    }
-
-    protected AVList getConfigurationParams(AVList params)
-    {
-        if (params == null)
-            params = new AVListImpl();
-
-        // Gather all the construction parameters if they are available.
-        AVList constructionParams = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (constructionParams != null)
-            params.setValues(constructionParams);
-
-        // Gather any missing LevelSet parameters from the LevelSet itself.
-        DataConfigurationUtils.getLevelSetConfigParams(this.getLevels(), params);
-
-        // Gather any missing parameters about the elevation data. These values must be available for consumers of the
-        // model configuration to property interpret the cached elevation files. While the elevation model assumes
-        // default values when these properties are missing, a different system does not know what those default values
-        // should be, and thus cannot assume anything about the value of these properties.
-
-        if (params.getValue(AVKey.BYTE_ORDER) == null)
-            params.setValue(AVKey.BYTE_ORDER, this.getElevationDataByteOrder());
-
-        if (params.getValue(AVKey.DATA_TYPE) == null)
-            params.setValue(AVKey.DATA_TYPE, this.getElevationDataType());
-
-        if (params.getValue(AVKey.MISSING_DATA_SIGNAL) == null)
-            params.setValue(AVKey.MISSING_DATA_SIGNAL, this.getMissingDataSignal());
-
-        return params;
-    }
-
-    @Override
-    public double getLocalDataAvailability(Sector requestedSector, Double targetResolution)
-    {
-        if (requestedSector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // Compute intersection of the requested sector and the sector covered by the elevation model.
-        LevelSet levelSet = this.getLevels();
-        Sector sector = requestedSector.copy().intersection(levelSet.getSector());
-
-        // If there is no intersection there is no data to retrieve
-        if (sector == null)
-            return 1d;
-
-        Level targetLevel = targetResolution != null
-            ? this.getTargetLevel(sector, targetResolution) : levelSet.getLastLevel();
-
-        // Count all the tiles intersecting the input sector.
-        long numLocalTiles = 0;
-        long numMissingTiles = 0;
-        LatLon delta = targetLevel.getTileDelta();
-        LatLon origin = levelSet.getTileOrigin();
-        final int nwRow = Tile.computeRow(delta.latitude, sector.maxLatitude, origin.latitude);
-        final int nwCol = Tile.computeColumn(delta.longitude, sector.minLongitude, origin.longitude);
-        final int seRow = Tile.computeRow(delta.latitude, sector.minLatitude, origin.latitude);
-        final int seCol = Tile.computeColumn(delta.longitude, sector.maxLongitude, origin.longitude);
-
-        for (int row = nwRow; row >= seRow; row--)
-        {
-            for (int col = nwCol; col <= seCol; col++)
-            {
-                TileKey key = new TileKey(targetLevel.getLevelNumber(), row, col, targetLevel.getCacheName());
-                Sector tileSector = levelSet.computeSectorForKey(key);
-                Tile tile = new Tile(tileSector, targetLevel, row, col);
-                if (!this.isTileLocalOrAbsent(tile))
-                    ++numMissingTiles;
-                else
-                    ++numLocalTiles;
-            }
-        }
-
-        return numLocalTiles > 0 ? numLocalTiles / (double) (numLocalTiles + numMissingTiles) : 0d;
-    }
-
-    protected boolean isTileLocalOrAbsent(Tile tile)
-    {
-        if (this.getLevels().isResourceAbsent(tile))
-            return true;  // tile is absent
-
-        URL url = this.getDataFileStore().findFile(tile.getPath(), false);
-
-        return url != null && !this.isFileExpired(tile, url, this.getDataFileStore());
     }
 }

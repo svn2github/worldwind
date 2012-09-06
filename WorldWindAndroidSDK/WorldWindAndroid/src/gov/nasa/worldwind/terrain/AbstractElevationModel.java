@@ -263,9 +263,4 @@ public abstract class AbstractElevationModel extends WWObjectImpl implements Ele
 
         return params;
     }
-
-    public double getLocalDataAvailability(Sector sector, Double targetResolution)
-    {
-        return 1d;
-    }
 }

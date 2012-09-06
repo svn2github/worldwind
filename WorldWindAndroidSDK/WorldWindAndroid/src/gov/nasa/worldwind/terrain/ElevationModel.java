@@ -291,20 +291,6 @@ public interface ElevationModel extends WWObject, Disposable
     void setMissingDataReplacement(double missingDataValue);
 
     /**
-     * Returns the proportion of this elevation model's data that is local -- in the computer's data cache or installed
-     * data filestore -- for a specified sector and target resolution.
-     *
-     * @param sector           the sector of interest.
-     * @param targetResolution the desired horizontal resolution, in radians, of the raster or other elevation sample
-     *                         from which elevations are drawn. (To compute radians from a distance, divide the distance
-     *                         by the radius of the globe, ensuring that both the distance and the radius are in the
-     *                         same units.) Specify null to use this elevation model's best resolution.
-     *
-     * @return the fraction of the data that is local. A value of 1.0 indicates that all the data is available.
-     */
-    double getLocalDataAvailability(Sector sector, Double targetResolution);
-
-    /**
      * Returns the elevations corresponding to a grid of locations in a specified sector. The grid is evenly spaced
      * locations in latitude and longitude defined by numLat and numLon.  The buffer is populated with this model's
      * elevation value at each grid point, starting in the sector's lower left corner and proceeding in row major order.

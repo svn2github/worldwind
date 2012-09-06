@@ -14,7 +14,6 @@
         <GetMapURL>http://data.worldwind.arc.nasa.gov/wms</GetMapURL>
         <LayerNames>bmng200405</LayerNames>
     </Service>
-    <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
     <!-- day month year hours:minutes:seconds timezone -->
     <LastUpdate>26 03 2009 00:00:00 GMT</LastUpdate>
     <DataCacheName>Earth/BMNGWMS/BMNG(Shaded + Bathymetry) Tiled - Version 1.1 - 5.2004</DataCacheName>
