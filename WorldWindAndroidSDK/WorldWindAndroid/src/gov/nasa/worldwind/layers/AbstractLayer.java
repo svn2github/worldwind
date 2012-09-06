@@ -308,18 +308,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
 
     protected abstract void doRender(DrawContext dc);
 
-    public String getRestorableState()
-    {
-        return null;
-    }
-
-    public void restoreState(String stateInXml)
-    {
-        String message = Logging.getMessage("RestorableSupport.RestoreNotSupported");
-        Logging.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
     public void setExpiryTime(long expiryTime)
     {
         this.expiryTime = expiryTime;

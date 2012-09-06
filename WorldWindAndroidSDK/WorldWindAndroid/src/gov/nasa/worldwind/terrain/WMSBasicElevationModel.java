@@ -38,26 +38,6 @@ public class WMSBasicElevationModel extends BasicElevationModel
 //        this(wmsGetParamsFromCapsDoc(caps, params));
 //    }
 
-    public WMSBasicElevationModel(String restorableStateInXml)
-    {
-        super(wmsRestorableStateToParams(restorableStateInXml));
-
-        RestorableSupport rs;
-        try
-        {
-            rs = RestorableSupport.parse(restorableStateInXml);
-        }
-        catch (Exception e)
-        {
-            // Parsing the document specified by stateInXml failed.
-            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", restorableStateInXml);
-            Logging.error(message);
-            throw new IllegalArgumentException(message, e);
-        }
-
-        this.doRestoreState(rs, null);
-    }
-
     protected static AVList wmsGetParamsFromDocument(Element domElement, AVList params)
     {
         if (domElement == null)
@@ -442,82 +422,5 @@ public class WMSBasicElevationModel extends BasicElevationModel
         {
             return outFile.getPath().contains(WWIO.DELETE_ON_EXIT_PREFIX);
         }
-    }
-
-    //**************************************************************//
-    //********************  Restorable Support  ********************//
-    //**************************************************************//
-
-    public void getRestorableStateForAVPair(String key, Object value,
-        RestorableSupport rs, RestorableSupport.StateObject context)
-    {
-        if (value instanceof URLBuilder)
-        {
-            rs.addStateValueAsString(context, "wms.Version", ((URLBuilder) value).wmsVersion);
-            rs.addStateValueAsString(context, "wms.Crs", ((URLBuilder) value).crs);
-        }
-        else
-        {
-            super.getRestorableStateForAVPair(key, value, rs, context);
-        }
-    }
-
-    protected static AVList wmsRestorableStateToParams(String stateInXml)
-    {
-        if (stateInXml == null)
-        {
-            String message = Logging.getMessage("nullValue.StringIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        RestorableSupport rs;
-        try
-        {
-            rs = RestorableSupport.parse(stateInXml);
-        }
-        catch (Exception e)
-        {
-            // Parsing the document specified by stateInXml failed.
-            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", stateInXml);
-            Logging.error(message);
-            throw new IllegalArgumentException(message, e);
-        }
-
-        AVList params = new AVListImpl();
-        wmsRestoreStateForParams(rs, null, params);
-        return params;
-    }
-
-    protected static void wmsRestoreStateForParams(RestorableSupport rs, RestorableSupport.StateObject context,
-        AVList params)
-    {
-        // Invoke the BasicElevationModel functionality.
-        restoreStateForParams(rs, null, params);
-
-        String s = rs.getStateValueAsString(context, AVKey.IMAGE_FORMAT);
-        if (s != null)
-            params.setValue(AVKey.IMAGE_FORMAT, s);
-
-        s = rs.getStateValueAsString(context, AVKey.TITLE);
-        if (s != null)
-            params.setValue(AVKey.TITLE, s);
-
-        s = rs.getStateValueAsString(context, AVKey.DISPLAY_NAME);
-        if (s != null)
-            params.setValue(AVKey.DISPLAY_NAME, s);
-
-        RestorableSupport.adjustTitleAndDisplayName(params);
-
-        s = rs.getStateValueAsString(context, AVKey.LAYER_NAMES);
-        if (s != null)
-            params.setValue(AVKey.LAYER_NAMES, s);
-
-        s = rs.getStateValueAsString(context, AVKey.STYLE_NAMES);
-        if (s != null)
-            params.setValue(AVKey.STYLE_NAMES, s);
-
-        s = rs.getStateValueAsString(context, "wms.Version");
-        params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(s, params));
     }
 }

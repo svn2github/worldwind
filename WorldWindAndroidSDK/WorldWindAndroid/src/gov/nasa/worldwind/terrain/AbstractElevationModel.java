@@ -126,18 +126,6 @@ public abstract class AbstractElevationModel extends WWObjectImpl implements Ele
         return e == this.missingDataFlag ? this.missingDataValue : e;
     }
 
-    public String getRestorableState()
-    {
-        return null;
-    }
-
-    public void restoreState(String stateInXml)
-    {
-        String message = Logging.getMessage("RestorableSupport.RestoreNotSupported");
-        Logging.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
     public void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth, double[] buffer)
         throws Exception
     {

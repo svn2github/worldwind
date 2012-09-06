@@ -392,23 +392,4 @@ public class AVListImpl implements AVList
             return null;
         }
     }
-
-    public void getRestorableStateForAVPair(String key, Object value, RestorableSupport rs,
-        RestorableSupport.StateObject context)
-    {
-        if (value == null)
-            return;
-
-        if (key.equals(PROPERTY_CHANGE_SUPPORT))
-            return;
-
-        if (rs == null)
-        {
-            String message = Logging.getMessage("nullValue.RestorableStateIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        rs.addStateValueAsString(context, key, value.toString());
-    }
 }

@@ -25,7 +25,7 @@ import java.util.List;
  * @author dcollins
  * @version $Id$
  */
-public interface ElevationModel extends WWObject, Restorable, Disposable
+public interface ElevationModel extends WWObject, Disposable
 {
     /**
      * Returns the elevation model's name.

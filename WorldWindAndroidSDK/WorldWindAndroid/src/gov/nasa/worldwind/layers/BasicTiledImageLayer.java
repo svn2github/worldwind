@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.layers;
 
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
@@ -20,7 +20,6 @@ import org.w3c.dom.*;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -245,26 +244,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     public BasicTiledImageLayer(Element domElement, AVList params)
     {
         this(getParamsFromDocument(domElement, params));
-    }
-
-    public BasicTiledImageLayer(String restorableStateInXml)
-    {
-        this(restorableStateToParams(restorableStateInXml));
-
-        RestorableSupport rs;
-        try
-        {
-            rs = RestorableSupport.parse(restorableStateInXml);
-        }
-        catch (Exception e)
-        {
-            // Parsing the document specified by stateInXml failed.
-            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", restorableStateInXml);
-            Logging.error(message);
-            throw new IllegalArgumentException(message, e);
-        }
-
-        this.doRestoreState(rs, null);
     }
 
     /** Overridden to cancel periodic non-tile resource retrieval tasks scheduled by this Layer. */
@@ -948,215 +927,5 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     protected Document createConfigurationDocument(AVList params)
     {
         return createTiledImageLayerConfigDocument(params);
-    }
-
-    //**************************************************************//
-    //********************  Restorable Support  ********************//
-    //**************************************************************//
-
-    @Override
-    public String getRestorableState()
-    {
-        // We only create a restorable state XML if this elevation model was constructed with an AVList.
-        AVList constructionParams = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (constructionParams == null)
-            return null;
-
-        RestorableSupport rs = RestorableSupport.newRestorableSupport();
-        // Creating a new RestorableSupport failed. RestorableSupport logged the problem, so just return null.
-        if (rs == null)
-            return null;
-
-        this.doGetRestorableState(rs, null);
-        return rs.getStateAsXml();
-    }
-
-    @Override
-    public void restoreState(String stateInXml)
-    {
-        String message = Logging.getMessage("RestorableSupport.RestoreRequiresConstructor");
-        Logging.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    protected void doGetRestorableState(RestorableSupport rs, RestorableSupport.StateObject context)
-    {
-        AVList constructionParams = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (constructionParams != null)
-        {
-            for (Map.Entry<String, Object> avp : constructionParams.getEntries())
-            {
-                this.getRestorableStateForAVPair(avp.getKey(), avp.getValue(), rs, context);
-            }
-        }
-
-        rs.addStateValueAsBoolean(context, "Layer.Enabled", this.isEnabled());
-        rs.addStateValueAsDouble(context, "Layer.Opacity", this.getOpacity());
-        rs.addStateValueAsDouble(context, "Layer.MinActiveAltitude", this.getMinActiveAltitude());
-        rs.addStateValueAsDouble(context, "Layer.MaxActiveAltitude", this.getMaxActiveAltitude());
-        rs.addStateValueAsBoolean(context, "Layer.NetworkRetrievalEnabled", this.isNetworkRetrievalEnabled());
-        rs.addStateValueAsString(context, "Layer.Name", this.getName());
-
-        RestorableSupport.StateObject so = rs.addStateObject(context, "avlist");
-        for (Map.Entry<String, Object> avp : this.getEntries())
-        {
-            this.getRestorableStateForAVPair(avp.getKey(), avp.getValue(), rs, so);
-        }
-    }
-
-    public void getRestorableStateForAVPair(String key, Object value,
-        RestorableSupport rs, RestorableSupport.StateObject context)
-    {
-        if (value == null)
-            return;
-
-        if (key.equals(AVKey.CONSTRUCTION_PARAMETERS))
-            return;
-
-        if (value instanceof LatLon)
-        {
-            rs.addStateValueAsLatLon(context, key, (LatLon) value);
-        }
-        else if (value instanceof Sector)
-        {
-            rs.addStateValueAsSector(context, key, (Sector) value);
-        }
-        //else if (value instanceof gov.nasa.worldwind.geom.Color)
-        //{
-        //    rs.addStateValueAsColor(context, key, (gov.nasa.worldwind.geom.Color) value);
-        //}
-        else
-        {
-            super.getRestorableStateForAVPair(key, value, rs, context);
-        }
-    }
-
-    protected void doRestoreState(RestorableSupport rs, RestorableSupport.StateObject context)
-    {
-        Boolean b = rs.getStateValueAsBoolean(context, "Layer.Enabled");
-        if (b != null)
-            this.setEnabled(b);
-
-        Double d = rs.getStateValueAsDouble(context, "Layer.Opacity");
-        if (d != null)
-            this.setOpacity(d);
-
-        d = rs.getStateValueAsDouble(context, "Layer.MinActiveAltitude");
-        if (d != null)
-            this.setMinActiveAltitude(d);
-
-        d = rs.getStateValueAsDouble(context, "Layer.MaxActiveAltitude");
-        if (d != null)
-            this.setMaxActiveAltitude(d);
-
-        b = rs.getStateValueAsBoolean(context, "Layer.NetworkRetrievalEnabled");
-        if (b != null)
-            this.setNetworkRetrievalEnabled(b);
-
-        String s = rs.getStateValueAsString(context, "Layer.Name");
-        if (s != null)
-            this.setName(s);
-
-        RestorableSupport.StateObject so = rs.getStateObject(context, "avlist");
-        if (so != null)
-        {
-            RestorableSupport.StateObject[] avpairs = rs.getAllStateObjects(so, "");
-            if (avpairs != null)
-            {
-                for (RestorableSupport.StateObject avp : avpairs)
-                {
-                    if (avp != null)
-                        this.doRestoreStateForObject(rs, avp);
-                }
-            }
-        }
-    }
-
-    @SuppressWarnings( {"UnusedDeclaration"})
-    protected void doRestoreStateForObject(RestorableSupport rs, RestorableSupport.StateObject so)
-    {
-        if (so == null)
-            return;
-
-        this.setValue(so.getName(), so.getValue());
-    }
-
-    protected static AVList restorableStateToParams(String stateInXml)
-    {
-        if (stateInXml == null)
-        {
-            String message = Logging.getMessage("nullValue.StringIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        RestorableSupport rs;
-        try
-        {
-            rs = RestorableSupport.parse(stateInXml);
-        }
-        catch (Exception e)
-        {
-            // Parsing the document specified by stateInXml failed.
-            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", stateInXml);
-            Logging.error(message);
-            throw new IllegalArgumentException(message, e);
-        }
-
-        AVList params = new AVListImpl();
-        restoreStateForParams(rs, null, params);
-        return params;
-    }
-
-    protected static void restoreStateForParams(RestorableSupport rs, RestorableSupport.StateObject context,
-        AVList params)
-    {
-        String s = rs.getStateValueAsString(context, AVKey.DATA_CACHE_NAME);
-        if (s != null)
-            params.setValue(AVKey.DATA_CACHE_NAME, s);
-
-        s = rs.getStateValueAsString(context, AVKey.SERVICE);
-        if (s != null)
-            params.setValue(AVKey.SERVICE, s);
-
-        s = rs.getStateValueAsString(context, AVKey.DATASET_NAME);
-        if (s != null)
-            params.setValue(AVKey.DATASET_NAME, s);
-
-        s = rs.getStateValueAsString(context, AVKey.FORMAT_SUFFIX);
-        if (s != null)
-            params.setValue(AVKey.FORMAT_SUFFIX, s);
-
-        Integer i = rs.getStateValueAsInteger(context, AVKey.NUM_EMPTY_LEVELS);
-        if (i != null)
-            params.setValue(AVKey.NUM_EMPTY_LEVELS, i);
-
-        i = rs.getStateValueAsInteger(context, AVKey.NUM_LEVELS);
-        if (i != null)
-            params.setValue(AVKey.NUM_LEVELS, i);
-
-        i = rs.getStateValueAsInteger(context, AVKey.TILE_WIDTH);
-        if (i != null)
-            params.setValue(AVKey.TILE_WIDTH, i);
-
-        i = rs.getStateValueAsInteger(context, AVKey.TILE_HEIGHT);
-        if (i != null)
-            params.setValue(AVKey.TILE_HEIGHT, i);
-
-        Long lo = rs.getStateValueAsLong(context, AVKey.EXPIRY_TIME);
-        if (lo != null)
-            params.setValue(AVKey.EXPIRY_TIME, lo);
-
-        LatLon ll = rs.getStateValueAsLatLon(context, AVKey.LEVEL_ZERO_TILE_DELTA);
-        if (ll != null)
-            params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, ll);
-
-        ll = rs.getStateValueAsLatLon(context, AVKey.TILE_ORIGIN);
-        if (ll != null)
-            params.setValue(AVKey.TILE_ORIGIN, ll);
-
-        Sector sector = rs.getStateValueAsSector(context, AVKey.SECTOR);
-        if (sector != null)
-            params.setValue(AVKey.SECTOR, sector);
     }
 }

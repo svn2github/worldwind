@@ -13,7 +13,7 @@ import gov.nasa.worldwind.render.DrawContext;
  * @author dcollins
  * @version $Id$
  */
-public interface Layer extends WWObject, Disposable, Restorable
+public interface Layer extends WWObject, Disposable
 {
     /**
      * Indicates whether the layer is enabled for rendering and selection.
