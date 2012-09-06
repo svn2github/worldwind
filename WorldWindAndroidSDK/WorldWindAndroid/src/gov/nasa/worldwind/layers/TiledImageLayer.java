@@ -26,7 +26,6 @@ import java.util.concurrent.PriorityBlockingQueue;
  * @author dcollins
  * @version $Id$
  */
-// TODO: implement isAtMaxResolution for Android.
 // TODO: apply layer opacity during rendering
 public abstract class TiledImageLayer extends AbstractLayer implements Tile.TileFactory
 {
@@ -41,12 +40,10 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
     protected String tileCountName;
     protected ArrayList<String> supportedImageFormats = new ArrayList<String>();
-    protected String textureFormat;
 
     // Stuff computed each frame
     protected List<GpuTextureTile> currentTiles = new ArrayList<GpuTextureTile>();
     protected GpuTextureTile currentAncestorTile;
-    protected boolean atMaxResolution = false;
     protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(
         DEFAULT_REQUEST_QUEUE_SIZE);
 
@@ -139,30 +136,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     public boolean isMultiResolution()
     {
         return this.getLevels() != null && this.getLevels().getNumLevels() > 1;
-    }
-
-    /**
-     * Returns the format used to store images in texture memory, or null if images are stored in their native format.
-     *
-     * @return the texture image format; null if images are stored in their native format.
-     *
-     * @see #setTextureFormat(String)
-     */
-    public String getTextureFormat()
-    {
-        return this.textureFormat;
-    }
-
-    /**
-     * Specifies the format used to store images in texture memory, or null to store images in their native format.
-     * Suppported texture formats are as follows: <ul> <li><code>image/dds</code> - Stores images in the compressed DDS
-     * format. If the image is already in DDS format it's stored as-is.</li> </ul>
-     *
-     * @param textureFormat the texture image format; null to store images in their native format.
-     */
-    public void setTextureFormat(String textureFormat)
-    {
-        this.textureFormat = textureFormat;
     }
 
     /**
@@ -592,8 +565,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
      * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
      * <tr><td>{@link
-     * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>String</td></tr>
-     * <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
      * <tr><td>{@link AVKey#URL_READ_TIMEOUT}</td><td>RetrievalTimeouts/ReadTimeout/Time</td><td>Integer
      * milliseconds</td></tr> <tr><td>{@link AVKey#RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT}</td>
@@ -650,7 +621,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
         // Image format properties.
         WWXML.checkAndAppendTextElement(params, AVKey.IMAGE_FORMAT, context, "ImageFormat");
-        WWXML.checkAndAppendTextElement(params, AVKey.TEXTURE_FORMAT, context, "TextureFormat");
 
         Object o = params.getValue(AVKey.AVAILABLE_IMAGE_FORMATS);
         if (o != null && o instanceof String[])
@@ -696,8 +666,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
      * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
      * <tr><td>{@link
-     * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>Boolean</td></tr>
-     * <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
      * <tr><td>{@link AVKey#URL_READ_TIMEOUT}</td><td>RetrievalTimeouts/ReadTimeout/Time</td><td>Integer
      * milliseconds</td></tr> <tr><td>{@link AVKey#RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT}</td>
@@ -741,7 +709,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
         // Image format properties.
         WWXML.checkAndSetStringParam(domElement, params, AVKey.IMAGE_FORMAT, "ImageFormat", xpath);
-        WWXML.checkAndSetStringParam(domElement, params, AVKey.TEXTURE_FORMAT, "TextureFormat", xpath);
         WWXML.checkAndSetUniqueStringsParam(domElement, params, AVKey.AVAILABLE_IMAGE_FORMATS,
             "AvailableImageFormats/ImageFormat", xpath);
 
@@ -770,8 +737,7 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * Parses TiledImageLayer configuration parameters from previous versions of configuration documents. This writes
      * output as key-value pairs to params. If a parameter from the XML document already exists in params, that
      * parameter is ignored. Supported key and parameter names are: <table> <tr><th>Parameter</th><th>Element
-     * Path</th><th>Type</th></tr> <tr><td>{@link AVKey#TEXTURE_FORMAT}</td><td>CompressTextures</td><td>"image/dds" if
-     * CompressTextures is "true"; null otherwise</td></tr> </table>
+     * Path</th><th>Type</th></tr></table>
      *
      * @param domElement the XML document root to parse for legacy TiledImageLayer configuration parameters.
      * @param params     the output key-value pairs which receive the TiledImageLayer configuration parameters. A null
@@ -794,14 +760,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
             params = new AVListImpl();
 
         XPath xpath = WWXML.makeXPath();
-
-        Object o = params.getValue(AVKey.TEXTURE_FORMAT);
-        if (o == null)
-        {
-            Boolean b = WWXML.getBoolean(domElement, "CompressTextures", xpath);
-            if (b != null && b)
-                params.setValue(AVKey.TEXTURE_FORMAT, "image/dds");
-        }
 
         return params;
     }

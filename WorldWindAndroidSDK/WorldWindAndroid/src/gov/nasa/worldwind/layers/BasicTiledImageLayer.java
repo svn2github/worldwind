@@ -190,10 +190,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (strings != null && strings.length > 0)
             this.setAvailableImageFormats(strings);
 
-        s = params.getStringValue(AVKey.TEXTURE_FORMAT);
-        if (s != null)
-            this.setTextureFormat(s);
-
         Double d = (Double) params.getValue(AVKey.OPACITY);
         if (d != null)
             this.setOpacity(d);

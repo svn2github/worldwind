@@ -147,7 +147,6 @@ public interface AVKey
     final String TASK_SERVICE_CLASS_NAME = "gov.nasa.worldwind.avkey.TaskServiceClassName";
     final String TASK_SERVICE_POOL_SIZE = "gov.nasa.worldwind.avkey.TaskServicePoolSize";
     final String TASK_SERVICE_QUEUE_SIZE = "gov.nasa.worldwind.avkey.TaskServiceQueueSize";
-    final String TEXTURE_FORMAT = "gov.nasa.worldwind.avkey.TextureFormat";
     final String TILE_DELTA = "gov.nasa.worldwind.avkey.TileDelta";
     final String TILE_HEIGHT = "gov.nasa.worldwind.avkey.TileHeight";
     final String TILE_ORIGIN = "gov.nasa.worldwind.avkey.TileOrigin";
