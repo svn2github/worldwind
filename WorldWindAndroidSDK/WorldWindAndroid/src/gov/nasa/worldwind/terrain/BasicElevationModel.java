@@ -10,7 +10,6 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
-import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
@@ -802,10 +801,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             if (buffer != null)
             {
-                // We've successfully cached data. Check whether there's a configuration file for this elevation model
-                // in the cache and create one if there isn't.
-                this.elevationModel.writeConfigurationFile(this.getFileStore());
-
                 // Fire a property change to denote that the model's backing data has changed.
                 this.elevationModel.firePropertyChange(AVKey.ELEVATION_MODEL, null, this);
             }
@@ -1910,145 +1905,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     //**************************************************************//
 
     /**
-     * Creates a configuration document for a BasicElevationModel described by the specified params. The returned
-     * document may be used as a construction parameter to {@link gov.nasa.worldwind.terrain.BasicElevationModel}.
-     *
-     * @param params parameters describing a BasicElevationModel.
-     *
-     * @return a configuration document for the BasicElevationModel.
-     */
-    public static Document createBasicElevationModelConfigDocument(AVList params)
-    {
-        Document doc = WWXML.createDocumentBuilder(true).newDocument();
-
-        Element root = WWXML.setDocumentElement(doc, "ElevationModel");
-        // Note: no type attribute denotes the default elevation model, which currently is BasicElevationModel.
-        WWXML.setIntegerAttribute(root, "version", 1);
-
-        createBasicElevationModelConfigElements(params, root);
-
-        return doc;
-    }
-
-    /**
-     * Appends BasicElevationModel configuration parameters as elements to the specified context. This appends elements
-     * for the following parameters: <table> <th><td>Parameter</td><td>Element Path</td><td>Type</td></th>
-     * <tr><td>{@link AVKey#SERVICE_NAME}</td><td>Service/@serviceName</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
-     * <tr><td>{@link AVKey#DATA_TYPE}</td><td>DataType/@type</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#BYTE_ORDER}</td><td>ByteOrder</td><td>DataType/@byteOrder</td></tr> <tr><td>{@link
-     * AVKey#ELEVATION_EXTREMES_FILE}</td><td>ExtremeElevations/FileName</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#ELEVATION_MAX}</td><td>ExtremeElevations/@max</td><td>Double</td></tr> <tr><td>{@link
-     * AVKey#ELEVATION_MIN}</td><td>ExtremeElevations/@min</td><td>Double</td></tr> </table> This also writes common
-     * elevation model and LevelSet configuration parameters by invoking {@link gov.nasa.worldwind.terrain.AbstractElevationModel#createElevationModelConfigElements(gov.nasa.worldwind.avlist.AVList,
-     * org.w3c.dom.Element)} and {@link DataConfigurationUtils#createLevelSetConfigElements(gov.nasa.worldwind.avlist.AVList,
-     * org.w3c.dom.Element)}.
-     *
-     * @param params  the key-value pairs which define the BasicElevationModel configuration parameters.
-     * @param context the XML document root on which to append BasicElevationModel configuration elements.
-     *
-     * @return a reference to context.
-     *
-     * @throws IllegalArgumentException if either the parameters or the context are null.
-     */
-    public static Element createBasicElevationModelConfigElements(AVList params, Element context)
-    {
-        if (params == null)
-        {
-            String message = Logging.getMessage("nullValue.ParametersIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (context == null)
-        {
-            String message = Logging.getMessage("nullValue.ContextIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        XPath xpath = WWXML.makeXPath();
-
-        // Common elevation model properties.
-        AbstractElevationModel.createElevationModelConfigElements(params, context);
-
-        // LevelSet properties.
-        DataConfigurationUtils.createLevelSetConfigElements(params, context);
-
-        // Service properties.
-        // Try to get the SERVICE_NAME property, but default to "WWTileService".
-        String s = AVListImpl.getStringValue(params, AVKey.SERVICE_NAME, "WWTileService");
-        if (s != null && s.length() > 0)
-        {
-            // The service element may already exist, in which case we want to append to it.
-            Element el = WWXML.getElement(context, "Service", xpath);
-            if (el == null)
-                el = WWXML.appendElementPath(context, "Service");
-            WWXML.setTextAttribute(el, "serviceName", s);
-        }
-
-        WWXML.checkAndAppendBooleanElement(params, AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE, context,
-            "RetrievePropertiesFromService");
-
-        // Image format properties.
-        WWXML.checkAndAppendTextElement(params, AVKey.IMAGE_FORMAT, context, "ImageFormat");
-
-        Object o = params.getValue(AVKey.AVAILABLE_IMAGE_FORMATS);
-        if (o != null && o instanceof String[])
-        {
-            String[] strings = (String[]) o;
-            if (strings.length > 0)
-            {
-                // The available image formats element may already exists, in which case we want to append to it, rather
-                // than create entirely separate paths.
-                Element el = WWXML.getElement(context, "AvailableImageFormats", xpath);
-                if (el == null)
-                    el = WWXML.appendElementPath(context, "AvailableImageFormats");
-                WWXML.appendTextArray(el, "ImageFormat", strings);
-            }
-        }
-
-        // Data type properties.
-        if (params.getValue(AVKey.DATA_TYPE) != null || params.getValue(AVKey.BYTE_ORDER) != null)
-        {
-            Element el = WWXML.getElement(context, "DataType", null);
-            if (el == null)
-                el = WWXML.appendElementPath(context, "DataType");
-
-            s = params.getStringValue(AVKey.DATA_TYPE);
-            if (s != null && s.length() > 0)
-            {
-                s = WWXML.dataTypeAsText(s);
-                if (s != null && s.length() > 0)
-                    WWXML.setTextAttribute(el, "type", s);
-            }
-
-            s = params.getStringValue(AVKey.BYTE_ORDER);
-            if (s != null && s.length() > 0)
-            {
-                s = WWXML.byteOrderAsText(s);
-                if (s != null && s.length() > 0)
-                    WWXML.setTextAttribute(el, "byteOrder", s);
-            }
-        }
-
-        // Elevation data properties.
-        Element el = WWXML.appendElementPath(context, "ExtremeElevations");
-        WWXML.checkAndAppendTextElement(params, AVKey.ELEVATION_EXTREMES_FILE, el, "FileName");
-
-        Double d = AVListImpl.getDoubleValue(params, AVKey.ELEVATION_MAX);
-        if (d != null)
-            WWXML.setDoubleAttribute(el, "max", d);
-
-        d = AVListImpl.getDoubleValue(params, AVKey.ELEVATION_MIN);
-        if (d != null)
-            WWXML.setDoubleAttribute(el, "min", d);
-
-        return context;
-    }
-
-    /**
      * Parses BasicElevationModel parameters from a specified DOM document. This writes output as key-value pairs to
      * params. If a parameter from the XML document already exists in params, that parameter is ignored. Supported key
      * and parameter names are: <table> <th><td>Parameter</td><td>Element Path</td><td>Type</td></th> <tr><td>{@link
@@ -2134,80 +1990,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         return params;
     }
 
-    protected void writeConfigurationFile(FileStore fileStore)
-    {
-        // TODO: configurable max attempts for creating a configuration file.
-
-        try
-        {
-            AVList configParams = this.getConfigurationParams(null);
-            this.writeConfigurationParams(configParams, fileStore);
-        }
-        catch (Exception e)
-        {
-            String message = Logging.getMessage("generic.ExceptionAttemptingToWriteConfigurationFile");
-            Logging.error(message, e);
-        }
-    }
-
-    protected void writeConfigurationParams(AVList params, FileStore fileStore)
-    {
-        // Determine what the configuration file name should be based on the configuration parameters. Assume an XML
-        // configuration document type, and append the XML file suffix.
-        String fileName = DataConfigurationUtils.getDataConfigFilename(params, ".xml");
-        if (fileName == null)
-        {
-            String message = Logging.getMessage("nullValue.FilePathIsNull");
-            Logging.error(message);
-            throw new WWRuntimeException(message);
-        }
-
-        // Check if this component needs to write a configuration file. This happens outside of the synchronized block
-        // to improve multithreaded performance for the common case: the configuration file already exists, this just
-        // need to check that it's there and return. If the file exists but is expired, do not remove it -  this
-        // removes the file inside the synchronized block below.
-        if (!this.needsConfigurationFile(fileStore, fileName, params, false))
-            return;
-
-        synchronized (this.fileLock)
-        {
-            // Check again if the component needs to write a configuration file, potentially removing any existing file
-            // which has expired. This additional check is necessary because the file could have been created by
-            // another thread while we were waiting for the lock.
-            if (!this.needsConfigurationFile(fileStore, fileName, params, true))
-                return;
-
-            this.doWriteConfigurationParams(fileStore, fileName, params);
-        }
-    }
-
-    protected void doWriteConfigurationParams(FileStore fileStore, String fileName, AVList params)
-    {
-        java.io.File file = fileStore.newFile(fileName);
-        if (file == null)
-        {
-            String message = Logging.getMessage("generic.CannotCreateFile", fileName);
-            Logging.error(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Document doc = this.createConfigurationDocument(params);
-        WWXML.saveDocumentToFile(doc, file.getPath());
-
-        String message = Logging.getMessage("generic.ConfigurationFileCreated", fileName);
-        Logging.verbose(message);
-    }
-
-    protected boolean needsConfigurationFile(FileStore fileStore, String fileName, AVList params,
-        boolean removeIfExpired)
-    {
-        long expiryTime = this.getExpiryTime();
-        if (expiryTime <= 0)
-            expiryTime = AVListImpl.getLongValue(params, AVKey.EXPIRY_TIME, 0L);
-
-        return !DataConfigurationUtils.hasDataConfigFile(fileStore, fileName, removeIfExpired, expiryTime);
-    }
-
     protected AVList getConfigurationParams(AVList params)
     {
         if (params == null)
@@ -2236,11 +2018,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             params.setValue(AVKey.MISSING_DATA_SIGNAL, this.getMissingDataSignal());
 
         return params;
-    }
-
-    protected Document createConfigurationDocument(AVList params)
-    {
-        return createBasicElevationModelConfigDocument(params);
     }
 
     @Override

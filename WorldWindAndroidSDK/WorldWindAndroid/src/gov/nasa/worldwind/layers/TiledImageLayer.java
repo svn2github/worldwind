@@ -81,6 +81,7 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      *
      * @see #setDetailHint(double)
      */
+    @SuppressWarnings("UnusedDeclaration")
     public double getDetailHint()
     {
         return this.detailHint;
@@ -447,127 +448,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     //**************************************************************//
     //********************  Configuration  *************************//
     //**************************************************************//
-
-    /**
-     * Creates a configuration document for a TiledImageLayer described by the specified params. The returned document
-     * may be used as a construction parameter to {@link gov.nasa.worldwind.layers.BasicTiledImageLayer}.
-     *
-     * @param params parameters describing the TiledImageLayer.
-     *
-     * @return a configuration document for the TiledImageLayer.
-     */
-    public static Document createTiledImageLayerConfigDocument(AVList params)
-    {
-        Document doc = WWXML.createDocumentBuilder(true).newDocument();
-
-        Element root = WWXML.setDocumentElement(doc, "Layer");
-        WWXML.setIntegerAttribute(root, "version", 1);
-        WWXML.setTextAttribute(root, "layerType", "TiledImageLayer");
-
-        createTiledImageLayerConfigElements(params, root);
-
-        return doc;
-    }
-
-    /**
-     * Appends TiledImageLayer configuration parameters as elements to the specified context. This appends elements for
-     * the following parameters: <table> <tr><th>Parameter</th><th>Element Path</th><th>Type</th></tr> <tr><td>{@link
-     * AVKey#SERVICE_NAME}</td><td>Service/@serviceName</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
-     * <tr><td>{@link
-     * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
-     * <tr><td>{@link AVKey#URL_READ_TIMEOUT}</td><td>RetrievalTimeouts/ReadTimeout/Time</td><td>Integer
-     * milliseconds</td></tr> <tr><td>{@link AVKey#RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT}</td>
-     * <td>RetrievalTimeouts/StaleRequestLimit/Time</td><td>Integer milliseconds</td></tr> </table> This also writes
-     * common layer and LevelSet configuration parameters by invoking {@link gov.nasa.worldwind.layers.AbstractLayer#createLayerConfigElements(gov.nasa.worldwind.avlist.AVList,
-     * org.w3c.dom.Element)} and {@link DataConfigurationUtils#createLevelSetConfigElements(gov.nasa.worldwind.avlist.AVList,
-     * org.w3c.dom.Element)}.
-     *
-     * @param params  the key-value pairs which define the TiledImageLayer configuration parameters.
-     * @param context the XML document root on which to append TiledImageLayer configuration elements.
-     *
-     * @return a reference to context.
-     *
-     * @throws IllegalArgumentException if either the parameters or the context are null.
-     */
-    public static Element createTiledImageLayerConfigElements(AVList params, Element context)
-    {
-        if (params == null)
-        {
-            String message = Logging.getMessage("nullValue.ParametersIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (context == null)
-        {
-            String message = Logging.getMessage("nullValue.ContextIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        XPath xpath = WWXML.makeXPath();
-
-        // Common layer properties.
-        AbstractLayer.createLayerConfigElements(params, context);
-
-        // LevelSet properties.
-        DataConfigurationUtils.createLevelSetConfigElements(params, context);
-
-        // Service properties.
-        // Try to get the SERVICE_NAME property, but default to "WWTileService".
-        String s = AVListImpl.getStringValue(params, AVKey.SERVICE_NAME, "WWTileService");
-        if (s != null && s.length() > 0)
-        {
-            // The service element may already exist, in which case we want to append to it.
-            Element el = WWXML.getElement(context, "Service", xpath);
-            if (el == null)
-                el = WWXML.appendElementPath(context, "Service");
-            WWXML.setTextAttribute(el, "serviceName", s);
-        }
-
-        WWXML.checkAndAppendBooleanElement(params, AVKey.RETRIEVE_PROPERTIES_FROM_SERVICE, context,
-            "RetrievePropertiesFromService");
-
-        // Image format properties.
-        WWXML.checkAndAppendTextElement(params, AVKey.IMAGE_FORMAT, context, "ImageFormat");
-
-        Object o = params.getValue(AVKey.AVAILABLE_IMAGE_FORMATS);
-        if (o != null && o instanceof String[])
-        {
-            String[] strings = (String[]) o;
-            if (strings.length > 0)
-            {
-                // The available image formats element may already exists, in which case we want to append to it, rather
-                // than create entirely separate paths.
-                Element el = WWXML.getElement(context, "AvailableImageFormats", xpath);
-                if (el == null)
-                    el = WWXML.appendElementPath(context, "AvailableImageFormats");
-                WWXML.appendTextArray(el, "ImageFormat", strings);
-            }
-        }
-
-        // Optional behavior properties.
-        WWXML.checkAndAppendDoubleElement(params, AVKey.DETAIL_HINT, context, "DetailHint");
-
-        // Retrieval properties.
-        if (params.getValue(AVKey.URL_CONNECT_TIMEOUT) != null ||
-            params.getValue(AVKey.URL_READ_TIMEOUT) != null ||
-            params.getValue(AVKey.RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT) != null)
-        {
-            Element el = WWXML.getElement(context, "RetrievalTimeouts", xpath);
-            if (el == null)
-                el = WWXML.appendElementPath(context, "RetrievalTimeouts");
-
-            WWXML.checkAndAppendTimeElement(params, AVKey.URL_CONNECT_TIMEOUT, el, "ConnectTimeout/Time");
-            WWXML.checkAndAppendTimeElement(params, AVKey.URL_READ_TIMEOUT, el, "ReadTimeout/Time");
-            WWXML.checkAndAppendTimeElement(params, AVKey.RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT, el,
-                "StaleRequestLimit/Time");
-        }
-
-        return context;
-    }
 
     /**
      * Parses TiledImageLayer configuration parameters from the specified DOM document. This writes output as key-value

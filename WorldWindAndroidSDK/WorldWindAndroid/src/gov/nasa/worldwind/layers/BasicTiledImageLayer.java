@@ -10,7 +10,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
-import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.retrieve.*;
@@ -26,7 +25,6 @@ import java.util.concurrent.*;
  * @author pabercrombie
  * @version $Id$
  */
-// TODO: Support parsing OGC Capabilities documents on Android
 public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetrievable
 {
     protected static class RequestTask implements Runnable, Comparable<RequestTask>
@@ -112,11 +110,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
             this.fileStore = fileStore;
         }
 
-        protected FileStore getFileStore()
-        {
-            return this.fileStore != null ? this.fileStore : this.layer.getDataFileStore();
-        }
-
         @Override
         protected void markResourceAbsent()
         {
@@ -142,10 +135,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
 
             if (buffer != null)
             {
-                // We've successfully cached data. Check if there's a configuration file for this layer, create one
-                // if there's not.
-                this.layer.writeConfigurationFile(this.getFileStore());
-
                 // Fire a property change to denote that the layer's backing data has changed.
                 this.layer.firePropertyChange(AVKey.LAYER, null, this);
             }
@@ -234,16 +223,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         {
             this.startResourceRetrieval();
         }
-    }
-
-    public BasicTiledImageLayer(Document dom, AVList params)
-    {
-        this(dom.getDocumentElement(), params);
-    }
-
-    public BasicTiledImageLayer(Element domElement, AVList params)
-    {
-        this(getParamsFromDocument(domElement, params));
     }
 
     /** Overridden to cancel periodic non-tile resource retrieval tasks scheduled by this Layer. */
@@ -778,6 +757,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
          *
          * @return the layer who's non-tile resources are retrieved.
          */
+        @SuppressWarnings("UnusedDeclaration")
         public BasicTiledImageLayer getLayer()
         {
             return this.layer;
@@ -828,104 +808,5 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
 
             this.layer.stopResourceRetrieval();
         }
-    }
-
-    //**************************************************************//
-    //********************  Configuration  *************************//
-    //**************************************************************//
-
-    protected void writeConfigurationFile(FileStore fileStore)
-    {
-        // TODO: configurable max attempts for creating a configuration file.
-
-        try
-        {
-            AVList configParams = this.getConfigurationParams(null);
-            this.writeConfigurationParams(fileStore, configParams);
-        }
-        catch (Exception e)
-        {
-            String message = Logging.getMessage("generic.ExceptionAttemptingToWriteConfigurationFile");
-            Logging.error(message, e);
-        }
-    }
-
-    protected void writeConfigurationParams(FileStore fileStore, AVList params)
-    {
-        // Determine what the configuration file name should be based on the configuration parameters. Assume an XML
-        // configuration document type, and append the XML file suffix.
-        String fileName = DataConfigurationUtils.getDataConfigFilename(params, ".xml");
-        if (fileName == null)
-        {
-            String message = Logging.getMessage("nullValue.FilePathIsNull");
-            Logging.error(message);
-            throw new WWRuntimeException(message);
-        }
-
-        // Check if this component needs to write a configuration file. This happens outside of the synchronized block
-        // to improve multi-threaded performance for the common case: the configuration file already exists, this just
-        // need to check that it's there and return. If the file exists but is expired, do not remove it -  this
-        // removes the file inside the synchronized block below.
-        if (!this.needsConfigurationFile(fileStore, fileName, params, false))
-            return;
-
-        synchronized (this.fileLock)
-        {
-            // Check again if the component needs to write a configuration file, potentially removing any existing file
-            // which has expired. This additional check is necessary because the file could have been created by
-            // another thread while we were waiting for the lock.
-            if (!this.needsConfigurationFile(fileStore, fileName, params, true))
-                return;
-
-            this.doWriteConfigurationParams(fileStore, fileName, params);
-        }
-    }
-
-    protected void doWriteConfigurationParams(FileStore fileStore, String fileName, AVList params)
-    {
-        java.io.File file = fileStore.newFile(fileName);
-        if (file == null)
-        {
-            String message = Logging.getMessage("generic.CannotCreateFile", fileName);
-            Logging.error(message);
-            throw new WWRuntimeException(message);
-        }
-
-        Document doc = this.createConfigurationDocument(params);
-        WWXML.saveDocumentToFile(doc, file.getPath());
-
-        String message = Logging.getMessage("generic.ConfigurationFileCreated", fileName);
-        Logging.verbose(message);
-    }
-
-    protected boolean needsConfigurationFile(FileStore fileStore, String fileName, AVList params,
-        boolean removeIfExpired)
-    {
-        long expiryTime = this.getExpiryTime();
-        if (expiryTime <= 0)
-            expiryTime = AVListImpl.getLongValue(params, AVKey.EXPIRY_TIME, 0L);
-
-        return !DataConfigurationUtils.hasDataConfigFile(fileStore, fileName, removeIfExpired, expiryTime);
-    }
-
-    protected AVList getConfigurationParams(AVList params)
-    {
-        if (params == null)
-            params = new AVListImpl();
-
-        // Gather all the construction parameters if they are available.
-        AVList constructionParams = (AVList) this.getValue(AVKey.CONSTRUCTION_PARAMETERS);
-        if (constructionParams != null)
-            params.setValues(constructionParams);
-
-        // Gather any missing LevelSet parameters from the LevelSet itself.
-        DataConfigurationUtils.getLevelSetConfigParams(this.getLevels(), params);
-
-        return params;
-    }
-
-    protected Document createConfigurationDocument(AVList params)
-    {
-        return createTiledImageLayerConfigDocument(params);
     }
 }

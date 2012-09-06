@@ -267,22 +267,4 @@ public class WMSBasicElevationModel extends BasicElevationModel
 //
 //        return params;
 //    }
-
-    /**
-     * Appends WMS basic elevation model configuration elements to the superclass configuration document.
-     *
-     * @param params configuration parameters describing this WMS basic elevation model.
-     *
-     * @return a WMS basic elevation model configuration document.
-     */
-    protected Document createConfigurationDocument(AVList params)
-    {
-        Document doc = super.createConfigurationDocument(params);
-        if (doc == null || doc.getDocumentElement() == null)
-            return doc;
-
-        DataConfigurationUtils.createWMSLayerConfigElements(params, doc.getDocumentElement());
-
-        return doc;
-    }
 }

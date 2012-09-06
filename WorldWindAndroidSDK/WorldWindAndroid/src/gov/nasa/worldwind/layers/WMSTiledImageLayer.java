@@ -17,34 +17,17 @@ import java.net.*;
  * @author pabercrombie
  * @version $Id$
  */
-// TODO: Support parsing WMS Capabilities document on Android
 public class WMSTiledImageLayer extends BasicTiledImageLayer
 {
-    private static final String[] formatOrderPreference = new String[]
-        {
-            "image/dds", "image/png", "image/jpeg"
-        };
-
     public WMSTiledImageLayer(AVList params)
     {
         super(params);
-    }
-
-    public WMSTiledImageLayer(Document dom, AVList params)
-    {
-        this(dom.getDocumentElement(), params);
     }
 
     public WMSTiledImageLayer(Element domElement, AVList params)
     {
         this(wmsGetParamsFromDocument(domElement, params));
     }
-
-    // TODO
-//    public WMSTiledImageLayer(WMSCapabilities caps, AVList params)
-//    {
-//        this(wmsGetParamsFromCapsDoc(caps, params));
-//    }
 
     /**
      * Extracts parameters necessary to configure the layer from an XML DOM element.
@@ -78,7 +61,6 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
         return params;
     }
 
-    // TODO: consolidate common code in WMSTiledImageLayer.URLBuilder and WMSBasicElevationModel.URLBuilder
     public static class URLBuilder implements TileUrlBuilder
     {
         private static final String MAX_VERSION = "1.3.0";
@@ -155,28 +137,5 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
 
             return new java.net.URL(sb.toString().replace(" ", "%20"));
         }
-    }
-
-    //**************************************************************//
-    //********************  Configuration  *************************//
-    //**************************************************************//
-
-    /**
-     * Appends WMS tiled image layer configuration elements to the superclass configuration document.
-     *
-     * @param params configuration parameters describing this WMS tiled image layer.
-     *
-     * @return a WMS tiled image layer configuration document.
-     */
-    @Override
-    protected Document createConfigurationDocument(AVList params)
-    {
-        Document doc = super.createConfigurationDocument(params);
-        if (doc == null || doc.getDocumentElement() == null)
-            return doc;
-
-        DataConfigurationUtils.createWMSLayerConfigElements(params, doc.getDocumentElement());
-
-        return doc;
     }
 }
