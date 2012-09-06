@@ -500,8 +500,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
         // Optional behavior properties.
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.DETAIL_HINT, "DetailHint", xpath);
-        //WWXML.checkAndSetColorArrayParam(domElement, params, AVKey.TRANSPARENCY_COLORS, "TransparencyColors/Color",
-        //    xpath);
 
         // Retrieval properties. Convert the Long time values to Integers, because BasicTiledImageLayer is expecting
         // Integer values.

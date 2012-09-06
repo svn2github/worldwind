@@ -13,7 +13,6 @@ import gov.nasa.worldwind.util.*;
 import org.w3c.dom.Element;
 
 import javax.xml.xpath.XPath;
-import java.util.List;
 
 /**
  * @author dcollins
@@ -108,11 +107,6 @@ public abstract class AbstractElevationModel extends WWObjectImpl implements Ele
         return dataFileStore;
     }
 
-    public void setDataFileStore(FileStore dataFileStore)
-    {
-        this.dataFileStore = dataFileStore;
-    }
-
     public double getElevation(Angle latitude, Angle longitude)
     {
         if (latitude == null || longitude == null)
@@ -135,86 +129,6 @@ public abstract class AbstractElevationModel extends WWObjectImpl implements Ele
     //**************************************************************//
     //********************  Configuration  *************************//
     //**************************************************************//
-
-    /**
-     * Returns true if a specified DOM document is an ElevationModel configuration document, and false otherwise.
-     *
-     * @param domElement the DOM document in question.
-     *
-     * @return true if the document is an ElevationModel configuration document; false otherwise.
-     *
-     * @throws IllegalArgumentException if document is null.
-     */
-    public static boolean isElevationModelConfigDocument(Element domElement)
-    {
-        if (domElement == null)
-        {
-            String message = Logging.getMessage("nullValue.DocumentIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        XPath xpath = WWXML.makeXPath();
-        List<Element> elements = WWXML.getElements(domElement, "//ElevationModel", xpath);
-
-        return elements != null && elements.size() > 0;
-    }
-
-    /**
-     * Appends elevation model configuration parameters as elements to the specified context. This appends elements for
-     * the following parameters: <table> <th><td>Parameter</td><td>Element Path</td><td>Type</td></th> <tr><td>{@link
-     * AVKey#DISPLAY_NAME}</td><td>DisplayName</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#NETWORK_RETRIEVAL_ENABLED}</td><td>NetworkRetrievalEnabled</td><td>Boolean</td></tr> <tr><td>{@link
-     * AVKey#MISSING_DATA_SIGNAL}</td><td>MissingData/@signal</td><td>Double</td></tr> <tr><td>{@link
-     * AVKey#MISSING_DATA_REPLACEMENT}</td><td>MissingData/@replacement</td><td>Double</td></tr> <tr><td>{@link
-     * AVKey#DETAIL_HINT}</td><td>DataDetailHint</td><td>Double</td></tr> </table>
-     *
-     * @param params  the key-value pairs which define the elevation model configuration parameters.
-     * @param context the XML document root on which to append elevation model configuration elements.
-     *
-     * @return a reference to context.
-     *
-     * @throws IllegalArgumentException if either the parameters or the context are null.
-     */
-    public static Element createElevationModelConfigElements(AVList params, Element context)
-    {
-        if (params == null)
-        {
-            String message = Logging.getMessage("nullValue.ParametersIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (context == null)
-        {
-            String message = Logging.getMessage("nullValue.ContextIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        WWXML.checkAndAppendTextElement(params, AVKey.DISPLAY_NAME, context, "DisplayName");
-        WWXML.checkAndAppendBooleanElement(params, AVKey.NETWORK_RETRIEVAL_ENABLED, context, "NetworkRetrievalEnabled");
-
-        if (params.getValue(AVKey.MISSING_DATA_SIGNAL) != null ||
-            params.getValue(AVKey.MISSING_DATA_REPLACEMENT) != null)
-        {
-            Element el = WWXML.getElement(context, "MissingData", null);
-            if (el == null)
-                el = WWXML.appendElementPath(context, "MissingData");
-
-            Double d = AVListImpl.getDoubleValue(params, AVKey.MISSING_DATA_SIGNAL);
-            if (d != null)
-                WWXML.setDoubleAttribute(el, "signal", d);
-
-            d = AVListImpl.getDoubleValue(params, AVKey.MISSING_DATA_REPLACEMENT);
-            if (d != null)
-                WWXML.setDoubleAttribute(el, "replacement", d);
-        }
-
-        WWXML.checkAndAppendDoubleElement(params, AVKey.DETAIL_HINT, context, "DataDetailHint");
-
-        return context;
-    }
 
     /**
      * Parses elevation model configuration parameters from the specified DOM document. This writes output as key-value
