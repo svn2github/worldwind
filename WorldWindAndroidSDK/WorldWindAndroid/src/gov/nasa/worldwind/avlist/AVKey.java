@@ -47,7 +47,6 @@ public interface AVKey
     final String FILE_NAME = "gov.nasa.worldwind.avkey.FileName";
     final String FILE_STORE_LOCATION = "gov.nasa.worldwind.avkey.FileStoreLocation";
     final String FLOAT32 = "gov.nasa.worldwind.avkey.Float32";
-    final String FORCE_LEVEL_ZERO_LOADS = "gov.nasa.worldwind.avkey.ForceLevelZeroLoads";
     final String FORMAT_SUFFIX = "gov.nasa.worldwind.avkey.FormatSuffixKey";
 
     final String GET_CAPABILITIES_URL = "gov.nasa.worldwind.avkey.GetCapabilitiesURL";
@@ -124,7 +123,6 @@ public interface AVKey
     final String POSITION = "gov.nasa.worldwind.avkey.Position";
     final String PROGRESS = "gov.nasa.worldwind.avkey.Progress";
 
-    final String RETAIN_LEVEL_ZERO_TILES = "gov.nasa.worldwind.avkey.RetainLevelZeroTiles";
     final String RETRIEVE_PROPERTIES_FROM_SERVICE = "gov.nasa.worldwind.avkey.RetrievePropertiesFromService";
     final String RETRIEVAL_POOL_SIZE = "gov.nasa.worldwind.avkey.RetrievalPoolSize";
     final String RETRIEVAL_QUEUE_SIZE = "gov.nasa.worldwind.avkey.RetrievalQueueSize";

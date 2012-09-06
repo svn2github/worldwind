@@ -42,8 +42,6 @@
             <LatLon units="degrees" latitude="90" longitude="180"/>
         </NorthEast>
     </Sector>
-    <ForceLevelZeroLoads>true</ForceLevelZeroLoads>
-    <RetainLevelZeroTiles>true</RetainLevelZeroTiles>
     <RetrievalTimeouts>
         <ReadTimeout>
             <Time units="milliseconds" value="30000"/>

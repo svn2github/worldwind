@@ -39,9 +39,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     protected List<Tile> topLevelTiles = new ArrayList<Tile>();
     protected GpuTextureFactory textureFactory;
 
-    protected boolean forceLevelZeroLoads = false;
-    protected boolean levelZeroLoaded = false;
-    protected boolean retainLevelZeroTiles = false;
     protected String tileCountName;
     protected ArrayList<String> supportedImageFormats = new ArrayList<String>();
     protected String textureFormat;
@@ -91,26 +88,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         Object value = super.getValue(key);
 
         return value != null ? value : this.getLevels().getValue(key); // see if the level set has it
-    }
-
-    public boolean isForceLevelZeroLoads()
-    {
-        return this.forceLevelZeroLoads;
-    }
-
-    public void setForceLevelZeroLoads(boolean forceLevelZeroLoads)
-    {
-        this.forceLevelZeroLoads = forceLevelZeroLoads;
-    }
-
-    public boolean isRetainLevelZeroTiles()
-    {
-        return retainLevelZeroTiles;
-    }
-
-    public void setRetainLevelZeroTiles(boolean retainLevelZeroTiles)
-    {
-        this.retainLevelZeroTiles = retainLevelZeroTiles;
     }
 
     /**
@@ -264,9 +241,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     @Override
     protected void doRender(DrawContext dc)
     {
-        if (this.forceLevelZeroLoads && !this.levelZeroLoaded)
-            this.loadAllTopLevelTextures(dc);
-
         if (dc.getSurfaceGeometry() == null || dc.getSurfaceGeometry().size() < 1)
             return;
 
@@ -342,8 +316,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
                 }
             }
         }
-
-        this.levelZeroLoaded = true;
     }
 
     // ============== Tile Assembly ======================= //
@@ -619,8 +591,7 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * AVKey#SERVICE_NAME}</td><td>Service/@serviceName</td><td>String</td></tr> <tr><td>{@link
      * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
      * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
-     * <tr><td>{@link AVKey#FORCE_LEVEL_ZERO_LOADS}</td><td>ForceLevelZeroLoads</td><td>Boolean</td></tr> <tr><td>{@link
-     * AVKey#RETAIN_LEVEL_ZERO_TILES}</td><td>RetainLevelZeroTiles</td><td>Boolean</td></tr> <tr><td>{@link
+     * <tr><td>{@link
      * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>String</td></tr>
      * <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
@@ -697,8 +668,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         }
 
         // Optional behavior properties.
-        WWXML.checkAndAppendBooleanElement(params, AVKey.FORCE_LEVEL_ZERO_LOADS, context, "ForceLevelZeroLoads");
-        WWXML.checkAndAppendBooleanElement(params, AVKey.RETAIN_LEVEL_ZERO_TILES, context, "RetainLevelZeroTiles");
         WWXML.checkAndAppendDoubleElement(params, AVKey.DETAIL_HINT, context, "DetailHint");
 
         // Retrieval properties.
@@ -726,8 +695,7 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * <tr><td>{@link AVKey#SERVICE_NAME}</td><td>Service/@serviceName</td><td>String</td></tr> <tr><td>{@link
      * AVKey#IMAGE_FORMAT}</td><td>ImageFormat</td><td>String</td></tr> <tr><td>{@link
      * AVKey#AVAILABLE_IMAGE_FORMATS}</td><td>AvailableImageFormats/ImageFormat</td><td>String array</td></tr>
-     * <tr><td>{@link AVKey#FORCE_LEVEL_ZERO_LOADS}</td><td>ForceLevelZeroLoads</td><td>Boolean</td></tr> <tr><td>{@link
-     * AVKey#RETAIN_LEVEL_ZERO_TILES}</td><td>RetainLevelZeroTiles</td><td>Boolean</td></tr> <tr><td>{@link
+     * <tr><td>{@link
      * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>Boolean</td></tr>
      * <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
@@ -778,8 +746,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
             "AvailableImageFormats/ImageFormat", xpath);
 
         // Optional behavior properties.
-        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.FORCE_LEVEL_ZERO_LOADS, "ForceLevelZeroLoads", xpath);
-        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.RETAIN_LEVEL_ZERO_TILES, "RetainLevelZeroTiles", xpath);
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.DETAIL_HINT, "DetailHint", xpath);
         //WWXML.checkAndSetColorArrayParam(domElement, params, AVKey.TRANSPARENCY_COLORS, "TransparencyColors/Color",
         //    xpath);

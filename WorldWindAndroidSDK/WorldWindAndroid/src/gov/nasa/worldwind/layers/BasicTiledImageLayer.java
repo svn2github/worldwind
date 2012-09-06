@@ -214,13 +214,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (d != null)
             this.setDetailHint(d);
 
-        Boolean b = (Boolean) params.getValue(AVKey.FORCE_LEVEL_ZERO_LOADS);
-        if (b != null)
-            this.setForceLevelZeroLoads(b);
-
-        b = (Boolean) params.getValue(AVKey.RETAIN_LEVEL_ZERO_TILES);
-        if (b != null)
-            this.setRetainLevelZeroTiles(b);
+        Boolean b;
 
         b = (Boolean) params.getValue(AVKey.NETWORK_RETRIEVAL_ENABLED);
         if (b != null)
