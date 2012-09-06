@@ -43,8 +43,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     protected boolean levelZeroLoaded = false;
     protected boolean retainLevelZeroTiles = false;
     protected String tileCountName;
-//    protected boolean useMipMaps = true;
-    protected boolean useTransparentTextures = false;
     protected ArrayList<String> supportedImageFormats = new ArrayList<String>();
     protected String textureFormat;
 
@@ -188,16 +186,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     public void setTextureFormat(String textureFormat)
     {
         this.textureFormat = textureFormat;
-    }
-
-    public boolean isUseTransparentTextures()
-    {
-        return this.useTransparentTextures;
-    }
-
-    public void setUseTransparentTextures(boolean useTransparentTextures)
-    {
-        this.useTransparentTextures = useTransparentTextures;
     }
 
     /**
@@ -635,7 +623,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * AVKey#RETAIN_LEVEL_ZERO_TILES}</td><td>RetainLevelZeroTiles</td><td>Boolean</td></tr> <tr><td>{@link
      * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>String</td></tr>
      * <tr><td>{@link
-     * AVKey#USE_TRANSPARENT_TEXTURES}</td><td>UseTransparentTextures</td><td>Boolean</td></tr> <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
      * <tr><td>{@link AVKey#URL_READ_TIMEOUT}</td><td>RetrievalTimeouts/ReadTimeout/Time</td><td>Integer
      * milliseconds</td></tr> <tr><td>{@link AVKey#RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT}</td>
@@ -712,7 +699,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         // Optional behavior properties.
         WWXML.checkAndAppendBooleanElement(params, AVKey.FORCE_LEVEL_ZERO_LOADS, context, "ForceLevelZeroLoads");
         WWXML.checkAndAppendBooleanElement(params, AVKey.RETAIN_LEVEL_ZERO_TILES, context, "RetainLevelZeroTiles");
-        WWXML.checkAndAppendBooleanElement(params, AVKey.USE_TRANSPARENT_TEXTURES, context, "UseTransparentTextures");
         WWXML.checkAndAppendDoubleElement(params, AVKey.DETAIL_HINT, context, "DetailHint");
 
         // Retrieval properties.
@@ -744,7 +730,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
      * AVKey#RETAIN_LEVEL_ZERO_TILES}</td><td>RetainLevelZeroTiles</td><td>Boolean</td></tr> <tr><td>{@link
      * AVKey#TEXTURE_FORMAT}</td><td>TextureFormat</td><td>Boolean</td></tr>
      * <tr><td>{@link
-     * AVKey#USE_TRANSPARENT_TEXTURES}</td><td>UseTransparentTextures</td><td>Boolean</td></tr> <tr><td>{@link
      * AVKey#URL_CONNECT_TIMEOUT}</td><td>RetrievalTimeouts/ConnectTimeout/Time</td><td>Integer milliseconds</td></tr>
      * <tr><td>{@link AVKey#URL_READ_TIMEOUT}</td><td>RetrievalTimeouts/ReadTimeout/Time</td><td>Integer
      * milliseconds</td></tr> <tr><td>{@link AVKey#RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT}</td>
@@ -795,8 +780,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         // Optional behavior properties.
         WWXML.checkAndSetBooleanParam(domElement, params, AVKey.FORCE_LEVEL_ZERO_LOADS, "ForceLevelZeroLoads", xpath);
         WWXML.checkAndSetBooleanParam(domElement, params, AVKey.RETAIN_LEVEL_ZERO_TILES, "RetainLevelZeroTiles", xpath);
-        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.USE_TRANSPARENT_TEXTURES, "UseTransparentTextures",
-            xpath);
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.DETAIL_HINT, "DetailHint", xpath);
         //WWXML.checkAndSetColorArrayParam(domElement, params, AVKey.TRANSPARENCY_COLORS, "TransparencyColors/Color",
         //    xpath);

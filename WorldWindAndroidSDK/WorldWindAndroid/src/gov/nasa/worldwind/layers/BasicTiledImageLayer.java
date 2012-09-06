@@ -226,10 +226,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (b != null)
             this.setNetworkRetrievalEnabled(b);
 
-        b = (Boolean) params.getValue(AVKey.USE_TRANSPARENT_TEXTURES);
-        if (b != null)
-            this.setUseTransparentTextures(b);
-
         Object o = params.getValue(AVKey.URL_CONNECT_TIMEOUT);
         if (o != null)
             this.setValue(AVKey.URL_CONNECT_TIMEOUT, o);
@@ -1026,7 +1022,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         rs.addStateValueAsDouble(context, "Layer.MaxActiveAltitude", this.getMaxActiveAltitude());
         rs.addStateValueAsBoolean(context, "Layer.NetworkRetrievalEnabled", this.isNetworkRetrievalEnabled());
         rs.addStateValueAsString(context, "Layer.Name", this.getName());
-        rs.addStateValueAsBoolean(context, "TiledImageLayer.UseTransparentTextures", this.isUseTransparentTextures());
 
         RestorableSupport.StateObject so = rs.addStateObject(context, "avlist");
         for (Map.Entry<String, Object> avp : this.getEntries())
@@ -1087,10 +1082,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         String s = rs.getStateValueAsString(context, "Layer.Name");
         if (s != null)
             this.setName(s);
-
-        b = rs.getStateValueAsBoolean(context, "TiledImageLayer.UseTransparentTextures");
-        if (b != null)
-            this.setUseTransparentTextures(b);
 
         RestorableSupport.StateObject so = rs.getStateObject(context, "avlist");
         if (so != null)

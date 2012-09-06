@@ -44,7 +44,6 @@
     </Sector>
     <ForceLevelZeroLoads>true</ForceLevelZeroLoads>
     <RetainLevelZeroTiles>true</RetainLevelZeroTiles>
-    <UseTransparentTextures>false</UseTransparentTextures>
     <RetrievalTimeouts>
         <ReadTimeout>
             <Time units="milliseconds" value="30000"/>

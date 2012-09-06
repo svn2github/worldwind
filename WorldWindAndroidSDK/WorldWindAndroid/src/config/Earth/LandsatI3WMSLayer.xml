@@ -35,7 +35,6 @@
             <LatLon units="degrees" latitude="90" longitude="180"/>
         </NorthEast>
     </Sector>
-    <UseTransparentTextures>true</UseTransparentTextures>
     <!--<ScreenCredit creditType="ScreenImage">-->
     <!--<FileName>images/32x32-icon-nasa.png</FileName>-->
     <!--<Link>http://worldwind.arc.nasa.gov/java</Link>-->

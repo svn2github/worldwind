@@ -163,7 +163,6 @@ public interface AVKey
     final String URL_PROXY_PORT = "gov.nasa.worldwind.avkey.UrlProxyPort";
     final String URL_PROXY_TYPE = "gov.nasa.worldwind.avkey.UrlProxyType";
     final String URL_READ_TIMEOUT = "gov.nasa.worldwind.avkey.URLReadTimeout";
-    final String USE_TRANSPARENT_TEXTURES = "gov.nasa.worldwind.avkey.UseTransparentTextures";
 
     final String VERTICAL_EXAGGERATION = "gov.nasa.worldwind.avkey.VerticalExaggeration";
     final String VIEW = "gov.nasa.worldwind.avkey.View";
