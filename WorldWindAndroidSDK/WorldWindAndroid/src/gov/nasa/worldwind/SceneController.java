@@ -41,7 +41,7 @@ public class SceneController extends WWObjectImpl
 
     protected DrawContext createDrawContext()
     {
-        return new DrawContextImpl();
+        return new DrawContext();
     }
 
     /**
