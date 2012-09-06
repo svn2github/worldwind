@@ -44,13 +44,22 @@ public class SceneController extends WWObjectImpl
         return new DrawContextImpl();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Indicates the scene controller's model. This returns <code>null</code> if the scene controller has no model.
+     *
+     * @return the scene controller's model, or <code>null</code> if the scene controller has no model.
+     */
     public Model getModel()
     {
         return this.model;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Specifies the scene controller's model. This method fires an {@link gov.nasa.worldwind.avlist.AVKey#MODEL}
+     * property change event.
+     *
+     * @param model the scene controller's model.
+     */
     public void setModel(Model model)
     {
         if (this.model != null)
@@ -63,13 +72,22 @@ public class SceneController extends WWObjectImpl
         this.firePropertyChange(AVKey.MODEL, oldModel, model);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the current view. This method fires an {@link gov.nasa.worldwind.avlist.AVKey#VIEW} property change
+     * event.
+     *
+     * @return the current view.
+     */
     public View getView()
     {
         return this.view;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Sets the current view.
+     *
+     * @param view the view.
+     */
     public void setView(View view)
     {
         if (this.view != null)
@@ -83,13 +101,22 @@ public class SceneController extends WWObjectImpl
         this.firePropertyChange(AVKey.VIEW, oldView, view);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Indicates the current vertical exaggeration.
+     *
+     * @return the current vertical exaggeration.
+     */
+    @SuppressWarnings("UnusedDeclaration")
     public double getVerticalExaggeration()
     {
         return this.verticalExaggeration;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Specifies the exaggeration to apply to elevation values of terrain and other displayed items.
+     *
+     * @param verticalExaggeration the vertical exaggeration to apply.
+     */
     public void setVerticalExaggeration(double verticalExaggeration)
     {
         Double oldVE = this.verticalExaggeration;
@@ -97,61 +124,107 @@ public class SceneController extends WWObjectImpl
         this.firePropertyChange(AVKey.VERTICAL_EXAGGERATION, oldVE, verticalExaggeration);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns this scene controller's GPU Resource cache.
+     *
+     * @return this scene controller's GPU Resource cache.
+     */
+    @SuppressWarnings("UnusedDeclaration")
     public GpuResourceCache getGpuResourceCache()
     {
         return this.gpuResourceCache;
     }
 
-    /** {@inheritDoc} */
-    public void setGpuResourceCache(GpuResourceCache cache)
+    /**
+     * Specifies the GPU Resource cache to use.
+     *
+     * @param gpuResourceCache the texture cache.
+     */
+    public void setGpuResourceCache(GpuResourceCache gpuResourceCache)
     {
-        this.gpuResourceCache = cache;
+        this.gpuResourceCache = gpuResourceCache;
     }
 
-    /** {@inheritDoc} */
-    public SectorGeometryList getSurfaceGeometry()
-    {
-        return this.dc.getSurfaceGeometry();
-    }
-
-    /** {@inheritDoc} */
+    /**
+     * Indicates whether all items under the cursor are identified during picking.
+     *
+     * @return true if all items under the cursor are identified during picking, otherwise false.
+     */
     public boolean isDeepPickEnabled()
     {
         return this.deepPick;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Specifies whether all items under the cursor are identified during picking.
+     *
+     * @param tf true to identify all items under the cursor during picking, otherwise false.
+     */
+    @SuppressWarnings("UnusedDeclaration")
     public void setDeepPickEnabled(boolean tf)
     {
         this.deepPick = tf;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the current pick point in AWT screen coordinates.
+     *
+     * @return the current pick point, or <code>null</code> if no pick point is current.
+     *
+     * @see #setPickPoint(Point)
+     */
+    @SuppressWarnings("UnusedDeclaration")
     public Point getPickPoint()
     {
         return this.pickPoint;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Specifies the current pick point in AWT screen coordinates, or <code>null</code> to indicate that there is no
+     * pick point. Each frame, this scene controller determines which objects are drawn at the pick point and places
+     * them in a PickedObjectList. This list can be accessed by calling {@link #getObjectsAtPickPoint()}.
+     * <p/>
+     * If the pick point is <code>null</code>, this scene controller ignores the pick point and the list of objects
+     * returned by getPickedObjectList is empty.
+     *
+     * @param pickPoint the current pick point, or <code>null</code>.
+     */
     public void setPickPoint(Point pickPoint)
     {
         this.pickPoint = pickPoint;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the list of picked objects at the current pick point. The returned list is computed during the most
+     * recent call to repaint.
+     *
+     * @return the list of picked objects at the pick point, or null if no objects are currently picked.
+     */
     public PickedObjectList getObjectsAtPickPoint()
     {
         return this.objectsAtPickPoint;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the current per-frame statistics.
+     *
+     * @return the current per-frame statistics.
+     */
     public Collection<PerformanceStatistic> getPerFrameStatistics()
     {
         return this.perFrameStatistics;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Cause the window to regenerate the frame, including pick resolution.
+     *
+     * @param viewportWidth  the width of the current viewport this scene controller is associated with, in pixels. Must
+     *                       not be less than zero.
+     * @param viewportHeight the height of the current viewport this scene controller is associated with, in pixels.
+     *                       Must not be less than zero.
+     *
+     * @throws IllegalArgumentException if either viewportWidth or viewportHeight are less than zero.
+     */
     public void drawFrame(int viewportWidth, int viewportHeight)
     {
         if (viewportWidth < 0)
@@ -214,6 +287,7 @@ public class SceneController extends WWObjectImpl
         dc.setPerFrameStatistics(this.perFrameStatistics);
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void initializeFrame(DrawContext dc)
     {
         GLES20.glEnable(GLES20.GL_BLEND);
@@ -224,6 +298,7 @@ public class SceneController extends WWObjectImpl
         // We do not specify glCullFace, because the default cull face state GL_BACK is appropriate for our needs.
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void finalizeFrame(DrawContext dc)
     {
         // Restore the default GL state values we modified in initializeFrame.
