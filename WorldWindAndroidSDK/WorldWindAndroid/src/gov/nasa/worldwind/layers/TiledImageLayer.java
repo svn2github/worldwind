@@ -5,20 +5,16 @@
  */
 package gov.nasa.worldwind.layers;
 
-import android.graphics.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
 import javax.xml.xpath.XPath;
-import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -39,7 +35,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
     protected GpuTextureFactory textureFactory;
 
     protected String tileCountName;
-    protected ArrayList<String> supportedImageFormats = new ArrayList<String>();
 
     // Stuff computed each frame
     protected List<GpuTextureTile> currentTiles = new ArrayList<GpuTextureTile>();
@@ -125,11 +120,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         return levels;
     }
 
-    protected PriorityBlockingQueue<Runnable> getRequestQ()
-    {
-        return requestQ;
-    }
-
     @Override
     public boolean isMultiResolution()
     {
@@ -156,14 +146,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
         if (expiryTime > 0)
             this.levels.setExpiryTime(expiryTime); // remove this in sub-class to use level-specific expiry times
-    }
-
-    public List<Tile> getTopLevels()
-    {
-        if (this.topLevelTiles == null)
-            this.createTopLevelTiles();
-
-        return topLevelTiles;
     }
 
     protected GpuTextureFactory createTextureFactory()
@@ -709,175 +691,13 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         WWXML.checkAndSetTimeParamAsInteger(domElement, params, AVKey.RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT,
             "RetrievalTimeouts/StaleRequestLimit/Time", xpath);
 
-        // Parse the legacy configuration parameters. This enables TiledImageLayer to recognize elements from previous
-        // versions of configuration documents.
-        getLegacyTiledImageLayerConfigParams(domElement, params);
-
         return params;
     }
 
-    /**
-     * Parses TiledImageLayer configuration parameters from previous versions of configuration documents. This writes
-     * output as key-value pairs to params. If a parameter from the XML document already exists in params, that
-     * parameter is ignored. Supported key and parameter names are: <table> <tr><th>Parameter</th><th>Element
-     * Path</th><th>Type</th></tr></table>
-     *
-     * @param domElement the XML document root to parse for legacy TiledImageLayer configuration parameters.
-     * @param params     the output key-value pairs which receive the TiledImageLayer configuration parameters. A null
-     *                   reference is permitted.
-     *
-     * @return a reference to params, or a new AVList if params is null.
-     *
-     * @throws IllegalArgumentException if the document is null.
-     */
-    protected static AVList getLegacyTiledImageLayerConfigParams(Element domElement, AVList params)
-    {
-        if (domElement == null)
-        {
-            String message = Logging.getMessage("nullValue.DocumentIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
+    // ============== Bulk Download ======================= //
+    // ============== Bulk Download ======================= //
+    // ============== Bulk Download ======================= //
 
-        if (params == null)
-            params = new AVListImpl();
-
-        XPath xpath = WWXML.makeXPath();
-
-        return params;
-    }
-
-    // ============== Image Composition ======================= //
-    // ============== Image Composition ======================= //
-    // ============== Image Composition ======================= //
-
-    public List<String> getAvailableImageFormats()
-    {
-        return new ArrayList<String>(this.supportedImageFormats);
-    }
-
-    public boolean isImageFormatAvailable(String imageFormat)
-    {
-        return imageFormat != null && this.supportedImageFormats.contains(imageFormat);
-    }
-
-    public String getDefaultImageFormat()
-    {
-        return !this.supportedImageFormats.isEmpty() ? this.supportedImageFormats.get(0) : null;
-    }
-
-    protected void setAvailableImageFormats(String[] formats)
-    {
-        this.supportedImageFormats.clear();
-
-        if (formats != null)
-            this.supportedImageFormats.addAll(Arrays.asList(formats));
-    }
-
-    protected Bitmap requestImage(GpuTextureTile tile, String mimeType)
-        throws URISyntaxException, InterruptedIOException, MalformedURLException
-    {
-        String pathBase = tile.getPathBase();
-        String suffix = WWIO.makeSuffixForMimeType(mimeType);
-        String path = pathBase + suffix;
-        File f = new File(path);
-        URL url;
-        if (f.isAbsolute() && f.exists())
-            url = f.toURI().toURL();
-        else
-            url = this.getDataFileStore().findFile(path, false);
-
-        if (url == null) // image is not local
-            return null;
-
-        if (WWIO.isFileOutOfDate(url, tile.getLevel().getExpiryTime()))
-        {
-            // The file has expired. Delete it.
-            this.getDataFileStore().removeFile(url);
-            String message = Logging.getMessage("generic.DataFileExpired", url);
-            Logging.verbose(message);
-        }
-        else
-        {
-            File imageFile = new File(url.toURI());
-            Bitmap image = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-            if (image == null)
-            {
-                // Assume that something is wrong with the file and delete it.
-                this.getDataFileStore().removeFile(url);
-                this.levels.markResourceAbsent(tile);
-                Logging.info(Logging.getMessage("generic.DeletedCorruptDataFile", url));
-
-                String message = Logging.getMessage("generic.ImageReadFailed", imageFile);
-                throw new RuntimeException(message);
-            }
-
-            this.levels.unmarkResourceAbsent(tile);
-            return image;
-        }
-
-        return null;
-    }
-
-    protected void downloadImage(GpuTextureTile tile, String mimeType, int timeout) throws Exception
-    {
-        if (this.getValue(AVKey.RETRIEVER_FACTORY_LOCAL) != null)
-            this.retrieveLocalImage(tile, mimeType, timeout);
-        else
-            // Assume it's remote.
-            this.retrieveRemoteImage(tile, mimeType, timeout);
-    }
-
-    protected void retrieveRemoteImage(final GpuTextureTile tile, String mimeType, int timeout) throws Exception
-    {
-        // TODO: apply retriever-factory pattern for remote retrieval case.
-        final URL resourceURL = tile.getResourceURL(mimeType);
-        if (resourceURL == null)
-            return;
-
-        Retriever retriever;
-
-        String protocol = resourceURL.getProtocol();
-
-        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol))
-        {
-            retriever = new HTTPRetriever(resourceURL, new CompositionRetrievalPostProcessor(tile));
-            retriever.setValue(URLRetriever.EXTRACT_ZIP_ENTRY, "true"); // supports legacy layers
-        }
-        else
-        {
-            String message = Logging.getMessage("layers.TextureLayer.UnknownRetrievalProtocol", resourceURL);
-            throw new RuntimeException(message);
-        }
-
-        Logging.verbose("Retrieving " + resourceURL.toString());
-        retriever.setConnectTimeout(10000);
-        retriever.setReadTimeout(timeout);
-        retriever.call();
-    }
-
-    protected void retrieveLocalImage(GpuTextureTile tile, String mimeType, int timeout) throws Exception
-    {
-        if (!WorldWind.getLocalRetrievalService().isAvailable())
-            return;
-
-        RetrieverFactory retrieverFactory = (RetrieverFactory) this.getValue(AVKey.RETRIEVER_FACTORY_LOCAL);
-        if (retrieverFactory == null)
-            return;
-
-        AVListImpl avList = new AVListImpl();
-        avList.setValue(AVKey.SECTOR, tile.getSector());
-        avList.setValue(AVKey.WIDTH, tile.getWidth());
-        avList.setValue(AVKey.HEIGHT, tile.getHeight());
-        avList.setValue(AVKey.FILE_NAME, tile.getPath());
-        avList.setValue(AVKey.IMAGE_FORMAT, mimeType);
-
-        Retriever retriever = retrieverFactory.createRetriever(avList, new CompositionRetrievalPostProcessor(tile));
-
-        Logging.verbose("Locally retrieving " + tile.getPath());
-        retriever.setReadTimeout(timeout);
-        retriever.call();
-    }
 
     public int computeLevelForResolution(Sector sector, double resolution)
     {
@@ -917,139 +737,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         Logging.verbose(Logging.getMessage("layers.TiledImageLayer.LevelSelection",
             targetLevel.getLevelNumber(), Double.toString(targetLevel.getTexelSize())));
         return targetLevel.getLevelNumber();
-    }
-
-    /**
-     * Create an image for the portion of this layer lying within a specified sector. The image is created at a
-     * specified aspect ratio within a canvas of a specified size. This returns the specified image if this layer has no
-     * content in the specified sector.
-     *
-     * @param sector       the sector of interest.
-     * @param canvasWidth  the width of the canvas.
-     * @param canvasHeight the height of the canvas.
-     * @param aspectRatio  the aspect ratio, width/height, of the window. If the aspect ratio is greater or equal to
-     *                     one, the full width of the canvas is used for the image; the height used is proportional to
-     *                     the inverse of the aspect ratio. If the aspect ratio is less than one, the full height of the
-     *                     canvas is used, and the width used is proportional to the aspect ratio.
-     * @param levelNumber  the target level of the tiled image layer.
-     * @param mimeType     the type of image to create, e.g., "png" and "jpg".
-     * @param abortOnError indicates whether to stop assembling the image if an error occurs. If false, processing
-     *                     continues until all portions of the layer that intersect the specified sector have been added
-     *                     to the image. Portions for which an error occurs will be blank.
-     * @param image        if non-null, a {@link Bitmap} in which to place the image. If null, a new buffered image is
-     *                     created. The image must be the width and height specified in the <code>canvasWidth</code> and
-     *                     <code>canvasHeight</code> arguments.
-     * @param timeout      The amount of time to allow for reading the image from the server.
-     *
-     * @return image        the assembled image, of size indicated by the <code>canvasWidth</code> and
-     *         <code>canvasHeight</code>. If the specified aspect ratio is one, all pixels contain values. If the aspect
-     *         ratio is greater than one, a full-width segment along the top of the canvas is blank. If the aspect ratio
-     *         is less than one, a full-height segment along the right side of the canvas is blank. If the
-     *         <code>image</code> argument was non-null, that buffered image is returned.
-     *
-     * @throws IllegalArgumentException if <code>sector</code> is null.
-     * @see ImageUtil#mergeImage(gov.nasa.worldwind.geom.Sector, gov.nasa.worldwind.geom.Sector, double,
-     *      android.graphics.Bitmap, android.graphics.Bitmap)
-     */
-    public Bitmap composeImageForSector(Sector sector, int canvasWidth, int canvasHeight, double aspectRatio,
-        int levelNumber, String mimeType, boolean abortOnError, Bitmap image, int timeout) throws Exception
-    {
-        if (sector == null)
-        {
-            String message = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (!this.levels.getSector().intersects(sector))
-        {
-            Logging.error(Logging.getMessage("generic.SectorRequestedOutsideCoverageArea", sector,
-                this.levels.getSector()));
-            return image;
-        }
-
-        Sector intersection = this.levels.getSector().intersection(sector);
-
-        if (levelNumber < 0)
-        {
-            levelNumber = this.levels.getLastLevel().getLevelNumber();
-        }
-        else if (levelNumber > this.levels.getLastLevel().getLevelNumber())
-        {
-            Logging.warning(Logging.getMessage("generic.LevelRequestedGreaterThanMaxLevel",
-                levelNumber, this.levels.getLastLevel().getLevelNumber()));
-            levelNumber = this.levels.getLastLevel().getLevelNumber();
-        }
-
-        int numTiles = 0;
-        GpuTextureTile[][] tiles = this.getTilesInSector(intersection, levelNumber);
-        for (GpuTextureTile[] row : tiles)
-        {
-            numTiles += row.length;
-        }
-
-        if (tiles.length == 0 || tiles[0].length == 0)
-        {
-            Logging.error(Logging.getMessage("layers.TiledImageLayer.NoImagesAvailable"));
-            return image;
-        }
-
-        if (image == null)
-            image = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888);
-
-        double tileCount = 0;
-        for (GpuTextureTile[] row : tiles)
-        {
-            for (GpuTextureTile tile : row)
-            {
-                if (tile == null)
-                    continue;
-
-                Bitmap tileImage;
-                try
-                {
-                    tileImage = this.getImage(tile, mimeType, timeout);
-                    if (Thread.currentThread().isInterrupted())
-                    {
-                        throw new InterruptedException();
-                    }
-
-                    if (tileImage != null)
-                        ImageUtil.mergeImage(sector, tile.getSector(), aspectRatio, tileImage, image);
-
-                    this.firePropertyChange(AVKey.PROGRESS, tileCount / numTiles, ++tileCount / numTiles);
-                }
-                catch (InterruptedException e)
-                {
-                    throw e;
-                }
-                catch (InterruptedIOException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                    if (abortOnError)
-                        throw e;
-
-                    String message = Logging.getMessage("generic.ExceptionWhileRequestingImage", tile.getPath());
-                    Logging.warning(message, e);
-                }
-            }
-        }
-
-        return image;
-    }
-
-    public long countImagesInSector(Sector sector)
-    {
-        long count = 0;
-        for (int i = 0; i <= this.getLevels().getLastLevel().getLevelNumber(); i++)
-        {
-            if (!this.levels.isLevelEmpty(i))
-                count += countImagesInSector(sector, i);
-        }
-        return count;
     }
 
     public long countImagesInSector(Sector sector, int levelNumber)
@@ -1133,93 +820,5 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         }
 
         return sectorTiles;
-    }
-
-    protected Bitmap getImage(GpuTextureTile tile, String mimeType, int timeout) throws Exception
-    {
-        // Read the image from disk.
-        Bitmap image = this.requestImage(tile, mimeType);
-
-        if (Thread.currentThread().isInterrupted())
-        {
-            throw new InterruptedException();
-        }
-
-        if (image != null)
-            return image;
-
-        // Retrieve it from the net since it's not on disk.
-        this.downloadImage(tile, mimeType, timeout);
-
-        // Try to read from disk again after retrieving it from the net.
-        image = this.requestImage(tile, mimeType);
-
-        if (Thread.currentThread().isInterrupted())
-        {
-            throw new InterruptedException();
-        }
-
-        if (image == null)
-        {
-            String message =
-                Logging.getMessage("layers.TiledImageLayer.ImageUnavailable", tile.getPath());
-            throw new RuntimeException(message);
-        }
-
-        return image;
-    }
-
-    protected class CompositionRetrievalPostProcessor extends AbstractRetrievalPostProcessor
-    {
-        protected GpuTextureTile tile;
-
-        public CompositionRetrievalPostProcessor(GpuTextureTile tile)
-        {
-            this.tile = tile;
-        }
-
-        protected File doGetOutputFile()
-        {
-            String suffix = WWIO.makeSuffixForMimeType(this.getRetriever().getContentType());
-            if (suffix == null)
-            {
-                Logging.error(Logging.getMessage("generic.UnknownContentType", this.getRetriever().getContentType()));
-                return null;
-            }
-
-            String path = this.tile.getPathBase();
-            path += suffix;
-
-            File f = new File(path);
-            File outFile = f.isAbsolute() ? f : getDataFileStore().newFile(path);
-            if (outFile == null)
-                return null;
-
-            return outFile;
-        }
-
-        @Override
-        protected boolean isDeleteOnExit(File outFile)
-        {
-            return outFile.getPath().contains(WWIO.DELETE_ON_EXIT_PREFIX);
-        }
-
-        @Override
-        protected boolean overwriteExistingFile()
-        {
-            return true;
-        }
-
-        @Override
-        protected void markResourceAbsent()
-        {
-            TiledImageLayer.this.levels.markResourceAbsent(tile);
-        }
-
-        @Override
-        protected void handleUnsuccessfulRetrieval()
-        {
-            // Don't mark the tile as absent because the caller may want to try again.
-        }
     }
 }
