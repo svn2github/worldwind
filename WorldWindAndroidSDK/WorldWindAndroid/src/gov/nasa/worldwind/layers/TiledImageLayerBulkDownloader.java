@@ -29,12 +29,12 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
+public class TiledImageLayerBulkDownloader extends BulkRetrievalThread
 {
     protected final static int MAX_TILE_COUNT_PER_REGION = 200;
     protected final static long DEFAULT_AVERAGE_FILE_SIZE = 350000L;
 
-    protected final BasicTiledImageLayer layer;
+    protected final TiledImageLayer layer;
     protected final int level;
     protected List<GpuTextureTile> missingTiles;
 
@@ -50,7 +50,7 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
      *
      * @throws IllegalArgumentException if either the layer or sector are null, or the resolution is less than zero.
      */
-    public BasicTiledImageLayerBulkDownloader(BasicTiledImageLayer layer, Sector sector, double resolution,
+    public TiledImageLayerBulkDownloader(TiledImageLayer layer, Sector sector, double resolution,
         BulkRetrievalListener listener)
     {
         // Arguments checked in parent constructor
@@ -74,7 +74,7 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
      * @throws IllegalArgumentException if either the layer, the sector or file store are null, or the resolution is
      *                                  less than zero.
      */
-    public BasicTiledImageLayerBulkDownloader(BasicTiledImageLayer layer, Sector sector, double resolution,
+    public TiledImageLayerBulkDownloader(TiledImageLayer layer, Sector sector, double resolution,
         FileStore fileStore, BulkRetrievalListener listener)
     {
         // Arguments checked in parent constructor
@@ -163,14 +163,14 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
         }
     }
 
-    protected BasicTiledImageLayer.DownloadPostProcessor createBulkDownloadPostProcessor(GpuTextureTile tile)
+    protected TiledImageLayer.DownloadPostProcessor createBulkDownloadPostProcessor(GpuTextureTile tile)
     {
         return new BulkDownloadPostProcessor(tile, this.layer, this.fileStore);
     }
 
-    protected class BulkDownloadPostProcessor extends BasicTiledImageLayer.DownloadPostProcessor
+    protected class BulkDownloadPostProcessor extends TiledImageLayer.DownloadPostProcessor
     {
-        public BulkDownloadPostProcessor(GpuTextureTile tile, BasicTiledImageLayer layer, FileStore fileStore)
+        public BulkDownloadPostProcessor(GpuTextureTile tile, TiledImageLayer layer, FileStore fileStore)
         {
             super(tile, layer, fileStore);
         }

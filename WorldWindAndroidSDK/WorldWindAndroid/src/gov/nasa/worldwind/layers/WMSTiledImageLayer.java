@@ -17,16 +17,11 @@ import java.net.*;
  * @author pabercrombie
  * @version $Id$
  */
-public class WMSTiledImageLayer extends BasicTiledImageLayer
+public class WMSTiledImageLayer extends TiledImageLayer
 {
-    public WMSTiledImageLayer(AVList params)
-    {
-        super(params);
-    }
-
     public WMSTiledImageLayer(Element domElement, AVList params)
     {
-        this(wmsGetParamsFromDocument(domElement, params));
+        super(wmsGetParamsFromDocument(domElement, params));
     }
 
     /**
@@ -54,7 +49,7 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
             params = new AVListImpl();
 
         DataConfigurationUtils.getWMSLayerConfigParams(domElement, params);
-        BasicTiledImageLayer.getParamsFromDocument(domElement, params);
+        TiledImageLayer.getParamsFromDocument(domElement, params);
 
         params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(params));
 
