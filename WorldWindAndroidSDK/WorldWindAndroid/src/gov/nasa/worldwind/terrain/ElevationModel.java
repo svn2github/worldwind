@@ -291,23 +291,6 @@ public interface ElevationModel extends WWObject, Disposable
     void setMissingDataReplacement(double missingDataValue);
 
     /**
-     * Determines the elevations at specified locations within a specified {@link Sector}.
-     *
-     * @param sector    the sector containing the locations.
-     * @param latlons   the locations for which to return elevations.
-     * @param tileWidth the number of locations that comprise one row in the {@code latlons} argument.
-     * @param buffer    a buffer in which to put the elevations. The buffer must have at least as many elements as the
-     *                  number of specified locations.
-     *
-     * @throws Exception                if the method fails. Different elevation models may fail for different reasons.
-     * @throws IllegalArgumentException if either the sector, list of locations or buffer is null, if the buffer size is
-     *                                  not at least as large as the location list, or the tile width is greater than
-     *                                  the locations list length or less than 1.
-     */
-    void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth, double[] buffer)
-        throws Exception;
-
-    /**
      * Returns the proportion of this elevation model's data that is local -- in the computer's data cache or installed
      * data filestore -- for a specified sector and target resolution.
      *

@@ -472,49 +472,6 @@ public class CompoundElevationModel extends AbstractElevationModel
         return resolutionAchieved;
     }
 
-    public void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth,
-        double[] buffer) throws Exception
-    {
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (latlons == null)
-        {
-            String msg = Logging.getMessage("nullValue.LatLonListIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.ElevationsBufferIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer.length < latlons.size())
-        {
-            String msg = Logging.getMessage("ElevationModel.ElevationsBufferTooSmall", latlons.size());
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // Fill the buffer with ElevationModel contents from back to front, potentially overwriting values at each step.
-        // ElevationModels are expected to leave the buffer untouched when data is missing at a location.
-        for (ElevationModel em : this.elevationModels)
-        {
-            int c = em.intersects(sector);
-            if (c < 0) // no intersection
-                continue;
-
-            em.composeElevations(sector, latlons, tileWidth, buffer);
-        }
-    }
-
     public void setNetworkRetrievalEnabled(boolean networkRetrievalEnabled)
     {
         super.setNetworkRetrievalEnabled(networkRetrievalEnabled);

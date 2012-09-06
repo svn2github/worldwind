@@ -126,53 +126,6 @@ public abstract class AbstractElevationModel extends WWObjectImpl implements Ele
         return e == this.missingDataFlag ? this.missingDataValue : e;
     }
 
-    public void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth, double[] buffer)
-        throws Exception
-    {
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (latlons == null)
-        {
-            String msg = Logging.getMessage("nullValue.LatLonListIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.ElevationsBufferIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (tileWidth < 1)
-        {
-            String msg = Logging.getMessage("generic.SizeOutOfRange", tileWidth);
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer.length < latlons.size() || tileWidth > latlons.size())
-        {
-            String msg = Logging.getMessage("ElevationModel.ElevationsBufferTooSmall", latlons.size());
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        for (int i = 0; i < latlons.size(); i++)
-        {
-            LatLon ll = latlons.get(i);
-            double e = this.getUnmappedElevation(ll.latitude, ll.longitude);
-            if (e != this.getMissingDataSignal() && !this.isTransparentValue(e))
-                buffer[i] = e;
-        }
-    }
-
     protected boolean isTransparentValue(Double value)
     {
         return ((value == null || value.equals(this.getMissingDataSignal()))

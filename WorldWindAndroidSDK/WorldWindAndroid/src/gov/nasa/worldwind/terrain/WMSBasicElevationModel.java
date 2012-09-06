@@ -8,13 +8,10 @@ package gov.nasa.worldwind.terrain;
 
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
-import java.io.*;
 import java.net.*;
-import java.util.List;
 
 /**
  * @author tag
@@ -287,140 +284,5 @@ public class WMSBasicElevationModel extends BasicElevationModel
         DataConfigurationUtils.createWMSLayerConfigElements(params, doc.getDocumentElement());
 
         return doc;
-    }
-
-    //**************************************************************//
-    //********************  Composition  ***************************//
-    //**************************************************************//
-
-    protected static class ElevationCompositionTile extends ElevationTile
-    {
-        protected int width;
-        protected int height;
-        protected File file;
-
-        public ElevationCompositionTile(Sector sector, Level level, int width, int height)
-            throws IOException
-        {
-            super(sector, level, -1, -1); // row and column aren't used and need to signal that
-
-            this.width = width;
-            this.height = height;
-
-            this.file = File.createTempFile(WWIO.DELETE_ON_EXIT_PREFIX, level.getFormatSuffix());
-        }
-
-        @Override
-        public int getWidth()
-        {
-            return this.width;
-        }
-
-        @Override
-        public int getHeight()
-        {
-            return this.height;
-        }
-
-        @Override
-        public String getPath()
-        {
-            return this.file.getPath();
-        }
-
-        public File getFile()
-        {
-            return this.file;
-        }
-    }
-
-    public void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth, double[] buffer)
-        throws Exception
-    {
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (latlons == null)
-        {
-            String msg = Logging.getMessage("nullValue.LatLonListIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.ElevationsBufferIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer.length < latlons.size() || tileWidth > latlons.size())
-        {
-            String msg = Logging.getMessage("ElevationModel.ElevationsBufferTooSmall", latlons.size());
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        ElevationCompositionTile tile = new ElevationCompositionTile(sector, this.getLevels().getLastLevel(),
-            tileWidth, latlons.size() / tileWidth);
-
-        this.downloadElevations(tile);
-        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()));
-
-        for (int i = 0; i < latlons.size(); i++)
-        {
-            LatLon ll = latlons.get(i);
-            if (ll == null)
-                continue;
-
-            double value = this.lookupElevation(ll.latitude, ll.longitude, tile);
-
-            // If an elevation at the given location is available, then write that elevation to the destination buffer.
-            // Otherwise do nothing.
-            if (value != this.getMissingDataSignal())
-                buffer[i] = value;
-        }
-    }
-
-    protected void downloadElevations(ElevationCompositionTile tile) throws Exception
-    {
-        URL url = tile.getResourceURL();
-
-        Retriever retriever = new HTTPRetriever(url, new CompositionRetrievalPostProcessor(tile.getFile()));
-        retriever.setConnectTimeout(10000);
-        retriever.setReadTimeout(60000);
-        retriever.call();
-    }
-
-    protected static class CompositionRetrievalPostProcessor extends AbstractRetrievalPostProcessor
-    {
-        // Note: Requested data is never marked as absent because the caller may want to continually re-try retrieval
-        protected File outFile;
-
-        public CompositionRetrievalPostProcessor(File outFile)
-        {
-            this.outFile = outFile;
-        }
-
-        protected File doGetOutputFile()
-        {
-            return this.outFile;
-        }
-
-        @Override
-        protected boolean overwriteExistingFile()
-        {
-            return true;
-        }
-
-        @Override
-        protected boolean isDeleteOnExit(File outFile)
-        {
-            return outFile.getPath().contains(WWIO.DELETE_ON_EXIT_PREFIX);
-        }
     }
 }
