@@ -49,8 +49,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
 
     abstract protected void requestTile(DrawContext dc, GpuTextureTile tile);
 
-    abstract protected void forceTextureLoad(GpuTextureTile tile);
-
     public TiledImageLayer(LevelSet levelSet)
     {
         if (levelSet == null)
@@ -274,21 +272,6 @@ public abstract class TiledImageLayer extends AbstractLayer implements Tile.Tile
         }
 
         return new GpuTextureTile(sector, level, row, column, this.getTextureTileCache(), this.textureFactory);
-    }
-
-    protected void loadAllTopLevelTextures(DrawContext dc)
-    {
-        for (Tile tile : this.getTopLevels())
-        {
-            if (tile instanceof GpuTextureTile)
-            {
-                GpuTextureTile textureTile = (GpuTextureTile) tile;
-                if (!textureTile.isTextureInMemory(dc.getGpuResourceCache()))
-                {
-                    this.forceTextureLoad(textureTile);
-                }
-            }
-        }
     }
 
     // ============== Tile Assembly ======================= //

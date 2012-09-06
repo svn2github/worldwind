@@ -324,18 +324,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
             params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
     }
 
-
-
-    protected void forceTextureLoad(GpuTextureTile tile)
-    {
-        final URL textureURL = this.getDataFileStore().findFile(tile.getPath(), true);
-
-        if (textureURL != null && !this.isTextureFileExpired(tile, textureURL, this.getDataFileStore()))
-        {
-            this.loadTileFromCache(tile, textureURL);
-        }
-    }
-
     @Override
     protected void requestTile(DrawContext dc, GpuTextureTile tile)
     {
