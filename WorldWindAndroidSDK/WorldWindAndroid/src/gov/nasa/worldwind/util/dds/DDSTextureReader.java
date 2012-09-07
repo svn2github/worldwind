@@ -96,7 +96,7 @@ public class DDSTextureReader
             height = Math.max(height / 2, 1);
         }
 
-        return GpuTextureData.fromCompressedData(format, levelData, estimatedMemorySize);
+        return new GpuTextureData(format, levelData, estimatedMemorySize);
     }
 
     protected int getFormat(DDSHeader header)

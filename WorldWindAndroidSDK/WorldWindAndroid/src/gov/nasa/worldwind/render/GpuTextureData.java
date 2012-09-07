@@ -106,7 +106,7 @@ public class GpuTextureData implements Cacheable
         {
             if (source instanceof Bitmap)
             {
-                data = fromBitmap((Bitmap) source, estimateMemorySize((Bitmap) source));
+                data = new GpuTextureData((Bitmap) source, estimateMemorySize((Bitmap) source));
             }
             else
             {
@@ -141,7 +141,34 @@ public class GpuTextureData implements Cacheable
         return data;
     }
 
-    protected static GpuTextureData fromBitmap(Bitmap bitmap, long estimatedMemorySize)
+    protected static final int DEFAULT_MARK_LIMIT = 1024;
+
+    protected static GpuTextureData fromStream(InputStream stream)
+    {
+        GpuTextureData data = null;
+        try
+        {
+            stream.mark(DEFAULT_MARK_LIMIT);
+
+            DDSTextureReader ddsReader = new DDSTextureReader();
+            data = ddsReader.read(stream);
+            if (data != null)
+                return data;
+
+            stream.reset();
+
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            return bitmap != null ? new GpuTextureData(bitmap, estimateMemorySize(bitmap)) : null;
+        }
+        catch (IOException e)
+        {
+            // TODO
+        }
+
+        return data;
+    }
+
+    public GpuTextureData(Bitmap bitmap, long estimatedMemorySize)
     {
         if (bitmap == null)
         {
@@ -160,38 +187,9 @@ public class GpuTextureData implements Cacheable
         GpuTextureData textureData = new GpuTextureData();
         textureData.bitmapData = new BitmapData(bitmap);
         textureData.estimatedMemorySize = estimatedMemorySize;
-
-        return textureData;
     }
 
-    protected static final int DEFAULT_MARK_LIMIT = 1024;
-
-    protected static GpuTextureData fromStream(InputStream stream)
-    {
-        GpuTextureData data = null;
-        try
-        {
-            stream.mark(DEFAULT_MARK_LIMIT);
-
-            DDSTextureReader ddsReader = new DDSTextureReader();
-            data = ddsReader.read(stream);
-            if (data != null)
-                return data;
-
-            stream.reset();
-
-            Bitmap bitmap = BitmapFactory.decodeStream(stream);
-            return bitmap != null ? GpuTextureData.fromBitmap(bitmap, estimateMemorySize(bitmap)) : null;
-        }
-        catch (IOException e)
-        {
-            // TODO
-        }
-
-        return data;
-    }
-
-    public static GpuTextureData fromCompressedData(int format, MipmapData[] levelData, long estimatedMemorySize)
+    public GpuTextureData(int format, MipmapData[] levelData, long estimatedMemorySize)
     {
         if (levelData == null || levelData.length == 0)
         {
@@ -207,11 +205,8 @@ public class GpuTextureData implements Cacheable
             throw new IllegalArgumentException(msg);
         }
 
-        GpuTextureData textureData = new GpuTextureData();
-        textureData.compressedData = new CompressedData(format, levelData);
-        textureData.estimatedMemorySize = estimatedMemorySize;
-
-        return textureData;
+        this.compressedData = new CompressedData(format, levelData);
+        this.estimatedMemorySize = estimatedMemorySize;
     }
 
     protected BitmapData bitmapData;
