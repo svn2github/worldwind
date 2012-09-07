@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
@@ -131,11 +130,10 @@ public class SurfaceImage implements Renderable, SurfaceTile
     {
         GpuTexture texture = null;
 
-        GpuTextureData textureData = BasicGpuTextureFactory.createTextureData(AVKey.GPU_TEXTURE_FACTORY,
-            this.imagePath, null);
+        GpuTextureData textureData = GpuTextureData.createTextureData(this.imagePath);
         if (textureData != null)
         {
-            texture = BasicGpuTextureFactory.createTexture(AVKey.GPU_TEXTURE_FACTORY, dc, textureData, null);
+            texture = GpuTexture.createTexture(dc, textureData);
         }
 
         this.textureCreationFailed = (texture == null);

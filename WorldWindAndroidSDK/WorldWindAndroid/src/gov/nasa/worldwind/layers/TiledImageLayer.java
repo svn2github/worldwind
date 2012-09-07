@@ -33,7 +33,6 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
     protected double detailHintOrigin = 2.8; // the default detail hint origin
     protected double detailHint;
     protected List<Tile> topLevelTiles = new ArrayList<Tile>();
-    protected GpuTextureFactory textureFactory;
     protected String tileCountName;
 
     // Stuff computed each frame
@@ -56,7 +55,6 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
         this.setValue(AVKey.SECTOR, this.levels.getSector());
         this.setPickEnabled(false); // textures are assumed to be terrain unless specifically indicated otherwise.
         this.tileCountName = this.getName() + " Tiles";
-        this.textureFactory = this.createTextureFactory();
 
         String s = params.getStringValue(AVKey.DISPLAY_NAME);
         if (s != null)
@@ -229,11 +227,6 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
             this.levels.setExpiryTime(expiryTime); // remove this in sub-class to use level-specific expiry times
     }
 
-    protected GpuTextureFactory createTextureFactory()
-    {
-        return (GpuTextureFactory) WorldWind.createConfigurationComponent(AVKey.GPU_TEXTURE_FACTORY);
-    }
-
     protected void checkTextureExpiration(DrawContext dc, List<GpuTextureTile> tiles)
     {
         for (GpuTextureTile tile : tiles)
@@ -334,7 +327,7 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
             throw new IllegalArgumentException(msg);
         }
 
-        return new GpuTextureTile(sector, level, row, column, this.getTextureTileCache(), this.textureFactory);
+        return new GpuTextureTile(sector, level, row, column, this.getTextureTileCache());
     }
 
     // ============== Tile Assembly ======================= //
@@ -645,7 +638,7 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
 
     protected GpuTextureData createTextureData(URL textureURL)
     {
-        return BasicGpuTextureFactory.createTextureData(AVKey.GPU_TEXTURE_FACTORY, textureURL, null);
+        return GpuTextureData.createTextureData(textureURL);
     }
 
     /**

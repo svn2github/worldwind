@@ -19,6 +19,27 @@
             </SvnBranchConfiguration>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/.idea">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://worldwind32.arc.nasa.gov/svninternal/trunk/WorldWindAndroidSDK/.idea" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/WorldWindAndroid">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://worldwind32.arc.nasa.gov/svninternal/trunk/WorldWindAndroidSDK/WorldWindAndroid" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/WorldWindAndroidExamples">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://worldwind32.arc.nasa.gov/svninternal/trunk/WorldWindAndroidSDK/WorldWindAndroidExamples" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
       </map>
     </option>
     <option name="mySupportsUserInfoFilter" value="true" />

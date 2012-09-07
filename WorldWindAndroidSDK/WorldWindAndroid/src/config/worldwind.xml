@@ -23,8 +23,6 @@
     <Property name="gov.nasa.worldwind.avkey.TessellatorFactory"
               value="gov.nasa.worldwind.terrain.BasicTessellatorFactory"/>
     <Property name="gov.nasa.worldwind.avkey.TessellatorConfigFile" value="config/worldwind.tessellator.xml"/>
-    <Property name="gov.nasa.worldwind.avkey.GpuTextureFactory"
-              value="gov.nasa.worldwind.render.BasicGpuTextureFactory"/>
     <Property name="gov.nasa.worldwind.avkey.MemoryCacheSetClassName"
               value="gov.nasa.worldwind.cache.BasicMemoryCacheSet"/>
     <Property name="gov.nasa.worldwind.avkey.RetrievalServiceClassName"

@@ -5,12 +5,14 @@
  */
 package gov.nasa.worldwind.render;
 
-import android.graphics.Bitmap;
+import android.graphics.*;
+import android.opengl.*;
 import gov.nasa.worldwind.cache.Cacheable;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.dds.DDSTextureReader;
 
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 /**
  * @author dcollins
@@ -89,11 +91,57 @@ public class GpuTextureData implements Cacheable
         }
     }
 
-    protected BitmapData bitmapData;
-    protected CompressedData compressedData;
-    protected long estimatedMemorySize;
+    public static GpuTextureData createTextureData(Object source)
+    {
+        if (WWUtil.isEmpty(source))
+        {
+            String msg = Logging.getMessage("nullValue.SourceIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
 
-    public static GpuTextureData fromBitmap(Bitmap bitmap, long estimatedMemorySize)
+        GpuTextureData data = null;
+
+        try
+        {
+            if (source instanceof Bitmap)
+            {
+                data = fromBitmap((Bitmap) source, estimateMemorySize((Bitmap) source));
+            }
+            else
+            {
+                // Attempt to open the source as an InputStream. This handle URLs, Files, InputStreams, a String
+                // containing a valid URL, a String path to a file on the local file system, and a String path to a
+                // class path resource.
+                InputStream stream = WWIO.openStream(source);
+                try
+                {
+                    if (stream != null)
+                    {
+                        // Wrap the stream in a BufferedInputStream to provide the mark/reset capability required to
+                        // avoid destroying the stream when it is read more than once. BufferedInputStream also improves
+                        // file read performance.
+                        if (!(stream instanceof BufferedInputStream))
+                            stream = new BufferedInputStream(stream);
+                        data = fromStream(stream);
+                    }
+                }
+                finally
+                {
+                    WWIO.closeStream(stream, source.toString()); // This method call is benign if the stream is null.
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            String msg = Logging.getMessage("GpuTextureFactory.TextureDataCreationFailed", source);
+            Logging.error(msg);
+        }
+
+        return data;
+    }
+
+    protected static GpuTextureData fromBitmap(Bitmap bitmap, long estimatedMemorySize)
     {
         if (bitmap == null)
         {
@@ -114,6 +162,33 @@ public class GpuTextureData implements Cacheable
         textureData.estimatedMemorySize = estimatedMemorySize;
 
         return textureData;
+    }
+
+    protected static final int DEFAULT_MARK_LIMIT = 1024;
+
+    protected static GpuTextureData fromStream(InputStream stream)
+    {
+        GpuTextureData data = null;
+        try
+        {
+            stream.mark(DEFAULT_MARK_LIMIT);
+
+            DDSTextureReader ddsReader = new DDSTextureReader();
+            data = ddsReader.read(stream);
+            if (data != null)
+                return data;
+
+            stream.reset();
+
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            return bitmap != null ? GpuTextureData.fromBitmap(bitmap, estimateMemorySize(bitmap)) : null;
+        }
+        catch (IOException e)
+        {
+            // TODO
+        }
+
+        return data;
     }
 
     public static GpuTextureData fromCompressedData(int format, MipmapData[] levelData, long estimatedMemorySize)
@@ -139,6 +214,10 @@ public class GpuTextureData implements Cacheable
         return textureData;
     }
 
+    protected BitmapData bitmapData;
+    protected CompressedData compressedData;
+    protected long estimatedMemorySize;
+
     protected GpuTextureData()
     {
     }
@@ -156,5 +235,41 @@ public class GpuTextureData implements Cacheable
     public long getSizeInBytes()
     {
         return this.estimatedMemorySize;
+    }
+
+    protected static long estimateMemorySize(Bitmap bitmap)
+    {
+        int internalFormat = GLUtils.getInternalFormat(bitmap);
+
+        if (internalFormat == GLES20.GL_ALPHA || internalFormat == GLES20.GL_LUMINANCE)
+        {
+            // Alpha and luminance pixel data is always stored as 1 byte per pixel. See OpenGL ES Specification, version 2.0.25,
+            // section 3.6.2, table 3.4.
+            return bitmap.getWidth() * bitmap.getHeight();
+        }
+        else if (internalFormat == GLES20.GL_LUMINANCE_ALPHA)
+        {
+            // Luminance-alpha pixel data is always stored as 2 bytes per pixel. See OpenGL ES Specification,
+            // version 2.0.25, section 3.6.2, table 3.4.
+            return 2 * bitmap.getWidth() * bitmap.getHeight(); // Type must be GL_UNSIGNED_BYTE.
+        }
+        else if (internalFormat == GLES20.GL_RGB)
+        {
+            // RGB pixel data is stored as either 2 or 3 bytes per pixel, depending on the type used during texture
+            // image specification. See OpenGL ES Specification, version 2.0.25, section 3.6.2, table 3.4.
+            int type = GLUtils.getType(bitmap);
+            // Default to type GL_UNSIGNED_BYTE.
+            int bpp = (type == GLES20.GL_UNSIGNED_SHORT_5_6_5 ? 2 : 3);
+            return bpp * bitmap.getWidth() * bitmap.getHeight();
+        }
+        else // Default to internal format GL_RGBA.
+        {
+            // RGBA pixel data is stored as either 2 or 4 bytes per pixel, depending on the type used during texture
+            // image specification. See OpenGL ES Specification, version 2.0.25, section 3.6.2, table 3.4.
+            int type = GLUtils.getType(bitmap);
+            // Default to type GL_UNSIGNED_BYTE.
+            int bpp = (type == GLES20.GL_UNSIGNED_SHORT_4_4_4_4 || type == GLES20.GL_UNSIGNED_SHORT_5_5_5_1) ? 2 : 4;
+            return bpp * bitmap.getWidth() * bitmap.getHeight();
+        }
     }
 }

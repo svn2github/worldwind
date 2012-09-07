@@ -54,7 +54,6 @@ public interface AVKey
     final String GLOBE = "gov.nasa.worldwind.avkey.Globe";
     final String GLOBE_CLASS_NAME = "gov.nasa.worldwind.avkey.GlobeClassName";
     final String GPU_RESOURCE_CACHE_SIZE = "gov.nasa.worldwind.avkey.GpuResourceCacheSize";
-    final String GPU_TEXTURE_FACTORY = "gov.nasa.worldwind.avkey.GpuTextureFactory";
     final String GPU_TEXTURE_TILE_CACHE_SIZE = "gov.nasa.worldwind.avkey.GpuTextureTileCacheSize";
 
     final String HEIGHT = "gov.nasa.worldwind.avkey.Height";

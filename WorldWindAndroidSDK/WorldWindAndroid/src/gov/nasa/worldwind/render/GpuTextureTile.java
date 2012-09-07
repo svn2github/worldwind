@@ -18,11 +18,10 @@ public class GpuTextureTile extends Tile implements SurfaceTile
     protected Extent extent;
     protected volatile GpuTextureData textureData;
     protected GpuTextureTile fallbackTile;
-    protected GpuTextureFactory textureFactory;
     protected MemoryCache memoryCache;
     protected long updateTime = 0;
 
-    public GpuTextureTile(Sector sector, Level level, int row, int column, MemoryCache cache, GpuTextureFactory factory)
+    public GpuTextureTile(Sector sector, Level level, int row, int column, MemoryCache cache)
     {
         super(sector, level, row, column);
 
@@ -33,15 +32,7 @@ public class GpuTextureTile extends Tile implements SurfaceTile
             throw new IllegalArgumentException(msg);
         }
 
-        if (factory == null)
-        {
-            String msg = Logging.getMessage("nullValue.FactoryIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
         this.memoryCache = cache;
-        this.textureFactory = factory;
     }
 
     public Extent getExtent()
@@ -221,7 +212,7 @@ public class GpuTextureTile extends Tile implements SurfaceTile
 
     protected GpuTexture createTexture(DrawContext dc, GpuTextureData textureData)
     {
-        return this.textureFactory.createTexture(dc, textureData, null);
+        return GpuTexture.createTexture(dc, textureData);
     }
 
     @SuppressWarnings( {"UnusedParameters"})
