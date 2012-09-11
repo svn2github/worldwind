@@ -23,18 +23,18 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <!--
-    Define the Android application that launches when the user selects our application's icon in the launch bar. Add the
-    attribute android:debuggable="true" to this element in order to debug your application using an IDE or the Android
-    SDK command line tools. Be sure to remove the android:debuggable attribute prior to deploying your application for
-    release.
+        Define the Android application that launches when the user selects our application's icon in the launch bar. Add
+        the attribute android:debuggable="true" to this element in order to debug your application using an IDE or the
+        Android SDK command line tools. Be sure to remove the android:debuggable attribute prior to deploying your
+        application for release.
     -->
     <application android:label="APP_NAME" android:icon="APP_ICON">
         <!--
-        Define the bootstrap activity that launches when the World Wind based activity launches. Configure the
-        android:launchMode attribute as singleTask so that the activity acts as an entry point for the application.
-        Configure the android:configChanges attribute to denote that our application handles orientation and keyboard
-        availability changes itself. This ensures that the application is not shut down and restarted due to either of
-        these changes.
+            Define the bootstrap activity that launches when the World Wind based activity launches. Configure the
+            android:launchMode attribute as singleTask so that the activity acts as an entry point for the application.
+            Configure the android:configChanges attribute to denote that our application handles orientation and
+            keyboard availability changes itself. This ensures that the application is not shut down and restarted due
+            to either of these changes.
         -->
         <activity android:name="MAIN_ACTIVITY_CLASSNAME"
                   android:label="MAIN_ACTIVITY_NAME"
