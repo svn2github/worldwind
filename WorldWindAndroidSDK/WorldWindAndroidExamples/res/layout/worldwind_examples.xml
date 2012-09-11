@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2012 United States Government as represented by the Administrator of the
+    National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Layout file for the World Wind Examples main activity. This layout displays a list of all World Wind examples by
+    including a gov.nasa.worldwind.examples.util.ActivityList fragment as its sole element. This fragment fills the
+    entire activity. This fragment and the WorldWindExamples activity collaborate to enable the user to start an example
+    by clicking on its list item.
+
+    $Id$
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+    <!--
+        Fragment that displays a list of all World Wind examples. We use a fragment rather than a ListView or
+        ListActivity in order to enable its re-use.
+    -->
+    <fragment android:name="gov.nasa.worldwindx.examples.util.ActivityList"
+              android:id="@+id/example_list"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"/>
+
+</LinearLayout>

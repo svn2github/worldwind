@@ -4,14 +4,39 @@
     National Aeronautics and Space Administration.
     All Rights Reserved.
 
+    Resource file containing strings for the World Wind Android examples. The elements in this file are grouped by the
+    example they correspond to.
+
     $Id$
 -->
+<!--suppress CheckTagEmptyBody -->
 <resources>
-    <string name="app_name">World Wind Android Examples</string>
-    <string name="main_activity_name">World Wind Android Examples</string>
+
+    <!--
+        String resources for the World Wind Examples main activity.
+    -->
+    <string name="WorldWindExamples.displayName">World Wind Examples</string>
+
+    <!--
+        String resources for the Basic World Wind Activity example.
+    -->
+    <string name="BasicWorldWindActivity.displayName">Basic World Wind Activity</string>
+    <string name="BasicWorldWindActivity.description">This is the most basic usage of the SDK. It displays the default globe with its default layers.</string>
     <string name="dashboard">Dashboard</string>
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>
     <string name="offglobe">off globe</string>
     <string name="spacer"></string>
+
+    <!--
+        String resources for the Simplest Possible Activity example.
+    -->
+    <string name="SimplestPossibleActivity.displayName">Simplest Possible Activity</string>
+    <string name="SimplestPossibleActivity.description">This example demonstrates the simplest possible way to create a WorldWind application.</string>
+
+    <!--
+        String resources for the ActivityList utility.
+    -->
+    <string name="ActivityList.iconDescription">Provides a visual depiction of the activity.</string>
+
 </resources>

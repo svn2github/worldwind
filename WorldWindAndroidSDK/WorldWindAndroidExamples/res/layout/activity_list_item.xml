@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2012 United States Government as represented by the Administrator of the
+    National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    The activity_list_item layout provides a view group for list items displayed by the World Wind fragment
+    gov.nasa.worldwindx.examples.ActivityList. This layout displays an icon, label, and description. The icon size is
+    expected to follow the Android icon design guidelines for a launcher icon
+    (http://developer.android.com/guide/practices/ui_guidelines/icon_design.html). The label should be a short name
+    defining what the activity is. The description name should be one or two sentences providing more information about
+    the activity, and may optionally be either left empty. Each element is specified by referencing its ID as follows:
+
+    - Icon: @id/icon
+    - Label: @id/displayName
+    - Description: @id/description
+
+    $Id$
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:paddingTop="16dp"
+              android:paddingBottom="16dp"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp">
+
+    <!--
+        View that displays the list item's icon. This view is capable of scaling to the icon's size, but the icon
+        should be sized according to the Android icon design guidelines for a launcher icon. See the root comment for
+        more information.
+    -->
+    <ImageView android:id="@+id/icon"
+               android:contentDescription="@string/ActivityList.iconDescription"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"/>
+
+    <!--
+        View that displays the list item's display name and description. The display name appears in large text to the
+        right of the icon and centered vertically. The description appears in small text just beneath the display name.
+        See the root comment for more information.
+    -->
+    <TwoLineListItem xmlns:android="http://schemas.android.com/apk/res/android"
+                     android:layout_width="fill_parent"
+                     android:layout_height="wrap_content"
+                     android:minHeight="?android:attr/listPreferredItemHeight"
+                     android:mode="twoLine">
+        <TextView android:id="@+id/displayName"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginLeft="16dp"
+                  android:layout_marginTop="16dp"
+                  android:textAppearance="?android:attr/textAppearanceLarge"/>
+        <TextView android:id="@+id/description"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_below="@id/displayName"
+                  android:layout_alignLeft="@id/displayName"
+                  android:layout_marginTop="4dp"
+                  android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+    </TwoLineListItem>
+
+</LinearLayout>
