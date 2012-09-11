@@ -43,7 +43,7 @@ public class BasicWorldWindActivity extends Activity
         File fileDir = getFilesDir();
         System.setProperty("gov.nasa.worldwind.platform.user.store", fileDir.getAbsolutePath());
 
-        this.setContentView(R.layout.main);
+        this.setContentView(R.layout.basic_worldwind_activity);
 
         this.wwd = (WorldWindowGLSurfaceView) this.findViewById(R.id.wwd);
         this.wwd.setModel((Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME));
