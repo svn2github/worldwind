@@ -184,9 +184,8 @@ public class GpuTextureData implements Cacheable
             throw new IllegalArgumentException(msg);
         }
 
-        GpuTextureData textureData = new GpuTextureData();
-        textureData.bitmapData = new BitmapData(bitmap);
-        textureData.estimatedMemorySize = estimatedMemorySize;
+        this.bitmapData = new BitmapData(bitmap);
+        this.estimatedMemorySize = estimatedMemorySize;
     }
 
     public GpuTextureData(int format, MipmapData[] levelData, long estimatedMemorySize)
