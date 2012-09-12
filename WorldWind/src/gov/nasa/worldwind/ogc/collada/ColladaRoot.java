@@ -713,7 +713,7 @@ public class ColladaRoot extends ColladaAbstractObject implements ColladaRendera
      */
     protected XMLEventReader createReader(Object docSource)
     {
-        return WWXML.openEventReader(docSource, false);
+        return WWXML.openEventReader(docSource, true);
     }
 
     /**
