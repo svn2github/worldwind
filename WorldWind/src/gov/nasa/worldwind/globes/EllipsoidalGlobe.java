@@ -12,6 +12,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -33,6 +34,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
     private final Vec4 center;
     private ElevationModel elevationModel;
     private Tessellator tessellator;
+    protected EGM96 egm96;
 
     /**
      * Create a new globe. The globe's center point will be (0, 0, 0). The globe will be tessellated using tessellator
@@ -428,11 +430,32 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         return WWMath.computeSphereProjectedArea(view, this.getCenter(), this.getRadius());
     }
 
+    public void applyEGMA96Offsets(String offsetsFilePath) throws IOException
+    {
+        if (offsetsFilePath != null)
+            this.egm96 = new EGM96(offsetsFilePath);
+        else
+            this.egm96 = null;
+    }
+
     public double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
         double[] elevations)
     {
-        return this.elevationModel != null ?
-            this.elevationModel.getElevations(sector, latlons, targetResolution, elevations) : 0;
+        if (this.elevationModel == null)
+            return 0;
+
+        double resolution = this.elevationModel.getElevations(sector, latlons, targetResolution, elevations);
+
+        if (this.egm96 != null)
+        {
+            for (int i = 0; i < elevations.length; i++)
+            {
+                LatLon latLon = latlons.get(i);
+                elevations[i] = elevations[i] + this.egm96.getOffset(latLon.getLatitude(), latLon.getLongitude());
+            }
+        }
+
+        return resolution;
     }
 
     public double getElevation(Angle latitude, Angle longitude)
@@ -444,7 +467,15 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             throw new IllegalArgumentException(message);
         }
 
-        return this.elevationModel != null ? this.elevationModel.getElevation(latitude, longitude) : 0;
+        if (this.elevationModel == null)
+            return 0;
+
+        double elevation = this.elevationModel.getElevation(latitude, longitude);
+
+        if (this.egm96 != null)
+            elevation += this.egm96.getOffset(latitude, longitude);
+
+        return elevation;
     }
 
     public Vec4 computePointFromPosition(Position position)
