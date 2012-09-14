@@ -75,6 +75,15 @@
             </intent-filter>
             <meta-data android:name="description" android:value="@string/SimplestPossibleActivity.description"/>
         </activity>
+        <activity android:name=".PerformanceTestSuite"
+                  android:label="@string/PerformanceTestSuite.displayName"
+                  android:icon="@drawable/performance_test_suite">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.SAMPLE_CODE"/>
+            </intent-filter>
+            <meta-data android:name="description" android:value="@string/PerformanceTestSuite.description"/>
+        </activity>
 
     </application>
 
