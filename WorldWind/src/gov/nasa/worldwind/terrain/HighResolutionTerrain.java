@@ -330,6 +330,42 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         return p.distanceTo3(pt) * (pt.getLength3() >= p.getLength3() ? 1 : -1);
     }
 
+    /**
+     * Intersect a line with the terrain.
+     * <p/>
+     * Note: This method produces a result only if the line is below the globe's horizon, i.e., it intersects the
+     * globe's ellipsoid. If the line is above the horizon, null is returned even if there is terrain in the path of the
+     * line.
+     *
+     * @param line the line to intersect
+     *
+     * @return an array of intersections with the terrain, or null if there are no intersections or the line is above
+     *         the globe's horizon.
+     */
+    public Intersection[] intersect(Line line)
+    {
+        if (line == null)
+        {
+            String msg = Logging.getMessage("nullValue.LineIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // We need to get two positions to pass to the actual intersection calculator. Make one of those the line's
+        // origin. Make the other the intersection point of the line with the globe's ellipsoid.
+
+        // Get the position of the line's origin.
+        Position pA = this.globe.computePositionFromPoint(line.getOrigin());
+
+        Intersection[] ellipsoidIntersections = this.globe.intersect(line, 0);
+        if (ellipsoidIntersections == null || ellipsoidIntersections.length == 0)
+            return null;
+
+        Position pB = this.globe.computePositionFromPoint(ellipsoidIntersections[0].getIntersectionPoint());
+
+        return this.intersect(pA, pB);
+    }
+
     /** {@inheritDoc} */
     public Intersection[] intersect(Position pA, Position pB)
     {
@@ -367,7 +403,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param pB the line's second position.
      *
      * @throws IllegalArgumentException if either position is null.
-     * @throws InterruptedException       if the operation is interrupted. if the current timeout is exceeded while
+     * @throws InterruptedException     if the operation is interrupted. if the current timeout is exceeded while
      *                                  retrieving terrain data.
      */
     public void cacheIntersectingTiles(Position pA, Position pB) throws InterruptedException
@@ -398,7 +434,6 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         }
     }
 
-
     /**
      * Cause the tiles used by subsequent intersection calculations to be cached so that they are available immediately
      * to those subsequent calculations.
@@ -409,7 +444,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param sector the sector for which to cache elevation data.
      *
      * @throws IllegalArgumentException if the specified sector is null.
-     * @throws InterruptedException       if the operation is interrupted. if the current timeout is exceeded while
+     * @throws InterruptedException     if the operation is interrupted. if the current timeout is exceeded while
      *                                  retrieving terrain data.
      */
     public void cacheIntersectingTiles(Sector sector) throws InterruptedException
