@@ -6,6 +6,7 @@
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.event.Message;
 import gov.nasa.worldwind.util.Logging;
 
 import java.beans.PropertyChangeEvent;
@@ -48,5 +49,11 @@ public class WWObjectImpl extends AVListImpl implements WWObject
 
         // Notify all *my* listeners of the change that I caught
         super.firePropertyChange(event);
+    }
+
+    /** Empty implementation of MessageListener. */
+    public void onMessage(Message message)
+    {
+        // Empty implementation
     }
 }

@@ -9,8 +9,8 @@ package gov.nasa.worldwind.util;
 import android.graphics.*;
 import gov.nasa.worldwind.geom.Sector;
 
-import java.io.*;
-import java.nio.ByteBuffer;
+import java.io.InputStream;
+import java.nio.*;
 import java.util.Arrays;
 
 /** @version $Id$ */
@@ -128,6 +128,13 @@ public class ImageUtil
             return null;
         }
         return mapTransparencyColors(image, originalColors);
+    }
+
+    public static Bitmap bitmapFromByteBuffer(ByteBuffer imageBuffer)
+    {
+        InputStream inputStream = WWIO.getInputStreamFromByteBuffer(imageBuffer);
+
+        return BitmapFactory.decodeStream(inputStream);
     }
 
     public static Bitmap mapTransparencyColors(Bitmap sourceImage, int[] originalColors)
@@ -275,5 +282,43 @@ public class ImageUtil
         }
 
         return mipMapLevels;
+    }
+
+    protected static float factor8To5 = 31f / 255f;
+
+    public static ByteBuffer convertTo5551(Bitmap image)
+    {
+        ByteBuffer outBuffer = ByteBuffer.allocate(2 * image.getWidth() * image.getHeight());
+        outBuffer.order(ByteOrder.BIG_ENDIAN); // this is the default, but set it to show that we're counting on it
+        ShortBuffer shortBuffer = outBuffer.asShortBuffer();
+
+        int[] pixels = new int[image.getWidth()];
+
+        for (int j = 0; j < image.getHeight(); j++)
+        {
+            image.getPixels(pixels, 0, image.getWidth(), 0, j, image.getWidth(), 1);
+
+            for (int i = 0; i < image.getWidth(); i++)
+            {
+                int pixel32 = pixels[i];
+
+                int a8 = (0xFF & (pixel32 >> 24));
+                int r8 = (0xFF & (pixel32 >> 16));
+                int g8 = (0xFF & (pixel32 >> 8));
+                int b8 = (0xFF & (pixel32));
+
+                // Store the new value as pre-multiplied alpha.
+                int a1 = (a8 == 0 ? 0 : 1);
+                int r5 = (int) (a1 * (r8 * factor8To5));
+                int g5 = (int) (a1 * (g8 * factor8To5));
+                int b5 = (int) (a1 * (b8 * factor8To5));
+
+                short pixel16 = (short) ((r5 << 11) | (g5 << 6) | (b5 << 1) | a1);
+
+                shortBuffer.put(pixel16);
+            }
+        }
+
+        return outBuffer;
     }
 }

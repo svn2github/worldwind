@@ -35,6 +35,184 @@ public class WWUtil
     {
         return new double[] {Double.MAX_VALUE, -Double.MAX_VALUE};
     }
+    /**
+     * Converts a specified string to an integer value. Returns null if the string cannot be converted.
+     *
+     * @param s the string to convert.
+     *
+     * @return integer value of the string, or null if the string cannot be converted.
+     *
+     * @throws IllegalArgumentException if the string is null.
+     */
+    public static Integer convertStringToInteger(String s)
+    {
+        if (s == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            if (s.length() == 0)
+            {
+                return null;
+            }
+
+            return Integer.valueOf(s);
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.ConversionError", s);
+            Logging.error(message, e);
+            return null;
+        }
+    }
+
+    /**
+     * Converts a specified string to a floating point value. Returns null if the string cannot be converted.
+     *
+     * @param s the string to convert.
+     *
+     * @return floating point value of the string, or null if the string cannot be converted.
+     *
+     * @throws IllegalArgumentException if the string is null.
+     */
+    public static Double convertStringToDouble(String s)
+    {
+        if (s == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            if (s.length() == 0)
+            {
+                return null;
+            }
+
+            return Double.valueOf(s);
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.ConversionError", s);
+            Logging.error(message, e);
+            return null;
+        }
+    }
+
+    /**
+     * Converts a specified string to a long integer value. Returns null if the string cannot be converted.
+     *
+     * @param s the string to convert.
+     *
+     * @return long integer value of the string, or null if the string cannot be converted.
+     *
+     * @throws IllegalArgumentException if the string is null.
+     */
+    public static Long convertStringToLong(String s)
+    {
+        if (s == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            if (s.length() == 0)
+            {
+                return null;
+            }
+
+            return Long.valueOf(s);
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.ConversionError", s);
+            Logging.error(message, e);
+            return null;
+        }
+    }
+
+    /**
+     * Converts a specified string to a boolean value. Returns null if the string cannot be converted.
+     *
+     * @param s the string to convert.
+     *
+     * @return boolean value of the string, or null if the string cannot be converted.
+     *
+     * @throws IllegalArgumentException if the string is null.
+     */
+    public static Boolean convertStringToBoolean(String s)
+    {
+        if (s == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            s = s.trim();
+
+            if (s.length() == 0)
+                return null;
+
+            if (s.length() == 1)
+                return convertNumericStringToBoolean(s);
+
+            return Boolean.valueOf(s);
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.ConversionError", s);
+            Logging.error(message, e);
+            return null;
+        }
+    }
+
+    /**
+     * Converts a specified string to a boolean value. Returns null if the string cannot be converted.
+     *
+     * @param s the string to convert.
+     *
+     * @return boolean value of the string, or null if the string cannot be converted.
+     *
+     * @throws IllegalArgumentException if the string is null.
+     */
+    public static Boolean convertNumericStringToBoolean(String s)
+    {
+        if (s == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            if (s.length() == 0)
+            {
+                return null;
+            }
+
+            Integer i = makeInteger(s);
+            return i != null && i != 0;
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.ConversionError", s);
+            Logging.error(message, e);
+            return null;
+        }
+    }
 
     /**
      * Parses a string to an integer value if the string can be parsed as a integer. Does not log a message if the

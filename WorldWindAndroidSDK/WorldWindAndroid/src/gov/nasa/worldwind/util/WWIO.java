@@ -231,6 +231,66 @@ public class WWIO
         }
     }
 
+    public static String getSuffix(String filePath)
+    {
+        if (filePath == null)
+        {
+            String message = Logging.getMessage("nullValue.FilePathIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        int len = filePath.length();
+        int p = filePath.lastIndexOf(".");
+        String suffix = (p >= 0 && p + 1 < len) ? filePath.substring(p + 1, len) : null;
+
+        // handle .bil.gz extensions
+        if (null != suffix && p > 0 && "gz".equals(suffix))
+        {
+            int idx = filePath.lastIndexOf(".", p - 1);
+            suffix = (idx >= 0 && idx + 1 < len) ? filePath.substring(idx + 1, len) : suffix;
+        }
+
+        return suffix;
+    }
+
+    /**
+     * Indicates whether a {@link File} contains content of a specified mime type.
+     * <p/>
+     * Only the filename suffix is consulted to determine the file's content type.
+     *
+     * @param file      the file to test.
+     * @param mimeTypes the mime types to test for.
+     *
+     * @return true if the file contains a specified content type, false if the file does not contain a specified
+     *         content type, the specified file is null, or no content types are specified.
+     */
+    public static boolean isContentType(File file, String... mimeTypes)
+    {
+        if (file == null || mimeTypes == null)
+            return false;
+
+        for (String mimeType : mimeTypes)
+        {
+            if (mimeType == null)
+                continue;
+
+            String typeSuffix = WWIO.makeSuffixForMimeType(mimeType);
+            String fileSuffix = WWIO.getSuffix(file.getName());
+
+            if (fileSuffix == null || typeSuffix == null)
+                continue;
+
+            if (!fileSuffix.startsWith("."))
+                fileSuffix = "." + fileSuffix;
+
+            if (fileSuffix.equalsIgnoreCase(typeSuffix))
+                return true;
+        }
+
+        return false;
+    }
+
     /**
      * Returns the mime type string corresponding to the specified file suffix string.
      *
@@ -348,6 +408,58 @@ public class WWIO
                 url = new URL(defaultProtocol, null, path.toString());
 
             return url;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Converts a string to a URL.
+     *
+     * @param path the string to convert to a URL.
+     *
+     * @return a URL for the specified object, or null if a URL could not be created.
+     *
+     * @see #makeURL(Object)
+     * @see #makeURL(Object, String)
+     */
+    public static URL makeURL(String path)
+    {
+        try
+        {
+            return new URL(path);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a URI from an object.
+     *
+     * @param path the object from which to create a URI, typically a string.
+     *
+     * @return a URI for the specified object, or null if a URI could not be created.
+     *
+     * @see #makeURL(String)
+     * @see #makeURL(Object)
+     * @see #makeURL(Object, String)
+     */
+    public static URI makeURI(Object path)
+    {
+        try
+        {
+            if (path instanceof String)
+                return new URI((String) path);
+            else if (path instanceof File)
+                return ((File) path).toURI();
+            else if (path instanceof URL)
+                return ((URL) path).toURI();
+            else
+                return null;
         }
         catch (Exception e)
         {
@@ -922,5 +1034,67 @@ public class WWIO
         }
 
         return s.replaceAll(ILLEGAL_FILE_PATH_PART_CHARACTERS, "_");
+    }
+
+    /**
+     * Ensure that all directories leading the element at the end of a file path exist. Create any nonexistent
+     * directories in the path. A directory is not creared for the last element in the path; it's assumed to be a file
+     * name and is ignored.
+     *
+     * @param path the path whose directories are vefified to exist or be created. The last element of the path is
+     *             ignored.
+     *
+     * @return true if all the directories in the path exist or were created.
+     *
+     * @throws IllegalArgumentException if the path is null.
+     */
+    public static boolean makeParentDirs(String path)
+    {
+        if (path == null)
+        {
+            String message = Logging.getMessage("nullValue.FilePathIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        String fs = File.separator;
+        String[] pathParts = path.split("[/" + (fs.equals("/") ? "" : (fs.equals("\\") ? "\\\\" : fs)) + "]");
+        if (pathParts.length <= 1)
+            return true;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pathParts.length - 1; i++)
+        {
+            if (pathParts[i].length() == 0)
+                continue;
+
+            sb.append(File.separator);
+            sb.append(pathParts[i]);
+        }
+
+        return (new File(sb.toString())).mkdirs();
+    }
+
+    /**
+     * Create a directory in the computer's temp directory.
+     *
+     * @return a file reference to the new directory, of null if a directory could not be created.
+     *
+     * @throws IOException       if a directory could not be created.
+     * @throws SecurityException if a security manager exists and it does not allow directory creation.
+     */
+    public static File makeTempDir() throws IOException
+    {
+        // To make a directory in the computer's temp directory, generate the name of a temp file then delete the file
+        // and create a directory of the same name.
+        File temp = File.createTempFile("wwj", null);
+
+        if (!temp.delete())
+            return null;
+
+        if (!temp.mkdir())
+            return null;
+
+        return temp;
     }
 }

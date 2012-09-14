@@ -30,6 +30,7 @@ public class WorldWind
     protected NetworkStatus networkStatus;
     protected FileStore dataFileStore;
     protected TaskService taskService;
+    protected SessionCache sessionCache;
 
     // Singleton, prevent public instantiation.
     protected WorldWind()
@@ -46,6 +47,7 @@ public class WorldWind
         this.dataFileStore = (FileStore) createConfigurationComponent(AVKey.DATA_FILE_STORE_CLASS_NAME);
         this.memoryCacheSet = (MemoryCacheSet) createConfigurationComponent(AVKey.MEMORY_CACHE_SET_CLASS_NAME);
         this.networkStatus = (NetworkStatus) createConfigurationComponent(AVKey.NETWORK_STATUS_CLASS_NAME);
+        this.sessionCache = (SessionCache) createConfigurationComponent(AVKey.SESSION_CACHE_CLASS_NAME);
         this.taskService = (TaskService) createConfigurationComponent(AVKey.TASK_SERVICE_CLASS_NAME);
     }
 
@@ -77,6 +79,11 @@ public class WorldWind
     public static NetworkStatus getNetworkStatus()
     {
         return instance.networkStatus;
+    }
+
+    public static SessionCache getSessionCache()
+    {
+        return instance.sessionCache;
     }
 
     public static TaskService getTaskService()

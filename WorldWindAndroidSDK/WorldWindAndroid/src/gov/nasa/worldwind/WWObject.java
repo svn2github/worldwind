@@ -6,6 +6,7 @@
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.event.MessageListener;
 
 import java.beans.PropertyChangeListener;
 
@@ -17,6 +18,6 @@ import java.beans.PropertyChangeListener;
  * @author dcollins
  * @version $Id$
  */
-public interface WWObject extends AVList, PropertyChangeListener
+public interface WWObject extends AVList, PropertyChangeListener, MessageListener
 {
 }

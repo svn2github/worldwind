@@ -7,6 +7,7 @@ package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.event.Message;
 import gov.nasa.worldwind.util.Logging;
 
 import java.beans.*;
@@ -436,5 +437,11 @@ public class LayerList extends CopyOnWriteArrayList<Layer> implements WWObject
         }
 
         return list;
+    }
+
+    /** Empty implementation of MessageListener. */
+    public void onMessage(Message message)
+    {
+        // Empty implementation
     }
 }

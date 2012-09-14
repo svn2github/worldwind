@@ -122,6 +122,7 @@ public interface AVKey
     final String POSITION = "gov.nasa.worldwind.avkey.Position";
     final String PROGRESS = "gov.nasa.worldwind.avkey.Progress";
 
+    final String REPAINT = "gov.nasa.worldwind.avkey.Repaint";
     final String RETRIEVAL_POOL_SIZE = "gov.nasa.worldwind.avkey.RetrievalPoolSize";
     final String RETRIEVAL_QUEUE_SIZE = "gov.nasa.worldwind.avkey.RetrievalQueueSize";
     final String RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT = "gov.nasa.worldwind.avkey.RetrievalStaleRequestLimit";
@@ -138,6 +139,7 @@ public interface AVKey
     final String SECTOR_RESOLUTION_LIMITS = "gov.nasa.worldwind.avkey.SectorResolutionLimits";
     final String SERVICE = "gov.nasa.worldwind.avkey.ServiceURLKey";
     final String SERVICE_NAME = "gov.nasa.worldwind.avkey.ServiceName";
+    final String SESSION_CACHE_CLASS_NAME = "gov.nasa.worldwind.avkey.SessionCacheClassName";
     final String STYLE_NAMES = "gov.nasa.worldwind.avkey.StyleNames";
 
     final String TESSELLATOR_FACTORY = "gov.nasa.worldwind.avkey.TessellatorFactory";
@@ -153,6 +155,8 @@ public interface AVKey
     final String TITLE = "gov.nasa.worldwind.avkey.Title";
     final String TRANSPARENCY_COLORS = "gov.nasa.worldwind.avkey.TransparencyColors";
 
+    final String UNRESOLVED = "gov.nasa.worldwind.avkey.Unresolved";
+    final String UPDATED = "gov.nasa.worldwind.avkey.Updated";
     final String URL_CONNECT_TIMEOUT = "gov.nasa.worldwind.avkey.URLConnectTimeout";
     final String URL_PROXY_HOST = "gov.nasa.worldwind.avkey.UrlProxyHost";
     final String URL_PROXY_PORT = "gov.nasa.worldwind.avkey.UrlProxyPort";

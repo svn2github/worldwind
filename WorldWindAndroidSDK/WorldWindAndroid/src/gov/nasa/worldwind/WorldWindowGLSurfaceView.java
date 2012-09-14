@@ -493,4 +493,10 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
         // Redraw this WorldWindow when we receive a property change event from the SceneController or the application.
         this.redraw();
     }
+
+    /** Empty implementation of MessageListener. */
+    public void onMessage(Message message)
+    {
+        // Empty implementation
+    }
 }

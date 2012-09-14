@@ -15,7 +15,7 @@ import gov.nasa.worldwind.render.*;
  */
 public class BMNGOneImage extends AbstractLayer
 {
-    protected static final String IMAGE_PATH = "images/world.topo.bathy.200405.3x2048x1024.dds";
+    protected static final String IMAGE_PATH = "images/world.topo.bathy.200405.3x2048x1024.jpg";
 
     protected SurfaceImage surfaceImage;
 

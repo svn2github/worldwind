@@ -8,8 +8,10 @@ package gov.nasa.worldwind.util;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.util.xml.*;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.*;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -21,7 +23,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * A collection of static methods use for opening, reading and otherwise working with XML files.
@@ -2775,9 +2776,11 @@ public class WWXML
 
     /**
      * Returns the data type constant for a specified string. This performs a mapping between text and an AVKey
-     * constant: <table> <th><td>Text</td><td>Constant</td></th> <tr><td>Float32</td><td>{@link gov.nasa.worldwind.avlist.AVKey#FLOAT32}</td></tr>
-     * <tr><td>Int32</td><td>{@link gov.nasa.worldwind.avlist.AVKey#INT32}</td></tr> <tr><td>Int16</td><td>{@link gov.nasa.worldwind.avlist.AVKey#INT16}</td></tr>
-     * <tr><td>Int8</td><td>{@link gov.nasa.worldwind.avlist.AVKey#INT8}</td></tr> </table>
+     * constant: <table> <th><td>Text</td><td>Constant</td></th> <tr><td>Float32</td><td>{@link
+     * gov.nasa.worldwind.avlist.AVKey#FLOAT32}</td></tr> <tr><td>Int32</td><td>{@link
+     * gov.nasa.worldwind.avlist.AVKey#INT32}</td></tr> <tr><td>Int16</td><td>{@link
+     * gov.nasa.worldwind.avlist.AVKey#INT16}</td></tr> <tr><td>Int8</td><td>{@link
+     * gov.nasa.worldwind.avlist.AVKey#INT8}</td></tr> </table>
      *
      * @param s the string to parse as a data type.
      *
@@ -2930,5 +2933,205 @@ public class WWXML
                 gms += "&";
 
         return gms;
+    }
+
+    /**
+     * Open a namespace-aware XML event stream from a general source. The source type may be one of the following: <ul>
+     * <li>{@link URL}</li> <li>{@link InputStream}</li> <li>{@link File}</li> <li>{@link String} containing a valid URL
+     * description or a file or resource name available on the classpath.</li> </ul>
+     *
+     * @param docSource the source of the XML document.
+     *
+     * @return the source document as a {@link XMLEventReader}, or null if the source object is a string that does not
+     *         identify a URL, a file or a resource available on the classpath.
+     */
+    public static XMLEventReader openEventReader(Object docSource)
+    {
+        return openEventReader(docSource, true);
+    }
+
+    /**
+     * Open an XML event stream from a general source. The source type may be one of the following: <ul> <li>{@link
+     * URL}</li> <li>{@link InputStream}</li> <li>{@link File}</li> <li>{@link String} containing a valid URL
+     * description or a file or resource name available on the classpath.</li> </ul>
+     *
+     * @param docSource        the source of the XML document.
+     * @param isNamespaceAware true to enable namespace-aware processing and false to disable it.
+     *
+     * @return the source document as a {@link XMLEventReader}, or null if the source object is a string that does not
+     *         identify a URL, a file or a resource available on the classpath.
+     */
+    public static XMLEventReader openEventReader(Object docSource, boolean isNamespaceAware)
+    {
+        if (docSource == null || WWUtil.isEmpty(docSource))
+        {
+            String message = Logging.getMessage("nullValue.DocumentSourceIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (docSource instanceof URL)
+        {
+            return openEventReaderURL((URL) docSource, isNamespaceAware);
+        }
+        else if (docSource instanceof InputStream)
+        {
+            return openEventReaderStream((InputStream) docSource, isNamespaceAware);
+        }
+        else if (docSource instanceof File)
+        {
+            return openEventReaderFile(((File) docSource).getPath(), null, isNamespaceAware);
+        }
+        else if (docSource instanceof java.nio.ByteBuffer)
+        {
+            InputStream is = WWIO.getInputStreamFromByteBuffer((java.nio.ByteBuffer) docSource);
+            return openEventReaderStream(is, isNamespaceAware);
+        }
+        else if (!(docSource instanceof String))
+        {
+            String message = Logging.getMessage("generic.UnrecognizedSourceType", docSource.toString());
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        String sourceName = (String) docSource;
+
+        URL url = WWIO.makeURL(sourceName);
+        if (url != null)
+            return openEventReaderURL(url, isNamespaceAware);
+
+        return openEventReaderFile(sourceName, null, isNamespaceAware);
+    }
+
+    /**
+     * Open an XML event stream given a generic {@link java.net.URL} reference.
+     *
+     * @param url              the URL to the document.
+     * @param isNamespaceAware true to enable namespace-aware processing and false to disable it.
+     *
+     * @return an XMLEventReader for the URL.
+     *
+     * @throws IllegalArgumentException if the url is null.
+     * @throws WWRuntimeException       if an exception or error occurs while opening and parsing the url. The causing
+     *                                  exception is included in this exception's {@link Throwable#initCause(Throwable)}.
+     */
+    public static XMLEventReader openEventReader(URL url, boolean isNamespaceAware)
+    {
+        if (url == null)
+        {
+            String message = Logging.getMessage("nullValue.URLIsNull"); // TODO
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            InputStream inputStream = url.openStream();
+            return openEventReaderStream(inputStream, isNamespaceAware);
+        }
+        catch (Exception e)
+        {
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseXml", url.toString()); // TODO
+            throw new WWRuntimeException(message, e);
+        }
+    }
+
+    /**
+     * Opens an XML event stream given an input stream, and a namespace-aware processing mode.
+     *
+     * @param inputStream      an XML document as an input stream.
+     * @param isNamespaceAware true to enable namespace-aware processing and false to disable it.
+     *
+     * @return an XMLEventReader for the stream content.
+     *
+     * @throws IllegalArgumentException if the input stream is null.
+     * @throws WWRuntimeException       if an exception or error occurs while parsing the stream. The causing exception
+     *                                  is included in this exception's {@link Throwable#initCause(Throwable)}
+     */
+    public static XMLEventReader openEventReaderStream(InputStream inputStream, boolean isNamespaceAware)
+    {
+        if (inputStream == null)
+        {
+            String message = Logging.getMessage("nullValue.InputStreamIsNull"); // TODO
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            XmlPullParserFactory inputFactory = XmlPullParserFactory.newInstance();
+            inputFactory.setNamespaceAware(isNamespaceAware);
+
+            XmlPullParser pullParser = inputFactory.newPullParser();
+            pullParser.setInput(inputStream, null);
+
+            return new XMLEventReader(pullParser);
+        }
+        catch (XmlPullParserException e)
+        {
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseXml", inputStream); // TODO
+            throw new WWRuntimeException(message, e);
+        }
+    }
+
+    /**
+     * Opens an XML event stream given the file's location in the file system or on the classpath.
+     *
+     * @param filePath         the path to the file. Must be an absolute path or a path relative to a location in the
+     *                         classpath.
+     * @param c                the class that is used to find a path relative to the classpath.
+     * @param isNamespaceAware true to enable namespace-aware processing and false to disable it.
+     *
+     * @return an XMLEventReader for the file, or null if the specified cannot be found.
+     *
+     * @throws IllegalArgumentException if the file path is null.
+     * @throws WWRuntimeException       if an exception or error occurs while opening and parsing the file. The causing
+     *                                  exception is included in this exception's {@link Throwable#initCause(Throwable)}.
+     */
+    public static XMLEventReader openEventReaderFile(String filePath, Class c, boolean isNamespaceAware)
+    {
+        if (filePath == null)
+        {
+            String message = Logging.getMessage("nullValue.FileIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        InputStream inputStream = WWIO.openFileOrResourceStream(filePath, c);
+
+        return inputStream != null ? openEventReaderStream(inputStream, isNamespaceAware) : null;
+    }
+
+    /**
+     * Open an XML event stream given a generic {@link java.net.URL} reference.
+     *
+     * @param url              the URL to the document.
+     * @param isNamespaceAware true to enable namespace-aware processing and false to disable it.
+     *
+     * @return an XMLEventReader for the URL.
+     *
+     * @throws IllegalArgumentException if the url is null.
+     * @throws WWRuntimeException       if an exception or error occurs while opening and parsing the url. The causing
+     *                                  exception is included in this exception's {@link Throwable#initCause(Throwable)}.
+     */
+    public static XMLEventReader openEventReaderURL(URL url, boolean isNamespaceAware)
+    {
+        if (url == null)
+        {
+            String message = Logging.getMessage("nullValue.URLIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        try
+        {
+            InputStream inputStream = url.openStream();
+            return openEventReaderStream(inputStream, isNamespaceAware);
+        }
+        catch (IOException e)
+        {
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseXml", url.toString());
+            throw new WWRuntimeException(message, e);
+        }
     }
 }

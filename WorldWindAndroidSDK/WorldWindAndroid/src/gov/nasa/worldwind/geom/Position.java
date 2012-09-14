@@ -7,6 +7,8 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
 
+import java.util.List;
+
 /**
  * @author dcollins
  * @version $Id$
@@ -28,6 +30,11 @@ public class Position extends LatLon
     public static Position fromDegrees(double latitude, double longitude, double elevation)
     {
         return new Position(Angle.fromDegrees(latitude), Angle.fromDegrees(longitude), elevation);
+    }
+
+    public static Position fromDegrees(double latitude, double longitude)
+    {
+        return new Position(Angle.fromDegrees(latitude), Angle.fromDegrees(longitude), 0);
     }
 
     public static Position fromRadians(double latitude, double longitude, double elevation)
@@ -90,6 +97,17 @@ public class Position extends LatLon
         this.elevation = elevation;
 
         return this;
+    }
+
+    // A class that makes it easier to pass around position lists.
+    public static class PositionList
+    {
+        public List<? extends Position> list;
+
+        public PositionList(List<? extends Position> list)
+        {
+            this.list = list;
+        }
     }
 
     public Position setDegrees(double latitude, double longitude, double elevation)
