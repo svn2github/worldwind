@@ -35,6 +35,12 @@
     <string name="SimplestPossibleActivity.description">This example demonstrates the simplest possible way to create a WorldWind application.</string>
 
     <!--
+        String resources for the Performance Test Suite.
+    -->
+    <string name="PerformanceTestSuite.displayName">Performance Test Suite</string>
+    <string name="PerformanceTestSuite.description">Measures OpenGL ES performance by drawing basic primitives with increasing complexity. Includes tests for the most common World Wind primitives: indexed triangle strips, line strips, and quadrilaterals. Results are written to the Android log with the tag \"gov.nasa.worldwind\".</string>
+
+    <!--
         String resources for the ActivityList utility.
     -->
     <string name="ActivityList.iconDescription">Provides a visual depiction of the activity.</string>
