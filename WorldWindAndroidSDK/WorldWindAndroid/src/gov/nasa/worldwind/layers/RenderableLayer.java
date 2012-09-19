@@ -4,11 +4,10 @@
 
 package gov.nasa.worldwind.layers;
 
-import android.graphics.*;
+import android.graphics.Point;
 import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.event.*;
-import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
@@ -26,11 +25,54 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class RenderableLayer extends AbstractLayer
 {
     protected Collection<Renderable> renderables = new ConcurrentLinkedQueue<Renderable>();
-    protected PickSupport pickSupport = new PickSupport();
 
-    /** Creates a new <code>RenderableLayer</code> with a null <code>delegateOwner</code> */
+    /** Creates a new <code>RenderableLayer</code> with an empty internal collection. */
     public RenderableLayer()
     {
+        this.setName(Logging.getMessage("layers.RenderableLayer.Name"));
+    }
+
+    /**
+     * Returns the layer's opacity value, which is ignored by this layer because each of its renderables typiically has
+     * its own opacity control.
+     *
+     * @return The layer opacity, a value between 0 and 1.
+     */
+    @Override
+    public double getOpacity()
+    {
+        return super.getOpacity();
+    }
+
+    /**
+     * Opacity is not applied to layers of this type because each renderable typically has its own opacity control.
+     *
+     * @param opacity the current opacity value, which is ignored by this layer.
+     */
+    @Override
+    public void setOpacity(double opacity)
+    {
+        super.setOpacity(opacity);
+    }
+
+    /**
+     * Returns the number of elements in this layer's internal collection.
+     *
+     * @return the size of this layer's internal collection, or 0 if the collection is empty.
+     */
+    public int getNumRenderables()
+    {
+        return this.renderables.size();
+    }
+
+    /**
+     * Returns this layer's internal collection of Renderables as an Iterable.
+     *
+     * @return an Iterable over this layer's internal collection.
+     */
+    public Iterable<Renderable> getRenderables()
+    {
+        return this.renderables;
     }
 
     /**
@@ -54,16 +96,18 @@ public class RenderableLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
 
-        this.renderables.add(renderable);
-
-        // Attach the layer as a property change listener of the renderable. This forwards property change events from
-        // the renderable to the SceneController.
-        if (renderable instanceof AVList)
-            ((AVList) renderable).addPropertyChangeListener(this);
+        if (this.renderables.add(renderable))
+        {
+            // Attach the layer as a property change listener of the renderable. This forwards property change events
+            // from the renderable to the SceneController.
+            if (renderable instanceof AVList)
+                ((AVList) renderable).addPropertyChangeListener(this);
+        }
     }
 
     /**
-     * Adds the contents of the specified <code>renderables</code> to this layer's internal collection.
+     * Adds the contents of the specified <code>renderables</code> to this layer's internal collection. This ignores any
+     * null elements in the specified Iterable.
      * <p/>
      * If any of the <code>renderables</code> implement {@link gov.nasa.worldwind.avlist.AVList}, the layer forwards
      * their property change events to the layer's property change listeners. Any property change listeners the layer
@@ -74,7 +118,7 @@ public class RenderableLayer extends AbstractLayer
      *
      * @throws IllegalArgumentException If <code>renderables</code> is null.
      */
-    public void addRenderables(Iterable<? extends Renderable> renderables)
+    public void addAllRenderables(Iterable<? extends Renderable> renderables)
     {
         if (renderables == null)
         {
@@ -86,13 +130,16 @@ public class RenderableLayer extends AbstractLayer
         for (Renderable renderable : renderables)
         {
             // Internal list of renderables does not accept null values.
-            if (renderable != null)
-                this.renderables.add(renderable);
+            if (renderable == null)
+                continue;
 
-            // Attach the layer as a property change listener of the renderable. This forwards property change events
-            // from the renderable to the SceneController.
-            if (renderable instanceof AVList)
-                ((AVList) renderable).addPropertyChangeListener(this);
+            if (this.renderables.add(renderable))
+            {
+                // Attach the layer as a property change listener of the renderable. This forwards property change
+                // events from the renderable to the SceneController.
+                if (renderable instanceof AVList)
+                    ((AVList) renderable).addPropertyChangeListener(this);
+            }
         }
     }
 
@@ -102,7 +149,7 @@ public class RenderableLayer extends AbstractLayer
      * If the <code>renderable</code> implements {@link gov.nasa.worldwind.avlist.AVList}, this stops forwarding the its
      * property change events to the layer's property change listeners. Any property change listeners the layer attached
      * to the <code>renderable</code> in {@link #addRenderable(gov.nasa.worldwind.render.Renderable)} or {@link
-     * #addRenderables(Iterable)} are removed.
+     * #addAllRenderables(Iterable)} are removed.
      *
      * @param renderable Renderable to remove.
      *
@@ -117,12 +164,13 @@ public class RenderableLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
 
-        this.renderables.remove(renderable);
-
-        // Remove the layer as a property change listener of the renderable. This prevents the renderable from keeping a
-        // dangling reference to the layer.
-        if (renderable instanceof AVList)
-            ((AVList) renderable).removePropertyChangeListener(this);
+        if (this.renderables.remove(renderable))
+        {
+            // Remove the layer as a property change listener of the renderable. This prevents the renderable from
+            // keeping a dangling reference to the layer.
+            if (renderable instanceof AVList)
+                ((AVList) renderable).removePropertyChangeListener(this);
+        }
     }
 
     /**
@@ -131,206 +179,77 @@ public class RenderableLayer extends AbstractLayer
      * If any of the <code>renderables</code> implement {@link gov.nasa.worldwind.avlist.AVList}, this stops forwarding
      * their property change events to the layer's property change listeners. Any property change listeners the layer
      * attached to the <code>renderables</code> in {@link #addRenderable(gov.nasa.worldwind.render.Renderable)} or
-     * {@link #addRenderables(Iterable)} are removed.
+     * {@link #addAllRenderables(Iterable)} are removed.
      */
     public void removeAllRenderables()
     {
-        this.clearRenderables();
-    }
-
-    protected void clearRenderables()
-    {
-        if (this.renderables != null && this.renderables.size() > 0)
+        // Remove the layer as property change listener of any renderables. This prevents the renderables from
+        // keeping a dangling references to the layer.
+        for (Renderable renderable : this.renderables)
         {
-            // Remove the layer as property change listener of any renderables. This prevents the renderables from
-            // keeping a dangling references to the layer.
-            for (Renderable renderable : this.renderables)
-            {
-                if (renderable instanceof AVList)
-                    ((AVList) renderable).removePropertyChangeListener(this);
-            }
-
-            this.renderables.clear();
-        }
-    }
-
-    public int getNumRenderables()
-    {
-        return this.renderables.size();
-    }
-
-    /**
-     * Returns the Iterable of Renderables currently in use by this layer.
-     *
-     * @return Iterable of currently active Renderables.
-     */
-    public Iterable<Renderable> getRenderables()
-    {
-        return this.getActiveRenderables();
-    }
-
-    /**
-     * Returns an Iterable of currently active Renderables.
-     *
-     * @return Iterable of currently active Renderables.
-     */
-    protected Iterable<Renderable> getActiveRenderables()
-    {
-        return this.renderables;
-    }
-
-    /**
-     * Opacity is not applied to layers of this type because each renderable typically has its own opacity control.
-     *
-     * @param opacity the current opacity value, which is ignored by this layer.
-     */
-    @Override
-    public void setOpacity(double opacity)
-    {
-        super.setOpacity(opacity);
-    }
-
-    /**
-     * Returns the layer's opacity value, which is ignored by this layer because each of its renderables typiically has
-     * its own opacity control.
-     *
-     * @return The layer opacity, a value between 0 and 1.
-     */
-    @Override
-    public double getOpacity()
-    {
-        return super.getOpacity();
-    }
-
-    /**
-     * Disposes the contents of this layer's internal Renderable collection, but does not remove any elements from that
-     * collection.
-     * <p/>
-     * If any of layer's internal Renderables implement {@link gov.nasa.worldwind.avlist.AVList}, this stops forwarding
-     * their property change events to the layer's property change listeners. Any property change listeners the layer
-     * attached to the <code>renderables</code> in {@link #addRenderable(gov.nasa.worldwind.render.Renderable)} or
-     * {@link #addRenderables(Iterable)} are removed.
-     */
-    public void dispose()
-    {
-        this.disposeRenderables();
-    }
-
-    protected void disposeRenderables()
-    {
-        if (this.renderables != null && this.renderables.size() > 0)
-        {
-            for (Renderable renderable : this.renderables)
-            {
-                try
-                {
-                    // Remove the layer as a property change listener of the renderable. This prevents the renderable
-                    // from keeping a dangling reference to the layer.
-                    if (renderable instanceof AVList)
-                        ((AVList) renderable).removePropertyChangeListener(this);
-
-                    if (renderable instanceof Disposable)
-                        ((Disposable) renderable).dispose();
-                }
-                catch (Exception e)
-                {
-                    String msg = Logging.getMessage("generic.ExceptionAttemptingToDisposeRenderable");
-                    Logging.error(msg);
-                    // continue to next renderable
-                }
-            }
+            if (renderable instanceof AVList)
+                ((AVList) renderable).removePropertyChangeListener(this);
         }
 
-        if (this.renderables != null)
-            this.renderables.clear();
+        this.renderables.clear();
     }
 
     protected void doPick(DrawContext dc, Point pickPoint)
     {
-        this.doPick(dc, this.getActiveRenderables(), pickPoint);
+        // TODO: Determine whether maintaining a pick list here has any purpose. Is everything deferred to ordered rendering?
+        //try
+        //{
+        //    this.pickSupport.beginPicking(dc);
+        //
+        //    for (Renderable renderable : this.renderables)
+        //    {
+        //        Color color = dc.getUniquePickColor();
+        //        dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+        //
+        //        try
+        //        {
+        //            renderable.render(dc);
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            String msg = Logging.getMessage("generic.ExceptionPickingRenderable", renderable);
+        //            Logging.error(msg, e);
+        //            continue; // Don't abort; continue on to the next renderable.
+        //        }
+        //
+        //        if (renderable instanceof Locatable)
+        //        {
+        //            this.pickSupport.addPickableObject(color.getRGB(), renderable,
+        //                ((Locatable) renderable).getPosition(), false);
+        //        }
+        //        else
+        //        {
+        //            this.pickSupport.addPickableObject(color.getRGB(), renderable);
+        //        }
+        //    }
+        //}
+        //finally
+        //{
+        //    this.pickSupport.endPicking(dc);
+        //    this.pickSupport.resolvePick(dc, pickPoint, this);
+        //}
     }
 
     protected void doRender(DrawContext dc)
     {
-        this.doRender(dc, this.getActiveRenderables());
-    }
-
-    protected void doPick(DrawContext dc, Iterable<? extends Renderable> renderables, Point pickPoint)
-    {
-//        this.pickSupport.clearPickList();
-//        this.pickSupport.beginPicking(dc);
-//
-//        try
-//        {
-//            for (Renderable renderable : renderables)
-//            {
-//                // If the caller has specified their own Iterable,
-//                // then we cannot make any guarantees about its contents.
-//                if (renderable != null)
-//                {
-////                    float[] inColor = new float[4];
-////                    dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, inColor, 0);
-//                    Color color = dc.getUniquePickColor();
-//                    dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
-//
-//                    try
-//                    {
-//                        renderable.render(dc);
-//                    }
-//                    catch (Exception e)
-//                    {
-//                        String msg = Logging.getMessage("generic.ExceptionWhilePickingRenderable");
-//                        Logging.error(msg);
-//                        Logging.warning(msg, e); // show exception for this level
-//                        continue; // go on to next renderable
-//                    }
-////
-////                    dc.getGL().glColor4fv(inColor, 0);
-//
-//                    if (renderable instanceof Locatable)
-//                    {
-//                        this.pickSupport.addPickableObject(color.getRGB(), renderable,
-//                            ((Locatable) renderable).getPosition(), false);
-//                    }
-//                    else
-//                    {
-//                        this.pickSupport.addPickableObject(color.getRGB(), renderable);
-//                    }
-//                }
-//            }
-//
-//            this.pickSupport.resolvePick(dc, pickPoint, this);
-//        }
-//        finally
-//        {
-//            this.pickSupport.endPicking(dc);
-//        }
-    }
-
-    protected void doRender(DrawContext dc, Iterable<? extends Renderable> renderables)
-    {
-        for (Renderable renderable : renderables)
+        for (Renderable renderable : this.renderables)
         {
             try
             {
-                // If the caller has specified their own Iterable,
-                // then we cannot make any guarantees about its contents.
-                if (renderable != null)
-                    renderable.render(dc);
+                renderable.render(dc);
             }
             catch (Exception e)
             {
-                String msg = Logging.getMessage("generic.ExceptionWhileRenderingRenderable");
+                String msg = Logging.getMessage("generic.ExceptionRenderingRenderable", renderable);
                 Logging.error(msg, e);
-                // continue to next renderable
+                // Don't abort; continue on to the next renderable.
             }
         }
-    }
-
-    @Override
-    public String toString()
-    {
-        return Logging.getMessage("layers.RenderableLayer.Name");
     }
 
     /**
@@ -353,10 +272,38 @@ public class RenderableLayer extends AbstractLayer
             }
             catch (Exception e)
             {
-                String msg = Logging.getMessage("generic.ExceptionInvokingMessageListener");
+                String msg = Logging.getMessage("generic.ExceptionSendingMessage", message, renderable);
                 Logging.error(msg, e);
-                // continue to next renderable
+                // Don't abort; continue on to the next renderable.
             }
         }
+    }
+
+    /**
+     * Disposes the contents of this layer's internal Renderable collection and removes all of its elements.
+     * <p/>
+     * If any of layer's internal Renderables implement {@link gov.nasa.worldwind.avlist.AVList}, this stops forwarding
+     * their property change events to the layer's property change listeners. Any property change listeners the layer
+     * attached to the <code>renderables</code> in {@link #addRenderable(gov.nasa.worldwind.render.Renderable)} or
+     * {@link #addAllRenderables(Iterable)} are removed.
+     */
+    public void dispose()
+    {
+        for (Renderable renderable : this.renderables)
+        {
+            try
+            {
+                if (renderable instanceof Disposable)
+                    ((Disposable) renderable).dispose();
+            }
+            catch (Exception e)
+            {
+                String msg = Logging.getMessage("generic.ExceptionDisposingObject", renderable);
+                Logging.error(msg, e);
+                // Don't abort; continue on to the next renderable.
+            }
+        }
+
+        this.removeAllRenderables();
     }
 }

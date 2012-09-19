@@ -85,13 +85,6 @@ public interface Layer extends WWObject, Disposable
     void setPickEnabled(boolean isPickable);
 
     /**
-     * Cause the layer to draw its representation.
-     *
-     * @param dc the current draw context for rendering.
-     */
-    void render(DrawContext dc);
-
-    /**
      * Cause the layer to perform picking, which determines whether the object or its components intersect a given point
      * on the screen. Objects that intersect that point are added to the draw context's pick list and are conveyed to
      * the application via selection events.
@@ -100,6 +93,13 @@ public interface Layer extends WWObject, Disposable
      * @param pickPoint the screen coordinate point
      */
     void pick(DrawContext dc, Point pickPoint);
+
+    /**
+     * Cause the layer to draw its representation.
+     *
+     * @param dc the current draw context for rendering.
+     */
+    void render(DrawContext dc);
 
     /**
      * Returns the map scale, in terms of the ratio of 1 to the value returned, e.g., 1:24000.

@@ -9,14 +9,13 @@ import android.graphics.Point;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.Element;
 
 import javax.xml.xpath.XPath;
 import java.beans.PropertyChangeEvent;
-import java.util.List;
 
 /**
  * @author dcollins
@@ -160,7 +159,7 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
+        if (dc.getView() == null)
         {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.error(message);
@@ -175,67 +174,26 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         return altitude >= this.minActiveAltitude && altitude <= this.maxActiveAltitude;
     }
 
-    /**
-     * @param dc the current draw context
-     *
-     * @throws IllegalArgumentException if <code>dc</code> is null, or <code>dc</code>'s <code>Globe</code> or
-     *                                  <code>View</code> is null
-     */
-    public void render(DrawContext dc)
-    {
-        if (!this.enabled)
-            return; // Don't check for arg errors if we're disabled
-
-        if (null == dc)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (null == dc.getGlobe())
-        {
-            String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (null == dc.getView())
-        {
-            String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
-            Logging.error(message);
-            throw new IllegalStateException(message);
-        }
-
-        if (!this.isLayerActive(dc))
-            return;
-
-        if (!this.isLayerInView(dc))
-            return;
-
-        this.doRender(dc);
-    }
-
     public void pick(DrawContext dc, Point point)
     {
         if (!this.enabled)
             return; // Don't check for arg errors if we're disabled
 
-        if (null == dc)
+        if (dc == null)
         {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.error(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getGlobe())
+        if (dc.getGlobe() == null)
         {
             String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
             Logging.error(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
+        if (dc.getView() == null)
         {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.error(message);
@@ -251,7 +209,52 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         this.doPick(dc, point);
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    /**
+     * @param dc the current draw context
+     *
+     * @throws IllegalArgumentException if <code>dc</code> is null, or <code>dc</code>'s <code>Globe</code> or
+     *                                  <code>View</code> is null
+     */
+    public void render(DrawContext dc)
+    {
+        if (!this.enabled)
+            return; // Don't check for arg errors if we're disabled
+
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        if (dc.getGlobe() == null)
+        {
+            String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
+            Logging.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        if (dc.getView() == null)
+        {
+            String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
+            Logging.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        if (!this.isLayerActive(dc))
+            return;
+
+        if (!this.isLayerInView(dc))
+            return;
+
+        this.doRender(dc);
+    }
+
+    public void dispose() // override if disposal is a supported operation
+    {
+    }
+
+    @SuppressWarnings({"UnusedParameters"})
     protected void doPick(DrawContext dc, Point point)
     {
         // any state that could change the color needs to be disabled, such as GL_TEXTURE, GL_LIGHTING or GL_FOG.
@@ -260,10 +263,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         // read the color under the cursor
         // use the color code as a key to retrieve a selected object from the selectable objects table
         // create an instance of the PickedObject and add to the dc via the dc.addPickedObject() method
-    }
-
-    public void dispose() // override if disposal is a supported operation
-    {
     }
 
     protected abstract void doRender(DrawContext dc);
@@ -281,83 +280,6 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
     //**************************************************************//
     //********************  Configuration  *************************//
     //**************************************************************//
-
-    /**
-     * Returns true if a specified DOM document is a Layer configuration document, and false otherwise.
-     *
-     * @param domElement the DOM document in question.
-     *
-     * @return true if the document is a Layer configuration document; false otherwise.
-     *
-     * @throws IllegalArgumentException if document is null.
-     */
-    public static boolean isLayerConfigDocument(Element domElement)
-    {
-        if (domElement == null)
-        {
-            String message = Logging.getMessage("nullValue.DocumentIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        XPath xpath = WWXML.makeXPath();
-        List<Element> elements = WWXML.getElements(domElement, "//Layer", xpath);
-
-        return elements != null && elements.size() > 0;
-    }
-
-    /**
-     * Appends layer configuration parameters as elements to the specified context. This appends elements for the
-     * following parameters: <table> <tr><th>Parameter</th><th>Element Path</th><th>Type</th></tr> <tr><td>{@link
-     * AVKey#DISPLAY_NAME}</td><td>DisplayName</td><td>String</td></tr> <tr><td>{@link
-     * AVKey#OPACITY}</td><td>Opacity</td><td>Double</td></tr> <tr><td>{@link AVKey#MAX_ACTIVE_ALTITUDE}</td><td>ActiveAltitudes/@max</td><td>Double</td></tr>
-     * <tr><td>{@link AVKey#MIN_ACTIVE_ALTITUDE}</td><td>ActiveAltitudes/@min</td><td>Double</td></tr> <tr><td>{@link
-     * AVKey#NETWORK_RETRIEVAL_ENABLED}</td><td>NetworkRetrievalEnabled</td><td>Boolean</td></tr> <tr><td>{@link
-     * AVKey#MAP_SCALE}</td><td>MapScale</td><td>Double</td></tr>
-     * </table>
-     *
-     * @param params  the key-value pairs which define the layer configuration parameters.
-     * @param context the XML document root on which to append layer configuration elements.
-     *
-     * @return a reference to context.
-     *
-     * @throws IllegalArgumentException if either the parameters or the context are null.
-     */
-    public static Element createLayerConfigElements(AVList params, Element context)
-    {
-        if (params == null)
-        {
-            String message = Logging.getMessage("nullValue.ParametersIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (context == null)
-        {
-            String message = Logging.getMessage("nullValue.ContextIsNull");
-            Logging.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        WWXML.checkAndAppendTextElement(params, AVKey.DISPLAY_NAME, context, "DisplayName");
-        WWXML.checkAndAppendDoubleElement(params, AVKey.OPACITY, context, "Opacity");
-
-        Double maxAlt = AVListImpl.getDoubleValue(params, AVKey.MAX_ACTIVE_ALTITUDE);
-        Double minAlt = AVListImpl.getDoubleValue(params, AVKey.MIN_ACTIVE_ALTITUDE);
-        if (maxAlt != null || minAlt != null)
-        {
-            Element el = WWXML.appendElementPath(context, "ActiveAltitudes");
-            if (maxAlt != null)
-                WWXML.setDoubleAttribute(el, "max", maxAlt);
-            if (minAlt != null)
-                WWXML.setDoubleAttribute(el, "min", minAlt);
-        }
-
-        WWXML.checkAndAppendBooleanElement(params, AVKey.NETWORK_RETRIEVAL_ENABLED, context, "NetworkRetrievalEnabled");
-        WWXML.checkAndAppendDoubleElement(params, AVKey.MAP_SCALE, context, "MapScale");
-
-        return context;
-    }
 
     /**
      * Parses layer configuration parameters from the specified DOM document. This writes output as key-value pairs to
