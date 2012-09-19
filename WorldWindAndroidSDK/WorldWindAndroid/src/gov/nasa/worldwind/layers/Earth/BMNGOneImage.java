@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layers.Earth;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.AbstractLayer;
 import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.util.Logging;
 
 /**
  * @author dcollins
@@ -15,14 +16,14 @@ import gov.nasa.worldwind.render.*;
  */
 public class BMNGOneImage extends AbstractLayer
 {
-    protected static final String IMAGE_PATH = "images/world.topo.bathy.200405.3x2048x1024.jpg";
+    protected static final String IMAGE_PATH = "images/world.topo.bathy.200405.3x2048x1024.dds";
 
     protected SurfaceImage surfaceImage;
 
     public BMNGOneImage()
     {
-        this.setName("layers.Earth.BlueMarbleOneImageLayer.Name");
         this.surfaceImage = new SurfaceImage(IMAGE_PATH, Sector.fromFullSphere());
+        this.setName(Logging.getMessage("layers.Earth.BlueMarbleOneImageLayer.Name"));
     }
 
     @Override
