@@ -17,7 +17,7 @@ import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.*;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author dcollins
@@ -25,6 +25,28 @@ import java.util.Collection;
  */
 public class DrawContext extends WWObjectImpl
 {
+    protected static class OrderedRenderableEntry implements Comparable<OrderedRenderableEntry>
+    {
+        protected OrderedRenderable or;
+        protected double distanceFromEye;
+        protected long time;
+
+        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double distanceFromEye, long insertionTime)
+        {
+            this.or = orderedRenderable;
+            this.distanceFromEye = distanceFromEye;
+            this.time = insertionTime;
+        }
+
+        public int compareTo(OrderedRenderableEntry that)
+        {
+            double dA = this.distanceFromEye;
+            double dB = that.distanceFromEye;
+
+            return dA > dB ? -1 : dA == dB ? (this.time < that.time ? -1 : this.time == that.time ? 0 : 1) : 1;
+        }
+    }
+
     protected static final double DEFAULT_VERTICAL_EXAGGERATION = 1;
 
     protected int viewportWidth;
@@ -33,13 +55,15 @@ public class DrawContext extends WWObjectImpl
     protected Model model;
     protected View view;
     protected double verticalExaggeration = DEFAULT_VERTICAL_EXAGGERATION;
-    protected Sector visibleSector;
     protected GpuResourceCache gpuResourceCache;
+    protected long frameTimestamp;
+    protected Sector visibleSector;
     protected SectorGeometryList surfaceGeometry;
     protected SurfaceTileRenderer surfaceTileRenderer = new SurfaceTileRenderer();
     protected Layer currentLayer;
     protected GpuProgram currentProgram;
-    protected long frameTimestamp;
+    protected boolean orderedRenderingMode;
+    protected PriorityQueue<OrderedRenderableEntry> orderedRenderables = new PriorityQueue<OrderedRenderableEntry>(100);
     protected boolean pickingMode;
     protected boolean deepPickingMode;
     protected int uniquePickNumber;
@@ -73,12 +97,14 @@ public class DrawContext extends WWObjectImpl
         this.model = null;
         this.view = null;
         this.verticalExaggeration = DEFAULT_VERTICAL_EXAGGERATION;
-        this.visibleSector = null;
         this.gpuResourceCache = null;
+        this.frameTimestamp = 0;
+        this.visibleSector = null;
         this.surfaceGeometry = null;
         this.currentLayer = null;
         this.currentProgram = null;
-        this.frameTimestamp = 0;
+        this.orderedRenderingMode = false;
+        this.orderedRenderables.clear();
         this.pickingMode = false;
         this.deepPickingMode = false;
         this.uniquePickNumber = 0;
@@ -196,28 +222,6 @@ public class DrawContext extends WWObjectImpl
     }
 
     /**
-     * Retrieves a <code>Sector</code> which is at least as large as the current visible sector. The value returned is
-     * the value passed to <code>SetVisibleSector</code>. This method may return null.
-     *
-     * @return a <code>Sector</code> at least the size of the current visible sector, null if unavailable
-     */
-    public Sector getVisibleSector()
-    {
-        return this.visibleSector;
-    }
-
-    /**
-     * Sets the visible <code>Sector</code>. The new visible sector must completely encompass the Sector which is
-     * visible on the display.
-     *
-     * @param sector the new visible <code>Sector</code>
-     */
-    public void setVisibleSector(Sector sector)
-    {
-        this.visibleSector = sector;
-    }
-
-    /**
      * Returns the GPU resource cache used by this draw context.
      *
      * @return the GPU resource cache used by this draw context.
@@ -245,64 +249,6 @@ public class DrawContext extends WWObjectImpl
     }
 
     /**
-     * Indicates the surface geometry that is visible this frame.
-     *
-     * @return the visible surface geometry.
-     */
-    public SectorGeometryList getSurfaceGeometry()
-    {
-        return this.surfaceGeometry;
-    }
-
-    /**
-     * Specifies the surface geometry that is visible this frame.
-     *
-     * @param surfaceGeometry the visible surface geometry.
-     */
-    public void setSurfaceGeometry(SectorGeometryList surfaceGeometry)
-    {
-        this.surfaceGeometry = surfaceGeometry;
-    }
-
-    /** {@inheritDoc} */
-    public SurfaceTileRenderer getSurfaceTileRenderer()
-    {
-        return this.surfaceTileRenderer;
-    }
-
-    /**
-     * Returns the current-layer. The field is informative only and enables layer contents to determine their containing
-     * layer.
-     *
-     * @return the current layer, or null if no layer is current.
-     */
-    public Layer getCurrentLayer()
-    {
-        return this.currentLayer;
-    }
-
-    /**
-     * Sets the current-layer field to the specified layer or null. The field is informative only and enables layer
-     * contents to determine their containing layer.
-     *
-     * @param layer the current layer or null.
-     */
-    public void setCurrentLayer(Layer layer)
-    {
-        this.currentLayer = layer;
-    }
-
-    public GpuProgram getCurrentProgram()
-    {
-        return this.currentProgram;
-    }
-
-    public void setCurrentProgram(GpuProgram program)
-    {
-        this.currentProgram = program;
-    }
-
-    /**
      * Returns the time stamp corresponding to the beginning of a pre-render, pick, render sequence. The stamp remains
      * constant across these three operations so that called objects may avoid recomputing the same values during each
      * of the calls in the sequence.
@@ -324,6 +270,137 @@ public class DrawContext extends WWObjectImpl
     public void setFrameTimeStamp(long timeStamp)
     {
         this.frameTimestamp = timeStamp;
+    }
+
+    /**
+     * Retrieves a <code>Sector</code> which is at least as large as the current visible sector. The value returned is
+     * the value passed to <code>SetVisibleSector</code>. This method may return null.
+     *
+     * @return a <code>Sector</code> at least the size of the current visible sector, null if unavailable
+     */
+    public Sector getVisibleSector()
+    {
+        return this.visibleSector;
+    }
+
+    /**
+     * Sets the visible <code>Sector</code>. The new visible sector must completely encompass the Sector which is
+     * visible on the display.
+     *
+     * @param sector the new visible <code>Sector</code>
+     */
+    public void setVisibleSector(Sector sector)
+    {
+        this.visibleSector = sector;
+    }
+
+    /**
+     * Indicates the surface geometry that is visible this frame.
+     *
+     * @return the visible surface geometry.
+     */
+    public SectorGeometryList getSurfaceGeometry()
+    {
+        return this.surfaceGeometry;
+    }
+
+    /**
+     * Specifies the surface geometry that is visible this frame.
+     *
+     * @param surfaceGeometry the visible surface geometry.
+     */
+    public void setSurfaceGeometry(SectorGeometryList surfaceGeometry)
+    {
+        this.surfaceGeometry = surfaceGeometry;
+    }
+
+    public SurfaceTileRenderer getSurfaceTileRenderer()
+    {
+        return this.surfaceTileRenderer;
+    }
+
+    /**
+     * Returns the current layer. The field is informative only and enables layer contents to determine their containing
+     * layer.
+     *
+     * @return the current layer, or null if no layer is current.
+     */
+    public Layer getCurrentLayer()
+    {
+        return this.currentLayer;
+    }
+
+    /**
+     * Sets the current layer field to the specified layer or null. The field is informative only and enables layer
+     * contents to determine their containing layer.
+     *
+     * @param layer the current layer or null.
+     */
+    public void setCurrentLayer(Layer layer)
+    {
+        this.currentLayer = layer;
+    }
+
+    public GpuProgram getCurrentProgram()
+    {
+        return this.currentProgram;
+    }
+
+    public void setCurrentProgram(GpuProgram program)
+    {
+        this.currentProgram = program;
+    }
+
+    public boolean isOrderedRenderingMode()
+    {
+        return this.orderedRenderingMode;
+    }
+
+    public void setOrderedRenderingMode(boolean tf)
+    {
+        this.orderedRenderingMode = tf;
+    }
+
+    public OrderedRenderable peekOrderedRenderables()
+    {
+        OrderedRenderableEntry ore = this.orderedRenderables.peek();
+
+        return ore != null ? ore.or : null;
+    }
+
+    public OrderedRenderable pollOrderedRenderables()
+    {
+        OrderedRenderableEntry ore = this.orderedRenderables.poll();
+
+        return ore != null ? ore.or : null;
+    }
+
+    public void addOrderedRenderable(OrderedRenderable orderedRenderable)
+    {
+        if (orderedRenderable == null)
+        {
+            String msg = Logging.getMessage("nullValue.OrderedRenderableIsNull");
+            Logging.warning(msg);
+            return; // benign event
+        }
+
+        this.orderedRenderables.add(
+            new OrderedRenderableEntry(orderedRenderable, orderedRenderable.getDistanceFromEye(), System.nanoTime()));
+    }
+
+    public void addOrderedRenderableToBack(OrderedRenderable orderedRenderable)
+    {
+        if (orderedRenderable == null)
+        {
+            String msg = Logging.getMessage("nullValue.OrderedRenderableIsNull");
+            Logging.warning(msg);
+            return; // benign event
+        }
+
+        // The ordered renderable should be treated as behind other ordered renderables, so we give it an eye distance
+        // of Double.MAX_VALUE and ignore the actual eye distance. If multiple ordered renderables are added in this
+        // way, they are drawn according to the order in which they are added.
+        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, Double.MAX_VALUE, System.nanoTime()));
     }
 
     /**

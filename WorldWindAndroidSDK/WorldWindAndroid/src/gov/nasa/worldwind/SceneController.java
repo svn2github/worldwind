@@ -282,8 +282,8 @@ public class SceneController extends WWObjectImpl
         dc.setView(this.view);
         dc.setVerticalExaggeration(this.verticalExaggeration);
         dc.setGpuResourceCache(this.gpuResourceCache);
-        dc.setPickPoint(this.pickPoint);
         dc.setFrameTimeStamp(timeStamp);
+        dc.setPickPoint(this.pickPoint);
         dc.setPerFrameStatistics(this.perFrameStatistics);
     }
 
@@ -340,7 +340,7 @@ public class SceneController extends WWObjectImpl
         }
         catch (Exception e)
         {
-            Logging.error(Logging.getMessage("SceneController.ExceptionCreatingSurfaceGeometry"), e);
+            Logging.error(Logging.getMessage("generic.ExceptionCreatingSurfaceGeometry"), e);
         }
 
         dc.setSurfaceGeometry(surfaceGeometry);
@@ -356,6 +356,7 @@ public class SceneController extends WWObjectImpl
     protected void draw(DrawContext dc)
     {
         this.drawLayers(dc);
+        this.drawOrderedRenderables(dc);
     }
 
     protected void drawLayers(DrawContext dc)
@@ -375,7 +376,7 @@ public class SceneController extends WWObjectImpl
             }
             catch (Exception e)
             {
-                String msg = Logging.getMessage("SceneController.ExceptionRenderingLayer",
+                String msg = Logging.getMessage("generic.ExceptionRenderingLayer",
                     (layer != null ? layer.getName() : Logging.getMessage("term.Unknown")));
                 Logging.error(msg, e);
                 // Don't abort; continue on to the next layer.
@@ -385,11 +386,34 @@ public class SceneController extends WWObjectImpl
         dc.setCurrentLayer(null);
     }
 
+    protected void drawOrderedRenderables(DrawContext dc)
+    {
+        dc.setOrderedRenderingMode(true);
+
+        while (dc.peekOrderedRenderables() != null)
+        {
+            OrderedRenderable or = dc.pollOrderedRenderables();
+
+            try
+            {
+                or.render(dc);
+            }
+            catch (Exception e)
+            {
+                String msg = Logging.getMessage("generic.ExceptionRenderingOrderedRenderable", or);
+                Logging.error(msg, e);
+                // Don't abort; continue on to the next ordered renderable.
+            }
+        }
+
+        dc.setOrderedRenderingMode(false);
+    }
+
     protected void pick(DrawContext dc)
     {
-        this.beginPicking(dc);
         try
         {
+            this.beginPicking(dc);
             this.doPick(dc);
         }
         finally
@@ -455,6 +479,7 @@ public class SceneController extends WWObjectImpl
             return;
 
         this.pickLayers(dc);
+        this.pickOrderedRenderables(dc);
     }
 
     protected void pickLayers(DrawContext dc)
@@ -474,7 +499,7 @@ public class SceneController extends WWObjectImpl
             }
             catch (Exception e)
             {
-                String msg = Logging.getMessage("SceneController.ExceptionPickingLayer",
+                String msg = Logging.getMessage("generic.ExceptionPickingLayer",
                     (layer != null ? layer.getName() : Logging.getMessage("term.Unknown")));
                 Logging.error(msg, e);
                 // Don't abort; continue on to the next layer.
@@ -482,6 +507,29 @@ public class SceneController extends WWObjectImpl
         }
 
         dc.setCurrentLayer(null);
+    }
+
+    protected void pickOrderedRenderables(DrawContext dc)
+    {
+        dc.setOrderedRenderingMode(true);
+
+        while (dc.peekOrderedRenderables() != null)
+        {
+            OrderedRenderable or = dc.pollOrderedRenderables();
+
+            try
+            {
+                or.pick(dc, dc.getPickPoint());
+            }
+            catch (Exception e)
+            {
+                String msg = Logging.getMessage("generic.ExceptionPickingOrderedRenderable", or);
+                Logging.error(msg, e);
+                // Don't abort; continue on to the next ordered renderable.
+            }
+        }
+
+        dc.setOrderedRenderingMode(false);
     }
 
     protected void resolveTopPick(DrawContext dc)
@@ -512,9 +560,9 @@ public class SceneController extends WWObjectImpl
 
     protected void doDeepPick(DrawContext dc)
     {
-        this.beginDeepPicking(dc);
         try
         {
+            this.beginDeepPicking(dc);
             this.doPickNonTerrain(dc);
         }
         finally
