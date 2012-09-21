@@ -1,12 +1,12 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.globes;
 
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.terrain.ElevationModel;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.Logging;
 
 /**
@@ -15,6 +15,71 @@ import gov.nasa.worldwind.util.Logging;
  */
 public class EllipsoidalGlobe extends AbstractGlobe
 {
+    protected class StateKey implements GlobeStateKey
+    {
+        protected Globe globe;
+        protected ElevationModel elevationModel;
+        protected Tessellator tessellator;
+        protected double verticalExaggeration;
+
+        public StateKey(DrawContext dc)
+        {
+            if (dc == null)
+            {
+                String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+                Logging.error(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            this.globe = dc.getGlobe();
+            this.elevationModel = this.globe.getElevationModel();
+            this.tessellator = EllipsoidalGlobe.this.tessellator;
+            this.verticalExaggeration = dc.getVerticalExaggeration();
+        }
+
+        public Globe getGlobe()
+        {
+            return this.globe;
+        }
+
+        @SuppressWarnings({"RedundantIfStatement"})
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || this.getClass() != o.getClass())
+                return false;
+
+            StateKey that = (StateKey) o;
+
+            if (this.globe != null ? !this.globe.equals(that.globe) : that.globe != null)
+                return false;
+            if (this.elevationModel != null ? !this.elevationModel.equals(that.elevationModel)
+                : that.elevationModel != null)
+                return false;
+            if (this.tessellator != null ? !this.tessellator.equals(that.tessellator) : that.tessellator != null)
+                return false;
+            if (Double.compare(this.verticalExaggeration, that.verticalExaggeration) != 0)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result;
+            long temp;
+            result = this.globe != null ? this.globe.hashCode() : 0;
+            result = 31 * result + (this.elevationModel != null ? this.elevationModel.hashCode() : 0);
+            result = 31 * result + (this.tessellator != null ? this.tessellator.hashCode() : 0);
+            temp = this.verticalExaggeration != +0.0d ? Double.doubleToLongBits(verticalExaggeration) : 0L;
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            return result;
+        }
+    }
+
     protected final double equatorialRadius;
     protected final double polarRadius;
     protected final double es;
@@ -41,6 +106,12 @@ public class EllipsoidalGlobe extends AbstractGlobe
         this.es = es;
         this.center = center;
         this.setElevationModel(elevationModel);
+    }
+
+    /** {@inheritDoc} */
+    public GlobeStateKey getGlobeStateKey(DrawContext dc)
+    {
+        return new StateKey(dc);
     }
 
     /** {@inheritDoc} */
@@ -450,7 +521,7 @@ public class EllipsoidalGlobe extends AbstractGlobe
         }
     }
 
-    @SuppressWarnings( {"SuspiciousNameCombination"})
+    @SuppressWarnings({"SuspiciousNameCombination"})
     protected void cartesianToGeodetic(Vec4 cart, Position result)
     {
         // Contributed by Nathan Kronenfeld. Integrated 1/24/2011. Brings this calculation in line with Vermeille's

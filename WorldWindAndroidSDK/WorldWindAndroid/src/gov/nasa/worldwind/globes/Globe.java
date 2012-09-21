@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.globes;
 
 import gov.nasa.worldwind.WWObject;
@@ -18,6 +17,18 @@ import java.util.List;
  */
 public interface Globe extends WWObject
 {
+    /**
+     * Returns a typed state key identifying this globe's current configuration. Can be used to subsequently determine
+     * whether the globe's configuration has changed.
+     *
+     * @param dc the current draw context.
+     *
+     * @return a state key for the globe's current configuration.
+     *
+     * @throws IllegalArgumentException if the draw context is <code>null</code>.
+     */
+    GlobeStateKey getGlobeStateKey(DrawContext dc);
+
     /**
      * Indicates this globe's elevation model.
      *
