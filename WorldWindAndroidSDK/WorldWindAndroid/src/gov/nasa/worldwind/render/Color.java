@@ -14,16 +14,16 @@ import gov.nasa.worldwind.util.Logging;
  * <p/>
  * <strong>Mutability</strong>
  * <p/>
- * Color is mutable and therefore provides public read and write access to each of its four components as properties
+ * Color is mutable and provides public read and write access to each of its four components as properties
  * <code>r</code>, <code>g</code>, <code>b</code>, and <code>a</code>. Additionally, color provides an overloaded
  * <code>set</code> method for specifying all RGB or RGBA components in bulk. It is important to avoid assumptions that
- * the application can know when a color changes. In particular, rendering should should be written to automatically
- * display changes to any colors it depends on.
+ * the application can know when a color changes. In particular, rendering code should should be written to
+ * automatically display changes to any colors it depends on.
  * <p/>
  * <p/>
  * <strong>Color Space</strong>
  * <p/>
- * Color's four RGBA components are assumed to exist in the standard sRGB color space. Commonly used colors are provided
+ * Color's four RGBA components are assumed to exist in the standard RGBA color space. Commonly used colors are provided
  * via static methods that return a new color instance who's components are configured to represent the specified RGB
  * color. Since color is mutable the returned instances are unique, and therefore should not be assumed to be constant.
  * <p/>
@@ -178,6 +178,28 @@ public class Color
     /** Creates a new color representing black. The color's RGBA components are set to (0.0, 0.0, 0.0, 1.0). */
     public Color()
     {
+    }
+
+    /**
+     * Creates a new color with the RGBA components from the specified color.
+     *
+     * @param color the color's RGBA components as a color.
+     *
+     * @throws IllegalArgumentException if the color is <code>null</code>.
+     */
+    public Color(Color color)
+    {
+        if (color == null)
+        {
+            String msg = Logging.getMessage("nullValue.ColorIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.r = color.r;
+        this.g = color.g;
+        this.b = color.b;
+        this.a = color.a;
     }
 
     /**
