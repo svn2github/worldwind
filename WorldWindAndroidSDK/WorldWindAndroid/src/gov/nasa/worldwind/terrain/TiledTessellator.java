@@ -5,14 +5,13 @@
  */
 package gov.nasa.worldwind.terrain;
 
-import android.graphics.*;
+import android.graphics.Point;
 import android.opengl.GLES20;
 import android.util.Pair;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.*;
@@ -316,6 +315,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
     // Properties used for picking.
     protected final Object pickProgramKey = new Object();
     protected boolean pickProgramCreationFailed;
+    protected Color pickColor = new Color();
     protected Line pickRay = new Line();
     protected Vec4 pickedTriPoint = new Vec4();
     protected Position pickedTriPos = new Position();
@@ -505,7 +505,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         }
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected void addTile(DrawContext dc, TerrainTile tile)
     {
         if (this.mustRegenerateGeometry(dc, tile))
@@ -598,7 +598,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         }
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected boolean isExpired(DrawContext dc, TerrainTile tile)
     {
         if (this.currentExpiredSectors.isEmpty())
@@ -1171,7 +1171,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         program.loadUniformMatrix("mvpMatrix", this.mvpMatrix);
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected void endRendering(DrawContext dc, TerrainTile tile)
     {
         // Intentionally left blank. All GL state is restored in endRendering(DrawContext).
@@ -1387,11 +1387,14 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
                 sg.beginRendering(dc);
                 try
                 {
+                    // Convert the pick color from a packed 32-bit RGB color int to a RGB color with separate components
+                    // in the range [0.0, 1.0].
+                    this.pickColor.set(color, false);
                     // Specify the generic vertex attribute value for "vertexColor" to be used for all vertices. Since
-                    // the "vertexColor" attrib array is not enabled, this constant value is used instead. This
-                    // 3-component RGB color is expanded to a 4-component RGBA color, where the alpha component is 1.0.
-                    GLES20.glVertexAttrib3f(location, Color.red(color) / 255f, Color.green(color) / 255f,
-                        Color.blue(color) / 255f);
+                    // the "vertexColor" attrib array is not enabled, this constant value is used instead. OpenGL
+                    // expands this 3-component RGB color to a 4-component RGBA color, where the alpha component is 1.0.
+                    GLES20.glVertexAttrib3f(location, (float) this.pickColor.r, (float) this.pickColor.g,
+                        (float) this.pickColor.b);
                     sg.render(dc);
                 }
                 finally
@@ -1535,9 +1538,9 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
 
                 if (i != 0 || j != 0) // The first triangle's color is allocated before this loop.
                     color = dc.getUniquePickColor();
-                colors[0] = colors[3] = colors[6] = (byte) Color.red(color); // Red value for all three vertices.
-                colors[1] = colors[4] = colors[7] = (byte) Color.green(color); // Green value for all three vertices.
-                colors[2] = colors[5] = colors[8] = (byte) Color.blue(color); // Blue value for all three vertices.
+                colors[0] = colors[3] = colors[6] = (byte) Color.getColorIntRed(color);
+                colors[1] = colors[4] = colors[7] = (byte) Color.getColorIntGreen(color);
+                colors[2] = colors[5] = colors[8] = (byte) Color.getColorIntBlue(color);
                 pickGeom.colors.put(colors); // Colors for all three vertices of the fist triangle.
 
                 // Second triangle. The second triangle is composed of the upper-right, lower-left, and lower-right
@@ -1549,9 +1552,9 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
                 pickGeom.points.put(corners, 3, 3); // Lower-right vertex.
 
                 color = dc.getUniquePickColor();
-                colors[0] = colors[3] = colors[6] = (byte) Color.red(color); // Red value for all three vertices.
-                colors[1] = colors[4] = colors[7] = (byte) Color.green(color); // Green value for all three vertices.
-                colors[2] = colors[5] = colors[8] = (byte) Color.blue(color); // Blue value for all three vertices.
+                colors[0] = colors[3] = colors[6] = (byte) Color.getColorIntRed(color);
+                colors[1] = colors[4] = colors[7] = (byte) Color.getColorIntGreen(color);
+                colors[2] = colors[5] = colors[8] = (byte) Color.getColorIntBlue(color);
                 pickGeom.colors.put(colors); // Colors for all three vertices of the fist triangle.
             }
         }

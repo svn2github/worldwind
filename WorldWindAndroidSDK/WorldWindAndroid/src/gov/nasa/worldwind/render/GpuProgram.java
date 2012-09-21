@@ -329,6 +329,27 @@ public class GpuProgram implements Cacheable, Disposable
         return location;
     }
 
+    // TODO: rename this method as loadUniform4f to clarify its purpose
+    public void loadUniformVec4(String name, double x, double y, double z, double w)
+    {
+        if (WWUtil.isEmpty(name))
+        {
+            String msg = Logging.getMessage("nullValue.NameIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int location = this.getUniformLocation(name);
+        if (location < 0)
+        {
+            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        GLES20.glUniform4f(location, (float) x, (float) y, (float) z, (float) w);
+    }
+
     public void loadUniformVec4(String name, Vec4 vec)
     {
         if (WWUtil.isEmpty(name))
@@ -354,26 +375,6 @@ public class GpuProgram implements Cacheable, Disposable
         }
 
         GLES20.glUniform4f(location, (float) vec.x, (float) vec.y, (float) vec.z, (float) vec.w);
-    }
-
-    public void loadUniformVec4(String name, double x, double y, double z, double w)
-    {
-        if (WWUtil.isEmpty(name))
-        {
-            String msg = Logging.getMessage("nullValue.NameIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        int location = this.getUniformLocation(name);
-        if (location < 0)
-        {
-            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        GLES20.glUniform4f(location, (float) x, (float) y, (float) z, (float) w);
     }
 
     public void loadUniformMatrix(String name, Matrix matrix)
@@ -426,6 +427,26 @@ public class GpuProgram implements Cacheable, Disposable
         m[15] = (float) matrix.m[15];
 
         GLES20.glUniformMatrix4fv(location, 1, false, m, 0);
+    }
+
+    public void loadUniformColor(String name, Color color)
+    {
+        if (WWUtil.isEmpty(name))
+        {
+            String msg = Logging.getMessage("nullValue.NameIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int location = this.getUniformLocation(name);
+        if (location < 0)
+        {
+            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        GLES20.glUniform4f(location, (float) color.r, (float) color.g, (float) color.b, (float) color.a);
     }
 
     public void loadUniformSampler(String name, int value)

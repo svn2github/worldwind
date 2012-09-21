@@ -23,6 +23,7 @@ import java.util.*;
  * @author dcollins
  * @version $Id$
  */
+@SuppressWarnings("UnusedDeclaration")
 public class DrawContext extends WWObjectImpl
 {
     protected static class OrderedRenderableEntry implements Comparable<OrderedRenderableEntry>
@@ -124,9 +125,13 @@ public class DrawContext extends WWObjectImpl
     }
 
     /**
-     * Returns the WorldWindow's background color.
+     * Returns the background color as a packed 32-bit ARGB color int. See the section on <i>Color Int</i> in the {@link
+     * Color} class documentation for more information on the color int format.
+     * <p/>
+     * The returned int can be converted to a floating-point RGBA color using the Color constructor {@link
+     * Color#Color(int)}.
      *
-     * @return the WorldWindow's background color.
+     * @return a packed 32-bit ARGB color representing the background color.
      */
     public int getClearColor()
     {
@@ -447,27 +452,49 @@ public class DrawContext extends WWObjectImpl
     }
 
     /**
-     * Returns a unique color to serve as a pick identifier during picking.
+     * Returns a unique packed 32-bit RGB color int to serve as an identifier during picking. The bits normally reserved
+     * for alpha in the returned value are filled with 0. See the section on <i>Color Int</i> in the {@link Color} class
+     * documentation for more information on the color int format.
+     * <p/>
+     * The returned int can be converted to a floating-point RGB color using the Color constructor {@link
+     * Color#Color(int, boolean)} and passing <code>false</code> in hasAlpha.
      *
-     * @return a unique pick color.
+     * @return a packed 32-bit RGB color representing a unique pick color.
      */
     public int getUniquePickColor()
     {
-        this.uniquePickNumber++;
+        this.uniquePickNumber++; // Increment to the next pick number. This causes the pick numbers to start at 1.
 
-        if (this.uniquePickNumber == this.clearColor)
+        if (this.uniquePickNumber == this.clearColor) // Skip the clear color.
             this.uniquePickNumber++;
 
-        if (this.uniquePickNumber >= 0x00FFFFFF)
+        if (this.uniquePickNumber >= 0x00FFFFFF) // We have run out of available pick numbers.
         {
-            this.uniquePickNumber = 1;  // no black, no white
-            if (this.uniquePickNumber == this.clearColor)
+            this.uniquePickNumber = 1;  // Do not use black or white as a pick color. Pick numbers start at 1.
+            if (this.uniquePickNumber == this.clearColor) // Skip the clear color.
                 this.uniquePickNumber++;
         }
 
         return this.uniquePickNumber;
     }
 
+    /**
+     * Returns the packed 32-bit RGB color int from the framebuffer at the specified screen point. The bits normally
+     * reserved for alpha in the returned value are filled with 0. See the section on <i>Color Int</i> in the {@link
+     * Color} class documentation for more information on the color int format.
+     * <p/>
+     * This returns 0 if the point specifies a framebuffer pixel containing the clear color.
+     * <p/>
+     * The returned int can be converted to a floating-point RGB color using the Color constructor {@link
+     * Color#Color(int, boolean)} and passing <code>false</code> in hasAlpha.
+     *
+     * @param point the screen point who's RGB color is returned.
+     *
+     * @return a packed 32-bit RGB color representing the color at the screen point, or 0 if the point indicates a pixel
+     *         filled with the clear color.
+     *
+     * @throws IllegalArgumentException if the point is <code>null</code>.
+     */
     public int getPickColor(Point point)
     {
         if (point == null)
@@ -479,15 +506,14 @@ public class DrawContext extends WWObjectImpl
 
         // Read the RGBA color at the specified point as a 4-component tuple of unsigned bytes. OpenGL ES does not
         // support reading only the RGB values, so we read the RGBA value and ignore the alpha component. We convert the
-        // y coordinate from Android UI coordinates to GL coordinates.
+        // y coordinate from system screen coordinates to OpenGL screen coordinates.
         int yInGLCoords = this.viewportHeight - point.y;
         GLES20.glReadPixels(point.x, yInGLCoords, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, this.pickColor);
 
-        // GL places the value RGBA in the first 4 bytes of the buffer, in that order. We ignore the alpha component and
-        // compose an integer equivalent to those returned by getUniquePickColor.
-        return ((0xFF & this.pickColor.get(0)) << 16)
-            | ((0xFF & this.pickColor.get(1)) << 8)
-            | (0xFF & this.pickColor.get(2));
+        // OpenGL places the pixel's RGBA components in the first 4 bytes of the buffer, in that order. We ignore the
+        // alpha component and compose a packed 24-bit RGB color int equivalent to those returned by getUniquePickColor.
+        int colorInt = Color.makeColorInt(this.pickColor.get(0), this.pickColor.get(1), this.pickColor.get(2));
+        return colorInt != this.clearColor ? colorInt : 0;
     }
 
     /**

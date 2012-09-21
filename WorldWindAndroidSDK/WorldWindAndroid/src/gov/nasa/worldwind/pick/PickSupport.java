@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.pick;
 
 import android.graphics.Point;
-import android.opengl.GLES20;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.render.DrawContext;
@@ -56,7 +55,7 @@ public class PickSupport
             return null;
 
         int colorCode = dc.getPickColor(pickPoint);
-        if (colorCode == dc.getClearColor())
+        if (colorCode == 0) // getPickColor returns 0 if the pick point selects the clear color.
             return null;
 
         PickedObject pickedObject = getPickableObjects().get(colorCode);
