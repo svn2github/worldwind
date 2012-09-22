@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind;
 
 import android.graphics.Point;
@@ -218,6 +217,23 @@ public class BasicView extends WWObjectImpl implements View
             return false;
 
         return globe.getIntersectionPosition(line, result);
+    }
+
+    /** {@inheritDoc} */
+    public double computePixelSizeAtDistance(double distance)
+    {
+        if (distance < 0)
+        {
+            String msg = Logging.getMessage("generic.DistanceIsInvalid", distance);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Replace a zero viewport width with 1. This effectively ignores the viewport width.
+        double viewportWidth = this.viewport.width > 0 ? this.viewport.width : 1;
+        double pixelSizeScale = 2 * this.fieldOfView.tanHalfAngle() / viewportWidth;
+
+        return distance * pixelSizeScale;
     }
 
     /** {@inheritDoc} */

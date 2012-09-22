@@ -1,15 +1,14 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.render;
 
 import android.graphics.Point;
 import android.opengl.GLES20;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.cache.GpuResourceCache;
-import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.*;
@@ -48,6 +47,8 @@ public class DrawContext extends WWObjectImpl
         }
     }
 
+    protected static final float DEFAULT_DEPTH_OFFSET_FACTOR = 1f;
+    protected static final float DEFAULT_DEPTH_OFFSET_UNITS = 1f;
     protected static final double DEFAULT_VERTICAL_EXAGGERATION = 1;
 
     protected int viewportWidth;
@@ -596,5 +597,156 @@ public class DrawContext extends WWObjectImpl
         }
 
         this.perFrameStatistics.add(new PerformanceStatistic(key, displayName, value));
+    }
+
+    /**
+     * Indicates whether a specified extent is smaller than a specified number of pixels for the current view.
+     *
+     * @param extent    the extent to test. May be null, in which case this method returns false.
+     * @param numPixels the number of pixels at and below which the extent is considered too small.
+     *
+     * @return true if the projected extent is smaller than the specified number of pixels, otherwise false.
+     *
+     * @throws IllegalArgumentException if the extend is <code>null</code>.
+     */
+    public boolean isSmall(Extent extent, int numPixels)
+    {
+        if (extent == null)
+        {
+            String msg = Logging.getMessage("nullValue.ExtentIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // TODO: John Burkey proposed the following in 2011, in reference to Collada model performance:
+        // Couldnt we make this minimum dimension so box could return small when one dim is narrow? I see really skinny
+        // telephone poles that dont need to be rendered at distance but are tall.
+        double distance = this.getView().getEyePoint().distanceTo3(extent.getCenter());
+        double extentInMeters = 2 * extent.getRadius();
+        double numPixelsIn = numPixels * this.getView().computePixelSizeAtDistance(distance);
+
+        return extentInMeters <= numPixelsIn;
+    }
+
+    /**
+     * Performs a multi-pass rendering technique to ensure that outlines around filled shapes are drawn correctly when
+     * blending or ant-aliasing is performed, and that filled portions of the shape resolve depth-buffer fighting with
+     * shapes previously drawn in favor of the current shape.
+     *
+     * @param renderer an object implementing the {@link gov.nasa.worldwind.render.OutlinedShape} interface for the
+     *                 shape.
+     * @param shape    the shape to render.
+     *
+     * @throws IllegalArgumentException if either the renderer or the shape are <code>null</code>.
+     * @see gov.nasa.worldwind.render.OutlinedShape
+     */
+    public void drawOutlinedShape(OutlinedShape renderer, Object shape)
+    {
+        if (renderer == null)
+        {
+            String msg = Logging.getMessage("nullValue.RendererIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (shape == null)
+        {
+            String msg = Logging.getMessage("nullValue.ShapeIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Draw the outlined shape using a multiple pass algorithm. The motivation for this algorithm is twofold:
+        //
+        // * The outline appears both in front of and behind the shape. If the outline is drawn using GL line smoothing
+        // or GL blending, then either the line must be broken into two parts, or rendered in two passes.
+        //
+        // * If depth offset is enabled, we want draw the shape on top of other intersecting shapes with similar depth
+        // values to eliminate z-fighting between shapes. However we do not wish to offset both the depth and color
+        // values, which would cause a cascading increase in depth offset when many shapes are drawn.
+        //
+        // These issues are resolved by making several passes for the interior and outline, as follows:
+
+        if (this.isDeepPickingEnabled())
+        {
+            if (renderer.isDrawInterior(this, shape))
+                renderer.drawInterior(this, shape);
+
+            if (renderer.isDrawOutline(this, shape)) // the line might extend outside the interior's projection
+                renderer.drawOutline(this, shape);
+
+            return;
+        }
+
+        try
+        {
+            // If the outline and interior are enabled, then draw the outline but do not affect the depth buffer. The
+            // fill pixels contribute the depth values. When the interior is drawn, it draws on top of these colors, and
+            // the outline is be visible behind the potentially transparent interior.
+            if (renderer.isDrawOutline(this, shape) && renderer.isDrawInterior(this, shape))
+            {
+                GLES20.glColorMask(true, true, true, true);
+                GLES20.glDepthMask(false);
+
+                renderer.drawOutline(this, shape);
+            }
+
+            // If the interior is enabled, then make two passes as follows. The first pass draws the interior depth
+            // values with a depth offset (likely away from the eye). This enables the shape to contribute to the
+            // depth buffer and occlude other geometries as it normally would. The second pass draws the interior color
+            // values without a depth offset, and does not affect the depth buffer. This giving the shape outline depth
+            // priority over the fill, and gives the fill depth priority over other shapes drawn with depth offset
+            // enabled. By drawing the colors without depth offset, we avoid the problem of having to use ever
+            // increasing depth offsets.
+            if (renderer.isDrawInterior(this, shape))
+            {
+                if (renderer.isEnableDepthOffset(this, shape))
+                {
+                    // Draw depth.
+                    Double depthOffsetFactor = renderer.getDepthOffsetFactor(this, shape);
+                    Double depthOffsetUnits = renderer.getDepthOffsetUnits(this, shape);
+                    GLES20.glColorMask(false, false, false, false);
+                    GLES20.glDepthMask(true);
+                    GLES20.glEnable(GLES20.GL_POLYGON_OFFSET_FILL);
+                    GLES20.glPolygonOffset(
+                        depthOffsetFactor != null ? depthOffsetFactor.floatValue() : DEFAULT_DEPTH_OFFSET_FACTOR,
+                        depthOffsetUnits != null ? depthOffsetUnits.floatValue() : DEFAULT_DEPTH_OFFSET_UNITS);
+
+                    renderer.drawInterior(this, shape);
+
+                    // Draw color.
+                    GLES20.glColorMask(true, true, true, true);
+                    GLES20.glDepthMask(false);
+                    GLES20.glDisable(GLES20.GL_POLYGON_OFFSET_FILL);
+
+                    renderer.drawInterior(this, shape);
+                }
+                else
+                {
+                    GLES20.glColorMask(true, true, true, true);
+                    GLES20.glDepthMask(true);
+
+                    renderer.drawInterior(this, shape);
+                }
+            }
+
+            // If the outline is enabled, then draw the outline color and depth values. This blends outline colors with
+            // the interior colors.
+            if (renderer.isDrawOutline(this, shape))
+            {
+                GLES20.glColorMask(true, true, true, true);
+                GLES20.glDepthMask(true);
+
+                renderer.drawOutline(this, shape);
+            }
+        }
+        finally
+        {
+            // Restore the default GL state values we modified above.
+            GLES20.glDisable(GLES20.GL_POLYGON_OFFSET_FILL);
+            GLES20.glColorMask(true, true, true, true);
+            GLES20.glDepthMask(true);
+            GLES20.glPolygonOffset(0f, 0f);
+        }
     }
 }

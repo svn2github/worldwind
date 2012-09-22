@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind;
 
 import android.graphics.Point;
@@ -181,6 +180,20 @@ public interface View extends WWObject
      *         <code>false</code> otherwise.
      */
     boolean computePositionFromScreenPoint(Point point, Globe globe, Position result);
+
+    /**
+     * Computes the dimension (in meters) that a screen pixel would cover at a given distance from the eye point (also
+     * in meters). The distance is interpreted as the linear distance between the eye point and the world point in
+     * question. This computation assumes that pixels dimensions are square, and therefore returns a single dimension.
+     *
+     * @param distance the distance in meters from the eye point. This value must be positive or zero, but is otherwise
+     *                 unbounded.
+     *
+     * @return the dimension of a pixel in meters at the given distance.
+     *
+     * @throws IllegalArgumentException if distance is less than zero.
+     */
+    double computePixelSizeAtDistance(double distance);
 
     void apply(DrawContext dc);
 }
