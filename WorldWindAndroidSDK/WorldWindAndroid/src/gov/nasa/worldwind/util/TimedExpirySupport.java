@@ -12,7 +12,7 @@ import java.util.Random;
  * Handles expiration after some interval of time has passed. Expiration time is computed as a random value between a
  * specified minimum and a specified maximum delay interval.
  *
- * @version $Id: TimedExpirySupport.java 1 2011-07-16 23:22:47Z dcollins $
+ * @version $Id$
  */
 public class TimedExpirySupport
 {
