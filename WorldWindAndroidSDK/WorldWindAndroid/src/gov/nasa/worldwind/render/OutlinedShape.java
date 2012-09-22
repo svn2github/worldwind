@@ -11,7 +11,7 @@ package gov.nasa.worldwind.render;
  * interface are called by the draw context during the multi-pass rendering.
  *
  * @author tag
- * @version $Id: OutlinedShape.java 1 2011-07-16 23:22:47Z dcollins $
+ * @version $Id$
  */
 public interface OutlinedShape
 {
