@@ -11,12 +11,21 @@ package gov.nasa.worldwind.avlist;
  */
 public interface AVKey
 {
+    /** Altitude mode constant indicating that altitude values are interpreted as being relative to mean sea level. */
+    final String ABSOLUTE = "gov.nasa.worldwind.avkey.Absolute";
     final String AVERAGE_TILE_SIZE = "gov.nasa.worldwind.avkey.AverageTileSize";
     final String AVAILABLE_IMAGE_FORMATS = "gov.nasa.worldwind.avkey.AvailableImageFormats";
 
     final String BIG_ENDIAN = "gov.nasa.worldwind.avkey.BigEndian";
     final String BYTE_ORDER = "gov.nasa.worldwind.avkey.ByteOrder";
 
+    /** Altitude mode constant indicating that altitude values are ignored, and are replaced with the terrain height. */
+    final String CLAMP_TO_GROUND = "gov.nasa.worldwind.avkey.ClampToGround";
+    /**
+     * Altitude mode constant indicating that a shape has a constant height. For example, a building may have a constant
+     * height of 10m which does not vary depending on the ground level beneath each of the building's corners.
+     */
+    final String CONSTANT = "gov.nasa.worldwind.avkey.Constant";
     final String CONSTRUCTION_PARAMETERS = "gov.nasa.worldwind.avkey.ConstructionParameters";
 
     final String DATA_CACHE_NAME = "gov.nasa.worldwind.avkey.DataCacheName";
@@ -55,6 +64,13 @@ public interface AVKey
     final String GLOBE_CLASS_NAME = "gov.nasa.worldwind.avkey.GlobeClassName";
     final String GPU_RESOURCE_CACHE_SIZE = "gov.nasa.worldwind.avkey.GpuResourceCacheSize";
     final String GPU_TEXTURE_TILE_CACHE_SIZE = "gov.nasa.worldwind.avkey.GpuTextureTileCacheSize";
+    /**
+     * Path type constant indicating the great circle method for interpolating between two geographic locations. When
+     * used to specify the path type for a shape, this indicates that each of the shape's defining points are connected
+     * by a great circle path. The resultant curve in world coordinates always represents the shortest path between the
+     * two endpoints.
+     */
+    final String GREAT_CIRCLE = "gov.nasa.worldwind.avkey.GreatCircle";
 
     final String HEIGHT = "gov.nasa.worldwind.avkey.Height";
 
@@ -77,6 +93,13 @@ public interface AVKey
     final String LEVEL_NAME = "gov.nasa.worldwind.avkey.LevelName";
     final String LEVEL_NUMBER = "gov.nasa.worldwind.avkey.LevelNumber";
     final String LEVEL_ZERO_TILE_DELTA = "gov.nasa.worldwind.LevelZeroTileDelta";
+    /**
+     * Path type constant the linear method for interpolating between two geographic locations. When used to specify the
+     * path type for a shape, this indicates that each of the shape's defining points are connected by a straight line
+     * in geographic space. The resultant curve in world coordinates is almost never a straight path between the two
+     * endpoints.
+     */
+    final String LINEAR = "gov.nasa.worldwind.avkey.Linear";
     final String LITTLE_ENDIAN = "gov.nasa.worldwind.avkey.LittleEndian";
     final String LOGCAT_TAG = "gov.nasa.worldwind.avkey.LogcatTag";
 
@@ -122,6 +145,8 @@ public interface AVKey
     final String POSITION = "gov.nasa.worldwind.avkey.Position";
     final String PROGRESS = "gov.nasa.worldwind.avkey.Progress";
 
+    /** Altitude mode constant indicating that altitude values are interpreted as being relative to ground level. */
+    final String RELATIVE_TO_GROUND = "gov.nasa.worldwind.avkey.RelativeToGround";
     final String REPAINT = "gov.nasa.worldwind.avkey.Repaint";
     final String RETRIEVAL_POOL_SIZE = "gov.nasa.worldwind.avkey.RetrievalPoolSize";
     final String RETRIEVAL_QUEUE_SIZE = "gov.nasa.worldwind.avkey.RetrievalQueueSize";
@@ -131,6 +156,13 @@ public interface AVKey
     final String RETRIEVER_STATE = "gov.nasa.worldwind.avkey.RetrieverState";
     final String RETRIEVAL_STATE_ERROR = "gov.nasa.worldwind.avkey.RetrievalStateError";
     final String RETRIEVAL_STATE_SUCCESSFUL = "gov.nasa.worldwind.avkey.RetrievalStateSuccessful";
+    /**
+     * Path type constant indicating the rhumb method for interpolating between two geographic locations. When used to
+     * specify the path type for a shape, this indicates that each of the shape's defining points are connected by a
+     * path with constant azimuth, the angle relative to North. The resultant curve in world coordinates is almost never
+     * a straight path between the two endpoints, but does maintain a constant azimuth.
+     */
+    final String RHUMB_LINE = "gov.nasa.worldwind.avkey.RhumbLine";
 
     final String SCENE_CONTROLLER_CLASS_NAME = "gov.nasa.worldwind.avkey.SceneControllerClassName";
     final String SECTOR = "gov.nasa.worldwind.avkey.Sector";
