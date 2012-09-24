@@ -662,7 +662,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         if (ptA == null || ptB == null)
             return null;
 
-        if (pA.getLatitude().equals(pB.getLatitude()) && pA.getLongitude().equals(pB.getLongitude()))
+        if (pA.getLatitude().equals(pB.getLatitude()) && pA.getLongitude().equals(pB.getLongitude())
+            && pA.getAltitude() == pB.getAltitude())
             return null;
 
         Line line = new Line(ptA, ptB.subtract3(ptA));
