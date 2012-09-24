@@ -62,9 +62,9 @@ package gov.nasa.worldwind.render;
 public interface ShapeAttributes
 {
     /**
-     * Sets this bundle's attributes to those of the specified bundle. The specified bundle's attributes are copied into
-     * this bundle. This does not retain any reference to the specified bundle's color attributes. The RGBA components
-     * from each color are copied into this bundle's attributes.
+     * Sets this bundle's attributes to those of the specified bundle. This does not retain any reference to the
+     * specified attributes, or modify them in any way. The specified bundle's attributes are copied into this bundle.
+     * The RGBA components from each color attribute are copied into this bundle's corresponding color attributes.
      *
      * @param attributes the new attribute values.
      *
@@ -144,9 +144,9 @@ public interface ShapeAttributes
     Color getInteriorColor();
 
     /**
-     * Specifies the RGBA color of the shape's interior. This does not retain any reference to the specified color. The
-     * color's RGBA components are copied into this bundle's interior color instance. See the section above on <i>Color
-     * and Lighting</i> for more information on shape colors.
+     * Specifies the RGBA color of the shape's interior. This does not retain any reference to the specified color, or
+     * modify it in any way. The color's RGBA components are copied into this bundle's interior color instance. See the
+     * section above on <i>Color and Lighting</i> for more information on shape colors.
      *
      * @param color the RGBA color to apply to the shape's interior.
      *
@@ -185,9 +185,9 @@ public interface ShapeAttributes
     Color getOutlineColor();
 
     /**
-     * Specifies the color of the shape's outline. This does not retain any reference to the specified color. The
-     * color's RGBA components are copied into this bundle's outline color instance. See the section above on <i>Color
-     * and Lighting</i> for more information on shape colors.
+     * Specifies the color of the shape's outline. This does not retain any reference to the specified color, or modify
+     * it in any way. The color's RGBA components are copied into this bundle's outline color instance. See the section
+     * above on <i>Color and Lighting</i> for more information on shape colors.
      *
      * @param color the RGBA color to apply to the shape's outline.
      *

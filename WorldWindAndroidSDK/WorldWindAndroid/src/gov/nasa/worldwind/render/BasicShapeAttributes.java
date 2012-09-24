@@ -50,9 +50,10 @@ public class BasicShapeAttributes implements ShapeAttributes
     }
 
     /**
-     * Creates a new BasicShapeAttributes with the specified attributes. The specified bundle's attributes are copied
-     * into the new bundle. This does not retain any reference to the specified bundle's color attributes. The RGBA
-     * components from each color are copied into this bundle's attributes.
+     * Creates a new BasicShapeAttributes with the specified attributes. This does not retain any reference to the
+     * specified attributes, or modify them in any way. The specified bundle's attributes are copied into the new
+     * bundle. The RGBA components from each color attribute are copied into the new bundle's corresponding color
+     * attributes.
      *
      * @param attributes the attribute values used to create the new bundle.
      *

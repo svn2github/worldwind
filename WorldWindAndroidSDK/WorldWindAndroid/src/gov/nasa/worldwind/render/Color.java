@@ -181,7 +181,9 @@ public class Color
     }
 
     /**
-     * Creates a new color with the RGBA components from the specified color.
+     * Creates a new color with the RGBA components from the specified color. This does not retain any reference to the
+     * specified color, or modify it in any way. The color's RGBA components are copied into this color's RGBA
+     * components.
      *
      * @param color the color's RGBA components as a color.
      *
@@ -426,17 +428,9 @@ public class Color
     }
 
     /**
-     * Returns a new color who's RGBA components are the same as this color's RGBA components.
-     *
-     * @return a copy of this color.
-     */
-    public Color copy()
-    {
-        return new Color(this.r, this.g, this.b, this.a);
-    }
-
-    /**
-     * Sets this color's RGBA components to those of the specified color.
+     * Sets this color's RGBA components to those of the specified color. This does not retain any reference to the
+     * specified color, or modify it in any way. The color's RGBA components are copied into this color's RGBA
+     * components.
      *
      * @param color the new RGBA components as a color.
      *
