@@ -12,6 +12,8 @@
     <Property name="gov.nasa.worldwind.avkey.ModelClassName" value="gov.nasa.worldwind.BasicModel"/>
     <Property name="gov.nasa.worldwind.avkey.GlobeClassName"
               value="gov.nasa.worldwind.globes.Earth"/>
+    <Property name="gov.nasa.worldwind.avkey.EarthElevationModelConfigFile"
+              value="config/Earth/EarthElevationModelAsBil16.xml"/>
     <Property name="gov.nasa.worldwind.avkey.InitialLatitude" value="38"/>
     <Property name="gov.nasa.worldwind.avkey.InitialAltitude" value="2.5e7"/>
     <Property name="gov.nasa.worldwind.avkey.ViewClassName" value="gov.nasa.worldwind.BasicView"/>
@@ -41,7 +43,7 @@
     <Property name="gov.nasa.worldwind.avkey.VerticalExaggeration" value="1"/>
     <Property name="gov.nasa.worldwind.avkey.GpuResourceCacheSize" value="40000000"/>
     <Property name="gov.nasa.worldwind.avkey.ElevationTileCacheSize" value="1000000"/>
-    <Property name="gov.nasa.worldwind.avkey.SectorGeometryCacheSize" value="4000000"/>
+    <Property name="gov.nasa.worldwind.avkey.SectorGeometryCacheSize" value="1000000"/>
     <Property name="gov.nasa.worldwind.avkey.SectorGeometryTileCacheSize" value="1000000"/>
     <Property name="gov.nasa.worldwind.avkey.GpuTextureTileCacheSize" value="2000000"/>
     <Property name="gov.nasa.worldwind.avkey.MaxMessageRepeat" value="10"/>
