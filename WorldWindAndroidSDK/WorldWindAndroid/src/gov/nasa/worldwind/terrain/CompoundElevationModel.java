@@ -9,7 +9,6 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.Logging;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author tag
@@ -17,14 +16,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class CompoundElevationModel extends AbstractElevationModel
 {
-    protected CopyOnWriteArrayList<ElevationModel> elevationModels = new CopyOnWriteArrayList<ElevationModel>();
+    protected ArrayList<ElevationModel> elevationModels = new ArrayList<ElevationModel>();
 
     public void dispose()
     {
-        for (ElevationModel child : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            if (child != null)
-                child.dispose();
+            if (this.elevationModels.get(i) != null)
+                this.elevationModels.get(i).dispose();
         }
     }
 
@@ -51,8 +50,10 @@ public class CompoundElevationModel extends AbstractElevationModel
             return true;
 
         // Check if the elevation model is a child of any CompoundElevationModels in our list.
-        for (ElevationModel child : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel child = this.elevationModels.get(i);
+
             if (child instanceof CompoundElevationModel)
             {
                 if (((CompoundElevationModel) child).containsElevationModel(em))
@@ -96,8 +97,10 @@ public class CompoundElevationModel extends AbstractElevationModel
             throw new IllegalArgumentException(msg);
         }
 
-        for (ElevationModel child : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel child = this.elevationModels.get(i);
+
             if (child instanceof CompoundElevationModel)
                 ((CompoundElevationModel) child).removeElevationModel(em);
         }
@@ -153,9 +156,9 @@ public class CompoundElevationModel extends AbstractElevationModel
     {
         super.setExpiryTime(expiryTime);
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            em.setExpiryTime(expiryTime);
+            this.elevationModels.get(i).setExpiryTime(expiryTime);
         }
     }
 
@@ -163,9 +166,9 @@ public class CompoundElevationModel extends AbstractElevationModel
     {
         double max = -Double.MAX_VALUE;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            double m = em.getMaxElevation();
+            double m = this.elevationModels.get(i).getMaxElevation();
             if (m > max)
                 max = m;
         }
@@ -177,9 +180,9 @@ public class CompoundElevationModel extends AbstractElevationModel
     {
         double min = Double.MAX_VALUE;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            double m = em.getMinElevation();
+            double m = this.elevationModels.get(i).getMinElevation();
             if (m < min)
                 min = m;
         }
@@ -198,9 +201,9 @@ public class CompoundElevationModel extends AbstractElevationModel
 
         double[] retVal = null;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            double[] minmax = em.getExtremeElevations(latitude, longitude);
+            double[] minmax = this.elevationModels.get(i).getExtremeElevations(latitude, longitude);
             if (retVal == null)
             {
                 retVal = new double[] {minmax[0], minmax[1]};
@@ -228,8 +231,10 @@ public class CompoundElevationModel extends AbstractElevationModel
 
         double[] retVal = null;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+
             int c = em.intersects(sector);
             if (c < 0) // no intersection
                 continue;
@@ -255,8 +260,10 @@ public class CompoundElevationModel extends AbstractElevationModel
     {
         double res = 0;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+
             if (sector != null && em.intersects(sector) < 0) // sector does not intersect elevation model
                 continue;
 
@@ -303,9 +310,9 @@ public class CompoundElevationModel extends AbstractElevationModel
 
         boolean intersects = false;
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            int c = em.intersects(sector);
+            int c = this.elevationModels.get(i).intersects(sector);
             if (c == 0) // sector fully contained in the elevation model. no need to test further
                 return 0;
 
@@ -325,9 +332,9 @@ public class CompoundElevationModel extends AbstractElevationModel
             throw new IllegalArgumentException(message);
         }
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            if (em.contains(latitude, longitude))
+            if (this.elevationModels.get(i).contains(latitude, longitude))
                 return true;
         }
 
@@ -453,8 +460,10 @@ public class CompoundElevationModel extends AbstractElevationModel
         // values at each step. ElevationModels are expected to leave the buffer untouched for locations outside their
         // coverage area.
         double resolutionAchieved = 0;
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+
             int c = em.intersects(sector);
             if (c < 0) // no intersection
                 continue;
@@ -476,9 +485,9 @@ public class CompoundElevationModel extends AbstractElevationModel
     {
         super.setNetworkRetrievalEnabled(networkRetrievalEnabled);
 
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
-            em.setNetworkRetrievalEnabled(networkRetrievalEnabled);
+            this.elevationModels.get(i).setNetworkRetrievalEnabled(networkRetrievalEnabled);
         }
     }
 
@@ -530,8 +539,10 @@ public class CompoundElevationModel extends AbstractElevationModel
 
         // Fill the buffer with ElevationModel contents from back to front, potentially overwriting values at each step.
         // ElevationModels are expected to leave the buffer untouched when data is missing at a location.
-        for (ElevationModel em : this.elevationModels)
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+
             int c = em.intersects(sector);
             if (c < 0) // no intersection
                 continue;
