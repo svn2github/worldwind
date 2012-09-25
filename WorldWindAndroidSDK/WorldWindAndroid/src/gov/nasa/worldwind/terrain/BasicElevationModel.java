@@ -54,8 +54,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     protected String elevationDataByteOrder = AVKey.LITTLE_ENDIAN;
     protected double detailHint = 0.0;
     protected final Object fileLock = new Object();
-    protected java.util.concurrent.ConcurrentHashMap<TileKey, ElevationTile> levelZeroTiles =
-        new java.util.concurrent.ConcurrentHashMap<TileKey, ElevationTile>();
     protected MemoryCache memoryCache;
     protected int extremesLevel = -1;
     protected short[] extremes = null;
@@ -453,11 +451,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected void addTileToCache(ElevationTile tile, BufferWrapper elevations)
     {
-        // Level 0 tiles are held in the model itself; other levels are placed in the memory cache.
-        if (tile.getLevelNumber() == 0)
-            this.levelZeroTiles.put(tile.getTileKey(), tile);
-        else
-            this.getMemoryCache().put(tile.getTileKey(), tile, elevations.getSizeInBytes());
+        this.getMemoryCache().put(tile.getTileKey(), tile, elevations.getSizeInBytes());
     }
 
     protected boolean areElevationsInMemory(TileKey key)
@@ -472,10 +466,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected ElevationTile getTileFromMemory(TileKey tileKey)
     {
-        if (tileKey.getLevelNumber() == 0)
-            return this.levelZeroTiles.get(tileKey);
-        else
-            return (ElevationTile) this.getMemoryCache().get(tileKey);
+        return (ElevationTile) this.getMemoryCache().get(tileKey);
     }
 
     // Read elevations from the file cache. Don't be confused by the use of a URL here: it's used so that files can
@@ -1138,7 +1129,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             final int row = ElevationTile.computeRow(delta.latitude, latitude, origin.latitude);
             final int col = ElevationTile.computeColumn(delta.longitude, longitude, origin.longitude);
 
-            final int nCols = ElevationTile.computeColumn(delta.longitude, Angle.fromDegrees(180), Angle.fromDegrees(-180)) + 1;
+            final int nCols =
+                ElevationTile.computeColumn(delta.longitude, Angle.fromDegrees(180), Angle.fromDegrees(-180)) + 1;
 
             int index = 2 * (row * nCols + col);
             double min = this.extremes[index];
@@ -1278,7 +1270,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         final int seRow = ElevationTile.computeRow(delta.latitude, sector.minLatitude, origin.latitude);
         final int seCol = ElevationTile.computeColumn(delta.longitude, sector.maxLongitude, origin.longitude);
 
-        final int nCols = ElevationTile.computeColumn(delta.longitude, Angle.fromDegrees(180), Angle.fromDegrees(-180)) + 1;
+        final int nCols = ElevationTile.computeColumn(delta.longitude, Angle.fromDegrees(180), Angle.fromDegrees(-180))
+            + 1;
 
         double min = Double.MAX_VALUE;
         double max = -Double.MAX_VALUE;
@@ -1492,7 +1485,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 {
                     fallbackRow /= 2;
                     fallbackCol /= 2;
-                    fallbackKey = new TileKey(fallbackLevelNum, fallbackRow, fallbackCol, this.levels.getLevel(fallbackLevelNum).getCacheName());
+                    fallbackKey = new TileKey(fallbackLevelNum, fallbackRow, fallbackCol,
+                        this.levels.getLevel(fallbackLevelNum).getCacheName());
 
                     tile = this.getTileFromMemory(fallbackKey);
                     if (tile != null)
@@ -1682,7 +1676,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     public ByteBuffer generateExtremeElevations(int levelNumber)
     {
         return null;
