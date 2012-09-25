@@ -27,7 +27,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * @version $Id$
  */
 // TODO: apply layer opacity during rendering
-public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory,  BulkRetrievable
+public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, BulkRetrievable
 {
     protected LevelSet levels;
     protected double detailHintOrigin = 2.8; // the default detail hint origin
@@ -396,9 +396,8 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
             Tile[] subTiles = tile.subdivide(this.levels.getLevel(tile.getLevelNumber() + 1), cache, this);
             for (Tile child : subTiles)
             {
-                // Put all sub-tiles in the terrain tile cache to avoid repeatedly allocating them each frame. Top level
-                // tiles are not cached because they are held in the topLevelTiles list. Sub tiles are placed in the
-                // cache here, and updated when their terrain geometry changes.
+                // Put all sub-tiles in the terrain tile cache to avoid repeatedly allocating them each frame. Sub
+                // tiles are placed in the cache here, and updated when their terrain geometry changes.
                 if (!cache.contains(child.getTileKey()))
                     cache.put(child.getTileKey(), child);
 
