@@ -439,8 +439,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected boolean loadElevations(ElevationTile tile, java.net.URL url) throws IOException
     {
-        BufferWrapper elevations = this.readElevations(url);
-        if (elevations == null || elevations.length() == 0)
+        short[] elevations = this.readElevations(url);
+        if (elevations == null || elevations.length == 0)
             return false;
 
         tile.setElevations(elevations);
@@ -449,9 +449,9 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         return true;
     }
 
-    protected void addTileToCache(ElevationTile tile, BufferWrapper elevations)
+    protected void addTileToCache(ElevationTile tile, short[] elevations)
     {
-        this.getMemoryCache().put(tile.getTileKey(), tile, elevations.getSizeInBytes());
+        this.getMemoryCache().put(tile.getTileKey(), tile, elevations.length * 2);
     }
 
     protected boolean areElevationsInMemory(TileKey key)
@@ -472,7 +472,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     // Read elevations from the file cache. Don't be confused by the use of a URL here: it's used so that files can
     // be read using System.getResource(URL), which will draw the data from a jar file in the classpath.
 
-    protected BufferWrapper readElevations(URL url) throws IOException
+    protected short[] readElevations(URL url) throws IOException
     {
         try
         {
@@ -482,11 +482,13 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 byteBuffer = WWIO.readURLContentToBuffer(url);
             }
 
-            // Setup parameters to instruct BufferWrapper on how to interpret the ByteBuffer.
-            AVList bufferParams = new AVListImpl();
-            bufferParams.setValue(AVKey.DATA_TYPE, this.elevationDataType);
-            bufferParams.setValue(AVKey.BYTE_ORDER, this.elevationDataByteOrder);
-            return BufferWrapper.wrap(byteBuffer, bufferParams);
+            // This byte order assignment assumes the WW .BIL format. It will be generalized when the new server
+            // setup is integrated.
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            ShortBuffer shortBuffer = byteBuffer.asShortBuffer();
+            short[] elevations = new short[shortBuffer.limit()];
+            shortBuffer.get(elevations);
+            return elevations;
         }
         catch (java.io.IOException e)
         {
@@ -851,15 +853,15 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             for (ElevationTile tile : this.tiles)
             {
-                BufferWrapper elevations = tile.getElevations();
+                short[] elevations = tile.getElevations();
 
-                int len = elevations.length();
+                int len = elevations.length;
                 if (len == 0)
                     return null;
 
                 for (int i = 0; i < len; i++)
                 {
-                    this.elevationModel.determineExtremes(elevations.getDouble(i), this.extremes);
+                    this.elevationModel.determineExtremes(elevations[i], this.extremes);
                 }
             }
 
@@ -1069,7 +1071,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected double lookupElevation(Angle latitude, Angle longitude, final ElevationTile tile)
     {
-        BufferWrapper elevations = tile.getElevations();
+        short[] elevations = tile.getElevations();
         Sector sector = tile.getSector();
         final int tileHeight = tile.getHeight();
         final int tileWidth = tile.getWidth();
@@ -1084,8 +1086,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         int i = (int) ((tileWidth - 1) * sLon);
         int k = j * tileWidth + i;
 
-        double eLeft = elevations.getDouble(k);
-        double eRight = i < (tileWidth - 1) ? elevations.getDouble(k + 1) : eLeft;
+        double eLeft = elevations[k];
+        double eRight = i < (tileWidth - 1) ? elevations[k + 1] : eLeft;
 
         if (this.getMissingDataSignal() == eLeft || this.getMissingDataSignal() == eRight)
             return this.getMissingDataSignal();
@@ -1099,8 +1101,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         if (j < tileHeight - 1 && i < tileWidth - 1)
         {
-            eLeft = elevations.getDouble(k + tileWidth);
-            eRight = elevations.getDouble(k + tileWidth + 1);
+            eLeft = elevations[k + tileWidth];
+            eRight = elevations[k + tileWidth + 1];
 
             if (this.getMissingDataSignal() == eLeft || this.getMissingDataSignal() == eRight)
                 return this.getMissingDataSignal();
@@ -1339,7 +1341,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected static class ElevationTile extends gov.nasa.worldwind.util.Tile implements Cacheable
     {
-        protected BufferWrapper elevations; // the elevations themselves
+        protected short[] elevations; // the elevations themselves
         protected long updateTime = 0;
 
         protected ElevationTile(Sector sector, Level level, int row, int col)
@@ -1347,12 +1349,12 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             super(sector, level, row, col);
         }
 
-        public BufferWrapper getElevations()
+        public short[] getElevations()
         {
             return this.elevations;
         }
 
-        public void setElevations(BufferWrapper elevations)
+        public void setElevations(short[] elevations)
         {
             this.elevations = elevations;
             this.updateTime = System.currentTimeMillis();
@@ -1401,7 +1403,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             for (int i = 0; i < 4; i++)
             {
                 int k = this.computeElevationIndex(corners[i]);
-                indices[i] = k < 0 ? 0 : k > this.elevations.length() - 1 ? this.elevations.length() - 1 : k;
+                indices[i] = k < 0 ? 0 : k > this.elevations.length - 1 ? this.elevations.length - 1 : k;
             }
 
             int sw = indices[0];
@@ -1418,7 +1420,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 for (int i = 0; i < nCols; i++)
                 {
                     int k = nw + i;
-                    em.determineExtremes(this.elevations.getDouble(k), extremes);
+                    em.determineExtremes(this.elevations[k], extremes);
                 }
 
                 nw += this.getWidth();
