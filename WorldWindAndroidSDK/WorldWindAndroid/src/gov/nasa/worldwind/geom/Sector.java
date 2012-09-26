@@ -82,6 +82,41 @@ public class Sector implements Iterable<LatLon>
         return Sector.fromDegrees(-90, 90, -180, 180);
     }
 
+    public static Sector fromBoundingSector(Iterable<? extends LatLon> iterable)
+    {
+        if (iterable == null)
+        {
+            String msg = Logging.getMessage("nullValue.IterableIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!iterable.iterator().hasNext())
+            return null;
+
+        double minLat = 90;
+        double minLon = 180;
+        double maxLat = -90;
+        double maxLon = -180;
+
+        for (LatLon location : iterable)
+        {
+            double lat = location.latitude.degrees;
+            if (lat < minLat)
+                minLat = lat;
+            if (lat > maxLat)
+                maxLat = lat;
+
+            double lon = location.longitude.degrees;
+            if (lon < minLon)
+                minLon = lon;
+            if (lon > maxLon)
+                maxLon = lon;
+        }
+
+        return Sector.fromDegrees(minLat, maxLat, minLon, maxLon);
+    }
+
     /**
      * Returns a {@link gov.nasa.worldwind.geom.Box} that bounds the specified sector on the surface of the specified
      * {@link gov.nasa.worldwind.globes.Globe}. The returned box encloses the globe's surface terrain in the sector,
