@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.render;
 
 import android.opengl.GLES20;
@@ -329,8 +328,67 @@ public class GpuProgram implements Cacheable, Disposable
         return location;
     }
 
-    // TODO: rename this method as loadUniform4f to clarify its purpose
-    public void loadUniformVec4(String name, double x, double y, double z, double w)
+    public void loadUniform1f(String name, double x)
+    {
+        if (WWUtil.isEmpty(name))
+        {
+            String msg = Logging.getMessage("nullValue.NameIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int location = this.getUniformLocation(name);
+        if (location < 0)
+        {
+            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        GLES20.glUniform1f(location, (float) x);
+    }
+
+    public void loadUniform2f(String name, double x, double y)
+    {
+        if (WWUtil.isEmpty(name))
+        {
+            String msg = Logging.getMessage("nullValue.NameIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int location = this.getUniformLocation(name);
+        if (location < 0)
+        {
+            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        GLES20.glUniform2f(location, (float) x, (float) y);
+    }
+
+    public void loadUniform3f(String name, double x, double y, double z)
+    {
+        if (WWUtil.isEmpty(name))
+        {
+            String msg = Logging.getMessage("nullValue.NameIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int location = this.getUniformLocation(name);
+        if (location < 0)
+        {
+            String msg = Logging.getMessage("GL.UniformNameIsInvalid", name);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        GLES20.glUniform3f(location, (float) x, (float) y, (float) z);
+    }
+
+    public void loadUniform4f(String name, double x, double y, double z, double w)
     {
         if (WWUtil.isEmpty(name))
         {

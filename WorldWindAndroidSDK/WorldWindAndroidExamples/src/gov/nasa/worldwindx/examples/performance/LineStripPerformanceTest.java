@@ -122,7 +122,7 @@ public class LineStripPerformanceTest extends AbstractPerformanceTest
 
     protected void drawLineStrip(int vertexPointLocation)
     {
-        this.program.loadUniformVec4("color", 1f, 1f, 1f, 1f);
+        this.program.loadUniform4f("color", 1, 1, 1, 1);
 
         if (this.enableVertexBufferObjects)
         {

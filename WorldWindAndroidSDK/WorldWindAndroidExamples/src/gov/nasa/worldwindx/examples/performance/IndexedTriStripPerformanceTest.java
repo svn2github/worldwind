@@ -163,7 +163,7 @@ public class IndexedTriStripPerformanceTest extends AbstractPerformanceTest
     protected void drawTriStrip(int vertexPointLocation)
     {
         this.program.loadUniformMatrix("mvpMatrix", this.mvpMatrix);
-        this.program.loadUniformVec4("color", 1f, 1f, 1f, 1f);
+        this.program.loadUniform4f("color", 1, 1, 1, 1);
 
         if (this.enableVertexBufferObjects)
         {

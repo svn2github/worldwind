@@ -136,7 +136,7 @@ public class QuadPerformanceTest extends AbstractPerformanceTest
                 this.mvpMatrix.multiplyAndSet(screenQuad.transformMatrix);
 
                 this.program.loadUniformMatrix("mvpMatrix", this.mvpMatrix);
-                this.program.loadUniformVec4("color", 1f, 1f, 1f, 1f);
+                this.program.loadUniform4f("color", 1, 1, 1, 1);
 
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
             }
