@@ -19,6 +19,21 @@ public interface SectorGeometry
 
     Extent getExtent();
 
+    /**
+     * Computes the point in model coordinates on the geometry's surface at the specified location.
+     *
+     * @param latitude  the latitude of the point to compute.
+     * @param longitude the longitude of the point to compute.
+     * @param result    contains the model coordinate point in meters, relative to an origin of (0, 0, 0) after this
+     *                  method exits. The result parameter is left unchanged if this method returns <code>false</code>.
+     *
+     * @return <code>true</code> if the specified location is within this geometry's sector and its internal geometry
+     *         exists, otherwise <code>false</code>.
+     *
+     * @throws IllegalArgumentException if any of the latitude, longitude or result are <code>null</code>.
+     */
+    boolean getSurfacePoint(Angle latitude, Angle longitude, Vec4 result);
+
     void render(DrawContext dc);
 
     void renderWireframe(DrawContext dc);
