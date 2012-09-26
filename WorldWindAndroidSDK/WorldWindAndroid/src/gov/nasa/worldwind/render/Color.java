@@ -155,6 +155,53 @@ public class Color
     }
 
     /**
+     * Computes the component-wise linear interpolation of the specified colors and stores the output in the result
+     * parameter. This does not retain any reference to the specified colors, or modify them in any way.
+     * <p/>
+     * The interpolation factor amount is a floating-point value in the range [0.0, 1.0] which defines the weight given
+     * to each color. Each of the RGBA components in the colors are interpolated according to the function: <code>(1 -
+     * amount) * ca + amount * cb</code>, where ca and cb are components of lhs and rhs, respectively.
+     * <p/>
+     *
+     * @param amount the interpolation factor.
+     * @param lhs    the first color.
+     * @param rhs    the second color.
+     * @param result contains the linear interpolation of lhs and rhs after this method exits.
+     *
+     * @throws IllegalArgumentException if either <code>lhs</code> or <code>rhs</code> are <code>null</code>.
+     */
+    public static void interpolate(double amount, Color lhs, Color rhs, Color result)
+    {
+        if (lhs == null)
+        {
+            String msg = Logging.getMessage("nullValue.LhsIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (rhs == null)
+        {
+            String msg = Logging.getMessage("nullValue.RhsIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (result == null)
+        {
+            String msg = Logging.getMessage("nullValue.ResultIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double t = (amount < 0 ? 0 : (amount > 1 ? 1 : amount));
+
+        result.r = lhs.r + t * (rhs.r - lhs.r);
+        result.g = lhs.g + t * (rhs.g - lhs.g);
+        result.b = lhs.b + t * (rhs.b - lhs.b);
+        result.a = lhs.a + t * (rhs.a - lhs.a);
+    }
+
+    /**
      * The color's red component as a floating-point value in the range [0.0, 1.0], where 0.0 indicates zero intensity
      * and 1.0 indicates full intensity. Initially 0.0.
      */
@@ -610,5 +657,38 @@ public class Color
             (int) (255 * this.g + 0.5),
             (int) (255 * this.b + 0.5),
             (int) (255 * this.a + 0.5));
+    }
+
+    /**
+     * @param array
+     * @param offset
+     */
+    public void toArray4f(float[] array, int offset)
+    {
+        if (array == null)
+        {
+            String msg = Logging.getMessage("nullValue.ArrayIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (array.length < 4)
+        {
+            String msg = Logging.getMessage("generic.ArrayInvalidLength", array.length);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (offset < 0 || offset + 4 > array.length)
+        {
+            String msg = Logging.getMessage("generic.OffsetIsInvalid", offset);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        array[offset] = (float) this.r;
+        array[offset + 1] = (float) this.g;
+        array[offset + 2] = (float) this.b;
+        array[offset + 3] = (float) this.a;
     }
 }
