@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
@@ -384,6 +383,44 @@ public class Frustum
         }
 
         return extent.intersects(this);
+    }
+
+    /**
+     * Indicates whether a specified point is within this frustum.
+     *
+     * @param point the point to test.
+     *
+     * @return <code>true</code> if the point is within the frustum, otherwise <code>false</code>.
+     *
+     * @throws IllegalArgumentException if the point is <code>null</code>.
+     */
+    public boolean contains(Vec4 point)
+    {
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // See if the point is entirely within the frustum. The dot product of the point with each plane's vector
+        // provides a distance to each plane. If this distance is less than 0, the point is clipped by that plane and
+        // neither intersects nor is contained by the space enclosed by this Frustum.
+
+        if (this.far.dot(point) <= 0)
+            return false;
+        if (this.left.dot(point) <= 0)
+            return false;
+        if (this.right.dot(point) <= 0)
+            return false;
+        if (this.top.dot(point) <= 0)
+            return false;
+        if (this.bottom.dot(point) <= 0)
+            return false;
+        if (this.near.dot(point) <= 0)
+            return false;
+
+        return true;
     }
 
     public Frustum transformBy(Matrix matrix)
