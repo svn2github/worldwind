@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
@@ -13,6 +12,61 @@ import gov.nasa.worldwind.util.Logging;
  */
 public class Line
 {
+    public static double distanceToSegment(Vec4 p0, Vec4 p1, Vec4 point)
+    {
+        Vec4 pb = nearestPointToSegment(p0, p1, point);
+
+        return point.distanceTo3(pb);
+    }
+
+    /**
+     * Finds the closest point to a third point of a segment defined by two points.
+     *
+     * @param p0    The first endpoint of the segment.
+     * @param p1    The second endpoint of the segment.
+     * @param point The point outside the segment whose closest point on the segment is desired.
+     *
+     * @return The closest point on (p0, p1) to point. Note that this will be p0 or p1 themselves whenever the closest
+     *         point on the <em>line</em> defined by p0 and p1 is outside the segment (i.e., the results are bounded by
+     *         the segment endpoints).
+     */
+    public static Vec4 nearestPointToSegment(Vec4 p0, Vec4 p1, Vec4 point)
+    {
+        if (p0 == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (p1 == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Vec4 v = p1.subtract3(p0);
+        Vec4 w = point.subtract3(p0);
+
+        double c1 = w.dot3(v);
+        double c2 = v.dot3(v);
+
+        if (c1 <= 0)
+            return p0;
+        if (c2 <= c1)
+            return p1;
+
+        return p0.add3(v.multiply3(c1 / c2));
+    }
+
     protected final Vec4 origin;
     protected final Vec4 direction;
 
