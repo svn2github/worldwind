@@ -7,6 +7,8 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
 
+import java.nio.FloatBuffer;
+
 /**
  * @author dcollins
  * @version $Id$
@@ -642,15 +644,15 @@ public class Vec4
     }
 
     /**
-     * Returns the arithmetic mean of the x, y, z coordinates of the specified points Iterable. This returns null if the
-     * Iterable contains no points, or if all of the points are null.
+     * Returns the arithmetic mean of the x, y, z coordinates of the specified points Iterable. This returns
+     * <code>null</code> if the Iterable contains no points, or if all of the points are <code>null</code>.
      *
      * @param points the Iterable of points which define the returned arithmetic mean.
      *
-     * @return the arithmetic mean point of the specified points Iterable, or null if the Iterable is empty or contains
-     *         only null points.
+     * @return the arithmetic mean point of the specified points Iterable, or <code>null</code> if the Iterable is empty
+     *         or contains only <code>null</code> points.
      *
-     * @throws IllegalArgumentException if the Iterable is null.
+     * @throws IllegalArgumentException if the Iterable is <code>null</code>.
      */
     public static Vec4 computeAverage3(Iterable<? extends Vec4> points)
     {
@@ -691,7 +693,8 @@ public class Vec4
 
     /**
      * Computes the arithmetic mean of the x, y, z coordinates of the specified points Iterable and sets this vector to
-     * the computed result. This does nothing if the Iterable contains no points, or if all of the points are null.
+     * the computed result. This does nothing if the Iterable contains no points, or if all of the points are
+     * <code>null</code>.
      *
      * @param points the Iterable of points which define the returned arithmetic mean.
      *
@@ -732,6 +735,61 @@ public class Vec4
         this.z = z / (double) count;
 
         return this;
+    }
+
+    /**
+     * Returns the arithmetic mean of the x, y, z coordinates of the specified points buffer. This returns
+     * <code>null</code> if the buffer is empty or contains only a partial point.
+     * <p/>
+     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
+     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
+     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
+     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
+     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
+     * remaining elements that follow the last complete tuple.
+     *
+     * @param buffer the buffer containing the point coordinates for which to compute a bounding volume.
+     * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this
+     *               interprets the buffer has having tightly packed XYZ coordinate tuples.
+     *
+     * @return the arithmetic mean point of the specified points Iterable, or <code>null</code> if the Iterable is empty
+     *         or contains only <code>null</code> points.
+     *
+     * @throws IllegalArgumentException if the buffer is <code>null</code>, or if the stride is less than three.
+     */
+    public static Vec4 computeAverage3(FloatBuffer buffer, int stride)
+    {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (stride < 3)
+        {
+            String msg = Logging.getMessage("generic.StrideIsInvalid", stride);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int count = 0;
+        double x = 0;
+        double y = 0;
+        double z = 0;
+
+        for (int i = buffer.position(); i <= buffer.limit() - stride; i += stride)
+        {
+            count++;
+            x += buffer.get(i);
+            y += buffer.get(i + 1);
+            z += buffer.get(i + 2);
+        }
+
+        if (count == 0)
+            return null;
+
+        return new Vec4(x / (double) count, y / (double) count, z / (double) count);
     }
 
     public Vec4 cross3(Vec4 vec)

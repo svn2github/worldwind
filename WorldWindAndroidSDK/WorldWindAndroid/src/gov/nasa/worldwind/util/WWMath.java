@@ -8,6 +8,7 @@ package gov.nasa.worldwind.util;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 
+import java.nio.FloatBuffer;
 import java.util.*;
 
 /**
@@ -95,30 +96,102 @@ public class WWMath
 
     /**
      * Returns an array of normalized vectors defining the three principal axes of the x-, y-, and z-coordinates from
-     * the specified points Iterable, sorted from the most prominent axis to the least prominent. This returns null if
-     * the points Iterable is empty, or if all of the points are null. The returned array contains three normalized
-     * orthogonal vectors defining a coordinate system which best fits the distribution of the points Iterable about its
-     * arithmetic mean.
+     * the specified points Iterable, sorted from the most prominent axis to the least prominent. This returns
+     * <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>. The returned
+     * array contains three normalized orthogonal vectors defining a coordinate system which best fits the distribution
+     * of the points Iterable about its arithmetic mean.
      *
-     * @param points the Iterable of points for which to compute the principal axes.
+     * @param iterable the Iterable of points for which to compute the principal axes.
      *
      * @return the normalized principal axes of the points Iterable, sorted from the most prominent axis to the least
      *         prominent.
      *
-     * @throws IllegalArgumentException if the points Iterable is null.
+     * @throws IllegalArgumentException if the points Iterable is <code>null</code>.
      */
-    public static Vec4[] computePrincipalAxes(Iterable<? extends Vec4> points)
+    public static Vec4[] computePrincipalAxes(Iterable<? extends Vec4> iterable)
     {
-        if (points == null)
+        if (iterable == null)
         {
-            String msg = Logging.getMessage("nullValue.PointListIsNull");
+            String msg = Logging.getMessage("nullValue.IterableIsNull");
             Logging.error(msg);
             throw new IllegalArgumentException(msg);
         }
 
         // Compute the covariance matrix of the specified points Iterable. Note that Matrix.fromCovarianceOfVertices
         // returns null if the points Iterable is empty, or if all of the points are null.
-        Matrix covariance = Matrix.fromCovarianceOfPoints(points);
+        Matrix covariance = Matrix.fromCovarianceOfPoints(iterable);
+        if (covariance == null)
+            return null;
+
+        // Compute the eigenvalues and eigenvectors of the covariance matrix. Since the covariance matrix is symmetric
+        // by definition, we can safely use the method Matrix.computeEigensystemFromSymmetricMatrix3().
+        final double[] eigenValues = new double[3];
+        final Vec4[] eigenVectors = new Vec4[3];
+        Matrix.computeEigensystemFromSymmetricMatrix3(covariance, eigenValues, eigenVectors);
+
+        // Compute an index array who's entries define the order in which the eigenValues array can be sorted in
+        // ascending order.
+        Integer[] indexArray = {0, 1, 2};
+        Arrays.sort(indexArray, new Comparator<Integer>()
+        {
+            public int compare(Integer a, Integer b)
+            {
+                return Double.compare(eigenValues[a], eigenValues[b]);
+            }
+        });
+
+        // Return the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
+        // normalized orthognal vectors defining a coordinate system, which are sorted from the most prominent axis to
+        // the least prominent.
+        return new Vec4[]
+            {
+                eigenVectors[indexArray[2]].normalize3(),
+                eigenVectors[indexArray[1]].normalize3(),
+                eigenVectors[indexArray[0]].normalize3()
+            };
+    }
+
+    /**
+     * Returns an array of normalized vectors defining the three principal axes of the x-, y-, and z-coordinates from
+     * the specified buffer of points, sorted from the most prominent axis to the least prominent. This returns
+     * <code>null</code> if the buffer is empty or contains only a partial point. The returned array contains three
+     * normalized orthogonal vectors defining a coordinate system which best fits the distribution of the points about
+     * its arithmetic mean.
+     * <p/>
+     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
+     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
+     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
+     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
+     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
+     * remaining elements that follow the last complete tuple.
+     *
+     * @param buffer the buffer containing the point coordinates for which to compute the principal axes.
+     * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this
+     *               interprets the buffer has having tightly packed XYZ coordinate tuples.
+     *
+     * @return the normalized principal axes of the points, sorted from the most prominent axis to the least prominent.
+     *
+     * @throws IllegalArgumentException if the buffer is <code>null</code>, or if the stride is less than three.
+     */
+    public static Vec4[] computePrincipalAxes(FloatBuffer buffer, int stride)
+    {
+        if (buffer == null)
+        {
+            String message = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (stride < 3)
+        {
+            String msg = Logging.getMessage("generic.StrideIsInvalid", stride);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Compute the covariance matrix of the specified points Iterable. Note that Matrix.fromCovarianceOfVertices
+        // returns null if the points Iterable is empty, or if all of the points are null.
+        Matrix covariance = Matrix.fromCovarianceOfPoints(buffer, stride);
         if (covariance == null)
             return null;
 

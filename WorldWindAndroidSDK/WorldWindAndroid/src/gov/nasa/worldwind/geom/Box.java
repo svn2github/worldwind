@@ -8,6 +8,8 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.*;
 
+import java.nio.FloatBuffer;
+
 /**
  * An arbitrarily oriented box, typically used as a oriented bounding volume for a collection of points or shapes. A
  * <code>Box</code> is defined by three orthogonal axes and two positions along each of those axes. Each of the
@@ -235,6 +237,98 @@ public class Box implements Extent
     }
 
     /**
+     * Computes a <code>Box</code> that bounds a specified buffer of points. Principal axes are computed for the points
+     * and used to form a <code>Box</code>. This returns <code>null</code> if the buffer is empty or contains only a
+     * partial point.
+     * <p/>
+     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
+     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
+     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
+     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
+     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
+     * remaining elements that follow the last complete tuple.
+     *
+     * @param buffer the buffer containing the point coordinates for which to compute a bounding volume.
+     * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this
+     *               interprets the buffer has having tightly packed XYZ coordinate tuples.
+     *
+     * @return the bounding volume, with axes lengths consistent with the conventions described in the <code>Box</code>
+     *         class overview.
+     *
+     * @throws IllegalArgumentException if the buffer is null or empty, or if the stride is less than three.
+     */
+    public static Box computeBoundingBox(FloatBuffer buffer, int stride)
+    {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (stride < 3)
+        {
+            String msg = Logging.getMessage("generic.StrideIsInvalid", stride);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Vec4[] axes = WWMath.computePrincipalAxes(buffer, stride);
+        if (axes == null)
+        {
+            String msg = Logging.getMessage("generic.BufferIsEmpty");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Vec4 r = axes[0];
+        Vec4 s = axes[1];
+        Vec4 t = axes[2];
+
+        // Find the extremes along each axis.
+        double minDotR = Double.MAX_VALUE;
+        double maxDotR = -minDotR;
+        double minDotS = Double.MAX_VALUE;
+        double maxDotS = -minDotS;
+        double minDotT = Double.MAX_VALUE;
+        double maxDotT = -minDotT;
+
+        for (int i = buffer.position(); i <= buffer.limit() - stride; i += stride)
+        {
+            double x = buffer.get(i);
+            double y = buffer.get(i + 1);
+            double z = buffer.get(i + 2);
+
+            double pdr = x * r.x + y * r.y + z * r.z;
+            if (pdr < minDotR)
+                minDotR = pdr;
+            if (pdr > maxDotR)
+                maxDotR = pdr;
+
+            double pds = x * s.x + y * s.y + z * s.z;
+            if (pds < minDotS)
+                minDotS = pds;
+            if (pds > maxDotS)
+                maxDotS = pds;
+
+            double pdt = x * t.x + y * t.y + z * t.z;
+            if (pdt < minDotT)
+                minDotT = pdt;
+            if (pdt > maxDotT)
+                maxDotT = pdt;
+        }
+
+        if (maxDotR == minDotR)
+            maxDotR = minDotR + 1;
+        if (maxDotS == minDotS)
+            maxDotS = minDotS + 1;
+        if (maxDotT == minDotT)
+            maxDotT = minDotT + 1;
+
+        return new Box(axes, minDotR, maxDotR, minDotS, maxDotS, minDotT, maxDotT);
+    }
+
+    /**
      * Returns the box's center point.
      *
      * @return the box's center point.
@@ -364,6 +458,29 @@ public class Box implements Extent
         return tLength;
     }
 
+    public Box translate(Vec4 point)
+    {
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.bottomCenter.add3AndSet(point);
+        this.topCenter.add3AndSet(point);
+        this.center.add3AndSet(point);
+
+        for (int i = 0; i < this.planes.length; i++)
+        {
+            Vec4 n = this.planes[i].getNormal();
+            double d = this.planes[i].getDistance();
+            this.planes[i].set(n.x, n.y, n.z, d - n.dot3(point));
+        }
+
+        return this;
+    }
+
     /**
      * Returns the effective radius of the box as if it were a sphere. The length returned is half the square root of
      * the sum of the squares of axis lengths.
@@ -373,6 +490,20 @@ public class Box implements Extent
     public double getRadius()
     {
         return 0.5 * Math.sqrt(this.rLength * this.rLength + this.sLength * this.sLength + this.tLength * this.tLength);
+    }
+
+    /** {@inheritDoc} */
+    public double distanceTo(Vec4 point)
+    {
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double distance = point.distanceTo3(this.center) - this.getRadius();
+        return (distance < 0d) ? 0d : distance;
     }
 
     /** {@inheritDoc} */

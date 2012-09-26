@@ -30,6 +30,18 @@ public interface Extent
     double getRadius();
 
     /**
+     * Computes the distance between this extent and the specified point. This returns 0 if the point is inside this
+     * extent. This does not retain any reference to the specified point, or modify it in any way.
+     *
+     * @param point the point who's distance to this extent is computed.
+     *
+     * @return the distance between the point and this extent, or 0 if the point is inside this extent.
+     *
+     * @throws IllegalArgumentException if the point is <code>null</code>.
+     */
+    double distanceTo(Vec4 point);
+
+    /**
      * Computes the effective radius of the extent relative to a specified plane.
      *
      * @param plane the plane.

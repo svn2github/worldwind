@@ -7,6 +7,7 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
 
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 /**
@@ -332,8 +333,8 @@ public class Matrix
     }
 
     /**
-     * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable. This
-     * returns null if the points Iterable is empty, or if all of the points are null.
+     * Computes a a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable. This
+     * returns <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>.
      * <p/>
      * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point Iterable's arithmetic mean. Its layout is as follows:
@@ -345,22 +346,70 @@ public class Matrix
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point Iterable is
      * distributed evenly about its mean point.
      *
-     * @param points the Iterable of points for which to compute a Covariance matrix.
+     * @param iterable the Iterable of points for which to compute a Covariance matrix.
      *
      * @return the covariance matrix for the iterable of 3D points.
      *
-     * @throws IllegalArgumentException if the points Iterable is null.
+     * @throws IllegalArgumentException if the points Iterable is <code>null</code>.
      */
-    public static Matrix fromCovarianceOfPoints(Iterable<? extends Vec4> points)
+    public static Matrix fromCovarianceOfPoints(Iterable<? extends Vec4> iterable)
     {
-        if (points == null)
+        if (iterable == null)
         {
-            String msg = Logging.getMessage("nullValue.PointListIsNull");
+            String msg = Logging.getMessage("nullValue.IterableIsNull");
             Logging.error(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        return Matrix.fromIdentity().setCovarianceOfPoints(points);
+        return Matrix.fromIdentity().setCovarianceOfPoints(iterable);
+    }
+
+    /**
+     * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points. This
+     * returns <code>null</code> if the buffer is empty or contains only a partial point.
+     * <p/>
+     * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
+     * they're distributed about the points arithmetic mean. Its layout is as follows:
+     * <p/>
+     * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
+     * <p/>
+     * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
+     * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
+     * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified points are
+     * distributed evenly about their mean point.
+     * <p/>
+     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
+     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
+     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
+     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
+     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
+     * remaining elements that follow the last complete tuple.
+     *
+     * @param buffer the buffer containing the point coordinates for which to compute a Covariance matrix.
+     * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this
+     *               interprets the buffer has having tightly packed XYZ coordinate tuples.
+     *
+     * @return the covariance matrix for the buffer of points.
+     *
+     * @throws IllegalArgumentException if the buffer is <code>null</code>, or if the stride is less than three.
+     */
+    public static Matrix fromCovarianceOfPoints(FloatBuffer buffer, int stride)
+    {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (stride < 3)
+        {
+            String msg = Logging.getMessage("generic.StrideIsInvalid", stride);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        return Matrix.fromIdentity().setCovarianceOfPoints(buffer, stride);
     }
 
     /**
@@ -1157,8 +1206,9 @@ public class Matrix
     }
 
     /**
-     * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable. This
-     * returns null if the points Iterable is empty, or if all of the points are null.
+     * Sets this Matrix to a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable.
+     * This has no effect and returns <code>null</code> if the points Iterable is empty, or if all of the points are
+     * <code>null</code>.
      * <p/>
      * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point Iterable's arithmetic mean. Its layout is as follows:
@@ -1170,22 +1220,22 @@ public class Matrix
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point Iterable is
      * distributed evenly about its mean point.
      *
-     * @param points the Iterable of points for which to compute a Covariance matrix.
+     * @param iterable the Iterable of points for which to compute a Covariance matrix.
      *
      * @return the covariance matrix for the iterable of 3D points.
      *
-     * @throws IllegalArgumentException if the points Iterable is null.
+     * @throws IllegalArgumentException if the points Iterable is <code>null</code>.
      */
-    public Matrix setCovarianceOfPoints(Iterable<? extends Vec4> points)
+    public Matrix setCovarianceOfPoints(Iterable<? extends Vec4> iterable)
     {
-        if (points == null)
+        if (iterable == null)
         {
-            String msg = Logging.getMessage("nullValue.PointListIsNull");
+            String msg = Logging.getMessage("nullValue.IterableIsNull");
             Logging.error(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        Vec4 mean = Vec4.computeAverage3(points);
+        Vec4 mean = Vec4.computeAverage3(iterable);
         if (mean == null)
             return null;
 
@@ -1197,7 +1247,7 @@ public class Matrix
         double c13 = 0d;
         double c23 = 0d;
 
-        for (Vec4 vec : points)
+        for (Vec4 vec : iterable)
         {
             if (vec == null)
                 continue;
@@ -1209,6 +1259,104 @@ public class Matrix
             c12 += (vec.x - mean.x) * (vec.y - mean.y); // c12 = c21
             c13 += (vec.x - mean.x) * (vec.z - mean.z); // c13 = c31
             c23 += (vec.y - mean.y) * (vec.z - mean.z); // c23 = c32
+        }
+
+        if (count == 0)
+            return null;
+
+        // Row 1
+        this.m[0] = c11 / (double) count;
+        this.m[1] = c12 / (double) count;
+        this.m[2] = c13 / (double) count;
+        this.m[3] = 0;
+        // Row 2
+        this.m[4] = c12 / (double) count;
+        this.m[5] = c22 / (double) count;
+        this.m[6] = c23 / (double) count;
+        this.m[7] = 0;
+        // Row 3
+        this.m[8] = c13 / (double) count;
+        this.m[9] = c23 / (double) count;
+        this.m[10] = c33 / (double) count;
+        this.m[11] = 0;
+        // Row 4
+        this.m[12] = 0;
+        this.m[13] = 0;
+        this.m[14] = 0;
+        this.m[15] = 0;
+
+        return this;
+    }
+
+    /**
+     * Sets this matrix to a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points.
+     * This has no effect and returns <code>null</code> if the buffer is empty or contains only a partial point.
+     * <p/>
+     * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
+     * they're distributed about the points arithmetic mean. Its layout is as follows:
+     * <p/>
+     * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
+     * <p/>
+     * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
+     * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
+     * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified points are
+     * distributed evenly about their mean point.
+     * <p/>
+     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
+     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
+     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
+     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
+     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
+     * remaining elements that follow the last complete tuple.
+     *
+     * @param buffer the buffer containing the point coordinates for which to compute a Covariance matrix.
+     * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this
+     *               interprets the buffer has having tightly packed XYZ coordinate tuples.
+     *
+     * @return the covariance matrix for the buffer of points.
+     *
+     * @throws IllegalArgumentException if the buffer is <code>null</code>, or if the stride is less than three.
+     */
+    public Matrix setCovarianceOfPoints(FloatBuffer buffer, int stride)
+    {
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.BufferIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (stride < 3)
+        {
+            String msg = Logging.getMessage("generic.StrideIsInvalid", stride);
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Vec4 mean = Vec4.computeAverage3(buffer, stride);
+        if (mean == null)
+            return null;
+
+        int count = 0;
+        double c11 = 0d;
+        double c22 = 0d;
+        double c33 = 0d;
+        double c12 = 0d;
+        double c13 = 0d;
+        double c23 = 0d;
+
+        for (int i = buffer.position(); i <= buffer.limit() - stride; i += stride)
+        {
+            double x = buffer.get(i);
+            double y = buffer.get(i + 1);
+            double z = buffer.get(i + 2);
+            count++;
+            c11 += (x - mean.x) * (x - mean.x);
+            c22 += (y - mean.y) * (y - mean.y);
+            c33 += (z - mean.z) * (z - mean.z);
+            c12 += (x - mean.x) * (y - mean.y); // c12 = c21
+            c13 += (x - mean.x) * (z - mean.z); // c13 = c31
+            c23 += (y - mean.y) * (z - mean.z); // c23 = c32
         }
 
         if (count == 0)
