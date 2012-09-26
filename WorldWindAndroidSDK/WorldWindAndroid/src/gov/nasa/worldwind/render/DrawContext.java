@@ -12,7 +12,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.*;
 
 import java.nio.ByteBuffer;
@@ -60,6 +60,7 @@ public class DrawContext extends WWObjectImpl
     protected GpuResourceCache gpuResourceCache;
     protected long frameTimestamp;
     protected Sector visibleSector;
+    protected Terrain visibleTerrain = new VisibleTerrain(this);
     protected SectorGeometryList surfaceGeometry;
     protected SurfaceTileRenderer surfaceTileRenderer = new SurfaceTileRenderer();
     protected Layer currentLayer;
@@ -298,6 +299,22 @@ public class DrawContext extends WWObjectImpl
     public void setVisibleSector(Sector sector)
     {
         this.visibleSector = sector;
+    }
+
+    /**
+     * Indicates an interface to the terrain that is visible this frame. The returned terrain object is the preferred
+     * interface for performing terrain queries and analysis such as line/terrain intersection and surface point
+     * computation against the visible terrain.
+     * <p/>
+     * The returned interface does not provide any method for drawing the currently visible terrain geometry. The
+     * methods {@link #getSurfaceGeometry()} and {@link #getSurfaceTileRenderer()} return interfaces suited for terrain
+     * rendering.
+     *
+     * @return an interface to perform queries against the currently visible terrain.
+     */
+    public Terrain getVisibleTerrain()
+    {
+        return this.visibleTerrain;
     }
 
     /**
