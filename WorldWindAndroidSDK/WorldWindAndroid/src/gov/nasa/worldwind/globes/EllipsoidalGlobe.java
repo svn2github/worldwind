@@ -723,6 +723,32 @@ public class EllipsoidalGlobe extends AbstractGlobe
         result.normalize3AndSet();
     }
 
+    /** {@inheritDoc} */
+    public void computeSurfaceNormalAtPoint(Vec4 point, Vec4 result)
+    {
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (result == null)
+        {
+            String msg = Logging.getMessage("nullValue.ResultIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double eqSquared = this.equatorialRadius * this.equatorialRadius;
+        double polSquared = this.polarRadius * this.polarRadius;
+
+        result.x = (point.x - this.center.x) / eqSquared;
+        result.y = (point.y - this.center.y) / polSquared;
+        result.z = (point.z - this.center.z) / eqSquared;
+        result.normalize3AndSet();
+    }
+
     public Vec4 computeNorthPointingTangentAtLocation(LatLon location)
     {
         if (location == null)

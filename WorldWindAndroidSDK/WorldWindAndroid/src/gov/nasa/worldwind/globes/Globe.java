@@ -163,6 +163,17 @@ public interface Globe extends WWObject
 
     void computeSurfaceNormalAtLocation(Angle latitude, Angle longitude, Vec4 result);
 
+    /**
+     * Computes a vector perpendicular to the surface of this globe, at a model coordinate point.
+     *
+     * @param point  a point in model coordinates at which to compute the normal vector.
+     * @param result contains a vector perpendicular to the surface of this globe at the specified point after this
+     *               method exits.
+     *
+     * @throws IllegalArgumentException if either the point or the result are <code>null</code>.
+     */
+    void computeSurfaceNormalAtPoint(Vec4 point, Vec4 result);
+
     Vec4 computeNorthPointingTangentAtLocation(LatLon location);
 
     Vec4 computeNorthPointingTangentAtLocation(Angle latitude, Angle longitude);
