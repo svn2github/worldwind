@@ -8,7 +8,7 @@ package gov.nasa.worldwind.render;
 
 import com.sun.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
@@ -37,6 +37,7 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
     protected double opacity = 1d;
     protected Double rotation;
     protected Color color = Color.WHITE;
+    protected Object delegateOwner;
 
     protected Size size = new Size();
     protected Offset screenOffset;
@@ -425,6 +426,26 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
     }
 
     /**
+     * Indicates the object included in {@link gov.nasa.worldwind.event.SelectEvent}s when this object is picked.
+     *
+     * @return the object identified as the picked object.
+     */
+    public Object getDelegateOwner()
+    {
+        return delegateOwner;
+    }
+
+    /**
+     * Specify the object to identify as the picked object when this shape is picked.
+     *
+     * @param delegateOwner the object included in {@link gov.nasa.worldwind.event.SelectEvent}s as the picked object.
+     */
+    public void setDelegateOwner(Object delegateOwner)
+    {
+        this.delegateOwner = delegateOwner;
+    }
+
+    /**
      * Compute the image size, rotation, and position based on the current viewport size. This method updates the
      * calculated values for screen point, rotation point, width, and height. The calculation is not performed if the
      * values have already been calculated for this frame.
@@ -540,7 +561,7 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
         this.doRender(dc);
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     public void pick(DrawContext dc, Point pickPoint)
     {
         this.doRender(dc);
@@ -651,7 +672,8 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
                 this.pickSupport.beginPicking(dc);
                 Color color = dc.getUniquePickColor();
                 int colorCode = color.getRGB();
-                this.pickSupport.addPickableObject(colorCode, this, null, false);
+                this.pickSupport.addPickableObject(colorCode, this.delegateOwner != null ? this.delegateOwner : this,
+                    null, false);
                 gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
                 gl.glScaled(xscale * this.originalImageWidth, yscale * this.originalImageHeight, 1d);
                 dc.drawUnitQuad();
