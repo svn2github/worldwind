@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwind.terrain;
 
 import android.graphics.Point;
@@ -816,9 +815,9 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         // the tile density has changed. We clear the buffer if it is non-null and has enough capacity to ensure that
         // the previous limit does not interfere with what the new limit should be after filling the buffer. We add two
         // rows and columns of vertices to provide an outer row/column for the tile skirt.
-        int numCoords = 3 * (numLat + 2) * (numLon + 2);
-        if (geom.points == null || geom.points.capacity() < numCoords)
-            geom.points = ByteBuffer.allocateDirect(4 * numCoords).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        int numPoints = (numLat + 2) * (numLon + 2);
+        if (geom.points == null || geom.points.capacity() < 3 * numPoints)
+            geom.points = BufferUtil.newFloatBuffer(3 * numPoints);
         geom.points.clear();
 
         double minLat = tile.getSector().minLatitude.degrees;
@@ -955,8 +954,8 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         // columns of vertices to provide an outer row/column for the tile skirt.
         int numLat = tileWidth + 3;
         int numLon = tileHeight + 3;
-        int numCoords = 2 * numLat * numLon;
-        FloatBuffer texCoords = ByteBuffer.allocateDirect(4 * numCoords).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        int numPoints = numLat * numLon;
+        FloatBuffer texCoords = BufferUtil.newFloatBuffer(2 * numPoints);
 
         double minS = 0;
         double maxS = 1;
@@ -1007,7 +1006,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         // tileWidth and tileHeight that can be indexed by a short is 256x256 (excluding the extra rows and columns to
         // convert between cell count and vertex count, and the extra rows and columns for the tile skirt).
         int numIndices = 2 * (numLat - 1) * numLon + 2 * (numLat - 2);
-        ShortBuffer indices = ByteBuffer.allocateDirect(2 * numIndices).order(ByteOrder.nativeOrder()).asShortBuffer();
+        ShortBuffer indices = BufferUtil.newShortBuffer(numIndices);
 
         for (int j = 0; j < numLat - 1; j++)
         {
@@ -1048,7 +1047,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         int numLon = tileWidth + 1;
 
         int numIndices = 2 * numLat * (numLon - 1) + 2 * (numLat - 1) * numLon;
-        ShortBuffer indices = ByteBuffer.allocateDirect(2 * numIndices).order(ByteOrder.nativeOrder()).asShortBuffer();
+        ShortBuffer indices = BufferUtil.newShortBuffer(numIndices);
 
         // Add two columns of vertices to the row stride to account for the two additional vertices that provide an
         // outer row/column for the tile skirt.
@@ -1095,7 +1094,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
 
         // The outline indices ignore the extra rows and columns for the tile skirt.
         int numIndices = 2 * (numLat - 1) + 2 * numLon - 1;
-        ShortBuffer indices = ByteBuffer.allocateDirect(2 * numIndices).order(ByteOrder.nativeOrder()).asShortBuffer();
+        ShortBuffer indices = BufferUtil.newShortBuffer(numIndices);
 
         // Add two columns of vertices to the row stride to account for the two additional vertices that provide an
         // outer row/column for the tile skirt.
@@ -1607,9 +1606,9 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         // the buffer if it is non-null and has enough capacity to ensure that the previous limit does not interfere
         // with  what the new limit should be after filling the buffer.
         if (pickGeom.points == null || pickGeom.points.capacity() < 3 * numPoints)
-            pickGeom.points = ByteBuffer.allocateDirect(12 * numPoints).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            pickGeom.points = BufferUtil.newFloatBuffer(3 * numPoints);
         if (pickGeom.colors == null || pickGeom.colors.capacity() < 3 * numPoints)
-            pickGeom.colors = ByteBuffer.allocateDirect(3 * numPoints);
+            pickGeom.colors = BufferUtil.newByteBuffer(3 * numPoints);
         pickGeom.points.clear();
         pickGeom.colors.clear();
 

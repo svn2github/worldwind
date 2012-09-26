@@ -70,7 +70,7 @@ public class DrawContext extends WWObjectImpl
     protected boolean pickingMode;
     protected boolean deepPickingMode;
     protected int uniquePickNumber;
-    protected ByteBuffer pickColor = ByteBuffer.allocateDirect(4);
+    protected ByteBuffer pickColor = BufferUtil.newByteBuffer(4);
     protected Point pickPoint;
     protected PickedObjectList objectsAtPickPoint = new PickedObjectList();
     protected Collection<PerformanceStatistic> perFrameStatistics;
