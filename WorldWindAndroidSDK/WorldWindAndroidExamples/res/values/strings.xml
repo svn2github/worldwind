@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (C) 2012 United States Government as represented by the Administrator of the
-    National Aeronautics and Space Administration.
+    Copyright (C) 2001, 2012 United States Government as represented by
+    the Administrator of the National Aeronautics and Space Administration.
     All Rights Reserved.
 
     Resource file containing strings for the World Wind Android examples. The elements in this file are grouped by the
@@ -21,7 +21,7 @@
         String resources for the Basic World Wind Activity example.
     -->
     <string name="BasicWorldWindActivity.displayName">Basic World Wind Activity</string>
-    <string name="BasicWorldWindActivity.description">This is the most basic usage of the SDK. It displays the default globe with its default layers.</string>
+    <string name="BasicWorldWindActivity.description">This is the most basic usage of the World Wind Android SDK. It displays the default globe with its default layers.</string>
     <string name="dashboard">Dashboard</string>
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>
@@ -32,7 +32,13 @@
         String resources for the Simplest Possible Activity example.
     -->
     <string name="SimplestPossibleActivity.displayName">Simplest Possible Activity</string>
-    <string name="SimplestPossibleActivity.description">This example demonstrates the simplest possible way to create a WorldWind application.</string>
+    <string name="SimplestPossibleActivity.description">This example demonstrates the simplest possible way to create an application using the World Wind Android SDK.</string>
+
+    <!--
+        String resources for the Path Activity example.
+    -->
+    <string name="PathActivity.displayName">Paths</string>
+    <string name="PathActivity.description">Example of World Wind path shape usage. A path is a line or curve between positions. The path may follow terrain, and may be turned into a curtain by extruding the path to the ground.</string>
 
     <!--
         String resources for the Performance Test Suite.
