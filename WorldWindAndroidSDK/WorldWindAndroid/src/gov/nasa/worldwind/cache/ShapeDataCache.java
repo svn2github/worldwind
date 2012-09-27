@@ -246,7 +246,7 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
      */
     public void addEntry(ShapeDataCacheEntry entry)
     {
-        if (entry != null)
+        if (entry == null)
             return;
 
         this.entries.put(entry.globeStateKey.getGlobe(), entry);
