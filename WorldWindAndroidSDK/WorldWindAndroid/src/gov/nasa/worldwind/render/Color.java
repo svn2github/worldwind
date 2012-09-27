@@ -57,151 +57,6 @@ import gov.nasa.worldwind.util.Logging;
 public class Color
 {
     /**
-     * Creates a packed 32-bit RGB color int from three separate values for each of the red, green, and blue components.
-     * See the section above on <i>Color Int</i> for more information on the color int format. Each component is
-     * interpreted as an 8-bit value in the range [0, 255] where 0 indicates zero intensity and 255 indicates full
-     * intensity. The behavior for values outside of this range is undefined.
-     * <p/>
-     * The bits normally reserved for alpha in the returned value are filled with 0.
-     *
-     * @param r the color's red component as an 8-bit value in the range [0, 255].
-     * @param g the color's green component as an 8-bit value in the range [0, 255].
-     * @param b the color's blue component as an 8-bit value in the range [0, 255].
-     *
-     * @return a packed 32-bit color int representing the specified RGB color.
-     */
-    public static int makeColorInt(int r, int g, int b)
-    {
-        return ((0xFF & r) << 16)
-            | ((0xFF & g) << 8)
-            | (0xFF & b);
-    }
-
-    /**
-     * Creates a packed 32-bit ARGB color int from four separate values for each of the red, green, blue, and alpha
-     * components. See the section above on <i>Color Int</i> for more information on the color int format. Each
-     * component is interpreted as an 8-bit value in the range [0, 255] where 0 indicates zero intensity and 255
-     * indicates full intensity. The behavior for values outside of this range is undefined.
-     *
-     * @param r the color's red component as an 8-bit value in the range [0, 255].
-     * @param g the color's green component as an 8-bit value in the range [0, 255].
-     * @param b the color's blue component as an 8-bit value in the range [0, 255].
-     * @param a the color's alpha component as an 8-bit value in the range [0, 255].
-     *
-     * @return a packed 32-bit color int representing the specified RGBA color.
-     */
-    public static int makeColorInt(int r, int g, int b, int a)
-    {
-        return ((0xFF & a) << 24)
-            | ((0xFF & r) << 16)
-            | ((0xFF & g) << 8)
-            | (0xFF & b);
-    }
-
-    /**
-     * Returns the value of the red component from the specified packed 32-bit ARGB color int. See the section above on
-     * <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
-     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
-     *
-     * @param colorInt the packed 32-bit color int representing an ARGB color.
-     *
-     * @return an 8-bit value in the range [0, 255] representing the red component from the specified ARGB color.
-     */
-    public static int getColorIntRed(int colorInt)
-    {
-        return (colorInt >> 16) & 0xFF;
-    }
-
-    /**
-     * Returns the value of the green component from the specified packed 32-bit ARGB color int. See the section above
-     * on <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
-     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
-     *
-     * @param colorInt the packed 32-bit color int representing an ARGB color.
-     *
-     * @return an 8-bit value in the range [0, 255] representing the green component from the specified ARGB color.
-     */
-    public static int getColorIntGreen(int colorInt)
-    {
-        return (colorInt >> 8) & 0xFF;
-    }
-
-    /**
-     * Returns the value of the blue component from the specified packed 32-bit ARGB color int. See the section above on
-     * <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
-     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
-     *
-     * @param colorInt the packed 32-bit color int representing an ARGB color.
-     *
-     * @return an 8-bit value in the range [0, 255] representing the blue component from the specified ARGB color.
-     */
-    public static int getColorIntBlue(int colorInt)
-    {
-        return colorInt & 0xFF;
-    }
-
-    /**
-     * Returns the value of the alpha component from the specified packed 32-bit ARGB color int. See the section above
-     * on <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
-     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
-     *
-     * @param colorInt the packed 32-bit color int representing an ARGB color.
-     *
-     * @return an 8-bit value in the range [0, 255] representing the alpha component from the specified ARGB color.
-     */
-    public static int getColorIntAlpha(int colorInt)
-    {
-        return colorInt >>> 24;
-    }
-
-    /**
-     * Computes the component-wise linear interpolation of the specified colors and stores the output in the result
-     * parameter. This does not retain any reference to the specified colors, or modify them in any way.
-     * <p/>
-     * The interpolation factor amount is a floating-point value in the range [0.0, 1.0] which defines the weight given
-     * to each color. Each of the RGBA components in the colors are interpolated according to the function: <code>(1 -
-     * amount) * ca + amount * cb</code>, where ca and cb are components of lhs and rhs, respectively.
-     * <p/>
-     *
-     * @param amount the interpolation factor.
-     * @param lhs    the first color.
-     * @param rhs    the second color.
-     * @param result contains the linear interpolation of lhs and rhs after this method exits.
-     *
-     * @throws IllegalArgumentException if either <code>lhs</code> or <code>rhs</code> are <code>null</code>.
-     */
-    public static void interpolate(double amount, Color lhs, Color rhs, Color result)
-    {
-        if (lhs == null)
-        {
-            String msg = Logging.getMessage("nullValue.LhsIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (rhs == null)
-        {
-            String msg = Logging.getMessage("nullValue.RhsIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (result == null)
-        {
-            String msg = Logging.getMessage("nullValue.ResultIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        double t = (amount < 0 ? 0 : (amount > 1 ? 1 : amount));
-
-        result.r = lhs.r + t * (rhs.r - lhs.r);
-        result.g = lhs.g + t * (rhs.g - lhs.g);
-        result.b = lhs.b + t * (rhs.b - lhs.b);
-        result.a = lhs.a + t * (rhs.a - lhs.a);
-    }
-
-    /**
      * The color's red component as a floating-point value in the range [0.0, 1.0], where 0.0 indicates zero intensity
      * and 1.0 indicates full intensity. Initially 0.0.
      */
@@ -475,15 +330,218 @@ public class Color
     }
 
     /**
+     * Generates a random RGB color between black and white. The returned color's alpha component is 1.0.
+     *
+     * @return a new color with random red, green and blue components.
+     */
+    public static Color randomColor()
+    {
+        return new Color(Math.random(), Math.random(), Math.random(), 1.0);
+    }
+
+    /**
+     * Generates a random RGB color by scaling each of the red, green and blue components of a specified color with
+     * independent random numbers. This does not retain any reference to the specified color, or modify it in any way.
+     * The returned color's RGB components can be any value between the specified color (or white if the color is
+     * <code>null</code>) and black. The returned color's alpha component is not scaled and is copied into the new
+     * color, or is set to 1.0 if the specified color is <code>null</code>.
+     * <p/>
+     * Unless there's a reason to use a specific input color, the best color to use is white.
+     *
+     * @param color the color to generate a random color from. If <code>null</code>, the color white (1.0, 1.0, 1.0) is
+     *              used.
+     *
+     * @return a new RGB color with random red, green and blue components.
+     */
+    public static Color randomColor(Color color)
+    {
+        double r;
+        double g;
+        double b;
+        double a;
+
+        if (color != null)
+        {
+            r = color.r;
+            g = color.g;
+            b = color.b;
+            a = color.a;
+        }
+        else
+        {
+            r = 1.0;
+            g = 1.0;
+            b = 1.0;
+            a = 1.0;
+        }
+
+        return new Color(r * Math.random(), g * Math.random(), b * Math.random(), a);
+    }
+
+    /**
+     * Creates a packed 32-bit RGB color int from three separate values for each of the red, green, and blue components.
+     * See the section above on <i>Color Int</i> for more information on the color int format. Each component is
+     * interpreted as an 8-bit value in the range [0, 255] where 0 indicates zero intensity and 255 indicates full
+     * intensity. The behavior for values outside of this range is undefined.
+     * <p/>
+     * The bits normally reserved for alpha in the returned value are filled with 0.
+     *
+     * @param r the color's red component as an 8-bit value in the range [0, 255].
+     * @param g the color's green component as an 8-bit value in the range [0, 255].
+     * @param b the color's blue component as an 8-bit value in the range [0, 255].
+     *
+     * @return a packed 32-bit color int representing the specified RGB color.
+     */
+    public static int makeColorInt(int r, int g, int b)
+    {
+        return ((0xFF & r) << 16)
+            | ((0xFF & g) << 8)
+            | (0xFF & b);
+    }
+
+    /**
+     * Creates a packed 32-bit ARGB color int from four separate values for each of the red, green, blue, and alpha
+     * components. See the section above on <i>Color Int</i> for more information on the color int format. Each
+     * component is interpreted as an 8-bit value in the range [0, 255] where 0 indicates zero intensity and 255
+     * indicates full intensity. The behavior for values outside of this range is undefined.
+     *
+     * @param r the color's red component as an 8-bit value in the range [0, 255].
+     * @param g the color's green component as an 8-bit value in the range [0, 255].
+     * @param b the color's blue component as an 8-bit value in the range [0, 255].
+     * @param a the color's alpha component as an 8-bit value in the range [0, 255].
+     *
+     * @return a packed 32-bit color int representing the specified RGBA color.
+     */
+    public static int makeColorInt(int r, int g, int b, int a)
+    {
+        return ((0xFF & a) << 24)
+            | ((0xFF & r) << 16)
+            | ((0xFF & g) << 8)
+            | (0xFF & b);
+    }
+
+    /**
+     * Returns the value of the red component from the specified packed 32-bit ARGB color int. See the section above on
+     * <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
+     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
+     *
+     * @param colorInt the packed 32-bit color int representing an ARGB color.
+     *
+     * @return an 8-bit value in the range [0, 255] representing the red component from the specified ARGB color.
+     */
+    public static int getColorIntRed(int colorInt)
+    {
+        return (colorInt >> 16) & 0xFF;
+    }
+
+    /**
+     * Returns the value of the green component from the specified packed 32-bit ARGB color int. See the section above
+     * on <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
+     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
+     *
+     * @param colorInt the packed 32-bit color int representing an ARGB color.
+     *
+     * @return an 8-bit value in the range [0, 255] representing the green component from the specified ARGB color.
+     */
+    public static int getColorIntGreen(int colorInt)
+    {
+        return (colorInt >> 8) & 0xFF;
+    }
+
+    /**
+     * Returns the value of the blue component from the specified packed 32-bit ARGB color int. See the section above on
+     * <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
+     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
+     *
+     * @param colorInt the packed 32-bit color int representing an ARGB color.
+     *
+     * @return an 8-bit value in the range [0, 255] representing the blue component from the specified ARGB color.
+     */
+    public static int getColorIntBlue(int colorInt)
+    {
+        return colorInt & 0xFF;
+    }
+
+    /**
+     * Returns the value of the alpha component from the specified packed 32-bit ARGB color int. See the section above
+     * on <i>Color Int</i> for more information on the color int format. The returned component is an 8-bit value in the
+     * range [0, 255] where 0 indicates zero intensity and 255 indicates full intensity.
+     *
+     * @param colorInt the packed 32-bit color int representing an ARGB color.
+     *
+     * @return an 8-bit value in the range [0, 255] representing the alpha component from the specified ARGB color.
+     */
+    public static int getColorIntAlpha(int colorInt)
+    {
+        return colorInt >>> 24;
+    }
+
+    /**
+     * Computes the component-wise linear interpolation of the specified colors and stores the output in the result
+     * parameter. This does not retain any reference to the specified colors, or modify them in any way.
+     * <p/>
+     * The interpolation factor amount is a floating-point value in the range [0.0, 1.0] which defines the weight given
+     * to each color. Each of the RGBA components in the colors are interpolated according to the function: <code>(1 -
+     * amount) * ca + amount * cb</code>, where ca and cb are components of lhs and rhs, respectively.
+     * <p/>
+     * If this method throws an IllegalArgumentException, the result is left unchanged.
+     *
+     * @param amount the interpolation factor as a floating-point value in the range [0.0, 1.0].
+     * @param lhs    the first color.
+     * @param rhs    the second color.
+     * @param result contains the linear interpolation of lhs and rhs after this method exits.
+     *
+     * @return a reference to the specified result, which contains the linear interpolation of lhs and rhs.
+     *
+     * @throws IllegalArgumentException if either <code>lhs</code> or <code>rhs</code> are <code>null</code>.
+     */
+    public static Color interpolate(double amount, Color lhs, Color rhs, Color result)
+    {
+        if (lhs == null)
+        {
+            String msg = Logging.getMessage("nullValue.LhsIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (rhs == null)
+        {
+            String msg = Logging.getMessage("nullValue.RhsIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (result == null)
+        {
+            String msg = Logging.getMessage("nullValue.ResultIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double t = (amount < 0 ? 0 : (amount > 1 ? 1 : amount));
+
+        result.r = lhs.r + t * (rhs.r - lhs.r);
+        result.g = lhs.g + t * (rhs.g - lhs.g);
+        result.b = lhs.b + t * (rhs.b - lhs.b);
+        result.a = lhs.a + t * (rhs.a - lhs.a);
+
+        return result;
+    }
+
+    /**
      * Sets this color's RGBA components to those of the specified color. This does not retain any reference to the
      * specified color, or modify it in any way. The color's RGBA components are copied into this color's RGBA
      * components.
+     * <p/>
+     * If this method throws an IllegalArgumentException, this color is left unchanged.
      *
      * @param color the new RGBA components as a color.
      *
+     * @return a reference to this color.
+     *
      * @throws IllegalArgumentException if the color is <code>null</code>.
      */
-    public void set(Color color)
+    public Color set(Color color)
     {
         if (color == null)
         {
@@ -496,6 +554,8 @@ public class Color
         this.g = color.g;
         this.b = color.b;
         this.a = color.a;
+
+        return this;
     }
 
     /**
@@ -506,12 +566,16 @@ public class Color
      * @param r the new red component as a floating-point value in the range [0.0, 1.0].
      * @param g the new green component as a floating-point value in the range [0.0, 1.0].
      * @param b the new blue component as a floating-point value in the range [0.0, 1.0].
+     *
+     * @return a reference to this color.
      */
-    public void set(double r, double g, double b)
+    public Color set(double r, double g, double b)
     {
         this.r = r;
         this.g = g;
         this.b = b;
+
+        return this;
     }
 
     /**
@@ -523,13 +587,17 @@ public class Color
      * @param g the new green component as a floating-point value in the range [0.0, 1.0].
      * @param b the new blue component as a floating-point value in the range [0.0, 1.0].
      * @param a the new alpha component as a floating-point value in the range [0.0, 1.0].
+     *
+     * @return a reference to this color.
      */
-    public void set(double r, double g, double b, double a)
+    public Color set(double r, double g, double b, double a)
     {
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a;
+
+        return this;
     }
 
     /**
@@ -538,13 +606,17 @@ public class Color
      * floating-point and stored in this color's components.
      *
      * @param colorInt the color's ARGB components as a packed 32-bit color int.
+     *
+     * @return a reference to this color.
      */
-    public void set(int colorInt)
+    public Color set(int colorInt)
     {
         this.r = ((colorInt >> 16) & 0xFF) / 255.0;
         this.g = ((colorInt >> 8) & 0xFF) / 255.0;
         this.b = (colorInt & 0xFF) / 255.0;
         this.a = (colorInt >>> 24) / 255.0;
+
+        return this;
     }
 
     /**
@@ -559,8 +631,10 @@ public class Color
      * @param hasAlpha <code>true</code> to indicate that this color's alpha component should be set from the colorInt's
      *                 alpha, or <code>false</code> to ignore the colorInt's alpha and leave this color's alpha
      *                 unchanged.
+     *
+     * @return a reference to this color.
      */
-    public void set(int colorInt, boolean hasAlpha)
+    public Color set(int colorInt, boolean hasAlpha)
     {
         this.r = ((colorInt >> 16) & 0xFF) / 255.0;
         this.g = ((colorInt >> 8) & 0xFF) / 255.0;
@@ -570,6 +644,8 @@ public class Color
         {
             this.a = (colorInt >>> 24) / 255.0;
         }
+
+        return this;
     }
 
     /**
@@ -577,12 +653,16 @@ public class Color
      * the red, green, and blue components by the alpha component. It is assumed that this color is in the standard RGBA
      * color space before this method is called. Color does not track whether an instance has been premultiplied; it is
      * the responsibility of the application to do so.
+     *
+     * @return a reference to this color.
      */
-    public void premultiply()
+    public Color premultiply()
     {
         this.r *= this.a;
         this.g *= this.a;
         this.b *= this.a;
+
+        return this;
     }
 
     /**
@@ -660,8 +740,19 @@ public class Color
     }
 
     /**
-     * @param array
-     * @param offset
+     * Writes this colors RGBA components into the specified array starting at the specified offset. The RGBA components
+     * are copied into an index of the specified array starting at offset and increasing by 1 for each component. This
+     * stores component values as 32-bit floating-point value in the range [0.0, 1.0], where 0.0 indicates zero
+     * intensity and 1.0 indicates full intensity.
+     * <p/>
+     * This throws an exception if the array has insufficient length to store four elements starting at offset.
+     *
+     * @param array  the array this color's RGBA components are stored in.
+     * @param offset the starting index, which receives the red component value.
+     *
+     * @throws IllegalArgumentException if the array is <code>null</code>, if the array length is less than 4, if the
+     *                                  offset is less than 0, or if the offset specifies an index that would cause the
+     *                                  color to extend beyond the end of the array.
      */
     public void toArray4f(float[] array, int offset)
     {
