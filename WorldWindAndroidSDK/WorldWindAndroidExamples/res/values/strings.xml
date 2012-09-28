@@ -41,6 +41,13 @@
     <string name="PathActivity.description">Example of World Wind path shape usage. A path is a line or curve between positions. The path may follow terrain, and may be turned into a curtain by extruding the path to the ground.</string>
 
     <!--
+        String resources for the KML Activity example.
+    -->
+    <string name="KMLActivity.displayName">KML</string>
+    <string name="KMLActivity.description">Example of World Wind KML file import. Loads and displays an example KML file that shows flight passageways in the state of Alaska.</string>
+
+
+    <!--
         String resources for the Performance Test Suite.
     -->
     <string name="PerformanceTestSuite.displayName">Performance Test Suite</string>

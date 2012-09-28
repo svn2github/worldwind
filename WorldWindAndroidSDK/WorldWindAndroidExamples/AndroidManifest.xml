@@ -76,12 +76,22 @@
             <meta-data android:name="description" android:value="@string/SimplestPossibleActivity.description"/>
         </activity>
         <activity android:name=".PathActivity"
-                  android:label="@string/PathActivity.displayName">
+                  android:label="@string/PathActivity.displayName"
+                  android:icon="@drawable/path">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.SAMPLE_CODE"/>
             </intent-filter>
             <meta-data android:name="description" android:value="@string/PathActivity.description"/>
+        </activity>
+        <activity android:name=".KMLActivity"
+                  android:label="@string/KMLActivity.displayName"
+                  android:icon="@drawable/kml">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.SAMPLE_CODE"/>
+            </intent-filter>
+            <meta-data android:name="description" android:value="@string/KMLActivity.description"/>
         </activity>
         <activity android:name=".PerformanceTestSuite"
                   android:label="@string/PerformanceTestSuite.displayName"
