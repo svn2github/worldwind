@@ -4,6 +4,7 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.exception.WWUnrecognizedException;
 import gov.nasa.worldwind.util.Logging;
 
 /**
@@ -49,6 +50,27 @@ import gov.nasa.worldwind.util.Logging;
  * converted back to 8-bit by multiplying by 255, the result is 0. This is because the result of 255 * (1/255) is
  * slightly less than 1, which results in 0 after taking the floor. Adding 0.5 before taking the floor compensates for
  * limitations in floating point precision.
+ * <p/>
+ * <strong>Color String</strong>
+ * <p/>
+ * A color string refers to an ABGR color specified by an eight character a hexadecimal string. Each component is
+ * represented by an 8-bit hexadecimal value in the range [00, FF] where 0 indicates zero intensity and FF indicates
+ * full intensity. The components are understood to be tightly packed in the orger AARRGGBB. This format is compatible
+ * with KML's color elements. The color string may have an optional prefix, and therefore as three valid forms:
+ * <code><ul> <li>AABBGGRR</li> <li>0xAABBGGRR</li> or <li>#AABBGGRR</li></ul><code>
+ * <p/>
+ * Colors can be converted between floating-point RGBA colors and ABGR hexadecimal color strings, and vice versa. This
+ * is done by mapping each 8-bit hexadecimal component in the range [00, FF] to the range [0.0, 1.0].
+ * <p/>
+ * Converting a component from hexadecimal 8-bit to floating-point is accomplished converting from hexadecimal to
+ * decimal, then dividing the value by 255.
+ * <p/>
+ * Converting a component from floating-point to hexadecimal 8-bit is accomplished by multiplying the value by 255,
+ * adding 0.5, taking the floor of the result, then coverting from decimal to hexadecimal. The additional step of adding
+ * 0.5 ensures that rounding errors do not produce values that are too small. For example, if the 8-bit value 1 is
+ * converted to floating-point by dividing by 255 then converted back to 8-bit by multiplying by 255, the result is 0.
+ * This is because the result of 255 * (1/255) is slightly less than 1, which results in 0 after taking the floor.
+ * Adding 0.5 before taking the floor compensates for limitations in floating point precision.
  *
  * @author dcollins
  * @version $Id$
@@ -174,6 +196,56 @@ public class Color
         this.g = ((colorInt >> 8) & 0xFF) / 255.0;
         this.b = (colorInt & 0xFF) / 255.0;
         this.a = hasAlpha ? (colorInt >>> 24) / 255.0 : 1.0;
+    }
+
+    /**
+     * Creates a new color from a hexadecimal ABGR color string. See the section above on <i>Color String</i> for more
+     * information on the color string format. Each of the four RGBA components are converted from 8-bit hexadecimal to
+     * floating-point and stored in this color's components.
+     *
+     * @param colorString the color's ABGR components as a hexadecimal color string.
+     *
+     * @throws IllegalArgumentException if the color string is <code>null</code>.
+     * @throws WWUnrecognizedException  or if the color string is in an unrecognized format, and cannot be decoded.
+     */
+    public Color(String colorString)
+    {
+        if (colorString == null)
+        {
+            String msg = Logging.getMessage("nullValue.StringIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (colorString.startsWith("#"))
+        {
+            colorString = colorString.replaceFirst("#", "0x");
+        }
+        else if (!colorString.startsWith("0x") && !colorString.startsWith("0X"))
+        {
+            colorString = "0x" + colorString;
+        }
+
+        // The hexadecimal representation for an RGBA color can result in a value larger than Integer.MAX_VALUE
+        // (for example, 0XFFFF). Therefore we decode the string as a long, then keep only the lower four bytes.
+        Long longValue;
+        try
+        {
+            longValue = Long.parseLong(colorString.substring(2), 16);
+        }
+        catch (NumberFormatException e)
+        {
+            String msg = Logging.getMessage("generic.ConversionError", colorString);
+            Logging.error(msg, e);
+            throw new WWUnrecognizedException(msg, e);
+        }
+
+        int i = (int) (longValue & 0xFFFFFFFFL);
+
+        this.r = (i & 0xFF) / 255.0;
+        this.g = ((i >> 8) & 0xFF) / 255.0;
+        this.b = ((i >> 16) & 0xFF) / 255.0;
+        this.a = ((i >> 24) & 0xFF) / 255.0;
     }
 
     /**
@@ -346,7 +418,8 @@ public class Color
      * <code>null</code>) and black. The returned color's alpha component is not scaled and is copied into the new
      * color, or is set to 1.0 if the specified color is <code>null</code>.
      * <p/>
-     * Unless there's a reason to use a specific input color, the best color to use is white.
+     * The returned color is consistent with KML's random colorMode. Unless there's a reason to use a specific input
+     * color, the best color to use is white.
      *
      * @param color the color to generate a random color from. If <code>null</code>, the color white (1.0, 1.0, 1.0) is
      *              used.
@@ -418,6 +491,29 @@ public class Color
             | ((0xFF & r) << 16)
             | ((0xFF & g) << 8)
             | (0xFF & b);
+    }
+
+    /**
+     * Creates a hexadecimal ABGR color string from four separate values for each of the red, green, blue, and alpha
+     * components. See the section above on <i>Color String</i> for more information on the color string format. Each
+     * component is interpreted as an 8-bit value in the range [0, 255] where 0 indicates zero intensity and 255
+     * indicates full intensity. The behavior for values outside of this range is undefined.
+     *
+     * @param r the color's red component as an 8-bit value in the range [0, 255].
+     * @param g the color's green component as an 8-bit value in the range [0, 255].
+     * @param b the color's blue component as an 8-bit value in the range [0, 255].
+     * @param a the color's alpha component as an 8-bit value in the range [0, 255].
+     *
+     * @return a hexadecimal ABGR color string representing the specified RGBA color.
+     */
+    public static String makeColorString(int r, int g, int b, int a)
+    {
+        int abgrColorInt = ((0xFF & a) << 24)
+            | ((0xFF & b) << 16)
+            | ((0xFF & g) << 8)
+            | (0xFF & r);
+
+        return String.format("%#08X", abgrColorInt);
     }
 
     /**
@@ -727,13 +823,32 @@ public class Color
     /**
      * Returns a packed 32-bit ARGB color int representation of this RGBA color. See the section above on <i>Color
      * Int</i> for more information on the color int format. Each of the four components are converted from
-     * floating-point to  8-bit and stored in the returned color int.
+     * floating-point to 8-bit and stored in the returned color int.
      *
      * @return a packed 32-bit color int representing this RGBA color.
      */
     public int toColorInt()
     {
+        // Convert each component from a floating-point value in the range [0.0, 1.0] to an 8-bit value in the range
+        // [0, 255]. See the above class comment on Color Int for why we add 0.5 to each value before rounding down.
         return makeColorInt((int) (255 * this.r + 0.5),
+            (int) (255 * this.g + 0.5),
+            (int) (255 * this.b + 0.5),
+            (int) (255 * this.a + 0.5));
+    }
+
+    /**
+     * Returns a hexadecimal ABGR color string representation of this RGBA color. See the section above on <i>Color
+     * String</i> for more information on the color string format. Each of the four components are converted from
+     * floating-point to 8-bit hexadecimal and composed as a string in the pattern #AABBGGRR.
+     *
+     * @return a hexadecimal ABGR color string representing this RGBA color.
+     */
+    public String toColorString()
+    {
+        // Convert each component from a floating-point value in the range [0.0, 1.0] to an 8-bit value in the range
+        // [0, 255]. See the above class comment on Color String for why we add 0.5 to each value before rounding down.
+        return makeColorString((int) (255 * this.r + 0.5),
             (int) (255 * this.g + 0.5),
             (int) (255 * this.b + 0.5),
             (int) (255 * this.a + 0.5));
