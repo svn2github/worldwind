@@ -1185,10 +1185,15 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
         {
             int color = dc.getUniquePickColor();
             pickCandidates.addPickableObject(this.createPickedObject(color));
-            this.currentColor.set(color, false); // The pick color does not have an alpha component.
-            dc.getCurrentProgram().loadUniformColor("color", this.currentColor);
+            dc.getCurrentProgram().loadUniformColor("color", this.currentColor.set(color, false)); // Ignore alpha.
         }
 
+        this.applyModelviewProjectionMatrix(dc);
+        dc.drawOutlinedShape(this.outlineShapeRenderer, this);
+    }
+
+    protected void applyModelviewProjectionMatrix(DrawContext dc)
+    {
         // Multiply the View's modelview-projection matrix by the shape's transform matrix to correctly transform shape
         // points into eye coordinates. This achieves the resolution we need on Gpus with limited floating point
         // precision keeping both the modelview-projection matrix and the point coordinates the Gpu uses as small as
@@ -1196,8 +1201,6 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
         this.currentMatrix.multiplyAndSet(dc.getView().getModelviewProjectionMatrix(),
             this.getCurrentData().getTransformMatrix());
         dc.getCurrentProgram().loadUniformMatrix("mvpMatrix", this.currentMatrix);
-
-        dc.drawOutlinedShape(this.outlineShapeRenderer, this);
     }
 
     /**

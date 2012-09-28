@@ -1883,6 +1883,32 @@ public class Matrix
         return this;
     }
 
+    /**
+     * Modifies this projection matrix to slightly offset the depth value of objects rasterized using this matrix toward
+     * or away from the eye point. This method assumes that this matrix represents a perspective projection matrix.
+     * Perspective projection matrices are typically created using the methods {@link #setPerspective(Angle, double,
+     * double, double, double)} and {@link #fromPerspective(Angle, double, double, double, double)}.
+     * <p/>
+     * When applied to a perspective projection matrix, this gives those objects visual priority over objects at the
+     * same or nearly the same position. Offset values less than zero move depth values toward the eye point, while
+     * offset values greater than zero move depth values away from the eye point.
+     * <p/>
+     * See "Mathematics for Game Programming and 3D Computer Graphics, 2 ed." by  Eric Lengyel, Section 9.1, "Depth
+     * Value Offset" for a description of this technique.
+     *
+     * @param depthOffset the depth offset factor to apply, typically near 0.0. Values less than zero move depth values
+     *                    toward the eye point, while offset values greater than zero move depth values away from the
+     *                    eye point.
+     *
+     * @return a reference to this matrix.
+     */
+    public Matrix offsetPerspectiveDepth(double depthOffset)
+    {
+        this.m[10] *= 1 + depthOffset;
+
+        return this;
+    }
+
     @Override
     public boolean equals(Object o)
     {

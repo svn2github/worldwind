@@ -73,11 +73,11 @@ public class Path extends AbstractShape
     /** The default path type. */
     protected static final String DEFAULT_PATH_TYPE = AVKey.LINEAR;
     /**
-     * The offset applied to a terrain following Path's depth values to to ensure it shows over the terrain: 0.99.
-     * Values less than 1.0 pull the path in front of the terrain, values greater than 1.0 push the path behind the
-     * terrain.
+     * The offset applied to a terrain following Path's depth values to to ensure it shows over the terrain: -0.1.
+     * Values less than zero pull the path's depth values in front of the terrain while values greater than push the
+     * path's depth values behind the terrain.
      */
-    protected static final double SURFACE_PATH_DEPTH_OFFSET = 0.99;
+    protected static final double SURFACE_PATH_DEPTH_OFFSET = -0.01;
     /** The default number of tessellation points between the specified path positions. */
     protected static final int DEFAULT_NUM_SUBSEGMENTS = 10;
     /** The default terrain conformance target. */
@@ -1189,6 +1189,25 @@ public class Path extends AbstractShape
         return this.getCurrentPathData().renderedPath != null && this.getCurrentPathData().vertexCount >= 2;
     }
 
+    @Override
+    protected void applyModelviewProjectionMatrix(DrawContext dc)
+    {
+        if (this.isSurfacePath())
+        {
+            // Modify the standard modelview-projection matrix by applying a depth offset to the perspective matrix.
+            // This depth offset pulls the line forward just a bit to ensure it shows over the terrain.
+            this.currentMatrix.set(dc.getView().getProjectionMatrix());
+            this.currentMatrix.offsetPerspectiveDepth(SURFACE_PATH_DEPTH_OFFSET);
+            this.currentMatrix.multiplyAndSet(dc.getView().getModelviewMatrix());
+            this.currentMatrix.multiplyAndSet(this.getCurrentPathData().getTransformMatrix());
+            dc.getCurrentProgram().loadUniformMatrix("mvpMatrix", this.currentMatrix);
+        }
+        else
+        {
+            super.applyModelviewProjectionMatrix(dc);
+        }
+    }
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -1202,17 +1221,12 @@ public class Path extends AbstractShape
     @Override
     protected void doDrawOutline(DrawContext dc)
     {
-        boolean projectionOffsetPushed = false; // keep track for error recovery
+        boolean isSurfacePath = this.isSurfacePath(); // Keep track for OpenGL state recovery.
 
         try
         {
-            if (this.isSurfacePath())
-            {
-                // Pull the line forward just a bit to ensure it shows over the terrain.
-                //dc.pushProjectionOffest(SURFACE_PATH_DEPTH_OFFSET); // TODO: Restore this custom projection matrix.
+            if (isSurfacePath)
                 GLES20.glDepthMask(false);
-                projectionOffsetPushed = true;
-            }
 
             int[] vboIds = this.getVboIds(dc);
             if (vboIds != null)
@@ -1225,11 +1239,8 @@ public class Path extends AbstractShape
         }
         finally
         {
-            if (projectionOffsetPushed)
-            {
-                // dc.popProjectionOffest(); // TODO: Restore this custom projection matrix.
+            if (isSurfacePath)
                 GLES20.glDepthMask(true); // Restore the default depth mask.
-            }
         }
     }
 
