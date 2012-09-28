@@ -194,7 +194,7 @@ public class KMLParserContext extends BasicXMLEventParserContext
 //        this.parsers.put(new QName(ns, "Delete"), new KMLDelete(ns));
         this.parsers.put(new QName(ns, "Document"), new KMLDocument(ns));
 //        this.parsers.put(new QName(ns, "ExtendedData"), new KMLExtendedData(ns));
-//        this.parsers.put(new QName(ns, "Folder"), new KMLFolder(ns));
+        this.parsers.put(new QName(ns, "Folder"), new KMLFolder(ns));
 //        this.parsers.put(new QName(ns, "GroundOverlay"), new KMLGroundOverlay(ns));
 //        this.parsers.put(new QName(ns, "Icon"), new KMLIcon(ns));
 //        this.parsers.put(new QName(ns, "IconStyle"), new KMLIconStyle(ns));
@@ -205,9 +205,9 @@ public class KMLParserContext extends BasicXMLEventParserContext
 //        this.parsers.put(new QName(ns, "LabelStyle"), new KMLLabelStyle(ns));
 //        this.parsers.put(new QName(ns, "LatLonBox"), new KMLLatLonBox(ns));
 //        this.parsers.put(new QName(ns, "LatLonAltBox"), new KMLLatLonAltBox(ns));
-//        this.parsers.put(new QName(ns, "LinearRing"), new KMLLinearRing(ns));
+        this.parsers.put(new QName(ns, "LinearRing"), new KMLLinearRing(ns));
         this.parsers.put(new QName(ns, "LineString"), new KMLLineString(ns));
-//        this.parsers.put(new QName(ns, "LineStyle"), new KMLLineStyle(ns));
+        this.parsers.put(new QName(ns, "LineStyle"), new KMLLineStyle(ns));
 //        this.parsers.put(new QName(ns, "Link"), new KMLLink(ns));
 //        this.parsers.put(new QName(ns, "linkSnippet"), new KMLSnippet(ns));
 //        this.parsers.put(new QName(ns, "ListStyle"), new KMLListStyle(ns));
@@ -221,12 +221,12 @@ public class KMLParserContext extends BasicXMLEventParserContext
 //        this.parsers.put(new QName(ns, "Orientation"), new KMLOrientation(ns));
 //        this.parsers.put(new QName(ns, "outerBoundaryIs"), new KMLBoundary(ns));
 //        this.parsers.put(new QName(ns, "overlayXY"), new KMLVec2(ns));
-//        this.parsers.put(new QName(ns, "Pair"), new KMLPair(ns));
+        this.parsers.put(new QName(ns, "Pair"), new KMLPair(ns));
 //        this.parsers.put(new QName(ns, "PhotoOverlay"), new KMLPhotoOverlay(ns));
         this.parsers.put(new QName(ns, "Placemark"), new KMLPlacemark(ns));
 //        this.parsers.put(new QName(ns, "Point"), new KMLPoint(ns));
 //        this.parsers.put(new QName(ns, "Polygon"), new KMLPolygon(ns));
-//        this.parsers.put(new QName(ns, "PolyStyle"), new KMLPolyStyle(ns));
+        this.parsers.put(new QName(ns, "PolyStyle"), new KMLPolyStyle(ns));
 //        this.parsers.put(new QName(ns, "Region"), new KMLRegion(ns));
 //        this.parsers.put(new QName(ns, "ResourceMap"), new KMLResourceMap(ns));
 //        this.parsers.put(new QName(ns, "rotationXY"), new KMLVec2(ns));
@@ -239,9 +239,9 @@ public class KMLParserContext extends BasicXMLEventParserContext
 //        this.parsers.put(new QName(ns, "SimpleField"), new KMLSimpleField(ns));
 //        this.parsers.put(new QName(ns, "size"), new KMLVec2(ns));
 //        this.parsers.put(new QName(ns, "Snippet"), new KMLSnippet(ns));
-//        this.parsers.put(new QName(ns, "Style"), new KMLStyle(ns));
-//        this.parsers.put(new QName(ns, "StyleMap"), new KMLStyleMap(ns));
-//        this.parsers.put(new QName(ns, "styleUrl"), new KMLStyleUrl(ns));
+        this.parsers.put(new QName(ns, "Style"), new KMLStyle(ns));
+        this.parsers.put(new QName(ns, "StyleMap"), new KMLStyleMap(ns));
+        this.parsers.put(new QName(ns, "styleUrl"), new KMLStyleUrl(ns));
 //        this.parsers.put(new QName(ns, "TimeSpan"), new KMLTimeSpan(ns));
 //        this.parsers.put(new QName(ns, "TimeStamp"), new KMLTimeStamp(ns));
 //        this.parsers.put(new QName(ns, "Update"), new KMLUpdate(ns));

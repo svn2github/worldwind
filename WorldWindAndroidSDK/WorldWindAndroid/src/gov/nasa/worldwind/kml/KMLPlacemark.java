@@ -4,7 +4,9 @@
 
 package gov.nasa.worldwind.kml;
 
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.Message;
+import gov.nasa.worldwind.kml.impl.KMLLineStringPlacemarkImpl;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.xml.*;
@@ -155,7 +157,7 @@ public class KMLPlacemark extends KMLAbstractFeature
         if (shape.getCoordinates() == null)
             return null;
 
-        return null; // TODO  new KMLLineStringPlacemarkImpl(tc, this, geom);
+        return new KMLLineStringPlacemarkImpl(tc, this, geom);
     }
 
     protected KMLRenderable selectLinearRingRenderable(KMLTraversalContext tc, KMLAbstractGeometry geom)
@@ -164,12 +166,12 @@ public class KMLPlacemark extends KMLAbstractFeature
 
         if (shape.getCoordinates() == null)
             return null;
-//
-//        KMLLineStringPlacemarkImpl impl = new KMLLineStringPlacemarkImpl(tc, this, geom);
-//        if (impl.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND) // See note in google's version of KML spec
-//            impl.setPathType(AVKey.GREAT_CIRCLE);
 
-        return null; // TODO impl;
+        KMLLineStringPlacemarkImpl impl = new KMLLineStringPlacemarkImpl(tc, this, geom);
+        if (impl.getAltitudeMode() == AVKey.CLAMP_TO_GROUND) // See note in google's version of KML spec
+            impl.setPathType(AVKey.GREAT_CIRCLE);
+
+        return impl;
     }
 
     protected KMLRenderable selectPolygonRenderable(KMLTraversalContext tc, KMLAbstractGeometry geom)

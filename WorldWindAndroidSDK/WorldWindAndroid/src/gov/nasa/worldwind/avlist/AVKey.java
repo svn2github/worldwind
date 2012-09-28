@@ -27,6 +27,7 @@ public interface AVKey
      */
     final String CONSTANT = "gov.nasa.worldwind.avkey.Constant";
     final String CONSTRUCTION_PARAMETERS = "gov.nasa.worldwind.avkey.ConstructionParameters";
+    final String CONTEXT = "gov.nasa.worldwind.avkey.Context";
 
     final String DATA_CACHE_NAME = "gov.nasa.worldwind.avkey.DataCacheName";
     final String DATA_FILE_STORE_CLASS_NAME = "gov.nasa.worldwind.avkey.DataFileStoreClassName";
@@ -40,6 +41,7 @@ public interface AVKey
      */
     final String DATA_TYPE = "gov.nasa.worldwind.avkey.DataType";
     final String DELETE_CACHE_ON_EXIT = "gov.nasa.worldwind.avkey.DeleteCacheOnExit";
+    final String DESCRIPTION = "gov.nasa.worldwind.avkey.Description";
     final String DETAIL_HINT = "gov.nasa.worldwind.avkey.DetailHint";
     final String DISPLAY_NAME = "gov.nasa.worldwind.avkey.DisplayName";
 
@@ -57,6 +59,7 @@ public interface AVKey
     final String FILE_STORE_LOCATION = "gov.nasa.worldwind.avkey.FileStoreLocation";
     final String FLOAT32 = "gov.nasa.worldwind.avkey.Float32";
     final String FORMAT_SUFFIX = "gov.nasa.worldwind.avkey.FormatSuffixKey";
+    final String FRACTION = "gov.nasa.worldwind.avkey.Fraction";
 
     final String GET_CAPABILITIES_URL = "gov.nasa.worldwind.avkey.GetCapabilitiesURL";
     final String GET_MAP_URL = "gov.nasa.worldwind.avkey.GetMapURL";
@@ -80,6 +83,7 @@ public interface AVKey
     final String INITIAL_LONGITUDE = "gov.nasa.worldwind.avkey.InitialLongitude";
     final String INITIAL_ALTITUDE = "gov.nasa.worldwind.avkey.InitialAltitude";
     final String INPUT_HANDLER_CLASS_NAME = "gov.nasa.worldwind.avkey.InputHandlerClassName";
+    final String INSET_PIXELS = "gov.nasa.worldwind.avkey.InsetPixels";
     final String INSTALLED = "gov.nasa.worldwind.avkey.Installed";
     final String INT8 = "gov.nasa.worldwind.avkey.Int8";
     final String INT16 = "gov.nasa.worldwind.avkey.Int16";
@@ -142,6 +146,7 @@ public interface AVKey
     final String OPACITY = "gov.nasa.worldwind.avkey.Opacity";
 
     final String PICKED_OBJECT_PARENT_LAYER = "gov.nasa.worldwind.avkey.PickedObject.ParentLayer";
+    final String PIXELS = "gov.nasa.worldwind.avkey.Pixels";
     final String POSITION = "gov.nasa.worldwind.avkey.Position";
     final String PROGRESS = "gov.nasa.worldwind.avkey.Progress";
 
@@ -172,6 +177,7 @@ public interface AVKey
     final String SERVICE = "gov.nasa.worldwind.avkey.ServiceURLKey";
     final String SERVICE_NAME = "gov.nasa.worldwind.avkey.ServiceName";
     final String SESSION_CACHE_CLASS_NAME = "gov.nasa.worldwind.avkey.SessionCacheClassName";
+    final String SHORT_DESCRIPTION = "gov.nasa.worldwind.avkey.Server.ShortDescription";
     final String STYLE_NAMES = "gov.nasa.worldwind.avkey.StyleNames";
 
     final String TESSELLATOR_FACTORY = "gov.nasa.worldwind.avkey.TessellatorFactory";
