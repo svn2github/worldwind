@@ -27,7 +27,8 @@
         Note: The world_wind_examples icon is taken from www.androidicons.com. This icon is licensed under the Creative
         Commons Attribution 3.0 Unported License.
     -->
-    <application android:icon="@drawable/world_wind_examples">
+    <application android:label="@string/WorldWindExamples.displayName"
+                 android:icon="@drawable/world_wind_examples">
 
         <!--
             Define the bootstrap activity that launches when the World Wind based activity launches. Configure the

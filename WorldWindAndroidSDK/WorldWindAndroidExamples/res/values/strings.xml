@@ -13,9 +13,9 @@
 <resources>
 
     <!--
-        String resources for the World Wind Examples main activity.
+        String resources for the World Wind Android Examples main activity.
     -->
-    <string name="WorldWindExamples.displayName">World Wind Examples</string>
+    <string name="WorldWindExamples.displayName">World Wind Android Examples</string>
 
     <!--
         String resources for the Basic World Wind Activity example.
