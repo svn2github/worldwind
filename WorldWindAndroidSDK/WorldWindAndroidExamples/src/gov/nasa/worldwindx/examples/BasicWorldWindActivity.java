@@ -1,8 +1,7 @@
-/*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration.
- * All Rights Reserved.
- */
+/* Copyright (C) 2001, 2012 United States Government as represented by
+the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
 package gov.nasa.worldwindx.examples;
 
 import android.app.Activity;
@@ -48,34 +47,6 @@ public class BasicWorldWindActivity extends Activity
         // Link the Android Dashboard view to this activity's WorldWindow.
         this.dashboard = (DashboardView) this.findViewById(R.id.dashboard);
         this.dashboard.setWwd(this.wwd);
-//
-//        Thread t = new Thread(new Runnable()
-//        {
-//            public void run()
-//            {
-//                try
-//                {
-//                    URL url = new URL("http://wwdev.tomgaskins.net/KMLTestFiles/LongLineString.kml");
-//                    KMLRoot kmlRoot = KMLRoot.createAndParse(url);
-//                    KMLController kmlController = new KMLController(kmlRoot);
-//                    RenderableLayer layer = new RenderableLayer();
-//                    layer.addRenderable(kmlController);
-//                }
-//                catch (MalformedURLException e)
-//                {
-//                    e.printStackTrace();
-//                }
-//                catch (XMLParserException e)
-//                {
-//                    e.printStackTrace();
-//                }
-//                catch (IOException e)
-//                {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//        t.start();
     }
 
     @Override
