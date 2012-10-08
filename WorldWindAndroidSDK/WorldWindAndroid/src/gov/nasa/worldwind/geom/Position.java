@@ -14,6 +14,8 @@ import java.util.*;
  */
 public class Position extends LatLon
 {
+    public static final Position ZERO = new Position();
+
     public double elevation;
 
     public Position()

@@ -777,7 +777,7 @@ public class BasicView extends WWObjectImpl implements View
             return globe.computePositionFromPoint(this.getEyePoint());
         }
 
-        return new Position(); // (0,0,0)
+        return Position.ZERO; // (0,0,0)
     }
 
     protected double computeNearClipDistance(DrawContext dc)
