@@ -9,8 +9,6 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.terrain.*;
 
-import java.util.List;
-
 /**
  * @author dcollins
  * @version $Id$
@@ -104,8 +102,6 @@ public interface Globe extends WWObject
     double getElevation(LatLon location);
 
     double getElevation(Angle latitude, Angle longitude);
-
-    double getElevations(Sector sector, List<? extends LatLon> locations, double targetResolution, double[] buffer);
 
     double getElevations(Sector sector, int numLat, int numLon, double targetResolution, double[] buffer);
 
