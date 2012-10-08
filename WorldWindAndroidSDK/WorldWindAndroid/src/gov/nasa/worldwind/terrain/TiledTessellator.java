@@ -531,8 +531,10 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
         if (this.topLevelTiles.isEmpty())
             this.createTopLevelTiles();
 
-        for (Tile tile : this.topLevelTiles)
+        for (int i = 0; i < this.topLevelTiles.size(); i++)
         {
+            Tile tile = this.topLevelTiles.get(i);
+
             this.updateTileExtent(dc, (TerrainTile) tile);
 
             if (this.intersectsFrustum(dc, (TerrainTile) tile))

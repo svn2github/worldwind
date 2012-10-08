@@ -77,8 +77,10 @@ public class SurfaceTileRenderer
                 this.intersectingGeometry.clear();
                 this.assembleIntersectingGeometry(tile, sgList);
 
-                for (SectorGeometry sg : this.intersectingGeometry)
+                for (int i = 0; i < this.intersectingGeometry.size(); i++)
                 {
+                    SectorGeometry sg = this.intersectingGeometry.get(i);
+
                     sg.beginRendering(dc);
                     try
                     {
@@ -99,7 +101,7 @@ public class SurfaceTileRenderer
         }
     }
 
-    public void renderTiles(DrawContext dc, Iterable<? extends SurfaceTile> tiles)
+    public void renderTiles(DrawContext dc, List<? extends SurfaceTile> tiles)
     {
         if (dc == null)
         {
@@ -130,8 +132,10 @@ public class SurfaceTileRenderer
         sgList.beginRendering(dc);
         try
         {
-            for (SectorGeometry sg : sgList)
+            for (int i = 0; i < sgList.size(); i++)
             {
+                SectorGeometry sg = sgList.get(i);
+
                 this.intersectingTiles.clear();
                 this.assembleIntersectingTiles(sg, tiles);
                 if (this.intersectingTiles.isEmpty())
@@ -140,8 +144,9 @@ public class SurfaceTileRenderer
                 sg.beginRendering(dc);
                 try
                 {
-                    for (SurfaceTile tile : this.intersectingTiles)
+                    for (int j = 0; j < this.intersectingTiles.size(); j++)
                     {
+                        SurfaceTile tile = this.intersectingTiles.get(j);
                         if (tile.bind(dc))
                         {
                             this.applyTileState(dc, sg, tile);
@@ -184,23 +189,27 @@ public class SurfaceTileRenderer
         this.intersectingGeometry.clear();
     }
 
-    protected void assembleIntersectingTiles(SectorGeometry sg, Iterable<? extends SurfaceTile> tiles)
+    protected void assembleIntersectingTiles(SectorGeometry sg, List<? extends SurfaceTile> tiles)
     {
         Sector sgSector = sg.getSector();
 
-        for (SurfaceTile tile : tiles)
+        for (int i = 0; i < tiles.size(); i++)
         {
+            SurfaceTile tile = tiles.get(i);
+
             if (tile != null && tile.getSector().intersectsInterior(sgSector))
                 this.intersectingTiles.add(tile);
         }
     }
 
-    protected void assembleIntersectingGeometry(SurfaceTile tile, Iterable<? extends SectorGeometry> sgList)
+    protected void assembleIntersectingGeometry(SurfaceTile tile, List<? extends SectorGeometry> sgList)
     {
         Sector tileSector = tile.getSector();
 
-        for (SectorGeometry sg : sgList)
+        for (int i = 0; i < sgList.size(); i++)
         {
+            SectorGeometry sg = sgList.get(i);
+
             if (sg != null && sg.getSector().intersects(tileSector))
                 this.intersectingGeometry.add(sg);
         }

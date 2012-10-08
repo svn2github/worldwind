@@ -33,7 +33,7 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
     protected SceneController sceneController;
     protected InputHandler inputHandler;
     protected GpuResourceCache gpuResourceCache;
-    protected Collection<RenderingListener> renderingListeners = new ArrayList<RenderingListener>();
+    protected List<RenderingListener> renderingListeners = new ArrayList<RenderingListener>();
     protected int viewportWidth;
     protected int viewportHeight;
     protected TextView latitudeText;
@@ -176,6 +176,9 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
         return super.onTouchEvent(event);
     }
 
+    protected final RenderingEvent beforeRenderingEvent = new RenderingEvent(this, RenderingEvent.BEFORE_RENDERING);
+    protected final RenderingEvent afterRenderingEvent = new RenderingEvent(this, RenderingEvent.AFTER_RENDERING);
+
     protected void drawFrame()
     {
         if (this.sceneController == null)
@@ -186,7 +189,7 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
 
         // Calls to rendering listeners are wrapped in a try/catch block to prevent any exception thrown by a listener
         // from terminating this frame.
-        this.sendRenderingEvent(new RenderingEvent(this, RenderingEvent.BEFORE_RENDERING));
+        this.sendRenderingEvent(this.beforeRenderingEvent);
 
         try
         {
@@ -199,7 +202,7 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
 
         // Calls to rendering listeners are wrapped in a try/catch block to prevent any exception thrown by a listener
         // from terminating this frame.
-        this.sendRenderingEvent(new RenderingEvent(this, RenderingEvent.AFTER_RENDERING));
+        this.sendRenderingEvent(this.afterRenderingEvent);
     }
 
     /** {@inheritDoc} */
@@ -336,8 +339,9 @@ public class WorldWindowGLSurfaceView extends GLSurfaceView implements GLSurface
         if (this.renderingListeners.isEmpty())
             return;
 
-        for (RenderingListener listener : this.renderingListeners)
+        for (int i = 0; i < this.renderingListeners.size(); i++)
         {
+            RenderingListener listener = this.renderingListeners.get(i);
             try
             {
                 // This method is called during rendering, so we wrao each rendering listener call in a try/catch block

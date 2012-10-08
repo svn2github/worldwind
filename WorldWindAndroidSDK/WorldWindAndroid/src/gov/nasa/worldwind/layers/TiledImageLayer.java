@@ -341,8 +341,10 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
         if (this.topLevelTiles.isEmpty())
             this.createTopLevelTiles();
 
-        for (Tile tile : this.topLevelTiles)
+        for (int i = 0; i < this.topLevelTiles.size(); i++)
         {
+            Tile tile = this.topLevelTiles.get(i);
+
             this.updateTileExtent(dc, (GpuTextureTile) tile);
             this.currentAncestorTile = null;
 
