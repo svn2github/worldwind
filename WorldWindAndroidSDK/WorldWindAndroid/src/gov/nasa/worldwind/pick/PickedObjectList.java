@@ -17,9 +17,10 @@ public class PickedObjectList extends ArrayList<PickedObject>
     {
     }
 
-    public PickedObjectList(PickedObjectList list) // clone a shallow copy
+    public void set(PickedObjectList list)
     {
-        super(list);
+        super.clear();
+        super.addAll(list);
     }
 
     public boolean hasNonTerrainObjects()

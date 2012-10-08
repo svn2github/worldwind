@@ -31,7 +31,7 @@ public class SceneController extends WWObjectImpl
     protected GpuResourceCache gpuResourceCache;
     protected boolean deepPick;
     protected Point pickPoint;
-    protected PickedObjectList objectsAtPickPoint;
+    protected PickedObjectList objectsAtPickPoint = new PickedObjectList();
     protected Collection<PerformanceStatistic> perFrameStatistics = new ArrayList<PerformanceStatistic>();
 
     protected SceneController()
@@ -459,7 +459,7 @@ public class SceneController extends WWObjectImpl
         this.doPickTerrain(dc);
         this.doPickNonTerrain(dc);
         this.resolveTopPick(dc);
-        this.objectsAtPickPoint = new PickedObjectList(dc.getObjectsAtPickPoint());
+        this.objectsAtPickPoint.set(dc.getObjectsAtPickPoint());
 
         if (this.isDeepPickEnabled() && this.objectsAtPickPoint.hasNonTerrainObjects())
             this.doDeepPick(dc);
