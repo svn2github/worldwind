@@ -38,6 +38,7 @@ public class Tile implements Cacheable
     /** An optional cache name. Overrides the Level's cache name when non-null. */
     protected String cacheName;
     protected TileKey tileKey;
+    protected TileKey[] childKeys;
     protected Vec4[] referencePoints;
     protected double priority = Double.MAX_VALUE; // Default is minimum priority
     // The following is late bound because it's only selectively needed and costly to create
@@ -468,19 +469,19 @@ public class Tile implements Cacheable
         double t2 = this.sector.maxLongitude.degrees;
         double t1 = 0.5 * (t0 + t2);
 
+        if (this.childKeys == null)
+            this.childKeys = this.createChildKeys(nextLevel);
+
         int subRow = 2 * this.row;
         int subCol = 2 * this.column;
-        TileKey newTileKey = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
-        Tile subTile = (Tile) cache.get(newTileKey);
+        Tile subTile = (Tile) cache.get(this.childKeys[0]);
         if (subTile != null)
             result[0] = subTile;
         else
             result[0] = factory.createTile(Sector.fromDegrees(p0, p1, t0, t1), nextLevel, subRow, subCol);
 
-        subRow = 2 * this.row;
         subCol = 2 * this.column + 1;
-        newTileKey = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
-        subTile = (Tile) cache.get(newTileKey);
+        subTile = (Tile) cache.get(this.childKeys[1]);
         if (subTile != null)
             result[1] = subTile;
         else
@@ -488,23 +489,41 @@ public class Tile implements Cacheable
 
         subRow = 2 * this.row + 1;
         subCol = 2 * this.column;
-        newTileKey = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
-        subTile = (Tile) cache.get(newTileKey);
+        subTile = (Tile) cache.get(this.childKeys[2]);
         if (subTile != null)
             result[2] = subTile;
         else
             result[2] = factory.createTile(Sector.fromDegrees(p1, p2, t0, t1), nextLevel, subRow, subCol);
 
-        subRow = 2 * this.row + 1;
         subCol = 2 * this.column + 1;
-        newTileKey = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
-        subTile = (Tile) cache.get(newTileKey);
+        subTile = (Tile) cache.get(this.childKeys[3]);
         if (subTile != null)
             result[3] = subTile;
         else
             result[3] = factory.createTile(Sector.fromDegrees(p1, p2, t1, t2), nextLevel, subRow, subCol);
 
         return result;
+    }
+
+    protected TileKey[] createChildKeys(Level nextLevel)
+    {
+        TileKey[] keys = new TileKey[4];
+
+        int subRow = 2 * this.row;
+        int subCol = 2 * this.column;
+        keys[0] = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
+
+        subCol = 2 * this.column + 1;
+        keys[1] = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
+
+        subRow = 2 * this.row + 1;
+        subCol = 2 * this.column;
+        keys[2] = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
+
+        subCol = 2 * this.column + 1;
+        keys[3] = new TileKey(nextLevel.getLevelNumber(), subRow, subCol, nextLevel.getCacheName());
+
+        return keys;
     }
 
     public static void createTilesForLevel(Level level, Sector sector, TileFactory factory, List<Tile> result)
