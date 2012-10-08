@@ -6,14 +6,11 @@ package gov.nasa.worldwindx.examples;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.*;
-import android.view.View;
 import android.widget.TextView;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.util.dashboard.DashboardView;
 
 import java.io.File;
 
@@ -24,7 +21,6 @@ import java.io.File;
 public class BasicWorldWindActivity extends Activity
 {
     protected WorldWindowGLSurfaceView wwd;
-    protected DashboardView dashboard;
 
     /** Called when the activity is first created. */
     @Override
@@ -43,10 +39,6 @@ public class BasicWorldWindActivity extends Activity
         this.wwd.setModel((Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME));
         this.setupView();
         this.setupTextViews();
-
-        // Link the Android Dashboard view to this activity's WorldWindow.
-        this.dashboard = (DashboardView) this.findViewById(R.id.dashboard);
-        this.dashboard.setWwd(this.wwd);
     }
 
     @Override
@@ -65,27 +57,6 @@ public class BasicWorldWindActivity extends Activity
 
         // Resume the OpenGL ES rendering thread.
         this.wwd.onResume();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        // Configure the application's options menu using the XML file res/menu/options.xml.
-        this.getMenuInflater().inflate(R.menu.options, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        // Display the World Wind dashboard when the dashboard options menu item is selected.
-        switch (item.getItemId())
-        {
-            case R.id.dashboard:
-                this.dashboard.setVisibility(View.VISIBLE);
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     protected void setupView()

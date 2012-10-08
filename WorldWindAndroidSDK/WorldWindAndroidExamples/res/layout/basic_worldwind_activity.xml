@@ -12,24 +12,10 @@
               android:gravity="center"
               android:orientation="vertical">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="3">
-
-        <gov.nasa.worldwind.WorldWindowGLSurfaceView android:id="@+id/wwd"
-                                                     android:layout_width="0dp"
-                                                     android:layout_height="match_parent"
-                                                     android:layout_weight="3"/>
-
-        <gov.nasa.worldwind.util.dashboard.DashboardView android:id="@+id/dashboard"
-                                                         android:layout_width="0dp"
-                                                         android:layout_height="match_parent"
-                                                         android:layout_weight="1"
-                                                         android:orientation="vertical"
-                                                         android:padding="10dp"/>
-    </LinearLayout>
+    <gov.nasa.worldwind.WorldWindowGLSurfaceView android:id="@+id/wwd"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 android:layout_weight="3"/>
 
     <LinearLayout android:id="@+id/latlondisplay"
                   android:orientation="horizontal"
