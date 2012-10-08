@@ -16,7 +16,7 @@ import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.*;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.PriorityQueue;
 
 /**
  * @author dcollins
@@ -73,7 +73,6 @@ public class DrawContext extends WWObjectImpl
     protected ByteBuffer pickColor = BufferUtil.newByteBuffer(4);
     protected Point pickPoint;
     protected PickedObjectList objectsAtPickPoint = new PickedObjectList();
-    protected Collection<PerformanceStatistic> perFrameStatistics;
 
     /**
      * Initializes this <code>DrawContext</code>. This method should be called at the beginning of each frame to prepare
@@ -113,7 +112,6 @@ public class DrawContext extends WWObjectImpl
         this.uniquePickNumber = 0;
         this.pickPoint = null;
         this.objectsAtPickPoint.clear();
-        this.perFrameStatistics = null;
     }
 
     public int getViewportWidth()
@@ -582,38 +580,6 @@ public class DrawContext extends WWObjectImpl
         }
 
         this.objectsAtPickPoint.add(pickedObject);
-    }
-
-    public Collection<PerformanceStatistic> getPerFrameStatistics()
-    {
-        return this.perFrameStatistics;
-    }
-
-    public void setPerFrameStatistics(Collection<PerformanceStatistic> perFrameStatistics)
-    {
-        this.perFrameStatistics = perFrameStatistics;
-    }
-
-    public void addPerFrameStatistic(String key, String displayName, Object value)
-    {
-        if (this.perFrameStatistics == null)
-            return;
-
-        if (WWUtil.isEmpty(key))
-        {
-            String msg = Logging.getMessage("nullValue.KeyIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (WWUtil.isEmpty(displayName))
-        {
-            String msg = Logging.getMessage("nullValue.NameIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.perFrameStatistics.add(new PerformanceStatistic(key, displayName, value));
     }
 
     /**

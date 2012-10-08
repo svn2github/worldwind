@@ -13,9 +13,7 @@ import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
-import gov.nasa.worldwind.util.*;
-
-import java.util.*;
+import gov.nasa.worldwind.util.Logging;
 
 /**
  * @author dcollins
@@ -32,7 +30,6 @@ public class SceneController extends WWObjectImpl
     protected boolean deepPick;
     protected Point pickPoint;
     protected PickedObjectList objectsAtPickPoint = new PickedObjectList();
-    protected Collection<PerformanceStatistic> perFrameStatistics = new ArrayList<PerformanceStatistic>();
 
     protected SceneController()
     {
@@ -207,16 +204,6 @@ public class SceneController extends WWObjectImpl
     }
 
     /**
-     * Returns the current per-frame statistics.
-     *
-     * @return the current per-frame statistics.
-     */
-    public Collection<PerformanceStatistic> getPerFrameStatistics()
-    {
-        return this.perFrameStatistics;
-    }
-
-    /**
      * Cause the window to regenerate the frame, including pick resolution.
      *
      * @param viewportWidth  the width of the current viewport this scene controller is associated with, in pixels. Must
@@ -242,18 +229,11 @@ public class SceneController extends WWObjectImpl
             throw new IllegalArgumentException(msg);
         }
 
-        this.perFrameStatistics.clear();
-        long beginTime = System.currentTimeMillis();
-
         // Prepare the drawing context for a new frame then cause this scene controller to draw its content. There is no
         // need to explicitly swap the front and back buffers here, as the owner WorldWindow does this for us. In the
         // case of WorldWindowGLSurfaceView, the GLSurfaceView automatically swaps the front and back buffers for us.
         this.initializeDrawContext(this.dc, viewportWidth, viewportHeight);
         this.doDrawFrame(this.dc);
-
-        long endTime = System.currentTimeMillis();
-        this.dc.addPerFrameStatistic(PerformanceStatistic.FRAME_TIME, "Frame Time (ms)", endTime - beginTime);
-        this.addPerFrameStatistics(this.dc);
     }
 
     protected void doDrawFrame(DrawContext dc)
@@ -285,7 +265,6 @@ public class SceneController extends WWObjectImpl
         dc.setGpuResourceCache(this.gpuResourceCache);
         dc.setFrameTimeStamp(timeStamp);
         dc.setPickPoint(this.pickPoint);
-        dc.setPerFrameStatistics(this.perFrameStatistics);
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -330,7 +309,6 @@ public class SceneController extends WWObjectImpl
 
     protected void createTerrain(DrawContext dc)
     {
-        long beginTime = System.currentTimeMillis();
         SectorGeometryList surfaceGeometry = null;
 
         try
@@ -350,12 +328,6 @@ public class SceneController extends WWObjectImpl
 
         dc.setSurfaceGeometry(surfaceGeometry);
         dc.setVisibleSector(surfaceGeometry != null ? surfaceGeometry.getSector() : null);
-
-        long endTime = System.currentTimeMillis();
-        dc.addPerFrameStatistic(PerformanceStatistic.TERRAIN_FRAME_TIME, "Frame Time (ms): Terrain Creation",
-            endTime - beginTime);
-        dc.addPerFrameStatistic(PerformanceStatistic.TERRAIN_TILE_COUNT, "Tile Count: Terrain",
-            dc.getSurfaceGeometry() != null ? dc.getSurfaceGeometry().size() : 0);
     }
 
     protected void draw(DrawContext dc)
@@ -470,12 +442,7 @@ public class SceneController extends WWObjectImpl
         if (dc.getSurfaceGeometry() == null || dc.getPickPoint() == null)
             return;
 
-        long beginTime = System.currentTimeMillis();
-
         dc.getSurfaceGeometry().pick(dc, dc.getPickPoint());
-
-        long endTime = System.currentTimeMillis();
-        dc.addPerFrameStatistic(PerformanceStatistic.TERRAIN_PICK_TIME, "Pick Time (ms): Terrain", endTime - beginTime);
     }
 
     protected void doPickNonTerrain(DrawContext dc)
@@ -632,22 +599,5 @@ public class SceneController extends WWObjectImpl
         }
 
         return listA;
-    }
-
-    protected void addPerFrameStatistics(DrawContext dc)
-    {
-        if (this.gpuResourceCache != null)
-        {
-            dc.addPerFrameStatistic(PerformanceStatistic.GPU_RESOURCE_CACHE, "Cache Size (Kb): GPU Resources",
-                this.gpuResourceCache.getUsedCapacity() / 1000);
-        }
-
-        this.perFrameStatistics.addAll(WorldWind.getMemoryCacheSet().getPerformanceStatistics());
-
-        long totalMemory = Runtime.getRuntime().totalMemory();
-        long freeMemory = Runtime.getRuntime().freeMemory();
-        dc.addPerFrameStatistic(PerformanceStatistic.JVM_HEAP, "JVM total memory (Kb)", totalMemory / 1000);
-        dc.addPerFrameStatistic(PerformanceStatistic.JVM_HEAP_USED, "JVM used memory (Kb)",
-            (totalMemory - freeMemory) / 1000);
     }
 }

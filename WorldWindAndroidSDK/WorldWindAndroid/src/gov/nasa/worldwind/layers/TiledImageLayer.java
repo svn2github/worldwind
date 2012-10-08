@@ -13,7 +13,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.xml.xpath.XPath;
 import java.io.*;
@@ -277,8 +277,6 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
         {
             // TODO: apply opacity and transparent texture support
 
-            dc.addPerFrameStatistic(PerformanceStatistic.IMAGE_TILE_COUNT, this.tileCountName,
-                this.currentTiles.size());
             dc.getSurfaceTileRenderer().renderTiles(dc, this.currentTiles);
 
             // Check texture expiration. Memory-cached textures are checked for expiration only when an explicit,
