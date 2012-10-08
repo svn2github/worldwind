@@ -13,7 +13,6 @@ import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.Logging;
 
 import java.beans.PropertyChangeEvent;
-import java.util.List;
 
 /**
  * @author dcollins
@@ -189,52 +188,6 @@ public abstract class AbstractGlobe extends WWObjectImpl implements Globe
         // that this location is consistently reported as having elevation 0.
         return (this.elevationModel != null && this.elevationModel.contains(latitude, longitude))
             ? this.elevationModel.getElevation(latitude, longitude) : 0;
-    }
-
-    /** {@inheritDoc} */
-    public double getElevations(Sector sector, List<? extends LatLon> locations, double targetResolution,
-        double[] buffer)
-    {
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (locations == null)
-        {
-            String msg = Logging.getMessage("nullValue.LocationsListIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (targetResolution <= 0)
-        {
-            String msg = Logging.getMessage("generic.ResolutionIsInvalid", targetResolution);
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer == null)
-        {
-            String msg = Logging.getMessage("nullValue.ElevationsBufferIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (buffer.length < locations.size())
-        {
-            String msg = Logging.getMessage("generic.ElevationsBufferInvalidLength", buffer.length);
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // Return 0 as this globe's elevation at the specified location if the elevation model is null or does not
-        // intersect the specified sector. If the elevation model does intersect the sector, we must return 0 to ensure
-        // that this sector is consistently reported as having elevation 0.
-        return (this.elevationModel != null && this.elevationModel.intersects(sector) != -1)
-            ? this.elevationModel.getElevations(sector, locations, targetResolution, buffer) : 0;
     }
 
     /** {@inheritDoc} */
