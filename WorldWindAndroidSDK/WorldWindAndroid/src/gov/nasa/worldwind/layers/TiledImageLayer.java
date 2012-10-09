@@ -30,7 +30,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, BulkRetrievable
 {
     protected LevelSet levels;
-    protected double detailHintOrigin = 2.8; // the default detail hint origin
+    protected double detailHintOrigin = 2.6; // the default detail hint origin
     protected double detailHint;
     protected List<Tile> topLevelTiles = new ArrayList<Tile>();
     protected String tileCountName;
