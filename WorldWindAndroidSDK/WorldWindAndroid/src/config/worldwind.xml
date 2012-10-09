@@ -45,6 +45,6 @@
     <Property name="gov.nasa.worldwind.avkey.ElevationTileCacheSize" value="2000000"/> <!--room for about 30 -->
     <Property name="gov.nasa.worldwind.avkey.SectorGeometryCacheSize" value="1300000"/> <!--room for about 160 -->
     <Property name="gov.nasa.worldwind.avkey.SectorGeometryTileCacheSize" value="25000"/> <!--room for about 200 -->
-    <Property name="gov.nasa.worldwind.avkey.GpuTextureTileCacheSize" value="25000"/> <!--room for about 300 -->
+    <Property name="gov.nasa.worldwind.avkey.GpuTextureTileCacheSize" value="2000000"/> <!--room for about 5 w/texture data -->
     <Property name="gov.nasa.worldwind.avkey.MaxMessageRepeat" value="10"/>
 </WorldWindConfiguration>
