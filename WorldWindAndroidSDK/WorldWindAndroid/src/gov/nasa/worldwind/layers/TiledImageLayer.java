@@ -410,6 +410,7 @@ public class TiledImageLayer extends AbstractLayer implements Tile.TileFactory, 
                     this.addTileOrDescendants(dc, (GpuTextureTile) child);
                 }
             }
+            tile.clearChildList();
         }
         finally
         {

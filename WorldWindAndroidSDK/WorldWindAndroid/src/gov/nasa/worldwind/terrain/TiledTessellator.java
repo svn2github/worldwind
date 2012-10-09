@@ -586,6 +586,7 @@ public class TiledTessellator extends WWObjectImpl implements Tessellator, Tile.
                 this.addTileOrDescendants(dc, (TerrainTile) child);
             }
         }
+        tile.clearChildList();
     }
 
     @SuppressWarnings({"UnusedParameters"})

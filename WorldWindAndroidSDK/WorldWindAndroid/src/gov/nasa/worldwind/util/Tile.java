@@ -44,6 +44,12 @@ public class Tile implements Cacheable
     // The following is late bound because it's only selectively needed and costly to create
     protected String path;
 
+    // This is a temporary location to hold this tile's children when they're requested in the subdivide() method. It
+    // prevents having to allocate an array for them with each call to subdivide(). Callers of subdivide must
+    // subsequently call this tile's clearChildList() method to set all children entries to null and thus allow the
+    // children to be garbage collected.
+    protected Tile[] children = new Tile[4];
+
     /**
      * Constructs a tile for a given sector, level, row and column of the tile's containing tile set.
      *
@@ -185,7 +191,7 @@ public class Tile implements Cacheable
         if (this.path != null)
             size += this.getPath().length();
 
-        size += 32; // to account for the references and the TileKey size
+        size += 48; // to account for the references, the TileKey size and the children array
 
         return size;
     }
@@ -427,8 +433,21 @@ public class Tile implements Cacheable
     }
 
     /**
+     * Replaces entries in this tile's child list with nulls. This is necessary to prevent persistence of references
+     * to children when they're not needed. Call this method after using the array of children returned by
+     * {@link #subdivide(Level, gov.nasa.worldwind.cache.MemoryCache, gov.nasa.worldwind.util.Tile.TileFactory)}
+     */
+    public void clearChildList()
+    {
+        this.children[0] = this.children[1] = this.children[2] = this.children[3] = null;
+    }
+
+    /**
      * Splits this tile into four tiles; one for each sub quadrant of this tile. This attempts to retrieve each sub tile
      * from the tile cache.
+     *
+     * Note: Be sure to call {@link #clearChildList()} when done  using the children returned by this method, otherwise
+     * reference to them will persist and eventually use a lot of memory unnecessarily.
      *
      * @param nextLevel the level for the sub tiles.
      *
@@ -459,7 +478,7 @@ public class Tile implements Cacheable
             throw new IllegalArgumentException(msg);
         }
 
-        Tile[] result = new Tile[4];
+        Tile[] result = this.children;
 
         double p0 = this.sector.minLatitude.degrees;
         double p2 = this.sector.maxLatitude.degrees;
