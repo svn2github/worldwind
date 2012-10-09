@@ -780,7 +780,16 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             this.achievedResolution = achievedResolution;
         }
 
-        protected Double getElevation(Angle latitude, Angle longitude)
+        /**
+         * Look up the elevation at a specified location.
+         *
+         * @param latitude  the location's latitude.
+         * @param longitude the location's longitude.
+         *
+         * @return the elevation at the specified location, or {@code Double.MAX_VALUE} if an elevation could not be
+         *         determined.
+         */
+        protected double getElevation(Angle latitude, Angle longitude)
         {
             if (latitude == null || longitude == null)
             {
@@ -790,7 +799,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             }
 
             if (this.tiles == null)
-                return null;
+                return Double.MAX_VALUE;
 
             try
             {
@@ -803,7 +812,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 }
 
                 // Location is not within this group of tiles, so is outside the coverage of this elevation model.
-                return null;
+                return Double.MAX_VALUE;
             }
             catch (Exception e)
             {
@@ -812,7 +821,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 Logging.error(
                     Logging.getMessage("BasicElevationModel.ExceptionComputingElevation", latitude, longitude), e);
 
-                return null;
+                return Double.MAX_VALUE;
             }
         }
 
@@ -1025,7 +1034,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             if (ll == null)
                 continue;
 
-            Double value = elevations.getElevation(ll.latitude, ll.longitude);
+            double value = elevations.getElevation(ll.latitude, ll.longitude);
 
             if (this.isTransparentValue(value))
                 continue;
@@ -1034,11 +1043,11 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             // If an elevation is not available but the location is within the elevation model's coverage, write the
             // elevation models extreme elevation at the location. Do nothing if the location is not within the
             // elevation model's coverage.
-            if (value != null && value != this.getMissingDataSignal())
+            if (value != Double.MAX_VALUE && value != this.getMissingDataSignal())
                 buffer[i] = value;
             else if (this.contains(ll.latitude, ll.longitude))
             {
-                if (value == null)
+                if (value == Double.MAX_VALUE)
                     buffer[i] = this.getExtremeElevations(sector)[0];
                 else if (mapMissingData && value == this.getMissingDataSignal())
                     buffer[i] = this.getMissingDataReplacement();
@@ -1654,8 +1663,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
                 latitude.setRadians(lat);
                 longitude.setRadians(lon);
 
-                Double value = tileSet.getElevation(latitude, longitude);
-                if (value != null)
+                double value = tileSet.getElevation(latitude, longitude);
+                if (value != Double.MAX_VALUE)
                     buffer[index++] = value;
             }
         }
