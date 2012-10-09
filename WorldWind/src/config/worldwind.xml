@@ -65,7 +65,7 @@
     <Property name="gov.nasa.worldwind.avkey.VerticalExaggeration" value="1"/>
     <Property name="gov.nasa.worldwind.avkey.URLConnectTimeout" value="8000"/>
     <Property name="gov.nasa.worldwind.avkey.URLReadTimeout" value="10000"/>
-    <Property name="gov.nasa.worldwind.avkey.TextureCacheSize" value="300000000"/>
+    <Property name="gov.nasa.worldwind.avkey.TextureCacheSize" value="1000000000"/>
     <Property name="gov.nasa.worldwind.avkey.ElevationTileCacheSize" value="10000000"/>
     <Property name="gov.nasa.worldwind.avkey.SectorGeometryCacheSize" value="10000000"/>
     <Property name="gov.nasa.worldwind.avkey.TextureTileCacheSize" value="10000000"/>
