@@ -6,8 +6,6 @@
 package gov.nasa.worldwind.event;
 
 import android.graphics.Point;
-import android.media.*;
-import android.opengl.GLES20;
 import android.view.*;
 import android.view.View;
 import android.widget.TextView;
@@ -42,11 +40,8 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
     protected static final double PINCH_WIDTH_DELTA_THRESHOLD = 5;
     protected static final Angle PINCH_ROTATE_DELTA_THRESHOLD = Angle.fromDegrees(1);
 
-    protected ToneGenerator tg;
-
     public BasicInputHandler()
     {
-        tg = new ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME);
     }
 
     public WorldWindow getEventSource()
@@ -92,9 +87,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                     {
                         // handle double tap here
 
-                        // play sound to test
-                        //tg.startTone(ToneGenerator.TONE_CDMA_CONFIRM);
-
                         eventSource.invokeInRenderingThread(new Runnable()
                         {
                             public void run()
@@ -110,9 +102,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                     else if (mLastTap < 0 || timeSinceLastTap > SINGLE_TAP_INTERVAL)
                     {
                         // handle single tap here
-
-                        // play a beep to test
-                        // tg.startTone(ToneGenerator.TONE_PROP_BEEP);
 
                         mLastTap = curTime;      // last tap is now this tap
                     }
@@ -170,7 +159,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                     {
                         public void run()
                         {
-                            //handlePan(x, y, mPreviousX, mPreviousY);
                             handlePan(xVelocity, yVelocity);
                         }
                     });
@@ -180,8 +168,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                 {
                     boolean upMove = dy > 0;
                     boolean downMove = dy < 0;
-                    boolean rightMove = dx > 0;
-                    boolean leftMove = dx < 0;
 
                     float slope = 2;    // arbitrary value indicating a vertical slope
                     if (dx != 0)
@@ -201,7 +187,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                             dy2 = y2 - mPreviousY2;
                         }
 
-                        final double xVelocity2 = dx2 / width;
                         final double yVelocity2 = dy2 / height;
 
                         Vec4 velocity2 = new Vec4(dx2 / width, dy2 / height, 0);  // assumes screen space
@@ -229,7 +214,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                                 }
                             });
                         }
-
                         // TODO: prevent this from confusion with pinch-rotate
                         else if ((upMove || downMove) && Math.abs(slope) > 1
                             && (yVelocity > 0 && yVelocity2 > 0) || (yVelocity < 0 && yVelocity2 < 0))
@@ -239,11 +223,9 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                                 public void run()
                                 {
                                     handleLookAtTilt(xVelocity, yVelocity);
-                                    //handleZoom(0, yVelocity);
                                 }
                             });
                         }
-
                         else if (deltaPinchAngle != null
                             && deltaPinchAngle.degrees > PINCH_ROTATE_DELTA_THRESHOLD.degrees)
                         {
@@ -256,92 +238,13 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                             });
                         }
 
-                        /*
-                        else if ((rightMove || leftMove) && Math.abs(slope) < 1)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleLookAtHeading(xVelocity, yVelocity, x, y);
-                                    //handleZoom(xVelocity, 0);
-                                }
-                            });
-                        }
-                        */
-
                         mPreviousX2 = x2;
                         mPreviousY2 = y2;
                         mPrevPinchWidth = pinchWidth;
                         mPrevPinchAngle = pinchAngle;
                     }
-                    else if (pointerCount == 3)
-                    {   /*
-                        if ((upMove || downMove) && Math.abs(slope) > 1)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleLookAtTilt(xVelocity, yVelocity);
-                                }
-                            });
-                        }
-                        else if ((rightMove || leftMove) && Math.abs(slope) < 1)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleLookAtHeading(xVelocity, yVelocity, x, y);
-                                }
-                            });
-                        }
-                        */
-
-                        eventSource.invokeInRenderingThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                handleRestoreNorth(xVelocity, yVelocity);
-                            }
-                        });
-                    }
-
-                    else if (pointerCount > 3)
-                    {   /*
-                        if (mPrevPointerCount == 4 && (upMove || downMove) && Math.abs(slope) > 1)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleEyeTilt(xVelocity, yVelocity);
-                                }
-                            });
-                        }
-                        else if (mPrevPointerCount == 4 && (rightMove || leftMove) && Math.abs(slope) < 1)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleEyeHeading(xVelocity, yVelocity);
-                                }
-                            });
-                        }
-                        if (mPrevPointerCount == 5)
-                        {
-                            eventSource.invokeInRenderingThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    handleRestoreNorth(xVelocity, yVelocity);
-                                }
-                            });
-                        }
-                        */
-
+                    else if (pointerCount >= 3)
+                    {
                         eventSource.invokeInRenderingThread(new Runnable()
                         {
                             public void run()
@@ -459,52 +362,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
         return Angle.fromRadians(BCA);
     }
 
-    /*
-    // computes pan using current and previous touch point locations
-    protected void handlePan(float x, float y, float xPrev, float yPrev)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        if (xPrev < 0 || yPrev < 0)
-            return;
-
-        Position lookAtPosition = view.getLookAtPosition(globe);
-
-        if (lookAtPosition != null)
-        {
-            Angle heading = view.getLookAtHeading(globe);
-            Angle tilt = view.getLookAtTilt(globe);
-            double dist = view.getLookAtDistance(globe);
-
-            Matrix M = view.getModelviewMatrix();
-            Vec4 back = new Vec4(M.m31, M.m32, M.m33);
-
-            int[] viewportArray = new int[4];
-            GLES20.glGetIntegerv(GLES20.GL_VIEWPORT, viewportArray, 0);
-            Rect viewport = new Rect(viewportArray[0], viewportArray[3],
-                viewportArray[2], viewportArray[1]);
-            Line newRay = BasicView.computeRayFromScreenPoint(x, y, M, view.getProjectionMatrix(), viewport);
-
-            double parallel = newRay.getDirection().dot3(back);
-
-            Position end = view.computePositionFromScreenPoint(globe, x, y);
-            Position start = view.computePositionFromScreenPoint(globe, xPrev, yPrev);
-            Angle deltaLat = end.latitude.subtract(start.latitude).multiplyAndSet(10);
-            Angle deltaLon = end.longitude.subtract(start.longitude).multiplyAndSet(10);
-
-            lookAtPosition.latitude.addAndSet(deltaLat);
-            lookAtPosition.longitude.addAndSet(deltaLon);
-
-            view.setLookAtPosition(lookAtPosition, heading, tilt, dist, globe);
-        }
-        else
-        {
-
-        }
-    }
-    */
-
     // computes pan using velocity of swipe motion
     protected void handlePan(double xVelocity, double yVelocity)
     {
@@ -551,29 +408,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
 
             view.setEyePosition(eyePosition, globe);
         }
-
-        // TODO: iterate through all pan listeners
-    }
-
-    protected void handleZoom(double xVelocity, double yVelocity)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        double zoomScalingFactor = 8E-1f;
-        double zoom = view.getZoom();
-
-        double dist = view.getLookAtDistance(globe);
-        if (dist >= 0)       // scale by lookAt distance if possible
-            zoom -= (yVelocity + xVelocity) * zoomScalingFactor * dist;
-        else
-        {   // if not, scale with eye altitude
-            Position eyePos = view.getEyePosition(globe);
-            zoom -= (yVelocity + xVelocity) * zoomScalingFactor * 5 * eyePos.elevation;
-        }
-        view.setZoom(zoom);
-
-        // TODO: iterate through all zoom listeners
     }
 
     protected void handlePinchZoom(double widthDelta, float centerX, float centerY)
@@ -593,8 +427,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
             zoom += (widthDelta) * zoomScalingFactor * 5 * eyePos.elevation;
         }
         view.setZoom(zoom);
-
-        // TODO: iterate through all zoom listeners
     }
 
     protected void handlePinchRotate(Angle rotAngle, float centerX, float centerY)
@@ -602,7 +434,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
         BasicView view = (BasicView) this.eventSource.getView();
         Globe globe = this.eventSource.getModel().getGlobe();
 
-        float headingScalingFactor = 200;
         Angle heading = view.getLookAtHeading(globe);
 
         // don't handle case where no lookAt intersection with globe
@@ -615,10 +446,7 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
         Angle tilt = view.getLookAtTilt(globe);
         double range = view.getLookAtDistance(globe);
 
-        //view.setLookAtHeading(heading, globe);
         view.setLookAtPosition(lookAt, heading, tilt, range, globe);
-
-        // TODO: iterate through all heading listeners
     }
 
     protected void handleLookAtTilt(double xVelocity, double yVelocity)
@@ -634,70 +462,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
             return;
         tilt.setDegrees(tilt.degrees + yVelocity * tiltScalingFactor);
         view.setLookAtTilt(tilt, globe);
-
-        // TODO: iterate through all tilt listeners
-    }
-
-    protected void handleEyeTilt(double xVelocity, double yVelocity)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        double tiltScalingFactor = 8E4;
-        Angle tilt = view.getEyeTilt(globe);
-        Position eyePos = view.getEyePosition(globe);
-
-        tilt.setDegrees(tilt.degrees + yVelocity * tiltScalingFactor * 1 / Math.sqrt(eyePos.elevation));
-        view.setEyeTilt(tilt, globe);
-
-        // TODO: iterate through all tilt listeners
-    }
-
-    protected void handleLookAtHeading(double xVelocity, double yVelocity, float x, float y)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        float headingScalingFactor = 200;
-        Angle heading = view.getLookAtHeading(globe);
-
-        // don't handle case where no lookAt intersection with globe
-        if (heading == null)
-            return;
-
-        // get screen height
-        int[] viewportArray = new int[4];
-        GLES20.glGetIntegerv(GLES20.GL_VIEWPORT, viewportArray, 0);
-        int midHeight = viewportArray[3] / 2;
-
-        // rotate clockwise above mid-screen, counter-clockwise below. (0, 0) is screen upper left.
-        if (y > midHeight)
-            heading.setDegrees(heading.degrees - xVelocity * headingScalingFactor);
-        else
-            heading.setDegrees(heading.degrees + xVelocity * headingScalingFactor);
-
-        Position lookAt = view.getLookAtPosition(globe);
-        Angle tilt = view.getLookAtTilt(globe);
-        double range = view.getLookAtDistance(globe);
-
-        //view.setLookAtHeading(heading, globe);
-        view.setLookAtPosition(lookAt, heading, tilt, range, globe);
-
-        // TODO: iterate through all heading listeners
-    }
-
-    protected void handleEyeHeading(double xVelocity, double yVelocity)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        float headingScalingFactor = 200;
-        Angle heading = view.getEyeHeading(globe);
-
-        heading.setDegrees(heading.degrees + xVelocity * headingScalingFactor);
-        view.setEyeHeading(heading, globe);
-
-        // TODO: iterate through all heading listeners
     }
 
     protected void handleRestoreNorth(double xVelocity, double yVelocity)
@@ -721,39 +485,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
             lookAtTilt.addAndSet(Angle.fromDegrees(-lookAtTilt.degrees * delta * tiltScalingFactor));
 
             view.setLookAtPosition(lookAtPosition, lookAtHeading, lookAtTilt, range, globe);
-        }
-        else
-        {
-
-        }
-
-        // TODO: iterate through all heading listeners
-    }
-
-    protected void handleGoToLocation(float x, float y)
-    {
-        BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
-        Position newLookAtPos = new Position();
-        if (!view.computePositionFromScreenPoint(new Point((int) x, (int) y), globe, newLookAtPos))
-            return;
-
-        Position lookAtPos = view.getLookAtPosition(globe);
-        if (lookAtPos != null)
-        {
-            Angle lookAtHeading = view.getLookAtHeading(globe);
-            Angle lookAtTilt = view.getLookAtTilt(globe);
-            double range = view.getLookAtDistance(globe);
-
-            view.setLookAtPosition(newLookAtPos, lookAtHeading, lookAtTilt, range, globe);
-        }
-        else
-        {
-            Position eyePos = view.getEyePosition(globe);
-            Angle zero = Angle.fromDegrees(0);
-
-            view.setLookAtPosition(newLookAtPos, zero, zero, eyePos.elevation, globe);
         }
     }
 }

@@ -25,12 +25,9 @@ public class WWMath
     public static final double DAY_TO_MILLIS = 24.0 * HOUR_TO_MILLIS;
 
     // Temporary properties used to avoid constant reallocation of primitive types.
-    protected static Vec4 origin = new Vec4();
-    protected static Vec4 direction = new Vec4();
     protected static Vec4 nearPoint = new Vec4();
     protected static Vec4 farPoint = new Vec4();
-    protected static Matrix invMatrix = Matrix.fromIdentity();
-    protected static Matrix mvpMatrix = Matrix.fromIdentity();
+    protected static Matrix matrix = Matrix.fromIdentity();
 
     /**
      * Converts time in seconds to time in milliseconds.
@@ -291,36 +288,34 @@ public class WWMath
         // http://www.opengl.org/resources/faq/technical/selection.htm#sele0010
 
         // Compute the combined modelview-projection matrix.
-        mvpMatrix.multiplyAndSet(projection, modelview);
+        matrix.multiplyAndSet(projection, modelview);
 
         // Compute the model coordinate point on the near clip plane that corresponds to the specified screen point.
         // Return false if this point cannot be computed for any reason. This method uses the point and matrix temporary
         // properties to compute the result. We must make this computation before doing anything that depends on the
         // values of the point and matrix properties.
-        if (!unProject(x, y, 0, mvpMatrix, viewport, nearPoint))
+        if (!unProject(x, y, 0, matrix, viewport, nearPoint))
             return false;
 
         // Compute the model coordinate point on the far clip plane that corresponds to the specified screen point.
         // Return false if this point cannot be computed for any reason. This method uses the point and matrix temporary
         // properties to compute the result. We must make this computation before doing anything that depends on the
         // values of the point and matrix properties.
-        if (!unProject(x, y, 1, mvpMatrix, viewport, farPoint))
+        if (!unProject(x, y, 1, matrix, viewport, farPoint))
             return false;
 
         // Compute the ray origin as the eye point in model coordinates. We compute the eye point by transforming the
-        // originby the inverse of the modelview matrix.
-        invMatrix.invertTransformMatrix(modelview);
-        origin.set(0, 0, 0).transformBy4AndSet(invMatrix);
+        // origin xby the inverse of the modelview matrix. The resultant vector is stored in the result's origin
+        // property.
+        matrix.invertTransformMatrix(modelview);
+        result.getOrigin().set(0, 0, 0).transformBy4AndSet(matrix);
 
         // Compute the ray direction as the vector pointing from the near clip plane to the far clip plane, and passing
         // through the specified screen point. We compute this vector buy subtracting the near point from the far point,
-        // resulting in a vector that points from near to far.
-        direction.subtract3AndSet(farPoint, nearPoint);
-        direction.normalize3AndSet();
-
-        // Set the line's origin and direction. Calling Line.set causes Line to copy the origin and direction into its
-        // local properties.
-        result.set(origin, direction);
+        // resulting in a vector that points from near to far. The resultant vector is stored in the result's direction
+        // property.
+        result.getDirection().subtract3AndSet(farPoint, nearPoint);
+        result.getDirection().normalize3AndSet();
 
         return true;
     }
@@ -476,7 +471,7 @@ public class WWMath
         // the inverse of the modelview matrix. This transforms a point from clip coordinates to model coordinates, and
         // is equivalent to transforming the point by the inverse of the concatenated projection-modelview matrix:
         // pmvInv = inverse(modelview * projection).
-        if (invMatrix.invert(mvpMatrix) == null)
+        if (matrix.invert(mvpMatrix) == null)
             return false;
 
         // Set the point to the specified screen coordinates, and set the w-coordinate to 1. The computations below
@@ -496,7 +491,7 @@ public class WWMath
         result.z = result.z * 2 - 1;
 
         // Transform the point from clip coordinates to model coordinates.
-        result.transformBy4AndSet(invMatrix);
+        result.transformBy4AndSet(matrix);
 
         if (result.w == 0.0)
             return false;

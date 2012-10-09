@@ -41,11 +41,6 @@ public class BasicView extends WWObjectImpl implements View
     protected double nearClipDistance = MINIMUM_NEAR_DISTANCE;
     protected double farClipDistance = MINIMUM_FAR_DISTANCE;
 
-    protected Vec4 unitX = new Vec4(1, 0, 0);
-    protected Vec4 unitY = new Vec4(0, 1, 0);
-    protected Vec4 unitZ = new Vec4(0, 0, 1);
-    protected Vec4 unitW = new Vec4(0, 0, 0);
-
     public BasicView()
     {
 
@@ -631,79 +626,6 @@ public class BasicView extends WWObjectImpl implements View
     }
 
     /**
-     * Sets the heading of the view "eye."  The heading values run positive clockwise from North, and indicate the view
-     * rotation about the eye itself.
-     *
-     * @param heading the eye heading.
-     * @param globe   the current globe
-     *
-     * @throws IllegalArgumentException If <code>heading</code> or <code>globe</code> is null.
-     */
-    public void setEyeHeading(Angle heading, Globe globe)
-    {
-        if (heading == null)
-        {
-            String msg = Logging.getMessage("nullValue.AngleIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        else if (globe == null)
-        {
-            String msg = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        Angle zero = Angle.fromDegrees(0);
-        Vec4 eyePoint = getEyePoint();
-        Angle tilt = getEyeTilt(globe);
-
-        setView(globe, eyePoint, tilt, zero, heading);
-    }
-
-    /**
-     * Sets the heading rotation about the lookAt point.  Heading values run positive clockwise from North, and indicate
-     * the view rotation about the lookAt.
-     *
-     * @param newHeading the heading rotation about the lookAt.
-     * @param globe      the current globe
-     *
-     * @throws IllegalArgumentException If <code>newHeading</code> or <code>globe</code> is null.
-     */
-    public void setLookAtHeading(Angle newHeading, Globe globe)
-    {
-        // TODO: fix or deprecate this
-
-        if (newHeading == null)
-        {
-            String msg = Logging.getMessage("nullValue.AngleIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        else if (globe == null)
-        {
-            String msg = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        Angle heading = getLookAtHeading(globe);
-        Angle delta = newHeading.subtract(heading).multiply(-1);  // negate for positive CW rotations
-
-        Position lookAtPosition = getLookAtPosition(globe);
-        if (lookAtPosition == null)
-            return;
-
-        Vec4 normal = new Vec4();
-        globe.computeSurfaceNormalAtLocation(lookAtPosition.latitude, lookAtPosition.longitude, normal);
-
-        Matrix M = this.modelview.copy();
-        M = M.multiply(Matrix.fromAxisAngle(delta, normal));
-
-        setView(M);
-    }
-
-    /**
      * Sets the zoom of the view "eye."  Values indicate the number of meters from the closest point to the center of
      * the globe along the current view trajectory.
      *
@@ -894,6 +816,6 @@ public class BasicView extends WWObjectImpl implements View
         this.modelview = matrix;
         this.modelviewInv.invertTransformMatrix(matrix);
         this.modelviewTranspose.transpose(matrix);
-        this.eyePoint = new Vec4().transformBy4AndSet(this.modelviewInv);
+        this.eyePoint.set(0, 0, 0).transformBy4AndSet(this.modelviewInv);
     }
 }
