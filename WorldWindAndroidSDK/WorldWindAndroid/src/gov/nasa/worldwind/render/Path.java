@@ -265,7 +265,7 @@ public class Path extends AbstractShape
          *
          * @return true if the path is extruded and the extrusion points are computed, otherwise false.
          */
-        public boolean isHasExtrusionPoints()
+        public boolean hasExtrusionPoints()
         {
             return this.hasExtrusionPoints;
         }
@@ -614,6 +614,7 @@ public class Path extends AbstractShape
     }
 
     protected Iterable<? extends Position> positions; // the positions as provided by the application
+    protected Position referencePosition;
     protected int numPositions; // the number of positions in the positions field.
     protected PositionColors positionColors; // defines a color at each application-provided position.
     //protected static ByteBuffer pickPositionColors; // defines the colors used to resolve position point picking.
@@ -748,6 +749,7 @@ public class Path extends AbstractShape
 
         this.positions = positions;
         this.computePositionCount();
+        this.referencePosition = this.numPositions < 1 ? null : this.positions.iterator().next(); // use  first position
         this.reset();
     }
 
@@ -1036,12 +1038,6 @@ public class Path extends AbstractShape
         return false; // TODO: Lighting; need to compute normals
     }
 
-    @Override
-    protected boolean mustApplyTexture(DrawContext dc)
-    {
-        return false;
-    }
-
     protected boolean mustRegenerateGeometry(DrawContext dc)
     {
         if (this.getCurrentPathData() == null || this.getCurrentPathData().renderedPath == null)
@@ -1107,11 +1103,11 @@ public class Path extends AbstractShape
         // currentData must be set prior to calling this method
         PathData pathData = this.getCurrentPathData();
 
-        pathData.setReferencePoint(this.computeReferenceCenter(dc));
+        this.computeReferenceCenter(dc);
         if (pathData.getReferencePoint() == null)
             return false;
 
-        pathData.setTransformMatrix(Matrix.fromTranslation(pathData.getReferencePoint()));
+        pathData.setTransformMatrixFromReferencePosition();
 
         // Recompute tessellated positions because the geometry or view may have changed.
         this.makeTessellatedPositions(dc, pathData);
@@ -2030,17 +2026,17 @@ public class Path extends AbstractShape
      *
      * @return the computed reference center, or null if it cannot be computed.
      */
-    protected Vec4 computeReferenceCenter(DrawContext dc)
+    protected void computeReferenceCenter(DrawContext dc)
     {
         if (this.positions == null)
-            return null;
+            return;
 
         Position pos = this.getReferencePosition();
         if (pos == null)
-            return null;
+            return;
 
-        return dc.getGlobe().computePointFromPosition(pos.latitude, pos.longitude,
-            dc.getVerticalExaggeration() * pos.elevation);
+        dc.getGlobe().computePointFromPosition(pos.latitude, pos.longitude,
+            dc.getVerticalExaggeration() * pos.elevation, this.getCurrentPathData().referencePoint);
     }
 
     /**
@@ -2128,7 +2124,7 @@ public class Path extends AbstractShape
      */
     public Position getReferencePosition()
     {
-        return this.numPositions < 1 ? null : this.positions.iterator().next(); // use the first position
+        return this.referencePosition;
     }
 
     protected void fillVBO(DrawContext dc)

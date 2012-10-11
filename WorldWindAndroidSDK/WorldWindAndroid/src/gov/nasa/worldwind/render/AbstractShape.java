@@ -80,18 +80,6 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
     abstract protected void initialize();
 
     /**
-     * Indicates whether texture should be applied to this shape. Called during rendering to determine whether texture
-     * state should be established during preparation for interior drawing.
-     * <p/>
-     * Note: This method always returns false during the pick pass.
-     *
-     * @param dc the current draw context
-     *
-     * @return true if texture should be applied, otherwise false.
-     */
-    abstract protected boolean mustApplyTexture(DrawContext dc);
-
-    /**
      * Produces the geometry and other state necessary to represent this shape as an ordered renderable. Places this
      * shape on the draw context's ordered renderable list for subsequent rendering. This method is called during {@link
      * #pick(DrawContext, Point)} and {@link #render(DrawContext)} when it's been determined that the shape is likely to
@@ -222,9 +210,9 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
         /** Identifies the frame used to calculate this entry's values. */
         protected long frameNumber = -1;
         /* This entry's transform matrix. */
-        protected Matrix transformMatrix;
+        protected Matrix transformMatrix = Matrix.fromTranslation(new Vec4());
         /** This entry's reference point. */
-        protected Vec4 referencePoint;
+        protected Vec4 referencePoint = new Vec4();
         /** A quick-to-compute metric to determine eye distance changes that invalidate this entry's geometry. */
         protected Double referenceDistance;
         /** The GPU-resource cache key to use for this entry's VBOs. */
@@ -259,19 +247,9 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
             return this.transformMatrix;
         }
 
-        public void setTransformMatrix(Matrix transformMatrix)
-        {
-            this.transformMatrix = transformMatrix;
-        }
-
         public Vec4 getReferencePoint()
         {
             return referencePoint;
-        }
-
-        public void setReferencePoint(Vec4 referencePoint)
-        {
-            this.referencePoint = referencePoint;
         }
 
         public Object getVboCacheKey()
@@ -292,6 +270,13 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
         public void setReferenceDistance(Double referenceDistance)
         {
             this.referenceDistance = referenceDistance;
+        }
+
+        public void setTransformMatrixFromReferencePosition()
+        {
+            this.transformMatrix.m[3] = this.referencePoint.x;
+            this.transformMatrix.m[7] = this.referencePoint.y;
+            this.transformMatrix.m[11] = this.referencePoint.z;
         }
     }
 
@@ -967,7 +952,7 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
     protected void checkViewDistanceExpiration(DrawContext dc)
     {
         // Determine whether the distance of this shape from the eye has changed significantly. Invalidate the previous
-        // extent and expire the shape geometry if it has. "Significantly" is considered a 10% difference.
+        // extent and expire the shape geometry if it has. "Significantly" is considered a 25% difference.
 
         if (!this.isViewDistanceExpiration())
             return;
@@ -978,7 +963,7 @@ public abstract class AbstractShape extends WWObjectImpl implements OrderedRende
 
         double newRefDistance = dc.getView().getEyePoint().distanceTo3(refPt);
         Double oldRefDistance = this.currentData.getReferenceDistance();
-        if (oldRefDistance == null || Math.abs(newRefDistance - oldRefDistance) / oldRefDistance > 0.10)
+        if (oldRefDistance == null || Math.abs(newRefDistance - oldRefDistance) / oldRefDistance > 0.25)
         {
             this.currentData.setExpired(true);
             this.currentData.setExtent(null);
