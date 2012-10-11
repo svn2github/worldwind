@@ -189,6 +189,12 @@ public class KMLAbstractContainer extends KMLAbstractFeature
     }
 
     /**
+     * This is temporary location to store a container list during the call to renderFeatures. It eliminates the need
+     * to allocate a new array list each render pass.
+     */
+    protected List<KMLAbstractFeature> containers = new ArrayList<KMLAbstractFeature>();
+
+    /**
      * Draws this KML container's list of KML features, in the order they appear in the list. This does nothing if the
      * list of features is empty.
      *
@@ -197,14 +203,15 @@ public class KMLAbstractContainer extends KMLAbstractFeature
      */
     protected void renderFeatures(KMLTraversalContext tc, DrawContext dc)
     {
-        List<KMLAbstractFeature> containers = new ArrayList<KMLAbstractFeature>();
-
         // Render non-container child features first, and containers second. This ensures that features closer to the
         // root are rendered before features deeper in the tree. In the case of an image pyramid of GroundOverlays,
         // this causes the deeper nested overlays (which are typically more detailed) to render on top of the more
         // general overlay that is higher in the tree.
-        for (KMLAbstractFeature feature : this.getFeatures())
+        List<KMLAbstractFeature> features = this.getFeatures();
+        for (int i = 0; i < features.size(); i++)
         {
+            KMLAbstractFeature feature = features.get(i);
+
             if (feature instanceof KMLAbstractContainer)
                 containers.add(feature);
             else
@@ -212,10 +219,12 @@ public class KMLAbstractContainer extends KMLAbstractFeature
         }
 
         // Now render the containers
-        for (KMLAbstractFeature feature : containers)
+        for (int i = 0; i < containers.size(); i++)
         {
-            feature.render(tc, dc);
+            containers.get(i).render(tc, dc);
         }
+
+        containers.clear();
     }
 
     @Override
@@ -268,9 +277,10 @@ public class KMLAbstractContainer extends KMLAbstractFeature
     @Override
     public void onMessage(Message msg)
     {
-        for (KMLAbstractFeature feature : this.getFeatures())
+        List<KMLAbstractFeature> features = this.getFeatures();
+        for (int i = 0; i < features.size(); i++)
         {
-            feature.onMessage(msg);
+            features.get(i).onMessage(msg);
         }
 
         super.onMessage(msg);

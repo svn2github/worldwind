@@ -94,9 +94,9 @@ public class KMLPlacemark extends KMLAbstractFeature
         List<KMLRenderable> rs = this.getRenderables();
         if (rs != null)
         {
-            for (KMLRenderable r : rs)
+            for (int i = 0; i < rs.size(); i++)
             {
-                r.render(tc, dc);
+                rs.get(i).render(tc, dc);
             }
         }
 
