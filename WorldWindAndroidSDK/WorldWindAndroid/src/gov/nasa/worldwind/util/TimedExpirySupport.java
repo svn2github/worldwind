@@ -25,8 +25,8 @@ public class TimedExpirySupport
     /** Constructs an instance with minimum expiry interval of 1 second and a max of 2 seconds. */
     public TimedExpirySupport()
     {
-        this.minExpiryTime = 2000;
-        this.maxExpiryTime = 3000;
+        this.minExpiryTime = 20000;
+        this.maxExpiryTime = 30000;
     }
 
     /**
