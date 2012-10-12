@@ -30,6 +30,7 @@ public class WWMath
     protected static Vec4 point1 = new Vec4();
     protected static Vec4 point2 = new Vec4();
     protected static Matrix matrix = Matrix.fromIdentity();
+    protected static Matrix matrixInv = Matrix.fromIdentity();
 
     /**
      * Converts time in seconds to time in milliseconds.
@@ -318,8 +319,8 @@ public class WWMath
         // stored it inline here to avoid an unnecessary matrix inverse and vector transform. This is equivalent to
         // result.getOrigin().set(0, 0, 0).transformBy4AndSet(matrix.invert(modelview)). The resultant point is stored
         // in the result's origin property.
-        matrix.invertTransformMatrix(modelview);
-        result.getOrigin().set(matrix.m[3], matrix.m[7], matrix.m[11]); // origin = eye point
+        matrixInv.invertTransformMatrix(modelview);
+        result.getOrigin().set(matrixInv.m[3], matrixInv.m[7], matrixInv.m[11]); // origin = eye point
 
         // Compute the ray direction as the vector pointing from the near clip plane to the far clip plane, and passing
         // through the specified screen point. We compute this vector buy subtracting the near point from the far point,
@@ -483,7 +484,7 @@ public class WWMath
         // the inverse of the modelview matrix. This transforms a point from clip coordinates to model coordinates, and
         // is equivalent to transforming the point by the inverse of the concatenated projection-modelview matrix:
         // pmvInv = inverse(modelview * projection).
-        if (matrix.invert(mvpMatrix) == null)
+        if (matrixInv.invert(mvpMatrix) == null)
             return false;
 
         // Set the point to the specified screen coordinates, and set the w-coordinate to 1. The computations below
@@ -503,7 +504,7 @@ public class WWMath
         result.z = result.z * 2 - 1;
 
         // Transform the point from clip coordinates to model coordinates.
-        result.transformBy4AndSet(matrix);
+        result.transformBy4AndSet(matrixInv);
 
         if (result.w == 0.0)
             return false;

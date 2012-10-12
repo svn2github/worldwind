@@ -5,6 +5,8 @@
  */
 package gov.nasa.worldwind.event;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.view.*;
 import android.view.View;
@@ -59,7 +61,7 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
         this.eventSource = eventSource;
     }
 
-    public boolean onTouch(View view, MotionEvent motionEvent)
+    public boolean onTouch(final View view, MotionEvent motionEvent)
     {
         int pointerCount = motionEvent.getPointerCount();
 
@@ -99,8 +101,14 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                         mLastTap = curTime;      // last tap is now this tap
                     }
 
-                    displayLatLonAtScreenPoint(x, y);
-                    ((WorldWindowGLSurfaceView) view).redraw();
+                    eventSource.invokeInRenderingThread(new Runnable()
+                    {
+                        public void run()
+                        {
+                            displayLatLonAtScreenPoint(view.getContext(), x, y);
+                        }
+                    });
+                    eventSource.redraw();
                 }
 
                 // reset previous variables
@@ -232,7 +240,7 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                     }
                 }
 
-                ((WorldWindowGLSurfaceView) view).redraw();
+                eventSource.redraw();
 
                 mPreviousX = x;
                 mPreviousY = y;
@@ -244,7 +252,38 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
         return true;
     }
 
-    protected void displayLatLonAtScreenPoint(float x, float y)
+    protected void displayLatLonAtScreenPoint(Context context, float x, float y)
+    {
+        BasicView view = (BasicView) this.eventSource.getView();
+        Globe globe = this.eventSource.getModel().getGlobe();
+        this.screenPoint.set((int) x, (int) y);
+
+        if (view.computePositionFromScreenPoint(globe, this.screenPoint, this.position))
+        {
+            final String latText = this.position.latitude.toString();
+            final String lonText = this.position.longitude.toString();
+
+            ((Activity) context).runOnUiThread(new Runnable()
+            {
+                public void run()
+                {
+                    updateLatLonText(latText, lonText);
+                }
+            });
+        }
+        else
+        {
+            ((Activity) context).runOnUiThread(new Runnable()
+            {
+                public void run()
+                {
+                    updateLatLonText("off globe", "off globe");
+                }
+            });
+        }
+    }
+
+    protected void updateLatLonText(String latitudeText, String longitudeText)
     {
         // update displayed lat/lon
         TextView latText = ((WorldWindowGLSurfaceView) this.eventSource).getLatitudeText();
@@ -252,20 +291,8 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
 
         if (latText != null && lonText != null)
         {
-            BasicView view = (BasicView) this.eventSource.getView();
-            Globe globe = this.eventSource.getModel().getGlobe();
-            this.screenPoint.set((int) x, (int) y);
-
-            if (view.computePositionFromScreenPoint(globe, this.screenPoint, this.position))
-            {
-                latText.setText(this.position.latitude.toString());
-                lonText.setText(this.position.longitude.toString());
-            }
-            else
-            {
-                latText.setText(" off globe ");
-                lonText.setText(" off globe ");
-            }
+            latText.setText(latitudeText);
+            lonText.setText(longitudeText);
         }
     }
 
