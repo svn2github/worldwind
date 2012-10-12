@@ -168,6 +168,13 @@ public class BasicView extends WWObjectImpl implements View
     /** {@inheritDoc} */
     public boolean computeRayFromScreenPoint(Point point, Line result)
     {
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         if (result == null)
         {
             String msg = Logging.getMessage("nullValue.ResultIsNull");
@@ -181,11 +188,18 @@ public class BasicView extends WWObjectImpl implements View
     }
 
     /** {@inheritDoc} */
-    public boolean computePositionFromScreenPoint(Point point, Globe globe, Position result)
+    public boolean computePositionFromScreenPoint(Globe globe, Point point, Position result)
     {
         if (globe == null)
         {
             String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (point == null)
+        {
+            String msg = Logging.getMessage("nullValue.PointIsNull");
             Logging.error(msg);
             throw new IllegalArgumentException(msg);
         }

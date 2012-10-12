@@ -154,15 +154,15 @@ public interface View extends WWObject
      * view's transform state computed the most recent call to <code>apply</code> is incorporated into the computed
      * position.
      *
+     * @param globe  the globe to use when translating screen coordinates to geographic coordinates.
      * @param point  the screen point for which to compute the geographic position.
-     * @param globe  the globe to d
      * @param result contains the screen point's geographic position after this method returns. This value is not
      *               modified if this returns <code>false</code>.
      *
      * @return <code>true</code> if the screen point corresponds to a position on the globe's ellipsoid, and
      *         <code>false</code> otherwise.
      */
-    boolean computePositionFromScreenPoint(Point point, Globe globe, Position result);
+    boolean computePositionFromScreenPoint(Globe globe, Point point, Position result);
 
     /**
      * Computes the dimension (in meters) that a screen pixel would cover at a given distance from the eye point (also
