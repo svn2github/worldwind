@@ -48,6 +48,16 @@ public class Vec4
         this.w = w;
     }
 
+    public static double getLength3(double x, double y, double z)
+    {
+        return Math.sqrt(getLengthSquared3(x, y, z));
+    }
+
+    public static double getLengthSquared3(double x, double y, double z)
+    {
+        return x * x + y * y + z * z;
+    }
+
     public Vec4 copy()
     {
         return new Vec4(this.x, this.y, this.z, this.w);
@@ -644,8 +654,11 @@ public class Vec4
     }
 
     /**
-     * Returns the arithmetic mean of the x, y, z coordinates of the specified points Iterable. This returns
-     * <code>null</code> if the Iterable contains no points, or if all of the points are <code>null</code>.
+     * Returns the arithmetic mean of the x, y, z coordinates of the specified points Iterable. This does not retain any
+     * reference to the specified iterable or its vectors, nor does this modify the vectors in any way.
+     * <p/>
+     * This returns <code>null</code> if the Iterable contains no points, or if all of the points are
+     * <code>null</code>.
      *
      * @param points the Iterable of points which define the returned arithmetic mean.
      *
@@ -693,8 +706,10 @@ public class Vec4
 
     /**
      * Computes the arithmetic mean of the x, y, z coordinates of the specified points Iterable and sets this vector to
-     * the computed result. This does nothing if the Iterable contains no points, or if all of the points are
-     * <code>null</code>.
+     * the computed result. This does not retain any reference to the specified iterable or its vectors, nor does this
+     * modify the vectors in any way.
+     * <p/>
+     * This does nothing if the Iterable contains no points, or if all of the points are <code>null</code>.
      *
      * @param points the Iterable of points which define the returned arithmetic mean.
      *
@@ -738,15 +753,16 @@ public class Vec4
     }
 
     /**
-     * Returns the arithmetic mean of the x, y, z coordinates of the specified points buffer. This returns
-     * <code>null</code> if the buffer is empty or contains only a partial point.
+     * Returns the arithmetic mean of the x, y, z coordinates of the specified points buffer. This does not retain any
+     * reference to the specified buffer or modify its contents in any way.
      * <p/>
-     * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
-     * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
-     * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
-     * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
-     * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
-     * remaining elements that follow the last complete tuple.
+     * This returns <code>null</code> if the buffer is empty or contains only a partial point. The buffer must contain
+     * XYZ coordinate tuples which are either tightly packed or offset by the specified stride. The stride specifies the
+     * number of buffer elements between the first coordinate of consecutive tuples. For example, a stride of 3
+     * specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies that there are two
+     * elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride must be at least 3.
+     * If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the remaining elements that
+     * follow the last complete tuple.
      *
      * @param buffer the buffer containing the point coordinates for which to compute a bounding volume.
      * @param stride the number of elements between the first coordinate of consecutive points. If stride is 3, this

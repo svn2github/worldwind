@@ -5,6 +5,7 @@
  */
 package gov.nasa.worldwind.geom;
 
+import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.Logging;
 
 import java.nio.FloatBuffer;
@@ -26,6 +27,9 @@ import java.util.Arrays;
 public class Matrix
 {
     public final double[] m = new double[16];
+    // This is a temporary vector used to prevent allocating a point in order to compute cartesian points from
+    // geographic positions in the setter methods below.
+    protected Vec4 point;
 
     public Matrix(double[] array, int offset)
     {
@@ -192,26 +196,27 @@ public class Matrix
     }
 
     /**
-     * Returns a viewing matrix in model coordinates defined by the specified View eye point, reference point indicating
-     * the center of the scene, and up vector. The eye point, center point, and up vector are in model coordinates. The
-     * returned viewing matrix maps the reference center point to the negative Z axis, and the eye point to the origin,
-     * and the up vector to the positive Y axis. When this matrix is used to define an OGL viewing transform along with
-     * a typical projection matrix such as {@link #setPerspective(Angle, double, double, double, double)} , this maps
-     * the center of the scene to the center of the viewport, and maps the up vector to the viewoport's positive Y axis
-     * (the up vector points up in the viewport). The eye point and reference center point must not be coincident, and
-     * the up vector must not be parallel to the line of sight (the vector from the eye point to the reference center
-     * point).
+     * Returns a viewing matrix in model coordinates defined by the specified View eye point, point indicating the
+     * center of the scene, and up vector, then returns a reference to this matrix. This does not keep any reference to
+     * the specified parameters, or modify them in any way.
+     * <p/>
+     * The eye point, center point, and up vector are in model coordinates. The returned matrix maps the center point to
+     * a point along the negative Z axis, the eye point to the origin, and the up vector to the positive Y axis.
+     * <p/>
+     * When this matrix is used to define an Open GL viewing transform along with a typical projection matrix such as
+     * {@link #setPerspective(Angle, double, double, double, double)} , this maps the center of the scene to the center
+     * of the viewport, and maps the up vector to the viewport's positive Y axis (the up vector points up in the
+     * viewport). The eye point and reference center point must not be coincident, and the up vector must not be
+     * parallel to the line of sight (the vector from the eye point to the reference center point).
      *
      * @param eye    the eye point, in model coordinates.
      * @param center the scene's reference center point, in model coordinates.
      * @param up     the direction of the up vector, in model coordinates.
      *
-     * @return a viewing matrix in model coordinates defined by the specified eye point, reference center point, and up
-     *         vector.
+     * @return a a viewing matrix in model coordinates defined by the specified eye point, reference center point, and
+     *         up vector.
      *
-     * @throws IllegalArgumentException if any of the eye point, reference center point, or up vector are null, if the
-     *                                  eye point and reference center point are coincident, or if the up vector and the
-     *                                  line of sight are parallel.
+     * @throws IllegalArgumentException if any point is <code>null</code>.
      */
     public static Matrix fromLookAt(Vec4 eye, Vec4 center, Vec4 up)
     {
@@ -333,9 +338,10 @@ public class Matrix
     }
 
     /**
-     * Computes a a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable. This
-     * returns <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>.
+     * Computes a a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable. This does
+     * not retain any reference to the specified iterable or its vectors, nor does this modify the vectors in any way.
      * <p/>
+     * This returns <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>.
      * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point Iterable's arithmetic mean. Its layout is as follows:
      * <p/>
@@ -365,11 +371,12 @@ public class Matrix
     }
 
     /**
-     * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points. This
-     * returns <code>null</code> if the buffer is empty or contains only a partial point.
+     * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points. This does
+     * not retain any reference to the specified buffer or modify its contents in any way.
      * <p/>
-     * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
-     * they're distributed about the points arithmetic mean. Its layout is as follows:
+     * This returns <code>null</code> if the buffer is empty or contains only a partial point. The returned covariance
+     * matrix represents the correlation between each pair of x-, y-, and z-coordinates as they're distributed about the
+     * points arithmetic mean. Its layout is as follows:
      * <p/>
      * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
      * <p/>
@@ -413,11 +420,14 @@ public class Matrix
     }
 
     /**
-     * Computes the eigensystem of the specified symmetric Matrix's upper 3x3 matrix. If the Matrix's upper 3x3 matrix
-     * is not symmetric, this throws an IllegalArgumentException. This writes the eigensystem parameters to the
-     * specified arrays <code>outEigenValues</code> and <code>outEigenVectors</code>, placing the eigenvalues in the
-     * entries of array <code>outEigenValues</code>, and the corresponding eigenvectors in the entires of array
-     * <code>outEigenVectors</code>. These arrays must be non-null, and have length three or greater.
+     * Computes the eigensystem of the specified symmetric Matrix's upper 3x3 matrix. This does not retain any reference
+     * to the specified matrix, or modify it in any way. If the Matrix's upper 3x3 matrix is not symmetric, this throws
+     * an IllegalArgumentException.
+     * <p/>
+     * This writes the eigensystem parameters to the specified arrays <code>outEigenValues</code> and
+     * <code>outEigenVectors</code>, placing the eigenvalues in the entries of array <code>outEigenValues</code>, and
+     * the corresponding eigenvectors in the entires of array <code>outEigenVectors</code>. These arrays must be
+     * non-null, and have length three or greater.
      *
      * @param matrix             the symmetric Matrix for which to compute an eigensystem.
      * @param resultEigenvalues  the array which receives the three output eigenvalues.
@@ -934,26 +944,26 @@ public class Matrix
     }
 
     /**
-     * Returns a viewing matrix in model coordinates defined by the specified View eye point, reference point indicating
-     * the center of the scene, and up vector. The eye point, center point, and up vector are in model coordinates. The
-     * returned viewing matrix maps the reference center point to the negative Z axis, and the eye point to the origin,
-     * and the up vector to the positive Y axis. When this matrix is used to define an OGL viewing transform along with
-     * a typical projection matrix such as {@link #setPerspective(Angle, double, double, double, double)} , this maps
-     * the center of the scene to the center of the viewport, and maps the up vector to the viewoport's positive Y axis
-     * (the up vector points up in the viewport). The eye point and reference center point must not be coincident, and
-     * the up vector must not be parallel to the line of sight (the vector from the eye point to the reference center
-     * point).
+     * Sets this matrix to a viewing matrix in model coordinates defined by the specified View eye point, point
+     * indicating the center of the scene, and up vector, then returns a reference to this matrix. This does not keep
+     * any reference to the specified parameters, or modify them in any way.
+     * <p/>
+     * The eye point, center point, and up vector are in model coordinates. The resultant matrix maps the center point
+     * to a point along the negative Z axis, the eye point to the origin, and the up vector to the positive Y axis.
+     * <p/>
+     * When this matrix is used to define an OGL viewing transform along with a typical projection matrix such as {@link
+     * #setPerspective(Angle, double, double, double, double)} , this maps the center of the scene to the center of the
+     * viewport, and maps the up vector to the viewport's positive Y axis (the up vector points up in the viewport). The
+     * eye point and reference center point must not be coincident, and the up vector must not be parallel to the line
+     * of sight (the vector from the eye point to the reference center point).
      *
      * @param eye    the eye point, in model coordinates.
      * @param center the scene's reference center point, in model coordinates.
      * @param up     the direction of the up vector, in model coordinates.
      *
-     * @return a viewing matrix in model coordinates defined by the specified eye point, reference center point, and up
-     *         vector.
+     * @return a reference to this matrix.
      *
-     * @throws IllegalArgumentException if any of the eye point, reference center point, or up vector are null, if the
-     *                                  eye point and reference center point are coincident, or if the up vector and the
-     *                                  line of sight are parallel.
+     * @throws IllegalArgumentException if any point is <code>null</code>.
      */
     public Matrix setLookAt(Vec4 eye, Vec4 center, Vec4 up)
     {
@@ -978,52 +988,261 @@ public class Matrix
             throw new IllegalArgumentException(msg);
         }
 
-        // Compute orthogonal forward, side, and up vectors from the specified eye, center, and up points. The computed
-        // forward vector always points from the eye to the center, the side is the always orthogonal to the computed
-        // forward and specified up vector, and the computed up vector is always orthogonal to the computed side and the
-        // computed up. The computed up vector is not equivalent to the specified up vector if the specified up vector
-        // is not orthogonal to the computed forward vector.
+        // Compute the forward vector from the specified center point and eye point. The forward vector always points
+        // from the eye to the center. We have pre-computed the resultant vector and stored the result inline here to
+        // avoid unnecessary vector allocations. This is equivalent to: Vec4 f = center.subtract3(eye).normalize3();
+        double fx = center.x - eye.x;
+        double fy = center.y - eye.y;
+        double fz = center.z - eye.z;
 
-        Vec4 f = center.subtract3(eye);
-        f.normalize3AndSet();
+        double len = Vec4.getLength3(fx, fy, fz);
+        if (len != 0)
+        {
+            fx /= len;
+            fy /= len;
+            fz /= len;
+        }
 
-        Vec4 s = f.subtract3(up);
-        s.normalize3AndSet();
+        // Compute the side vector from the specified center point, eye point, and up vector. The side vector is the
+        // always orthogonal to the forward and up vectors. We have pre-computed the resultant vector and stored the
+        // result inline here to avoid unnecessary vector allocations. This is equivalent to:
+        // Vec4 s = f.cross3(up).normalize3();
+        double sx = (fy * up.z) - (fz * up.y);
+        double sy = (fz * up.x) - (fx * up.z);
+        double sz = (fx * up.y) - (fy * up.x);
 
-        Vec4 u = s.cross3(f);
-        u.normalize3AndSet();
+        len = Vec4.getLength3(sx, sy, sz);
+        if (len != 0)
+        {
+            sx /= len;
+            sy /= len;
+            sz /= len;
+        }
 
-        // Set this matrix to translate model coordinates into the eye's coordinate space. The eye's coordinate space
-        // places the eye point at the origin, looking down the negative Z axis with the Y axis pointing up. This is
-        // equivalent to:
-        //
+        // Compute the up vector from the specified center point, eye point, and up vector. We compute this vector
+        // rather than using the caller specified value to ensure that it is orthogonal to the forward and side vectors.
+        // We have pre-computed the resultant vector and stored the result inline here to avoid unnecessary vector
+        // allocations. This is equivalent to: Vec4 u = s.cross3(f).normalize3();
+        double ux = (sy * fz) - (sz * fy);
+        double uy = (sz * fx) - (sx * fz);
+        double uz = (sx * fy) - (sy * fx);
+
+        len = Vec4.getLength3(ux, uy, uz);
+        if (len != 0)
+        {
+            ux /= len;
+            uy /= len;
+            uz /= len;
+        }
+
+        // Set this matrix to translate model coordinates to eye coordinates based on the specified look-at parameters.
+        // This places the eye point at the origin, looking down the negative Z axis with the Y axis pointing up. We
+        // have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
+        // allocations and multiplications. The matrix below is equivalent to the following:
         // Matrix m = new Matrix(s.x, s.y, s.z, 0, u.x, u.y, u.z, 0, -f.x, -f.y, -f.z, 0, 0, 0, 0, 1);
-        // Matrix eye = Matrix.fromIdentity().setTranslation(-eye.x, -eye.y, -eye.z);
-        // Matrix lookAt = Matrix.fromIdentity();
+        // Matrix eye = Matrix.fromTranslation(-eye.x, -eye.y, -eye.z);
         // this.multiplyAndSet(m, eye);
-        //
-        // We use the shorthand version below to avoid two matrix allocations and one matrix multiplication.
 
         // Row 1
-        this.m[0] = s.x;
-        this.m[1] = s.y;
-        this.m[2] = s.z;
-        this.m[3] = -s.x * eye.x - s.y * eye.y - s.z * eye.z;
+        this.m[0] = sx;
+        this.m[1] = sy;
+        this.m[2] = sz;
+        this.m[3] = -sx * eye.x - sy * eye.y - sz * eye.z;
         // Row 2
-        this.m[4] = u.x;
-        this.m[5] = u.y;
-        this.m[6] = u.z;
-        this.m[7] = -u.x * eye.x - u.y * eye.y - u.z * eye.z;
+        this.m[4] = ux;
+        this.m[5] = uy;
+        this.m[6] = uz;
+        this.m[7] = -ux * eye.x - uy * eye.y - uz * eye.z;
         // Row 3
-        this.m[8] = -f.x;
-        this.m[9] = -f.y;
-        this.m[10] = -f.z;
-        this.m[11] = f.x * eye.x + f.y * eye.y + f.z * eye.z;
+        this.m[8] = -fx;
+        this.m[9] = -fy;
+        this.m[10] = -fz;
+        this.m[11] = fx * eye.x + fy * eye.y + fz * eye.z;
         // Row 4
         this.m[12] = 0;
         this.m[13] = 0;
         this.m[14] = 0;
         this.m[15] = 1;
+
+        return this;
+    }
+
+    /**
+     * Sets this matrix to a viewing matrix in model coordinates defined by the specified center position, range,
+     * heading, tilt and roll, then returns a reference to this matrix. This does not keep any reference to the
+     * specified parameters, or modify them in any way.
+     * <p/>
+     * The center latitude, center longitude, center altitude and altitude mode indicate the geographic position that
+     * the view is looking at. The specified center altitude may be set to any value, and does not need to be on the
+     * geoid or on the terrain surface. The altitude mode may be one of AVKey.ABSOLUTE, AVKey.RELATIVE_TO_GROUND, OR
+     * AVKEY.CLAMP_TO_GROUND to indicate whether to interpret the centerAltitude as relative to the geoid, relative to
+     * the terrain surface, or clamped to the terrain surface, respectively. Altitude mode may be <code>null</code> to
+     * indicate that centerAltitude should be interpreted relative to the geoid.
+     * <p/>
+     * The range indicates the distance in meters between the center position and the eye position. A range of 0
+     * indicates that the center position and the eye position are at the same point. A range greater than zero moves
+     * the eye position away from and looking at the center position.
+     * <p/>
+     * The heading, tilt and roll indicate the rotational angles applied to the view. When all three angles are zero,
+     * the view is looking down the surface normal at the center position, north is up in screen coordinates, and east
+     * is right in screen coordinates.
+     *
+     * @param terrain         the terrain to use when computing the specified center position in model coordinates.
+     * @param centerLatitude  the latitude of the view's center position.
+     * @param centerLongitude the longitude of the view's center position.
+     * @param centerAltitude  the altitude of the view's center position.
+     * @param altitudeMode    indicates whether to interpret the centerAltitude as relative to the geoid, relative to
+     *                        the terrain surface, or clamped to the terrain surface. May be <code>null</code> to
+     *                        indicate that centerAltitude should be interpreted relative to the geoid.
+     * @param range           the distance between the center position and the eye position, in meters.
+     * @param heading         the scene's heading as a clockwise angle relative to North. 0 degrees indicates that the
+     *                        view is looking North.
+     * @param tilt            the scene's tilt as a clockwise angle relative to the surface normal. 0 degrees indicates
+     *                        that the view is looking at the surface, while 90 degrees indicates that the view is
+     *                        looking at the horizon.
+     * @param roll            the view's roll as a clockwise angle relative to the vector coming out of the screen.
+     *
+     * @return a reference to this matrix.
+     *
+     * @throws IllegalArgumentException if any of the terrain, centerLatitude, centerLongitude, altitudeMode, heading,
+     *                                  tilt, or roll is <code>null</code>.
+     */
+    public Matrix setLookAt(Terrain terrain, Angle centerLatitude, Angle centerLongitude, double centerAltitude,
+        String altitudeMode, double range, Angle heading, Angle tilt, Angle roll)
+    {
+        if (terrain == null)
+        {
+            String msg = Logging.getMessage("nullValue.TerrainIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (centerLatitude == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatitudeIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (centerLongitude == null)
+        {
+            String msg = Logging.getMessage("nullValue.LongitudeIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (heading == null)
+        {
+            String msg = Logging.getMessage("nullValue.HeadingIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (tilt == null)
+        {
+            String msg = Logging.getMessage("nullValue.TiltIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (roll == null)
+        {
+            String msg = Logging.getMessage("nullValue.RollIsNull");
+            Logging.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Range transform. Moves the eye point along the positive z axis while keeping the center point in the center
+        // of the viewport.
+        this.setTranslation(0, 0, -range);
+
+        // Roll transform. Rotates the up vector in a clockwise direction around the positive z axis. We have
+        // pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix allocations.
+        // This is equivalent to: this.multiplyAndSet(fromRotationZ(-roll)).
+        double c = roll.cos();
+        double s = roll.sin();
+        this.multiplyAndSet(
+            c, -s, 0, 0,
+            s, c, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+        // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that
+        // we invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant
+        // matrix and stored the result inline here to avoid unnecessary matrix allocations. This is equivalent to:
+        // this.multiplyAndSet(fromRotationX(tilt)).
+        c = tilt.cos(); // No need to invert cos(roll) to change the direction of rotation. cos(-a) = cos(a)
+        s = -tilt.sin(); // Invert sin(roll) in order to change the direction of rotation. sin(-a) = -sin(a)
+        this.multiplyAndSet(
+            1, 0, 0, 0,
+            0, c, -s, 0,
+            0, s, c, 0,
+            0, 0, 0, 1);
+
+        // Heading transform. Rotates the eye point in a clockwise direction around the positive z axis. This has a
+        // different effect than roll when tilt is non-zero because the view is no longer looking down the positive z
+        // axis. We have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
+        // allocations. This is equivalent to: this.multiplyAndSet(fromRotationZ(heading)).
+        c = heading.cos();
+        s = heading.sin();
+        this.multiplyAndSet(
+            c, -s, 0, 0,
+            s, c, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+        // Allocate a vector to hold this the result of the geographic to cartesian conversions below. We keep a
+        // reference to this vector in order to avoid allocating it more than once when this matrix is re-used and
+        // updated. Additionally, we use an instance property rather than a static class property to avoid the need
+        // to synchronize access to this vector from multiple threads.
+        if (this.point == null)
+            this.point = new Vec4();
+
+        // Compute the center point in model coordinates. This point is mapped to the eye point in the center position
+        // transform below. By using the terrain and an altitude mode, we provide the ability for this transform to map
+        // the eye point to either a point relative to the geoid or a point relative to the surface.
+        terrain.getPoint(centerLatitude, centerLongitude, centerAltitude, altitudeMode, this.point);
+        double cx = this.point.x;
+        double cy = this.point.y;
+        double cz = this.point.z;
+
+        // Compute the surface normal in model coordinates. This normal is used as the inverse of the forward vector in
+        // the center position transform below.
+        terrain.getGlobe().computeSurfaceNormalAtLocation(centerLatitude, centerLongitude, this.point);
+        double nx = this.point.x;
+        double ny = this.point.y;
+        double nz = this.point.z;
+
+        // Compute the north pointing tangent vector in model coordinates. This vector is used as the up vector in the
+        // center position transform below.
+        terrain.getGlobe().computeNorthPointingTangentAtLocation(centerLatitude, centerLongitude, this.point);
+        double ux = this.point.x;
+        double uy = this.point.y;
+        double uz = this.point.z;
+
+        // Compute the side vector from the specified surface normal, and north pointing tangent. The side vector is
+        // orthogonal to the surface normal and north pointing tangent. We have pre-computed the resultant vector and
+        // stored the result inline here to avoid unnecessary vector allocations.
+        double sx = (uy * nz) - (uz * ny);
+        double sy = (uz * nx) - (ux * nz);
+        double sz = (ux * ny) - (uy * nx);
+
+        double len = Vec4.getLength3(sx, sy, sz);
+        if (len != 0)
+        {
+            sx /= len;
+            sy /= len;
+            sz /= len;
+        }
+
+        // Center position transform. Maps the eye point to the center position, the positive z axis to the surface
+        // normal, and the positive y axis is mapped to the north pointing tangent. We have pre-computed the resultant
+        // matrix and stored the result inline here to avoid unnecessary matrix allocations.
+        this.multiplyAndSet(
+            sx, sy, sz, -sx * cx - sy * cy - sz * cz,
+            ux, uy, uz, -ux * cx - uy * cy - uz * cz,
+            nx, ny, nz, -nx * cx - ny * cy - nz * cz,
+            0, 0, 0, 1);
 
         return this;
     }
@@ -1207,11 +1426,12 @@ public class Matrix
 
     /**
      * Sets this Matrix to a symmetric covariance Matrix from the x, y, z coordinates of the specified points Iterable.
-     * This has no effect and returns <code>null</code> if the points Iterable is empty, or if all of the points are
-     * <code>null</code>.
+     * This does not retain any reference to the specified iterable or its vectors, nor does this modify the vectors in
+     * any way.
      * <p/>
-     * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
-     * they're distributed about the point Iterable's arithmetic mean. Its layout is as follows:
+     * This has no effect and returns <code>null</code> if the points Iterable is empty, or if all of the points are
+     * <code>null</code>. The returned covariance matrix represents the correlation between each pair of x-, y-, and
+     * z-coordinates as they're distributed about the point Iterable's arithmetic mean. Its layout is as follows:
      * <p/>
      * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
      * <p/>
@@ -1290,10 +1510,11 @@ public class Matrix
 
     /**
      * Sets this matrix to a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points.
-     * This has no effect and returns <code>null</code> if the buffer is empty or contains only a partial point.
+     * This does not retain any reference to the specified buffer or modify its contents in any way.
      * <p/>
-     * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
-     * they're distributed about the points arithmetic mean. Its layout is as follows:
+     * This has no effect and returns <code>null</code> if the buffer is empty or contains only a partial point. The
+     * returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as they're
+     * distributed about the points arithmetic mean. Its layout is as follows:
      * <p/>
      * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
      * <p/>
