@@ -12,21 +12,23 @@ import java.nio.FloatBuffer;
 import java.util.*;
 
 /**
- * A collection of useful math methods, all static.
+ * WWMath provides a collection of static utility methods for common World Wind mathematical operations.
  *
  * @author dcollins
  * @version $Id$
  */
 public class WWMath
 {
-    public static final double SECOND_TO_MILLIS = 1000.0;
-    public static final double MINUTE_TO_MILLIS = 60.0 * SECOND_TO_MILLIS;
-    public static final double HOUR_TO_MILLIS = 60.0 * MINUTE_TO_MILLIS;
-    public static final double DAY_TO_MILLIS = 24.0 * HOUR_TO_MILLIS;
+    /** The ratio of milliseconds per second. Used to convert time in seconds to time in milliseconds. */
+    protected static final double SECOND_TO_MILLIS = 1000.0;
+    /** The ratio of milliseconds per minute. Used to convert time in minutes to time in milliseconds. */
+    protected static final double MINUTE_TO_MILLIS = 60.0 * SECOND_TO_MILLIS;
+    /** The ratio of milliseconds per hour. Used to convert time in hours to time in milliseconds. */
+    protected static final double HOUR_TO_MILLIS = 60.0 * MINUTE_TO_MILLIS;
 
     // Temporary properties used to avoid constant reallocation of primitive types.
-    protected static Vec4 nearPoint = new Vec4();
-    protected static Vec4 farPoint = new Vec4();
+    protected static Vec4 point1 = new Vec4();
+    protected static Vec4 point2 = new Vec4();
     protected static Matrix matrix = Matrix.fromIdentity();
 
     /**
@@ -38,7 +40,7 @@ public class WWMath
      */
     public static double convertSecondsToMillis(double seconds)
     {
-        return (seconds * SECOND_TO_MILLIS);
+        return seconds * SECOND_TO_MILLIS;
     }
 
     /**
@@ -50,7 +52,7 @@ public class WWMath
      */
     public static double convertMinutesToMillis(double minutes)
     {
-        return (minutes * MINUTE_TO_MILLIS);
+        return minutes * MINUTE_TO_MILLIS;
     }
 
     /**
@@ -62,12 +64,13 @@ public class WWMath
      */
     public static double convertHoursToMillis(double hours)
     {
-        return (hours * HOUR_TO_MILLIS);
+        return hours * HOUR_TO_MILLIS;
     }
 
     /**
-     * Computes the current distance to the horizon from a viewer at the specified elevation. Only the globe's ellipsoid
-     * is considered; terrain elevations are not incorporated.
+     * Computes the distance to the horizon from a viewer at the specified elevation. Only the globe's ellipsoid is
+     * considered; terrain elevations are not incorporated. This returns zero if the specified elevation is less than or
+     * equal to zero.
      *
      * @param globe     the globe to compute a horizon distance for.
      * @param elevation the viewer's elevation, in meters relative to mean sea level.
@@ -93,10 +96,12 @@ public class WWMath
 
     /**
      * Returns an array of normalized vectors defining the three principal axes of the x-, y-, and z-coordinates from
-     * the specified points Iterable, sorted from the most prominent axis to the least prominent. This returns
-     * <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>. The returned
-     * array contains three normalized orthogonal vectors defining a coordinate system which best fits the distribution
-     * of the points Iterable about its arithmetic mean.
+     * the specified points Iterable, sorted from the most prominent axis to the least prominent. This does not retain
+     * any reference to the specified iterable or its vectors, nor does this modify the vectors in any way.
+     * <p/>
+     * This returns <code>null</code> if the points Iterable is empty, or if all of the points are <code>null</code>.
+     * The returned array contains three normalized orthogonal vectors defining a coordinate system which best fits the
+     * distribution of the points Iterable about its arithmetic mean.
      *
      * @param iterable the Iterable of points for which to compute the principal axes.
      *
@@ -138,7 +143,7 @@ public class WWMath
         });
 
         // Return the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
-        // normalized orthognal vectors defining a coordinate system, which are sorted from the most prominent axis to
+        // normalized orthogonal vectors defining a coordinate system, which are sorted from the most prominent axis to
         // the least prominent.
         return new Vec4[]
             {
@@ -150,10 +155,12 @@ public class WWMath
 
     /**
      * Returns an array of normalized vectors defining the three principal axes of the x-, y-, and z-coordinates from
-     * the specified buffer of points, sorted from the most prominent axis to the least prominent. This returns
-     * <code>null</code> if the buffer is empty or contains only a partial point. The returned array contains three
-     * normalized orthogonal vectors defining a coordinate system which best fits the distribution of the points about
-     * its arithmetic mean.
+     * the specified buffer of points, sorted from the most prominent axis to the least prominent. This does not retain
+     * any reference to the specified buffer or modify its contents in any way.
+     * <p/>
+     * This returns <code>null</code> if the buffer is empty or contains only a partial point. The returned array
+     * contains three normalized orthogonal vectors defining a coordinate system which best fits the distribution of the
+     * points about its arithmetic mean.
      * <p/>
      * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
      * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
@@ -222,8 +229,10 @@ public class WWMath
 
     /**
      * Computes a line in model coordinates that originates from the eye point and passes through the screen point (x,
-     * y). The specified modelview, projection, and viewport define the properties used to transform from screen
-     * coordinates to model coordinates. The screen point is relative to the lower left corner.
+     * y). This does not retain any reference to the specified parameters or modify them in any way.
+     * <p/>
+     * The specified modelview, projection, and viewport define the properties used to transform from screen coordinates
+     * to model coordinates. The screen point is relative to the lower left corner.
      *
      * @param x          the screen point's x-coordinate, relative to the lower left corner.
      * @param y          the screen point's y-coordinate, relative to the lower left corner.
@@ -294,39 +303,41 @@ public class WWMath
         // Return false if this point cannot be computed for any reason. This method uses the point and matrix temporary
         // properties to compute the result. We must make this computation before doing anything that depends on the
         // values of the point and matrix properties.
-        if (!unProject(x, y, 0, matrix, viewport, nearPoint))
+        if (!unProject(x, y, 0, matrix, viewport, point1))
             return false;
 
         // Compute the model coordinate point on the far clip plane that corresponds to the specified screen point.
         // Return false if this point cannot be computed for any reason. This method uses the point and matrix temporary
         // properties to compute the result. We must make this computation before doing anything that depends on the
         // values of the point and matrix properties.
-        if (!unProject(x, y, 1, matrix, viewport, farPoint))
+        if (!unProject(x, y, 1, matrix, viewport, point2))
             return false;
 
-        // Compute the ray origin as the eye point in model coordinates. We compute the eye point by transforming the
-        // origin xby the inverse of the modelview matrix. The resultant vector is stored in the result's origin
-        // property.
+        // Compute the ray origin as the eye point in model coordinates. The eye point is computed by transforming the
+        // origin (0.0, 0.0, 0.0, 1.0) by the inverse of the modelview matrix. We have pre-computed the result and
+        // stored it inline here to avoid an unnecessary matrix inverse and vector transform. This is equivalent to
+        // result.getOrigin().set(0, 0, 0).transformBy4AndSet(matrix.invert(modelview)). The resultant point is stored
+        // in the result's origin property.
         matrix.invertTransformMatrix(modelview);
-        result.getOrigin().set(0, 0, 0).transformBy4AndSet(matrix);
+        result.getOrigin().set(matrix.m[3], matrix.m[7], matrix.m[11]); // origin = eye point
 
         // Compute the ray direction as the vector pointing from the near clip plane to the far clip plane, and passing
         // through the specified screen point. We compute this vector buy subtracting the near point from the far point,
         // resulting in a vector that points from near to far. The resultant vector is stored in the result's direction
         // property.
-        result.getDirection().subtract3AndSet(farPoint, nearPoint);
-        result.getDirection().normalize3AndSet();
+        result.getDirection().subtract3AndSet(point2, point1).normalize3AndSet(); // direction = far - near
 
         return true;
     }
 
     /**
      * Transforms the model coordinate point (x, y, z) to screen coordinates using the specified transform parameters.
-     * The specified mvpMatrix and viewport define transformation from model coordinates to screen coordinates.
+     * This does not retain any reference to the specified parameters or modify them in any way.
      * <p/>
-     * After this method returns, the result's x and y values represent the point's screen coordinates relative to the
-     * lower left corner. The result's z value represents the point's depth as a value in the range [0, 1], where 0
-     * corresponds to the near clip plane and 1 corresponds to the far clip plane.
+     * The specified mvpMatrix and viewport define transformation from model coordinates to screen coordinates. After
+     * this method returns, the result's x and y values represent the point's screen coordinates relative to the lower
+     * left corner. The result's z value represents the point's depth as a value in the range [0.0, 1.0], where 0.0
+     * corresponds to the near clip plane and 1.0 corresponds to the far clip plane.
      *
      * @param x         the model point's x-coordinate.
      * @param y         the model point's y-coordinate.
@@ -395,8 +406,8 @@ public class WWMath
         if (result.w == 0.0)
             return false;
 
-        // Transform the point from clip coordinates in the range [-1, 1] to coordinates in the range [0, 1]. This
-        // intermediate step makes the final step of transforming to screen coordinates easier.
+        // Transform the point from clip coordinates in the range [-1.0, 1.0] to coordinates in the range [0.0, 1.0].
+        // This intermediate step makes the final step of transforming to screen coordinates easier.
         result.w = (1.0 / result.w) * 0.5;
         result.x = result.x * result.w + 0.5;
         result.y = result.y * result.w + 0.5;
@@ -411,15 +422,16 @@ public class WWMath
 
     /**
      * Transforms the screen coordinate point (x, y, z) to model coordinates, using the specified transform parameters.
+     * This does not retain any reference to the specified parameters or modify them in any way.
+     * <p/>
      * The specified mvpMatrix and viewport define transformation from screen coordinates to model coordinates. The
      * screen point's x and y values represent its coordinates relative to the lower left corner. The screen point's z
-     * value represents its depth as a value in the range [0, 1].
-     * <p/>
-     * After this method returns, the results x, y, and z coordinates represent the point's model coordinates.
+     * value represents its depth as a value in the range [0.0, 1.0]. After this method returns, the results x, y, and z
+     * coordinates represent the point's model coordinates.
      *
      * @param x         the screen point's x-coordinate, relative to the lower left corner.
      * @param y         the screen point's y-coordinate, relative to the lower left corner.
-     * @param z         the screen point's z-coordinate, in the range [0, 1].
+     * @param z         the screen point's z-coordinate, in the range [0.0, 1.0].
      * @param mvpMatrix the modelview-projection matrix, transforms model coordinates to clip coordinates.
      * @param viewport  the viewport rectangle, transforms clip coordinates to screen coordinates.
      * @param result    contains the point in model coordinates after this method returns. This value is not modified if
@@ -481,7 +493,7 @@ public class WWMath
         result.z = z;
         result.w = 1;
 
-        // Transform the point from screen coordinates to coordinates in the range [0, 1].
+        // Transform the point from screen coordinates to coordinates in the range [0.0, 1.0].
         result.x = (result.x - viewport.x) / viewport.width;
         result.y = (result.y - viewport.y) / viewport.height;
 
