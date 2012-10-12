@@ -7,7 +7,6 @@ package gov.nasa.worldwindx.examples;
 import android.os.Bundle;
 import gov.nasa.worldwind.BasicView;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.kml.KMLRoot;
 import gov.nasa.worldwind.kml.impl.KMLController;
 import gov.nasa.worldwind.layers.*;
@@ -28,7 +27,17 @@ public class KMLActivity extends BasicWorldWindActivity
     {
         super.onCreate(savedInstanceState);
 
+        this.setViewDefaults();
         this.addKMLFile(ALASKA_FLIGHT_PASSAGEWAYS_PATH);
+    }
+
+    protected void setViewDefaults()
+    {
+        // Configure the view to start looking at the Alaska Flight Passageways KML file.
+        BasicView view = (BasicView) this.wwd.getView();
+        view.setLookAtPosition(Position.fromDegrees(61.7, -148.7, 0.0));
+        view.setRange(4700000);
+        view.setTilt(Angle.fromDegrees(30));
     }
 
     protected void addKMLFile(final String path)
@@ -65,19 +74,5 @@ public class KMLActivity extends BasicWorldWindActivity
                 wwd.getModel().getLayers().add(layer);
             }
         });
-    }
-
-    @Override
-    protected void setupView()
-    {
-        super.setupView();
-
-        BasicView view = (BasicView) this.wwd.getView();
-        Globe globe = this.wwd.getModel().getGlobe();
-
-        // Configure the view to start looking at the Alaska Flight Passageways KML file.
-        Position eyePos = Position.fromDegrees(61.7, -148.7, 4700000);
-        view.setEyePosition(eyePos, Angle.fromDegrees(0), Angle.fromDegrees(0), globe);
-        view.setLookAtTilt(Angle.fromDegrees(30), globe);
     }
 }

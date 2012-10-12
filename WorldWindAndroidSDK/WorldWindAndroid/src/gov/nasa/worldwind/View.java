@@ -108,23 +108,6 @@ public interface View extends WWObject
     double getFarClipDistance();
 
     /**
-     * Gets the current eye point in world coordinates.
-     *
-     * @return the current eye point
-     */
-    Vec4 getEyePoint();
-
-    /**
-     * Returns the current geographic coordinates of this view's eye position, corresponding to this view's most recent
-     * state.
-     *
-     * @param globe the globe for which to compute the current eye position.
-     *
-     * @return the position of the eye corresponding to the most recent state of this view
-     */
-    Position getEyePosition(Globe globe);
-
-    /**
      * Transforms the model coordinate point to screen coordinates, using this view's transform state computed the most
      * recent call to <code>apply</code>. The result's x and y values represent the point's screen coordinates relative
      * to the lower left corner. The result's z value represents the point's depth as a value in the range [0, 1].
@@ -196,4 +179,19 @@ public interface View extends WWObject
     double computePixelSizeAtDistance(double distance);
 
     void apply(DrawContext dc);
+
+    /**
+     * Gets the current eye point in world coordinates.
+     *
+     * @return the current eye point
+     */
+    Vec4 getEyePoint();
+
+    /**
+     * Returns the current geographic coordinates of this view's eye position, corresponding to this view's most recent
+     * state.
+     *
+     * @return the position of the eye corresponding to the most recent state of this view
+     */
+    Position getEyePosition(Globe globe);
 }

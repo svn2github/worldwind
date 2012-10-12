@@ -9,8 +9,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
 
 import java.io.File;
 
@@ -36,7 +34,6 @@ public class SimplestPossibleActivity extends Activity
         this.wwd = new WorldWindowGLSurfaceView(this);
         this.wwd.setModel((Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME));
         this.setContentView(this.wwd);
-        this.setupView();
     }
 
     @Override
@@ -55,18 +52,5 @@ public class SimplestPossibleActivity extends Activity
 
         // Resume the OpenGL ES rendering thread.
         this.wwd.onResume();
-    }
-
-    protected void setupView()
-    {
-        // TODO: this should be done during View initialization, not here in the application.
-        BasicView view = (BasicView) this.wwd.getView();
-        Globe globe = this.wwd.getModel().getGlobe();
-
-        Position lookFromPosition = Position.fromDegrees(Configuration.getDoubleValue(AVKey.INITIAL_LATITUDE),
-            Configuration.getDoubleValue(AVKey.INITIAL_LONGITUDE),
-            Configuration.getDoubleValue(AVKey.INITIAL_ALTITUDE));
-        view.setEyePosition(lookFromPosition, Angle.fromDegrees(0), Angle.fromDegrees(0), globe);
-        view.setEyeTilt(Angle.fromDegrees(0), globe);
     }
 }

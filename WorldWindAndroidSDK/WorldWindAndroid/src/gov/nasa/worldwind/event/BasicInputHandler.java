@@ -56,7 +56,6 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
 
     public boolean onTouch(View view, MotionEvent motionEvent)
     {
-
         int pointerCount = motionEvent.getPointerCount();
 
         final float x = motionEvent.getX(0);
@@ -86,23 +85,12 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
                     if (mLastTap > 0 && (timeSinceLastTap < DOUBLE_TAP_INTERVAL))
                     {
                         // handle double tap here
-
-                        eventSource.invokeInRenderingThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                //handleGoToLocation(x, y);
-                                //updateLatLonDisplay();
-                            }
-                        });
-
                         mLastTap = 0;
                     }
                     // otherwise, single tap has occurred
                     else if (mLastTap < 0 || timeSinceLastTap > SINGLE_TAP_INTERVAL)
                     {
                         // handle single tap here
-
                         mLastTap = curTime;      // last tap is now this tap
                     }
 
@@ -366,125 +354,78 @@ public class BasicInputHandler extends WWObjectImpl implements InputHandler
     protected void handlePan(double xVelocity, double yVelocity)
     {
         BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
+        Position pos = view.getLookAtPosition();
+        Angle heading = view.getHeading();
+        double range = view.getRange();
 
         double panScalingFactor = 0.00001f;
-        Position eyePosition = view.getEyePosition(globe);
-        Position lookAtPosition = view.getLookAtPosition(globe);
+        double sin = heading.sin();
+        double cos = heading.cos();
 
-        if (lookAtPosition != null)
-        {
-            Angle heading = view.getLookAtHeading(globe);
-            Angle tilt = view.getLookAtTilt(globe);
-            double dist = view.getLookAtDistance(globe);
+        double newLat = Angle.normalizedDegreesLatitude(pos.latitude.degrees
+            + (cos * yVelocity + sin * xVelocity) * panScalingFactor * range);
+        double newLon = Angle.normalizedDegreesLongitude(pos.longitude.degrees
+            - (cos * xVelocity - sin * yVelocity) * panScalingFactor * range);
 
-            double sinHead = Math.sin(-heading.radians);    // trigonometric functions assume CCW rotation
-            double cosHead = Math.cos(-heading.radians);
-
-            double newLong = Angle.normalizedDegreesLongitude(lookAtPosition.longitude.degrees
-                - (cosHead * xVelocity - sinHead * yVelocity)
-                * panScalingFactor * dist);
-            double newLat = Angle.normalizedDegreesLatitude(lookAtPosition.latitude.degrees
-                + (cosHead * yVelocity + sinHead * xVelocity) * panScalingFactor * dist);
-            lookAtPosition.longitude.setDegrees(newLong);
-            lookAtPosition.latitude.setDegrees(newLat);
-
-            view.setLookAtPosition(lookAtPosition, heading, tilt, dist, globe);
-        }
-        else    // use eye position instead.  TODO: make this work better
-        {
-            Angle heading = view.getEyeHeading(globe);
-
-            double sinHead = Math.sin(-heading.radians);
-            double cosHead = Math.cos(-heading.radians);
-
-            double newLong = Angle.normalizedDegreesLongitude(eyePosition.longitude.degrees
-                - (cosHead * xVelocity - sinHead * yVelocity)
-                * panScalingFactor * eyePosition.elevation);
-            double newLat = Angle.normalizedDegreesLatitude(eyePosition.latitude.degrees
-                + (cosHead * yVelocity + sinHead * xVelocity) * panScalingFactor * eyePosition.elevation);
-            eyePosition.longitude.setDegrees(newLong);
-            eyePosition.latitude.setDegrees(newLat);
-
-            view.setEyePosition(eyePosition, globe);
-        }
+        pos.setDegrees(newLat, newLon);
     }
 
     protected void handlePinchZoom(double widthDelta, float centerX, float centerY)
     {
         BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
-
+        double value = view.getRange();
         double zoomScalingFactor = 3E-3f;
-        double zoom = view.getZoom();
+        double newValue = value - widthDelta * zoomScalingFactor * value;
 
-        double dist = view.getLookAtDistance(globe);
-        if (dist >= 0)       // scale by lookAt distance if possible
-            zoom += (widthDelta) * zoomScalingFactor * dist;
-        else
-        {   // if not, scale with eye altitude
-            Position eyePos = view.getEyePosition(globe);
-            zoom += (widthDelta) * zoomScalingFactor * 5 * eyePos.elevation;
-        }
-        view.setZoom(zoom);
+        if (newValue < 0)
+            newValue = 0;
+
+        view.setRange(newValue);
     }
 
     protected void handlePinchRotate(Angle rotAngle, float centerX, float centerY)
     {
         BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
+        Angle angle = view.getHeading();
+        double newAngle = (angle.degrees - rotAngle.degrees) % 360;
 
-        Angle heading = view.getLookAtHeading(globe);
+        if (newAngle < -180)
+            newAngle = 360 + newAngle;
+        else if (newAngle > 180)
+            newAngle = newAngle - 360;
 
-        // don't handle case where no lookAt intersection with globe
-        if (heading == null)
-            return;
-
-        heading.setDegrees(heading.degrees + rotAngle.degrees);
-
-        Position lookAt = view.getLookAtPosition(globe);
-        Angle tilt = view.getLookAtTilt(globe);
-        double range = view.getLookAtDistance(globe);
-
-        view.setLookAtPosition(lookAt, heading, tilt, range, globe);
+        angle.setDegrees(newAngle);
     }
 
     protected void handleLookAtTilt(double xVelocity, double yVelocity)
     {
         BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
+        Angle angle = view.getTilt();
+        double scalingFactor = 100;
+        double newAngle = (angle.degrees + yVelocity * scalingFactor) % 360;
 
-        double tiltScalingFactor = 100;
-        Angle tilt = view.getLookAtTilt(globe);
+        if (newAngle < 0)
+            newAngle = 0;
+        else if (newAngle > 90)
+            newAngle = 90;
 
-        // don't handle case where no lookAt intersection with globe
-        if (tilt == null)
-            return;
-        tilt.setDegrees(tilt.degrees + yVelocity * tiltScalingFactor);
-        view.setLookAtTilt(tilt, globe);
+        angle.setDegrees(newAngle);
     }
 
     protected void handleRestoreNorth(double xVelocity, double yVelocity)
     {
         BasicView view = (BasicView) this.eventSource.getView();
-        Globe globe = this.eventSource.getModel().getGlobe();
+        Angle heading = view.getHeading();
+        Angle tilt = view.getTilt();
 
-        Position lookAtPosition = view.getLookAtPosition(globe);
+        // interpolate to zero heading and tilt
+        double headingScalingFactor = 5;
+        double tiltScalingFactor = 3;
         double delta = Math.sqrt(Math.pow(xVelocity, 2) + Math.pow(yVelocity, 2));
+        double newHeading = heading.degrees + -heading.degrees * delta * headingScalingFactor;
+        double newTilt = tilt.degrees + -tilt.degrees * delta * tiltScalingFactor;
 
-        if (lookAtPosition != null)
-        {
-            Angle lookAtHeading = view.getLookAtHeading(globe);
-            Angle lookAtTilt = view.getLookAtTilt(globe);
-            double range = view.getLookAtDistance(globe);
-            float headingScalingFactor = 5;
-            double tiltScalingFactor = 3;
-
-            // interpolate to zero heading and tilt
-            lookAtHeading.addAndSet(Angle.fromDegrees(-lookAtHeading.degrees * delta * headingScalingFactor));
-            lookAtTilt.addAndSet(Angle.fromDegrees(-lookAtTilt.degrees * delta * tiltScalingFactor));
-
-            view.setLookAtPosition(lookAtPosition, lookAtHeading, lookAtTilt, range, globe);
-        }
+        heading.setDegrees(newHeading);
+        tilt.setDegrees(newTilt);
     }
 }
