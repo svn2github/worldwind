@@ -91,4 +91,12 @@ public interface Terrain
      *                                  if the operation is interrupted.
      */
     Vec4 getSurfacePoint(Angle latitude, Angle longitude, double metersOffset);
+
+    void getSurfacePoint(Position position, Vec4 result);
+
+    void getSurfacePoint(Angle latitude, Angle longitude, double metersOffset, Vec4 result);
+
+    void getPoint(Position position, String altitudeMode, Vec4 result);
+
+    void getPoint(Angle latitude, Angle longitude, double metersOffset, String altitudeMode, Vec4 result);
 }
