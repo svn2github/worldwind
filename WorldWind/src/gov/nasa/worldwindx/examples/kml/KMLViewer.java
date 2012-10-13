@@ -256,6 +256,7 @@ public class KMLViewer extends ApplicationTemplate
     protected static void makeMenu(final AppFrame appFrame)
     {
         final JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("KML/KMZ File", "kml", "kmz"));
 
         JMenuBar menuBar = new JMenuBar();
@@ -272,7 +273,10 @@ public class KMLViewer extends ApplicationTemplate
                     int status = fileChooser.showOpenDialog(appFrame);
                     if (status == JFileChooser.APPROVE_OPTION)
                     {
-                        new WorkerThread(fileChooser.getSelectedFile(), appFrame).start();
+                        for (File file : fileChooser.getSelectedFiles())
+                        {
+                            new WorkerThread(file, appFrame).start();
+                        }
                     }
                 }
                 catch (Exception e)
