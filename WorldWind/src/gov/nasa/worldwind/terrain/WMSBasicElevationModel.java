@@ -162,7 +162,6 @@ public class WMSBasicElevationModel extends BasicElevationModel
         private final String layerNames;
         private final String styleNames;
         private final String imageFormat;
-        private final String bgColor;
         private final String wmsVersion;
         private final String crs;
         protected String URLTemplate = null;
@@ -174,7 +173,6 @@ public class WMSBasicElevationModel extends BasicElevationModel
             this.layerNames = params.getStringValue(AVKey.LAYER_NAMES);
             this.styleNames = params.getStringValue(AVKey.STYLE_NAMES);
             this.imageFormat = params.getStringValue(AVKey.IMAGE_FORMAT);
-            this.bgColor = (d != null) ? d.toString() : null;
 
             if (version == null || version.compareTo(MAX_VERSION) >= 0)
             {
@@ -211,11 +209,6 @@ public class WMSBasicElevationModel extends BasicElevationModel
                     sb.append(this.imageFormat);
                 else
                     sb.append(altImageFormat);
-                if (this.bgColor != null)
-                {
-                    sb.append("&bgColor=");
-                    sb.append(this.bgColor);
-                }
 
                 this.URLTemplate = sb.toString();
             }
