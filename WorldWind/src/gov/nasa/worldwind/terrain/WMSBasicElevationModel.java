@@ -148,7 +148,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
             params.setValue(AVKey.MISSING_DATA_SIGNAL, -9999d);
 
         if (params.getValue(AVKey.NUM_LEVELS) == null)
-            params.setValue(AVKey.NUM_LEVELS, 19); // approximately 0.1 meters per pixel
+            params.setValue(AVKey.NUM_LEVELS, 18); // approximately 20 cm per pixel
 
         if (params.getValue(AVKey.NUM_EMPTY_LEVELS) == null)
             params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
