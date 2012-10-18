@@ -230,6 +230,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (this.ri.isVboBound)
             {
                 dc.getGL().glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+                dc.getGL().glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
                 this.ri.isVboBound = false;
             }
         }
