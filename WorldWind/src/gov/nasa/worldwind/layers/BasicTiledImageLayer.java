@@ -25,7 +25,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.*;
 
 /**
  * @author tag
@@ -36,11 +35,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     protected final Object fileLock = new Object();
 
     // Layer resource properties.
-    protected ScheduledExecutorService resourceRetrievalService;
-    protected AbsentResourceList absentResources;
     protected static final int RESOURCE_ID_OGC_CAPABILITIES = 1;
-    protected static final int DEFAULT_MAX_RESOURCE_ATTEMPTS = 3;
-    protected static final int DEFAULT_MIN_RESOURCE_CHECK_INTERVAL = (int) 6e5; // 10 minutes
 
     public BasicTiledImageLayer(LevelSet levelSet)
     {
@@ -162,17 +157,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         this.doRestoreState(rs, null);
     }
 
-    /** Overridden to cancel periodic non-tile resource retrieval tasks scheduled by this Layer. */
-    @Override
-    public void dispose()
-    {
-        super.dispose();
-
-        // Stop any scheduled non-tile resource retrieval tasks. Resource retrievals are performed in a separate thread,
-        // and are unnecessary once the Layer is disposed.
-        this.stopResourceRetrieval();
-    }
-
     protected static AVList getParamsFromDocument(Element domElement, AVList params)
     {
         if (domElement == null)
@@ -268,7 +252,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
                 }
                 else
                 {
-                    // Assume that something's wrong with the file and delete it.
+                    // Assume that something is wrong with the file and delete it.
                     this.layer.getDataFileStore().removeFile(textureURL);
                     String message = Logging.getMessage("generic.DeletedCorruptDataFile", textureURL);
                     Logging.logger().info(message);
@@ -721,13 +705,8 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
             return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
         }
 
-        // The OGC Capabilities resource is marked as absent. Return null indicating that the retrieval was not
-        // successful, and we should try again later.
-        if (this.absentResources.isResourceAbsent(RESOURCE_ID_OGC_CAPABILITIES))
-            return null;
-
-        // Get the service's OGC Capabilities resource from the session cache, or initiate a retrieval to fetch it in
-        // a separate thread. SessionCacheUtils.getOrRetrieveSessionCapabilities() returns null if it initiated a
+        // Get the service's OGC Capabilities resource from the session cache, or initiate a retrieval to fetch it.
+        // SessionCacheUtils.getOrRetrieveSessionCapabilities() returns null if it initiated a
         // retrieval, or if the OGC Capabilities URL is unavailable.
         //
         // Note that we use the URL's String representation as the cache key. We cannot use the URL itself, because
@@ -737,7 +716,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         WMSCapabilities caps;
         if (this.isNetworkRetrievalEnabled())
             caps = SessionCacheUtils.getOrRetrieveSessionCapabilities(url, WorldWind.getSessionCache(),
-                url.toString(), this.absentResources, RESOURCE_ID_OGC_CAPABILITIES, null, null);
+                url.toString(), null, RESOURCE_ID_OGC_CAPABILITIES, null, null);
         else
             caps = SessionCacheUtils.getSessionCapabilities(WorldWind.getSessionCache(), url.toString(),
                 url.toString());
@@ -748,7 +727,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (caps == null)
             return null;
 
-        // We have sucessfully retrieved this Layer's OGC Capabilities resource. Intialize this Layer using the
+        // We have successfully retrieved this Layer's OGC Capabilities resource. Initialize this Layer using the
         // Capabilities document, and return a key indicating the retrieval has succeeded.
         this.initFromOGCCapabilitiesResource(caps, params);
 
@@ -818,135 +797,20 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
     }
 
     /**
-     * Starts retrieving non-tile resources associated with this Layer in a non-rendering thread. By default, this
-     * schedules a task immediately to retrieve those resources, and then every 10 seconds thereafter until the
-     * retrieval succeeds.
-     * <p/>
-     * If this method is invoked while any non-tile resource tasks are running or pending, this cancels any pending
-     * tasks (but allows any running tasks to finish).
+     * Starts retrieving non-tile resources associated with this Layer in a non-rendering thread.
      */
     protected void startResourceRetrieval()
     {
-        // Configure an AbsentResourceList with the specified number of max retrieval attempts, and the smallest
-        // possible min attempt interval. We specify a small attempt interval because the resource retrieval service
-        // itself schedules the attempts at our specified interval. We therefore want to bypass AbsentResourceLists's
-        // internal timing scheme.
-        this.absentResources = new AbsentResourceList(DEFAULT_MAX_RESOURCE_ATTEMPTS, 1);
-
-        // Stop any pending resource retrieval tasks.
-        if (this.resourceRetrievalService != null)
-            this.resourceRetrievalService.shutdown();
-
-        // Schedule a task to retrieve non-tile resources immediately, then at intervals thereafter.
-        Runnable task = this.createResourceRetrievalTask();
-        String taskName = Logging.getMessage("layers.TiledImageLayer.ResourceRetrieverThreadName", this.getName());
-        this.resourceRetrievalService = DataConfigurationUtils.createResourceRetrievalService(taskName);
-        this.resourceRetrievalService.scheduleAtFixedRate(task, 0,
-            DEFAULT_MIN_RESOURCE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    /** Cancels any pending non-tile resource retrieval tasks, and allows any running tasks to finish. */
-    protected void stopResourceRetrieval()
-    {
-        if (this.resourceRetrievalService != null)
+        Thread t = new Thread(new Runnable()
         {
-            this.resourceRetrievalService.shutdownNow();
-            this.resourceRetrievalService = null;
-        }
-    }
-
-    /**
-     * Returns a Runnable task which retrieves any non-tile resources associated with a specified Layer in it's run
-     * method. This task is used by the Layer to schedule periodic resource checks. If the task's run method throws an
-     * Exception, it will no longer be scheduled for execution. By default, this returns a reference to a new {@link
-     * ResourceRetrievalTask}.
-     *
-     * @return Runnable who's run method retrieves non-tile resources.
-     */
-    protected Runnable createResourceRetrievalTask()
-    {
-        return new ResourceRetrievalTask(this);
-    }
-
-    /** ResourceRetrievalTask retrieves any non-tile resources associated with this Layer in it's run method. */
-    protected static class ResourceRetrievalTask implements Runnable
-    {
-        protected BasicTiledImageLayer layer;
-
-        /**
-         * Constructs a new ResourceRetrievalTask, but otherwise does nothing.
-         *
-         * @param layer the BasicTiledImageLayer who's non-tile resources should be retrieved in the run method.
-         *
-         * @throws IllegalArgumentException if the layer is null.
-         */
-        public ResourceRetrievalTask(BasicTiledImageLayer layer)
-        {
-            if (layer == null)
+            @Override
+            public void run()
             {
-                String message = Logging.getMessage("nullValue.LayerIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
+                retrieveResources();
             }
-
-            this.layer = layer;
-        }
-
-        /**
-         * Returns the layer who's non-tile resources are retrieved by this ResourceRetrievalTask
-         *
-         * @return the layer who's non-tile resources are retireved.
-         */
-        public BasicTiledImageLayer getLayer()
-        {
-            return this.layer;
-        }
-
-        /**
-         * Retrieves any non-tile resources associated with the specified Layer, and cancels any pending retrieval tasks
-         * if the retrieval succeeds, or if an exception is thrown during retrieval.
-         */
-        public void run()
-        {
-            try
-            {
-                if (this.layer.isEnabled())
-                    this.retrieveResources();
-            }
-            catch (Throwable t)
-            {
-                this.handleUncaughtException(t);
-            }
-        }
-
-        /**
-         * Invokes {@link BasicTiledImageLayer#retrieveResources()}, and cancels any pending retrieval tasks if the call
-         * returns {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL}.
-         */
-        protected void retrieveResources()
-        {
-            String state = this.layer.retrieveResources();
-
-            if (state != null && state.equals(AVKey.RETRIEVAL_STATE_SUCCESSFUL))
-            {
-                this.layer.stopResourceRetrieval();
-            }
-        }
-
-        /**
-         * Logs a message describing the uncaught exception thrown during a call to run, and cancels any pending
-         * retrieval tasks.
-         *
-         * @param t the uncaught exception.
-         */
-        protected void handleUncaughtException(Throwable t)
-        {
-            String message = Logging.getMessage("layers.TiledImageLayer.ExceptionRetrievingResources",
-                this.layer.getName());
-            Logging.logger().log(java.util.logging.Level.FINE, message, t);
-
-            this.layer.stopResourceRetrieval();
-        }
+        });
+        t.setName("Capabilities retrieval for " + this.getName());
+        t.start();
     }
 
     //**************************************************************//
@@ -1178,7 +1042,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void doRestoreStateForObject(RestorableSupport rs, RestorableSupport.StateObject so)
     {
         if (so == null)

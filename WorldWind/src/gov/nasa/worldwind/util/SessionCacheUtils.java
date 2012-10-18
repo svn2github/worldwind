@@ -21,7 +21,7 @@ import java.beans.PropertyChangeListener;
 public class SessionCacheUtils
 {
     /**
-     * Asynchronously retrieves the contents of a specified {@link java.net.URL}. If successful, this places the URL
+     * Retrieves the contents of a specified {@link java.net.URL}. If successful, this places the URL
      * contents in a specified session cache with a specified key. This either marks the resource as available or
      * missing, depending on whether the retrieval succeeds or fails. Finally, this optionally notifies the caller that
      * the retrieval has succeeded by firing a property change event. If either the property listener or property name
@@ -65,7 +65,8 @@ public class SessionCacheUtils
 
         if (WorldWind.getNetworkStatus().isHostUnavailable(url))
         {
-            absentResourceList.markResourceAbsent(resourceID);
+            if (absentResourceList != null)
+                absentResourceList.markResourceAbsent(resourceID);
             return;
         }
 
@@ -74,7 +75,15 @@ public class SessionCacheUtils
         postProcessor.setName(url.toString());
 
         Retriever retriever = URLRetriever.createRetriever(url, postProcessor);
-        WorldWind.getRetrievalService().runRetriever(retriever);
+        try
+        {
+            retriever.call();
+        }
+        catch (Exception e)
+        {
+            String message = Logging.getMessage("layers.TiledImageLayer.ExceptionRetrievingResources", url.toString());
+            Logging.logger().severe(message);
+        }
     }
 
     /**
@@ -174,6 +183,11 @@ public class SessionCacheUtils
             return caps;
 
         retrieveSessionData(url, cache, cacheKey, absentResourceList, resourceID, propertyListener, propertyName);
+
+        // Try to get the caps after the retrieval attempt.
+        caps = getSessionCapabilities(cache, cacheKey, url.toString());
+        if (caps != null)
+            return caps;
 
         return null;
     }

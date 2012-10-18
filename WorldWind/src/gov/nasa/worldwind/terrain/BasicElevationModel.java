@@ -21,12 +21,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.xpath.XPath;
 import java.awt.image.*;
-import java.beans.PropertyChangeEvent;
 import java.io.*;
 import java.net.URL;
 import java.nio.*;
 import java.util.*;
-import java.util.concurrent.*;
 
 // Implementation notes, not for API doc:
 //
@@ -67,11 +65,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     protected BufferWrapper extremes = null;
     protected MemoryCache extremesLookupCache;
     // Model resource properties.
-    protected ScheduledExecutorService resourceRetrievalService;
-    protected AbsentResourceList absentResources;
     protected static final int RESOURCE_ID_OGC_CAPABILITIES = 1;
-    protected static final int DEFAULT_MAX_RESOURCE_ATTEMPTS = 3;
-    protected static final int DEFAULT_MIN_RESOURCE_CHECK_INTERVAL = (int) 6e5; // 10 minutes
 
     public BasicElevationModel(AVList params)
     {
@@ -140,17 +134,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (this.isRetrieveResources())
         {
             this.startResourceRetrieval();
-            WorldWind.addPropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
         }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent)
-    {
-        if (this.isRetrieveResources() && propertyChangeEvent.getPropertyName().equals(WorldWind.SHUTDOWN_EVENT))
-            BasicElevationModel.this.stopResourceRetrieval();
-
-        super.propertyChange(propertyChangeEvent);
     }
 
     public BasicElevationModel(Document dom, AVList params)
@@ -181,12 +165,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
 
         this.doRestoreState(rs, null);
-    }
-
-    public void dispose()
-    {
-        WorldWind.removePropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
-        this.stopResourceRetrieval();
     }
 
     @Override
@@ -1800,11 +1778,6 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             return AVKey.RETRIEVAL_STATE_SUCCESSFUL;
         }
 
-        // The OGC Capabilities resource is marked as absent. Return null indicating that the retrieval was not
-        // successful, and we should try again later.
-        if (this.absentResources.isResourceAbsent(RESOURCE_ID_OGC_CAPABILITIES))
-            return null;
-
         // Get the service's OGC Capabilities resource from the session cache, or initiate a retrieval to fetch it in
         // a separate thread. SessionCacheUtils.getOrRetrieveSessionCapabilities() returns null if it initiated a
         // retrieval, or if the OGC Capabilities URL is unavailable.
@@ -1816,7 +1789,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         WMSCapabilities caps;
         if (this.isNetworkRetrievalEnabled())
             caps = SessionCacheUtils.getOrRetrieveSessionCapabilities(url, WorldWind.getSessionCache(),
-                url.toString(), this.absentResources, RESOURCE_ID_OGC_CAPABILITIES, null, null);
+                url.toString(), null, RESOURCE_ID_OGC_CAPABILITIES, null, null);
         else
             caps = SessionCacheUtils.getSessionCapabilities(WorldWind.getSessionCache(), url.toString(),
                 url.toString());
@@ -1827,7 +1800,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (caps == null)
             return null;
 
-        // We have sucessfully retrieved this ElevationModel's OGC Capabilities resource. Intialize this ElevationModel
+        // We have successfully retrieved this ElevationModel's OGC Capabilities resource. Initialize this ElevationModel
         // using the Capabilities document, and return a key indicating the retrieval has succeeded.
         this.initFromOGCCapabilitiesResource(caps, params);
 
@@ -1898,133 +1871,20 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     }
 
     /**
-     * Starts retrieving non-tile resources associated with this ElevationModel in a non-rendering thread. By default,
-     * this schedules a task immediately to retrieve those resources, and then every 10 seconds thereafter until the
-     * retrieval succeeds.
-     * <p/>
-     * If this method is invoked while any non-tile resource tasks are running or pending, this cancels any pending
-     * tasks (but allows any running tasks to finish).
+     * Starts retrieving non-tile resources associated with this model in a non-rendering thread.
      */
     protected void startResourceRetrieval()
     {
-        // Configure an AbsentResourceList with the specified number of max retrieval attempts, and the smallest
-        // possible min attempt interval. We specify a small attempt interval because the resource retrieval service
-        // itself schedules the tasks at our specified interval. We therefore want to bypass AbsentResourceLists's
-        // internal timing scheme.
-        this.absentResources = new AbsentResourceList(DEFAULT_MAX_RESOURCE_ATTEMPTS, 1);
-
-        // Stop any pending resource retrieval tasks.
-        if (this.resourceRetrievalService != null)
-            this.resourceRetrievalService.shutdown();
-
-        // Schedule a task to retrieve non-tile resources immediately, then at intervals thereafter.
-        Runnable task = this.createResourceRetrievalTask();
-        String taskName = Logging.getMessage("BasicElevationModel.ResourceRetrieverThreadName", this.getName());
-        this.resourceRetrievalService = DataConfigurationUtils.createResourceRetrievalService(taskName);
-        this.resourceRetrievalService.scheduleAtFixedRate(task, 0,
-            DEFAULT_MIN_RESOURCE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    /** Cancels any pending non-tile resource retrieval tasks, and allows any running tasks to finish. */
-    protected void stopResourceRetrieval()
-    {
-        if (this.resourceRetrievalService != null)
+        Thread t = new Thread(new Runnable()
         {
-            this.resourceRetrievalService.shutdownNow();
-            this.resourceRetrievalService = null;
-        }
-    }
-
-    /**
-     * Returns a Runnable task which retrieves any non-tile resources associated with a specified ElevationModel in it's
-     * run method. This task is used by the ElevationModel to schedule periodic resource checks. If the task's run
-     * method throws an Exception, it will no longer be scheduled for execution. By default, this returns a reference to
-     * a new {@link ResourceRetrievalTask}.
-     *
-     * @return Runnable who's run method retrieves non-tile resources.
-     */
-    protected Runnable createResourceRetrievalTask()
-    {
-        return new ResourceRetrievalTask(this);
-    }
-
-    /** ResourceRetrievalTask retrieves any non-tile resources associated with this ElevationModel in it's run method. */
-    protected static class ResourceRetrievalTask implements Runnable
-    {
-        protected BasicElevationModel em;
-
-        /**
-         * Constructs a new ResourceRetrievalTask, but otherwise does nothing.
-         *
-         * @param em the BasicElevationModel who's non-tile resources should be retrieved in the run method.
-         *
-         * @throws IllegalArgumentException if the elevation model is null.
-         */
-        public ResourceRetrievalTask(BasicElevationModel em)
-        {
-            if (em == null)
+            @Override
+            public void run()
             {
-                String message = Logging.getMessage("nullValue.ElevationModelIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
+                retrieveResources();
             }
-
-            this.em = em;
-        }
-
-        /**
-         * Returns the elevation model who's non-tile resources are retrieved by this ResourceRetrievalTask
-         *
-         * @return the elevation model who's non-tile resources are retireved.
-         */
-        public BasicElevationModel getElevationModel()
-        {
-            return this.em;
-        }
-
-        /**
-         * Retrieves any non-tile resources associated with the specified ElevationModel, and cancels any pending
-         * retrieval tasks if the retrieval succeeds, or if an exception is thrown during retrieval.
-         */
-        public void run()
-        {
-            try
-            {
-                this.retrieveResources();
-            }
-            catch (Throwable t)
-            {
-                this.handleUncaughtException(t);
-            }
-        }
-
-        /**
-         * Invokes {@link BasicElevationModel#retrieveResources()}, and cancels any pending retrieval tasks if the call
-         * returns {@link gov.nasa.worldwind.avlist.AVKey#RETRIEVAL_STATE_SUCCESSFUL}.
-         */
-        protected void retrieveResources()
-        {
-            String state = this.em.retrieveResources();
-
-            if (state != null && state.equals(AVKey.RETRIEVAL_STATE_SUCCESSFUL))
-            {
-                this.em.stopResourceRetrieval();
-            }
-        }
-
-        /**
-         * Logs a message describing the uncaught exception thrown during a call to run, and cancels any pending
-         * retrieval tasks.
-         *
-         * @param t the uncaught exception.
-         */
-        protected void handleUncaughtException(Throwable t)
-        {
-            String message = Logging.getMessage("BasicElevationModel.ExceptionRetrievingResources", this.em.getName());
-            Logging.logger().log(java.util.logging.Level.FINE, message, t);
-
-            this.em.stopResourceRetrieval();
-        }
+        });
+        t.setName("Capabilities retrieval for " + this.getName());
+        t.start();
     }
 
     //**************************************************************//

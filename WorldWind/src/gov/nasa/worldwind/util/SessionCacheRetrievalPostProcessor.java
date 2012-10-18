@@ -187,14 +187,16 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
     protected void onRetrievalSuceeded(Retriever retriever)
     {
         // Put the retrieved data in the session cache, using the specified cache key.
-        this.absentResourceList.unmarkResourceAbsent(this.resourceID);
+        if (this.absentResourceList != null)
+            this.absentResourceList.unmarkResourceAbsent(this.resourceID);
         this.cache.put(this.cacheKey, retriever.getBuffer());
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
     protected void onRetrievalFailed(Retriever retriever)
     {
-        this.absentResourceList.markResourceAbsent(this.resourceID);
+        if (this.absentResourceList != null)
+            this.absentResourceList.markResourceAbsent(this.resourceID);
     }
 
     protected String validate(Retriever retriever)
