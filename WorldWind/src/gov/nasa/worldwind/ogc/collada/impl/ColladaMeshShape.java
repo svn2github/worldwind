@@ -462,7 +462,11 @@ public class ColladaMeshShape extends AbstractGeneralShape
     {
         GL gl = dc.getGL();
 
+        // Create an OpenGL stack handler to handle matrix stack push/pop. Explicitly track changes to the OpenGL
+        // texture and cull face states in order to eliminate the need for attribute push/pop on a per mesh basis.
         OGLStackHandler stackHandler = new OGLStackHandler();
+        boolean texturesEnabled = false;
+        boolean cullingEnabled = false;
         try
         {
             stackHandler.pushModelview(gl);
@@ -483,8 +487,6 @@ public class ColladaMeshShape extends AbstractGeneralShape
                 gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, vb.rewind());
             }
 
-            boolean texturesEnabled = false;
-            boolean cullingEnabled = false;
             for (Geometry geometry : this.geometries)
             {
                 Material nextMaterial = geometry.material != null ? geometry.material : defaultMaterial;
@@ -556,7 +558,23 @@ public class ColladaMeshShape extends AbstractGeneralShape
         }
         finally
         {
+            // Restore the OpenGL matrix stack state.
             stackHandler.pop(gl);
+
+            // Restore the previous OpenGL texture state and cull face state. We do this in order to ensure that any
+            // subsequent ColladaMeshShape instances processed during batch picking/rendering have the same initial
+            // conditions as the first ColladaMeshShape. Without this restore, subsequent ColladaMeshShapes without a
+            // texture will have the GL_TEXTURE_COORD_ARRAY state enabled during glDrawArrays.
+            if (texturesEnabled)
+            {
+                gl.glDisable(GL.GL_TEXTURE_2D);
+                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            }
+
+            if (cullingEnabled)
+            {
+                gl.glDisable(GL.GL_CULL_FACE);
+            }
         }
     }
 
