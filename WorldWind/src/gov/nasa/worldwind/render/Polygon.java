@@ -610,7 +610,7 @@ public class Polygon extends AbstractShape
         if (dc.getVerticalExaggeration() != this.getCurrent().getVerticalExaggeration())
             return true;
 
-        if (this.mustCreateNormals(dc) && this.getCurrent().normalBuffer == null)
+        if (this.mustApplyLighting(dc, null) && this.getCurrent().normalBuffer == null)
             return true;
 
         if (this.getAltitudeMode() == WorldWind.ABSOLUTE
@@ -692,7 +692,7 @@ public class Polygon extends AbstractShape
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.coordBuffer.rewind());
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.normalBuffer.rewind());
 
         int k = 0;
@@ -714,7 +714,7 @@ public class Polygon extends AbstractShape
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, 4 * shapeData.normalBufferPosition);
 
         int k = 0;
@@ -764,7 +764,7 @@ public class Polygon extends AbstractShape
     {
         GL gl = dc.getGL();
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.normalBuffer.rewind());
 
         FloatBuffer vb = shapeData.coordBuffer;
@@ -783,7 +783,7 @@ public class Polygon extends AbstractShape
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, 4 * shapeData.normalBufferPosition);
 
         gl.glDrawElements(GL.GL_TRIANGLES, shapeData.interiorIndicesBuffer.limit(), GL.GL_UNSIGNED_INT, 0);
@@ -895,7 +895,7 @@ public class Polygon extends AbstractShape
         this.createVertices(terrain, shapeData, skipOuterBoundary);
         this.createGeometry(dc, shapeData);
 
-        if (this.mustCreateNormals(dc))
+        if (this.mustApplyLighting(dc, null))
             this.createNormals(shapeData);
         else
             shapeData.normalBuffer = null;
@@ -956,7 +956,7 @@ public class Polygon extends AbstractShape
      */
     protected void createGeometry(DrawContext dc, ShapeData shapeData)
     {
-        int size = this.numPositions * (this.mustCreateNormals(dc) ? 6 : 3);
+        int size = this.numPositions * (this.mustApplyLighting(dc, null) ? 6 : 3);
 
         if (shapeData.coordBuffer != null && shapeData.coordBuffer.capacity() >= size)
             shapeData.coordBuffer.clear();
