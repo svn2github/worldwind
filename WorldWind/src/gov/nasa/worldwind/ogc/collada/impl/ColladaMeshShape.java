@@ -275,7 +275,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
             // texture matrix stack is popped from OGLStackHandler.pop(), in the finally block below.
             ogsh.pushTextureIdentity(dc.getGL());
 
-            if (this.mustApplyLighting(dc))
+            if (this.mustApplyLighting(dc, null))
             {
                 // We apply a scale transform on the modelview matrix, so the normal vectors must be re-normalized
                 // before lighting is computed.
@@ -590,7 +590,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
         if (geometry.offset == -1)
             return;
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null) && this.normalBuffer != null)
             gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBuffer.rewind());
 
         gl.glDrawArrays(this.elementType, geometry.offset, geometry.colladaGeometry.getCount() * this.vertsPerShape);
@@ -615,7 +615,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
             gl.glVertexPointer(ColladaAbstractGeometry.COORDS_PER_VERTEX, GL.GL_FLOAT, 0, 0);
 
-            if (!dc.isPickingMode() && this.mustApplyLighting(dc) && this.normalBuffer != null)
+            if (!dc.isPickingMode() && this.mustApplyLighting(dc, null) && this.normalBuffer != null)
             {
                 gl.glNormalPointer(GL.GL_FLOAT, 0, this.normalBufferPosition * BufferUtil.SIZEOF_FLOAT);
             }
@@ -710,7 +710,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
      */
     protected void createFullGeometry(DrawContext dc)
     {
-        if (this.normalBuffer == null && this.mustCreateNormals(dc))
+        if (this.normalBuffer == null && this.mustApplyLighting(dc, null))
             this.createNormals();
 
         if (this.textureCoordsBuffer == null && this.mustApplyTexture(dc))
@@ -770,7 +770,7 @@ public class ColladaMeshShape extends AbstractGeneralShape
 
         // Capture the position at which normals buffer starts (in case there are normals)
         this.normalBufferPosition = size;
-        if (this.mustCreateNormals(dc))
+        if (this.mustApplyLighting(dc, null))
         {
             size += (this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX);
         }
