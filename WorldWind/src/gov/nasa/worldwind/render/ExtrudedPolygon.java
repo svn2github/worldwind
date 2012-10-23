@@ -1140,21 +1140,6 @@ public class ExtrudedPolygon extends AbstractShape
         return super.mustDrawOutline() || this.getActiveSideAttributes().isDrawOutline();
     }
 
-    /**
-     * Indicates whether standard lighting must be applied.
-     *
-     * @param dc the current draw context
-     *
-     * @return true if lighting must be applied, otherwise false.
-     */
-    protected boolean mustApplyLighting(DrawContext dc)
-    {
-        if (dc == null || super.mustApplyLighting(dc))
-            return true;
-
-        return this.getActiveSideAttributes().isEnableLighting();
-    }
-
     protected boolean mustRegenerateGeometry(DrawContext dc)
     {
         ShapeData shapeData = this.getCurrent();
@@ -1165,7 +1150,8 @@ public class ExtrudedPolygon extends AbstractShape
         if (dc.getVerticalExaggeration() != shapeData.getVerticalExaggeration())
             return true;
 
-        if (this.mustCreateNormals(dc) && (shapeData.capNormalBuffer == null || shapeData.sideNormalBuffer == null))
+        if ((this.mustApplyLighting(dc, this.getActiveCapAttributes()) && shapeData.capNormalBuffer == null)
+            || (this.mustApplyLighting(dc, this.getActiveSideAttributes()) && shapeData.sideNormalBuffer == null))
             return true;
 
         return super.mustRegenerateGeometry(dc);
