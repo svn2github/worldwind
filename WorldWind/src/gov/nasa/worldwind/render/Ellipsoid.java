@@ -311,7 +311,7 @@ public class Ellipsoid extends RigidShape
         normalBuffer = null;
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
@@ -366,7 +366,7 @@ public class Ellipsoid extends RigidShape
 
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)

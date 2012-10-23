@@ -29,7 +29,7 @@ public class Box extends RigidShape
 {
     protected static final int DEFAULT_SUBDIVISIONS = 0;
 
-    @SuppressWarnings( {"FieldCanBeLocal"})
+    @SuppressWarnings({"FieldCanBeLocal"})
     protected int faceCount = 6;   // number of separate geometric faces that comprise this Box
     // The faces are numbered as follows:
     // face 0: right face
@@ -294,7 +294,7 @@ public class Box extends RigidShape
         normalBuffer = null;
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
@@ -349,7 +349,7 @@ public class Box extends RigidShape
 
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)

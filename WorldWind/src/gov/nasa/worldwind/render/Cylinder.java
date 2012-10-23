@@ -30,7 +30,7 @@ public class Cylinder extends RigidShape
     protected static final int DEFAULT_SUBDIVISIONS = 2;
 
     // Geometry.
-    @SuppressWarnings( {"FieldCanBeLocal"})
+    @SuppressWarnings({"FieldCanBeLocal"})
     protected int faceCount = 3;   // number of separate Geometry pieces that comprise this Cylinder
     // The faces are numbered as follows:
     // face 0: Cylinder top
@@ -410,7 +410,7 @@ public class Cylinder extends RigidShape
         normalBuffer = null;
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
@@ -464,7 +464,7 @@ public class Cylinder extends RigidShape
 
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)

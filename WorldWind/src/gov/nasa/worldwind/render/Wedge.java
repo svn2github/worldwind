@@ -32,7 +32,7 @@ public class Wedge extends RigidShape
     protected Angle wedgeAngle = Angle.fromDegrees(220);     // default value for angle consumed by the wedge
 
     // Geometry.
-    @SuppressWarnings( {"FieldCanBeLocal"})
+    @SuppressWarnings({"FieldCanBeLocal"})
     protected int faceCount = 5;   // number of separate Geometry pieces that comprise this Wedge
     // The faces are numbered as follows:
     // face 0: Wedge top
@@ -538,7 +538,7 @@ public class Wedge extends RigidShape
         normalBuffer = null;
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
@@ -592,7 +592,7 @@ public class Wedge extends RigidShape
 
         if (!dc.isPickingMode())
         {
-            if (mustApplyLighting(dc))
+            if (mustApplyLighting(dc, null))
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)
