@@ -380,7 +380,7 @@ public class AntennaModel extends AbstractShape
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.vertices.rewind());
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.normals.rewind());
 
         for (IntBuffer iBuffer : shapeData.indices)

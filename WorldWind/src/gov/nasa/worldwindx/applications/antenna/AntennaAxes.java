@@ -348,7 +348,7 @@ public class AntennaAxes extends AbstractShape
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.vertices.rewind());
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.normals.rewind());
 
         // Draw the "Z axis
@@ -370,7 +370,7 @@ public class AntennaAxes extends AbstractShape
         // Draw the axis cones.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.coneVertices.rewind());
 
-        if (!dc.isPickingMode() && this.mustApplyLighting(dc))
+        if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.coneNormals.rewind());
 
         // Draw the "Z axis cone
