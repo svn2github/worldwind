@@ -748,18 +748,6 @@ public abstract class AbstractShape extends WWObjectImpl
     /**
      * Indicates whether standard lighting must be applied.
      *
-     * @param dc the current draw context
-     *
-     * @return true if lighting must be applied, otherwise false.
-     */
-    protected boolean mustApplyLighting(DrawContext dc)
-    {
-        return this.activeAttributes.isEnableLighting();
-    }
-
-    /**
-     * Indicates whether standard lighting must be applied.
-     *
      * @param dc          the current draw context
      * @param activeAttrs the attribute bundle to consider when determining whether lighting is applied. May be null, in
      *                    which case the current active attributes are used.
@@ -770,33 +758,6 @@ public abstract class AbstractShape extends WWObjectImpl
     protected boolean mustApplyLighting(DrawContext dc, ShapeAttributes activeAttrs)
     {
         return activeAttrs != null ? activeAttrs.isEnableLighting() : this.activeAttributes.isEnableLighting();
-    }
-
-    /**
-     * Indicates whether normal vectors must be computed by consulting the current active attributes.
-     *
-     * @param dc the current draw context
-     *
-     * @return true if normal vectors must be computed, otherwise false.
-     */
-    protected boolean mustCreateNormals(DrawContext dc)
-    {
-        return this.mustCreateNormals(dc, this.getActiveAttributes());
-    }
-
-    /**
-     * Indicates whether standard lighting must be applied.
-     *
-     * @param dc          the current draw context
-     * @param activeAttrs the attribute bundle to consider when determining whether normals should be computed. May be
-     *                    null, in which case the current active attributes are used.
-     *
-     * @return true if normal vectors must be computed, otherwise false.
-     */
-    @SuppressWarnings({"UnusedParameters"})
-    protected boolean mustCreateNormals(DrawContext dc, ShapeAttributes activeAttrs)
-    {
-        return activeAttrs != null ? activeAttrs.isEnableLighting() : this.getActiveAttributes().isEnableLighting();
     }
 
     /**

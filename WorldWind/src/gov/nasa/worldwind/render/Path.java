@@ -1050,12 +1050,6 @@ public class Path extends AbstractShape
     }
 
     @Override
-    protected boolean mustCreateNormals(DrawContext dc, ShapeAttributes activeAttrs)
-    {
-        return false; // TODO: Lighting; need to compute normals
-    }
-
-    @Override
     protected boolean mustApplyTexture(DrawContext dc)
     {
         return false;
