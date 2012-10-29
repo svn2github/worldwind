@@ -675,35 +675,57 @@ public class Box implements Extent, Renderable
         double intersectionPoint;
         Vec4[] endPoints = new Vec4[] {this.bottomCenter, this.topCenter};
 
-        double effectiveRadius = this.getEffectiveRadius(frustum.getNear());
+        double effectiveRadius = this.getEffectiveRadius2(frustum.getNear());
         intersectionPoint = this.intersectsAt(frustum.getNear(), effectiveRadius, endPoints);
         if (intersectionPoint < 0)
             return false;
 
         // Near and far have the same effective radius.
-        effectiveRadius = this.getEffectiveRadius(frustum.getFar());
+        effectiveRadius = this.getEffectiveRadius2(frustum.getFar());
         intersectionPoint = this.intersectsAt(frustum.getFar(), effectiveRadius, endPoints);
         if (intersectionPoint < 0)
             return false;
 
-        effectiveRadius = this.getEffectiveRadius(frustum.getLeft());
+        effectiveRadius = this.getEffectiveRadius2(frustum.getLeft());
         intersectionPoint = this.intersectsAt(frustum.getLeft(), effectiveRadius, endPoints);
         if (intersectionPoint < 0)
             return false;
 
-        effectiveRadius = this.getEffectiveRadius(frustum.getRight());
+        effectiveRadius = this.getEffectiveRadius2(frustum.getRight());
         intersectionPoint = this.intersectsAt(frustum.getRight(), effectiveRadius, endPoints);
         if (intersectionPoint < 0)
             return false;
 
-        effectiveRadius = this.getEffectiveRadius(frustum.getTop());
+        effectiveRadius = this.getEffectiveRadius2(frustum.getTop());
         intersectionPoint = this.intersectsAt(frustum.getTop(), effectiveRadius, endPoints);
         if (intersectionPoint < 0)
             return false;
 
-        effectiveRadius = this.getEffectiveRadius(frustum.getBottom());
+        effectiveRadius = this.getEffectiveRadius2(frustum.getBottom());
         intersectionPoint = this.intersectsAt(frustum.getBottom(), effectiveRadius, endPoints);
         return intersectionPoint >= 0;
+    }
+
+    /**
+     * Returns the effective radius of this box relative to a specified plane, using only this box's S and T axes. This
+     * is an optimization available when using the effective radius to test the distance from a plane to the line
+     * segment along this box's R axis, as is done in this class' {@link #intersects(Frustum)} method. See Lengyel, 2
+     * Ed, Section 7.2.4.
+     *
+     * @param plane the plane in question.
+     *
+     * @return the effective radius of this box relative to the specified plane, using only this box's S and T axes to
+     *         determine the effective radius.
+     */
+    protected double getEffectiveRadius2(Plane plane)
+    {
+        if (plane == null)
+            return 0;
+
+        // Determine the effective radius of the box axis relative to the plane, use only the S and T axes because the
+        // R axis is incorporated into the endpoints of the line this place is being tested against.
+        Vec4 n = plane.getNormal();
+        return 0.5 * (Math.abs(this.s.dot3(n)) + Math.abs(this.t.dot3(n)));
     }
 
     /** {@inheritDoc} */
@@ -714,7 +736,7 @@ public class Box implements Extent, Renderable
 
         // Determine the effective radius of the box axis relative to the plane.
         Vec4 n = plane.getNormal();
-        return 0.5 * (Math.abs(this.s.dot3(n)) + Math.abs(this.t.dot3(n)));
+        return 0.5 * (Math.abs(this.s.dot3(n)) + Math.abs(this.t.dot3(n)) + Math.abs(this.r.dot3(n)));
     }
 
     protected double intersectsAt(Plane plane, double effectiveRadius, Vec4[] endpoints)
