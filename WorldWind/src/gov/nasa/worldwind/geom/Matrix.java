@@ -2090,65 +2090,174 @@ public class Matrix
             return computeGeneralInverse(this);
     }
 
+    private static class MatrixBuilder // like "StringBuilder" - an efficiently modifiable matrix
+    {
+        private double[][] m = new double[4][4];
+
+        MatrixBuilder()
+        {
+        }
+
+        MatrixBuilder(Matrix mat)
+        {
+            m[0][0] = mat.m11;
+            m[0][1] = mat.m12;
+            m[0][2] = mat.m13;
+            m[0][3] = mat.m14;
+            m[1][0] = mat.m21;
+            m[1][1] = mat.m22;
+            m[1][2] = mat.m23;
+            m[1][3] = mat.m24;
+            m[2][0] = mat.m31;
+            m[2][1] = mat.m32;
+            m[2][2] = mat.m33;
+            m[2][3] = mat.m34;
+            m[3][0] = mat.m41;
+            m[3][1] = mat.m42;
+            m[3][2] = mat.m43;
+            m[3][3] = mat.m44;
+        }
+
+        Matrix toMatrix()
+        {
+            return new Matrix(
+                m[0][0], m[0][1], m[0][2], m[0][3],
+                m[1][0], m[1][1], m[1][2], m[1][3],
+                m[2][0], m[2][1], m[2][2], m[2][3],
+                m[3][0], m[3][1], m[3][2], m[3][3]);
+        }
+    }
+
     private static Matrix computeGeneralInverse(Matrix a)
     {
-        double cf_11 = a.m22 * (a.m33 * a.m44 - a.m43 * a.m34)
-            - a.m23 * (a.m32 * a.m44 - a.m42 * a.m34)
-            + a.m24 * (a.m32 * a.m43 - a.m42 * a.m33);
-        double cf_12 = -(a.m21 * (a.m33 * a.m44 - a.m43 * a.m34)
-            - a.m23 * (a.m31 * a.m44 - a.m41 * a.m34)
-            + a.m24 * (a.m31 * a.m43 - a.m41 * a.m33));
-        double cf_13 = a.m21 * (a.m32 * a.m44 - a.m42 * a.m34)
-            - a.m22 * (a.m31 * a.m44 - a.m41 * a.m34)
-            + a.m24 * (a.m31 * a.m42 - a.m41 * a.m32);
-        double cf_14 = -(a.m21 * (a.m32 * a.m43 - a.m42 - a.m33)
-            - a.m22 * (a.m31 * a.m43 - a.m41 * a.m33)
-            + a.m23 * (a.m31 * a.m42 - a.m41 * a.m32));
-        double cf_21 = a.m12 * (a.m33 * a.m44 - a.m43 - a.m34)
-            - a.m13 * (a.m32 * a.m44 - a.m42 * a.m34)
-            + a.m14 * (a.m32 * a.m43 - a.m42 * a.m33);
-        double cf_22 = -(a.m11 * (a.m33 * a.m44 - a.m43 * a.m34)
-            - a.m13 * (a.m31 * a.m44 - a.m41 * a.m34)
-            + a.m14 * (a.m31 * a.m43 - a.m41 * a.m33));
-        double cf_23 = a.m11 * (a.m32 * a.m44 - a.m42 * a.m34)
-            - a.m12 * (a.m31 * a.m44 - a.m41 * a.m34)
-            + a.m14 * (a.m31 * a.m42 - a.m41 * a.m32);
-        double cf_24 = -(a.m11 * (a.m32 * a.m43 - a.m42 * a.m33)
-            - a.m12 * (a.m31 * a.m43 - a.m41 * a.m33)
-            + a.m13 * (a.m31 * a.m42 - a.m41 * a.m32));
-        double cf_31 = a.m12 * (a.m23 * a.m44 - a.m43 * a.m24)
-            - a.m13 * (a.m22 * a.m44 - a.m42 * a.m24)
-            + a.m14 * (a.m22 * a.m43 - a.m42 * a.m23);
-        double cf_32 = -(a.m11 * (a.m23 * a.m44 - a.m43 * a.m24)
-            - a.m13 * (a.m21 * a.m44 - a.m41 * a.m24)
-            + a.m14 * (a.m24 * a.m43 - a.m41 * a.m23));
-        double cf_33 = a.m11 * (a.m22 * a.m44 - a.m42 * a.m24)
-            - a.m12 * (a.m21 * a.m44 - a.m41 * a.m24)
-            + a.m14 * (a.m21 * a.m42 - a.m41 * a.m22);
-        double cf_34 = -(a.m11 * (a.m22 * a.m33 - a.m32 * a.m23)
-            - a.m12 * (a.m21 * a.m33 - a.m31 * a.m23)
-            + a.m13 * (a.m21 * a.m32 - a.m31 * a.m22));
-        double cf_41 = a.m12 * (a.m23 * a.m34 - a.m33 * a.m24)
-            - a.m13 * (a.m22 * a.m34 - a.m32 * a.m24)
-            + a.m14 * (a.m22 * a.m33 - a.m32 * a.m23);
-        double cf_42 = -(a.m11 * (a.m23 * a.m34 - a.m33 * a.m24)
-            - a.m13 * (a.m21 * a.m34 - a.m31 * a.m24)
-            + a.m14 * (a.m21 * a.m33 - a.m31 * a.m23));
-        double cf_43 = a.m11 * (a.m22 * a.m34 - a.m32 * a.m24)
-            - a.m12 * (a.m21 * a.m34 - a.m31 * a.m24)
-            + a.m14 * (a.m21 * a.m32 - a.m31 * a.m22);
-        double cf_44 = -(a.m11 * (a.m22 * a.m33 - a.m32 * a.m23)
-            - a.m12 * (a.m21 * a.m33 - a.m31 * a.m23)
-            + a.m13 * (a.m21 * a.m32 - a.m31 * a.m22));
-        double det = (a.m11 * cf_11) + (a.m12 * cf_12) + (a.m13 * cf_13) + (a.m14 * cf_14);
+        // create a "MatrixBuilder" version of the given matrix
 
-        if (isZero(det))
-            return null;
-        return new Matrix(
-            cf_11 / det, cf_21 / det, cf_31 / det, cf_41 / det,
-            cf_12 / det, cf_22 / det, cf_32 / det, cf_42 / det,
-            cf_13 / det, cf_23 / det, cf_33 / det, cf_43 / det,
-            cf_14 / det, cf_24 / det, cf_34 / det, cf_44 / det);
+        MatrixBuilder A = new MatrixBuilder(a);
+        MatrixBuilder Y = new MatrixBuilder();
+        double[] col = new double[4];
+        int[] indx = new int[4];
+
+        ludcmp(A, indx);
+        for (int j = 0; j < 4; j++)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                col[i] = 0.0;
+            }
+            col[j] = 1.0;
+            lubksb(A, indx, col);
+            for (int i = 0; i < 4; i++)
+            {
+                Y.m[i][j] = col[i];
+            }
+        }
+        return Y.toMatrix();
+    }
+
+    // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
+    private static void lubksb(MatrixBuilder A, int[] indx, double[] b)
+    {
+        int ii = -1;
+        for (int i = 0; i < 4; i++)
+        {
+            int ip = indx[i];
+            double sum = b[ip];
+            b[ip] = b[i];
+            if (ii != -1)
+                for (int j = ii; j <= i - 1; j++)
+                {
+                    sum -= A.m[i][j] * b[j];
+                }
+            else if (sum != 0.0)
+                ii = i;
+            b[i] = sum;
+        }
+        for (int i = 3; i >= 0; i--)
+        {
+            double sum = b[i];
+            for (int j = i + 1; j < A.m.length; j++)
+            {
+                sum -= A.m[i][j] * b[j];
+            }
+            b[i] = sum / A.m[i][i];
+        }
+    }
+
+    // Method "ludcmp" derived from "Numerical Recipes in C", Press et al., 1988
+    private static double ludcmp(MatrixBuilder A, int[] indx)
+    {
+        final double TINY = 1.0e-20;
+
+        double[] vv = new double[4];
+        double d = 1.0;
+        double temp;
+        for (int i = 0; i < 4; i++)
+        {
+            double big = 0.0;
+            for (int j = 0; j < 4; j++)
+            {
+                if ((temp = Math.abs(A.m[i][j])) > big)
+                    big = temp;
+            }
+            if (big == 0.0)
+                System.err.println("Matrix.ludcmp: Singular matrix. (Row " + i + " is zero.)");
+            else
+                vv[i] = 1.0 / big;
+        }
+
+        double sum;
+        for (int j = 0; j < 4; j++)
+        {
+            for (int i = 0; i < j; i++)
+            {
+                sum = A.m[i][j];
+                for (int k = 0; k < i; k++)
+                {
+                    sum -= A.m[i][k] * A.m[k][j];
+                }
+                A.m[i][j] = sum;
+            }
+            double big = 0.0;
+            double dum;
+            int imax = -1;
+            for (int i = j; i < 4; i++)
+            {
+                sum = A.m[i][j];
+                for (int k = 0; k < j; k++)
+                {
+                    sum -= A.m[i][k] * A.m[k][j];
+                }
+                A.m[i][j] = sum;
+                if ((dum = vv[i] * Math.abs(sum)) >= big)
+                {
+                    big = dum;
+                    imax = i;
+                }
+            }
+            if (j != imax)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    dum = A.m[imax][k];
+                    A.m[imax][k] = A.m[j][k];
+                    A.m[j][k] = dum;
+                }
+                d = -d;
+                vv[imax] = vv[j];
+            }
+            indx[j] = imax;
+            if (A.m[j][j] == 0.0)
+                A.m[j][j] = TINY;
+            if (j != 3)
+            {
+                dum = 1.0 / A.m[j][j];
+                for (int i = j + 1; i < 4; i++)
+                {
+                    A.m[i][j] *= dum;
+                }
+            }
+        }
+        return d;
     }
 
     private static Matrix computeTransformInverse(Matrix a)
@@ -2304,5 +2413,61 @@ public class Matrix
     {
         return (POSITIVE_ZERO.compareTo(value) == 0)
             || (NEGATIVE_ZERO.compareTo(value) == 0);
+    }
+
+    // ============== TESTING ======================= //
+    // ============== TESTING ======================= //
+    // ============== TESTING ======================= //
+
+    private static void print(Matrix m, String label)
+    {
+        System.out.println(label);
+        System.out.println(m.m11 + " " + m.m12 + " " + m.m13 + " " + m.m14);
+        System.out.println(m.m21 + " " + m.m22 + " " + m.m23 + " " + m.m24);
+        System.out.println(m.m31 + " " + m.m32 + " " + m.m33 + " " + m.m34);
+        System.out.println(m.m41 + " " + m.m42 + " " + m.m43 + " " + m.m44 + "\n");
+    }
+
+    public static void main(String[] args)
+    {
+        // test a random matrix
+        Matrix m1 = new Matrix(
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random());
+
+        Matrix m1Inv = computeGeneralInverse(m1);
+        print(m1.multiply(m1Inv), "Random matrix times its inverse:");
+
+        // try to create and invert a singular matrix (should fail)
+        double m11 = Math.random(), m12 = Math.random(), m13 = Math.random(), m14 = Math.random();
+        double m21 = Math.random(), m22 = Math.random(), m23 = Math.random(), m24 = Math.random();
+        double m31 = Math.random(), m32 = Math.random(), m33 = Math.random(), m34 = Math.random();
+        // make fourth row a linear combination of first three:
+        double f1 = 1.4, f2 = -4.02, f3 = 0.3;
+        double m41 = f1*m11 + f2*m21 + f3*m31;
+        double m42 = f1*m12 + f2*m22 + f3*m32;
+        double m43 = f1*m13 + f2*m23 + f3*m33;
+        double m44 = f1*m14 + f2*m24 + f3*m34;
+        Matrix m2 = new Matrix(
+            m11, m12, m13, m14,
+            m21, m22, m23, m24,
+            m31, m32, m33, m34,
+            m41, m42, m43, m44);
+
+        Matrix m2Inv = computeGeneralInverse(m2);
+        print(m2.multiply(m2Inv), "Singular matrix times its inverse:");
+
+        // Slightly perturb away from singular:
+        Matrix m3 = new Matrix(
+            m11, m12, m13, m14,
+            m21, m22, m23, m24,
+            m31, m32, m33, m34,
+            m41, m42+1.0e-5, m43, m44);
+
+
+        Matrix m3Inv = computeGeneralInverse(m3);
+        print(m3.multiply(m3Inv), "Near-Singular matrix times its inverse:");
     }
 }
