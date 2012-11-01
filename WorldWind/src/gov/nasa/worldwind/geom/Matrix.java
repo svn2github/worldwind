@@ -2110,8 +2110,6 @@ public class Matrix
     private static Matrix computeGeneralInverse(Matrix a)
     {
         double[][] A = new double[4][4];
-        double[][] Y = new double[4][4];
-        double[] col = new double[4];
         int[] indx = new int[4];
 
         // Copy the specified matrix into a mutable two-dimensional array.
@@ -2132,9 +2130,15 @@ public class Matrix
         A[3][2] = a.m43;
         A[3][3] = a.m44;
 
-        if (!ludcmp(A, indx))
+        double d = ludcmp(A, indx);
+        // compute determinant
+        for (int i=0 ; i<4 ; i++)
+            d *= A[i][i];
+        if (d < 1.0e-8)
             return null; // Matrix is singular; return null to indicate that this Matrix has no inverse.
 
+        double[][] Y = new double[4][4];
+        double[] col = new double[4];
         for (int j = 0; j < 4; j++)
         {
             for (int i = 0; i < 4; i++)
@@ -2196,7 +2200,7 @@ public class Matrix
     }
 
     // Method "ludcmp" derived from "Numerical Recipes in C", Press et al., 1988
-    private static boolean ludcmp(double[][] A, int[] indx)
+    private static double ludcmp(double[][] A, int[] indx)
     {
         final double TINY = 1.0e-20;
 
@@ -2213,7 +2217,7 @@ public class Matrix
             }
 
             if (big == 0.0)
-                return false; // Matrix is singular if the entire row contains zero.
+                return 0.0; // Matrix is singular if the entire row contains zero.
             else
                 vv[i] = 1.0 / big;
         }
@@ -2279,7 +2283,7 @@ public class Matrix
             }
         }
 
-        return true;
+        return d;
     }
 
     // ============== Accessor Functions ======================= //
