@@ -2134,7 +2134,7 @@ public class Matrix
         // compute determinant
         for (int i=0 ; i<4 ; i++)
             d *= A[i][i];
-        if (d < 1.0e-8)
+        if (Math.abs(d) < 1.0e-8)
             return null; // Matrix is singular; return null to indicate that this Matrix has no inverse.
 
         double[][] Y = new double[4][4];
