@@ -44,6 +44,7 @@ public class Matrix
     public final double m44;
 
     protected static final double EPSILON = 1.0e-6;
+    protected static final double NEAR_ZERO_THRESHOLD = 1.0e-8;
 
     // 16 values in a 4x4 matrix.
     private static final int NUM_ELEMENTS = 16;
@@ -2109,10 +2110,8 @@ public class Matrix
 
     private static Matrix computeGeneralInverse(Matrix a)
     {
-        double[][] A = new double[4][4];
-        int[] indx = new int[4];
-
         // Copy the specified matrix into a mutable two-dimensional array.
+        double[][] A = new double[4][4];
         A[0][0] = a.m11;
         A[0][1] = a.m12;
         A[0][2] = a.m13;
@@ -2130,12 +2129,18 @@ public class Matrix
         A[3][2] = a.m43;
         A[3][3] = a.m44;
 
+        int[] indx = new int[4];
         double d = ludcmp(A, indx);
-        // compute determinant
-        for (int i=0 ; i<4 ; i++)
+
+        // Compute the matrix's determinant.
+        for (int i = 0; i < 4; i++)
+        {
             d *= A[i][i];
-        if (Math.abs(d) < 1.0e-8)
-            return null; // Matrix is singular; return null to indicate that this Matrix has no inverse.
+        }
+
+        // The matrix is singular if its determinant is zero or very close to zero.
+        if (Math.abs(d) < NEAR_ZERO_THRESHOLD)
+            return null;
 
         double[][] Y = new double[4][4];
         double[] col = new double[4];

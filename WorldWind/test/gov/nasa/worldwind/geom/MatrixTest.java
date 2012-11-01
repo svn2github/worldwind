@@ -133,7 +133,7 @@ public class MatrixTest
         //********************  Helper Methods  ************************//
         //**************************************************************//
 
-        public static final double EQUALITY_TOLERANCE = 1e-8;
+        public static final double EQUALITY_TOLERANCE = 1.0e-9;
 
         public static boolean equals(Matrix a, Matrix b, double tolerance)
         {
