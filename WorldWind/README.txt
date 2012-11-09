@@ -26,10 +26,10 @@ World Wind Forum:
 http://forum.worldwindcentral.com/forumdisplay.php?f=37
 
 World Wind API Documentation:
-http://builds.worldwind.arc.nasa.gov/worldwind-releases/1.3/docs/api/index.html
+http://builds.worldwind.arc.nasa.gov/worldwind-releases/1.5/docs/api/index.html
 
 World Wind Bug Base:
-http://issues.worldwind.arc.nasa.gov/secure/IssueNavigator.jspa?reset=true&pid=10021&status=1
+http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ
 
 
 Running a Basic Demo Application
@@ -54,7 +54,7 @@ than the graphics card manufacturer's.
 
 
 Using World Wind on Windows or Linux 64-bit
--------------------------------------------
+------------------------------------------------------------
 
 To run World Wind on Windows with a 64-bit Java Virtual Machine, you must extract the 64-bit native libraries:
     1) Open a terminal.
@@ -70,6 +70,39 @@ http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl-natives-linux-amd64.jar
 http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt-natives-linux-amd64.jar
 
 Follow instructions above to extract the archives into the World Wind release folder.
+
+
+New features and improvements in World Wind Java SDK 1.5.0
+------------------------------------------------------------
+- See http://goworldwind.org/releases/ for a description of this release's major features.
+
+- Added global text decluttering. See the ClutterFilter and Declutterable interfaces.
+- Added support for refreshing KML icons.
+- Added support for applying Earth Gravitational Model offsets (EGM96) to EllipsoidalGlobe.
+- Added support for HighResolutionTerrain line intersection.
+- Added an OpenStreetMap layer provided by a NASA hosted MapServer instance.
+- Added delegate owner support to ScreenImage.
+- Added the PersistSessionState example, which demonstrates how to persist a session's layer and view state.
+- Removed erroneous inclusion of the BGCOLOR parameter in WMS elevation requests. This parameter causes GeoServer to return an exception.
+- Increased the texture cache size from 300 MB to 500 MB.
+- Improved shutdown behavior by simplifying automatic retrieval of WMS capabilities documents in WMSTiledImageLayer and WMSBasicElevationModel.
+- Improved the performance of SectorGeometryList.getSurfacePoint.
+- Repaired an OpenGL state leak of GL_ELEMENT_ARRAY_BUFFER binding in terrain rendering.
+- Repaired an OpenGL state leak of the normal pointer binding in COLLADA models, which caused a JVM crash on certain machines.
+- Repaired BasicShapeAttributes' handling of the enableLighting attribute in its restorable state.
+- Repaired Matrix.getInverse, which now returns a correct inverse for all nonsingular matrices.
+- Fixed a regression bug where Box ignores the R axis while computing its effective radius.
+- Fixed a bug where enabling Path lighting caused the JVM to crash.
+- Fixed a bug where enabling ExtrudedPolygon side lighting with cap lighting disabled caused a NullPointerException.
+- Fixed a bug where the MIL-STD-2525 Fire Support Line graphic appears in the wrong place.
+- Fixed a bug preventing COLLADA models from updating after a position change.
+- Fixed a bug in Triangle.intersectTriangleTypes preventing triangle strip intersection from operating correctly.
+- Modified MIL-STD-2525 symbol code parsing to correctly handle symbol modifier codes without an echelon in the second character.
+- Modified MIL-STD-2525 symbol code parsing to correctly compose the modifier code for the feint/dummy installation modifier.
+- Modified MIL-STD-2525 TacticalGraphicFactory to enable application configuration of MIL-STD-2525 implementation classes.
+- Modified MIL-STD-2525 TacticalGraphicSymbol to enable subclasses to change and extend the symbol layout.
+- Modified SurfaceText to add control over the text size in meters.
+- Simplified AbstractShape's protected lighting interface. Multiple versions of mustApplyLighting and mustCreateNormals have been consolidated.
 
 
 New features and improvements in World Wind Java SDK 1.4.0 - July 20, 2012
@@ -171,8 +204,10 @@ New features and improvements in World Wind Java SDK 1.4.0 - July 20, 2012
 - Corrected globe-based calculation of icon point to account for the elevation.
 - Reduced the test for equality when checking WMS server names.
 
+
 New features and improvements in World Wind Java SDK 1.3.0 - April 27, 2012
 ------------------------------------------------------------
+
 - 2525C Symbology
 - KML NetworkLinkControl and Update
 
