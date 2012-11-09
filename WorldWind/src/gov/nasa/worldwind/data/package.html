@@ -297,53 +297,8 @@
 
 <h3>Deploying with Java Web Start</h3>
 
-    World Wind with the GDAL libraries can be provided via Java Web Start. The following four files are needed:
-<ul>
-    <li><code>gdal.jar</code>, the GDAL Java Bindings, located in the World Wind root folder.</li>
-    <li><code>gdaldata.jar</code>, a jar file with the GDAL data tables<!--TODO: Where does this file have to be?-->
-        </li>
-    <li><code>gdal.jnlp</code>, the Java Network Launching Protocol file identifying application and resource locations.
-        </li>
-</ul>
-    Here is an example of a sample WWJ-based Java WebStart application that refers to our GDAL-bundle:
-<pre>
-<code>
-<?xml version="1.0" encoding="utf-8"?>
-    &lt;jnlp spec="1.0" codebase="http://yourcompany.website.com/applications/" href="MyDemoWWJApplication.jnlp"&gt;
-
-        &lt;information&gt;
-            &lt;title&gt;My Demo WWJ app&lt;/title&gt;
-            &lt;vendor&gt;Your Company Name Here&lt;/vendor&gt;
-            &lt;homepage href="http://yourcompany.website.com/"/&gt;
-            &lt;description&gt;My WWJ Application&lt;/description&gt;
-            &lt;description kind="short"&gt;My WWJ Application&lt;/description&gt;
-            &lt;offline-allowed/&gt;
-        &lt;/information&gt;
-
-        &lt;security&gt;
-            &lt;all-permissions/&gt;
-        &lt;/security&gt;
-
-        &lt;resources&gt;
-            &lt;j2se href="http://java.sun.com/products/autodl/j2se" version="1.6+"
-                initial-heap-size="2048m" max-heap-size="2048m"/&gt;
-
-            &lt;property name="sun.java2d.noddraw" value="true"/&gt;
-
-            &lt;property name="java.util.logging.config.file" value="logging.properties"/&gt;
-
-            &lt;jar href="MyWWJDemo.jar" main="true"/&gt;
-
-            &lt;extension name="worldwind" href="http://worldwind.arc.nasa.gov/java/1.4.0/webstart/worldwind.jnlp"/&gt;
-            <!--TODO: We need to show how to locate this on the user's site, not World Wind's-->
-            &lt;extension name="gdal" href="http://worldwind.arc.nasa.gov/java/gdal/webstart/gdal.jnlp"/&gt;
-        &lt;/resources&gt;
-
-        &lt;application-desc main-class="com.YourCompanyName.applications.MyWWJDemoApp"/&gt;
-
-    &lt;/jnlp&gt;
-</code>
-</pre>
+    Instructions for using the World Wind GDAL libraries with a Java Web Start application are available at
+    <a href="http://goworldwind.org/getting-started/" target="_blank">http://goworldwind.org/getting-started/</a>.
 
 <!--**************************************************************-->
 <!--********************  Use Case Examples  *********************-->
