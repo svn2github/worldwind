@@ -20,8 +20,7 @@
               max-heap-size="512m"/>
         <property name="sun.java2d.noddraw" value="true"/>
         <jar href="WWJApplet.jar" main="true"/>
-        <jar href="worldwind.jar"/>
-        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
+        <extension name="worldwind" href="http://worldwind.arc.nasa.gov/java/1.5.0/webstart/worldwind.jnlp"/>
     </resources>
     <!-- Width and height are overridden by the containing web page. -->
     <applet-desc

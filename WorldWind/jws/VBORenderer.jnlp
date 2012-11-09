@@ -20,9 +20,7 @@
               max-heap-size="512m"/>
         <property name="sun.java2d.noddraw" value="true"/>
         <jar href="worldwind-performance.jar" main="true"/>
-        <jar href="worldwindx.jar"/>
-        <jar href="worldwind.jar"/>
-        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
+        <extension name="worldwindx" href="http://worldwind.arc.nasa.gov/java/1.5.0/webstart/worldwindx.jnlp"/>
     </resources>
     <application-desc main-class="performance.VBORenderer.VBORenderer"/>
 </jnlp>

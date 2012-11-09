@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--$Id$-->
 <jnlp spec="1.0"
-      codebase="http://worldwind.arc.nasa.gov/java/1.4.0/webstart/"
+      codebase="http://worldwind.arc.nasa.gov/java/1.5.0/webstart/"
       href="worldwind.jnlp">
     <information>
         <title>NASA World Wind Java</title>
         <vendor>NASA</vendor>
         <homepage href="http://worldwind.arc.nasa.gov/java"/>
-        <description>NASA World Wind Java version 1.4.0</description>
+        <description>NASA World Wind Java version 1.5.0</description>
         <description kind="short">NASA World Wind Planetary Visualization Software Library</description>
         <offline-allowed/>
     </information>
@@ -28,7 +28,7 @@
         <jar href="http://worldwind.arc.nasa.gov/java/gdal/webstart/gdal.jar"/>
         <!-- Add the JOGL webstart JNLP file as an extension of this JNLP file. World Wind depends on the JOGL library
              to communicate with the platform native OpenGL libraries. -->
-        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
+        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jnlp"/>
     </resources>
 
     <!-- Include the WebView native library JAR archive for all Mac OS X platforms. The WebView libraries are required by

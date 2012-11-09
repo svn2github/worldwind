@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--$Id$-->
 <jnlp spec="1.0"
-      codebase="http://worldwind.arc.nasa.gov/java/demos/"
+      codebase="http://worldwindserver.net/java/1.5.0/demos/"
       href="WebBrowserBalloons.jnlp">
     <information>
         <title>World Wind Java Web Browser Balloons</title>
@@ -19,22 +19,7 @@
         <j2se href="http://java.sun.com/products/autodl/j2se" version="1.6+" initial-heap-size="512m"
               max-heap-size="512m"/>
         <property name="sun.java2d.noddraw" value="true"/>
-        <jar href="worldwindx.jar" main="true"/>
-        <jar href="worldwind.jar"/>
-        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
+        <extension name="worldwindx" href="http://worldwind.arc.nasa.gov/java/1.5.0/webstart/worldwindx.jnlp"/>
     </resources>
-
-    <!--Include the WebView native library JAR archive for all Mac OS X platforms.-->
-    <!--The WebView libraries are required by World Wind BrowserBalloons.-->
-    <resources os="Mac OS X">
-        <nativelib href="webview-natives-macosx.jar"/>
-    </resources>
-
-    <!--Include the WebView native library JAR archive for Windows 32-bit and 64-bit platforms.-->
-    <!--The WebView libraries are required by World Wind BrowserBalloons.-->
-    <resources os="Windows">
-        <nativelib href="webview-natives-windows.jar"/>
-    </resources>
-
     <application-desc main-class="gov.nasa.worldwindx.examples.WebBrowserBalloons"/>
 </jnlp>
