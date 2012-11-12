@@ -796,10 +796,147 @@ public class LatLon
         return rhumbEndPosition(p, Angle.fromRadians(rhumbAzimuthRadians), Angle.fromRadians(pathLengthRadians));
     }
 
+    /**
+     * Computes the length of the linear path between two locations. The return value gives the distance as the angular
+     * distance between the two positions on the pi radius circle. In radians, this angle is also the arc length of the
+     * segment between the two positions on that circle. To compute a distance in meters from this value, multiply it by
+     * the radius of the globe.
+     *
+     * @param p1 LatLon of the first location
+     * @param p2 LatLon of the second location
+     *
+     * @return the arc length of the line between the two locations. In radians, this value is the arc length on the
+     *         radius pi circle.
+     */
+    public static Angle linearDistance(LatLon p1, LatLon p2)
+    {
+        if (p1 == null || p2 == null)
+        {
+            String message = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        double lat1 = p1.getLatitude().radians;
+        double lon1 = p1.getLongitude().radians;
+        double lat2 = p2.getLatitude().radians;
+        double lon2 = p2.getLongitude().radians;
+
+        if (lat1 == lat2 && lon1 == lon2)
+            return Angle.ZERO;
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        // If lonChange over 180 take shorter path across 180 meridian.
+        if (Math.abs(dLon) > Math.PI)
+        {
+            dLon = dLon > 0 ? -(2 * Math.PI - dLon) : (2 * Math.PI + dLon);
+        }
+
+        double distanceRadians = Math.hypot(dLat, dLon);
+
+        return Double.isNaN(distanceRadians) ? Angle.ZERO : Angle.fromRadians(distanceRadians);
+    }
+
+    /**
+     * Computes the azimuth angle (clockwise from North) of a linear path two locations.
+     *
+     * @param p1 LatLon of the first location
+     * @param p2 LatLon of the second location
+     *
+     * @return azimuth Angle of a linear path between the two locations.
+     */
+    public static Angle linearAzimuth(LatLon p1, LatLon p2)
+    {
+        if (p1 == null || p2 == null)
+        {
+            String message = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        double lat1 = p1.getLatitude().radians;
+        double lon1 = p1.getLongitude().radians;
+        double lat2 = p2.getLatitude().radians;
+        double lon2 = p2.getLongitude().radians;
+
+        if (lat1 == lat2 && lon1 == lon2)
+            return Angle.ZERO;
+
+        double dLon = lon2 - lon1;
+        double dLat = lat2 - lat1;
+
+        // If lonChange over 180 take shorter rhumb across 180 meridian.
+        if (Math.abs(dLon) > Math.PI)
+        {
+            dLon = dLon > 0 ? -(2 * Math.PI - dLon) : (2 * Math.PI + dLon);
+        }
+        double azimuthRadians = Math.atan2(dLon, dLat);
+
+        return Double.isNaN(azimuthRadians) ? Angle.ZERO : Angle.fromRadians(azimuthRadians);
+    }
+
+    /**
+     * Computes the location on a linear path given a starting location, azimuth, and arc distance along the line. A
+     * linear path is determined by treating latitude and longitude as a rectangular grid. This type of path is a
+     * straight line in the equidistant cylindrical map projection (also called equirectangular).
+     *
+     * @param p             LatLon of the starting location
+     * @param linearAzimuth azimuth angle (clockwise from North)
+     * @param pathLength    arc distance to travel
+     *
+     * @return LatLon location on the line.
+     */
+    public static LatLon linearEndPosition(LatLon p, Angle linearAzimuth, Angle pathLength)
+    {
+        if (p == null)
+        {
+            String message = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (linearAzimuth == null || pathLength == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        double lat1 = p.getLatitude().radians;
+        double lon1 = p.getLongitude().radians;
+        double azimuth = linearAzimuth.radians;
+        double distance = pathLength.radians;
+
+        if (distance == 0)
+            return p;
+
+        double lat2 = lat1 + distance * Math.cos(azimuth);
+
+        // Handle latitude passing over either pole.
+        if (Math.abs(lat2) > Math.PI / 2.0)
+        {
+            lat2 = lat2 > 0 ? Math.PI - lat2 : -Math.PI - lat2;
+        }
+        double lon2 = (lon1 + distance * Math.sin(azimuth) + Math.PI) % (2 * Math.PI) - Math.PI;
+
+        if (Double.isNaN(lat2) || Double.isNaN(lon2))
+            return p;
+
+        return new LatLon(
+            Angle.fromRadians(lat2).normalizedLatitude(),
+            Angle.fromRadians(lon2).normalizedLongitude());
+    }
+
+    /**
+     * Compute the average rhumb distance between locations.
+     *
+     * @param locations Locations of which to compute average.
+     *
+     * @return Average rhumb line distance between locations, as an angular distance.
+     */
     public static Angle getAverageDistance(Iterable<? extends LatLon> locations)
     {
-        // Compute the average rhumb distance between locations.
-
         if ((locations == null))
         {
             String msg = Logging.getMessage("nullValue.LocationsListIsNull");
