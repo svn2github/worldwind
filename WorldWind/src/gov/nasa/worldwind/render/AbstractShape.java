@@ -746,7 +746,21 @@ public abstract class AbstractShape extends WWObjectImpl
     }
 
     /**
-     * Indicates whether standard lighting must be applied.
+     * Indicates whether standard lighting must be applied by consulting the current active attributes. Calls {@link
+     * #mustApplyLighting(DrawContext, ShapeAttributes)}, specifying null for the activeAttrs.
+     *
+     * @param dc the current draw context
+     *
+     * @return true if lighting must be applied, otherwise false.
+     */
+    protected boolean mustApplyLighting(DrawContext dc)
+    {
+        return this.mustApplyLighting(dc, null);
+    }
+
+    /**
+     * Indicates whether standard lighting must be applied by consulting either the specified active attributes or the
+     * current active attributes.
      *
      * @param dc          the current draw context
      * @param activeAttrs the attribute bundle to consider when determining whether lighting is applied. May be null, in
@@ -754,10 +768,38 @@ public abstract class AbstractShape extends WWObjectImpl
      *
      * @return true if lighting must be applied, otherwise false.
      */
-    @SuppressWarnings({"UnusedParameters"})
     protected boolean mustApplyLighting(DrawContext dc, ShapeAttributes activeAttrs)
     {
         return activeAttrs != null ? activeAttrs.isEnableLighting() : this.activeAttributes.isEnableLighting();
+    }
+
+    /**
+     * Indicates whether normal vectors must be computed by consulting the current active attributes. Calls {@link
+     * #mustCreateNormals(DrawContext, ShapeAttributes)}, specifying null for the activeAttrs.
+     *
+     * @param dc the current draw context
+     *
+     * @return true if normal vectors must be computed, otherwise false.
+     */
+    protected boolean mustCreateNormals(DrawContext dc)
+    {
+        return this.mustCreateNormals(dc, null);
+    }
+
+    /**
+     * Indicates whether normal vectors must be computed by consulting either the specified active attributes or the
+     * current active attributes. Calls {@link #mustApplyLighting(DrawContext, ShapeAttributes)}, passing the specified
+     * active attrs.
+     *
+     * @param dc          the current draw context
+     * @param activeAttrs the attribute bundle to consider when determining whether normals should be computed. May be
+     *                    null, in which case the current active attributes are used.
+     *
+     * @return true if normal vectors must be computed, otherwise false.
+     */
+    protected boolean mustCreateNormals(DrawContext dc, ShapeAttributes activeAttrs)
+    {
+        return this.mustApplyLighting(dc, activeAttrs);
     }
 
     /**
