@@ -178,6 +178,8 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
      * segment endpoints, or {@link #RHUMB_LINE}, which draws each segment of the path as a line of constant heading.
      *
      * @param pathType the type of path to draw.
+     *
+     * @see <a href="{@docRoot}/overview-summary.html#path-types">Path Types</a>
      */
     public void setPathType(int pathType)
     {
@@ -186,6 +188,16 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         this.measurer.setPathType(pathType);
     }
 
+    /**
+     * Sets the type of path to draw, one of {@link AVKey#GREAT_CIRCLE}, which draws each segment of the path as a great
+     * circle, {@link AVKey#LINEAR}, which determines the intermediate positions between segments by interpolating the
+     * segment endpoints, or {@link AVKey#RHUMB_LINE}, which draws each segment of the path as a line of constant
+     * heading.
+     *
+     * @param pathType the type of path to draw.
+     *
+     * @see <a href="{@docRoot}/overview-summary.html#path-types">Path Types</a>
+     */
     public void setPathType(String pathType)
     {
         if (pathType == null)
@@ -921,7 +933,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         Angle segmentAzimuth = null;
         Angle segmentDistance = null;
 
-        for (double s = 0, p = 0; s < 1;)
+        for (double s = 0, p = 0; s < 1; )
         {
             if (this.followTerrain)
                 p += this.terrainConformance * dc.getView().computePixelSizeAtDistance(
@@ -936,7 +948,18 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
             {
                 pos = posB;
             }
-            else if (this.pathType == RHUMB_LINE || this.pathType == LINEAR) // or LOXODROME
+            else if (this.pathType == LINEAR)
+            {
+                if (segmentAzimuth == null)
+                {
+                    segmentAzimuth = LatLon.linearAzimuth(posA, posB);
+                    segmentDistance = LatLon.linearDistance(posA, posB);
+                }
+                Angle distance = Angle.fromRadians(s * segmentDistance.radians);
+                LatLon latLon = LatLon.linearEndPosition(posA, segmentAzimuth, distance);
+                pos = new Position(latLon, (1 - s) * posA.getElevation() + s * posB.getElevation());
+            }
+            else if (this.pathType == RHUMB_LINE) // or LOXODROME
             {
                 if (segmentAzimuth == null)
                 {
@@ -968,7 +991,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         return span;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected ArrayList<Vec4> clipAndAdd(DrawContext dc, Vec4 ptA, Vec4 ptB, ArrayList<Vec4> span)
     {
         // Line clipping appears to be useful only for long lines with few segments. It's costly otherwise.

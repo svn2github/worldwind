@@ -933,6 +933,8 @@ public class Path extends AbstractShape
      * {@link AVKey#LINEAR}.
      *
      * @param pathType the current path type. The default value is {@link AVKey#LINEAR}.
+     *
+     * @see <a href="{@docRoot}/overview-summary.html#path-types">Path Types</a>
      */
     public void setPathType(String pathType)
     {
