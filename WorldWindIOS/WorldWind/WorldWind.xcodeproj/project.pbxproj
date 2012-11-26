@@ -1,0 +1,496 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B9813BD165FF5FC00193E50 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813BC165FF5FB00193E50 /* Foundation.framework */; };
+		0B9813C2165FF5FC00193E50 /* WorldWind.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0B9813C1165FF5FC00193E50 /* WorldWind.h */; };
+		0B9813C4165FF5FC00193E50 /* WorldWind.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813C3165FF5FC00193E50 /* WorldWind.m */; };
+		0B9813CC165FF5FC00193E50 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813CB165FF5FC00193E50 /* SenTestingKit.framework */; };
+		0B9813CE165FF5FC00193E50 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813CD165FF5FC00193E50 /* UIKit.framework */; };
+		0B9813CF165FF5FC00193E50 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813BC165FF5FB00193E50 /* Foundation.framework */; };
+		0B9813D2165FF5FC00193E50 /* libWorldWind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813B9165FF5FB00193E50 /* libWorldWind.a */; };
+		0B9813D8165FF5FC00193E50 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0B9813D6165FF5FC00193E50 /* InfoPlist.strings */; };
+		0B9813DB165FF5FC00193E50 /* WorldWindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813DA165FF5FC00193E50 /* WorldWindTests.m */; };
+		0B9813E7165FF65400193E50 /* Simple.frag in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E5165FF65400193E50 /* Simple.frag */; };
+		0B9813E8165FF65400193E50 /* Simple.vert in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E6165FF65400193E50 /* Simple.vert */; };
+		0B9813E9165FF67000193E50 /* Simple.frag in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E5165FF65400193E50 /* Simple.frag */; };
+		0B9813EA165FF67400193E50 /* Simple.vert in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E6165FF65400193E50 /* Simple.vert */; };
+		0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F2165FF77700193E50 /* WWSceneController.m */; };
+		0B9813F4165FF77700193E50 /* WWSceneController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F2165FF77700193E50 /* WWSceneController.m */; };
+		0B9813F7165FF84F00193E50 /* WorldWindView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F6165FF84F00193E50 /* WorldWindView.m */; };
+		0B9813F8165FF84F00193E50 /* WorldWindView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F6165FF84F00193E50 /* WorldWindView.m */; };
+		0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98142F165FFDF200193E50 /* WorldWindConstants.m */; };
+		0B981431165FFDF200193E50 /* WorldWindConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98142F165FFDF200193E50 /* WorldWindConstants.m */; };
+		0B9814431660391E00193E50 /* WWAngle.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9814421660391E00193E50 /* WWAngle.m */; };
+		0B9814441660391E00193E50 /* WWAngle.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9814421660391E00193E50 /* WWAngle.m */; };
+		0B98144916607E2300193E50 /* WWLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98144816607E2300193E50 /* WWLocation.m */; };
+		0B98144A16607E2300193E50 /* WWLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98144816607E2300193E50 /* WWLocation.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0B9813D0165FF5FC00193E50 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0B9813B0165FF5FB00193E50 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B9813B8165FF5FB00193E50;
+			remoteInfo = WorldWind;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0B9813B7165FF5FB00193E50 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/${PRODUCT_NAME}";
+			dstSubfolderSpec = 16;
+			files = (
+				0B9813C2165FF5FC00193E50 /* WorldWind.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0B9813B9165FF5FB00193E50 /* libWorldWind.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWorldWind.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0B9813BC165FF5FB00193E50 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0B9813C0165FF5FC00193E50 /* WorldWind-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WorldWind-Prefix.pch"; sourceTree = "<group>"; };
+		0B9813C1165FF5FC00193E50 /* WorldWind.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WorldWind.h; sourceTree = "<group>"; };
+		0B9813C3165FF5FC00193E50 /* WorldWind.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WorldWind.m; sourceTree = "<group>"; };
+		0B9813CA165FF5FC00193E50 /* WorldWindTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorldWindTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0B9813CB165FF5FC00193E50 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		0B9813CD165FF5FC00193E50 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		0B9813D5165FF5FC00193E50 /* WorldWindTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WorldWindTests-Info.plist"; sourceTree = "<group>"; };
+		0B9813D7165FF5FC00193E50 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0B9813D9165FF5FC00193E50 /* WorldWindTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WorldWindTests.h; sourceTree = "<group>"; };
+		0B9813DA165FF5FC00193E50 /* WorldWindTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WorldWindTests.m; sourceTree = "<group>"; };
+		0B9813E5165FF65400193E50 /* Simple.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Simple.frag; sourceTree = "<group>"; };
+		0B9813E6165FF65400193E50 /* Simple.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Simple.vert; sourceTree = "<group>"; };
+		0B9813F1165FF77700193E50 /* WWSceneController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWSceneController.h; sourceTree = "<group>"; };
+		0B9813F2165FF77700193E50 /* WWSceneController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWSceneController.m; sourceTree = "<group>"; };
+		0B9813F5165FF84F00193E50 /* WorldWindView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WorldWindView.h; sourceTree = "<group>"; };
+		0B9813F6165FF84F00193E50 /* WorldWindView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WorldWindView.m; sourceTree = "<group>"; };
+		0B98142E165FFDF200193E50 /* WorldWindConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WorldWindConstants.h; sourceTree = "<group>"; };
+		0B98142F165FFDF200193E50 /* WorldWindConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WorldWindConstants.m; sourceTree = "<group>"; };
+		0B9814411660391E00193E50 /* WWAngle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWAngle.h; path = Geometry/WWAngle.h; sourceTree = "<group>"; };
+		0B9814421660391E00193E50 /* WWAngle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWAngle.m; path = Geometry/WWAngle.m; sourceTree = "<group>"; };
+		0B98144716607E2300193E50 /* WWLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWLocation.h; path = Geometry/WWLocation.h; sourceTree = "<group>"; };
+		0B98144816607E2300193E50 /* WWLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWLocation.m; path = Geometry/WWLocation.m; sourceTree = "<group>"; };
+		0B98144B16608BE900193E50 /* WWLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLog.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0B9813B6165FF5FB00193E50 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B9813BD165FF5FC00193E50 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0B9813C6165FF5FC00193E50 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B9813CC165FF5FC00193E50 /* SenTestingKit.framework in Frameworks */,
+				0B9813CE165FF5FC00193E50 /* UIKit.framework in Frameworks */,
+				0B9813CF165FF5FC00193E50 /* Foundation.framework in Frameworks */,
+				0B9813D2165FF5FC00193E50 /* libWorldWind.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0B9813AE165FF5FB00193E50 = {
+			isa = PBXGroup;
+			children = (
+				0B9813BE165FF5FC00193E50 /* WorldWind */,
+				0B9813D3165FF5FC00193E50 /* WorldWindTests */,
+				0B9813BB165FF5FB00193E50 /* Frameworks */,
+				0B9813BA165FF5FB00193E50 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0B9813BA165FF5FB00193E50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813B9165FF5FB00193E50 /* libWorldWind.a */,
+				0B9813CA165FF5FC00193E50 /* WorldWindTests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0B9813BB165FF5FB00193E50 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813BC165FF5FB00193E50 /* Foundation.framework */,
+				0B9813CB165FF5FC00193E50 /* SenTestingKit.framework */,
+				0B9813CD165FF5FC00193E50 /* UIKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0B9813BE165FF5FC00193E50 /* WorldWind */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813EC165FF6E500193E50 /* Render */,
+				0B9813E4165FF65400193E50 /* Shaders */,
+				0B9813F5165FF84F00193E50 /* WorldWindView.h */,
+				0B9813F6165FF84F00193E50 /* WorldWindView.m */,
+				0B9813C1165FF5FC00193E50 /* WorldWind.h */,
+				0B9813C3165FF5FC00193E50 /* WorldWind.m */,
+				0B9813BF165FF5FC00193E50 /* Supporting Files */,
+				0B98142E165FFDF200193E50 /* WorldWindConstants.h */,
+				0B98142F165FFDF200193E50 /* WorldWindConstants.m */,
+				0B9814461660392D00193E50 /* Geometry */,
+				0B98144B16608BE900193E50 /* WWLog.h */,
+			);
+			path = WorldWind;
+			sourceTree = "<group>";
+		};
+		0B9813BF165FF5FC00193E50 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813C0165FF5FC00193E50 /* WorldWind-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0B9813D3165FF5FC00193E50 /* WorldWindTests */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813D9165FF5FC00193E50 /* WorldWindTests.h */,
+				0B9813DA165FF5FC00193E50 /* WorldWindTests.m */,
+				0B9813D4165FF5FC00193E50 /* Supporting Files */,
+			);
+			path = WorldWindTests;
+			sourceTree = "<group>";
+		};
+		0B9813D4165FF5FC00193E50 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813D5165FF5FC00193E50 /* WorldWindTests-Info.plist */,
+				0B9813D6165FF5FC00193E50 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0B9813E4165FF65400193E50 /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813E5165FF65400193E50 /* Simple.frag */,
+				0B9813E6165FF65400193E50 /* Simple.vert */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
+		0B9813EC165FF6E500193E50 /* Render */ = {
+			isa = PBXGroup;
+			children = (
+				0B9813F1165FF77700193E50 /* WWSceneController.h */,
+				0B9813F2165FF77700193E50 /* WWSceneController.m */,
+			);
+			path = Render;
+			sourceTree = "<group>";
+		};
+		0B9814461660392D00193E50 /* Geometry */ = {
+			isa = PBXGroup;
+			children = (
+				0B9814411660391E00193E50 /* WWAngle.h */,
+				0B9814421660391E00193E50 /* WWAngle.m */,
+				0B98144716607E2300193E50 /* WWLocation.h */,
+				0B98144816607E2300193E50 /* WWLocation.m */,
+			);
+			name = Geometry;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0B9813B8165FF5FB00193E50 /* WorldWind */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B9813DE165FF5FC00193E50 /* Build configuration list for PBXNativeTarget "WorldWind" */;
+			buildPhases = (
+				0B9813B5165FF5FB00193E50 /* Sources */,
+				0B9813B6165FF5FB00193E50 /* Frameworks */,
+				0B9813B7165FF5FB00193E50 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WorldWind;
+			productName = WorldWind;
+			productReference = 0B9813B9165FF5FB00193E50 /* libWorldWind.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		0B9813C9165FF5FC00193E50 /* WorldWindTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B9813E1165FF5FC00193E50 /* Build configuration list for PBXNativeTarget "WorldWindTests" */;
+			buildPhases = (
+				0B9813C5165FF5FC00193E50 /* Sources */,
+				0B9813C6165FF5FC00193E50 /* Frameworks */,
+				0B9813C7165FF5FC00193E50 /* Resources */,
+				0B9813C8165FF5FC00193E50 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0B9813D1165FF5FC00193E50 /* PBXTargetDependency */,
+			);
+			name = WorldWindTests;
+			productName = WorldWindTests;
+			productReference = 0B9813CA165FF5FC00193E50 /* WorldWindTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0B9813B0165FF5FB00193E50 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "NASA World Wind";
+			};
+			buildConfigurationList = 0B9813B3165FF5FB00193E50 /* Build configuration list for PBXProject "WorldWind" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0B9813AE165FF5FB00193E50;
+			productRefGroup = 0B9813BA165FF5FB00193E50 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0B9813B8165FF5FB00193E50 /* WorldWind */,
+				0B9813C9165FF5FC00193E50 /* WorldWindTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0B9813C7165FF5FC00193E50 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B9813D8165FF5FC00193E50 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0B9813C8165FF5FC00193E50 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0B9813B5165FF5FB00193E50 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B9813C4165FF5FC00193E50 /* WorldWind.m in Sources */,
+				0B9813E7165FF65400193E50 /* Simple.frag in Sources */,
+				0B9813E8165FF65400193E50 /* Simple.vert in Sources */,
+				0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */,
+				0B9813F7165FF84F00193E50 /* WorldWindView.m in Sources */,
+				0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */,
+				0B9814431660391E00193E50 /* WWAngle.m in Sources */,
+				0B98144916607E2300193E50 /* WWLocation.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0B9813C5165FF5FC00193E50 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B9813DB165FF5FC00193E50 /* WorldWindTests.m in Sources */,
+				0B9813E9165FF67000193E50 /* Simple.frag in Sources */,
+				0B9813EA165FF67400193E50 /* Simple.vert in Sources */,
+				0B9813F4165FF77700193E50 /* WWSceneController.m in Sources */,
+				0B9813F8165FF84F00193E50 /* WorldWindView.m in Sources */,
+				0B981431165FFDF200193E50 /* WorldWindConstants.m in Sources */,
+				0B9814441660391E00193E50 /* WWAngle.m in Sources */,
+				0B98144A16607E2300193E50 /* WWLocation.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0B9813D1165FF5FC00193E50 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B9813B8165FF5FB00193E50 /* WorldWind */;
+			targetProxy = 0B9813D0165FF5FC00193E50 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		0B9813D6165FF5FC00193E50 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0B9813D7165FF5FC00193E50 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0B9813DC165FF5FC00193E50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		0B9813DD165FF5FC00193E50 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0B9813DF165FF5FC00193E50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/WorldWind.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WorldWind/WorldWind-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		0B9813E0165FF5FC00193E50 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/WorldWind.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WorldWind/WorldWind-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		0B9813E2165FF5FC00193E50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WorldWind/WorldWind-Prefix.pch";
+				INFOPLIST_FILE = "WorldWindTests/WorldWindTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		0B9813E3165FF5FC00193E50 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WorldWind/WorldWind-Prefix.pch";
+				INFOPLIST_FILE = "WorldWindTests/WorldWindTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B9813B3165FF5FB00193E50 /* Build configuration list for PBXProject "WorldWind" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B9813DC165FF5FC00193E50 /* Debug */,
+				0B9813DD165FF5FC00193E50 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0B9813DE165FF5FC00193E50 /* Build configuration list for PBXNativeTarget "WorldWind" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B9813DF165FF5FC00193E50 /* Debug */,
+				0B9813E0165FF5FC00193E50 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0B9813E1165FF5FC00193E50 /* Build configuration list for PBXNativeTarget "WorldWindTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B9813E2165FF5FC00193E50 /* Debug */,
+				0B9813E3165FF5FC00193E50 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0B9813B0165FF5FB00193E50 /* Project object */;
+}
