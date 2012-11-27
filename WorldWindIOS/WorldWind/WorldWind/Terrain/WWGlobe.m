@@ -5,8 +5,8 @@
  @version $Id$
  */
 
-#import "WorldWind/WorldWind.h"
+#import "WWGlobe.h"
 
-@implementation WorldWind
+@implementation WWGlobe
 
 @end

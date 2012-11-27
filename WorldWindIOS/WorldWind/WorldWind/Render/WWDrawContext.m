@@ -5,8 +5,13 @@
  @version $Id$
  */
 
-#import "WorldWind/WorldWind.h"
+#import "WWDrawContext.h"
 
-@implementation WorldWind
+@implementation WWDrawContext
+
+- (void) reset
+{
+    _timestamp = [NSDate date];
+}
 
 @end

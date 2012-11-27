@@ -5,8 +5,15 @@
  @version $Id$
  */
 
-#import "WorldWind/WorldWind.h"
+#import <Foundation/Foundation.h>
 
-@implementation WorldWind
+@class WWGlobe;
+
+@interface WWDrawContext : NSObject
+
+@property (readonly) NSDate* timestamp;
+@property WWGlobe* globe;
+
+- (void) reset;
 
 @end

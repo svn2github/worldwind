@@ -1,9 +1,8 @@
 /*
  Copyright (C) 2013 United States Government as represented by the Administrator of the
- National Aeronautics and Space Administration.
- All Rights Reserved.
+ National Aeronautics and Space Administration. All Rights Reserved.
  
- * @version $Id$
+ @version $Id$
  */
 
 #import "WorldWind/Render/WWSceneController.h"
@@ -14,21 +13,99 @@
 #import "WorldWind/Shaders/Simple.frag"
 
 @implementation WWSceneController
+
+- (WWSceneController*)init
+{
+    self->_globe = [[WWGlobe alloc] init];
+    self->drawContext = [[WWDrawContext alloc] init];
+    
+    return self;
+}
+
+- (void) dispose
+{
+    if (self->program != 0)
+    {
+        glDeleteProgram(self->program);
+        self->program = 0;
+    }
+}
+
+- (void) handleMemoryWarning
 {
 }
 
 - (void) render:(CGRect) bounds
 {
+    if (_globe == nil)
+    {
+        WWLOG_AND_THROW(NSInternalInconsistencyException, @"No globe has been specified to the scene controller")
+    }
+    
     @try
     {
-        glViewport(0, 0, CGRectGetWidth(bounds), CGRectGetHeight(bounds));
-        
-        [self testRender];
+        [self resetDrawContext];
+        [self drawFrame:bounds];
     }
     @catch (NSException *exception)
     {
         WWLogE(@"Rendering Scene", exception);
     }
+}
+
+- (void) resetDrawContext
+{
+    [self->drawContext reset];
+    [self->drawContext setGlobe:_globe];
+}
+
+- (void) drawFrame:(CGRect) bounds
+{
+    @try {
+        [self beginFrame:bounds];
+        [self clearFrame];
+        [self testRender];
+    }
+    @finally {
+        [self endFrame];
+    }
+}
+
+- (void) beginFrame:(CGRect) bounds
+{
+    glViewport(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+    
+    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LEQUAL);
+}
+
+- (void) endFrame
+{
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_ONE, GL_ZERO);
+    glDepthFunc(GL_LESS);
+    glClearColor(0, 0, 0, 0);
+}
+
+- (void) clearFrame
+{
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+- (void) applyView
+{
+    
+}
+
+- (void) createTerrain
+{
+    
 }
 
 typedef struct Vertex
@@ -55,9 +132,6 @@ struct Vertex Vertices[] =
     
     [self applyOrtho:2 maxY:3];
     
-    glClearColor(0.5f, 0.5, 0.5f, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
     [self applyRotation:0];
     
     GLuint positionSlot = glGetAttribLocation(self->program, "Position");
@@ -78,19 +152,6 @@ struct Vertex Vertices[] =
     
     glDisableVertexAttribArray(positionSlot);
     glDisableVertexAttribArray(colorSlot);
-}
-
-- (void) handleMemoryWarning
-{
-}
-
-- (void) dispose
-{
-    if (self->program != 0)
-    {
-        glDeleteProgram(self->program);
-        self->program = 0;
-    }
 }
 
 - (void) applyRotation:(float) degrees

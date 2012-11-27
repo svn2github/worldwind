@@ -5,8 +5,8 @@
  @version $Id$
  */
 
-#import "WorldWind/WorldWind.h"
+#import <Foundation/Foundation.h>
 
-@implementation WorldWind
+@interface WWGlobe : NSObject
 
 @end

@@ -1,9 +1,8 @@
 /*
  Copyright (C) 2013 United States Government as represented by the Administrator of the
- National Aeronautics and Space Administration.
- All Rights Reserved.
+ National Aeronautics and Space Administration. All Rights Reserved.
  
- * @version $Id$
+ @version $Id$
  */
 
 #define WWLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
