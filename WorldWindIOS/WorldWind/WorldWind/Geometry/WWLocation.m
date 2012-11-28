@@ -21,7 +21,7 @@ WWLocation const * WWLOCATION_ZERO;
 
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
 {
-    self = [super self];
+    self = [super init];
     
     _latitude = latitude;
     _longitude = latitude;

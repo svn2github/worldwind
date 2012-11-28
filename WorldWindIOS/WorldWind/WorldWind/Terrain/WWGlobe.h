@@ -7,6 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class WWTerrainTileList;
+
 @interface WWGlobe : NSObject
+
+- (WWTerrainTileList*) tessellate;
 
 @end

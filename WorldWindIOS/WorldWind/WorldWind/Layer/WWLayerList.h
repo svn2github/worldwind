@@ -5,13 +5,13 @@
  @version $Id$
  */
 
-#import "WorldWind/Terrain/WWGlobe.h"
+#import <Foundation/Foundation.h>
 
-@implementation WWGlobe
+@class WWLayer;
 
-- (WWTerrainTileList*) tessellate
-{
-    return nil; // TODO
-}
+@interface WWLayerList : NSObject
+
+- (NSUInteger) count;
+- (WWLayer*) layerAtIndex:(NSUInteger)index;
 
 @end

@@ -6,6 +6,12 @@
  */
 
 #import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Terrain/WWGLobe.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWInd/Layer/WWLayer.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/WWLog.h"
 
 // STRINGIFY is used in the shader files.
 #define STRINGIFY(A) #A
@@ -16,7 +22,11 @@
 
 - (WWSceneController*)init
 {
-    self->_globe = [[WWGlobe alloc] init];
+    self = [super init];
+
+    _globe = [[WWGlobe alloc] init];
+    _layers = [[WWLayerList alloc] init];
+    
     self->drawContext = [[WWDrawContext alloc] init];
     
     return self;
@@ -37,11 +47,6 @@
 
 - (void) render:(CGRect) bounds
 {
-    if (_globe == nil)
-    {
-        WWLOG_AND_THROW(NSInternalInconsistencyException, @"No globe has been specified to the scene controller")
-    }
-    
     @try
     {
         [self resetDrawContext];
@@ -57,14 +62,17 @@
 {
     [self->drawContext reset];
     [self->drawContext setGlobe:_globe];
+    [self->drawContext setLayers:_layers];
 }
 
 - (void) drawFrame:(CGRect) bounds
 {
     @try {
         [self beginFrame:bounds];
+        [self applyView];
+        [self createTerrain];
         [self clearFrame];
-        [self testRender];
+        [self draw];
     }
     @finally {
         [self endFrame];
@@ -100,12 +108,44 @@
 
 - (void) applyView
 {
-    
 }
 
 - (void) createTerrain
 {
+    WWTerrainTileList* surfaceGeometry = [_globe tessellate];
     
+    // If there's no surface geometry, just log a warning and keep going. Some layers may have meaning without it.
+    if (surfaceGeometry == nil)
+    {
+        WWLog(@"No surface geometry");
+    }
+    
+    [self->drawContext setSurfaceGeometry:surfaceGeometry];
+    [self->drawContext setVisibleSector:surfaceGeometry.sector];
+}
+
+- (void) draw
+{
+    [self drawLayers];
+    [self drawOrderedRenderables];
+}
+
+- (void) drawLayers
+{
+    int nLayers = _layers.count;
+    for (int i = 0; i < nLayers; i++)
+    {
+        WWLayer* layer = [_layers layerAtIndex:i];
+        if (layer != nil)
+        {
+            [layer render];
+        }
+    }
+}
+
+- (void) drawOrderedRenderables
+{
+    [self testRender];
 }
 
 typedef struct Vertex

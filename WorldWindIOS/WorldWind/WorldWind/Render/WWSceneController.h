@@ -8,9 +8,11 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES2/gl.h>
-#import "WorldWind/WorldWind.h"
-#import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Render/WWDrawContext.h"
+//#import "WorldWind/WorldWind.h"
+
+@class WWGlobe;
+@class WWLayerList;
+@class WWDrawContext;
 
 
 @interface WWSceneController : NSObject
@@ -20,7 +22,8 @@
     WWDrawContext *drawContext;
 }
 
-@property (readonly, nonatomic) WWGlobe* globe;
+@property (readonly) WWGlobe* globe;
+@property (readonly) WWLayerList* layers;
 
 - (WWSceneController*)init;
 - (void) render:(CGRect) bounds;
@@ -32,4 +35,7 @@
 - (void) clearFrame;
 - (void) applyView;
 - (void) createTerrain;
+- (void) draw;
+- (void) drawLayers;
+- (void) drawOrderedRenderables;
 @end

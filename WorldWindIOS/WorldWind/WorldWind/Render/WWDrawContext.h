@@ -8,11 +8,17 @@
 #import <Foundation/Foundation.h>
 
 @class WWGlobe;
+@class WWLayerList;
+@class WWTerrainTileList;
+@class WWSector;
 
 @interface WWDrawContext : NSObject
 
 @property (readonly) NSDate* timestamp;
 @property WWGlobe* globe;
+@property WWLayerList* layers;
+@property WWTerrainTileList* surfaceGeometry;
+@property WWSector* visibleSector;
 
 - (void) reset;
 

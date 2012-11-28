@@ -23,7 +23,7 @@
                             minLongitude:(double)minLongitude
                             maxLongitude:(double)maxLongitude
 {
-    self = [super self];
+    self = [super init];
     
     _minLatitude = minLatitude;
     _maxLatitude = maxLatitude;

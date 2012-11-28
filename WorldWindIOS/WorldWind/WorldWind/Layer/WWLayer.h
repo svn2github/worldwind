@@ -5,13 +5,10 @@
  @version $Id$
  */
 
-#import "WorldWind/Terrain/WWGlobe.h"
+#import <Foundation/Foundation.h>
 
-@implementation WWGlobe
+@interface WWLayer : NSObject
 
-- (WWTerrainTileList*) tessellate
-{
-    return nil; // TODO
-}
+- (void) render;
 
 @end

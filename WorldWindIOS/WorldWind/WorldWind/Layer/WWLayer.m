@@ -5,13 +5,13 @@
  @version $Id$
  */
 
-#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Layer/WWLayer.h"
 
-@implementation WWGlobe
+@implementation WWLayer
 
-- (WWTerrainTileList*) tessellate
+- (void) render
 {
-    return nil; // TODO
+    
 }
 
 @end

@@ -23,7 +23,7 @@
 
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z
 {
-    self = [super self];
+    self = [super init];
     
     _x = x;
     _y = y;
@@ -35,7 +35,7 @@
 
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z w:(double)w
 {
-    self = [super self];
+    self = [super init];
     
     _x = x;
     _y = y;
