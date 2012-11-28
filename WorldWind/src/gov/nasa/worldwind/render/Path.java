@@ -2085,7 +2085,7 @@ public class Path extends AbstractShape
                 pos = new Position(latLon, (1 - s) * posA.getElevation() + s * posB.getElevation());
                 color = (colorA != null && colorB != null) ? WWUtil.interpolateColor(s, colorA, colorB) : null;
             }
-            else if (this.pathType == AVKey.RHUMB_LINE) // LOXODROME
+            else if (this.pathType == AVKey.RHUMB_LINE || this.pathType == AVKey.LOXODROME)
             {
                 if (segmentAzimuth == null)
                 {
@@ -2136,7 +2136,7 @@ public class Path extends AbstractShape
         String pathType = this.getPathType();
         if (pathType == AVKey.LINEAR)
             ang = LatLon.linearDistance(llA, llB);
-        else if (pathType == AVKey.RHUMB_LINE)
+        else if (pathType == AVKey.RHUMB_LINE || pathType == AVKey.LOXODROME)
             ang = LatLon.rhumbDistance(llA, llB);
         else // Great circle
             ang = LatLon.greatCircleDistance(llA, llB);

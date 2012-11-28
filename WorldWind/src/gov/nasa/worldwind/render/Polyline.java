@@ -208,7 +208,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         }
 
         this.setPathType(pathType.equals(AVKey.GREAT_CIRCLE) ? GREAT_CIRCLE
-            : pathType.equals(AVKey.RHUMB_LINE) ? RHUMB_LINE : LINEAR);
+            : pathType.equals(AVKey.RHUMB_LINE) || pathType.equals(AVKey.LOXODROME) ? RHUMB_LINE : LINEAR);
     }
 
     public boolean isFollowTerrain()
@@ -959,7 +959,8 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                 LatLon latLon = LatLon.linearEndPosition(posA, segmentAzimuth, distance);
                 pos = new Position(latLon, (1 - s) * posA.getElevation() + s * posB.getElevation());
             }
-            else if (this.pathType == RHUMB_LINE) // or LOXODROME
+            else if (this.pathType
+                == RHUMB_LINE) // or LOXODROME (note that loxodrome is translated to RHUMB_LINE in setPathType)
             {
                 if (segmentAzimuth == null)
                 {
