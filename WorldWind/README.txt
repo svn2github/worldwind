@@ -102,7 +102,6 @@ New features and improvements in World Wind Java SDK 1.5.0
 - Modified MIL-STD-2525 TacticalGraphicFactory to enable application configuration of MIL-STD-2525 implementation classes.
 - Modified MIL-STD-2525 TacticalGraphicSymbol to enable subclasses to change and extend the symbol layout.
 - Modified SurfaceText to add control over the text size in meters.
-- Simplified AbstractShape's protected lighting interface. Multiple versions of mustApplyLighting and mustCreateNormals have been consolidated.
 
 
 New features and improvements in World Wind Java SDK 1.4.0 - July 20, 2012
