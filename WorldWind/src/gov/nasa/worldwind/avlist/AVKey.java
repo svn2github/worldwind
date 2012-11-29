@@ -267,7 +267,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
 
     final String OFFLINE_MODE = "gov.nasa.worldwind.avkey.OfflineMode";
     final String OPACITY = "gov.nasa.worldwind.avkey.Opacity";
-    final String OSM_LAYER_CACHE_SIZE = "gov.nasa.worldwind.avkey.OpenStreetMapLayerCacheSize";
     /**
      * Indicates an object's position in a series. When used as a key, the corresponding value must be an {@link
      * Integer} object indicating the ordinal.
@@ -279,9 +278,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
      */
     final String ORDINAL_LIST = "gov.nasa.worldwind.avkey.OrdinalList";
     final String ORIGIN = "gov.nasa.worldwind.avkey.Origin";
-
-    final String OSM_LABEL_INTERVAL = "gov.nasa.worldwind.avkey.OSMLabelInterval";
-    final String OSM_LANE_WIDTH = "gov.nasa.worldwind.avkey.OSMLaneWidth";
 
     final String OVERVIEW_FILE_NAME = "gov.nasa.worldwind.avkey.Overview.FileName";
 
