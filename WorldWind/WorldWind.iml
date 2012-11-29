@@ -15,7 +15,6 @@
     <orderEntry type="library" name="junit" level="project" />
     <orderEntry type="library" name="jsobjectplugin" level="project" />
     <orderEntry type="library" name="gdal" level="project" />
-    <orderEntry type="library" name="osmosis" level="project" />
   </component>
 </module>
 

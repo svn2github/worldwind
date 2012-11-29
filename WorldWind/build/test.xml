@@ -25,7 +25,6 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
-                <pathelement location="osmparser.jar"/>
                 <pathelement location="build/lib/junit-4.5.jar"/>
                 <pathelement location="${java.home}/lib/plugin.jar"/>
             </classpath>

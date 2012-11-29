@@ -56,7 +56,6 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
-                <pathelement location="osmparser.jar"/>
                 <pathelement location="${java.home}/lib/plugin.jar"/>
             </classpath>
         </javac>
@@ -86,7 +85,6 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
-                <pathelement location="osmparser.jar"/>
                 <pathelement location="${java.home}/lib/plugin.jar"/>
             </classpath>
             <link href="http://download.oracle.com/javase/6/docs/api/"/>
@@ -96,8 +94,8 @@
 
     <!-- Builds the World Wind SDK core Jar file 'worldwind.jar'. Includes all World Wind core class files, property
          files, configuration files, and image files. Excludes files added by Subversion, and files added by the
-         operating system. The resultant Jar file is dependent on jogl.jar, gluegen-rt.jar, gdal.jar, and has these Jar
-         files added to its class-path. -->
+         operating system. The resultant Jar file is dependent on jogl.jar, gluegen-rt.jar, and gdal.jar, and has these
+         Jar files added to its class-path. -->
     <target name="worldwind.jarfile" depends="compile"
             description="Builds the World Wind core JAR file 'worldwind.jar'.">
         <jar jarfile="${basedir}/${worldwind.jarfile}">
@@ -130,13 +128,13 @@
 
     <!-- Builds the World Wind SDK extensions Jar file 'worldwindx.jar'. Includes all World Wind extension class files,
          configuration files, image files, and data resource files. Excludes files added by Subversion and files added
-         by the operating system. The resultant Jar file is dependent on the the World Wind core Jar file and
-         osmparser.jar, and has these Jar files added to its class-path. -->
+         by the operating system. The resultant Jar file is dependent on the the World Wind core Jar file, and has that
+         Jar file added to its class-path. -->
     <target name="worldwind.extensions.jarfile" depends="compile"
             description="Builds the World Wind extensions JAR file 'worldwindx.jar'.">
         <jar jarfile="${basedir}/${worldwind.extensions.jarfile}">
             <manifest>
-                <attribute name="Class-Path" value="${worldwind.jarfile} osmparser.jar"/>
+                <attribute name="Class-Path" value="${worldwind.jarfile}"/>
                 <attribute name="Main-Class" value="${worldwind.extensions.jarfile.mainclass}"/>
             </manifest>
             <!-- Include class files for the World Wind extensions package gov.nasa.worldwindx. -->
