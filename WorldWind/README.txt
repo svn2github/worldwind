@@ -82,11 +82,15 @@ New features and improvements in World Wind Java SDK 1.5.0
 - Added support for HighResolutionTerrain line intersection.
 - Added an OpenStreetMap layer provided by a NASA hosted MapServer instance.
 - Added delegate owner support to ScreenImage.
+- Added a section to the Javadoc overview outlining the behavior of World Wind path types.
+- Added static utility methods for equirectangular interpolation to LatLon.
 - Added the PersistSessionState example, which demonstrates how to persist a session's layer and view state.
 - Removed erroneous inclusion of the BGCOLOR parameter in WMS elevation requests. This parameter causes GeoServer to return an exception.
 - Increased the texture cache size from 300 MB to 500 MB.
 - Improved shutdown behavior by simplifying automatic retrieval of WMS capabilities documents in WMSTiledImageLayer and WMSBasicElevationModel.
 - Improved the performance of SectorGeometryList.getSurfacePoint.
+- Repaired Path and Polyline's handling of the LINEAR path type.
+- Repaired Path and Polyline's handling of the LOXODROME alias for RHUMB_LINE path types.
 - Repaired an OpenGL state leak of GL_ELEMENT_ARRAY_BUFFER binding in terrain rendering.
 - Repaired an OpenGL state leak of the normal pointer binding in COLLADA models, which caused a JVM crash on certain machines.
 - Repaired BasicShapeAttributes' handling of the enableLighting attribute in its restorable state.
