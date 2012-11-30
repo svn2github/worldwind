@@ -81,7 +81,7 @@
 
 - (void) beginFrame:(CGRect) bounds
 {
-    glViewport(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+    glViewport((int) bounds.origin.x, (int) bounds.origin.y, (int) bounds.size.width, (int) bounds.size.height);
     
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
@@ -133,7 +133,7 @@
 - (void) drawLayers
 {
     int nLayers = _layers.count;
-    for (int i = 0; i < nLayers; i++)
+    for (NSUInteger i = 0; i < nLayers; i++)
     {
         WWLayer* layer = [_layers layerAtIndex:i];
         if (layer != nil)
@@ -174,8 +174,8 @@ struct Vertex Vertices[] =
     
     [self applyRotation:0];
     
-    GLuint positionSlot = glGetAttribLocation(self->program, "Position");
-    GLuint colorSlot = glGetAttribLocation(self->program, "SourceColor");
+    GLuint positionSlot = (GLuint) glGetAttribLocation(self->program, "Position");
+    GLuint colorSlot = (GLuint) glGetAttribLocation(self->program, "SourceColor");
     
     glEnableVertexAttribArray(positionSlot);
     glEnableVertexAttribArray(colorSlot);
