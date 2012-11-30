@@ -156,7 +156,7 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
     // TODO: consolidate common code in WMSTiledImageLayer.URLBuilder and WMSBasicElevationModel.URLBuilder
     public static class URLBuilder implements TileUrlBuilder
     {
-        private static final String MAX_VERSION = "1.3.0";
+        private static final String MAX_VERSION = "1.3";
 
         private final String layerNames;
         private final String styleNames;
