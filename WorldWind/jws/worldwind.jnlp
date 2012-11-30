@@ -28,7 +28,7 @@
         <jar href="http://worldwind.arc.nasa.gov/java/gdal/webstart/gdal.jar"/>
         <!-- Add the JOGL webstart JNLP file as an extension of this JNLP file. World Wind depends on the JOGL library
              to communicate with the platform native OpenGL libraries. -->
-        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jnlp"/>
+        <extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
     </resources>
 
     <!-- Include the WebView native library JAR archive for all Mac OS X platforms. The WebView libraries are required by

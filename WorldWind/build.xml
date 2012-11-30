@@ -88,7 +88,7 @@
                 <pathelement location="${java.home}/lib/plugin.jar"/>
             </classpath>
             <link href="http://download.oracle.com/javase/6/docs/api/"/>
-            <link href="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/docs/"/>
+            <link href="http://worldwind.arc.nasa.gov/java/jogl/docs/"/>
         </javadoc>
     </target>
 

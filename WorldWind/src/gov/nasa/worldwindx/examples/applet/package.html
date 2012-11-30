@@ -133,7 +133,7 @@ Launching an applet with the Next Generation Plugin requires a .jnlp file. Here'
             &lt;property name="sun.java2d.noddraw" value="true"/>
             &lt;jar href="WWJApplet.jar" main="true"/>
             &lt;jar href="worldwind.jar"/>
-            &lt;extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jnlp"/>
+            &lt;extension name="jogl" href="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp"/>
          &lt;/resources>
          &lt;!-- Width and heigth are overwritten by the surrounding web page -->
          &lt;applet-desc
@@ -167,8 +167,8 @@ to use the following HTML code instead:</p>
       width=600
       height=400
       archive="http://download.java.net/media/applet-launcher/applet-launcher.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/gluegen-rt.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt.jar,
                http://my.web.server.com/WWJApplet/worldwind.jar">
                http://my.web.server.com/WWJApplet/myapplet.jar">
    <b>&lt;param name="jnlp_href" value="WWJApplet.jnlp"></b> &lt;!-- Picked up by new plugin -->
@@ -179,7 +179,7 @@ to use the following HTML code instead:</p>
    &lt;param name="progressbar" value="true">
    &lt;param name="jnlpNumExtensions" value="1">
    &lt;param name="jnlpExtension1"
-          value="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jnlp">
+          value="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp">
  &lt;/applet>
 </pre></blockquote>
 
@@ -207,8 +207,8 @@ use of the noddraw.check parameter to disable the use of DirectDraw since using 
       width=600
       height=400
       archive="http://download.java.net/media/applet-launcher/applet-launcher.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/gluegen-rt.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt.jar,
                http://my.web.server.com/WWJApplet/worldwind.jar">
    &lt;param name="codebase_lookup" value="false">
    &lt;param name="subapplet.classname" value="gov.nasa.worldwind.examples.applet.WWJApplet">
@@ -217,7 +217,7 @@ use of the noddraw.check parameter to disable the use of DirectDraw since using 
    &lt;param name="progressbar" value="true">
    &lt;param name="jnlpNumExtensions" value="1">
    &lt;param name="jnlpExtension1"
-          value="http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jnlp">
+          value="http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jnlp">
  &lt;/applet>
 
 </pre></blockquote>
@@ -230,8 +230,8 @@ and specify the proper path in the subapplet.classname parameter:
       width=600
       height=400
       archive="http://download.java.net/media/applet-launcher/applet-launcher.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/jogl.jar,
-               http://worldwind.arc.nasa.gov/java/jogl/1.1.1/webstart/gluegen-rt.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl.jar,
+               http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt.jar,
                http://my.web.server.com/WWJApplet/worldwind.jar,
                <b>http://my.web.server.com/WWJApplet/myapplet.jar</b>">
    &lt;param name="codebase_lookup" value="false">
