@@ -5,12 +5,7 @@
  @version $Id$
  */
 
-
 #import "WorldWindView.h"
-
-@interface WorldWindView ()
-- (void) tearDownGL;
-@end
 
 @implementation WorldWindView
 
@@ -31,7 +26,8 @@
         
         glGenRenderbuffers(1, &self->_depthBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, self->_depthBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, CGRectGetWidth(frame), CGRectGetHeight(frame));
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES,
+                (GLsizei) CGRectGetWidth(frame), (GLsizei) CGRectGetHeight(frame));
         
         glGenRenderbuffers(1, &self->_renderBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, self->_renderBuffer);

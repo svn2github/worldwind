@@ -15,6 +15,7 @@
 
 @property (readonly) WWTessellator* tessellator;
 
+- (WWGlobe*) init;
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
 
 @end

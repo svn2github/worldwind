@@ -5,11 +5,9 @@
  @version $Id$
  */
 
-
 #import <WorldWind/WorldWind.h>
 #import <WorldWind/Render/WWSceneController.h>
 #import <UIKit/UIKit.h>
-
 
 @interface WorldWindView : UIView
 
@@ -20,5 +18,6 @@
 @property (readonly, nonatomic, strong) WWSceneController* sceneController;
 
 - (void) drawView;
+- (void) tearDownGL;
 
 @end

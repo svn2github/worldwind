@@ -23,7 +23,7 @@
 
 - (WWTerrainTileList*) initWithTessellator:(WWTessellator*)tessellator;
 - (void) addTile:(WWTerrainTile*)tile;
-- (WWTerrainTile*) objectAtIndex:(int)index;
+- (WWTerrainTile*) objectAtIndex:(NSUInteger)index;
 - (NSUInteger) count;
 - (void) beginRendering:(WWDrawContext*)dc;
 - (void) endRendering:(WWDrawContext*)dc;

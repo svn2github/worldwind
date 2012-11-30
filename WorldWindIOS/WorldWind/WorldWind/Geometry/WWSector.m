@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "WWSector.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
 
 WWSector* WWSECTOR_ZERO;

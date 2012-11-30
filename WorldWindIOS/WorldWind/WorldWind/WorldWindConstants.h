@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-extern NSString const * A_WW_CONSTANT;
+extern NSString * const A_WW_CONSTANT;
 
 @interface WorldWindConstants : NSObject
 

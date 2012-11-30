@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWSector; // forward delcaration for use in externs below
+@class WWSector; // forward declaration for use in externs below
 
 extern WWSector* WWSECTOR_ZERO;
 extern WWSector* WWSECTOR_FULL_SPHERE;

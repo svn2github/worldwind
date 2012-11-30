@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLocation; // forward delcaration for use in externs below
+@class WWLocation; // forward declaration for use in externs below
 
 extern WWLocation* WWLOCATION_ZERO;
 

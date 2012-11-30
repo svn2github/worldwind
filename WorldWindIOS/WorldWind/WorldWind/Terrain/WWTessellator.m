@@ -66,8 +66,8 @@
 {
     WWTerrainTileList* tiles = [[WWTerrainTileList alloc] initWithTessellator:self];
     
-    int count = [self->topLevelTiles count];
-    for (int i = 0; i < count; i++)
+    NSUInteger count = [self->topLevelTiles count];
+    for (NSUInteger i = 0; i < count; i++)
     {
         [tiles addTile:[self->topLevelTiles objectAtIndex:i]];
     }

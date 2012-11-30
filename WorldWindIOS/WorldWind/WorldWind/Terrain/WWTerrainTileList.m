@@ -27,10 +27,15 @@
 
 - (void) addTile:(WWTerrainTile *)tile
 {
+    if (tile == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
+    }
+
     [self->tiles addObject:tile];
 }
 
-- (WWTerrainTile*) objectAtIndex:(int)index
+- (WWTerrainTile*) objectAtIndex:(NSUInteger)index
 {
     return [self->tiles objectAtIndex:index];
 }

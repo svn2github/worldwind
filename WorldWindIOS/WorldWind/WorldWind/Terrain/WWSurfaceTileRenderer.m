@@ -6,12 +6,17 @@
  */
 
 #import "WWSurfaceTileRenderer.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWSurfaceTileRenderer
 
 - (void) renderTiles:(WWDrawContext *)dc
 {
-    
+    if (dc == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw contexts is nil")
+    }
+
 }
 
 @end

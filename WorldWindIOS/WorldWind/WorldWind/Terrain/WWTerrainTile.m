@@ -16,6 +16,8 @@
                            column:(int)column
                       tessellator:(WWTessellator *)tessellator
 {
+    // superclass checks sector, level, row and column arguments.
+
     if (tessellator == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tessellator is nil")

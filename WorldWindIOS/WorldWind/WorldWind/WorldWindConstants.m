@@ -5,9 +5,9 @@
  @version $Id$
  */
 
-#import "WorldWindConstants.h"
+#import "WorldWind/WorldWindConstants.h"
 
-NSString const * A_WW_CONSTANT = @"AWWConstant";
+NSString * const A_WW_CONSTANT = @"AWWConstant";
 
 @implementation WorldWindConstants
 

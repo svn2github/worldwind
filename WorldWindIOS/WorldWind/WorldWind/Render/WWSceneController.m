@@ -28,7 +28,7 @@
     _layers = [[WWLayerList alloc] init];
     
     self->drawContext = [[WWDrawContext alloc] init];
-    
+
     return self;
 }
 
@@ -61,8 +61,8 @@
 - (void) resetDrawContext
 {
     [self->drawContext reset];
-    [self->drawContext setGlobe:_globe];
     [self->drawContext setLayers:_layers];
+    [self->drawContext setGlobe:[self globe]];
 }
 
 - (void) drawFrame:(CGRect) bounds
@@ -113,7 +113,7 @@
 - (void) createTerrain
 {
     WWTerrainTileList* surfaceGeometry = [_globe tessellate:self->drawContext];
-    
+
     // If there's no surface geometry, just log a warning and keep going. Some layers may have meaning without it.
     if (surfaceGeometry == nil || [surfaceGeometry count] == 0)
     {

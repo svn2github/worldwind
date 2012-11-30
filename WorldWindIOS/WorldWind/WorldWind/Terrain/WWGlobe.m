@@ -7,16 +7,26 @@
 
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWGlobe
 
+- (WWGlobe *) init
+{
+    self = [super init];
+
+    _tessellator = [[WWTessellator alloc] initWithGlobe:self];
+
+    return self;
+}
+
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
 {
-    if (_tessellator == nil)
+    if (dc == nil)
     {
-        _tessellator = [[WWTessellator alloc] initWithGlobe:self];
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw contexts is nil")
     }
-    
+
     return [_tessellator tessellate:dc];
 }
 
