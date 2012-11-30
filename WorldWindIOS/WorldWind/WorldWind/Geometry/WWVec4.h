@@ -9,11 +9,11 @@
 
 @class WWVec4; // forward delcaration for use in externs below
 
-extern WWVec4 const * WWVEC4_ZERO;
-extern WWVec4 const * WWVEC4_ONE;
-extern WWVec4 const * WWVEC4_UNIT_X;
-extern WWVec4 const * WWVEC4_UNIT_Y;
-extern WWVec4 const * WWVEC4_UNIT_Z;
+extern WWVec4* WWVEC4_ZERO;
+extern WWVec4* WWVEC4_ONE;
+extern WWVec4* WWVEC4_UNIT_X;
+extern WWVec4* WWVEC4_UNIT_Y;
+extern WWVec4* WWVEC4_UNIT_Z;
 
 @interface WWVec4 : NSObject <NSCopying>
 

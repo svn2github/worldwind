@@ -6,12 +6,18 @@
  */
 
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Terrain/WWTessellator.h"
 
 @implementation WWGlobe
 
-- (WWTerrainTileList*) tessellate
+- (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
 {
-    return nil; // TODO
+    if (_tessellator == nil)
+    {
+        _tessellator = [[WWTessellator alloc] initWithGlobe:self];
+    }
+    
+    return [_tessellator tessellate:dc];
 }
 
 @end

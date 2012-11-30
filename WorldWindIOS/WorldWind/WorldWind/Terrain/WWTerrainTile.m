@@ -11,41 +11,36 @@
 @implementation WWTerrainTile
 
 - (WWTerrainTile*) initWithSector:(WWSector *)sector
-                            level:(WWLevel *)level
+                            level:(int)level
                               row:(int)row
                            column:(int)column
                       tessellator:(WWTessellator *)tessellator
 {
-    if (sector == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
-    }
-    
-    if (level == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Level is nil")
-    }
-    
     if (tessellator == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tessellator is nil")
     }
     
-    if (row < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Row is less than 0")
-    }
-    
-    if (column < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Column is less than 0")
-    }
-
     self = [super initWithSector:sector level:level row:row column:column];
     
     _tessellator = tessellator;
     
     return self;
+}
+
+- (void) beginRendering:(WWDrawContext *)dc
+{
+    
+}
+
+- (void) endRendering:(WWDrawContext *)dc
+{
+    
+}
+
+- (void) render:(WWDrawContext *)dc
+{
+    
 }
 
 @end

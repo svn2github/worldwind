@@ -8,6 +8,12 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
 
+WWVec4* WWVEC4_ZERO;
+WWVec4* WWVEC4_ONE;
+WWVec4* WWVEC4_UNIT_X;
+WWVec4* WWVEC4_UNIT_Y;
+WWVec4* WWVEC4_UNIT_Z;
+
 @implementation WWVec4
 
 +(void)initialize

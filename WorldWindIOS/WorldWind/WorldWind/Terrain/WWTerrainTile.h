@@ -9,15 +9,19 @@
 #import "WorldWind/Util/WWTile.h"
 
 @class WWTessellator;
+@class WWDrawContext;
 
 @interface WWTerrainTile : WWTile
 
 @property (readonly) WWTessellator* tessellator;
 
 - (WWTerrainTile*) initWithSector:(WWSector*)sector
-                            level:(WWLevel*)level
+                            level:(int)level
                               row:(int)row
                            column:(int)column
                       tessellator:(WWTessellator*)tessellator;
+- (void) beginRendering:(WWDrawContext*)dc;
+- (void) endRendering:(WWDrawContext*)dc;
+- (void) render:(WWDrawContext*)dc;
 
 @end

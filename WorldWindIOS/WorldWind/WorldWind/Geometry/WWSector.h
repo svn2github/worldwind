@@ -9,8 +9,8 @@
 
 @class WWSector; // forward delcaration for use in externs below
 
-extern WWSector const * WWSECTOR_ZERO;
-extern WWSector const * WWSECTOR_FULL_SPHERE;
+extern WWSector* WWSECTOR_ZERO;
+extern WWSector* WWSECTOR_FULL_SPHERE;
 
 @interface WWSector : NSObject <NSCopying>
 

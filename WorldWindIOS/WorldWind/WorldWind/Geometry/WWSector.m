@@ -8,6 +8,9 @@
 #import "WWSector.h"
 #import "WorldWind/WWLog.h"
 
+WWSector* WWSECTOR_ZERO;
+WWSector* WWSECTOR_FULL_SPHERE;
+
 @implementation WWSector
 
 +(void)initialize

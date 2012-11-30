@@ -9,7 +9,7 @@
 
 @class WWLocation; // forward delcaration for use in externs below
 
-extern WWLocation const * WWLOCATION_ZERO;
+extern WWLocation* WWLOCATION_ZERO;
 
 @interface WWLocation : NSObject <NSCopying>
 

@@ -7,14 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWTessellator;
-@class WWTerrainTileList;
 @class WWDrawContext;
+@class WWTerrainTile;
+@class WWTerrainTileList;
 
-@interface WWGlobe : NSObject
+@interface WWSurfaceTileRenderer : NSObject
 
-@property (readonly) WWTessellator* tessellator;
-
-- (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
+- (void) renderTiles:(WWDrawContext*)dc;
 
 @end

@@ -11,16 +11,16 @@
 
 @implementation WWTile
 
-- (WWTile*) initWithSector:(WWSector *)sector level:(WWLevel*)level row:(int)row column:(int)column
+- (WWTile*) initWithSector:(WWSector *)sector level:(int)level row:(int)row column:(int)column
 {
     if (sector == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile sector is nil")
     }
     
-    if (level == nil)
+    if (level < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile level is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile level is less than zero")
     }
     
     if (row < 0)

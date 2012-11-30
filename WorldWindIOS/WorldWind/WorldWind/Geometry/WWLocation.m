@@ -8,7 +8,7 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/WWLog.h"
 
-WWLocation const * WWLOCATION_ZERO;
+WWLocation* WWLOCATION_ZERO;
 
 @implementation WWLocation
 

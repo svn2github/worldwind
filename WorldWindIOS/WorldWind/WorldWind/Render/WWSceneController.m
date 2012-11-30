@@ -112,10 +112,10 @@
 
 - (void) createTerrain
 {
-    WWTerrainTileList* surfaceGeometry = [_globe tessellate];
+    WWTerrainTileList* surfaceGeometry = [_globe tessellate:self->drawContext];
     
     // If there's no surface geometry, just log a warning and keep going. Some layers may have meaning without it.
-    if (surfaceGeometry == nil)
+    if (surfaceGeometry == nil || [surfaceGeometry count] == 0)
     {
         WWLog(@"No surface geometry");
     }
