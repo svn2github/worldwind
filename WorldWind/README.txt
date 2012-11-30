@@ -101,6 +101,8 @@ New features and improvements in World Wind Java SDK 1.5.0
 - Fixed a bug where the MIL-STD-2525 Fire Support Line graphic appears in the wrong place.
 - Fixed a bug preventing COLLADA models from updating after a position change.
 - Fixed a bug in Triangle.intersectTriangleTypes preventing triangle strip intersection from operating correctly.
+- Fixed a bug in WMSTiledImageLayer causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
+- Fixed a bug in WMSBasicElevationModel causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
 - Modified MIL-STD-2525 symbol code parsing to correctly handle symbol modifier codes without an echelon in the second character.
 - Modified MIL-STD-2525 symbol code parsing to correctly compose the modifier code for the feint/dummy installation modifier.
 - Modified MIL-STD-2525 TacticalGraphicFactory to enable application configuration of MIL-STD-2525 implementation classes.
