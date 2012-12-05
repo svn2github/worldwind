@@ -22,6 +22,7 @@
                 <include name="doc/**"/>
                 <include name="jws/**"/>
                 <include name="lib-external/**"/>
+                <include name="resources/**"/>
                 <include name="schemas/**"/>
                 <include name="servers/**"/>
                 <include name="src/**"/>
