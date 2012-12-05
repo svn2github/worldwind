@@ -7,19 +7,10 @@
 
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
-
-WWSector* WWSECTOR_ZERO;
-WWSector* WWSECTOR_FULL_SPHERE;
+#import "WWVec4.h"
+#import "WWLocation.h"
 
 @implementation WWSector
-
-+(void)initialize
-{
-    // Create the class constants.
-    
-    WWSECTOR_ZERO = [[WWSector alloc] initWithDegreesMinLatitude:0 maxLatitude:0 minLongitude:0 maxLongitude:0];
-    WWSECTOR_FULL_SPHERE = [[WWSector alloc] initWithDegreesMinLatitude:-90 maxLatitude:90 minLongitude:-180 maxLongitude:180];
-}
 
 - (WWSector*) initWithDegreesMinLatitude:(double)minLatitude
                              maxLatitude:(double)maxLatitude
@@ -36,9 +27,32 @@ WWSector* WWSECTOR_FULL_SPHERE;
     return self;
 }
 
+- (WWSector*) initWithFullSphere
+{
+    self = [super init];
+
+    _minLatitude = -90;
+    _maxLatitude = 90;
+    _minLongitude = -180;
+    _maxLongitude = 180;
+
+    return self;
+}
+
 - (id) copyWithZone:(NSZone *)zone
 {
     return [[[self class] alloc] initWithDegreesMinLatitude:_minLatitude maxLatitude:_maxLatitude minLongitude:_minLongitude maxLongitude:_maxLongitude];
+}
+
+- (void) centroidLocation:(WWLocation*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    result.latitude = 0.5 * (_minLatitude + _maxLatitude);
+    result.longitude = 0.5 * (_minLongitude + _maxLongitude);
 }
 
 @end

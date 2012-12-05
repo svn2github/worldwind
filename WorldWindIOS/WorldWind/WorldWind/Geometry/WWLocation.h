@@ -7,13 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLocation; // forward declaration for use in externs below
-
-extern WWLocation* WWLOCATION_ZERO;
-
 @interface WWLocation : NSObject <NSCopying>
-
-+(void)initialize;
 
 @property double latitude;
 @property double longitude;

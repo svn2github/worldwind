@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <OpenGLES/ES2/gl.h>
 
 @class WWGlobe;
 @class WWLayerList;

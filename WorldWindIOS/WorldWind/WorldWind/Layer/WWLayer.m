@@ -9,9 +9,8 @@
 
 @implementation WWLayer
 
-- (void) render
+- (void) render:(WWDrawContext *)dc
 {
-    
 }
 
 @end

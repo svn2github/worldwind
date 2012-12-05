@@ -7,6 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#define RADIANS(a) (a * Math.PI / 180)
+#define RADIANS(a) (a * 3.14159265359 / 180)
 
 extern double WWAngleFromDMS(int degrees, int minutes, double seconds);

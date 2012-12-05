@@ -11,6 +11,7 @@
 @class WWSector;
 @class WWTerrainTile;
 @class WWTerrainTileList;
+@class WWTerrainSharedGeometry;
 @class WWDrawContext;
 
 @interface WWTessellator : NSObject
@@ -20,14 +21,19 @@
 }
 
 @property (readonly) WWGlobe* globe;
+@property (readonly) WWTerrainSharedGeometry* sharedGeometry;
 
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe;
 - (void) createTopLevelTiles;
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
+- (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (void) regenerateGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (void) buildSharedGeometry;
 - (void) beginRendering:(WWDrawContext*)dc;
 - (void) endRendering:(WWDrawContext*)dc;
-- (void) beginRendering:(WWDrawContext*)dc terrainTile:(WWTerrainTile*)tile;
-- (void) endRendering:(WWDrawContext*)dc terrainTile:(WWTerrainTile*)tile;
+- (void) beginRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 - (void) render:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 @end

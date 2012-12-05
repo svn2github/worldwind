@@ -10,8 +10,16 @@
 @class WWLayer;
 
 @interface WWLayerList : NSObject
+{
+@protected
+    NSMutableArray* layers;
+}
+- (WWLayerList*) init;
 
 - (NSUInteger) count;
-- (WWLayer*) layerAtIndex:(NSUInteger)index;
+
+- (WWLayer*) layerAtIndex:(NSUInteger) index;
+
+- (void) addLayer:(WWLayer*) layer;
 
 @end

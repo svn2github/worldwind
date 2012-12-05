@@ -7,6 +7,8 @@
 
 #import "ViewController.h"
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/Layer/WWShowTessellationLayer.h"
 
 @implementation ViewController
 
@@ -32,8 +34,13 @@
     [super viewDidLoad];
 
     WWLog(@"View Did Load");
-    
-    [(WorldWindView*) self.view drawView];
+
+    WorldWindView* wwv =  (WorldWindView*) self.view;
+
+    WWLayerList* layers = [[wwv sceneController] layers];
+    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
+
+    [wwv drawView];
 }
 
 @end

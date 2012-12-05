@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES2/gl.h>
-//#import "WorldWind/WorldWind.h"
 
 @class WWGlobe;
 @class WWLayerList;

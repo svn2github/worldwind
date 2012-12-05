@@ -10,12 +10,22 @@
 @class WWTessellator;
 @class WWTerrainTileList;
 @class WWDrawContext;
+@class WWVec4;
 
 @interface WWGlobe : NSObject
 
-@property (readonly) WWTessellator* tessellator;
+@property(readonly) double equatorialRadius;
+@property(readonly) double polarRadius;
+@property(readonly) double es;
+@property(readonly) WWTessellator* tessellator;
 
 - (WWGlobe*) init;
+
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
+
+- (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
+                           outputPoint:(WWVec4*)result;
+- (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
+                           outputArray:(float*)result;
 
 @end

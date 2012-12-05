@@ -7,8 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class WWDrawContext;
+
 @interface WWLayer : NSObject
 
-- (void) render;
+- (void) render:(WWDrawContext *)dc;
 
 @end

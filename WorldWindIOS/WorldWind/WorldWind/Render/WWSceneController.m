@@ -97,12 +97,12 @@
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_ONE, GL_ZERO);
     glDepthFunc(GL_LESS);
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0, 0, 0, 1);
 }
 
 - (void) clearFrame
 {
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.3, 0.3, 0.3, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -138,7 +138,7 @@
         WWLayer* layer = [_layers layerAtIndex:i];
         if (layer != nil)
         {
-            [layer render];
+            [layer render:self->drawContext];
         }
     }
 }
@@ -176,7 +176,7 @@ struct Vertex Vertices[] =
     
     GLuint positionSlot = (GLuint) glGetAttribLocation(self->program, "Position");
     GLuint colorSlot = (GLuint) glGetAttribLocation(self->program, "SourceColor");
-    
+
     glEnableVertexAttribArray(positionSlot);
     glEnableVertexAttribArray(colorSlot);
     
@@ -261,7 +261,7 @@ struct Vertex Vertices[] =
     {
         GLchar messages[256];
         glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
-        NSLog(@"%s", messages);
+        WWLog(@"%s", messages);
     }
     
     return programHandle;

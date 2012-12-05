@@ -14,7 +14,7 @@
 {
     if (dc == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw contexts is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
 }

@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "WorldWindView.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation WorldWindView
 

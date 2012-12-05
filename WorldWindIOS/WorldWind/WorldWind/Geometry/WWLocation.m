@@ -8,16 +8,7 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/WWLog.h"
 
-WWLocation* WWLOCATION_ZERO;
-
 @implementation WWLocation
-
-+(void)initialize
-{
-    // Create the class constants.
-    
-    WWLOCATION_ZERO = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
-}
 
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
 {

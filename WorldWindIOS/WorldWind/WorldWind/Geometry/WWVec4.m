@@ -8,24 +8,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
 
-WWVec4* WWVEC4_ZERO;
-WWVec4* WWVEC4_ONE;
-WWVec4* WWVEC4_UNIT_X;
-WWVec4* WWVEC4_UNIT_Y;
-WWVec4* WWVEC4_UNIT_Z;
-
 @implementation WWVec4
-
-+(void)initialize
-{
-    // Create the class constants.
-    
-    WWVEC4_ZERO = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:0];
-    WWVEC4_ONE = [[WWVec4 alloc] initWithCoordinates:1 y:1 z:1];
-    WWVEC4_UNIT_X = [[WWVec4 alloc] initWithCoordinates:1 y:0 z:0];
-    WWVEC4_UNIT_Y = [[WWVec4 alloc] initWithCoordinates:0 y:1 z:0];
-    WWVEC4_UNIT_Z = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:1];
-}
 
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z
 {
@@ -48,6 +31,30 @@ WWVec4* WWVEC4_UNIT_Z;
     _z = z;
     _w = w;
     
+    return self;
+}
+
+- (WWVec4*) initWithZeroVector
+{
+    self = [super init];
+
+    _x = 0;
+    _y = 0;
+    _z = 0;
+    _w = 1;
+
+    return self;
+}
+
+- (WWVec4*) initWithUnitVector
+{
+    self = [super init];
+
+    _x = 1;
+    _y = 1;
+    _z = 1;
+    _w = 1;
+
     return self;
 }
 

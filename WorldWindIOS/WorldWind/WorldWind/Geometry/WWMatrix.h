@@ -1,17 +1,14 @@
 /*
  Copyright (C) 2013 United States Government as represented by the Administrator of the
  National Aeronautics and Space Administration. All Rights Reserved.
- 
+
  @version $Id$
  */
 
-#import "WorldWind/Render/WWDrawContext.h"
+#import <Foundation/Foundation.h>
 
-@implementation WWDrawContext
+@interface WWMatrix : NSObject
 
-- (void) reset
-{
-    _timestamp = [NSDate date];
-}
+- (WWMatrix*) initWithIdentity;
 
 @end

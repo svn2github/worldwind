@@ -10,14 +10,28 @@
 
 @implementation WWLayerList
 
+- (WWLayerList*) init
+{
+    self = [super init];
+
+    self->layers = [[NSMutableArray alloc] init];
+
+    return self;
+}
+
 - (NSUInteger) count
 {
-    return 0;
+    return [self->layers count];
 }
 
 - (WWLayer*)layerAtIndex:(NSUInteger)index
 {
-    return nil;
+    return (WWLayer*) [self->layers objectAtIndex:index];
+}
+
+- (void) addLayer:(WWLayer*) layer
+{
+    [self->layers addObject:layer];
 }
 
 @end

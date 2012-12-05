@@ -7,14 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWVec4; // forward delcaration for use in externs below
-
-extern WWVec4* WWVEC4_ZERO;
-extern WWVec4* WWVEC4_ONE;
-extern WWVec4* WWVEC4_UNIT_X;
-extern WWVec4* WWVEC4_UNIT_Y;
-extern WWVec4* WWVEC4_UNIT_Z;
-
 @interface WWVec4 : NSObject <NSCopying>
 
 @property double x;
@@ -24,6 +16,8 @@ extern WWVec4* WWVEC4_UNIT_Z;
 
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z;
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z w:(double)w;
+- (WWVec4*) initWithZeroVector;
+- (WWVec4*) initWithUnitVector;
 
 - (WWVec4*) add3:(WWVec4*)vector;
 - (WWVec4*) subtract3:(WWVec4*)vector;

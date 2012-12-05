@@ -7,10 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWSector; // forward declaration for use in externs below
-
-extern WWSector* WWSECTOR_ZERO;
-extern WWSector* WWSECTOR_FULL_SPHERE;
+@class WWLocation;
 
 @interface WWSector : NSObject <NSCopying>
 
@@ -23,5 +20,7 @@ extern WWSector* WWSECTOR_FULL_SPHERE;
                              maxLatitude:(double)maxLatitude
                             minLongitude:(double)minLongitude
                             maxLongitude:(double)maxLongitude;
+- (WWSector*) initWithFullSphere;
+- (void) centroidLocation:(WWLocation*)result;
 
 @end

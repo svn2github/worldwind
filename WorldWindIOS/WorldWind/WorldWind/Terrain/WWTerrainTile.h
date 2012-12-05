@@ -10,10 +10,12 @@
 
 @class WWTessellator;
 @class WWDrawContext;
+@class WWTerrainGeometry;
 
 @interface WWTerrainTile : WWTile
 
 @property (readonly) WWTessellator* tessellator;
+@property WWTerrainGeometry* terrainGeometry;
 
 - (WWTerrainTile*) initWithSector:(WWSector*)sector
                             level:(int)level
@@ -23,5 +25,6 @@
 - (void) beginRendering:(WWDrawContext*)dc;
 - (void) endRendering:(WWDrawContext*)dc;
 - (void) render:(WWDrawContext*)dc;
+- (void) renderWireframe:(WWDrawContext*)dc;
 
 @end
