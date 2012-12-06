@@ -7,8 +7,10 @@
 
 #import "ViewController.h"
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
+#import "WWLog.h"
 
 @implementation ViewController
 

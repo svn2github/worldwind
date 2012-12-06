@@ -6,6 +6,8 @@
  */
 
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WorldWindView
 

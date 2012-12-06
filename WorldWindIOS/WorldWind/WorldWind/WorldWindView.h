@@ -5,9 +5,11 @@
  @version $Id$
  */
 
-#import <WorldWind/WorldWind.h>
-#import <WorldWind/Render/WWSceneController.h>
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
+#import <OpenGLES/ES2/gl.h>
+
+@class WWSceneController;
 
 @interface WorldWindView : UIView
 
