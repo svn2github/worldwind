@@ -8,6 +8,10 @@
 #import <Foundation/Foundation.h>
 
 @interface WWMatrix : NSObject
+{
+@public
+    double m[16];
+}
 
 - (WWMatrix*) initWithIdentity;
 
