@@ -163,6 +163,14 @@
     indices[4] = 4;
     indices[5] = 1;
     _sharedGeometry.indices = indices;
+
+    // Assigne wireframe indices for a line loop.
+    short* wireframeIndices = (short*) malloc(4 * sizeof(short));
+    wireframeIndices[0] = 1;
+    wireframeIndices[1] = 2;
+    wireframeIndices[2] = 3;
+    wireframeIndices[3] = 4;
+    _sharedGeometry.wireframeIndices = wireframeIndices;
 }
 
 - (void) beginRendering:(WWDrawContext*)dc
@@ -256,6 +264,11 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
+
+    int location = [dc.currentProgram getAttributeLocation:@"Position"];
+    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+    glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
 }
 
 - (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -273,6 +286,6 @@
     int location = [dc.currentProgram getAttributeLocation:@"Position"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
-    glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
+    glDrawElements(GL_LINE_LOOP, 6, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);
 }
 @end
