@@ -18,8 +18,8 @@
     NSMutableArray* tiles;
 }
 
-@property WWSector* sector;
-@property (readonly) WWTessellator* tessellator;
+@property (nonatomic) WWSector* sector;
+@property (readonly, nonatomic) WWTessellator* tessellator;
 
 - (WWTerrainTileList*) initWithTessellator:(WWTessellator*)tessellator;
 - (void) addTile:(WWTerrainTile*)tile;

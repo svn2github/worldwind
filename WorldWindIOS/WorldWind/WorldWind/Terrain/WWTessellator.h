@@ -20,8 +20,8 @@
     NSMutableArray* topLevelTiles;
 }
 
-@property (readonly) WWGlobe* globe;
-@property (readonly) WWTerrainSharedGeometry* sharedGeometry;
+@property (readonly, nonatomic) WWGlobe* globe;
+@property (readonly, nonatomic) WWTerrainSharedGeometry* sharedGeometry;
 
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe;
 - (void) createTopLevelTiles;

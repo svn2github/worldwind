@@ -11,10 +11,10 @@
 
 @interface WWSector : NSObject <NSCopying>
 
-@property double minLatitude;
-@property double maxLatitude;
-@property double minLongitude;
-@property double maxLongitude;
+@property (nonatomic) double minLatitude;
+@property (nonatomic) double maxLatitude;
+@property (nonatomic) double minLongitude;
+@property (nonatomic) double maxLongitude;
 
 - (WWSector*) initWithDegreesMinLatitude:(double)minLatitude
                              maxLatitude:(double)maxLatitude

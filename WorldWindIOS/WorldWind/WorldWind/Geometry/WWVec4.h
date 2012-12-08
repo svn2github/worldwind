@@ -9,10 +9,10 @@
 
 @interface WWVec4 : NSObject <NSCopying>
 
-@property double x;
-@property double y;
-@property double z;
-@property double w;
+@property (nonatomic) double x;
+@property (nonatomic) double y;
+@property (nonatomic) double z;
+@property (nonatomic) double w;
 
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z;
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z w:(double)w;

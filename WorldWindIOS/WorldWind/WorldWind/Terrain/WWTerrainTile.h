@@ -14,8 +14,8 @@
 
 @interface WWTerrainTile : WWTile
 
-@property (readonly) WWTessellator* tessellator;
-@property WWTerrainGeometry* terrainGeometry;
+@property (readonly, nonatomic) WWTessellator* tessellator;
+@property (nonatomic) WWTerrainGeometry* terrainGeometry;
 
 - (WWTerrainTile*) initWithSector:(WWSector*)sector
                             level:(int)level

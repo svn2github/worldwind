@@ -9,8 +9,8 @@
 
 @interface WWLocation : NSObject <NSCopying>
 
-@property double latitude;
-@property double longitude;
+@property (nonatomic) double latitude;
+@property (nonatomic) double longitude;
 
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude;
 

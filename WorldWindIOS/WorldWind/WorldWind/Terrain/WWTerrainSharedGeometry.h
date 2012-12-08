@@ -11,11 +11,11 @@ All Rights Reserved.
 
 @interface WWTerrainSharedGeometry : NSObject
 
-@property float* texCoords;
-@property short* indices;
-@property short* wireframeIndices;
-@property short* outlineIndices;
-@property NSObject* vboCacheKey;
+@property (nonatomic) float* texCoords;
+@property (nonatomic) short* indices;
+@property (nonatomic) short* wireframeIndices;
+@property (nonatomic) short* outlineIndices;
+@property (nonatomic) NSObject* vboCacheKey;
 
 - (WWTerrainSharedGeometry*) init;
 

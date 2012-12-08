@@ -21,8 +21,8 @@
     WWDrawContext *drawContext;
 }
 
-@property (readonly) WWGlobe* globe;
-@property (readonly) WWLayerList* layers;
+@property (readonly, nonatomic) WWGlobe* globe;
+@property (readonly, nonatomic) WWLayerList* layers;
 
 - (WWSceneController*)init;
 - (void) render:(CGRect) bounds;

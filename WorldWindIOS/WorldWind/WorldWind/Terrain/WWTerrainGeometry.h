@@ -12,12 +12,12 @@
 
 @interface WWTerrainGeometry : NSObject
 
-@property WWVec4* referenceCenter;
-@property WWMatrix* transformationMatrix;
-@property NSObject* vboCacheKey;
-@property int numPoints;
-@property float* points;
-@property BOOL mustRegenerateVbos;
+@property (nonatomic) WWVec4* referenceCenter;
+@property (nonatomic) WWMatrix* transformationMatrix;
+@property (nonatomic) NSObject* vboCacheKey;
+@property (nonatomic) int numPoints;
+@property (nonatomic) float* points;
+@property (nonatomic) BOOL mustRegenerateVbos;
 
 
 @end

@@ -14,10 +14,10 @@
 
 @interface WWGlobe : NSObject
 
-@property(readonly) double equatorialRadius;
-@property(readonly) double polarRadius;
-@property(readonly) double es;
-@property(readonly) WWTessellator* tessellator;
+@property(readonly, nonatomic) double equatorialRadius;
+@property(readonly, nonatomic) double polarRadius;
+@property(readonly, nonatomic) double es;
+@property(readonly, nonatomic) WWTessellator* tessellator;
 
 - (WWGlobe*) init;
 

@@ -12,10 +12,10 @@
 
 @interface WWTile : NSObject
 
-@property (readonly) WWSector* sector;
-@property (readonly) int level;
-@property (readonly) int row;
-@property (readonly) int column;
+@property (readonly, nonatomic) WWSector* sector;
+@property (readonly, nonatomic) int level;
+@property (readonly, nonatomic) int row;
+@property (readonly, nonatomic) int column;
 
 - (WWTile*) initWithSector:(WWSector*)sector level:(int)level row:(int)row column:(int)column;
 
