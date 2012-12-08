@@ -125,9 +125,9 @@
     [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputPoint:refCenter];
     tile.terrainGeometry.referenceCenter = refCenter;
 
-    float* points = malloc(6 * 3 * sizeof(float)); // TODO: free this
+    float* points = malloc(5 * 3 * sizeof(float)); // TODO: free this
     tile.terrainGeometry.points = points;
-    tile.terrainGeometry.numPoints = 6;
+    tile.terrainGeometry.numPoints = 5;
 
     points[0] = (float) refCenter.x;
     points[1] = (float) refCenter.y;
@@ -148,10 +148,6 @@
     lat = sector.maxLatitude;
     lon = sector.minLongitude;
     [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[12]];
-
-    points[15] = points[3];
-    points[16] = points[4];
-    points[17] = points[5];
 }
 
 - (void) buildSharedGeometry
@@ -277,6 +273,6 @@
     int location = [dc.currentProgram getAttributeLocation:@"Position"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+    glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
 }
 @end
