@@ -15,6 +15,7 @@
 @property WWVec4* referenceCenter;
 @property WWMatrix* transformationMatrix;
 @property NSObject* vboCacheKey;
+@property int numPoints;
 @property float* points;
 @property BOOL mustRegenerateVbos;
 

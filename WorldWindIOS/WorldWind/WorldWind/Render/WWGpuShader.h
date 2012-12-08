@@ -19,7 +19,7 @@
 
 @property(readonly, nonatomic) GLuint shaderId;
 
-- (WWGpuShader*) initWithType:(GLuint)shaderType source:(char*)source;
+- (WWGpuShader*) initWithType:(GLuint)shaderType source:(const char*)source;
 - (BOOL) compile:(GLuint)shaderType source:(const char*)source;
 - (NSString*) nameFromShaderType:(GLuint)shaderType;
 

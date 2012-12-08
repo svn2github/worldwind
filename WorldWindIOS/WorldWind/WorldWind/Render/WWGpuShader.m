@@ -10,7 +10,7 @@
 
 @implementation WWGpuShader
 
-- (WWGpuShader*) initWithType:(GLuint)shaderType source:(char*)source
+- (WWGpuShader*) initWithType:(GLuint)shaderType source:(const char*)source
 {
     if (shaderType != GL_VERTEX_SHADER && shaderType != GL_FRAGMENT_SHADER)
     {

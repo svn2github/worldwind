@@ -15,6 +15,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Render/WWGpuProgram.h"
 
 #define NUM_LAT_SUBDIVISIONS 3
 #define NUM_LON_SUBDIVISIONS 6
@@ -64,7 +65,11 @@
             WWSector* tileSector = [[WWSector alloc] initWithDegreesMinLatitude:lastLat maxLatitude:lat minLongitude:lastLon maxLongitude:lon];
             WWTerrainTile* tile = [[WWTerrainTile alloc] initWithSector:tileSector level:0 row:row column:col tessellator:self];
             [self->topLevelTiles addObject:tile];
+
+            lastLon = lon;
         }
+
+        lastLat = lat;
     }
 }
 
@@ -100,7 +105,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    return true;
+    return tile.terrainGeometry == nil;
 }
 
 - (void) regenerateGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -120,8 +125,9 @@
     [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputPoint:refCenter];
     tile.terrainGeometry.referenceCenter = refCenter;
 
-    float* points = malloc(5 * 3 * sizeof(float));
+    float* points = malloc(6 * 3 * sizeof(float)); // TODO: free this
     tile.terrainGeometry.points = points;
+    tile.terrainGeometry.numPoints = 6;
 
     points[0] = (float) refCenter.x;
     points[1] = (float) refCenter.y;
@@ -142,6 +148,10 @@
     lat = sector.maxLatitude;
     lon = sector.minLongitude;
     [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[12]];
+
+    points[15] = points[3];
+    points[16] = points[4];
+    points[17] = points[5];
 }
 
 - (void) buildSharedGeometry
@@ -165,6 +175,20 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
+
+    WWGpuProgram* program = dc.currentProgram;
+    if (program == nil)
+    {
+        WWLog(@"Current program is nil");
+        return;
+    }
+
+    // Enable the program's vertex attribute, if one exists.
+    int location = [program getAttributeLocation:@"Position"];
+    if (location >= 0)
+    {
+        glEnableVertexAttribArray((GLuint) location);
+    }
 }
 
 - (void) endRendering:(WWDrawContext*)dc
@@ -172,6 +196,21 @@
     if (dc == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    WWGpuProgram* program = dc.currentProgram;
+    if (program == nil)
+    {
+        return;
+    }
+
+    int location = [program getAttributeLocation:@"Position"];
+    if (location >= 0)
+    {
+        glDisableVertexAttribArray((GLuint) location);
     }
 }
 
@@ -186,6 +225,14 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
+
+    WWGpuProgram* program = dc.currentProgram;
+    if (program == nil)
+    {
+        return;
+    }
+
+    [dc.currentProgram loadUniformMatrix:@"Modelview" matrix:dc.modelviewProjection];
 }
 
 - (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -227,6 +274,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    NSLog(@"RENDER WIREFRAME");
+    int location = [dc.currentProgram getAttributeLocation:@"Position"];
+    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 }
 @end

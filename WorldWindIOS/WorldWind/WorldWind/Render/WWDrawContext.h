@@ -12,14 +12,18 @@
 @class WWLayerList;
 @class WWTerrainTileList;
 @class WWSector;
+@class WWGpuProgram;
+@class WWMatrix;
 
 @interface WWDrawContext : NSObject
 
-@property (readonly) NSDate* timestamp;
-@property WWGlobe* globe;
-@property WWLayerList* layers;
-@property WWTerrainTileList* surfaceGeometry;
-@property WWSector* visibleSector;
+@property (readonly, nonatomic) NSDate* timestamp;
+@property (nonatomic) WWGlobe* globe;
+@property (nonatomic) WWLayerList* layers;
+@property (nonatomic) WWTerrainTileList* surfaceGeometry;
+@property (nonatomic) WWSector* visibleSector;
+@property (nonatomic) WWGpuProgram* currentProgram;
+@property (nonatomic) WWMatrix* modelviewProjection;
 
 - (void) reset;
 

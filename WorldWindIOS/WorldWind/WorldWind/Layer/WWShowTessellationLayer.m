@@ -10,6 +10,12 @@
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Render/WWGpuProgram.h"
+
+// STRINGIFY is used in the shader files.
+#define STRINGIFY(A) #A
+#import "WorldWind/Shaders/Simple.vert"
+#import "WorldWind/Shaders/Simple.frag"
 
 @implementation WWShowTessellationLayer
 
@@ -24,20 +30,57 @@
     if (surfaceTiles == nil || [surfaceTiles count] == 0)
         return;
 
-    [surfaceTiles beginRendering:dc];
+    [self makeGpuProgram];
+    if (_gpuProgram == nil)
+        return;
 
-    NSUInteger count = [surfaceTiles count];
-    for (NSUInteger i = 0; i < count; i++)
+    [self beginRendering:dc];
+
+    @try
     {
-        WWTerrainTile* tile = [surfaceTiles objectAtIndex:i];
+        [surfaceTiles beginRendering:dc];
 
-        [tile beginRendering:dc];
-        [tile renderWireframe:dc];
-        [tile endRendering:dc];
+        NSUInteger count = [surfaceTiles count];
+        for (NSUInteger i = 0; i < count; i++)
+        {
+            WWTerrainTile* tile = [surfaceTiles objectAtIndex:i];
+
+            [tile beginRendering:dc];
+            [tile renderWireframe:dc];
+            [tile endRendering:dc];
+        }
+    }
+    @finally
+    {
+        [surfaceTiles endRendering:dc];
+        [self endRendering:dc];
     }
 
-    [surfaceTiles endRendering:dc];
+}
 
+- (void) beginRendering:(WWDrawContext*)dc
+{
+    [_gpuProgram bind];
+    [dc setCurrentProgram:_gpuProgram];
+}
+
+- (void) endRendering:(WWDrawContext*)dc
+{
+    [dc setCurrentProgram:nil];
+    glUseProgram(0);
+}
+
+- (void) makeGpuProgram
+{
+    @try
+    {
+        _gpuProgram = [[WWGpuProgram alloc] initWithVertexShader:SimpleVertexShader
+                                                  fragmentShader:SimpleFragmentShader];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"making GPU program", exception);
+    }
 }
 
 @end

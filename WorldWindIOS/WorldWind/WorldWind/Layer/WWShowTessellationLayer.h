@@ -8,5 +8,15 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWLayer.h"
 
+@class WWGpuProgram;
+@class WWDrawContext;
+
 @interface WWShowTessellationLayer : WWLayer
+
+@property (readonly, nonatomic) WWGpuProgram* gpuProgram;
+
+- (void) beginRendering:(WWDrawContext*)dc;
+- (void) endRendering:(WWDrawContext*)dc;
+- (void) makeGpuProgram;
+
 @end

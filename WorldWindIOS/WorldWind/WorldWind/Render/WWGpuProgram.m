@@ -13,7 +13,7 @@
 
 @implementation WWGpuProgram
 
-- (WWGpuProgram*) initWithVertexShader:(char*)vertexSource fragmentShader:(char*)fragmentSource
+- (WWGpuProgram*) initWithVertexShader:(const char*)vertexSource fragmentShader:(const char*)fragmentSource
 {
     self = [super init];
 
@@ -54,7 +54,7 @@
     glAttachShader(program, vShader.shaderId);
     glAttachShader(program, fShader.shaderId);
 
-    if ([self link:program])
+    if (![self link:program])
     {
         // Get the info log before deleting the program.
         GLsizei logSize = 0;
@@ -150,8 +150,8 @@
         // starts with "gl_". In either case, we store the value -1 in our map since the return value does not change
         // until the program is linked again.
         int actualLocation = glGetAttribLocation(_programId, attributeName.UTF8String);
-        NSNumber* number = [NSNumber numberWithInt:actualLocation];
-        [self->attributeLocations setValue:number forKey:attributeName];
+        location = [NSNumber numberWithInt:actualLocation];
+        [self->attributeLocations setValue:location forKey:attributeName];
     }
 
     return location.intValue;
@@ -171,8 +171,8 @@
         // starts with "gl_". In either case, we store the value -1 in our map since the return value does not change
         // until the program is linked again.
         int actualLocation = glGetUniformLocation(_programId, uniformName.UTF8String);
-        NSNumber* number = [NSNumber numberWithInt:actualLocation];
-        [self->uniformLocations setValue:number forKey:uniformName];
+        location = [NSNumber numberWithInt:actualLocation];
+        [self->uniformLocations setValue:location forKey:uniformName];
     }
 
     return location.intValue;
