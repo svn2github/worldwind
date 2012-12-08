@@ -14,5 +14,8 @@
 }
 
 - (WWMatrix*) initWithIdentity;
+- (WWMatrix*) initWithTranslation:(double)x y:(double)y z:(double)z;
+- (WWMatrix*) initWithMatrix:(WWMatrix*)matrix;
+- (WWMatrix*) initWithMultiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB;
 
 @end

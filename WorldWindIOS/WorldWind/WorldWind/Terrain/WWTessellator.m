@@ -16,9 +16,10 @@
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Render/WWGpuProgram.h"
+#import "WWMatrix.h"
 
-#define NUM_LAT_SUBDIVISIONS 3
-#define NUM_LON_SUBDIVISIONS 6
+#define NUM_LAT_SUBDIVISIONS 5
+#define NUM_LON_SUBDIVISIONS 10
 
 @implementation WWTessellator
 
@@ -124,30 +125,34 @@
     double lon = 0.5 * (sector.minLongitude + tile.sector.maxLongitude);
     [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputPoint:refCenter];
     tile.terrainGeometry.referenceCenter = refCenter;
+    double rcx = refCenter.x;
+    double rcy = refCenter.y;
+    double rcz = refCenter.z;
+    tile.terrainGeometry.transformationMatrix = [[WWMatrix alloc] initWithTranslation:rcx y:rcy z:rcz];
 
     float* points = malloc(5 * 3 * sizeof(float)); // TODO: free this
     tile.terrainGeometry.points = points;
     tile.terrainGeometry.numPoints = 5;
 
-    points[0] = (float) refCenter.x;
-    points[1] = (float) refCenter.y;
-    points[2] = (float) refCenter.z;
+    points[0] = 0;
+    points[1] = 0;
+    points[2] = 0;
 
     lat = sector.minLatitude;
     lon = sector.minLongitude;
-    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[3]];
+    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 offset:refCenter outputArray:&points[3]];
 
     lat = sector.minLatitude;
     lon = sector.maxLongitude;
-    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[6]];
+    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 offset:refCenter outputArray:&points[6]];
 
     lat = sector.maxLatitude;
     lon = sector.maxLongitude;
-    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[9]];
+    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 offset:refCenter outputArray:&points[9]];
 
     lat = sector.maxLatitude;
     lon = sector.minLongitude;
-    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 outputArray:&points[12]];
+    [dc.globe computePointFromPosition:lat longitude:lon altitude:0 offset:refCenter outputArray:&points[12]];
 }
 
 - (void) buildSharedGeometry
@@ -236,7 +241,8 @@
         return;
     }
 
-    [dc.currentProgram loadUniformMatrix:@"Modelview" matrix:dc.modelviewProjection];
+    WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:dc.modelviewProjection matrixB:tile.terrainGeometry.transformationMatrix];
+    [dc.currentProgram loadUniformMatrix:@"Modelview" matrix:mvp];
 }
 
 - (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -286,6 +292,6 @@
     int location = [dc.currentProgram getAttributeLocation:@"Position"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
-    glDrawElements(GL_LINE_LOOP, 6, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);
+    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);
 }
 @end

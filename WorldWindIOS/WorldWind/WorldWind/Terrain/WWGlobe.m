@@ -36,7 +36,7 @@
 }
 
 - (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
-                              outputPoint:(WWVec4*)result
+                      outputPoint:(WWVec4*)result
 {
     double cosLat = cos(RADIANS(latitude));
     double sinLat = sin(RADIANS(latitude));
@@ -51,7 +51,7 @@
 }
 
 - (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
-                      outputArray:(float*)result
+                           offset:(WWVec4*)offset outputArray:(float*)result
 {
     double cosLat = cos(RADIANS(latitude));
     double sinLat = sin(RADIANS(latitude));
@@ -60,9 +60,9 @@
 
     double rpm = _equatorialRadius / sqrt(1.0 - _es * sinLat * sinLat);
 
-    result[0] = (float) ((rpm + altitude) * cosLat * sinLon);
-    result[1] = (float) ((rpm * (1.0 - _es) + altitude) * sinLat);
-    result[2] = (float) ((rpm + altitude) * cosLat * cosLon);
+    result[0] = (float) (((rpm + altitude) * cosLat * sinLon) - offset.x);
+    result[1] = (float) (((rpm * (1.0 - _es) + altitude) * sinLat) - offset.y);
+    result[2] = (float) (((rpm + altitude) * cosLat * cosLon) - offset.z);
 }
 
 @end

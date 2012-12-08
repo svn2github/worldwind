@@ -17,7 +17,6 @@
     self = [super init];
 
     _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
-    _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     _vboCacheKey = [[NSObject alloc] init];
     _mustRegenerateVbos = YES;
     _points = 0;

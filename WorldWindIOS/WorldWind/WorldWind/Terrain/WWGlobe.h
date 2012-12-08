@@ -26,6 +26,6 @@
 - (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
                            outputPoint:(WWVec4*)result;
 - (void) computePointFromPosition:(double)latitude longitude:(double)longitude altitude:(double)altitude
-                           outputArray:(float*)result;
+                           offset:(WWVec4*)offset outputArray:(float*)result;
 
 @end
