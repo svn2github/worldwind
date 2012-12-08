@@ -33,41 +33,21 @@
 
 - (void) beginRendering:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator beginRendering:dc tile:self];
 }
 
 - (void) endRendering:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator endRendering:dc tile:self];
 }
 
 - (void) render:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator render:dc tile:self];
 }
 
 - (void) renderWireframe:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator renderWireFrame:dc tile:self];
 }
 @end

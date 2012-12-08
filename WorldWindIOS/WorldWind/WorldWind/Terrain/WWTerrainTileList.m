@@ -48,21 +48,11 @@
 
 - (void) beginRendering:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator beginRendering:dc];
 }
 
 - (void) endRendering:(WWDrawContext*) dc
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
     [_tessellator endRendering:dc];
 }
 
