@@ -17,7 +17,6 @@
 @interface WWSceneController : NSObject
 {
 @protected
-    GLuint program;
     WWDrawContext *drawContext;
 }
 
