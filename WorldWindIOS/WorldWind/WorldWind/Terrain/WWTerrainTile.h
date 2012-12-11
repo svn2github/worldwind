@@ -14,7 +14,9 @@
 
 @interface WWTerrainTile : WWTile
 
-@property (readonly, nonatomic) WWTessellator* tessellator;
+// The tessellator property is weak because the tessellator can point to the tile,
+// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
+@property (readonly, nonatomic, weak) WWTessellator* tessellator;
 @property (nonatomic) WWTerrainGeometry* terrainGeometry;
 
 - (WWTerrainTile*) initWithSector:(WWSector*)sector

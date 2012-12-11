@@ -19,8 +19,9 @@
 @protected
     NSMutableArray* topLevelTiles;
 }
-
-@property (readonly, nonatomic) WWGlobe* globe;
+// The globe property is weak because the globe contains a strong pointer to the tessellator. Making the tessellator's
+// pointer to the globe strong would create a cycle and prevent both from being released.
+@property (readonly, nonatomic, weak) WWGlobe* globe;
 @property (readonly, nonatomic) WWTerrainSharedGeometry* sharedGeometry;
 
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe;
