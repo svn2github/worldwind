@@ -100,9 +100,12 @@
 
 - (void) applyView
 {
+    double globeRadius = self->drawContext.globe.equatorialRadius;
+
     WWMatrix* m = [[WWMatrix alloc] initWithIdentity];
-    m->m[0] = 0.5;
-    m->m[5] = 1.0 / 3.0;
+    m->m[0] = 1.0 / (2.0 * globeRadius);
+    m->m[5] = 1.0 / (3.0 * globeRadius);
+    m->m[10] = 1.0 / globeRadius;
 
     [self->drawContext setModelviewProjection:m];
 }

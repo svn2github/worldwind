@@ -18,8 +18,8 @@
 {
     self = [super init];
 
-    _equatorialRadius = 1;
-    _polarRadius = 1;
+    _equatorialRadius = 6378137.0;
+    _polarRadius = 6356752.3;
     _es = 0.00669437999013;
     _tessellator = [[WWTessellator alloc] initWithGlobe:self];
 
