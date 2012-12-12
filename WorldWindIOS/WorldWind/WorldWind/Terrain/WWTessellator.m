@@ -111,6 +111,7 @@
     }
 
     WWTerrainGeometry* terrainGeometry = [[WWTerrainGeometry alloc] init];
+    tile.terrainGeometry = terrainGeometry;
 
     // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
     // center here and establish a translation transform that is used later to move the tile coordinates into place
@@ -122,11 +123,9 @@
     double rcz = refCenter.z;
     terrainGeometry.transformationMatrix = [[WWMatrix alloc] initWithTranslation:rcx y:rcy z:rcz];
 
-    [self buildTileVertices:dc tile:tile geom:terrainGeometry];
+    [self buildTileVertices:dc tile:tile];
     if (_sharedGeometry == nil)
         [self buildSharedGeometry:tile];
-
-    tile.terrainGeometry = terrainGeometry;
 }
 
 - (WWVec4*) computeReferenceCenter:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -145,7 +144,7 @@
     return refCenter;
 }
 
-- (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile geom:(WWTerrainGeometry*)geom
+- (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     // The number of vertices in each dimension is 1 more than the number of cells.
     int numLatVertices = tile.numLonCells + 1;
@@ -165,9 +164,10 @@
     double minElevation = dc.globe.minElevation * dc.verticalExaggeration;
 
     // Allocate space for the Cartesian vertices.
-    int numCoords = (numLatVertices + 2) * (numLonVertices + 2) * 3;
-    geom.points = malloc((size_t) (numCoords * sizeof(float)));
-    float* points = geom.points; // running pointer to the portion of the array that will hold the computed vertices
+    tile.terrainGeometry.numPoints = (numLatVertices + 2) * (numLonVertices + 2);
+    int numCoords = tile.terrainGeometry.numPoints * 3;
+    tile.terrainGeometry.points = malloc((size_t) (numCoords * sizeof(float)));
+    float* points = tile.terrainGeometry.points; // running pointer to the portion of the array that will hold the computed vertices
 
     WWSector* sector = tile.sector;
     double minLat = sector.minLatitude;
@@ -180,14 +180,14 @@
     // We're going to build the vertices one row of longitude at a time. The rowSector variable changes to reflect
     // that in the calls below.
     WWSector* rowSector = [[WWSector alloc] initWithDegreesMinLatitude:minLat
-                                                           maxLatitude:maxLat
+                                                           maxLatitude:minLat
                                                           minLongitude:minLon
                                                           maxLongitude:maxLon];
     // Create the vertices row at minimum latitude. The elevation of the skirt vertices is constant -- the globe's
     // minimum elevation. The method called here computes the skirt vertices at the ends of the row.
     [self buildTileRowVertices:dc.globe
                      rowSector:rowSector
-            numRowVertices:numLonVertices
+                numRowVertices:numLonVertices
                     elevations:nil
              constantElevation:&minElevation // specifies constant elevation for the row
                   minElevation:minElevation
@@ -216,11 +216,11 @@
         // Build the row of vertices.
         [self buildTileRowVertices:dc.globe
                          rowSector:rowSector
-                numRowVertices:numLonVertices
+                    numRowVertices:numLonVertices
                         elevations:&elevations[elevOffset]
                  constantElevation:nil // we're using elevations per vertex here, unlike at the skirt rows
                       minElevation:minElevation
-                         refCenter:geom.referenceCenter
+                         refCenter:tile.terrainGeometry.referenceCenter
                             points:points];
 
         // Update the pointers to the elevations array and the vertices array
@@ -237,7 +237,7 @@
                     elevations:nil
              constantElevation:&minElevation
                   minElevation:minElevation
-                     refCenter:geom.referenceCenter
+                     refCenter:tile.terrainGeometry.referenceCenter
                         points:points];
 }
 
@@ -252,8 +252,8 @@
 {
 
     // Add a redundant point at the row's minimum longitude. This point is used to define the tile's western skirt. It
-    // hasthe same location as the row's first location but is assigned the minimum elevation instead of the location's
-    // actual elevation.
+    // has the same location as the row's first location but is assigned the minimum elevation instead of the
+    // location's actual elevation.
     [globe computePointFromPosition:rowSector.minLatitude
                           longitude:rowSector.minLongitude
                            altitude:minElevation
@@ -287,10 +287,59 @@
     _sharedGeometry = [[WWTerrainSharedGeometry alloc] init];
 
     int numIndices; // holds the returned number of indices from the method below
+
+    // Build the surface-tile indices.
+    _sharedGeometry.indices = [self buildIndices:tile.numLonCells tileHeight:tile.numLatCells
+                                   numIndicesOut:&numIndices];
+    _sharedGeometry.numIndices = numIndices;
+
+    // Build the wireframe indices.
     _sharedGeometry.wireframeIndices = [self buildWireframeIndices:tile.numLonCells
                                                         tileHeight:tile.numLatCells
                                                      numIndicesOut:&numIndices];
     _sharedGeometry.numWireframeIndices = numIndices;
+}
+
+- (short*) buildIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut
+{
+    // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
+    int numLatVertices = tileHeight + 3;
+    int numLonVertices = tileWidth + 3;
+
+    // Allocate a native short array to hold the indices used to draw a tile of the specified width and height as
+    // a triangle strip. Shorts are the largest primitive that OpenGL ES allows for an index buffer. The largest
+    // tileWidth and tileHeight that can be indexed by a short is 256x256 (excluding the extra rows and columns to
+    // convert between cell count and vertex count, and the extra rows and columns for the tile skirt).
+    int numIndices = 2 * (numLatVertices - 1) * numLonVertices + 2 * (numLatVertices - 2);
+    short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
+
+    int k = 0;
+    for (int j = 0; j < numLatVertices - 1; j++)
+    {
+        if (j != 0)
+        {
+            // Attach the previous and next triangle strips by repeating the last and first vertices of the previous
+            // and current strips, respectively. This creates a degenerate triangle between the two strips which is
+            // not rasterized because it has zero area. We don't perform this step when j==0 because there is no
+            // previous triangle strip to connect with.
+            indices[k++] = (short) ((numLonVertices - 1) + (j - 1) * numLonVertices); // last vertex of previous strip
+            indices[k++] = (short) (j * numLonVertices + numLonVertices); // first vertex of current strip
+        }
+
+        for (int i = 0; i < numLonVertices; i++)
+        {
+            // Create a triangle strip joining each adjacent row of vertices, starting in the lower left corner and
+            // proceeding upward. The first vertex starts with the upper row of vertices and moves down to create a
+            // counter-clockwise winding order.
+            int vertex = i + j * numLonVertices;
+            indices[k++] = (short) (vertex + numLonVertices);
+            indices[k++] = (short) vertex;
+        }
+    }
+
+    *numIndicesOut = numIndices;
+
+    return indices;
 }
 
 - (short*) buildWireframeIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut
@@ -434,11 +483,11 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
-//
-//    int location = [dc.currentProgram getAttributeLocation:@"Position"];
-//    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
-//    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
-//    glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
+
+    int location = [dc.currentProgram getAttributeLocation:@"Position"];
+    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+    glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
 }
 
 - (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile

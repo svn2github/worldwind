@@ -12,6 +12,7 @@ All Rights Reserved.
 @interface WWTerrainSharedGeometry : NSObject
 
 @property (nonatomic) float* texCoords;
+@property (nonatomic) int numIndices;
 @property (nonatomic) short* indices;
 @property (nonatomic) short* wireframeIndices;
 @property (nonatomic) int numWireframeIndices;

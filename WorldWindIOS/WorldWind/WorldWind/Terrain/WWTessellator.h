@@ -52,7 +52,7 @@
 
 - (WWVec4*) computeReferenceCenter:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
-- (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile geom:(WWTerrainGeometry*)geom;
+- (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 - (void) buildTileRowVertices:(WWGlobe*)globe
                     rowSector:(WWSector*)rowSector
@@ -62,6 +62,8 @@
                  minElevation:(double)minElevation
                     refCenter:(WWVec4*)refCenter
                        points:(float [])points;
+
+- (short*) buildIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut;
 
 - (short*) buildWireframeIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut;
 
