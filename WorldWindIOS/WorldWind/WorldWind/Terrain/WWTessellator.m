@@ -166,7 +166,7 @@
 
     // Allocate space for the Cartesian vertices.
     int numCoords = (numLatVertices + 2) * (numLonVertices + 2) * 3;
-    geom.points = malloc((size_t) (numCoords * sizeof(float))); // TODO: free this
+    geom.points = malloc((size_t) (numCoords * sizeof(float)));
     float* points = geom.points; // running pointer to the portion of the array that will hold the computed vertices
 
     WWSector* sector = tile.sector;
@@ -303,7 +303,7 @@
 
     int numIndices = 2 * numLatVertices * (numLonVertices - 1) + 2 * (numLatVertices - 1) * numLonVertices;
     // Allocate an array to hold the computed indices.
-    short* indices = (short*) malloc((size_t) (numIndices * sizeof(short))); // TODO: free this
+    short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
 
     // Add two columns of vertices to the row stride to account for the west and east skirt vertices.
     int rowStride = numLonVertices + 2;
