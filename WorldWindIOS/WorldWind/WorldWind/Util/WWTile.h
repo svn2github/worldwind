@@ -16,6 +16,7 @@
 @property (readonly, nonatomic) int level;
 @property (readonly, nonatomic) int row;
 @property (readonly, nonatomic) int column;
+@property (readonly, nonatomic) double resolution;
 
 - (WWTile*) initWithSector:(WWSector*)sector level:(int)level row:(int)row column:(int)column;
 

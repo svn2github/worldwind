@@ -54,6 +54,7 @@
     [self->drawContext reset];
     [self->drawContext setLayers:_layers];
     [self->drawContext setGlobe:[self globe]];
+    [self->drawContext setVerticalExaggeration:1.0];
 }
 
 - (void) drawFrame:(CGRect) bounds

@@ -12,6 +12,7 @@
 - (void) reset
 {
     _timestamp = [NSDate date];
+    _verticalExaggeration = 1;
 }
 
 @end

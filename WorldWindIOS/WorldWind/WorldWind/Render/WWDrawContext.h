@@ -24,6 +24,7 @@
 @property (nonatomic) WWSector* visibleSector;
 @property (nonatomic) WWGpuProgram* currentProgram;
 @property (nonatomic) WWMatrix* modelviewProjection;
+@property (nonatomic) double verticalExaggeration;
 
 - (void) reset;
 

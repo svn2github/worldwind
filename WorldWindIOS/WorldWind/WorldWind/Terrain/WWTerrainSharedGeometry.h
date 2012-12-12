@@ -14,6 +14,7 @@ All Rights Reserved.
 @property (nonatomic) float* texCoords;
 @property (nonatomic) short* indices;
 @property (nonatomic) short* wireframeIndices;
+@property (nonatomic) int numWireframeIndices;
 @property (nonatomic) short* outlineIndices;
 @property (nonatomic) NSObject* vboCacheKey;
 

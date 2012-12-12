@@ -16,17 +16,23 @@
 
 // The tessellator property is weak because the tessellator can point to the tile,
 // thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
-@property (readonly, nonatomic, weak) WWTessellator* tessellator;
-@property (nonatomic) WWTerrainGeometry* terrainGeometry;
+@property(readonly, nonatomic, weak) WWTessellator* tessellator;
+@property(nonatomic) WWTerrainGeometry* terrainGeometry;
+@property(readonly, nonatomic) int numLonCells;
+@property(readonly, nonatomic) int numLatCells;
 
 - (WWTerrainTile*) initWithSector:(WWSector*)sector
                             level:(int)level
                               row:(int)row
                            column:(int)column
                       tessellator:(WWTessellator*)tessellator;
+
 - (void) beginRendering:(WWDrawContext*)dc;
+
 - (void) endRendering:(WWDrawContext*)dc;
+
 - (void) render:(WWDrawContext*)dc;
+
 - (void) renderWireframe:(WWDrawContext*)dc;
 
 @end
