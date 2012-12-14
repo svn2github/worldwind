@@ -112,4 +112,29 @@
     return self;
 }
 
+- (WWMatrix*) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
+              m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
+              m20:(double)m20 m21:(double)m21 m12:(double)m22 m13:(double)m23
+              m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33
+{
+    self->m[0] = m00;
+    self->m[1] = m01;
+    self->m[2] = m02;
+    self->m[3] = m03;
+    self->m[4] = m10;
+    self->m[5] = m11;
+    self->m[6] = m12;
+    self->m[7] = m13;
+    self->m[8] = m20;
+    self->m[9] = m21;
+    self->m[10] = m22;
+    self->m[11] = m23;
+    self->m[12] = m30;
+    self->m[13] = m31;
+    self->m[14] = m32;
+    self->m[15] = m33;
+
+    return self;
+}
+
 @end

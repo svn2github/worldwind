@@ -7,8 +7,8 @@
 
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
-#import "WWVec4.h"
-#import "WWLocation.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWAngle.h"
 
 @implementation WWSector
 
@@ -53,6 +53,36 @@
 
     result.latitude = 0.5 * (_minLatitude + _maxLatitude);
     result.longitude = 0.5 * (_minLongitude + _maxLongitude);
+}
+
+- (double) deltaLat
+{
+    return _maxLatitude = _minLatitude;
+}
+
+- (double) deltaLon
+{
+    return _maxLongitude - _minLongitude;
+}
+
+- (double) minLatitudeRadians
+{
+    return RADIANS(_minLatitude);
+}
+
+- (double) maxLatitudeRadians
+{
+    return RADIANS(_maxLatitude);
+}
+
+- (double) minLongitudeRadians
+{
+    return RADIANS(_minLongitude);
+}
+
+- (double) maxLongitudeRadians
+{
+    return RADIANS(_maxLongitude);
 }
 
 @end
