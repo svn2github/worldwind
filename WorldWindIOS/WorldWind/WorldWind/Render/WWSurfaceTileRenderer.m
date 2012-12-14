@@ -72,7 +72,8 @@
                 @try
                 {
                     [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
-                    [terrainTile render:dc];
+//                    [terrainTile render:dc];
+                    [terrainTile renderWireframe:dc];
                 }
                 @finally
                 {
@@ -176,11 +177,13 @@
 
 - (void) assembleIntersectingTiles:(WWTerrainTile*)terrainTile surfaceTiles:(NSArray*)surfaceTiles
 {
+    WWSector* terrainTileSector = [terrainTile sector];
+
     for (NSUInteger i = 0; i < [surfaceTiles count]; i++)
     {
         id <WWSurfaceTile> surfaceTile = [surfaceTiles objectAtIndex:i];
 
-        if (surfaceTile != nil && [[surfaceTile sector] intersects:[terrainTile sector]])
+        if (surfaceTile != nil && [[surfaceTile sector] intersects:terrainTileSector])
         {
             [self->intersectingTiles addObject:surfaceTile];
         }
@@ -189,11 +192,13 @@
 
 - (void) assembleIntersectingGeometry:(id <WWSurfaceTile>)surfaceTile terrainTiles:(WWTerrainTileList*)terrainTiles
 {
+    WWSector* surfaceTileSector = [surfaceTile sector];
+
     for (NSUInteger i = 0; i < [terrainTiles count]; i++)
     {
         WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
 
-        if (terrainTile != nil && [[terrainTile sector] intersects:[surfaceTile sector]])
+        if (terrainTile != nil && [[terrainTile sector] intersects:surfaceTileSector])
         {
             [self->intersectingGeometry addObject:terrainTile];
         }

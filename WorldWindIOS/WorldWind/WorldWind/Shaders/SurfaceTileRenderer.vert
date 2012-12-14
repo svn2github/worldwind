@@ -1,6 +1,6 @@
 const char* SurfaceTileRendererVertexShader = STRINGIFY(
 /*
- Copyright (C) 2012 United States Government as represented by the Administrator of the
+ Copyright (C) 2013 United States Government as represented by the Administrator of the
  National Aeronautics and Space Administration. All Rights Reserved.
 
  @version $Id$
@@ -57,12 +57,15 @@ varying vec2 tileCoord;
  */
 varying vec2 texCoord;
 
-varying vec4 DestinationColor;
-
 void main(void)
 {
-    DestinationColor = vec4(1.0, 0.0, 0.0, 1.0);
+    /* Transform the surface vertex point from model coordinates to eye coordinates. */
     gl_Position = mvpMatrix * vertexPoint;
-    texCoord = vertexTexCoord.st;
+
+    /* Transform the surface vertex texture coordinate from normalized surface coordinates to normalized tile coordinates. */
+    tileCoord = (tileCoordMatrix * vertexTexCoord).st;
+
+    /* Transform the surface vertex texture coordinate from normalized surface coordinates to texture coordinates. */
+    texCoord = (texCoordMatrix * vertexTexCoord).st;
 }
 );

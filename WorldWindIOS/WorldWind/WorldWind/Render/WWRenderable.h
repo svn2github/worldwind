@@ -5,14 +5,10 @@
  @version $Id$
  */
 
-#import <Foundation/Foundation.h>
-
 @class WWDrawContext;
-@class WWTerrainTile;
-@class WWTerrainTileList;
 
-@interface WWSurfaceTileRenderer : NSObject
+@protocol WWRenderable
 
-- (void) renderTiles:(WWDrawContext*)dc;
+- (void) render:(WWDrawContext*)dc;
 
 @end

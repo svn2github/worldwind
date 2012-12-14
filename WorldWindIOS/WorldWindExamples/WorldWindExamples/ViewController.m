@@ -10,7 +10,8 @@
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
-#import "WWLog.h"
+#import "WorldWind/WWLog.h"
+#import "WorldWind/Layer/WWBMNGOneImageLayer.h"
 
 @implementation ViewController
 
@@ -40,7 +41,8 @@
     WorldWindView* wwv =  (WorldWindView*) self.view;
 
     WWLayerList* layers = [[wwv sceneController] layers];
-    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
+//    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
+    [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
 
     [wwv drawView];
 }

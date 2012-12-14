@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Render/WWSurfaceTileRenderer.h"
 
 @implementation WWDrawContext
 
@@ -13,6 +14,7 @@
 {
     _timestamp = [NSDate date];
     _verticalExaggeration = 1;
+    _surfaceTileRenderer = [[WWSurfaceTileRenderer alloc] init];
 }
 
 @end

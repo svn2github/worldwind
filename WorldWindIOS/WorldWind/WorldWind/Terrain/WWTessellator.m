@@ -573,7 +573,14 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    // Must turn off texture coordinates, which were turned on in beginRendering.
+    int location = [dc.currentProgram getAttributeLocation:@"vertexTexCoord"];
+    if (location >= 0)
+    {
+        glDisableVertexAttribArray((GLuint) location);
+    }
+
+    location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
     glDrawElements(GL_LINES, _sharedGeometry.numWireframeIndices, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);

@@ -14,6 +14,7 @@
 @class WWSector;
 @class WWGpuProgram;
 @class WWMatrix;
+@class WWSurfaceTileRenderer;
 
 @interface WWDrawContext : NSObject
 
@@ -25,6 +26,7 @@
 @property (nonatomic) WWGpuProgram* currentProgram;
 @property (nonatomic) WWMatrix* modelviewProjection;
 @property (nonatomic) double verticalExaggeration;
+@property (readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
 
 - (void) reset;
 
