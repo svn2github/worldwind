@@ -85,4 +85,22 @@
     return RADIANS(_maxLongitude);
 }
 
+- (BOOL) intersects:(WWSector*)other
+{
+    if (other == nil)
+        return NO;
+
+    // Assumes normalized angles: [-180, 180], [-90, 90].
+    if ([other maxLongitude] < _minLongitude)
+        return NO;
+    if ([other minLongitude] > _maxLongitude)
+        return NO;
+    if ([other maxLatitude] < _minLatitude)
+        return NO;
+    if ([other minLatitude] > _maxLatitude)
+        return NO;
+
+    return YES;
+}
+
 @end

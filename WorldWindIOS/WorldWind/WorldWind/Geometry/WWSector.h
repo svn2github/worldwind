@@ -32,4 +32,6 @@
 - (double) minLongitudeRadians;
 - (double) maxLongitudeRadians;
 
+- (BOOL) intersects:(WWSector*)sector;
+
 @end
