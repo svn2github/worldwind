@@ -26,4 +26,8 @@
               m20:(double)m20 m21:(double)m21 m12:(double)m22 m13:(double)m23
               m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
+- (WWMatrix*) setIdentity;
+
+- (WWMatrix*) multiply:(WWMatrix*)matrix;
+
 @end
