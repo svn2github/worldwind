@@ -188,8 +188,7 @@
     [self buildTileRowVertices:dc.globe
                      rowSector:rowSector
                 numRowVertices:numLonVertices
-                    elevations:nil
-             constantElevation:&minElevation // specifies constant elevation for the row
+                    elevations:nil constantElevation:&minElevation // specifies constant elevation for the row
                   minElevation:minElevation
                      refCenter:tile.terrainGeometry.referenceCenter
                         points:points];
@@ -234,8 +233,7 @@
     [self buildTileRowVertices:dc.globe
                      rowSector:rowSector
                 numRowVertices:numLonVertices
-                    elevations:nil
-             constantElevation:&minElevation
+                    elevations:nil constantElevation:&minElevation
                   minElevation:minElevation
                      refCenter:tile.terrainGeometry.referenceCenter
                         points:points];
@@ -286,18 +284,71 @@
 
     _sharedGeometry = [[WWTerrainSharedGeometry alloc] init];
 
-    int numIndices; // holds the returned number of indices from the method below
+    int count; // holds the returned number of elements returned from the methods below
+
+    _sharedGeometry.texCoords = [self buildTexCoords:tile.numLonCells
+                                          tileHeight:tile.numLatCells
+                                        numCoordsOut:&count];
+    _sharedGeometry.numTexCoords = count;
 
     // Build the surface-tile indices.
-    _sharedGeometry.indices = [self buildIndices:tile.numLonCells tileHeight:tile.numLatCells
-                                   numIndicesOut:&numIndices];
-    _sharedGeometry.numIndices = numIndices;
+    _sharedGeometry.indices = [self buildIndices:tile.numLonCells
+                                      tileHeight:tile.numLatCells
+                                   numIndicesOut:&count];
+    _sharedGeometry.numIndices = count;
 
     // Build the wireframe indices.
     _sharedGeometry.wireframeIndices = [self buildWireframeIndices:tile.numLonCells
                                                         tileHeight:tile.numLatCells
-                                                     numIndicesOut:&numIndices];
-    _sharedGeometry.numWireframeIndices = numIndices;
+                                                     numIndicesOut:&count];
+    _sharedGeometry.numWireframeIndices = count;
+}
+
+- (float*) buildTexCoords:(int)tileWidth tileHeight:(int)tileHeight numCoordsOut:(int*)numCoordsOut
+{
+    // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
+    int numLatVertices = tileHeight + 3;
+    int numLonVertices = tileWidth + 3;
+
+    // Allocate an array to hold the texture coordinates.
+    *numCoordsOut = numLatVertices * numLonVertices;
+    float* texCoords = (float*) malloc((size_t) *numCoordsOut);
+
+    double minS = 0;
+    double maxS = 1;
+    double minT = 0;
+    double maxT = 1;
+    double deltaS = (maxS - minS) / tileWidth;
+    double deltaT = (maxT - minT) / tileHeight;
+
+    double s = minS; // Horizontal texture coordinate; varies along tile width or longitude.
+    double t = minT; // Vertical texture coordinate; varies along tile height or latitude.
+
+    int k = 0;
+    for (int j = 0; j < numLatVertices; j++)
+    {
+        if (j <= 1) // First two columns repeat the min T-coordinate to provide a column for the skirt.
+            t = minT;
+        else if (j >= numLatVertices - 2) // Last two columns repeat the max T-coordinate to provide a column for the skirt.
+            t = maxT;
+        else
+            t += deltaT; // Non-boundary latitudes are separated by the cell latitude delta.
+
+        for (int i = 0; i < numLonVertices; i++)
+        {
+            if (i <= 1) // First two rows repeat the min S-coordinate to provide a row for the skirt.
+                s = minS;
+            else if (i >= numLonVertices - 2) // Last two rows repeat the max S-coordinate to provide a row for the skirt.
+                s = maxS;
+            else
+                s += deltaS; // Non-boundary longitudes are separated by the cell longitude delta.
+
+            texCoords[k++] = (float) s;
+            texCoords[k++] = (float) t;
+        }
+    }
+
+    return texCoords;
 }
 
 - (short*) buildIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut
@@ -406,7 +457,14 @@
     }
 
     // Enable the program's vertex attribute, if one exists.
-    int location = [program getAttributeLocation:@"Position"];
+    int location = [program getAttributeLocation:@"vertexPoint"];
+    if (location >= 0)
+    {
+        glEnableVertexAttribArray((GLuint) location);
+    }
+
+    // Enable the program's texture coordinate attribute.
+    location = [program getAttributeLocation:@"vertexTexCoord"];
     if (location >= 0)
     {
         glEnableVertexAttribArray((GLuint) location);
@@ -429,7 +487,13 @@
         return;
     }
 
-    int location = [program getAttributeLocation:@"Position"];
+    int location = [program getAttributeLocation:@"vertexPoint"];
+    if (location >= 0)
+    {
+        glDisableVertexAttribArray((GLuint) location);
+    }
+
+    location = [program getAttributeLocation:@"vertexTexCoord"];
     if (location >= 0)
     {
         glDisableVertexAttribArray((GLuint) location);
@@ -455,7 +519,7 @@
     }
 
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:dc.modelviewProjection matrixB:tile.terrainGeometry.transformationMatrix];
-    [dc.currentProgram loadUniformMatrix:@"Modelview" matrix:mvp];
+    [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
 }
 
 - (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -484,9 +548,16 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    int location = [dc.currentProgram getAttributeLocation:@"Position"];
+    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+
+    location = [dc.currentProgram getAttributeLocation:@"vertexTexCoord"];
+    if (location >= 0) // attribute might not be used in shader, so check to be sure it has a location
+    {
+        glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, _sharedGeometry.texCoords);
+    }
+
     glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
 }
 
@@ -502,7 +573,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    int location = [dc.currentProgram getAttributeLocation:@"Position"];
+    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
     glDrawElements(GL_LINES, _sharedGeometry.numWireframeIndices, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);

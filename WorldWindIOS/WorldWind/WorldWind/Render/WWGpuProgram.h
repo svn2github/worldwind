@@ -24,7 +24,7 @@
 
 @property(readonly, nonatomic) GLuint programId;
 
-- (WWGpuProgram*) initWithVertexShader:(const char*)vertexSource fragmentShader:(const char*)fragmentSource;
+- (WWGpuProgram*) initWithShaderSource:(const char*)vertexSource fragmentShader:(const char*)fragmentSource;
 
 - (BOOL) link:(GLuint)program;
 

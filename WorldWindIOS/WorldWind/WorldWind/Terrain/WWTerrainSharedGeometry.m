@@ -16,10 +16,6 @@ All Rights Reserved.
     self = [super init];
 
     _vboCacheKey = [[NSObject alloc] init];
-    _texCoords = 0;
-    _indices = 0;
-    _wireframeIndices = 0;
-    _outlineIndices = 0;
 
     return self;
 }

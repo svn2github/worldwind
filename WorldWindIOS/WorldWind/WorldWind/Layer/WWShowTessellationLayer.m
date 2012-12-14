@@ -74,7 +74,7 @@
 {
     @try
     {
-        _gpuProgram = [[WWGpuProgram alloc] initWithVertexShader:SimpleVertexShader
+        _gpuProgram = [[WWGpuProgram alloc] initWithShaderSource:SimpleVertexShader
                                                   fragmentShader:SimpleFragmentShader];
     }
     @catch (NSException* exception)
