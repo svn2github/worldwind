@@ -45,6 +45,14 @@
                              offset:(WWVec4*)offset
                         outputArray:(float [])result;
 
+- (void) computeNormal:(double)latitude
+             longitude:(double)longitude
+           outputPoint:(WWVec4*)result;
+
+- (void) computeNorthTangent:(double)latitude
+                   longitude:(double)longitude
+                  outputPoint:(WWVec4*)result;
+
 - (double) getElevation:(double)latitude longitude:(double)longitude;
 
 - (void) getElevations:(WWSector*)sector

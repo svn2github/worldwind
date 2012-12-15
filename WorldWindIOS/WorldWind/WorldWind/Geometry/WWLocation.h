@@ -14,7 +14,12 @@
 
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude;
 
+- (WWLocation*) setDegreesLatitude:(double)latitude longitude:(double)longitude;
+
+- (WWLocation*) set:(WWLocation*)location;
+
 - (WWLocation*) add:(WWLocation*)location;
+
 - (WWLocation*) subtract:(WWLocation*)location;
 
 

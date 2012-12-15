@@ -10,3 +10,7 @@
 #define RADIANS(a) (a * 3.14159265359 / 180)
 
 extern double WWAngleFromDMS(int degrees, int minutes, double seconds);
+
+extern double NormalizedDegreesLatitude(double degrees);
+
+extern double NormalizedDegreesLongitude(double degrees);

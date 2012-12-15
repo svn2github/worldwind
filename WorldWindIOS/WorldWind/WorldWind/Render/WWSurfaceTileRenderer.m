@@ -235,7 +235,7 @@
 
     [result set:sScale m01:0 m02:0 m03:sScale * sTrans
             m10:0 m11:tScale m12:0 m13:tScale * tTrans
-            m20:0 m21:0 m12:1 m13:0
+            m20:0 m21:0 m22:1 m23:0
             m30:0 m31:0 m32:0 m33:1];
 }
 

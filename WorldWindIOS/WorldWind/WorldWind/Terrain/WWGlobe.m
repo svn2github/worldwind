@@ -173,6 +173,62 @@
     }
 }
 
+- (void) computeNormal:(double)latitude
+             longitude:(double)longitude
+           outputPoint:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    double cosLat = cos(RADIANS(latitude));
+    double cosLon = cos(RADIANS(longitude));
+    double sinLat = sin(RADIANS(latitude));
+    double sinLon = sin(RADIANS(longitude));
+
+    double eqSquared = _equatorialRadius * _equatorialRadius;
+    double polSquared = _polarRadius * _polarRadius;
+
+    result.x = cosLat * sinLon / eqSquared;
+    result.y = (1 - _es) * sinLat / polSquared;
+    result.z = cosLat * cosLon / eqSquared;
+    [result normalize3];
+}
+
+- (void) computeNorthTangent:(double)latitude
+                   longitude:(double)longitude
+                 outputPoint:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
+    // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
+    // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
+    // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
+    // transforming the vector (0, 1, 0) by the combined transform:
+    //
+    // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
+    //
+    // This computation can be simplified and encoded inline by making two observations:
+    // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
+    // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the trigonimetric
+    //   identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+
+    double cosLat = cos(RADIANS(latitude));
+    double cosLon = cos(RADIANS(longitude));
+    double sinLat = sin(RADIANS(latitude));
+    double sinLon = sin(RADIANS(longitude));
+
+    result.x = -sinLat * sinLon;
+    result.y = cosLat;
+    result.z = -sinLat * cosLon;
+    [result normalize3];
+}
+
 - (double) getElevation:(double)latitude longitude:(double)longitude
 {
     return 0;

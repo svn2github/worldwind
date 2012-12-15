@@ -19,8 +19,18 @@
 - (WWVec4*) initWithZeroVector;
 - (WWVec4*) initWithUnitVector;
 
-- (WWVec4*) add3:(WWVec4*)vector;
-- (WWVec4*) subtract3:(WWVec4*)vector;
+- (WWVec4*) set:(double)x y:(double)y;
 
+- (WWVec4*) set:(double)x y:(double)y z:(double)z;
+
+- (WWVec4*) set:(double)x y:(double)y z:(double)z w:(double)w;
+
+- (double) getLength3;
+
+- (WWVec4*) normalize3;
+
+- (WWVec4*) add3:(WWVec4*)vector;
+
+- (WWVec4*) subtract3:(WWVec4*)vector;
 
 @end

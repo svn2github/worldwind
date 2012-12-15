@@ -25,6 +25,27 @@
     return [[[self class] alloc] initWithDegreesLatitude:_latitude longitude:_longitude];
 }
 
+- (WWLocation*) setDegreesLatitude:(double)latitude longitude:(double)longitude
+{
+    _latitude = latitude;
+    _longitude = longitude;
+
+    return self;
+}
+
+- (WWLocation*) set:(WWLocation*)location
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    _latitude = location->_latitude;
+    _longitude = location->_longitude;
+
+    return self;
+}
+
 -(WWLocation*) add:(WWLocation *)location
 {
     if (location == nil)
