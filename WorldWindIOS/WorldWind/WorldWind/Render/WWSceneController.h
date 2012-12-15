@@ -12,7 +12,7 @@
 @class WWGlobe;
 @class WWLayerList;
 @class WWDrawContext;
-
+@protocol WWNavigatorState;
 
 @interface WWSceneController : NSObject
 {
@@ -22,6 +22,7 @@
 
 @property (readonly, nonatomic) WWGlobe* globe;
 @property (readonly, nonatomic) WWLayerList* layers;
+@property (nonatomic) id<WWNavigatorState> navigatorState;
 
 - (WWSceneController*)init;
 - (void) render:(CGRect) bounds;
@@ -31,7 +32,6 @@
 - (void) beginFrame:(CGRect) bounds;
 - (void) endFrame;
 - (void) clearFrame;
-- (void) applyView;
 - (void) createTerrain;
 - (void) draw;
 - (void) drawLayers;

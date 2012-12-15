@@ -8,11 +8,10 @@
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Terrain/WWGLobe.h"
 #import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWInd/Layer/WWLayer.h"
+#import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWMatrix.h"
 
 @implementation WWSceneController
 
@@ -54,6 +53,7 @@
     [self->drawContext reset];
     [self->drawContext setLayers:_layers];
     [self->drawContext setGlobe:[self globe]];
+    [self->drawContext setNavigatorState:_navigatorState];
     [self->drawContext setVerticalExaggeration:1.0];
 }
 
@@ -61,7 +61,6 @@
 {
     @try {
         [self beginFrame:bounds];
-        [self applyView];
         [self createTerrain];
         [self clearFrame];
         [self draw];
@@ -96,18 +95,6 @@
 {
     glClearColor(0.3, 0.3, 0.3, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-- (void) applyView
-{
-    double globeRadius = self->drawContext.globe.equatorialRadius;
-
-    WWMatrix* m = [[WWMatrix alloc] initWithIdentity];
-    m->m[0] = 1.0 / (2.0 * globeRadius);
-    m->m[5] = 1.0 / (3.0 * globeRadius);
-    m->m[10] = 1.0 / globeRadius;
-
-    [self->drawContext setModelviewProjection:m];
 }
 
 - (void) createTerrain

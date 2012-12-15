@@ -17,6 +17,7 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
 
 #define NUM_LAT_SUBDIVISIONS 3
 #define NUM_LON_SUBDIVISIONS 6
@@ -518,7 +519,7 @@
         return;
     }
 
-    WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:dc.modelviewProjection matrixB:tile.terrainGeometry.transformationMatrix];
+    WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection] matrixB:[[tile terrainGeometry] transformationMatrix]];
     [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
 }
 

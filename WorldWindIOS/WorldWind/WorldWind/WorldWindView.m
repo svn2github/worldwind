@@ -7,6 +7,7 @@
 
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WorldWindView
@@ -49,6 +50,7 @@
         }
 
         self->_sceneController = [[WWSceneController alloc] init];
+        self->_navigator = [[WWBasicNavigator alloc] initWithView:self];
     }
     
     return self;
@@ -57,8 +59,9 @@
 - (void) drawView
 {
     [EAGLContext setCurrentContext:self.context];
-    
+
     // The scene controller catches and logs rendering exceptions, so don't do it here.
+    [self.sceneController setNavigatorState:[[self navigator] currentState]];
     [self.sceneController render:self.frame];
     
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
@@ -69,7 +72,7 @@
     [EAGLContext setCurrentContext:self.context];
     
     [self.sceneController dispose];
-    
+
     [self tearDownGL];
     
     if ([EAGLContext currentContext] == self.context)

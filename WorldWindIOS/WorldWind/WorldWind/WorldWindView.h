@@ -10,6 +10,7 @@
 #import <OpenGLES/ES2/gl.h>
 
 @class WWSceneController;
+@protocol WWNavigator;
 
 @interface WorldWindView : UIView
 
@@ -18,6 +19,7 @@
 @property (readonly, nonatomic) GLuint depthBuffer;
 @property (readonly, nonatomic, strong) EAGLContext* context;
 @property (readonly, nonatomic, strong) WWSceneController* sceneController;
+@property (readonly, nonatomic, strong) id<WWNavigator> navigator;
 
 - (void) drawView;
 - (void) tearDownGL;
