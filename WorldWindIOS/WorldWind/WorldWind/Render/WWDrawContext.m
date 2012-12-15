@@ -10,11 +10,19 @@
 
 @implementation WWDrawContext
 
+- (WWDrawContext*) init
+{
+    self = [super init];
+
+    _surfaceTileRenderer = [[WWSurfaceTileRenderer alloc] init];
+
+    return self;
+}
+
 - (void) reset
 {
     _timestamp = [NSDate date];
     _verticalExaggeration = 1;
-    _surfaceTileRenderer = [[WWSurfaceTileRenderer alloc] init];
 }
 
 @end

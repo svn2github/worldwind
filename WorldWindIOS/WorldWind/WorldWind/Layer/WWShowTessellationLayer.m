@@ -72,6 +72,9 @@
 
 - (void) makeGpuProgram
 {
+    if (_gpuProgram != nil)
+        return;
+
     @try
     {
         _gpuProgram = [[WWGpuProgram alloc] initWithShaderSource:SimpleVertexShader

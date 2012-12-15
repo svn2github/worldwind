@@ -28,6 +28,8 @@
 @property (nonatomic) double verticalExaggeration;
 @property (readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
 
+- (WWDrawContext*) init;
+
 - (void) reset;
 
 @end
