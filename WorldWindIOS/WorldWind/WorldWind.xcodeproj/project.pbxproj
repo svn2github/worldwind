@@ -86,6 +86,12 @@
 		1BF9AE7F21E1AA26D5F744D2 /* WWMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A673E5A9F5C56E14C90C /* WWMatrix.m */; };
 		1BF9AF76E65DEB8ACAECB60A /* WWRenderable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AA82A12E77637CF92E72 /* WWRenderable.h */; };
 		1BF9AFC59712651B9E24D989 /* WWDisposable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A05D58A0C09F3E88E3F2 /* WWDisposable.h */; };
+		CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */; };
+		CC8CF45C6898988F6C2D425B /* WWBasicNavigator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */; };
+		CC8CF5AE663CF8D85ACE2CB9 /* WWBasicNavigatorState.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */; };
+		CC8CF6375A098A256F29B363 /* WWNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */; };
+		CC8CF94AB53EE8F3A04FCBD8 /* WWNavigatorState.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */; };
+		CC8CFABB9FB2B6F6B5F3A8BB /* WWBasicNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFF1CC1B22282FDE20451 /* WWBasicNavigator.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +125,10 @@
 				1BF9A92F9CB9604B40ABC54A /* WWSurfaceImage.h in CopyFiles */,
 				1BF9ADAFFA280D13485DD4F4 /* WWBMNGOneImageLayer.h in CopyFiles */,
 				1BF9AF76E65DEB8ACAECB60A /* WWRenderable.h in CopyFiles */,
+				CC8CFABB9FB2B6F6B5F3A8BB /* WWBasicNavigator.h in CopyFiles */,
+				CC8CF5AE663CF8D85ACE2CB9 /* WWBasicNavigatorState.h in CopyFiles */,
+				CC8CF6375A098A256F29B363 /* WWNavigator.h in CopyFiles */,
+				CC8CF94AB53EE8F3A04FCBD8 /* WWNavigatorState.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +208,12 @@
 		1BF9AEC62033A510E2AB3B10 /* WWSurfaceTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWSurfaceTile.h; sourceTree = "<group>"; };
 		1BF9AF1740AFDC53176E405F /* WWTerrainSharedGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTerrainSharedGeometry.h; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
+		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWNavigator.h; path = WWNavigator.h; sourceTree = "<group>"; };
+		CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBasicNavigator.m; path = WWBasicNavigator.m; sourceTree = "<group>"; };
+		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBasicNavigatorState.m; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
+		CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWNavigatorState.h; path = WWNavigatorState.h; sourceTree = "<group>"; };
+		CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWBasicNavigatorState.h; path = WWBasicNavigatorState.h; sourceTree = "<group>"; };
+		CC8CFF1CC1B22282FDE20451 /* WWBasicNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWBasicNavigator.h; path = WWBasicNavigator.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -317,6 +333,7 @@
 				0B98142F165FFDF200193E50 /* WorldWindConstants.m */,
 				0B98144B16608BE900193E50 /* WWLog.h */,
 				1BF9A18999427D066EE933B0 /* Shapes */,
+				CC8CF1BC7095267650B2E530 /* Navigate */,
 			);
 			path = WorldWind;
 			sourceTree = "<group>";
@@ -404,6 +421,19 @@
 				1BF9AB0F33BC4A536062C709 /* WWSurfaceImage.h */,
 			);
 			path = Shapes;
+			sourceTree = "<group>";
+		};
+		CC8CF1BC7095267650B2E530 /* Navigate */ = {
+			isa = PBXGroup;
+			children = (
+				CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */,
+				CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */,
+				CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */,
+				CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */,
+				CC8CFF1CC1B22282FDE20451 /* WWBasicNavigator.h */,
+				CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */,
+			);
+			path = Navigate;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -535,6 +565,8 @@
 				1BF9AD40B55DD54FCA764D63 /* WWSurfaceTileRenderer.m in Sources */,
 				1BF9AA589C954F47D2044975 /* WWSurfaceImage.m in Sources */,
 				1BF9A297DD0276545C6AEE99 /* WWBMNGOneImageLayer.m in Sources */,
+				CC8CF45C6898988F6C2D425B /* WWBasicNavigator.m in Sources */,
+				CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
