@@ -57,7 +57,7 @@
 
 - (double) deltaLat
 {
-    return _maxLatitude = _minLatitude;
+    return _maxLatitude - _minLatitude;
 }
 
 - (double) deltaLon
