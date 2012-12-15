@@ -402,7 +402,7 @@
     int numLatVertices = tileHeight + 1;
     int numLonVertices = tileWidth + 1;
 
-    int numIndices = 2 * numLatVertices * (numLonVertices - 1) + 2 * (numLatVertices - 1) * numLonVertices;
+    int numIndices = 2 * tileWidth * (tileHeight + 1) + 2 * tileHeight * (tileWidth + 1);
     // Allocate an array to hold the computed indices.
     short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
 
@@ -411,12 +411,12 @@
     // Skip the skirt row and column to start an the first interior vertex.
     int offset = rowStride + 1;
 
-    // Add a line between each column to define the vertical cell outlines. Starts and ends at the vertices that
+    // Add a line between each row to define the horizontal cell outlines. Starts and ends at the vertices that
     // appear on the surface, thereby ignoring the tile skirt.
     int k = 0;
     for (int j = 0; j < numLatVertices; j++)
     {
-        for (int i = 0; i < numLonVertices; i++)
+        for (int i = 0; i < tileWidth; i++)
         {
             int vertex = offset + i + j * rowStride;
             indices[k] = (short) vertex;
@@ -425,11 +425,11 @@
         }
     }
 
-    // Add a line between each row to define the horizontal cell outlines. Starts and ends at the vertices that appear
-    // on the surface, thereby ignoring the tile skirt.
+    // Add a line between each column to define the vertical cell outlines. Starts and ends at the vertices that
+    // appear on the surface, thereby ignoring the tile skirt.
     for (int i = 0; i < numLonVertices; i++)
     {
-        for (int j = 0; j < numLatVertices; j++)
+        for (int j = 0; j < tileHeight; j++)
         {
             int vertex = offset + i + j * rowStride;
             indices[k] = (short) vertex;
