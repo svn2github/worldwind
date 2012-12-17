@@ -12,7 +12,7 @@
 @class WorldWindView;
 @class WWLocation;
 
-@interface WWBasicNavigator : NSObject<WWNavigator>
+@interface WWBasicNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
 {
 @protected
     WorldWindView* view;
@@ -37,5 +37,7 @@
 - (void) handlePinchFrom:(UIPinchGestureRecognizer*)recognizer;
 
 - (void) updateView;
+
+- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
 
 @end

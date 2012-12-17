@@ -36,9 +36,10 @@
     self->view = viewToNavigate;
     self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
     self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
+    [self->panGestureRecognizer setDelegate:self];
+    [self->pinchGestureRecognizer setDelegate:self];
     [self->view addGestureRecognizer:self->panGestureRecognizer];
     [self->view addGestureRecognizer:self->pinchGestureRecognizer];
-    // TODO: configure the pan and pinch gesture recognizers to operate simultaneously.
 
     self->beginLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
     self->beginRange = 0;
@@ -151,6 +152,16 @@
 - (void) updateView
 {
     [self->view drawView];
+}
+
+- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    if (gestureRecognizer == self->panGestureRecognizer)
+        return otherGestureRecognizer == self->pinchGestureRecognizer;
+    else if (gestureRecognizer == self->pinchGestureRecognizer)
+        return otherGestureRecognizer == self->panGestureRecognizer;
+    else
+        return NO;
 }
 
 @end
