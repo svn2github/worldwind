@@ -30,7 +30,7 @@
         // Generate OpenGL objects for the framebuffer, color renderbuffer, and depth renderbuffer. The storage for
         // each renderbuffer is allocated in resizeWithLayer.
         glGenFramebuffers(1, &self->_frameBuffer);
-        glGenRenderbuffers(1, &self->_renderBuffer);
+        glGenRenderbuffers(1, &self->_colorBuffer);
         glGenRenderbuffers(1, &self->_depthBuffer);
 
         // Allocate storage for the color and depth renderbuffers. This computes the correct and consistent dimensions
@@ -39,8 +39,8 @@
 
         // Configure the framebuffer's color and depth attachments, then validate the framebuffer's status.
         glBindFramebuffer(GL_FRAMEBUFFER, self->_frameBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, self->_renderBuffer);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, self->_renderBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, self->_colorBuffer);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, self->_depthBuffer);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -64,7 +64,7 @@
     // Allocate storage for the color renderbuffer using the CAEAGLLayer, then retrieve its dimensions. The color
     // renderbuffer's are calculated based on this view's bounds and scale factor, and therefore may not be equal to
     // this view's bounds. The depth renderbuffer and viewport must have the same dimensions as the color renderbuffer.
-    glBindRenderbuffer(GL_RENDERBUFFER, self->_renderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
     [self->_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height);
@@ -76,7 +76,7 @@
 
     // Restore the GL_RENDERBUFFER binding to the color renderbuffer. All other methods in WorldWindView assume that the
     // color renderbuffer is bound.
-    glBindRenderbuffer(GL_RENDERBUFFER, self->_renderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
 
     // Assign the viewport to a rectangle with its origin at (0, 0) and with dimensions equal to the color renderbuffer.
     // This viewport property is used by the scene controller to set the OpenGL viewport state, and is used by the
@@ -127,8 +127,8 @@
 
 - (void) tearDownGL
 {
-    glDeleteRenderbuffers(1, &self->_renderBuffer);
-    self->_renderBuffer = 0;
+    glDeleteRenderbuffers(1, &self->_colorBuffer);
+    self->_colorBuffer = 0;
 
     glDeleteRenderbuffers(1, &self->_depthBuffer);
     self->_depthBuffer = 0;

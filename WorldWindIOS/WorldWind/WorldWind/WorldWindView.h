@@ -15,7 +15,7 @@
 @interface WorldWindView : UIView
 
 @property (readonly, nonatomic) GLuint frameBuffer;
-@property (readonly, nonatomic) GLuint renderBuffer;
+@property (readonly, nonatomic) GLuint colorBuffer;
 @property (readonly, nonatomic) GLuint depthBuffer;
 @property (readonly, nonatomic) CGRect viewport;
 @property (readonly, nonatomic, strong) EAGLContext* context;
