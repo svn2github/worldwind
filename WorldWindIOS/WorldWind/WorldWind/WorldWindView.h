@@ -17,6 +17,7 @@
 @property (readonly, nonatomic) GLuint frameBuffer;
 @property (readonly, nonatomic) GLuint renderBuffer;
 @property (readonly, nonatomic) GLuint depthBuffer;
+@property (readonly, nonatomic) CGRect viewport;
 @property (readonly, nonatomic, strong) EAGLContext* context;
 @property (readonly, nonatomic, strong) WWSceneController* sceneController;
 @property (readonly, nonatomic, strong) id<WWNavigator> navigator;

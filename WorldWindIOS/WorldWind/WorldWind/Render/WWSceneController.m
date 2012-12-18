@@ -35,12 +35,12 @@
 {
 }
 
-- (void) render:(CGRect) bounds
+- (void) render:(CGRect)viewport
 {
     @try
     {
         [self resetDrawContext];
-        [self drawFrame:bounds];
+        [self drawFrame:viewport];
     }
     @catch (NSException *exception)
     {
@@ -57,22 +57,24 @@
     [self->drawContext setVerticalExaggeration:1.0];
 }
 
-- (void) drawFrame:(CGRect) bounds
+- (void) drawFrame:(CGRect)viewport
 {
-    @try {
-        [self beginFrame:bounds];
+    @try
+    {
+        [self beginFrame:viewport];
         [self createTerrain];
         [self clearFrame];
         [self draw];
     }
-    @finally {
+    @finally
+    {
         [self endFrame];
     }
 }
 
-- (void) beginFrame:(CGRect) bounds
+- (void) beginFrame:(CGRect)viewport
 {
-    glViewport((int) bounds.origin.x, (int) bounds.origin.y, (int) bounds.size.width, (int) bounds.size.height);
+    glViewport((int) viewport.origin.x, (int) viewport.origin.y, (int) viewport.size.width, (int) viewport.size.height);
     
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);

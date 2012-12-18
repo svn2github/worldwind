@@ -25,11 +25,11 @@
 @property (nonatomic) id<WWNavigatorState> navigatorState;
 
 - (WWSceneController*)init;
-- (void) render:(CGRect) bounds;
+- (void) render:(CGRect)viewport;
 - (void) dispose;
 - (void) resetDrawContext;
-- (void) drawFrame:(CGRect) bounds;
-- (void) beginFrame:(CGRect) bounds;
+- (void) drawFrame:(CGRect)viewport;
+- (void) beginFrame:(CGRect)viewport;
 - (void) endFrame;
 - (void) clearFrame;
 - (void) createTerrain;

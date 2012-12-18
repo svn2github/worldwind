@@ -22,7 +22,7 @@
 
 - (void) loadView
 {
-    self.view = [[WorldWindView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.view = [[WorldWindView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
     if (self.view == nil)
     {
         NSLog(@"Unable to create a WorldWindView");

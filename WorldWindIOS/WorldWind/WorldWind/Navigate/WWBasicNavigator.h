@@ -32,11 +32,11 @@
 
 - (id<WWNavigatorState>) currentState;
 
+- (void) updateView;
+
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer;
 
 - (void) handlePinchFrom:(UIPinchGestureRecognizer*)recognizer;
-
-- (void) updateView;
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
 
