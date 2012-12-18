@@ -9,26 +9,36 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWSurfaceTileRenderer.h"
-
+#import "WorldWind/Render/WWTexture.h"
+#import "WorldWInd/WWLog.h"
 
 @implementation WWSurfaceImage
 
-- (WWSurfaceImage*) init
+- (WWSurfaceImage*) initWithImagePath:(WWSector*)sector imagePath:(NSString*)imagePath
 {
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (imagePath == nil || [imagePath length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Image path is nil or zero length")
+    }
+
     self = [super init];
 
-    _sector = [[WWSector alloc] initWithFullSphere];
+    _imagePath = imagePath;
+    _sector = sector;
+
+    self->texture = [[WWTexture alloc] initWithContentsOfFile:imagePath];
 
     return self;
 }
 
 - (BOOL) bind:(WWDrawContext*)dc
 {
-    return true;
-}
-
-- (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
-{
+    return [self->texture bind:dc];
 }
 
 - (void) render:(WWDrawContext*)dc

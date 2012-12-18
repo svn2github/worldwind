@@ -63,7 +63,5 @@ void main(void)
     /* 10.1. */
     gl_FragColor = tileColor(tileTexture, tileCoord, texCoord);
 
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-
 }
 );

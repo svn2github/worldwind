@@ -13,6 +13,7 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Render/WWSurfaceTile.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/WWLog.h"
 
 // STRINGIFY is used in the shader files.
@@ -72,8 +73,8 @@
                 @try
                 {
                     [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
-//                    [terrainTile render:dc];
-                    [terrainTile renderWireframe:dc];
+                    [terrainTile render:dc];
+//                    [terrainTile renderWireframe:dc];
                 }
                 @finally
                 {
@@ -212,8 +213,7 @@
     [self computeTileCoordMatrix:terrainTile surfaceTile:surfaceTile result:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"tileCoordMatrix" matrix:self->tileCoordMatrix];
 
-    [self->texCoordMatrix setIdentity];
-    [surfaceTile applyInternalTransform:dc matrix:self->texCoordMatrix];
+    [self->texCoordMatrix setUnitYFlip];
     [self->texCoordMatrix multiply:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"texCoordMatrix" matrix:self->texCoordMatrix];
 }
@@ -221,12 +221,12 @@
 - (void) computeTileCoordMatrix:(WWTerrainTile*)terrainTile surfaceTile:(id <WWSurfaceTile>)surfaceTile result:(WWMatrix*)result
 {
     WWSector* terrainSector = [terrainTile sector];
-    double terrainDeltaLon = [terrainSector deltaLon];
-    double terrainDeltaLat = [terrainSector deltaLat];
+    double terrainDeltaLon = RADIANS([terrainSector deltaLon]);
+    double terrainDeltaLat = RADIANS([terrainSector deltaLat]);
 
     WWSector* surfaceSector = [surfaceTile sector];
-    double surfaceDeltaLon = [surfaceSector deltaLon];
-    double surfaceDeltaLat = [surfaceSector deltaLat];
+    double surfaceDeltaLon = RADIANS([surfaceSector deltaLon]);
+    double surfaceDeltaLat = RADIANS([surfaceSector deltaLat]);
 
     double sScale = surfaceDeltaLon > 0 ? terrainDeltaLon / surfaceDeltaLon : 1;
     double tScale = surfaceDeltaLat > 0 ? terrainDeltaLat / surfaceDeltaLat : 1;

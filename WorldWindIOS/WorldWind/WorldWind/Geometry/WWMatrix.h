@@ -32,6 +32,8 @@
 
 - (WWMatrix*) setTranslation:(double)x y:(double)y z:(double) z;
 
+- (WWMatrix*) setUnitYFlip;
+
 - (WWMatrix*) setPerspective:(double)left
                        right:(double)right
                       bottom:(double)bottom

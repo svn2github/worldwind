@@ -10,12 +10,16 @@
 #import "WorldWind/Render/WWRenderable.h"
 
 @class WWDrawContext;
-
+@class WWTexture;
 
 @interface WWSurfaceImage : NSObject <WWSurfaceTile, WWRenderable>
+{
+    WWTexture* texture;
+}
 
-@property (nonatomic) WWSector* sector;
+@property (readonly, nonatomic) WWSector* sector;
+@property (readonly, nonatomic) NSString* imagePath;
 
-- (WWSurfaceImage*) init;
+- (WWSurfaceImage*) initWithImagePath:(WWSector*)sector imagePath:(NSString*)imagePath;
 
 @end

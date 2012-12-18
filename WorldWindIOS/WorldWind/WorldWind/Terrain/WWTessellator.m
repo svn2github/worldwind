@@ -313,7 +313,7 @@
 
     // Allocate an array to hold the texture coordinates.
     *numCoordsOut = numLatVertices * numLonVertices;
-    float* texCoords = (float*) malloc((size_t) *numCoordsOut);
+    float* texCoords = (float*) malloc((size_t) *numCoordsOut * 2 * sizeof(float));
 
     double minS = 0;
     double maxS = 1;
@@ -519,7 +519,8 @@
         return;
     }
 
-    WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection] matrixB:[[tile terrainGeometry] transformationMatrix]];
+    WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
+                                               matrixB:[[tile terrainGeometry] transformationMatrix]];
     [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
 }
 

@@ -14,4 +14,6 @@
 
 @property (readonly, nonatomic) WWSurfaceImage* surfaceImage;
 
+- (void) retrieveImage:(NSString*) fileName atLocation:(NSString*)location toFilePath:(NSString*)path;
+
 @end

@@ -188,6 +188,28 @@
     return self;
 }
 
+- (WWMatrix*) setUnitYFlip
+{
+    self->m[0] = 1;
+    self->m[1] = 0;
+    self->m[2] = 0;
+    self->m[3] = 0;
+    self->m[4] = 0;
+    self->m[5] = -1;
+    self->m[6] = 0;
+    self->m[7] = 1;
+    self->m[8] = 0;
+    self->m[9] = 0;
+    self->m[10] = 1;
+    self->m[11] = 0;
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = 0;
+    self->m[15] = 1;
+
+    return self;
+}
+
 - (WWMatrix*) setPerspective:(double)left
                        right:(double)right
                       bottom:(double)bottom
