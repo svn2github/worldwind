@@ -100,6 +100,19 @@
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
+- (void) layoutSubviews
+{
+    // Called whenever the backing Core Animation layer's bounds or properties change. In this case, the WorldWindView
+    // must reallocate storage for the color and depth renderbuffers, and reassign the viewport property. This ensures
+    // that the renderbuffers fit the view, and that the OpenGL viewport and projection matrix match the renderbuffer
+    // dimensions.
+
+    CAEAGLLayer* eaglLayer = (CAEAGLLayer*) super.layer;
+    [self resizeWithLayer:eaglLayer];
+
+    [self drawView];
+}
+
 - (void) dealloc
 {
     [EAGLContext setCurrentContext:self.context];

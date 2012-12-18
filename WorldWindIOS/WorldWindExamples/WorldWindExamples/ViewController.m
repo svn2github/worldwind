@@ -41,10 +41,7 @@
     WorldWindView* wwv =  (WorldWindView*) self.view;
 
     WWLayerList* layers = [[wwv sceneController] layers];
-//    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
     [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
-
-    [wwv drawView];
 }
 
 @end
