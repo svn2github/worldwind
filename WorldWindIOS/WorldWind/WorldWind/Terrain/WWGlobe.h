@@ -11,8 +11,9 @@
 @class WWTerrainTile;
 @class WWTerrainTileList;
 @class WWDrawContext;
-@class WWVec4;
+@class WWPosition;
 @class WWSector;
+@class WWVec4;
 
 @interface WWGlobe : NSObject
 
@@ -44,6 +45,11 @@
                   constantElevation:(double*)constantElevation
                              offset:(WWVec4*)offset
                         outputArray:(float [])result;
+
+- (void) computePositionFromPoint:(double)x
+                                y:(double)y
+                                z:(double)z
+                   outputPosition:(WWPosition*)result;
 
 - (void) computeNormal:(double)latitude
              longitude:(double)longitude

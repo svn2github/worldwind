@@ -7,10 +7,11 @@
 
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTessellator.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWGlobe
 
@@ -171,6 +172,117 @@
             ++index;
         }
     }
+}
+
+- (void) computePositionFromPoint:(double)x
+                                y:(double)y
+                                z:(double)z
+                   outputPosition:(WWPosition*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    // Contributed by Nathan Kronenfeld. Updated on 1/24/2011. Brings this calculation in line with Vermeille's most
+    // recent update.
+
+    // According to H. Vermeille, "An analytical method to transform geocentric into geodetic coordinates"
+    // http://www.springerlink.com/content/3t6837t27t351227/fulltext.pdf
+    // Journal of Geodesy, accepted 10/2010, not yet published
+    double X = z;
+    double Y = x;
+    double Z = y;
+    double XXpYY = X * X + Y * Y;
+    double sqrtXXpYY = sqrt(XXpYY);
+
+    double a = _equatorialRadius;
+    double ra2 = 1 / (a * a);
+    double e2 = _es;
+    double e4 = e2 * e2;
+
+    // Step 1
+    double p = XXpYY * ra2;
+    double q = Z * Z * (1 - e2) * ra2;
+    double r = (p + q - e4) / 6;
+
+    double h;
+    double phi;
+
+    double evoluteBorderTest = 8 * r * r * r + e4 * p * q;
+    if (evoluteBorderTest > 0 || q != 0)
+    {
+        double u;
+
+        if (evoluteBorderTest > 0)
+        {
+            // Step 2: general case
+            double rad1 = sqrt(evoluteBorderTest);
+            double rad2 = sqrt(e4 * p * q);
+
+            // 10*e2 is my arbitrary decision of what Vermeille means by "near... the cusps of the evolute".
+            if (evoluteBorderTest > 10 * e2)
+            {
+                double rad3 = cbrt((rad1 + rad2) * (rad1 + rad2));
+                u = r + 0.5 * rad3 + 2 * r * r / rad3;
+            }
+            else
+            {
+                u = r + 0.5 * cbrt((rad1 + rad2) * (rad1 + rad2)) + 0.5 * cbrt((rad1 - rad2) * (rad1 - rad2));
+            }
+        }
+        else
+        {
+            // Step 3: near evolute
+            double rad1 = sqrt(-evoluteBorderTest);
+            double rad2 = sqrt(-8 * r * r * r);
+            double rad3 = sqrt(e4 * p * q);
+            double atan = 2 * atan2(rad3, rad1 + rad2) / 3;
+
+            u = -4 * r * sin(atan) * cos(M_PI / 6 + atan);
+        }
+
+        double v = sqrt(u * u + e4 * q);
+        double w = e2 * (u + v - q) / (2 * v);
+        double k = (u + v) / (sqrt(w * w + u + v) + w);
+        double D = k * sqrtXXpYY / (k + e2);
+        double sqrtDDpZZ = sqrt(D * D + Z * Z);
+
+        h = (k + e2 - 1) * sqrtDDpZZ / k;
+        phi = 2 * atan2(Z, sqrtDDpZZ + D);
+    }
+    else
+    {
+        // Step 4: singular disk
+        double rad1 = sqrt(1 - e2);
+        double rad2 = sqrt(e2 - p);
+        double e = sqrt(e2);
+
+        h = -a * rad1 * rad2 / e;
+        phi = rad2 / (e * rad2 + rad1 * sqrt(p));
+    }
+
+    // Compute lambda
+    double lambda;
+    double s2 = sqrt(2);
+    if ((s2 - 1) * Y < sqrtXXpYY + X)
+    {
+        // case 1 - -135deg < lambda < 135deg
+        lambda = 2 * atan2(Y, sqrtXXpYY + X);
+    }
+    else if (sqrtXXpYY + Y < (s2 + 1) * X)
+    {
+        // case 2 - -225deg < lambda < 45deg
+        lambda = -M_PI * 0.5 + 2 * atan2(X, sqrtXXpYY - Y);
+    }
+    else
+    {
+        // if (sqrtXXpYY-Y<(s2=1)*X) {  // is the test, if needed, but it's not
+        // case 3: - -45deg < lambda < 225deg
+        lambda = M_PI * 0.5 - 2 * atan2(X, sqrtXXpYY + Y);
+    }
+
+    [result setDegreesLatitude:DEGREES(phi) longitude:DEGREES(lambda) elevation:h];
 }
 
 - (void) computeNormal:(double)latitude
