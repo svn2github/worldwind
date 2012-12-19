@@ -11,7 +11,9 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
@@ -21,6 +23,8 @@
 #define DEFAULT_LATITUDE 0
 #define DEFAULT_LONGITUDE 0
 #define DEFAULT_ALTITUDE 20000000
+#define MIN_NEAR_DISTANCE 1
+#define MIN_FAR_DISTANCE 100
 
 @implementation WWBasicNavigator
 
@@ -55,6 +59,32 @@
 
 - (id<WWNavigatorState>) currentState
 {
+    WWGlobe* globe = [[self->view sceneController] globe];
+
+    // Compute the current modelview matrix based on this Navigator's look-at location and range.
+    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
+    [modelview setLookAt:globe
+          centerLatitude:[self->_lookAt latitude]
+         centerLongitude:[self->_lookAt longitude]
+          centerAltitude:0
+           rangeInMeters:self->_range];
+
+    // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
+    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
+    WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
+    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 elevation:0];
+    [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
+
+    double tanHalfFov = tan(RADIANS(self->_fieldOfView / 2));
+    self->_nearDistance = [eyePos elevation] / (2 * sqrt(2 * tanHalfFov * tanHalfFov + 1));
+    if (self->_nearDistance < MIN_NEAR_DISTANCE)
+        self->_nearDistance = MIN_NEAR_DISTANCE;
+
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    self->_farDistance = horizonDistance(globeRadius, [eyePos elevation]);
+    if (self->_farDistance < MIN_FAR_DISTANCE)
+        self->_farDistance = MIN_FAR_DISTANCE;
+
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
     // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
     // actual render buffer dimension, whereas the bounds contain the view's dimension in screen points.
@@ -65,15 +95,6 @@
                 viewportHeight:CGRectGetHeight(viewport)
                   nearDistance:self->_nearDistance
                    farDistance:self->_farDistance];
-
-    // Compute the current modelview matrix based on this Navigator's look-at location and range.
-    WWGlobe* globe = [[self->view sceneController] globe];
-    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview setLookAt:globe
-          centerLatitude:[self->_lookAt latitude]
-         centerLongitude:[self->_lookAt longitude]
-          centerAltitude:0
-           rangeInMeters:self->_range];
 
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
