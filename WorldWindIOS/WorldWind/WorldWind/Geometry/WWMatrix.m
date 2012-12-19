@@ -524,4 +524,42 @@
     return self;
 }
 
+- (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    double* ma = self->m;
+    double* mb = matrix->m;
+    
+    // Compute the transpose of the specified matrix's upper 3x3 portion, and store the result in this matrix's upper
+    // 3x3 portion.
+    ma[0] = mb[0];
+    ma[1] = mb[4];
+    ma[2] = mb[8];
+    ma[4] = mb[1];
+    ma[5] = mb[5];
+    ma[6] = mb[9];
+    ma[8] = mb[2];
+    ma[9] = mb[6];
+    ma[10] = mb[10];
+
+    // Transform the translation vector of the specified matrix by the transpose of its upper 3x3 portion, and store the
+    // negative of this vector in this matrix's translation component.
+    ma[3] = -(mb[0] * mb[3]) - (mb[4] * mb[7]) - (mb[8] * mb[11]);
+    ma[7] = -(mb[1] * mb[3]) - (mb[5] * mb[7]) - (mb[9] * mb[11]);
+    ma[11] = -(mb[2] * mb[3]) - (mb[6] * mb[7]) - (mb[10] * mb[11]);
+
+    // Copy the specified matrix's bottom row into this matrix's bottom row. Since we're assuming the matrix represents
+    // an orthonormal transform matrix, the bottom row should always be (0, 0, 0, 1).
+    ma[12] = mb[12];
+    ma[13] = mb[13];
+    ma[14] = mb[14];
+    ma[15] = mb[15];
+
+    return self;
+}
+
 @end

@@ -62,4 +62,19 @@
 
 - (WWMatrix*) multiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB;
 
+/*!
+    Inverts the specified matrix and stores the result in this matrix. The specified matrix is assumed to represent an
+    orthonormal transform matrix. This matrix's upper 3x3 is transposed, then its fourth column is transformed by the
+    transposed upper 3x3 and negated. The result of this method is undefined if this matrix is passed in as the matrix
+    to invert.
+
+    @param matrix
+        The matrix who's inverse is computed. This matrix is assumed to represent an orthonormal transform matrix.
+    @result
+        A pointer to this Matrix.
+    @throws
+        NSInvalidArgumentException if the matrix is nil.
+ */
+- (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix;
+
 @end
