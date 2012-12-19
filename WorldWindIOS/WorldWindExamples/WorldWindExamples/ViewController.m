@@ -45,16 +45,20 @@
 }
 
 /*!
-    Returns YES if this view controller's contents should auto rotate in response to the specified orientation, and NO
-    otherwise. This returns YES for the iPad idom, and returns YES for the iPhone idom except when the specified
-    toInterfaceOrientation is UIInterfaceOrientationPortraitUpsideDown. This behavior matches the default supported
-    interface orientations in iOS 6.0.
+    Returns a Boolean value indicating whether the view controller supports the specified orientation. Returns YES for
+    the iPad idom, and returns YES for the iPhone idom except when the specified toInterfaceOrientation is
+    UIInterfaceOrientationPortraitUpsideDown. This behavior matches the default supported interface orientations in iOS
+    6.0.
 
     This method is deprecated in iOS 6.0, but is required in iOS 5.x in order to support device orientation changes
     other than portrait. In iOS 6.0, auto rotation and supported interface orientations are handled by entries in the
     application's Info.plist file, or alternatively by overriding the method supportedInterfaceOrientations.
 
-    @result Returns YES.
+    @param toInterfaceOrientation
+        The orientation of the app’s user interface after the rotation. The possible values are described in UIInterfaceOrientation.
+
+    @result Returns
+        YES if the view controller auto-rotates its view to the specified orientation; otherwise, NO.
  */
 - (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
