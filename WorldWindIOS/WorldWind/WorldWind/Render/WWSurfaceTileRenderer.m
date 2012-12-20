@@ -14,6 +14,8 @@
 #import "WorldWind/Render/WWSurfaceTile.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 
 // STRINGIFY is used in the shader files.
@@ -32,6 +34,8 @@
 
     self->intersectingTiles = [[NSMutableArray alloc] init];
     self->intersectingGeometry = [[NSMutableArray alloc] init];
+
+    self->programKey = [WWUtil generateUUID];
 
     return self;
 }
@@ -55,7 +59,7 @@
         return;
     }
 
-    WWGpuProgram* program = [self gpuProgram];
+    WWGpuProgram* program = [self gpuProgram:dc];
     [self beginRendering:dc program:program];
     [terrainTiles beginRendering:dc];
     @try
@@ -110,7 +114,7 @@
         return;
     }
 
-    WWGpuProgram* program = [self gpuProgram];
+    WWGpuProgram* program = [self gpuProgram:dc];
     [self beginRendering:dc program:program];
     [terrainTiles beginRendering:dc];
 
@@ -239,22 +243,24 @@
             m30:0 m31:0 m32:0 m33:1];
 }
 
-- (WWGpuProgram*) gpuProgram
+- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc
 {
-    if (self->rendererProgram != nil)
-        return self->rendererProgram;
+    WWGpuProgram* program = [[dc gpuResourceCache] getProgramForKey:self->programKey];
+    if (program != nil)
+        return program;
 
     @try
     {
-        self->rendererProgram = [[WWGpuProgram alloc] initWithShaderSource:SurfaceTileRendererVertexShader
-                                                            fragmentShader:SurfaceTileRendererFragmentShader];
+        program = [[WWGpuProgram alloc] initWithShaderSource:SurfaceTileRendererVertexShader
+                                              fragmentShader:SurfaceTileRendererFragmentShader];
+        [[dc gpuResourceCache] putProgram:program forKey:self->programKey];
     }
     @catch (NSException* exception)
     {
         WWLogE(@"making GPU program", exception);
     }
 
-    return self->rendererProgram;
+    return program;
 }
 
 @end

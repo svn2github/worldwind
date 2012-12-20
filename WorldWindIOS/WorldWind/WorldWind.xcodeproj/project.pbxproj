@@ -55,9 +55,11 @@
 		0BFCC7C016710C3200B74C8A /* WWPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BFCC7BF16710C3200B74C8A /* WWPosition.m */; };
 		1BF9A056D3E8A5E8F036701A /* WWGpuShader.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */; };
 		1BF9A17A0BE04BBCF1D8F9E9 /* SurfaceTileRenderer.vert in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4714353DEADEF474F63 /* SurfaceTileRenderer.vert */; };
+		1BF9A1A660028CB4D734241D /* WWUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC163DFB1836313D6753 /* WWUtil.m */; };
 		1BF9A21517208794800230BD /* WWTerrainSharedGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A3ABEDB1867B12374E37 /* WWTerrainSharedGeometry.m */; };
 		1BF9A297DD0276545C6AEE99 /* WWBMNGOneImageLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7E4BB3F81A351856181 /* WWBMNGOneImageLayer.m */; };
 		1BF9A4F1E2CDC30B85028280 /* WWMatrix.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A2E372DB4135FF2EC1BE /* WWMatrix.h */; };
+		1BF9A535A31B03ED8822A48A /* WWUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC163DFB1836313D6753 /* WWUtil.m */; };
 		1BF9A551DC123671B334744B /* WWSurfaceImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACDE465B228D7C8B1F7E /* WWSurfaceImage.m */; };
 		1BF9A558DA2291DAE380A618 /* WWBMNGOneImageLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7E4BB3F81A351856181 /* WWBMNGOneImageLayer.m */; };
 		1BF9A61A24CEC8714AE1123C /* WWGpuProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5C985BCED6294E81BB7 /* WWGpuProgram.m */; };
@@ -73,6 +75,7 @@
 		1BF9A79DA6FDF01489B2885E /* WWGpuShader.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A5CA324B55F360E1EC7D /* WWGpuShader.h */; };
 		1BF9A7A0356FA09A8A03A3A3 /* WWTerrainGeometry.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A01A5C11D63C8B3B3169 /* WWTerrainGeometry.h */; };
 		1BF9A7A5B13C43FB331830CD /* WWMemoryCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACB11D3F73CF45E7C5DD /* WWMemoryCache.m */; };
+		1BF9A7AD8340E5AA16819BF5 /* WWUtil.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AFDC42D63335332E8C9A /* WWUtil.h */; };
 		1BF9A82603C7A9F9A4BA4D51 /* WWTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB2315FD45213FF0DA63 /* WWTexture.m */; };
 		1BF9A84382A6CC240117EF4E /* WWGpuShader.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */; };
 		1BF9A92F9CB9604B40ABC54A /* WWSurfaceImage.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AB0F33BC4A536062C709 /* WWSurfaceImage.h */; };
@@ -146,6 +149,7 @@
 				1BF9A690C5834DCAA8F08A58 /* WWMemoryCacheListener.h in CopyFiles */,
 				1BF9A6AD1D8256E68FAF7618 /* WWGpuResourceCache.h in CopyFiles */,
 				CC8CF6A9BC4FA2A46CCF142F /* WWMath.h in CopyFiles */,
+				1BF9A7AD8340E5AA16819BF5 /* WWUtil.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,11 +230,13 @@
 		1BF9AA973D779A9B2589F51E /* SurfaceTileRenderer.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = SurfaceTileRenderer.frag; sourceTree = "<group>"; };
 		1BF9AB0F33BC4A536062C709 /* WWSurfaceImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWSurfaceImage.h; sourceTree = "<group>"; };
 		1BF9AB2315FD45213FF0DA63 /* WWTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWTexture.m; sourceTree = "<group>"; };
+		1BF9AC163DFB1836313D6753 /* WWUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWUtil.m; sourceTree = "<group>"; };
 		1BF9ACB11D3F73CF45E7C5DD /* WWMemoryCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWMemoryCache.m; sourceTree = "<group>"; };
 		1BF9ACDE465B228D7C8B1F7E /* WWSurfaceImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWSurfaceImage.m; sourceTree = "<group>"; };
 		1BF9AEC62033A510E2AB3B10 /* WWSurfaceTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWSurfaceTile.h; sourceTree = "<group>"; };
 		1BF9AF1740AFDC53176E405F /* WWTerrainSharedGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTerrainSharedGeometry.h; sourceTree = "<group>"; };
 		1BF9AFAE856E06936D6D5C57 /* WWTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTexture.h; sourceTree = "<group>"; };
+		1BF9AFDC42D63335332E8C9A /* WWUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWUtil.h; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
 		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWNavigator.h; path = WWNavigator.h; sourceTree = "<group>"; };
 		CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBasicNavigator.m; path = WWBasicNavigator.m; sourceTree = "<group>"; };
@@ -300,6 +306,8 @@
 				1BF9A8DF5C59ABDB7E3FE84F /* WWGpuResourceCache.h */,
 				CC8CF876C2D9BF7128E50B36 /* WWMath.m */,
 				CC8CFB028A4DEB1340F1D0AF /* WWMath.h */,
+				1BF9AC163DFB1836313D6753 /* WWUtil.m */,
+				1BF9AFDC42D63335332E8C9A /* WWUtil.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -606,6 +614,7 @@
 				1BF9A7A5B13C43FB331830CD /* WWMemoryCache.m in Sources */,
 				1BF9AE61B1BBD5E1D7C9560B /* WWGpuResourceCache.m in Sources */,
 				CC8CFA91DBABC83303127DDA /* WWMath.m in Sources */,
+				1BF9A535A31B03ED8822A48A /* WWUtil.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,6 +653,7 @@
 				1BF9A82603C7A9F9A4BA4D51 /* WWTexture.m in Sources */,
 				1BF9A646B4D33764730E5685 /* WWMemoryCache.m in Sources */,
 				1BF9AFC464EDDE37A20EF181 /* WWGpuResourceCache.m in Sources */,
+				1BF9A1A660028CB4D734241D /* WWUtil.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

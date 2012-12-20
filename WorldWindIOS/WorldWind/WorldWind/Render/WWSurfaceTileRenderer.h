@@ -17,7 +17,7 @@
 @interface WWSurfaceTileRenderer : NSObject
 {
 @protected
-    WWGpuProgram* rendererProgram;
+    NSString* programKey;
     WWMatrix* tileCoordMatrix;
     WWMatrix* texCoordMatrix;
     NSMutableArray* intersectingTiles;
@@ -26,7 +26,7 @@
 
 - (WWSurfaceTileRenderer*) init;
 
-- (WWGpuProgram*) gpuProgram;
+- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc;
 
 - (void) assembleIntersectingTiles:(WWTerrainTile*)terrainTile surfaceTiles:(NSArray*)surfaceTiles;
 
