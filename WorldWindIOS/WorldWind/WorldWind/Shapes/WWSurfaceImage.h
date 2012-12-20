@@ -13,9 +13,6 @@
 @class WWTexture;
 
 @interface WWSurfaceImage : NSObject <WWSurfaceTile, WWRenderable>
-{
-    WWTexture* texture;
-}
 
 @property (readonly, nonatomic) WWSector* sector;
 @property (readonly, nonatomic) NSString* imagePath;

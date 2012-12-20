@@ -14,6 +14,7 @@
 @class WWSector;
 @class WWGpuProgram;
 @class WWSurfaceTileRenderer;
+@class WWGpuResourceCache;
 @protocol WWNavigatorState;
 
 @interface WWDrawContext : NSObject
@@ -27,6 +28,7 @@
 @property (nonatomic) WWGpuProgram* currentProgram;
 @property (nonatomic) double verticalExaggeration;
 @property (readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
+@property (nonatomic) WWGpuResourceCache* gpuResourceCache;
 
 - (WWDrawContext*) init;
 

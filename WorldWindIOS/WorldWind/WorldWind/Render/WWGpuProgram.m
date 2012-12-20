@@ -82,12 +82,12 @@
     return self;
 }
 
-- (long) getSizeInBytes
+- (long) sizeInBytes
 {
     long size = 0;
 
-    size += self->vertexShader != nil ? [self->vertexShader getSizeInBytes] : 0;
-    size += self->fragmentShader != nil ? [self->fragmentShader getSizeInBytes] : 0;
+    size += self->vertexShader != nil ? [self->vertexShader sizeInBytes] : 0;
+    size += self->fragmentShader != nil ? [self->fragmentShader sizeInBytes] : 0;
 
     return size;
 }

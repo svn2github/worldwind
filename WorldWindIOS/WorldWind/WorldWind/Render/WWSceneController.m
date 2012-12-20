@@ -11,6 +11,7 @@
 #import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWSceneController
@@ -22,13 +23,17 @@
     _globe = [[WWGlobe alloc] init];
     _layers = [[WWLayerList alloc] init];
     
+    _gpuResourceCache = [[WWGpuResourceCache alloc] initWithLowWater:(long)150e6 highWater:(long)250e6];
+
     self->drawContext = [[WWDrawContext alloc] init];
+    [self->drawContext setGpuResourceCache:_gpuResourceCache];
 
     return self;
 }
 
 - (void) dispose
 {
+    [_gpuResourceCache clear];
 }
 
 - (void) handleMemoryWarning

@@ -11,7 +11,7 @@
 
 @implementation WWTexture
 
-- (WWTexture*) initWithContentsOfFile:(NSString*)filePath
+- (WWTexture*) initWithImagePath:(NSString*)filePath
 {
     if (filePath == nil || [filePath length] == 0)
     {
@@ -23,6 +23,20 @@
     _filePath = filePath;
 
     return self;
+}
+
+- (void) dispose
+{
+    if (_textureID != 0)
+    {
+        glDeleteTextures(1, &_textureID);
+        _textureID = 0;
+    }
+}
+
+- (long) sizeInBytes
+{
+    return _textureSize;
 }
 
 - (BOOL) bind:(WWDrawContext*)dc
@@ -65,7 +79,8 @@
         return;
     }
 
-    self->imageData = malloc((size_t) (_imageWidth * _imageHeight * 4)); // allocate space for the image, 4byte per pxl
+    _textureSize = _imageWidth * _imageHeight * 4; // assume 4 bytes per pixel
+    self->imageData = malloc((size_t) _textureSize); // allocate space for the image
 
     CGContextRef context;
     @try

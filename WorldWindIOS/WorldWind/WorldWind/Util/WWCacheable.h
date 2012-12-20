@@ -7,6 +7,6 @@
 
 @protocol WWCacheable
 
-- (long) getSizeInBytes;
+- (long) sizeInBytes;
 
 @end

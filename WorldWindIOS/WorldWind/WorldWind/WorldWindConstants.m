@@ -7,7 +7,8 @@
 
 #import "WorldWind/WorldWindConstants.h"
 
-NSString * const A_WW_CONSTANT = @"AWWConstant";
+NSString * const WW_GPU_PROGRAM = @"gov.nasa.worldwind.GpuProgram";
+NSString * const WW_GPU_TEXTURE = @"gov.nasa.worldwind.GpuTexture";
 
 @implementation WorldWindConstants
 

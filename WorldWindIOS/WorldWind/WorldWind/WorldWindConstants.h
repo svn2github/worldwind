@@ -5,7 +5,8 @@
  @version $Id$
  */
 
-extern NSString * const A_WW_CONSTANT;
+extern NSString * const WW_GPU_PROGRAM;
+extern NSString * const WW_GPU_TEXTURE;
 
 @interface WorldWindConstants : NSObject
 

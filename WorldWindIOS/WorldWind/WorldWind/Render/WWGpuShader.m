@@ -59,7 +59,7 @@
     }
 }
 
-- (long) getSizeInBytes
+- (long) sizeInBytes
 {
     return self->estimatedMemorySize;
 }

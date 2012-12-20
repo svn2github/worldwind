@@ -7,10 +7,12 @@
 
 #import <Foundation/Foundation.h>
 #import <OpenGLES/ES2/gl.h>
+#import "WorldWind/Util/WWDisposable.h"
+#import "WorldWind/Util/WWCacheable.h"
 
 @class WWDrawContext;
 
-@interface WWTexture : NSObject
+@interface WWTexture : NSObject <WWDisposable, WWCacheable>
 {
     void* imageData;
 }
@@ -19,9 +21,10 @@
 @property (readonly, nonatomic) int imageWidth;
 @property (readonly, nonatomic) int imageHeight;
 @property (readonly, nonatomic) GLuint textureID;
+@property (readonly, nonatomic) long textureSize;
 @property (readonly, nonatomic) BOOL textureCreationFailed;
 
-- (WWTexture*) initWithContentsOfFile:(NSString*)filePath;
+- (WWTexture*) initWithImagePath:(NSString*)filePath;
 
 - (BOOL) bind:(WWDrawContext*)dc;
 

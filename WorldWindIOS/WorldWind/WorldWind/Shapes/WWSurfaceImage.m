@@ -11,6 +11,7 @@
 #import "WorldWind/Render/WWSurfaceTileRenderer.h"
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWInd/WWLog.h"
+#import "WWGpuResourceCache.h"
 
 @implementation WWSurfaceImage
 
@@ -31,14 +32,26 @@
     _imagePath = imagePath;
     _sector = sector;
 
-    self->texture = [[WWTexture alloc] initWithContentsOfFile:imagePath];
-
     return self;
 }
 
 - (BOOL) bind:(WWDrawContext*)dc
 {
-    return [self->texture bind:dc];
+    WWTexture* texture = [[dc gpuResourceCache] getTextureForKey:_imagePath];
+    if (texture != nil)
+    {
+        return [texture bind:dc];
+    }
+
+    texture = [[WWTexture alloc] initWithImagePath:_imagePath];
+    BOOL yn = [texture bind:dc];
+
+    if (yn)
+    {
+        [[dc gpuResourceCache] putTexture:texture forKey:_imagePath];
+    }
+
+    return yn;
 }
 
 - (void) render:(WWDrawContext*)dc

@@ -12,6 +12,7 @@
 @class WWGlobe;
 @class WWLayerList;
 @class WWDrawContext;
+@class WWGpuResourceCache;
 @protocol WWNavigatorState;
 
 @interface WWSceneController : NSObject
@@ -23,6 +24,7 @@
 @property (readonly, nonatomic) WWGlobe* globe;
 @property (readonly, nonatomic) WWLayerList* layers;
 @property (nonatomic) id<WWNavigatorState> navigatorState;
+@property (readonly, nonatomic) WWGpuResourceCache* gpuResourceCache;
 
 - (WWSceneController*)init;
 - (void) render:(CGRect)viewport;
