@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CGGeometry.h>
 
 /*!
     Returns the distance between a globe's horizon and a viewer at the specified elevation. Only the globe's ellipsoid
@@ -20,3 +21,9 @@
         The distance to the horizon, in meters.
  */
 extern double horizonDistance(double globeRadius, double elevation);
+
+extern CGRect perspectiveFieldOfViewFrustumRect(double horizontalFOV, double viewportWidth, double viewportHeight, double zDistance);
+
+extern double perspectiveFieldOfViewMaxNearDistance(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);
+
+extern double perspectiveFieldOfViewMaxPixelSize(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);

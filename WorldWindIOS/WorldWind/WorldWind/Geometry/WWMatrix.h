@@ -41,11 +41,11 @@
                 nearDistance:(double)near
                  farDistance:(double)far;
 
-- (WWMatrix*) setPerspective:(double)horizontalFOV
-               viewportWidth:(double)width
-              viewportHeight:(double)height
-                nearDistance:(double)near
-                 farDistance:(double)far;
+- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
+                          viewportWidth:(double)width
+                         viewportHeight:(double)height
+                           nearDistance:(double)near
+                            farDistance:(double)far;
 
 - (WWMatrix*) setLookAt:(WWGlobe*)globe
          centerLatitude:(double)latitude

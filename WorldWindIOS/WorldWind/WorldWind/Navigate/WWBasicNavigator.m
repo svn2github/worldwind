@@ -60,6 +60,11 @@
 - (id<WWNavigatorState>) currentState
 {
     WWGlobe* globe = [[self->view sceneController] globe];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+
+    CGRect viewport = [self->view viewport];
+    double viewportWidth = CGRectGetWidth(viewport);
+    double viewportHeight = CGRectGetHeight(viewport);
 
     // Compute the current modelview matrix based on this Navigator's look-at location and range.
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
@@ -75,12 +80,10 @@
     WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 elevation:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
 
-    double tanHalfFov = tan(RADIANS(self->_fieldOfView / 2));
-    self->_nearDistance = [eyePos elevation] / (2 * sqrt(2 * tanHalfFov * tanHalfFov + 1));
+    self->_nearDistance = perspectiveFieldOfViewMaxNearDistance(self->_fieldOfView, viewportWidth, viewportHeight, [eyePos elevation]);
     if (self->_nearDistance < MIN_NEAR_DISTANCE)
         self->_nearDistance = MIN_NEAR_DISTANCE;
 
-    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
     self->_farDistance = horizonDistance(globeRadius, [eyePos elevation]);
     if (self->_farDistance < MIN_FAR_DISTANCE)
         self->_farDistance = MIN_FAR_DISTANCE;
@@ -88,13 +91,12 @@
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
     // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
     // actual render buffer dimension, whereas the bounds contain the view's dimension in screen points.
-    CGRect viewport = [self->view viewport];
     WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
-    [projection setPerspective:self->_fieldOfView
-                 viewportWidth:CGRectGetWidth(viewport)
-                viewportHeight:CGRectGetHeight(viewport)
-                  nearDistance:self->_nearDistance
-                   farDistance:self->_farDistance];
+    [projection setPerspectiveFieldOfView:self->_fieldOfView
+                            viewportWidth:viewportWidth
+                           viewportHeight:viewportHeight
+                             nearDistance:self->_nearDistance
+                              farDistance:self->_farDistance];
 
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
@@ -129,7 +131,9 @@
 
         // Convert the translation from the view's local coordinate system to meters, assuming the translation is
         // intended for an object that is 'range' meters away form the eye position.
-        double metersPerPixel = 2 * self->_range * tan(self->_fieldOfView / 2) / CGRectGetWidth([self->view bounds]);
+        CGRect viewport = [self->view viewport];
+        double distance = MAX(1, self->_range);
+        double metersPerPixel = perspectiveFieldOfViewMaxPixelSize(self->_fieldOfView, CGRectGetWidth(viewport), CGRectGetHeight(viewport), distance);
         double yMeters = translation.y * metersPerPixel;
         double xMeters = translation.x * metersPerPixel;
 

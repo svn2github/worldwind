@@ -8,6 +8,7 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWMatrix
@@ -263,11 +264,11 @@
     return self;
 }
 
-- (WWMatrix*) setPerspective:(double)horizontalFOV
-               viewportWidth:(double)width
-              viewportHeight:(double)height
-                nearDistance:(double)near
-                 farDistance:(double)far;
+- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
+                          viewportWidth:(double)width
+                         viewportHeight:(double)height
+                           nearDistance:(double)near
+                            farDistance:(double)far
 {
     if (horizontalFOV <= 0 || horizontalFOV > 180)
     {
@@ -298,10 +299,11 @@
     // This method uses horizontal field-of-view here to describe the perspective viewing angle. This results in a
     // different set of clip plane distances than documented in sources using vertical field-of-view.
 
-    double right = near * tan(horizontalFOV / 2.0);
-    double left = -right;
-    double top = right * height / width;
-    double bottom = -top;
+    CGRect nearRect = perspectiveFieldOfViewFrustumRect(horizontalFOV, width, height, near);
+    double left = CGRectGetMinX(nearRect);
+    double right = CGRectGetMaxX(nearRect);
+    double bottom = CGRectGetMinY(nearRect);
+    double top = CGRectGetMaxY(nearRect);
 
     [self setPerspective:left
                    right:right
