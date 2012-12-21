@@ -44,6 +44,9 @@
     [self->view addGestureRecognizer:self->panGestureRecognizer];
     [self->view addGestureRecognizer:self->pinchGestureRecognizer];
 
+    self->displayLink = nil;
+    self->animators = 0;
+
     self->beginLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
     self->beginRange = 0;
 
@@ -98,11 +101,6 @@
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
 
-- (void) updateView
-{
-    [self->view drawView];
-}
-
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
 {
     // Apply the translation of the pan gesture to this Navigator's look-at location. Horizontal pan gestures translate
@@ -116,10 +114,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         [self->beginLookAt set:self->_lookAt];
+        [self startAnimation];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self->beginLookAt setDegreesLatitude:0 longitude:0];
+        [self stopAnimation];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -143,7 +142,6 @@
 
         [self->_lookAt setDegreesLatitude:NormalizedDegreesLatitude([self->beginLookAt latitude] + yDegrees)
                                 longitude:NormalizedDegreesLongitude([self->beginLookAt longitude] - xDegrees)];
-        [self updateView];
     }
 }
 
@@ -163,15 +161,15 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginRange = self->_range;
+        [self startAnimation];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        self->beginRange = 0;
+        [self stopAnimation];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
         self->_range = self->beginRange / [recognizer scale];
-        [self updateView];
     }
 }
 
@@ -183,6 +181,33 @@
         return otherGestureRecognizer == self->panGestureRecognizer;
     else
         return NO;
+}
+
+- (void) startAnimation
+{
+    if (self->animators == 0)
+    {
+        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
+        [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    }
+
+    self->animators++;
+}
+
+- (void) stopAnimation
+{
+    self->animators--;
+
+    if (self->animators == 0)
+    {
+        [self->displayLink invalidate];
+        self->displayLink = nil;
+    }
+}
+
+- (void) drawView
+{
+    [self->view drawView];
 }
 
 @end

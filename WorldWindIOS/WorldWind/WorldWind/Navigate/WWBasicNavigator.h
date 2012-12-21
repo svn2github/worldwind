@@ -20,6 +20,8 @@
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     WWLocation* beginLookAt;
     double beginRange;
+    CADisplayLink* displayLink;
+    int animators;
 }
 
 @property (readonly, nonatomic) double nearDistance;
@@ -30,8 +32,6 @@
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
 - (id<WWNavigatorState>) currentState;
-
-- (void) updateView;
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer;
 
