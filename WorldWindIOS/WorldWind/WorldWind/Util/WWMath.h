@@ -27,3 +27,9 @@ extern CGRect perspectiveFieldOfViewFrustumRect(double horizontalFOV, double vie
 extern double perspectiveFieldOfViewMaxNearDistance(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);
 
 extern double perspectiveFieldOfViewMaxPixelSize(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);
+
+extern CGRect perspectiveSizePreservingFrustumRect(double viewportWidth, double viewportHeight, double zDistance);
+
+extern double perspectiveSizePreservingMaxNearDistance(double viewportWidth, double viewportHeight, double distanceToObject);
+
+extern double perspectiveSizePreservingMaxPixelSize(double viewportWidth, double viewportHeight, double distanceToObject);

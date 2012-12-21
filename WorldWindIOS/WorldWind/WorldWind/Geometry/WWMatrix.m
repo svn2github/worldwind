@@ -295,11 +295,48 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
     }
 
-    // Based on http://www.opengl.org/resources/faq/technical/transformations.htm#tran0085.
-    // This method uses horizontal field-of-view here to describe the perspective viewing angle. This results in a
-    // different set of clip plane distances than documented in sources using vertical field-of-view.
-
     CGRect nearRect = perspectiveFieldOfViewFrustumRect(horizontalFOV, width, height, near);
+    double left = CGRectGetMinX(nearRect);
+    double right = CGRectGetMaxX(nearRect);
+    double bottom = CGRectGetMinY(nearRect);
+    double top = CGRectGetMaxY(nearRect);
+
+    [self setPerspective:left
+                   right:right
+                  bottom:bottom
+                     top:top
+            nearDistance:near
+             farDistance:far];
+
+    return self;
+}
+
+- (WWMatrix*) setPerspectiveSizePreserving:(double)width
+                           viewportHeight:(double)height
+                             nearDistance:(double)near
+                              farDistance:(double)far
+{
+    if (width <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is invalid");
+    }
+
+    if (height <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is invalid");
+    }
+
+    if (near >= far)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are invalid");
+    }
+
+    if (near <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
+    }
+
+    CGRect nearRect = perspectiveSizePreservingFrustumRect(width, height, near);
     double left = CGRectGetMinX(nearRect);
     double right = CGRectGetMaxX(nearRect);
     double bottom = CGRectGetMinY(nearRect);

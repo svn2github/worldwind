@@ -47,6 +47,11 @@
                            nearDistance:(double)near
                             farDistance:(double)far;
 
+- (WWMatrix*) setPerspectiveSizePreserving:(double)width
+                            viewportHeight:(double)height
+                              nearDistance:(double)near
+                               farDistance:(double)far;
+
 - (WWMatrix*) setLookAt:(WWGlobe*)globe
          centerLatitude:(double)latitude
         centerLongitude:(double)longitude

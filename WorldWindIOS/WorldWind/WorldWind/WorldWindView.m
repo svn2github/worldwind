@@ -52,6 +52,11 @@
 
         self->_sceneController = [[WWSceneController alloc] init];
         self->_navigator = [[WWBasicNavigator alloc] initWithView:self];
+
+        // Indicate that iOS should maintain the WorldWindView's proportions when its size changes. This prevents the
+        // scene from distorting when WorldWindView is rotated in response to a device orientation change. Without
+        // contentMode configured this way, the globe appears to expand or contract during the autorotation animation.
+        [self setContentMode:UIViewContentModeCenter];
     }
 
     return self;

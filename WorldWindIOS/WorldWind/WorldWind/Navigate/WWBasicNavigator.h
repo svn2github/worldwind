@@ -22,7 +22,6 @@
     double beginRange;
 }
 
-@property (nonatomic) double fieldOfView;
 @property (readonly, nonatomic) double nearDistance;
 @property (readonly, nonatomic) double farDistance;
 @property (nonatomic) WWLocation* lookAt;
