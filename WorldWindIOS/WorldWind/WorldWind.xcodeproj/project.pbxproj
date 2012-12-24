@@ -38,8 +38,6 @@
 		0B9813D2165FF5FC00193E50 /* libWorldWind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9813B9165FF5FB00193E50 /* libWorldWind.a */; };
 		0B9813D8165FF5FC00193E50 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0B9813D6165FF5FC00193E50 /* InfoPlist.strings */; };
 		0B9813DB165FF5FC00193E50 /* WorldWindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813DA165FF5FC00193E50 /* WorldWindTests.m */; };
-		0B9813E7165FF65400193E50 /* Simple.frag in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E5165FF65400193E50 /* Simple.frag */; };
-		0B9813E8165FF65400193E50 /* Simple.vert in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E6165FF65400193E50 /* Simple.vert */; };
 		0B9813E9165FF67000193E50 /* Simple.frag in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E5165FF65400193E50 /* Simple.frag */; };
 		0B9813EA165FF67400193E50 /* Simple.vert in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813E6165FF65400193E50 /* Simple.vert */; };
 		0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F2165FF77700193E50 /* WWSceneController.m */; };
@@ -238,14 +236,14 @@
 		1BF9AFAE856E06936D6D5C57 /* WWTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTexture.h; sourceTree = "<group>"; };
 		1BF9AFDC42D63335332E8C9A /* WWUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWUtil.h; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
-		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWNavigator.h; path = WWNavigator.h; sourceTree = "<group>"; };
-		CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBasicNavigator.m; path = WWBasicNavigator.m; sourceTree = "<group>"; };
-		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBasicNavigatorState.m; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
+		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigator.h; sourceTree = "<group>"; };
+		CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigator.m; sourceTree = "<group>"; };
+		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
 		CC8CF876C2D9BF7128E50B36 /* WWMath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWMath.m; sourceTree = "<group>"; };
-		CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWNavigatorState.h; path = WWNavigatorState.h; sourceTree = "<group>"; };
+		CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigatorState.h; sourceTree = "<group>"; };
 		CC8CFB028A4DEB1340F1D0AF /* WWMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWMath.h; sourceTree = "<group>"; };
-		CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWBasicNavigatorState.h; path = WWBasicNavigatorState.h; sourceTree = "<group>"; };
-		CC8CFF1CC1B22282FDE20451 /* WWBasicNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWBasicNavigator.h; path = WWBasicNavigator.h; sourceTree = "<group>"; };
+		CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicNavigatorState.h; sourceTree = "<group>"; };
+		CC8CFF1CC1B22282FDE20451 /* WWBasicNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicNavigator.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -580,8 +578,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0B9813C4165FF5FC00193E50 /* WorldWind.m in Sources */,
-				0B9813E7165FF65400193E50 /* Simple.frag in Sources */,
-				0B9813E8165FF65400193E50 /* Simple.vert in Sources */,
 				0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */,
 				0B9813F7165FF84F00193E50 /* WorldWindView.m in Sources */,
 				0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */,
