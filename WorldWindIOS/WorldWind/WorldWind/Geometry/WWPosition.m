@@ -9,6 +9,13 @@
 
 @implementation WWPosition
 
+- (id) copyWithZone:(NSZone*)zone
+{
+    return [[[self class] alloc] initWithDegreesLatitude:[self latitude]
+                                               longitude:[self longitude]
+                                               elevation:_elevation];
+}
+
 - (WWPosition*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude elevation:(double)metersElevation
 {
     self = [super initWithDegreesLatitude:latitude longitude:longitude];

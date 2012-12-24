@@ -8,7 +8,8 @@
 #import <Foundation/Foundation.h>
 
 /**
-* Represents a latitude/longitude pair and provides operations on and between location coordinates.
+* Represents a geographic location as a latitude/longitude pair and provides operations on and between location
+* coordinates.
 *
 * @warning WWLocation instances are mutable. Most methods of this class modify the instance, itself.
 */
