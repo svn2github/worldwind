@@ -218,7 +218,7 @@
     [prog loadUniformMatrix:@"tileCoordMatrix" matrix:self->tileCoordMatrix];
 
     [self->texCoordMatrix setUnitYFlip];
-    [self->texCoordMatrix multiply:self->tileCoordMatrix];
+    [self->texCoordMatrix multiplyMatrix:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"texCoordMatrix" matrix:self->texCoordMatrix];
 }
 

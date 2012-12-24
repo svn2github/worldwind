@@ -33,7 +33,7 @@
     return self;
 }
 
-- (WWLocation*) set:(WWLocation*)location
+- (WWLocation*) setLocation:(WWLocation*)location
 {
     if (location == nil)
     {
@@ -46,7 +46,7 @@
     return self;
 }
 
--(WWLocation*) add:(WWLocation *)location
+-(WWLocation*) addLocation:(WWLocation *)location
 {
     if (location == nil)
     {
@@ -59,7 +59,7 @@
     return self;
 }
 
--(WWLocation*) subtract:(WWLocation *)location
+-(WWLocation*) subtractLocation:(WWLocation *)location
 {
     if (location == nil)
     {

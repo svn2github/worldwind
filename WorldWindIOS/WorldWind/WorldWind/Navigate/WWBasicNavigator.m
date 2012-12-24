@@ -113,7 +113,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        [self->beginLookAt set:self->_lookAt];
+        [self->beginLookAt setLocation:self->_lookAt];
         [self startAnimation];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
