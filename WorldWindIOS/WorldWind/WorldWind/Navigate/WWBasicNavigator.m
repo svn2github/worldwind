@@ -78,14 +78,14 @@
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
     // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
     WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
-    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 elevation:0];
+    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
 
-    self->_nearDistance = perspectiveSizePreservingMaxNearDistance(viewportWidth, viewportHeight, [eyePos elevation]);
+    self->_nearDistance = perspectiveSizePreservingMaxNearDistance(viewportWidth, viewportHeight, [eyePos altitude]);
     if (self->_nearDistance < MIN_NEAR_DISTANCE)
         self->_nearDistance = MIN_NEAR_DISTANCE;
 
-    self->_farDistance = horizonDistance(globeRadius, [eyePos elevation]);
+    self->_farDistance = horizonDistance(globeRadius, [eyePos altitude]);
     if (self->_farDistance < MIN_FAR_DISTANCE)
         self->_farDistance = MIN_FAR_DISTANCE;
 

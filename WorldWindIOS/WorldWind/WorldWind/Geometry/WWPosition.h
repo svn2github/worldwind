@@ -22,7 +22,7 @@
 /**
 * The position's altitude.
 */
-@property (nonatomic) double elevation;
+@property (nonatomic) double altitude;
 
 /// @name Initializing Positions
 
@@ -31,11 +31,11 @@
 *
 * @param latitude The position's latitude.
 * @param longitude The position's longitude.
-* @param elevation The position's altitude.
+* @param altitude The position's altitude.
 *
 * @return The initialized position.
 */
-- (WWPosition*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude elevation:(double)elevation;
+- (WWPosition*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)altitude;
 
 /// @name Setting the Contents of Positions
 
@@ -44,10 +44,10 @@
 *
 * @param latitude The position's latitude.
 * @param longitude The position's longitude.
-* @param elevation The position's altitude.
+* @param altitude The position's altitude.
 *
 * @return The initialized position.
 */
-- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude elevation:(double)elevation;
+- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)altitude;
 
 @end

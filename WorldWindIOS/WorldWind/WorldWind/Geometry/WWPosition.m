@@ -13,25 +13,25 @@
 {
     return [[[self class] alloc] initWithDegreesLatitude:[self latitude]
                                                longitude:[self longitude]
-                                               elevation:_elevation];
+                                                altitude:_altitude];
 }
 
-- (WWPosition*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude elevation:(double)metersElevation
+- (WWPosition*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersElevation
 {
     self = [super initWithDegreesLatitude:latitude longitude:longitude];
 
     if (self != nil)
     {
-        _elevation = metersElevation;
+        _altitude = metersElevation;
     }
 
     return self;
 }
 
-- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude elevation:(double)metersElevation
+- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersAltitude
 {
     [super setDegreesLatitude:latitude longitude:longitude]; // Let the superclass set the latitude and longitude.
-    _elevation = metersElevation;
+    _altitude = metersAltitude;
 
     return self;
 }

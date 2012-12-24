@@ -282,7 +282,7 @@
         lambda = M_PI * 0.5 - 2 * atan2(X, sqrtXXpYY + Y);
     }
 
-    [result setDegreesLatitude:DEGREES(phi) longitude:DEGREES(lambda) elevation:h];
+    [result setDegreesLatitude:DEGREES(phi) longitude:DEGREES(lambda) altitude:h];
 }
 
 - (void) computeNormal:(double)latitude
