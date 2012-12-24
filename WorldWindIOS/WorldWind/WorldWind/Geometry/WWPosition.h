@@ -10,7 +10,9 @@
 
 /**
 * Represents a geographic positions as a latitude, longitude, altitude triple and provides operations on and between
-* positions. Often within World Wind the altitude field is considered an elevation.
+* positions.
+*
+* Often within World Wind the altitude field is considered an elevation.
 *
 * @warning WWPosition instances are mutable. Most methods of this class modify the instance, itself.
 */
