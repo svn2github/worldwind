@@ -19,6 +19,13 @@
 
 @implementation WWShowTessellationLayer
 
+- (WWShowTessellationLayer*) init
+{
+    self = [super init];
+
+    return self;
+}
+
 - (void) render:(WWDrawContext*)dc
 {
     if (dc == nil)
