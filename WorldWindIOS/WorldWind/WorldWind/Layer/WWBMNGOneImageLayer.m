@@ -26,7 +26,7 @@
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
     if (!fileExists)
     {
-        [self retrieveImage:imageFileName atLocation:networkLocation toFilePath:filePath];
+        [self retrieveImageWithName:imageFileName atLocation:networkLocation toFilePath:filePath];
         fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
     }
 
@@ -42,9 +42,9 @@
     return self;
 }
 
-- (void) retrieveImage:(NSString*)fileName atLocation:(NSString*)location toFilePath:(NSString*)path
+- (void) retrieveImageWithName:(NSString*)fileName atLocation:(NSString*)atLocation toFilePath:(NSString*)toFilePath
 {
-    NSString* urlPath = [NSString stringWithFormat:@"%@/%@", location, fileName];
+    NSString* urlPath = [NSString stringWithFormat:@"%@/%@", atLocation, fileName];
     NSURL* url = [NSURL URLWithString:urlPath];
 
     NSError* error = nil;
@@ -55,10 +55,10 @@
         return;
     }
 
-    [data writeToFile:path options:0 error:&error];
+    [data writeToFile:toFilePath options:0 error:&error];
     if (error != nil)
     {
-        WWLog("@Error \"%@\" writing file %@", [error description], path);
+        WWLog("@Error \"%@\" writing file %@", [error description], toFilePath);
         return;
     }
 }
