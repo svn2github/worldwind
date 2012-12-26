@@ -18,7 +18,7 @@
 */
 @interface WWSector : NSObject <NSCopying>
 
-/// @name Position Attributes
+/// @name Sector Attributes
 
 /// This sector's minimum latitude, in degrees.
 @property(nonatomic) double minLatitude;
@@ -81,7 +81,7 @@
 */
 - (void) centroidLocation:(WWLocation*)result;
 
-/// @name Initializing Positions
+/// @name Initializing Sectors
 
 /**
 * Initializes a sector with specified minimum and maximum latitudes and longitudes.
