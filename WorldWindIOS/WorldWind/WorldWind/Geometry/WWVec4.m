@@ -46,18 +46,6 @@
     return self;
 }
 
-- (WWVec4*) initWithUnitVector
-{
-    self = [super init];
-
-    _x = 1;
-    _y = 1;
-    _z = 1;
-    _w = 1;
-
-    return self;
-}
-
 - (id) copyWithZone:(NSZone *)zone
 {
     return [[[self class] alloc] initWithCoordinates:_x y:_y z:_z w:_w];
@@ -93,14 +81,14 @@
     return self;
 }
 
-- (double) getLength3
+- (double) length3
 {
     return sqrt(_x * _x + _y * _y + _z * _z);
 }
 
 - (WWVec4*) normalize3
 {
-    double length = [self getLength3];
+    double length = [self length3];
     if (length == 0)
         return self; // Vector has zero length.
 

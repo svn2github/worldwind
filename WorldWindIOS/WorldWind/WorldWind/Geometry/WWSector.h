@@ -106,7 +106,7 @@
 */
 - (WWSector*) initWithFullSphere;
 
-/// @name Intersection and inclusion operations
+/// @name Intersection and Inclusion Operations
 
 /**
 * Indicates whether this sector intersects a specified sector.

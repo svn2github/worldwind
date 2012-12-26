@@ -406,7 +406,7 @@
     double sy = (uz * nx) - (ux * nz);
     double sz = (ux * ny) - (uy * nx);
 
-    double len = [[point set:sx y:sy z:sz] getLength3];
+    double len = [[point set:sx y:sy z:sz] length3];
     if (len != 0)
     {
         sx /= len;
