@@ -95,6 +95,7 @@ New features and improvements in World Wind Java SDK 1.5.0
 - Repaired an OpenGL state leak of the normal pointer binding in COLLADA models, which caused a JVM crash on certain machines.
 - Repaired BasicShapeAttributes' handling of the enableLighting attribute in its restorable state.
 - Repaired Matrix.getInverse, which now returns a correct inverse for all nonsingular matrices.
+- Fixed an issue where World Wind does not compile on Java 7 in IntelliJ IDEA.
 - Fixed a regression bug where Box ignores the R axis while computing its effective radius.
 - Fixed a bug where enabling Path lighting caused the JVM to crash.
 - Fixed a bug where enabling ExtrudedPolygon side lighting with cap lighting disabled caused a NullPointerException.
