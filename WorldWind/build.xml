@@ -56,7 +56,7 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
-                <pathelement location="${java.home}/lib/plugin.jar"/>
+                <pathelement location="plugin.jar"/>
             </classpath>
         </javac>
     </target>
@@ -85,7 +85,7 @@
                 <pathelement location="jogl.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
-                <pathelement location="${java.home}/lib/plugin.jar"/>
+                <pathelement location="plugin.jar"/>
             </classpath>
             <link href="http://download.oracle.com/javase/6/docs/api/"/>
             <link href="http://worldwind.arc.nasa.gov/java/jogl/docs/"/>
