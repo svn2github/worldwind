@@ -63,7 +63,19 @@
     return self;
 }
 
-// TODO: remove gesture recognizers on dealloc
+- (void) dealloc
+{
+    [self->view removeGestureRecognizer:self->panGestureRecognizer];
+    [self->view removeGestureRecognizer:self->pinchGestureRecognizer];
+    [self->view removeGestureRecognizer:self->rotationGestureRecognizer];
+
+    if (self->displayLink != nil)
+    {
+        [self->displayLink invalidate];
+        self->displayLink = nil;
+        self->animators = 0;
+    }
+}
 
 - (id<WWNavigatorState>) currentState
 {
