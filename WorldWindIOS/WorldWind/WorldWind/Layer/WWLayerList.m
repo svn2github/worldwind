@@ -34,4 +34,9 @@
     [self->layers addObject:layer];
 }
 
+- (void) insertLayer:(WWLayer*)layer atIndex:(NSUInteger)atIndex
+{
+    [self->layers insertObject:layer atIndex:atIndex];
+}
+
 @end
