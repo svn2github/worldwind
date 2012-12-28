@@ -111,7 +111,9 @@
 - (WWMatrix*) setTranslation:(double)x y:(double)y z:(double) z;
 
 /**
-* Sets this matrix to one that flips and shifts the Y axis. All existing values are overridden. This matrix is
+* Sets this matrix to one that flips and shifts the Y axis.
+*
+* All existing values are overwritten. This matrix is
 * usually used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin.
 * This is typically necessary to align the coordinate system of images (upper left origin) with that of OpenGL (lower
 * left origin).
@@ -165,17 +167,20 @@
                    m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
 /**
-    Inverts the specified matrix and stores the result in this matrix. The specified matrix is assumed to represent an
-    orthonormal transform matrix. This matrix's upper 3x3 is transposed, then its fourth column is transformed by the
-    transposed upper 3x3 and negated. The result of this method is undefined if this matrix is passed in as the matrix
-    to invert.
-
-    @param matrix The matrix who's inverse is computed. This matrix is assumed to represent an orthonormal transform matrix.
-
-    @return A pointer to this Matrix.
-
-    @exception NSInvalidArgumentException if the matrix is nil.
- */
+* Inverts the specified matrix and stores the result in this matrix.
+*
+* The specified matrix is assumed to represent an orthonormal transform matrix. This matrix's upper 3x3 is transposed,
+* then its fourth column is transformed by the transposed upper 3x3 and negated.
+*
+* The result of this method is undefined if this matrix is passed in as the matrix to invert.
+*
+* @param matrix The matrix whose inverse is computed. This matrix is assumed to represent an orthonormal transform
+* matrix.
+*
+* @return This matrix with its values set to the inverse of the specified matrix.
+*
+* @exception NSInvalidArgumentException If the specified matrix is nil.
+*/
 - (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix;
 
 @end
