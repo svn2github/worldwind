@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWLocation
@@ -15,7 +16,7 @@
     self = [super init];
     
     _latitude = latitude;
-    _longitude = latitude;
+    _longitude = longitude;
     
     return self;
 }
@@ -45,6 +46,87 @@
 
     return self;
 }
+
+- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)startAzimuth distance:(double)angularDistance
+{
+    if (startLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
+
+    _latitude = startLocation->_latitude;
+    _longitude = startLocation->_longitude;
+
+    if (angularDistance != 0)
+    {
+        double lat1 = RADIANS(_latitude);
+        double lon1 = RADIANS(_longitude);
+        double a = RADIANS(startAzimuth);
+        double d = RADIANS(angularDistance);
+
+        double lat2 = asin(sin(lat1) * cos(d) + cos(lat1) * sin(d) * cos(a));
+        double lon2 = lon1 + atan2(sin(d) * sin(a), cos(lat1) * cos(d) - sin(lat1) * sin(d) * cos(a));
+
+        if (!isnan(lat2) && !isnan(lon2))
+        {
+            _latitude = NormalizedDegreesLatitude(DEGREES(lat2));
+            _longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+        }
+    }
+
+    return self;
+}
+
+- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)angularDistance
+{
+    if (startLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    // Taken from http://www.movable-type.co.uk/scripts/latlong.html
+
+    _latitude = startLocation->_latitude;
+    _longitude = startLocation->_longitude;
+
+    if (angularDistance != 0)
+    {
+        double lat1 = RADIANS(_latitude);
+        double lon1 = RADIANS(_longitude);
+        double a = RADIANS(azimuth);
+        double d = RADIANS(angularDistance);
+
+        double lat2 = lat1 + d * cos(a);
+        double dPhi = log(tan(lat2 / 2 + M_PI_4) / tan(lat1 / 2 + M_PI_4));
+        double q = (lat2 - lat1) / dPhi;
+
+        if (isnan(dPhi) || isnan(q) || isinf(q))
+        {
+            q = cos(lat1);
+        }
+
+        double dLon = d * sin(a) / q;
+
+        // Handle latitude passing over either pole.
+        if (fabs(lat2) > M_PI_2)
+        {
+            lat2 = lat2 > 0 ? M_PI - lat2 : -M_PI - lat2;
+        }
+
+        double lon2 = fmod(lon1 + dLon + M_PI, 2 * M_PI) - M_PI;
+
+        if (!isnan(lat2) && !isnan(lon2))
+        {
+            _latitude = NormalizedDegreesLatitude(DEGREES(lat2));
+            _longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+        }
+    }
+
+    return self;
+}
+
 
 -(WWLocation*) addLocation:(WWLocation *)location
 {

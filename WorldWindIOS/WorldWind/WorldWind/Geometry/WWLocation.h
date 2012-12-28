@@ -62,6 +62,16 @@
 */
 - (WWLocation*) setLocation:(WWLocation*)location;
 
+/**
+*
+*/
+- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)startAzimuth distance:(double)angularDistance;
+
+/**
+*
+*/
+- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)angularDistance;
+
 /// @name Operations on Locations
 
 /**
@@ -84,8 +94,6 @@
 *
 * @exception NSInvalidArgumentException if the specified location is nil.
 */
-
 - (WWLocation*) subtractLocation:(WWLocation*)location;
-
 
 @end
