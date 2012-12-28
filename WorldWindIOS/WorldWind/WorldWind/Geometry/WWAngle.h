@@ -31,3 +31,5 @@ extern double NormalizedDegreesLatitude(double degrees);
 * Clamps a specified angle to the range [-180, 180].
 */
 extern double NormalizedDegreesLongitude(double degrees);
+
+extern double NormalizedDegreesHeading(double degrees);

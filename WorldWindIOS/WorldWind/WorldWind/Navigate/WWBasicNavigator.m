@@ -22,6 +22,7 @@
 #define DEFAULT_LATITUDE 0
 #define DEFAULT_LONGITUDE 0
 #define DEFAULT_ALTITUDE 20000000
+#define DEFAULT_HEADING 0
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
 
@@ -39,24 +40,30 @@
     self->view = viewToNavigate;
     self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
     self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
+    self->rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
     [self->panGestureRecognizer setDelegate:self];
     [self->pinchGestureRecognizer setDelegate:self];
     [self->view addGestureRecognizer:self->panGestureRecognizer];
     [self->view addGestureRecognizer:self->pinchGestureRecognizer];
+    [self->view addGestureRecognizer:self->rotationGestureRecognizer];
 
     self->displayLink = nil;
     self->animators = 0;
 
-    self->beginLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+    self->lastPanTranslation = CGPointMake(0, 0);
     self->beginRange = 0;
+    self->beginHeading = 0;
 
     self->_nearDistance = DEFAULT_NEAR_DISTANCE;
     self->_farDistance = DEFAULT_FAR_DISTANCE;
     self->_lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
     self->_range = DEFAULT_ALTITUDE;
+    self->_heading = DEFAULT_HEADING;
 
     return self;
 }
+
+// TODO: remove gesture recognizers on dealloc
 
 - (id<WWNavigatorState>) currentState
 {
@@ -73,7 +80,9 @@
           centerLatitude:[self->_lookAt latitude]
          centerLongitude:[self->_lookAt longitude]
           centerAltitude:0
-           rangeInMeters:self->_range];
+           rangeInMeters:self->_range
+                 heading:self->_heading
+                    tilt:0];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
     // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
@@ -103,17 +112,17 @@
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
 {
-    // Apply the translation of the pan gesture to this Navigator's look-at location. Horizontal pan gestures translate
-    // the look-at's longitude, while vertical pan gestures translate the look-at's latitude. We convert the pan
-    // translation from screen pixels to arc degrees in order to provide a translation that is appropriate for the
-    // current eye position. In order to convert from pixels to arc degrees we assume that this Navigator's range
-    // represents the distance that the gesture is intended for.
+    // Apply the translation of the pan gesture to this Navigator's look-at location. We convert the pan translation
+    // from screen pixels to arc degrees in order to provide a translation that is appropriate for the current eye
+    // position. In order to convert from pixels to arc degrees we assume that this Navigator's range represents the
+    // distance that the gesture is intended for. The translation is applied incrementally so that simultaneously
+    // applied heading changes are correctly integratedinto the navigator's current location.
 
     UIGestureRecognizerState state = [recognizer state];
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        [self->beginLookAt setLocation:self->_lookAt];
+        self->lastPanTranslation = CGPointMake(0, 0);
         [self startAnimation];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -123,25 +132,33 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         // Compute the translation in the view's local coordinate system.
-        CGPoint translation = [recognizer translationInView:self->view];
+        CGPoint panTranslation = [recognizer translationInView:self->view];
+        double dx = panTranslation.x - self->lastPanTranslation.x;
+        double dy = panTranslation.y - self->lastPanTranslation.y;
+        self->lastPanTranslation = panTranslation;
 
         // Convert the translation from the view's local coordinate system to meters, assuming the translation is
         // intended for an object that is 'range' meters away form the eye position.
         CGRect viewport = [self->view viewport];
         double distance = MAX(1, self->_range);
         double metersPerPixel = perspectiveSizePreservingMaxPixelSize(CGRectGetWidth(viewport), CGRectGetHeight(viewport), distance);
-        double yMeters = translation.y * metersPerPixel;
-        double xMeters = translation.x * metersPerPixel;
+        double forwardMeters = dy * metersPerPixel;
+        double sideMeters = -dx * metersPerPixel;
 
         // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context to
         // perform this conversion.
         WWGlobe* globe = [[self->view sceneController] globe];
         double radius = MAX([globe equatorialRadius], [globe polarRadius]);
-        double yDegrees = DEGREES(yMeters / radius);
-        double xDegrees = DEGREES(xMeters / radius);
+        double forwardDegrees = DEGREES(forwardMeters / radius);
+        double sideDegrees = DEGREES(sideMeters / radius);
+        double sideHeading = NormalizedDegreesHeading(self->_heading + 90);
 
-        [self->_lookAt setDegreesLatitude:NormalizedDegreesLatitude([self->beginLookAt latitude] + yDegrees)
-                                longitude:NormalizedDegreesLongitude([self->beginLookAt longitude] - xDegrees)];
+        [self->_lookAt setRhumbEndLocation:self->_lookAt azimuth:self->_heading distance:forwardDegrees];
+        [self->_lookAt setRhumbEndLocation:self->_lookAt azimuth:sideHeading distance:sideDegrees];
+    }
+    else
+    {
+        WWLog("Unknown gesture recognizer state: %d", state);
     }
 }
 
@@ -171,18 +188,48 @@
     {
         self->_range = self->beginRange / [recognizer scale];
     }
-}
-
-- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    if (gestureRecognizer == self->panGestureRecognizer)
-        return otherGestureRecognizer == self->pinchGestureRecognizer;
-    else if (gestureRecognizer == self->pinchGestureRecognizer)
-        return otherGestureRecognizer == self->panGestureRecognizer;
     else
-        return NO;
+    {
+        WWLog("Unknown gesture recognizer state: %d", state);
+    }
 }
 
+- (void) handleRotationFrom:(UIRotationGestureRecognizer*)recognizer
+{
+    UIGestureRecognizerState state = [recognizer state];
+
+    if (state == UIGestureRecognizerStateBegan)
+    {
+        self->beginHeading = self->_heading;
+        [self startAnimation];
+    }
+    else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
+    {
+        [self stopAnimation];
+    }
+    else if (state == UIGestureRecognizerStateChanged)
+    {
+        double rotationInDegrees = DEGREES([recognizer rotation]);
+        self->_heading = NormalizedDegreesHeading(self->beginHeading - rotationInDegrees);
+    }
+    else
+    {
+        WWLog("Unknown gesture recognizer state: %d", state);
+    }
+}
+
+- (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer
+{
+    return (gestureRecognizer == self->panGestureRecognizer
+            || gestureRecognizer == self->pinchGestureRecognizer
+            || gestureRecognizer == self->rotationGestureRecognizer)
+            && (otherGestureRecognizer == self->panGestureRecognizer
+                    || otherGestureRecognizer == self->pinchGestureRecognizer
+                    || otherGestureRecognizer == self->rotationGestureRecognizer);
+}
+
+// TODO: Consider adding a capability similar to startAnimation/stopAnimation to WorldWindView.
+// This would enable multiple components to synchronize their requests for a redraw, and avoid duplicate redraws.
 - (void) startAnimation
 {
     if (self->animators == 0)

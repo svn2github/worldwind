@@ -25,3 +25,9 @@ double NormalizedDegreesLongitude(double degrees)
     double lon = fmod(degrees, 360);
     return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
 }
+
+double NormalizedDegreesHeading(double degrees)
+{
+    double angle = fmod(degrees, 360);
+    return angle > 180 ? angle - 360 : angle < -180 ? 360 + angle : angle;
+}
