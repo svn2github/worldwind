@@ -17,21 +17,66 @@
 @class WWGpuResourceCache;
 @protocol WWNavigatorState;
 
+/**
+* Provides current state during rendering. The current draw context is passed to most rendering methods in order to
+* make those methods aware of current state.
+*/
 @interface WWDrawContext : NSObject
 
+/// @name Draw Context Attributes
+
+/// The time at which this draw context was most recently reset or initialized. This is the time at which the current
+/// frame started.
 @property (readonly, nonatomic) NSDate* timestamp;
+
+/// The globe being rendered.
 @property (nonatomic) WWGlobe* globe;
+
+/// The current layer list.
 @property (nonatomic) WWLayerList* layers;
-@property (nonatomic) id<WWNavigatorState> navigatorState;
+
+/// The current navigator state. This state contains the current viewing information.
+@property (nonatomic) id <WWNavigatorState> navigatorState;
+
+/// The current set of terrain tiles visible in the frame. This set enables more precise determination of the
+/// geographic area visible in the current frame than can be determined from the visibleSector field.
 @property (nonatomic) WWTerrainTileList* surfaceGeometry;
+
+/// The union of all the terrain tile sectors. This is a very gross measure of the visible geographic area.
 @property (nonatomic) WWSector* visibleSector;
+
+/// The GPU program currently established with OpenGL.
 @property (nonatomic) WWGpuProgram* currentProgram;
+
+/// The current vertical exaggeration, as specified by the application to the scene controller, WWSceneController.
 @property (nonatomic) double verticalExaggeration;
+
+/// The current renderer used to draw terrain tiles and the imagery placed on them.
 @property (readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
+
+/// The cache containing all currently active GPU resources such as textures, programs and vertex buffers. This is an
+/// LRU cache. It assumes the responsibility of freeing GPU resources when they are evicted from the cache.
 @property (nonatomic) WWGpuResourceCache* gpuResourceCache;
 
+/// @name Initializing a Draw Context
+
+/**
+* Initializes a draw context.
+*
+* @return This draw context initialized to empty values.
+*/
 - (WWDrawContext*) init;
 
+/// @name Operations on Draw Context
+
+/**
+* Reinitialize certain draw context fields to default values.
+*
+* The reinitialized fields and their defaults are:
+*
+* - timestamp (the current time)
+* - verticalExaggeration (1)
+*/
 - (void) reset;
 
 @end

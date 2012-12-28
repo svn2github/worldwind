@@ -15,6 +15,8 @@
     self = [super init];
 
     _surfaceTileRenderer = [[WWSurfaceTileRenderer alloc] init];
+    _verticalExaggeration = 1;
+    _timestamp = [NSDate date];
 
     return self;
 }
