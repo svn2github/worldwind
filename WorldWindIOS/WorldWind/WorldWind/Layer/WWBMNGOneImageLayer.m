@@ -8,7 +8,7 @@
 #import "WorldWind/Layer/WWBMNGOneImageLayer.h"
 #import "WorldWind/Shapes/WWSurfaceImage.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WOrldWind/WWLog.h"
+#import "WorldWind/WWLog.h"
 
 
 @implementation WWBMNGOneImageLayer
