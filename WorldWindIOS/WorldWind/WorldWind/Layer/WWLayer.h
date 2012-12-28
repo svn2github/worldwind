@@ -9,8 +9,18 @@
 
 @class WWDrawContext;
 
+/**
+* Provides the base instance for a layer.
+*/
 @interface WWLayer : NSObject
 
+/// @name Operations on Layers
+
+/**
+* Draw the layer.
+*
+* @param dc The current draw context.
+*/
 - (void) render:(WWDrawContext *)dc;
 
 @end
