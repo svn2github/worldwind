@@ -146,7 +146,9 @@
          centerLatitude:(double)latitude
         centerLongitude:(double)longitude
          centerAltitude:(double)altitude
-          rangeInMeters:(double)range;
+          rangeInMeters:(double)range
+                heading:(double)heading
+                   tilt:(double)tilt;
 
 /// @name Operations on Matrices
 

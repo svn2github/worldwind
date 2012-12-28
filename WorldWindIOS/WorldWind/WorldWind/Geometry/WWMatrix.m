@@ -7,6 +7,7 @@
 
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
@@ -221,7 +222,7 @@
                       bottom:(double)bottom
                          top:(double)top
                 nearDistance:(double)near
-                 farDistance:(double)far;
+                 farDistance:(double)far
 {
     if (left >= right)
     {
@@ -361,7 +362,9 @@
          centerLatitude:(double)latitude
         centerLongitude:(double)longitude
          centerAltitude:(double)altitude
-          rangeInMeters:(double)range;
+          rangeInMeters:(double)range
+                heading:(double)heading
+                   tilt:(double)tilt
 {
     if (globe == nil)
     {
@@ -376,6 +379,27 @@
     // Range transform. Moves the eye point along the positive z axis while keeping the center point in the center
     // of the viewport.
     [self setTranslation:0 y:0 z:-range];
+
+    // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
+    // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix
+    // and stored the result inline here to avoid unnecessary matrix allocations.
+    double c = cos(RADIANS(tilt)); // No need to invert cos(roll) to change the direction of rotation. cos(-a) = cos(a)
+    double s = -sin(RADIANS(tilt)); // Invert sin(roll) in order to change the direction of rotation. sin(-a) = -sin(a)
+    [self multiply:1 m01:0 m02:0 m03:0
+               m10:0 m11:c m12:-s m13:0
+               m20:0 m21:s m22:c m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    // Heading transform. Rotates the eye point in a clockwise direction around the positive z axis. This has a
+    // different effect than roll when tilt is non-zero because the view is no longer looking down the positive z axis.
+    // We have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
+    // allocations.
+    c = cos(RADIANS(heading));
+    s = sin(RADIANS(heading));
+    [self multiply:c m01:-s m02:0 m03:0
+               m10:s m11:c m12:0 m13:0
+               m20:0 m21:0 m22:1 m23:0
+               m30:0 m31:0 m32:0 m33:1];
 
     // Compute the center point in model coordinates. This point is mapped to the eye point in the center position
     // transform below. By using the terrain and an altitude mode, we provide the ability for this transform to map the
