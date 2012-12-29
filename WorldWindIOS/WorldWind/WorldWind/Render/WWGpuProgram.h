@@ -13,6 +13,11 @@
 @class WWGpuShader;
 @class WWMatrix;
 
+/**
+* Represents an OpenGL shading language (GLSL) shader program and provides methods for identifying and accessing shader
+* variables. Shader programs are created by instances of this class and made current when the instance's bind
+* method is invoked.
+*/
 @interface WWGpuProgram : NSObject <WWCacheable, WWDisposable>
 {
 @protected
@@ -22,20 +27,107 @@
     NSMutableDictionary* uniformLocations;
 }
 
+/// @name GPU Program Attributes
+
+/// The OpenGL program ID of this shader.
 @property(readonly, nonatomic) GLuint programId;
 
+/// @name Initializing GPU Programs
+
+/**
+* Initializes a GPU program with specified source code for vertex and fragment shaders.
+*
+* An OpenGL context must be current when this method is called.
+*
+* This method creates OpenGL shaders for the specified shader sources and attaches them to a new GLSL program. The
+* method compiles the shaders and links the program if compilation is successful. Use the bind method to make the
+* program current during rendering.
+*
+* @param vertexSource A null-terminated string containing the source code for the vertex shader.
+* @param fragmentSource A null-terminated string containing the source code for the fragment shader.
+*
+* @return This GPU program linked with the specified shaders.
+*
+* @exception NSInvalidArgumentException If either shader source is nil or empty, the shaders cannot be compiled, or
+* linking of the compiled shaders into a program fails.
+*/
 - (WWGpuProgram*) initWithShaderSource:(const char*)vertexSource fragmentShader:(const char*)fragmentSource;
 
-- (BOOL) link:(GLuint)program;
+/// @name Operations on GPU Programs
 
+/**
+* Makes this GPU program the current program in the current OpenGL context.
+*
+* An OpenGL context must be current when this method is called.
+*/
 - (void) bind;
 
+/// @name Accessing Shader Variables
+
+/**
+* Returns the GLSL attribute location of a specified attribute name.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param attributeName The name of the attribute whose location is determined.
+*
+* @return The OpenGL attribute location of the specified attribute, or -1 if the attribute is not found.
+*
+* @exception NSInvalidArgumentException If the specified name is nil or empty.
+*/
 - (int) getAttributeLocation:(NSString*)attributeName;
 
+/**
+* Returns the GLSL uniform variable location of a specified uniform name.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param uniformName The name of the uniform variable whose location is determined.
+*
+* @return The OpenGL location of the specified uniform variable, or -1 if the name is not found.
+*
+* @exception NSInvalidArgumentException If the specified name is nil or empty.
+*/
 - (int) getUniformLocation:(NSString*)uniformName;
 
+/**
+* Sets the values of a named uniform matrix variable to those of a specified matrix.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param uniformName The name of the uniform matrix variable.
+* @param matrix The values to set the uniform matrix variable to.
+*
+* @exception NSInvalidArgumentException If the uniform variable's name is nil or empty, the specified matrix is nil,
+* or the named uniform variable does not exist.
+*/
 - (void) loadUniformMatrix:(NSString*)uniformName matrix:(WWMatrix*)matrix;
 
+/**
+* Sets the value of a named uniform sampler to a specified value.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param samplerName The name of the uniform sampler.
+* @param value The value to set the sampler to.
+*
+* @exception NSInvalidArgumentException If the specified sampler name is nil or empty or the sampler does not exist.
+*/
 - (void) loadUniformSampler:(NSString*)samplerName value:(int)value;
+
+/// @name Supporting Methods
+
+/**
+* Links the specified GLSL program.
+*
+* An OpenGL context must be current when this method is called.
+*
+* This method is not meant to be invoked by applications. It is invoked internally as needed.
+*
+* @param program The OpenGL program ID of the program to link.
+*
+* @return YES if linking was successful, otherwise NO.
+*/
+- (BOOL) link:(GLuint)program;
 
 @end
