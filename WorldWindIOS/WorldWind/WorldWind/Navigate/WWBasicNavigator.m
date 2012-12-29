@@ -23,6 +23,7 @@
 #define DEFAULT_LONGITUDE 0
 #define DEFAULT_ALTITUDE 20000000
 #define DEFAULT_HEADING 0
+#define DEFAULT_TILT 0
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
 
@@ -34,18 +35,25 @@
 
     if (viewToNavigate == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"View is invalid")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
     }
 
     self->view = viewToNavigate;
     self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
     self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
     self->rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
+    self->verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
+
     [self->panGestureRecognizer setDelegate:self];
     [self->pinchGestureRecognizer setDelegate:self];
+    [self->rotationGestureRecognizer setDelegate:self];
+    [self->verticalPanGestureRecognizer setDelegate:self];
+    [self->verticalPanGestureRecognizer setMinimumNumberOfTouches:2];
+
     [self->view addGestureRecognizer:self->panGestureRecognizer];
     [self->view addGestureRecognizer:self->pinchGestureRecognizer];
     [self->view addGestureRecognizer:self->rotationGestureRecognizer];
+    [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
 
     self->displayLink = nil;
     self->animators = 0;
@@ -53,12 +61,14 @@
     self->lastPanTranslation = CGPointMake(0, 0);
     self->beginRange = 0;
     self->beginHeading = 0;
+    self->beginTilt = 0;
 
     self->_nearDistance = DEFAULT_NEAR_DISTANCE;
     self->_farDistance = DEFAULT_FAR_DISTANCE;
     self->_lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
     self->_range = DEFAULT_ALTITUDE;
     self->_heading = DEFAULT_HEADING;
+    self->_tilt = DEFAULT_TILT;
 
     return self;
 }
@@ -68,6 +78,7 @@
     [self->view removeGestureRecognizer:self->panGestureRecognizer];
     [self->view removeGestureRecognizer:self->pinchGestureRecognizer];
     [self->view removeGestureRecognizer:self->rotationGestureRecognizer];
+    [self->view removeGestureRecognizer:self->verticalPanGestureRecognizer];
 
     if (self->displayLink != nil)
     {
@@ -94,7 +105,7 @@
           centerAltitude:0
            rangeInMeters:self->_range
                  heading:self->_heading
-                    tilt:0];
+                    tilt:self->_tilt];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
     // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
@@ -170,7 +181,7 @@
     }
     else
     {
-        WWLog("Unknown gesture recognizer state: %d", state);
+        WWLog(@"Unknown gesture recognizer state: %d", state);
     }
 }
 
@@ -198,11 +209,15 @@
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
-        self->_range = self->beginRange / [recognizer scale];
+        // Ignore a scale of zero. This appears to be a bug in UIPinchGestureRecognzier's handling of the user changing
+        // between two and three fingers while pinching.
+        CGFloat scale = [recognizer scale];
+        if (scale != 0)
+            self->_range = self->beginRange / scale;
     }
     else
     {
-        WWLog("Unknown gesture recognizer state: %d", state);
+        WWLog(@"Unknown gesture recognizer state: %d", state);
     }
 }
 
@@ -226,18 +241,70 @@
     }
     else
     {
-        WWLog("Unknown gesture recognizer state: %d", state);
+        WWLog(@"Unknown gesture recognizer state: %d", state);
+    }
+}
+
+- (void) handleVerticalPanFrom:(UIPanGestureRecognizer*)recognizer
+{
+    UIGestureRecognizerState state = [recognizer state];
+
+    if (state == UIGestureRecognizerStateBegan)
+    {
+        self->beginTilt = self->_tilt;
+        [self startAnimation];
+    }
+    else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
+    {
+        [self stopAnimation];
+    }
+    else if (state == UIGestureRecognizerStateChanged)
+    {
+        CGPoint translation = [recognizer translationInView:self->view];
+        CGRect bounds = [self->view bounds];
+        double degrees = 90 * translation.y / CGRectGetHeight(bounds);
+        self->_tilt = clamp(self->beginTilt + degrees, 0, 90);
+    }
+    else
+    {
+        WWLog(@"Unknown gesture recognizer state: %d", state);
+    }
+}
+
+- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer
+{
+    if (gestureRecognizer == self->verticalPanGestureRecognizer)
+    {
+        CGPoint translation = [(UIPanGestureRecognizer*) gestureRecognizer translationInView:self->view];
+        return fabs(translation.y) > fabs(translation.x);
+    }
+    else
+    {
+        return YES;
     }
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer
 {
-    return (gestureRecognizer == self->panGestureRecognizer
-            || gestureRecognizer == self->pinchGestureRecognizer
-            || gestureRecognizer == self->rotationGestureRecognizer)
-            && (otherGestureRecognizer == self->panGestureRecognizer
-                    || otherGestureRecognizer == self->pinchGestureRecognizer
-                    || otherGestureRecognizer == self->rotationGestureRecognizer);
+    if (gestureRecognizer == self->panGestureRecognizer)
+    {
+        return otherGestureRecognizer == self->pinchGestureRecognizer
+            || otherGestureRecognizer == self->rotationGestureRecognizer;
+    }
+    else if (gestureRecognizer == self->pinchGestureRecognizer)
+    {
+        return otherGestureRecognizer == self->panGestureRecognizer
+            || otherGestureRecognizer == self->rotationGestureRecognizer;
+    }
+    else if (gestureRecognizer == self->rotationGestureRecognizer)
+    {
+        return otherGestureRecognizer == self->panGestureRecognizer
+            || otherGestureRecognizer == self->pinchGestureRecognizer;
+    }
+    else
+    {
+        return NO;
+    }
 }
 
 // TODO: Consider adding a capability similar to startAnimation/stopAnimation to WorldWindView.

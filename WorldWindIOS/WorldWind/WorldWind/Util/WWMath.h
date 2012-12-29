@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
+extern double clamp(double value, double min, double max);
+
 /*!
     Returns the distance between a globe's horizon and a viewer at the specified elevation. Only the globe's ellipsoid
     is considered; terrain elevations are not incorporated. This returns zero if the specified elevation is less than or

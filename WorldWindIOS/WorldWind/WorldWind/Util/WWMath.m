@@ -8,6 +8,11 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Geometry/WWAngle.h"
 
+double clamp(double value, double min, double max)
+{
+    return value < min ? min : (value > max ? max : value);
+}
+
 double horizonDistance(double globeRadius, double elevation)
 {
     if (elevation <= 0)

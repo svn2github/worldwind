@@ -19,9 +19,11 @@
     UIPanGestureRecognizer* panGestureRecognizer;
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
+    UIPanGestureRecognizer * verticalPanGestureRecognizer;
     CGPoint lastPanTranslation;
     double beginRange;
     double beginHeading;
+    double beginTilt;
     CADisplayLink* displayLink;
     int animators;
 }
@@ -31,6 +33,7 @@
 @property (nonatomic) WWLocation* lookAt;
 @property (nonatomic) double range;
 @property (nonatomic) double heading;
+@property (nonatomic) double tilt;
 
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
@@ -41,6 +44,10 @@
 - (void) handlePinchFrom:(UIPinchGestureRecognizer*)recognizer;
 
 - (void) handleRotationFrom:(UIRotationGestureRecognizer*)recognizer;
+
+- (void) handleVerticalPanFrom:(UIPanGestureRecognizer*)recognizer;
+
+- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer;
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer;
 
