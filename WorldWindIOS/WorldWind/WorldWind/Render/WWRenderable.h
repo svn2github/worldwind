@@ -7,8 +7,18 @@
 
 @class WWDrawContext;
 
+/**
+* Provides a method to draw an instance conforming to this protocol.
+*/
 @protocol WWRenderable
 
+/// @name Drawing Renderables
+
+/**
+* Draw this instance.
+*
+* @param dc The current draw context.
+*/
 - (void) render:(WWDrawContext*)dc;
 
 @end

@@ -6,13 +6,14 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "WorldWind/Render/WWRenderable.h"
 
 @class WWDrawContext;
 
 /**
 * Provides the base instance for a layer.
 */
-@interface WWLayer : NSObject
+@interface WWLayer : NSObject <WWRenderable>
 
 /// @name Operations on Layers
 
