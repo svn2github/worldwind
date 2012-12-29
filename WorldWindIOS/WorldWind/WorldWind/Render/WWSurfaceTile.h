@@ -27,7 +27,9 @@
 /// @name Making a Surface Tile Active
 
 /**
-* Cause the surface tile's texture to be active, typically by call glBindTexture.
+* Cause this surface tile's texture to be active, typically by calling glBindTexture.
+*
+* @param dc The current draw context.
 *
 * @return Yes if the resource was successfully bound, otherwise NO.
 */
