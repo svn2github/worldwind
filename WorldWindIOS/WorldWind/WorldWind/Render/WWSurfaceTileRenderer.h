@@ -38,6 +38,8 @@
 
 /**
 * Returns the GPU program (WWGpuProgram) used by this surface tile renderer.
+*
+* @param dc The current draw context.
 */
 - (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc;
 
