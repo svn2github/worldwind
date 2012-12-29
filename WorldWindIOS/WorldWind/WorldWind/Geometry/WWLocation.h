@@ -58,19 +58,35 @@
 *
 * @return This location with the specified latitude and longitude.
 *
-* @exception NSInvalidArgumentException if the specified location is nil.
+* @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) setLocation:(WWLocation*)location;
 
 /**
+* Sets this location to the end of a great circle path specified by an azimuth and distance.
 *
+* @param startLocation The beginning location of the great circle path.
+* @param azimuth The direction, in degrees clockwise from north, of the great circle path.
+* @param distance The angular distance, in degrees, between the start location of the path and its end location.
+*
+* @return This instance set to the end position of the specified great circle path.
+*
+* @exception NSInvalidArgumentException If the specified start location is nil.
 */
-- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)startAzimuth distance:(double)angularDistance;
+- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)distance;
 
 /**
+* Sets this location to the end of a rhumb path specified by an azimuth and distance.
 *
+* @param startLocation The beginning location of the rhumb path.
+* @param azimuth The direction, in degrees clockwise from north, of the rhumb path.
+* @param distance The angular distance, in degrees, between the start location of the path and its end location.
+*
+* @return This instance set to the end position of the specified rhumb path.
+*
+* @exception NSInvalidArgumentException If the specified start location is nil.
 */
-- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)angularDistance;
+- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)distance;
 
 /// @name Operations on Locations
 
@@ -81,7 +97,7 @@
 *
 * @return This location with the specified location added to it.
 *
-* @exception NSInvalidArgumentException if the specified location is nil.
+* @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) addLocation:(WWLocation*)location;
 
@@ -92,7 +108,7 @@
 *
 * @return This location with the specified location subtracted from it.
 *
-* @exception NSInvalidArgumentException if the specified location is nil.
+* @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) subtractLocation:(WWLocation*)location;
 

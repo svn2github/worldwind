@@ -47,7 +47,7 @@
     return self;
 }
 
-- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)startAzimuth distance:(double)angularDistance
+- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double) distance
 {
     if (startLocation == nil)
     {
@@ -59,12 +59,12 @@
     _latitude = startLocation->_latitude;
     _longitude = startLocation->_longitude;
 
-    if (angularDistance != 0)
+    if (distance != 0)
     {
         double lat1 = RADIANS(_latitude);
         double lon1 = RADIANS(_longitude);
-        double a = RADIANS(startAzimuth);
-        double d = RADIANS(angularDistance);
+        double a = RADIANS(azimuth);
+        double d = RADIANS(distance);
 
         double lat2 = asin(sin(lat1) * cos(d) + cos(lat1) * sin(d) * cos(a));
         double lon2 = lon1 + atan2(sin(d) * sin(a), cos(lat1) * cos(d) - sin(lat1) * sin(d) * cos(a));
@@ -79,7 +79,7 @@
     return self;
 }
 
-- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)angularDistance
+- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)distance
 {
     if (startLocation == nil)
     {
@@ -91,12 +91,12 @@
     _latitude = startLocation->_latitude;
     _longitude = startLocation->_longitude;
 
-    if (angularDistance != 0)
+    if (distance != 0)
     {
         double lat1 = RADIANS(_latitude);
         double lon1 = RADIANS(_longitude);
         double a = RADIANS(azimuth);
-        double d = RADIANS(angularDistance);
+        double d = RADIANS(distance);
 
         double lat2 = lat1 + d * cos(a);
         double dPhi = log(tan(lat2 / 2 + M_PI_4) / tan(lat1 / 2 + M_PI_4));
