@@ -62,6 +62,14 @@
 */
 - (void) bind;
 
+/**
+* Releases this GPU program's OpenGL program and associated shaders. Upon return this GPU program's OpenGL program ID
+ * is 0 as is that of its associated shaders.
+ *
+ * An OpenGL context must be current when this method is called.
+*/
+- (void) dispose;
+
 /// @name Accessing Shader Variables
 
 /**

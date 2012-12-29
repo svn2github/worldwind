@@ -76,10 +76,4 @@
     return compileStatus == GL_TRUE;
 }
 
-- (NSString*) nameFromShaderType:(GLuint)shaderType
-{
-    return shaderType == GL_VERTEX_SHADER ? @"Vertex Shader" : shaderType == GL_FRAGMENT_SHADER ? @"Fragment Shader"
-            : nil;
-}
-
 @end
