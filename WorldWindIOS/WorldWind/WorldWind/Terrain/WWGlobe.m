@@ -13,7 +13,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
 
-@implementation WWGlobe
+@implementation WWGlobe : NSObject
 
 - (WWGlobe*) init
 {
@@ -346,7 +346,7 @@
     return 0;
 }
 
-- (void) getElevations:(WWSector*)sector
+- (double) getElevations:(WWSector*)sector
                 numLat:(int)numLat
                 numLon:(int)numLon
       targetResolution:(double)targetResolution
@@ -376,6 +376,8 @@
             outputArray[index] = 0;
         }
     }
+
+    return 1;
 }
 
 @end
