@@ -36,10 +36,6 @@
     [_gpuResourceCache clear];
 }
 
-- (void) handleMemoryWarning
-{
-}
-
 - (void) render:(CGRect)viewport
 {
     @try
