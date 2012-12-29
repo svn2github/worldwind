@@ -32,8 +32,8 @@
     self->tileCoordMatrix = [[WWMatrix alloc] initWithIdentity];
     self->texCoordMatrix = [[WWMatrix alloc] initWithIdentity];
 
-    self->intersectingTiles = [[NSMutableArray alloc] init];
-    self->intersectingGeometry = [[NSMutableArray alloc] init];
+    _intersectingTiles = [[NSMutableArray alloc] init];
+    _intersectingGeometry = [[NSMutableArray alloc] init];
 
     self->programKey = [WWUtil generateUUID];
 
@@ -66,12 +66,12 @@
     {
         if ([surfaceTile bind:dc])
         {
-            [self->intersectingGeometry removeAllObjects];
+            [_intersectingGeometry removeAllObjects];
             [self assembleIntersectingGeometry:surfaceTile terrainTiles:terrainTiles];
 
-            for (NSUInteger i = 0; i < [self->intersectingGeometry count]; i++)
+            for (NSUInteger i = 0; i < [_intersectingGeometry count]; i++)
             {
-                WWTerrainTile* terrainTile = [self->intersectingGeometry objectAtIndex:i];
+                WWTerrainTile* terrainTile = [_intersectingGeometry objectAtIndex:i];
 
                 [terrainTile beginRendering:dc];
                 @try
@@ -124,9 +124,9 @@
         {
             WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
 
-            [self->intersectingTiles removeAllObjects];
+            [_intersectingTiles removeAllObjects];
             [self assembleIntersectingTiles:terrainTile surfaceTiles:surfaceTiles];
-            if ([self->intersectingTiles count] == 0)
+            if ([_intersectingTiles count] == 0)
             {
                 continue;
             }
@@ -134,9 +134,9 @@
             [terrainTile beginRendering:dc];
             @try
             {
-                for (NSUInteger j = 0; j < [self->intersectingTiles count]; j++)
+                for (NSUInteger j = 0; j < [_intersectingTiles count]; j++)
                 {
-                    id <WWSurfaceTile> surfaceTile = [self->intersectingTiles objectAtIndex:j];
+                    id <WWSurfaceTile> surfaceTile = [_intersectingTiles objectAtIndex:j];
                     if ([surfaceTile bind:dc])
                     {
                         [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
@@ -176,8 +176,8 @@
     glUseProgram(0);
     glActiveTexture(GL_TEXTURE0); // TODO: is this necessary? Was any other texture unit used?
 
-    [self->intersectingGeometry removeAllObjects];
-    [self->intersectingTiles removeAllObjects];
+    [_intersectingGeometry removeAllObjects];
+    [_intersectingTiles removeAllObjects];
 }
 
 - (void) assembleIntersectingTiles:(WWTerrainTile*)terrainTile surfaceTiles:(NSArray*)surfaceTiles
@@ -190,7 +190,7 @@
 
         if (surfaceTile != nil && [[surfaceTile sector] intersects:terrainTileSector])
         {
-            [self->intersectingTiles addObject:surfaceTile];
+            [_intersectingTiles addObject:surfaceTile];
         }
     }
 }
@@ -205,7 +205,7 @@
 
         if (terrainTile != nil && [[terrainTile sector] intersects:surfaceTileSector])
         {
-            [self->intersectingGeometry addObject:terrainTile];
+            [_intersectingGeometry addObject:terrainTile];
         }
     }
 }
