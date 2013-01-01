@@ -38,6 +38,7 @@ import java.net.URL;
  */
 public class Annotations extends ApplicationTemplate
 {
+    @SuppressWarnings("unchecked")
     private static class AppFrame extends ApplicationTemplate.AppFrame
     {
         // Above mean sea level globe annotation

@@ -33,6 +33,7 @@ import java.util.regex.*;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class GazetteerPanel extends JPanel
 {
     private final WorldWindow wwd;

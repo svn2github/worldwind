@@ -47,6 +47,7 @@ public class KMLExportTest
      *
      * @return Collection of object[]. Each object[] holds parameters for one invocation of the test.
      */
+    @SuppressWarnings("unchecked")
     @Parameterized.Parameters
     public static Collection<Object[]> data()
     {

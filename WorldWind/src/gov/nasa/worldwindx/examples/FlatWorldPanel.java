@@ -24,7 +24,7 @@ import java.awt.event.*;
  * @author Patrick Murris
  * @version $Id$
  */
-
+@SuppressWarnings("unchecked")
 public class FlatWorldPanel extends JPanel
 {
     private WorldWindow wwd;

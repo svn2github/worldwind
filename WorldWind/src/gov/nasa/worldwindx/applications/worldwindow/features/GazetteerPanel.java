@@ -24,6 +24,7 @@ import java.io.IOException;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class GazetteerPanel extends AbstractFeature implements FeaturePanel
 {
     private JPanel panel;

@@ -29,6 +29,7 @@ import java.util.List;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class DataCacheViewer
 {
     protected JPanel panel;

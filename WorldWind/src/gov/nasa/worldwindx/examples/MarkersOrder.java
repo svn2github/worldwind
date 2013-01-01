@@ -45,6 +45,7 @@ public class MarkersOrder extends ApplicationTemplate
     protected static final double TRACK_LATITUDE = 37.90;
     protected static final double TRACK_LONGITUDE = -119.52;
 
+    @SuppressWarnings("unchecked")
     protected static class AppFrame extends ApplicationTemplate.AppFrame
     {
         protected static final int COLOR_MODE_RAMP = 0;

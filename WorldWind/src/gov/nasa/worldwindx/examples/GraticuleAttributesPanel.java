@@ -26,6 +26,7 @@ import java.beans.PropertyChangeSupport;
  * @author dcollins
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class GraticuleAttributesPanel extends JPanel
 {
     // Line attribute components.

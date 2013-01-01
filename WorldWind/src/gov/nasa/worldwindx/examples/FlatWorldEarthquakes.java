@@ -42,6 +42,7 @@ import java.util.logging.Level;
  */
 public class FlatWorldEarthquakes extends ApplicationTemplate
 {
+    @SuppressWarnings("unchecked")
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
         private RenderableLayer eqLayer;

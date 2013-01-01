@@ -43,6 +43,7 @@ public class Shapes
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected static class AppFrame extends JFrame
     {
         private Dimension canvasSize = new Dimension(800, 600);

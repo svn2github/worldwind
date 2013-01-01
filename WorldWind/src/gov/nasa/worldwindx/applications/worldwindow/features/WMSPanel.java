@@ -34,6 +34,7 @@ import java.util.logging.Level;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class WMSPanel extends AbstractFeaturePanel implements TreeModelListener, NetworkActivitySignal.NetworkUser
 {
     protected static final String FEATURE_TITLE = "WMS Server Panel";

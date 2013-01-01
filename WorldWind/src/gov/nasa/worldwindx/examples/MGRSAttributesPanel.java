@@ -31,6 +31,7 @@ import java.io.FileWriter;
  * @author dcollins
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class MGRSAttributesPanel extends JPanel
 {
     // Logical components.
@@ -550,6 +551,7 @@ public class MGRSAttributesPanel extends JPanel
         return icon;
     }
 
+    @SuppressWarnings("unchecked")
     private static class GraticuleTypeListRenderer implements ListCellRenderer
     {
         private ListCellRenderer delegate;

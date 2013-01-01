@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * @author Patrick Murris
  * @version $Id$
  */
-@SuppressWarnings({"FieldCanBeLocal"})
+@SuppressWarnings({"FieldCanBeLocal", "UnusedParameters", "unchecked"})
 public class CloudCeilingPanel extends JPanel implements Restorable
 {
     public static final String CLOUD_CEILING_OPEN = "CloudCeilingPanel.CloudCeilingOpen";
@@ -170,22 +170,19 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         if (track.size() == 0)
             return 0;
 
-        return (int) WWMath.clamp(position, 0, track.size() - 1);
+        return WWMath.clamp(position, 0, track.size() - 1);
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void descriptionTextFieldActionPerformed(ActionEvent event)
     {
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void enabledCheckBoxActionPerformed(ActionEvent event)
     {
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void baseElevationTextFieldActionPerformed(ActionEvent event)
     {
         Double baseElevation = getNumberValue(this.baseElevationTextField.getText());
@@ -194,7 +191,6 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void deltaElevationTextFieldActionPerformed(ActionEvent event)
     {
         this.deltaElevationTextField.setText(String.format("%.0f",
@@ -202,10 +198,8 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void deltaModeRadioButtonActionPerformed(ActionEvent event) {updateCloudCeiling();}
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void advancedButtonActionPerformed(ActionEvent event)
     {
         Dimension topSize = this.getTopLevelAncestor().getSize();
@@ -244,7 +238,6 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void wholeTrackCheckBoxActionPerformed(ActionEvent event)
     {
         if (this.wholeTrackCheckBox.isSelected())
@@ -261,7 +254,6 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         }
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void currentSegmentCheckBoxActionPerformed(ActionEvent event)
     {
         if (this.currentSegmentCheckBox.isSelected())
@@ -308,19 +300,16 @@ public class CloudCeilingPanel extends JPanel implements Restorable
         }
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void patternComboActionPerformed(ActionEvent event)
     {
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void patternSizeComboActionPerformed(ActionEvent event)
     {
         updateCloudCeiling();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     private void opacitySpinnerChanged(ChangeEvent event)
     {
         updateCloudCeiling();

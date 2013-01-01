@@ -31,7 +31,7 @@ import java.util.HashMap;
  * @author tag
  * @version $Id$
  */
-@SuppressWarnings({"FieldCanBeLocal"})
+@SuppressWarnings({"FieldCanBeLocal", "unchecked"})
 public class TerrainProfilePanel extends JPanel implements Restorable
 {
     public static final String TERRAIN_PROFILE_OPEN = "TerrainProfilePanel.Open";

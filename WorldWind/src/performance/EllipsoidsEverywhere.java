@@ -89,6 +89,7 @@ import java.util.Hashtable;
  */
 public class EllipsoidsEverywhere extends ApplicationTemplate
 {
+    @SuppressWarnings("unchecked")
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
         String shapeType = "Ellipsoid";

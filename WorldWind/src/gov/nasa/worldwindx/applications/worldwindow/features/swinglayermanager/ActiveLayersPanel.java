@@ -25,6 +25,7 @@ import java.util.ArrayList;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class ActiveLayersPanel extends AbstractFeaturePanel implements ActiveLayersManager
 {
     protected static final String TOOL_TIP = "Visible layers. Drag a layer to reposition it.";

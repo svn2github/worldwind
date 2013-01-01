@@ -30,6 +30,7 @@ public class ViewSwitch extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame implements ActionListener
     {
+        @SuppressWarnings("unchecked")
         public class ViewDisplay extends JPanel implements PositionListener, RenderingListener, ActionListener
         {
 

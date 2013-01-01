@@ -17,6 +17,7 @@ import java.awt.*;
  * @author tag
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public class ActiveLayersList extends JList
 {
     public ActiveLayersList(ListModel listModel)

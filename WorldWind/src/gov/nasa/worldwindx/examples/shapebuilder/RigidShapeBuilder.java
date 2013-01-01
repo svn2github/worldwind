@@ -48,7 +48,6 @@ import java.util.*;
  * @author ccrick
  * @version $Id$
  */
-
 public class RigidShapeBuilder extends ApplicationTemplate
 {
     /* string constants used in the example application */
@@ -809,6 +808,7 @@ public class RigidShapeBuilder extends ApplicationTemplate
     //********************  Abstract Shape Builder Panel  ****************//
     //********************************************************************//
 
+    @SuppressWarnings("unchecked")
     protected static class AbstractShapeBuilderPanel extends JPanel
     {
         private JComboBox factoryComboBox;

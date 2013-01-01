@@ -27,6 +27,7 @@ import java.util.ArrayList;
 * @version $Id$
 * @see gov.nasa.worldwind.util.measure.MeasureTool
 */
+@SuppressWarnings("unchecked")
 public class MeasureToolPanel extends JPanel
 {
     private final WorldWindow wwd;
