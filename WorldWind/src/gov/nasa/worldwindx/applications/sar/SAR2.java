@@ -80,7 +80,6 @@ public class SAR2 extends JFrame
 
     // Preferences
     protected static AVList userPreferences = new AVListImpl();
-    protected UserPreferencesDialog userPreferencesDialog;
     private Timer autoSaveTimer;
     protected static final long MIN_AUTO_SAVE_INTERVAL = 1000L;
 
@@ -147,15 +146,6 @@ public class SAR2 extends JFrame
         });
 
         // Preferences
-        this.userPreferencesDialog = new UserPreferencesDialog(this, true)
-        {
-            protected void applyChanges()
-            {
-                super.applyChanges();
-                saveUserPreferences();
-                onUserPreferencesChanged();
-            }
-        };
         this.autoSaveTimer = new Timer(0, new ActionListener()
         {
             public void actionPerformed(ActionEvent actionEvent)
@@ -714,11 +704,6 @@ public class SAR2 extends JFrame
         return userPreferences;
     }
 
-    public void showPreferences()
-    {
-        this.userPreferencesDialog.raiseDialog(getUserPreferences());
-    }
-
     public void showHelp()
     {
         try
@@ -900,39 +885,6 @@ public class SAR2 extends JFrame
                 screenShot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,
                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 fileMenu.add(screenShot);
-
-                if (!Configuration.isMacOS())
-                {
-                    //--------
-                    fileMenu.addSeparator();
-
-                    JMenuItem preferences = new JMenuItem();
-                    preferences.setText("Preferences...");
-                    preferences.setMnemonic('P');
-                    preferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                    preferences.addActionListener(new ActionListener()
-                    {
-                        public void actionPerformed(ActionEvent event)
-                        {
-                            // Bring the bulk download frame up
-                            showPreferences();
-                        }
-                    });
-                    fileMenu.add(preferences);
-                }
-                else
-                {
-                    try
-                    {
-                        OSXAdapter.setPreferencesHandler(this,
-                            getClass().getDeclaredMethod("showPreferences", (Class[]) null));
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
 
                 //--------
                 fileMenu.addSeparator();
