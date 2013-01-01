@@ -346,7 +346,8 @@ public class SectorRangeFan extends AbstractMilStd2525TacticalGraphic implements
         {
             if (value instanceof Iterable)
             {
-                this.setAzimuths((Iterable) value);
+                Iterable<? extends Angle> iterable = (Iterable<? extends Angle>) value;
+                this.setAzimuths(iterable);
             }
             else if (value instanceof Angle)
             {
@@ -357,7 +358,8 @@ public class SectorRangeFan extends AbstractMilStd2525TacticalGraphic implements
         {
             if (value instanceof Iterable)
             {
-                this.setAltitudes((Iterable) value);
+                Iterable<String> iterable = (Iterable<String>) value;
+                this.setAltitudes(iterable);
             }
             else if (value != null)
             {
