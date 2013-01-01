@@ -588,7 +588,7 @@ public class Path extends AbstractShape
                             int ordinal = path.getOrdinal(colorCode - positions.minColorCode);
 
                             // Add the ordinal to the list of picked ordinals on the path's picked object.
-                            List<Integer> ordinalList = (List<Integer>) po.getValue(AVKey.ORDINAL_LIST);
+                            List ordinalList = (List) po.getValue(AVKey.ORDINAL_LIST);
                             if (ordinalList == null)
                                 po.setValue(AVKey.ORDINAL_LIST, ordinalList = new ArrayList<Integer>());
                             ordinalList.add(ordinal);
