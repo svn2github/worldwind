@@ -33,15 +33,24 @@
             description="Main build target for the World Wind Java SDK. Compiles the World Wind source, creates the World Wind API documentation, and builds the World Wind JAR files."/>
 
     <!-- Compiles all World Wind Java sources under the 'src' folder into Java class files under the 'classes'
-         folder. Note that this excludes the Java sources under the 'servers/src' and 'test' directories. We configure
-         the javac task parameters 'source' and 'target' in order to explicitly control the Java compiler version used
-         to build World Wind classes. Without these parameters, the javac task would use the most recent compiler
-         available on the current machine, and the Java compiler version used to build WorldWind classes would be
-         unpredictable. For this reason, the Apache ANT manual strongly recommends specifying the 'source' and 'target'
-         parameters. See the following link for more detail: http://ant.apache.org/manual/CoreTasks/javac.html
+         folder. Note that this excludes the Java sources under the 'servers/src' and 'test' directories.
 
-         The Java compiler version used by the javac task is defined by the build parameter 'worldwind.jdk.version'.
-         By default, this parameter is defined in the file 'build/build.properties'. -->
+         The parameters 'source' and 'target' are configured in order to explicitly define the Java compiler version
+         used to build World Wind classes. Without these parameters, the javac task would use the most recent compiler
+         available on the current machine, and the Java compiler version used to build WorldWind classes would be
+         unpredictable. The Java compiler version used by the javac task is defined by the build parameter
+         'worldwind.jdk.version'. By default, this parameter is defined in the file 'build/build.properties'. See the
+         following link for more detail:
+         http://ant.apache.org/manual/CoreTasks/javac.html
+
+         The compiler argument '-Xlint:unchecked' is specified in order to give more detail for unchecked conversion
+         warnings. This argument is specified in the World Wind Java IntelliJ IDEA project. Its use here keeps the ANT
+         build output in sync with the IntelliJ IDEA project output.
+
+         The compiler argument '-Xlint:-options' suppresses warnings about the compiling for Java 1.6 on a Java 1.7
+         platform without specifying the bootstrap class path. See the following link for more detail:
+         https://blogs.oracle.com/darcy/entry/bootclasspath_older_source
+          -->
     <target name="compile"
             description="Compiles all World Wind Java sources under the 'src' folder into Java class files under the 'classes' folder.">
         <mkdir dir="${worldwind.classes.dir}"/>
@@ -58,6 +67,8 @@
                 <pathelement location="gdal.jar"/>
                 <pathelement location="plugin.jar"/>
             </classpath>
+            <compilerarg value="-Xlint:unchecked"/>
+            <compilerarg value="-Xlint:-options"/>
         </javac>
     </target>
 
