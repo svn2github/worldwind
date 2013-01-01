@@ -33,7 +33,7 @@ public class GeotiffImageReaderSpi extends ImageReaderSpi
     private GeotiffImageReaderSpi()
     {
         super(vendorName, version, names, suffixes, mimeTypes,
-            readerClassname, STANDARD_INPUT_TYPE,
+            readerClassname, new Class[] {ImageInputStream.class},
             null, false, null, null, null, null,
             false, null, null, null, null);
     }
