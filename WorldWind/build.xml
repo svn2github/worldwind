@@ -49,8 +49,7 @@
 
          The compiler argument '-Xlint:-options' suppresses warnings about the compiling for Java 1.6 on a Java 1.7
          platform without specifying the bootstrap class path. See the following link for more detail:
-         https://blogs.oracle.com/darcy/entry/bootclasspath_older_source
-          -->
+         https://blogs.oracle.com/darcy/entry/bootclasspath_older_source -->
     <target name="compile"
             description="Compiles all World Wind Java sources under the 'src' folder into Java class files under the 'classes' folder.">
         <mkdir dir="${worldwind.classes.dir}"/>
