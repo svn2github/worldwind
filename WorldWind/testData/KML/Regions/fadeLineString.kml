@@ -27,6 +27,7 @@
                 </Lod>
             </Region>
             <LineString>
+                <tessellate>1</tessellate>
                 <coordinates>
                     22,50,0
                     28,50,0
