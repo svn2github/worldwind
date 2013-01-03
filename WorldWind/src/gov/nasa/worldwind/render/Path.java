@@ -100,15 +100,6 @@ public class Path extends AbstractShape
     /** The default scale for position dots. The scale is applied to the current outline width to produce the dot size. */
     protected static final double DEFAULT_DRAW_POSITIONS_SCALE = 10;
 
-    /**
-     * Overrides the default materials specified in the base class.
-     */
-    static
-    {
-        defaultAttributes.setInteriorMaterial(DEFAULT_INTERIOR_MATERIAL);
-        defaultAttributes.setOutlineMaterial(DEFAULT_OUTLINE_MATERIAL);
-    }
-
     /** The PositionColors interface defines an RGBA color for each of a path's original positions. */
     public static interface PositionColors
     {
