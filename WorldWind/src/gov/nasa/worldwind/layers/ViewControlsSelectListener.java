@@ -315,7 +315,11 @@ public class ViewControlsSelectListener implements SelectListener
             // Handle left press on controls
             this.pressedControl = selectedObject;
             this.pressedControlType = controlType;
-            event.consume();
+
+            // Consume drag events, but do not consume left press events. It is not necessary to consume left press
+            // events here, and doing so prevents the WorldWindow from gaining focus.
+            if (event.getEventAction().equals(SelectEvent.DRAG))
+                event.consume();
         }
         else if (event.getEventAction().equals(SelectEvent.LEFT_CLICK)
             || event.getEventAction().equals(SelectEvent.LEFT_DOUBLE_CLICK)

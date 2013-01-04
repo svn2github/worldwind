@@ -918,7 +918,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         return size;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected Point computeOffset(DrawContext dc, BalloonAttributes activeAttrs, int width, int height)
     {
         Point2D.Double offset = activeAttrs.getOffset().computeOffset(width, height, 1d, 1d);
@@ -1168,7 +1168,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
             this.drawLinks(dc);
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected PickedObject createPickedObject(DrawContext dc, Color pickColor)
     {
         PickedObject po = new PickedObject(pickColor.getRGB(),
@@ -1183,7 +1183,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         return po;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected PickedObject createLinkPickedObject(DrawContext dc, Color pickColor, AVList linkParams)
     {
         PickedObject po = new PickedObject(pickColor.getRGB(), this);
@@ -1199,13 +1199,13 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         return po;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected boolean isDrawInterior(DrawContext dc)
     {
         return this.getActiveAttributes().isDrawInterior() && this.getActiveAttributes().getInteriorOpacity() > 0;
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected boolean isDrawOutline(DrawContext dc)
     {
         return this.getActiveAttributes().isDrawOutline() && this.getActiveAttributes().getOutlineOpacity() > 0;
@@ -2071,8 +2071,10 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
         this.lastPickPoint = event.getPickPoint();
 
-        // Consume the SelectEvent now that it has been passed on to the WebView as a mouse event.
-        event.consume();
+        // Consume the SelectEvent now that it has been passed on to the WebView as a mouse event. We avoid consuming
+        // left press events, since doing so prevents the WorldWindow from gaining focus.
+        if (!event.isLeftPress())
+            event.consume();
     }
 
     /**

@@ -32,7 +32,9 @@ import java.util.List;
  * <p/>
  * If a select listener performs some action in response to a select event, it should call the event's {@link
  * #consume()} method in order to indicate to subsequently called listeners that the event has been responded to and no
- * further action should be taken.
+ * further action should be taken. Left press select events should not be consumed unless it is necessary to do so.
+ * Consuming left press events prevents the WorldWindow from gaining focus, thereby preventing it from receiving key
+ * events.
  * <p/>
  * If no object is under the cursor but the cursor is over terrain, the select event will identify the terrain as the
  * picked object and will include the corresponding geographic position. See {@link
@@ -41,7 +43,7 @@ import java.util.List;
  * @author tag
  * @version $Id$
  */
-@SuppressWarnings( {"StringEquality"})
+@SuppressWarnings({"StringEquality"})
 public class SelectEvent extends WWEvent
 {
     /** The user clicked the left mouse button while the cursor was over picked object. */
