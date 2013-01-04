@@ -139,7 +139,6 @@ public class WorldWindDiagnostics
         public void display(GLAutoDrawable glAutoDrawable)
         {
             glAutoDrawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-            this.setVisible(false);
         }
 
         public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height)
