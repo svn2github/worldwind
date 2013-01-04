@@ -16,7 +16,7 @@
     <AvailableImageFormats>
         <ImageFormat>image/png</ImageFormat>
     </AvailableImageFormats>
-    <FormatSuffix>.png</FormatSuffix>
+    <FormatSuffix>.jpg</FormatSuffix>
     <NumLevels count="16" numEmpty="6"/>
     <TileOrigin>
         <LatLon units="degrees" latitude="-90" longitude="-180"/>
