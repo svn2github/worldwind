@@ -26,7 +26,7 @@
     return self;
 }
 
-- (void) render:(WWDrawContext*)dc
+- (void) doRender:(WWDrawContext*)dc
 {
     if (dc == nil)
     {

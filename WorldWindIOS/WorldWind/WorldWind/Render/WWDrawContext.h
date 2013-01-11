@@ -16,6 +16,7 @@
 @class WWSurfaceTileRenderer;
 @class WWGpuResourceCache;
 @protocol WWNavigatorState;
+@class WWPosition;
 
 /**
 * Provides current state during rendering. The current draw context is passed to most rendering methods in order to
@@ -58,6 +59,8 @@
 /// LRU cache. It assumes the responsibility of freeing GPU resources when they are evicted from the cache.
 @property (nonatomic) WWGpuResourceCache* gpuResourceCache;
 
+@property (nonatomic, readonly) WWPosition* eyePosition;
+
 /// @name Initializing a Draw Context
 
 /**
@@ -78,5 +81,15 @@
 * - verticalExaggeration (1)
 */
 - (void) reset;
+
+/**
+* The last draw context method called by the scene controller after the draw context state is set but prior to
+* rendering.
+*
+* This method updates the draw context's fields as necessary to reflect viewing and other state that was set since
+* the most recent call to update. The draw context computes, for example, the eye position from the just set
+* navigation state.
+*/
+- (void) update;
 
 @end

@@ -81,6 +81,18 @@
     return self;
 }
 
+- (WWMatrix*) initWithInverse:(WWMatrix*)matrix
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    self = [super init];
+
+    return [self invertTransformMatrix:matrix];
+}
+
 - (WWMatrix*) initWithMultiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB
 {
     self = [super init];
@@ -550,6 +562,27 @@
     ma[15] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
 
     return self;
+}
+
+- (WWVec4*) multiplyVector:(WWVec4*)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil");
+    }
+
+    double* ms = self->m;
+    double vx = [vector x];
+    double vy = [vector y];
+    double vz = [vector z];
+    double vw = [vector w];
+
+    double x = ms[0] * vx + ms[1] * vy + ms[2] * vz + ms[3] * vw;
+    double y = ms[4] * vx + ms[5] * vy + ms[6] * vz + ms[7] * vw;
+    double z = ms[8] * vx + ms[9] * vy + ms[10] * vz + ms[11] * vw;
+    double w = ms[12] * vx + ms[13] * vy + ms[14] * vz + ms[15] * vw;
+
+    return [[WWVec4 alloc] initWithCoordinates:x y:y z:z w:w];
 }
 
 - (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix

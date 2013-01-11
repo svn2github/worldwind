@@ -9,6 +9,7 @@
 #import "WorldWind/Layer/WWLayer.h"
 
 @class WWSurfaceImage;
+@class WWDrawContext;
 
 /**
 * Provides a layer containing a single image of Earth. The layer has only one resolution. This class is typically
@@ -31,7 +32,7 @@
 */
 - (WWBMNGOneImageLayer*) init;
 
-/// @name Supporting Methods
+/// @name Methods of Interest Only to Subclasses
 
 /**
 * Retrieves this layer's image from the internet.
@@ -49,5 +50,12 @@
  * @param toFilePath The full path to a local directory in which to save the retrieved image.
 */
 - (void) retrieveImageWithName:(NSString*)fileName atLocation:(NSString*)atLocation toFilePath:(NSString*)toFilePath;
+
+/**
+* Overrides the doRender method of the WWLayer base class in order to draw the image.
+*
+* @param dc The current draw context.
+*/
+- (void) doRender:(WWDrawContext*)dc;
 
 @end

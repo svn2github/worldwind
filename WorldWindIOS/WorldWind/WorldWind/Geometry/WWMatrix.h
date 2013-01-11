@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class WWGlobe;
+@class WWVec4;
 
 /**
 * Represents a 4x4 double precision matrix and provides operations on and between matrices.
@@ -63,6 +64,18 @@
 */
 - (WWMatrix*) initWithMultiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB;
 
+/**
+* Initializes a matrix to the inverse of a specified matrix.
+*
+* @param matrix The matrix whose inverse is to initialize this matrix. The specified matrix is assumed to be
+* orthonormal. (See invertTransformMatrix.)
+*
+* @return The initialized matrix.
+*
+* @exception NSInvalidArgumentException if the specified matrix is nil.
+*/
+- (WWMatrix*) initWithInverse:(WWMatrix*)matrix;
+
 /// @name Setting the Contents of Matrices
 
 /**
@@ -108,7 +121,7 @@
 *
 * @return This matrix as a translation matrix for a translation of the specified values.
 */
-- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double) z;
+- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z;
 
 /**
 * Sets this matrix to one that flips and shifts the Y axis.
@@ -150,7 +163,7 @@
                 heading:(double)heading
                    tilt:(double)tilt;
 
-/// @name Operations on Matrices
+/// @name Matrix Operations
 
 /**
 * Multiplies this matrix by a specified matrix.
@@ -163,10 +176,43 @@
 */
 - (WWMatrix*) multiplyMatrix:(WWMatrix*)matrix;
 
+/**
+* Multiplies this matrix by a matrix specified by individual components.
+*
+* @param m00 The value at row 0 column 0;
+* @param m01 The value at row 0 column 1;
+* @param m02 The value at row 0 column 2;
+* @param m03 The value at row 0 column 3;
+* @param m10 The value at row 1 column 0;
+* @param m11 The value at row 1 column 1;
+* @param m12 The value at row 1 column 2;
+* @param m13 The value at row 1 column 3;
+* @param m20 The value at row 2 column 0;
+* @param m21 The value at row 2 column 1;
+* @param m22 The value at row 2 column 2;
+* @param m23 The value at row 2 column 3;
+* @param m30 The value at row 3 column 0;
+* @param m31 The value at row 3 column 1;
+* @param m32 The value at row 3 column 2;
+* @param m33 The value at row 3 column 3;
+*
+* @return This matrix multiplied by the matrix with the specified values.
+*/
 - (WWMatrix*) multiply:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
                    m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
                    m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
                    m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
+
+/**
+* Multiplies a specified vector by this matrix.
+*
+* @param vector The vector to multiply.
+*
+* @return A new vector that's the product of this matrix and the specified vector.
+*
+* @exception NSInvalidArgumentException if the specified vector is nil.
+*/
+- (WWVec4*) multiplyVector:(WWVec4*)vector;
 
 /**
 * Inverts the specified matrix and stores the result in this matrix.

@@ -5,32 +5,32 @@
  @version $Id$
  */
 
-#import "WorldWind/Shapes/WWSurfaceImage.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Render/WWSurfaceTileRenderer.h"
+#import "WorldWind/Render/WWSurfaceTile.h"
+#import "WorldWind/Render/WWTextureTile.h"
+#import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Render/WWTexture.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/WWLog.h"
 
-@implementation WWSurfaceImage
+@implementation WWTextureTile
 
-- (WWSurfaceImage*) initWithImagePath:(WWSector*)sector imagePath:(NSString*)imagePath
+- (WWTextureTile*) initWithSector:(WWSector*)sector
+                            level:(WWLevel*)level
+                              row:(int)row
+                           column:(int)column
+                        imagePath:(NSString*)imagePath
 {
-    if (sector == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
-    }
+    // superclass checks sector, level, row and column arguments.
 
-    if (imagePath == nil || [imagePath length] == 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Image path is nil or zero length")
-    }
+    self = [super initWithSector:sector level:level row:row column:column];
 
-    self = [super init];
+    if (imagePath == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile image path is nil")
+    }
 
     _imagePath = imagePath;
-    _sector = sector;
 
     return self;
 }
@@ -52,11 +52,6 @@
     }
 
     return yn;
-}
-
-- (void) render:(WWDrawContext*)dc
-{
-    [[dc surfaceTileRenderer] renderTile:dc surfaceTile:self];
 }
 
 @end

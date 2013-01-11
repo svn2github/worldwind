@@ -12,6 +12,7 @@
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Layer/WWBMNGOneImageLayer.h"
+#import "WorldWind/Layer/WWBMNGLayer.h"
 
 @implementation ViewController
 
@@ -41,7 +42,8 @@
     WorldWindView* wwv =  (WorldWindView*) self.view;
 
     WWLayerList* layers = [[wwv sceneController] layers];
-    [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
+//    [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
+    [layers addLayer:[[WWBMNGLayer alloc] init]];
 }
 
 /*!

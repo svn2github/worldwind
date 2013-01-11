@@ -63,8 +63,15 @@
             if (lon + 1 > 180)
                 lon = 180;
 
-            WWSector* tileSector = [[WWSector alloc] initWithDegreesMinLatitude:lastLat maxLatitude:lat minLongitude:lastLon maxLongitude:lon];
-            WWTerrainTile* tile = [[WWTerrainTile alloc] initWithSector:tileSector level:0 row:row column:col tessellator:self];
+            WWSector* tileSector = [[WWSector alloc] initWithDegreesMinLatitude:lastLat
+                                                                    maxLatitude:lat
+                                                                   minLongitude:lastLon
+                                                                   maxLongitude:lon];
+
+            WWTerrainTile* tile = [[WWTerrainTile alloc] initWithSector:tileSector
+                                                                  level:nil row:row
+                                                                 column:col
+                                                            tessellator:self];
             [self->topLevelTiles addObject:tile];
 
             lastLon = lon;

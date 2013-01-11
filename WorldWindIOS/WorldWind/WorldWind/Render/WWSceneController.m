@@ -56,6 +56,7 @@
     [self->drawContext setGlobe:[self globe]];
     [self->drawContext setNavigatorState:_navigatorState];
     [self->drawContext setVerticalExaggeration:1.0];
+    [self->drawContext update];
 }
 
 - (void) drawFrame:(CGRect)viewport

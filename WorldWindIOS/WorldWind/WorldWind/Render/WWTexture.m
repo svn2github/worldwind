@@ -7,7 +7,7 @@
 
 #import "UIKit/UIKit.h"
 #import "WorldWind/Render/WWTexture.h"
-#import "WorldWInd/WWLog.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWTexture
 

@@ -7,12 +7,12 @@
 
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTessellator.h"
-#import "WorldWInd/WWLog.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWTerrainTile
 
 - (WWTerrainTile*) initWithSector:(WWSector*) sector
-                            level:(int) level
+                            level:(WWLevel*) level
                               row:(int) row
                            column:(int) column
                       tessellator:(WWTessellator*) tessellator
@@ -24,17 +24,14 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tessellator is nil")
     }
 
-    if (row < 0 || column < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile dimension is < 0")
-    }
-
     self = [super initWithSector:sector level:level row:row column:column];
 
     _tessellator = tessellator;
 
     _numLonCells = 5;
     _numLatCells = 5;
+
+    //TODO: set the resolution (if that property is still necessary).
 
     return self;
 }

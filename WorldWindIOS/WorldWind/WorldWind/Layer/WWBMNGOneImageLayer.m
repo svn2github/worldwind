@@ -9,6 +9,7 @@
 #import "WorldWind/Shapes/WWSurfaceImage.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Render/WWDrawContext.h"
 
 
 @implementation WWBMNGOneImageLayer
@@ -17,7 +18,7 @@
 {
     self = [super init];
 
-    NSString* networkLocation = @"http://worldwindserver.net";
+    NSString* networkLocation = @"http://worldwindserver.net"; // TODO: change location, and perhaps image type (PVRTC)
     NSString* imageFileName = @"BMNG_world.topo.bathy.200405.3.2048x1024.jpg";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask,
@@ -63,7 +64,7 @@
     }
 }
 
-- (void) render:(WWDrawContext*)dc
+- (void) doRender:(WWDrawContext*)dc
 {
     if (_surfaceImage != nil)
     {

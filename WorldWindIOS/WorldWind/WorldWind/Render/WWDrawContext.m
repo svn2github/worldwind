@@ -7,6 +7,10 @@
 
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWSurfaceTileRenderer.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Geometry/WWPosition.h"
 
 @implementation WWDrawContext
 
@@ -17,6 +21,7 @@
     _surfaceTileRenderer = [[WWSurfaceTileRenderer alloc] init];
     _verticalExaggeration = 1;
     _timestamp = [NSDate date];
+    _eyePosition = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
 
     return self;
 }
@@ -25,6 +30,13 @@
 {
     _timestamp = [NSDate date];
     _verticalExaggeration = 1;
+}
+
+- (void) update
+{
+    WWVec4* ep = [_navigatorState eyePoint];
+
+    [_globe computePositionFromPoint:[ep x] y:[ep y] z:[ep z] outputPosition:_eyePosition];
 }
 
 @end
