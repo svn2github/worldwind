@@ -7,9 +7,34 @@
 
 #import <Foundation/Foundation.h>
 
-
+/**
+* Provides a collection of utility methods.
+*/
 @interface WWUtil : NSObject
 
+/// @name I/O and Caching
+
+/**
+* Retrieves the data designated by a URL and saves it in a local file.
+*
+* @param url The URL from which to retrieve the data.
+* @param filePath The full path of the file in which to save the data. The directories in the path need not exist,
+* they will be created.
+*
+* @return YES if the operation was successful, otherwise NO. A log message is written if the operation is
+* unsuccessful.
+*
+* @exception NSInvalidArgumentException if the url or file path are nil or the file path is empty.
+*/
++ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath;
+
+/// @name Other Utilities
+
+/**
+* Generate a unique string.
+*
+* @return A unique string.
+*/
 + (NSString*) generateUUID;
 
 @end

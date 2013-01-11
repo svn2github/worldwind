@@ -18,6 +18,9 @@
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWTiledImageLayer
 
@@ -54,8 +57,7 @@
     _formatSuffix = @".png";
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
-                                               origin:nil
-                                       levelZeroDelta:levelZeroDelta
+                                               origin:nil levelZeroDelta:levelZeroDelta
                                             numLevels:numLevels];
 
     self->currentTiles = [[NSMutableArray alloc] init];
@@ -167,31 +169,12 @@
 - (void) retrieveTileImage:(WWTextureTile*)tile
 {
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_imageFormat];
+    NSString* filePath = [tile imagePath];
 
-    NSError* error = nil;
-    NSData* data = [NSData dataWithContentsOfURL:url options:0 error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
-        return;
-    }
+    NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
 
-    // Ensure that the cache directory for this tile exists.
-    NSString* pathDir = [[tile imagePath] stringByDeletingLastPathComponent];
-    [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
-                              withIntermediateDirectories:YES attributes:nil error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" creating path %@", [error description], [tile imagePath]);
-        return;
-    }
-
-    [data writeToFile:[tile imagePath] options:0 error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" writing file %@", [error description], [tile imagePath]);
-        return;
-    }
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath notification:notification];
+    [retriever addToQueue:retriever];
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat

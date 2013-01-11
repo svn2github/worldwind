@@ -5,8 +5,9 @@
  @version $Id$
  */
 
-extern NSString * const WW_GPU_PROGRAM;
-extern NSString * const WW_GPU_TEXTURE;
+extern NSString* const WW_GPU_PROGRAM;
+extern NSString* const WW_GPU_TEXTURE;
+extern NSString* const WW_REQUEST_REDRAW;
 
 @interface WorldWindConstants : NSObject
 

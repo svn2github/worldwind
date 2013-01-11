@@ -8,6 +8,16 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
+/**
+* Provides access to World Wind singletons.
+*/
 @interface WorldWind : NSObject
+
+/**
+* Returns the singleton World Wind retrieval queue.
+*
+* @return The World Wind retrieval queue.
+*/
++ (NSOperationQueue*) retrievalQueue;
 
 @end

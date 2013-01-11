@@ -9,4 +9,21 @@
 
 @implementation WorldWind
 
+static NSOperationQueue* wwRetrievalQueue; // singleton instance
+
++ (void) initialize
+{
+    static BOOL initialized = NO; // protects against erroneous explicit calls to this method
+    if (!initialized)
+    {
+        initialized = YES;
+        wwRetrievalQueue = [[NSOperationQueue alloc] init];
+    }
+}
+
++ (NSOperationQueue*) retrievalQueue
+{
+    return wwRetrievalQueue;
+}
+
 @end

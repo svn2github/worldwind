@@ -7,13 +7,10 @@
 
 #import "WorldWind/WorldWindConstants.h"
 
-NSString * const WW_GPU_PROGRAM = @"gov.nasa.worldwind.GpuProgram";
-NSString * const WW_GPU_TEXTURE = @"gov.nasa.worldwind.GpuTexture";
+NSString* const WW_GPU_PROGRAM = @"gov.nasa.worldwind.GpuProgram";
+NSString* const WW_GPU_TEXTURE = @"gov.nasa.worldwind.GpuTexture";
+NSString* const WW_REQUEST_REDRAW = @"gov.nasa.worldwind.RequestRedraw";
 
 @implementation WorldWindConstants
-
-+(void)initialize
-{
-}
 
 @end

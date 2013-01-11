@@ -24,5 +24,6 @@
 
 - (void) drawView;
 - (void) tearDownGL;
+- (void) handleNotification:(NSNotification*)notification;
 
 @end

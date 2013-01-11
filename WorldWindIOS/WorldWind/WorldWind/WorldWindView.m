@@ -9,6 +9,7 @@
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WorldWindView
 
@@ -57,6 +58,12 @@
         // scene from distorting when WorldWindView is rotated in response to a device orientation change. Without
         // contentMode configured this way, the globe appears to expand or contract during the autorotation animation.
         [self setContentMode:UIViewContentModeCenter];
+
+        // Set up to handle redraw requests.
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleNotification:)
+                                                     name:WW_REQUEST_REDRAW
+                                                   object:nil];
     }
 
     return self;
@@ -140,6 +147,14 @@
 
     glDeleteFramebuffers(1, &self->_frameBuffer);
     self->_frameBuffer = 0;
+}
+
+- (void) handleNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_REQUEST_REDRAW])
+    {
+        [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
+    }
 }
 
 @end
