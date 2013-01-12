@@ -61,7 +61,7 @@
     return [[_level parent] tileHeight];
 }
 
-+ (int) computeRow:(double)delta latitude:(double)latitude origin:(double)origin
++ (int) computeRow:(double)delta latitude:(double)latitude
 {
     if (delta <= 0)
     {
@@ -74,9 +74,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
-    int row = (int) ((latitude - origin) / delta);
-    // Latitude is at the end of the grid. Subtract 1 from the computed row to return the last row.
-    if ((latitude - origin) == 180)
+    int row = (int) ((latitude + 90) / delta);
+    // If latitude is at the end of the grid, subtract 1 from the computed row to return the last row.
+    if (latitude == 90)
     {
         row -= 1;
     }
@@ -84,7 +84,7 @@
     return row;
 }
 
-+ (int) computeColumn:(double)delta longitude:(double)longitude origin:(double)origin
++ (int) computeColumn:(double)delta longitude:(double)longitude
 {
     if (delta <= 0)
     {
@@ -97,15 +97,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
-    double gridLongitude = longitude - origin;
+    double gridLongitude = longitude + 180;
     if (gridLongitude < 0)
     {
         gridLongitude = 360 + gridLongitude;
     }
 
     int col = (int) (gridLongitude / delta);
-    // Longitude is at the end of the grid. Subtract 1 from the computed column to return the last column.
-    if ((longitude - origin) == 360)
+    // If longitude is at the end of the grid, subtract 1 from the computed column to return the last column.
+    if (longitude == 180)
     {
         col -= 1;
     }
@@ -136,11 +136,11 @@
     double deltaLon = [[level tileDelta] longitude];
 
     WWSector* sector = [level sector];
-    int firstRow = [WWTile computeRow:deltaLat latitude:[sector minLatitude] origin:-90];
-    int lastRow = [WWTile computeRow:deltaLat latitude:[sector maxLatitude] origin:-90];
+    int firstRow = [WWTile computeRow:deltaLat latitude:[sector minLatitude]];
+    int lastRow = [WWTile computeRow:deltaLat latitude:[sector maxLatitude]];
 
-    int firstCol = [WWTile computeColumn:deltaLon longitude:[sector minLongitude] origin:-180];
-    int lastCol = [WWTile computeColumn:deltaLon longitude:[sector maxLongitude] origin:-180];
+    int firstCol = [WWTile computeColumn:deltaLon longitude:[sector minLongitude]];
+    int lastCol = [WWTile computeColumn:deltaLon longitude:[sector maxLongitude]];
 
     double firstRowLat = -90 + firstRow * deltaLat;
     double firstRowLon = -180 + firstCol * deltaLon;

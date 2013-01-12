@@ -33,9 +33,6 @@
 /// The geographic size of lowest resolution (level 0) tiles in this level set.
 @property(nonatomic, readonly) WWLocation* levelZeroDelta;
 
-/// The orgin of this level set's tiling system. Typically -90 latitude and -180 longitude.
-@property(nonatomic, readonly) WWLocation* origin; // TODO: Is this actually needed? Is any other origin likely?
-
 /// The number of levels in this level set.
 @property(nonatomic, readonly) int numLevels;
 
@@ -101,8 +98,6 @@
 * Initialize a level set.
 *
 * @param sector The sector spanned by this level set.
-* @param origin The origin of this level set's tiling system. May be nil, in which case the origin is set to
-* -90 latitude and -180 longitude.
 * @param levelZeroDelta The geographic size of tiles in the lowest resolution level of this level set.
 * @param numLevels The number of levels in the level set.
 *
@@ -112,7 +107,6 @@
 * or the number of levels is less than 1.
 */
 - (WWLevelSet*) initWithSector:(WWSector*)sector
-                        origin:(WWLocation*)origin
                 levelZeroDelta:(WWLocation*)levelZeroDelta
                      numLevels:(int)numLevels;
 

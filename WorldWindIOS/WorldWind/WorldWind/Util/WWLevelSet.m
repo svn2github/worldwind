@@ -16,7 +16,6 @@
 @implementation WWLevelSet
 
 - (WWLevelSet*) initWithSector:(WWSector*)sector
-                        origin:(WWLocation*)origin
                 levelZeroDelta:(WWLocation*)levelZeroDelta
                      numLevels:(int)numLevels
 {
@@ -38,7 +37,6 @@
     self = [super init];
 
     _sector = sector;
-    _origin = origin != nil ? origin : [[WWLocation alloc] initWithDegreesLatitude:-90 longitude:-180];
     _levelZeroDelta = levelZeroDelta;
     _numLevels = numLevels;
 
@@ -46,11 +44,9 @@
     _tileHeight = 256;
 
     int firstLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude]
-                                           longitude:[_sector minLongitude]
-                                              origin:[_origin longitude]];
+                                           longitude:[_sector minLongitude]];
     int lastLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude]
-                                          longitude:[_sector maxLongitude]
-                                             origin:[_origin longitude]];
+                                          longitude:[_sector maxLongitude]];
     _numLevelZeroColumns = MAX(1, lastLevelZeroColumn - firstLevelZeroColumn + 1);
 
     self->levels = [[NSMutableArray alloc] init];

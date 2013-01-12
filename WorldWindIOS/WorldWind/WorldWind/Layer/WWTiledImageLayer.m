@@ -63,7 +63,7 @@
     self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
-                                               origin:nil levelZeroDelta:levelZeroDelta
+                                       levelZeroDelta:levelZeroDelta
                                             numLevels:numLevels];
 
     self->currentTiles = [[NSMutableArray alloc] init];

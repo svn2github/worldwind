@@ -53,28 +53,26 @@
 *
 * @param delta The level's latitudinal tile delta in degrees.
 * @param latitude The tile's minimum latitude.
-* @param origin The latitudinal origin of the tile's level set.
 *
 * @return the row number of the specified tile.
 *
 * @exception NSInvalidArgumentException if the specified delta is less than or equal to 0 or the specified latitude
 * is not within the range -90, 90.
 */
-+ (int) computeRow:(double)delta latitude:(double)latitude origin:(double)origin;
++ (int) computeRow:(double)delta latitude:(double)latitude;
 
 /**
 * Computes a column number for a tile within a level given its longitude.
 *
 * @param delta The level's longitudinal tile delta in degrees.
 * @param longitude The tile's minimum longitude.
-* @param origin The longitudinal origin of the tile's level set.
 *
 * @return the column number of the specified tile.
 *
 * @exception NSInvalidArgumentException if the specified delta is less than or equal to 0 or the specified longitude
 * is not within the range --180, 180.
 */
-+ (int) computeColumn:(double)delta longitude:(double)longitude origin:(double)origin;
++ (int) computeColumn:(double)delta longitude:(double)longitude;
 
 /// @name Initializing Tiles
 
