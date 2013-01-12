@@ -36,7 +36,7 @@
 * Initialize this navigator state.
 *
 * @param modelviewMatrix The modelview matrix.
-* @param projection The projection matrix.
+* @param projectionMatrix The projection matrix.
 *
 * @return The initialized instance.
 *
