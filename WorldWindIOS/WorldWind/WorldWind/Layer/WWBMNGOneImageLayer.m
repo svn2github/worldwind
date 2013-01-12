@@ -18,8 +18,8 @@
 {
     self = [super init];
 
-    NSString* networkLocation = @"http://worldwindserver.net"; // TODO: change location, and perhaps image type (PVRTC)
-    NSString* imageFileName = @"BMNG_world.topo.bathy.200405.3.2048x1024.jpg";
+    NSString* networkLocation = @"http://worldwind.arc.nasa.gov/mobile";
+    NSString* imageFileName = @"BMNG_world.topo.bathy.200405.3.2048x1024.jpeg";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask,
             YES) objectAtIndex:0];
