@@ -41,6 +41,7 @@
 @protected
     WWLevelSet* levels;
     NSMutableArray* topLevelTiles;
+    NSString* formatSuffix; // determined at initialization and cached here
 
     // Stuff computed each frame.
     NSMutableArray* currentTiles;
@@ -53,9 +54,6 @@
 
 /// The image format to request from the remote server. The default is _image/png_.
 @property(nonatomic, readonly) NSString* imageFormat;
-
-/// The format suffix to use when saving images to the local cache. The default is _.png_.
-@property(nonatomic, readonly) NSString* formatSuffix;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS
 // tiled image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be
@@ -73,13 +71,18 @@
 * @param numLevels The number of levels to define for the layer. Each level is successively one power of two higher
 * resolution than the next lower-numbered level. (0 is the lowest resolution level, 1 is twice that resolution, etc.)
 * Each level contains four times as many tiles as the next lower-numbered level, each 1/4 the geographic size.
+* @param imageFormat The mime type of the image format for the layer's tiles, e.g., _image/png_.
 * @param cachePath The local file system location in which to store the layer's retrieved imagery.
 *
 * @return This tiled image layer, initialized.
+*
+* @exception NSInvalidArgumentException If the sector, level zero delta, image format or cache path are nil,
+* or the specified number of levels is less than one.
 */
 - (WWTiledImageLayer*) initWithSector:(WWSector*)sector
                        levelZeroDelta:(WWLocation*)levelZeroDelta
                             numLevels:(int)numLevels
+                          imageFormat:(NSString*)imageFormat
                             cachePath:(NSString*)cachePath;
 
 /// @name Methods of Interest Only to Subclasses

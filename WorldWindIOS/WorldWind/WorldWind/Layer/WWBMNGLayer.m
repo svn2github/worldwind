@@ -20,6 +20,7 @@
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:90 longitude:90]
                        numLevels:7
+                     imageFormat:@"image/jpeg"
                        cachePath:cachePath];
 
     NSString* serviceLocation = @"http://data.worldwind.arc.nasa.gov/wms";

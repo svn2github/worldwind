@@ -37,4 +37,13 @@
 */
 + (NSString*) generateUUID;
 
+/**
+* Returns the suffix for a specified mime type.
+*
+* @param mimeType The mime type, e.g. _image/png_.
+*
+* @return The suffix for the mime type, including the ".", e.g. _.png_, or nil if the mime type is not recognized.
+*/
++ (NSString*) suffixForMimeType:(NSString*)mimeType;
+
 @end

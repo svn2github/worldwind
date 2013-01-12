@@ -18,15 +18,16 @@
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Util/WWUtil.h"
 
 @implementation WWTiledImageLayer
 
 - (WWTiledImageLayer*) initWithSector:(WWSector*)sector
                        levelZeroDelta:(WWLocation*)levelZeroDelta
                             numLevels:(int)numLevels
+                          imageFormat:(NSString*)imageFormat
                             cachePath:(NSString*)cachePath
 {
     if (sector == nil)
@@ -44,6 +45,11 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Number of levels is less than 1")
     }
 
+    if (imageFormat == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Image format is nil")
+    }
+
     if (cachePath == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Cache path is nil")
@@ -51,10 +57,10 @@
 
     self = [super init];
 
+    _imageFormat = imageFormat;
     _cachePath = cachePath;
 
-    _imageFormat = @"image/png";
-    _formatSuffix = @".png";
+    self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
                                                origin:nil levelZeroDelta:levelZeroDelta
@@ -64,6 +70,12 @@
     self->topLevelTiles = [[NSMutableArray alloc] init];
 
     return self;
+}
+
+- (void) setImageFormat:(NSString*)imageFormat
+{
+    _imageFormat = imageFormat;
+    self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 }
 
 - (void) doRender:(WWDrawContext*)dc
@@ -161,7 +173,7 @@
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
     NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d%@",
-                                                     _cachePath, [level levelNumber], row, row, column, _formatSuffix];
+                                                     _cachePath, [level levelNumber], row, row, column, self->formatSuffix];
 
     return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }

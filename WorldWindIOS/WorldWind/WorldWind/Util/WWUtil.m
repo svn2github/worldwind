@@ -64,4 +64,15 @@
     return YES;
 }
 
++ (NSString*) suffixForMimeType:(NSString*)mimeType
+{
+    if ([@"image/png" isEqualToString:mimeType])
+        return @".png";
+
+    if ([@"image/jpeg" isEqualToString:mimeType])
+        return @".jpg";
+
+    return nil;
+}
+
 @end
