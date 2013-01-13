@@ -20,4 +20,14 @@
 */
 + (NSOperationQueue*) retrievalQueue;
 
+/**
+* Show or hide the device's network busy signal.
+*
+* Calls to this method are reference counted so the signal may still display even after calling this method. If so,
+* it means that the method has been called by other code performing network activity.
+*
+* @param visible YES to turn the busy signal on, NO to turn it off.
+*/
++ (void) setNetworkBusySignalVisible:(BOOL)visible;
+
 @end

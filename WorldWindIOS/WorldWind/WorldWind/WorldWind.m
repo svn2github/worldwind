@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import "UIKit/UIKit.h"
 #import "WorldWind/WorldWind.h"
 
 @implementation WorldWind
@@ -24,6 +25,18 @@ static NSOperationQueue* wwRetrievalQueue; // singleton instance
 + (NSOperationQueue*) retrievalQueue
 {
     return wwRetrievalQueue;
+}
+
++ (void) setNetworkBusySignalVisible:(BOOL)visible
+{
+    static int numCalls = 0;
+
+    if (visible)
+        ++numCalls;
+    else
+        --numCalls;
+
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:numCalls > 0];
 }
 
 @end
