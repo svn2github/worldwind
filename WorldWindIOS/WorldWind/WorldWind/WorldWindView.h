@@ -21,6 +21,7 @@
 @property (readonly, nonatomic, strong) EAGLContext* context;
 @property (readonly, nonatomic, strong) WWSceneController* sceneController;
 @property (readonly, nonatomic, strong) id<WWNavigator> navigator;
+@property BOOL redrawRequested;
 
 - (void) drawView;
 - (void) tearDownGL;

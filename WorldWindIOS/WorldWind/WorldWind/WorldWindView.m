@@ -18,11 +18,11 @@
     return [CAEAGLLayer class];
 }
 
-- (id) initWithFrame:(CGRect) frame
+- (id) initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *) super.layer;
+        CAEAGLLayer* eaglLayer = (CAEAGLLayer*) super.layer;
         eaglLayer.opaque = YES;
 
         self->_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -47,7 +47,7 @@
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             WWLog(@"Failed to complete framebuffer attachment %x",
-                  glCheckFramebufferStatus(GL_FRAMEBUFFER));
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
             return nil;
         }
 
@@ -69,7 +69,7 @@
     return self;
 }
 
-- (void) resizeWithLayer:(CAEAGLLayer*) layer
+- (void) resizeWithLayer:(CAEAGLLayer*)layer
 {
     GLint width, height;
 
@@ -98,6 +98,8 @@
 
 - (void) drawView
 {
+    [self setRedrawRequested:NO];
+
     [EAGLContext setCurrentContext:self.context];
 
     // The scene controller catches and logs rendering exceptions, so don't do it here. Draw the scene using the current
@@ -153,7 +155,11 @@
 {
     if ([[notification name] isEqualToString:WW_REQUEST_REDRAW])
     {
-        [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
+        if (![self redrawRequested])
+        {
+            [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
+            [self setRedrawRequested:YES];
+        }
     }
 }
 
