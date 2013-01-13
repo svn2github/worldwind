@@ -9,7 +9,9 @@
 
 @class WWSector;
 @class WWLevel;
+@class WWDrawContext;
 @protocol WWTileFactory;
+@class WWGlobe;
 
 /**
 * Provides a base class for texture tiles used by tiled image layers and elevation tiles used by elevation models.
@@ -33,6 +35,8 @@
 
 /// The resolution of a single pixel or cell in a tile of this level set.
 @property(readonly, nonatomic) double resolution; // TODO: Is this property necessary?
+
+@property (readonly, nonatomic) NSMutableArray* referencePoints;
 
 /**
 * Indicates the width in pixels or cells of this tile's resource.
@@ -104,5 +108,35 @@
 + (void) createTilesForLevel:(WWLevel*)level
                  tileFactory:(id <WWTileFactory>)tileFactory
                     tilesOut:(NSMutableArray*)tilesOut;
+
+- (NSArray*) subdivide:(WWLevel*)nextLevel tileFactory:(id <WWTileFactory>)tileFactory;
+
+/**
+* Determines whether the tile should be subdivided based on the current navigation state and a specified detail factor.
+*
+* This method assumes that the tile's reference points are current relative to the current globe and vertical
+* exaggeration.
+*
+* @param dc The current draw context.
+* @param detailFactor The detail factor to consider.
+*
+* @return YES if the tile should be subdivided, otherwise NO.
+*/
+- (BOOL) mustSubdivide:(WWDrawContext*)dc detailFactor:(double)detailFactor;
+
+/// @name Operations on Tiles
+
+/**
+* Updates the tile's reference points to reflect current state.
+*
+* The tile's reference points are the Cartesian points corresponding to the tile's corner and center points. These
+* must be up-to-date for certain operations such as computing the tile's extent or whether it should be subdivided.
+*
+* @param globe The globe the tile's associated with.
+* @param verticalExaggeration The current vertical exaggeration.
+*
+* @exception NSInvalidArgumentException If the globe is nil.
+*/
+- (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
 
 @end

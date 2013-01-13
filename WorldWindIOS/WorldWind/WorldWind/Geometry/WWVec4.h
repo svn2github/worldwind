@@ -28,9 +28,18 @@
 /**
 * The Cartesian length of the vector, not including the W component.
 *
-* @return the vector's length considering only the X, Y and Z components.
+* @return The vector's length considering only the X, Y and Z components.
 */
 - (double) length3;
+
+/**
+* The square of the Cartesian vector length, not including the W component.
+*
+* This operation avoids the overhead of computing the square root.
+*
+* @return The vector's length squared.
+*/
+- (double) lengthSquared3;
 
 /// @name Initializing Vectors
 
@@ -130,5 +139,29 @@
 * @exception NSInvalidArgumentException if the specified vector is nil.
 */
 - (WWVec4*) subtract3:(WWVec4*)vector;
+
+/**
+* Computes the Cartesian distance between points represented by this vector and a specified vector.
+*
+* @param vector The vector identifying the distant point.
+*
+* @return The Cartesian distance between the two points.
+*
+* @exception NSInvalidArgumentException if the specified vector is nil
+*/
+- (double) distance3:(WWVec4*)vector;
+
+/**
+* Computes the square of the Cartesian distance between points represented by this vector and a specified vector.
+*
+* This method avoids computing the square root that would produce the actual distance between the two points.
+*
+* @param vector The vector identifying the distant point.
+*
+* @return The square of the Cartesian distance between the two points.
+*
+* @exception NSInvalidArgumentException if the specified vector is nil
+*/
+- (double) distanceSquared3:(WWVec4*)vector;
 
 @end

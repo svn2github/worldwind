@@ -90,7 +90,7 @@
 *
 * @return YES if the level number indicated the highest resolution level in the level set, otherwise NO.
 */
-- (BOOL) isLastLevel:(NSUInteger)levelNumber;
+- (BOOL) isLastLevel:(int)levelNumber;
 
 /// @name Initializing Level Sets
 

@@ -86,6 +86,11 @@
     return sqrt(_x * _x + _y * _y + _z * _z);
 }
 
+- (double) lengthSquared3
+{
+    return _x * _x + _y * _y + _z * _z;
+}
+
 - (WWVec4*) normalize3
 {
     double length = [self length3];
@@ -125,6 +130,34 @@
     _z -= vector.z;
 
     return self;
+}
+
+- (double) distance3:(WWVec4*)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    double dx = [vector x] - _x;
+    double dy = [vector y] - _y;
+    double dz = [vector z] - _z;
+
+    return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+- (double) distanceSquared3:(WWVec4*)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    double dx = [vector x] - _x;
+    double dy = [vector y] - _y;
+    double dz = [vector z] - _z;
+
+    return dx * dx + dy * dy + dz * dz;
 }
 
 @end

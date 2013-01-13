@@ -35,4 +35,6 @@
 */
 - (BOOL) bind:(WWDrawContext*)dc;
 
+- (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix;
+
 @end

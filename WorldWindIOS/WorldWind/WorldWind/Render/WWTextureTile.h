@@ -23,6 +23,9 @@
 /// The full file-system path to the image.
 @property(readonly, nonatomic) NSString* imagePath;
 
+/// The tile whose texture to use when this tile's texture is not available.
+@property WWTextureTile* fallbackTile;
+
 /// @name Initializing Texture Tiles
 
 /**

@@ -41,10 +41,16 @@
 @protected
     WWLevelSet* levels;
     NSMutableArray* topLevelTiles;
+    double detailHintOrigin;
     NSString* formatSuffix; // determined at initialization and cached here
 
     // Stuff computed each frame.
     NSMutableArray* currentTiles;
+    WWTextureTile* currentAncestorTile;
+
+    // TODO: The following field is used to prevent duplicate retrievals, but entries are only added to it, never
+    // removed. It therefore grows unbounded. Add logic to remove retrieved resources.
+    NSMutableSet* currentRetrievals;
 }
 
 /// @name Attributes
@@ -60,6 +66,9 @@
 // specified prior to using the layer. Although it is initalized to nil, it may not be nil when the layer becomes
 // active.
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
+
+/// The current detail hint.
+@property (nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
 
 /// @name Initializing Tiled Image Layers
 
@@ -221,7 +230,19 @@
 *
 * @param dc The current draw context.
 * @param tile The tile to consider.
+*
+* @return YES if the tile meets the render criteria, otherwise NO.
 */
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
+* Indicates whether a tile's texture image is in the memory cache or file-system cache.
+*
+* @param dc The current draw context.
+* @param tile The tile in question.
+*
+* @return YES if the tile's texture is local, otherwise NO.
+*/
+- (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
 
 @end

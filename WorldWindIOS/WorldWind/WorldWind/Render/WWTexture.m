@@ -52,7 +52,17 @@
         return NO;
     }
 
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_filePath])
+    {
+        return NO;
+    }
+
     [self loadTextureDataFromFile];
+    if (_textureCreationFailed)
+    {
+        return NO;
+    }
+
     [self establishTexture]; // also performs the bind
 
     return _textureID != 0;

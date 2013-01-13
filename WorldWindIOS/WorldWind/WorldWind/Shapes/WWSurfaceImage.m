@@ -54,6 +54,11 @@
     return yn;
 }
 
+- (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
+{
+    // nothing to do here for this shape
+}
+
 - (void) render:(WWDrawContext*)dc
 {
     [[dc surfaceTileRenderer] renderTile:dc surfaceTile:self];

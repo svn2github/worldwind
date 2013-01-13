@@ -85,7 +85,7 @@
     return [self->levels lastObject];
 }
 
-- (BOOL) isLastLevel:(NSUInteger)levelNumber
+- (BOOL) isLastLevel:(int)levelNumber
 {
     return levelNumber == [self->levels count] - 1;
 }

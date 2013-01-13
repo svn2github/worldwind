@@ -218,6 +218,7 @@
     [prog loadUniformMatrix:@"tileCoordMatrix" matrix:self->tileCoordMatrix];
 
     [self->texCoordMatrix setUnitYFlip];
+    [surfaceTile applyInternalTransform:dc matrix:self->texCoordMatrix];
     [self->texCoordMatrix multiplyMatrix:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"texCoordMatrix" matrix:self->texCoordMatrix];
 }

@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class WWLocation;
+@class WWGlobe;
 
 /**
 * Represents a geographic region defined by a rectangle in degrees latitude and longitude. Sectors are used extensively
@@ -80,6 +81,20 @@
 * @exception NSInvalidArgumentException if the result parameter is nil.
 */
 - (void) centroidLocation:(WWLocation*)result;
+
+/**
+* Computed the Cartesian coordinates of this sector's four corners and its center.
+*
+* @param globe The globe for the sector.
+* @param verticalExaggeration The vertical exaggeration to apply. Use 1 if no vertical exaggeration.
+* @param result A mutable array of points. The array and its points may not be nil. The points in the
+* array are computed in the following order: southwest, southeast, northeast, northwest, center.
+*
+* @exception NSInvalidArgumentException if the globe or output array are nil.
+*/
+- (void) computeReferencePoints:(WWGlobe*)globe
+           verticalExaggeration:(double)verticalExaggeration
+                         result:(NSMutableArray*)result;
 
 /// @name Initializing Sectors
 

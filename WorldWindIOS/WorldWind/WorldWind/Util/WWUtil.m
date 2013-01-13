@@ -7,6 +7,7 @@
 
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWind.h"
 
 @implementation WWUtil
 
@@ -33,32 +34,41 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"File path is nil or empty")
     }
 
-    NSError* error = nil;
-
-    // Get the data from the URL.
-    NSData* data = [NSData dataWithContentsOfURL:url options:0 error:&error];
-    if (error != nil)
+    @try
     {
-        WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
-        return NO;
+        [WorldWind setNetworkBusySignalVisible:YES];
+
+        NSError* error = nil;
+
+        // Get the data from the URL.
+        NSData* data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+        if (error != nil)
+        {
+            WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
+            return NO;
+        }
+
+        // Ensure that the directory for the file exists.
+        NSString* pathDir = [filePath stringByDeletingLastPathComponent];
+        [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
+                                  withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error != nil)
+        {
+            WWLog("@Error \"%@\" creating path %@", [error description], filePath);
+            return NO;
+        }
+
+        // Write the data to the file.
+        [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
+        if (error != nil)
+        {
+            WWLog("@Error \"%@\" writing file %@", [error description], filePath);
+            return NO;
+        }
     }
-
-    // Ensure that the directory for the file exists.
-    NSString* pathDir = [filePath stringByDeletingLastPathComponent];
-    [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
-                              withIntermediateDirectories:YES attributes:nil error:&error];
-    if (error != nil)
+    @finally
     {
-        WWLog("@Error \"%@\" creating path %@", [error description], filePath);
-        return NO;
-    }
-
-    // Write the data to the file.
-    [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" writing file %@", [error description], filePath);
-        return NO;
+        [WorldWind setNetworkBusySignalVisible:NO];
     }
 
     return YES;

@@ -60,6 +60,7 @@
     _imageFormat = imageFormat;
     _cachePath = cachePath;
 
+    self->detailHintOrigin = 2.6;
     self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
@@ -68,6 +69,7 @@
 
     self->currentTiles = [[NSMutableArray alloc] init];
     self->topLevelTiles = [[NSMutableArray alloc] init];
+    self->currentRetrievals = [[NSMutableSet alloc] init];
 
     return self;
 }
@@ -76,6 +78,15 @@
 {
     _imageFormat = imageFormat;
     self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
+}
+
+- (void) createTopLevelTiles
+{
+    [self->topLevelTiles removeAllObjects];
+
+    [WWTile createTilesForLevel:[self->levels firstLevel]
+                    tileFactory:self
+                       tilesOut:self->topLevelTiles];
 }
 
 - (void) doRender:(WWDrawContext*)dc
@@ -123,7 +134,11 @@
     {
         WWTextureTile* tile = [self->topLevelTiles objectAtIndex:i];
 
+        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+
         // TODO: update tile extent
+
+        self->currentAncestorTile = nil;
 
         if ([self isTileVisible:dc tile:tile])
         {
@@ -132,42 +147,88 @@
     }
 }
 
-- (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile // TODO
+- (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
+    if ([[tile level] levelNumber] != 0) // level 0 tiles were updated in assembleTiles
+    {
+        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+        // TODO update tile extent
+    }
+
     if ([self tileMeetsRenderCriteria:dc tile:tile])
     {
         [self addTile:dc tile:tile];
+        return;
     }
-}
 
-- (void) createTopLevelTiles
-{
-    [self->topLevelTiles removeAllObjects];
+    WWTextureTile* ancestorTile = nil;
 
-    [WWTile createTilesForLevel:[self->levels firstLevel]
-                    tileFactory:self
-                       tilesOut:self->topLevelTiles];
+    @try
+    {
+        if ([self isTileTextureLocal:dc tile:tile] || [[tile level] levelNumber] == 0)
+        {
+            ancestorTile = self->currentAncestorTile;
+            self->currentAncestorTile = tile;
+        }
+
+        // TODO: Surround this loop with an autorelease pool since a lot of tiles are generated?
+        WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
+        NSArray* subTiles = [tile subdivide:nextLevel tileFactory:self];
+        for (NSUInteger i = 0; i < 4; i++)
+        {
+            WWTile* child = [subTiles objectAtIndex:i];
+            if ([[self->levels sector] intersects:[child sector]]
+                    && [self isTileVisible:dc tile:(WWTextureTile*) child])
+            {
+                [self addTileOrDescendants:dc tile:(WWTextureTile*) child];
+            }
+        }
+    }
+    @finally
+    {
+        if (ancestorTile != nil)
+        {
+            self->currentAncestorTile = ancestorTile;
+        }
+    }
 }
 
 - (void) addTile:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    if ([dc.gpuResourceCache containsKey:[tile imagePath]])
+    [tile setFallbackTile:nil];
+
+    if ([self isTileTextureLocal:dc tile:tile])
     {
         [self->currentTiles addObject:tile];
+        return;
     }
-    else if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
+
+    [self retrieveTileImage:tile];
+
+    if (self->currentAncestorTile != nil)
     {
-        [self->currentTiles addObject:tile];
+        if ([self isTileTextureLocal:dc tile:self->currentAncestorTile])
+        {
+            [tile setFallbackTile:self->currentAncestorTile];
+            [self->currentTiles addObject:tile];
+        }
+        else if ([[self->currentAncestorTile level] levelNumber] == 0)
+        {
+            [self retrieveTileImage:self->currentAncestorTile];
+        }
     }
-    else
-    {
-        [self retrieveTileImage:tile];
-    }
+}
+
+- (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+{
+    return [dc.gpuResourceCache containsKey:[tile imagePath]]
+            || [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
 }
 
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    return true;
+    return [self->levels isLastLevel:[[tile level] levelNumber]]
+            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
 }
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
@@ -180,6 +241,10 @@
 
 - (void) retrieveTileImage:(WWTextureTile*)tile
 {
+    if ([self->currentRetrievals containsObject:[tile imagePath]])
+        return;
+    [self->currentRetrievals addObject:[tile imagePath]];
+
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_imageFormat];
     NSString* filePath = [tile imagePath];
 

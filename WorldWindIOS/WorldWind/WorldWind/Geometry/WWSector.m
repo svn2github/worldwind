@@ -9,6 +9,8 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Geometry/WWVec4.h"
 
 @implementation WWSector
 
@@ -18,12 +20,12 @@
                             maxLongitude:(double)maxLongitude
 {
     self = [super init];
-    
+
     _minLatitude = minLatitude;
     _maxLatitude = maxLatitude;
     _minLongitude = minLongitude;
     _maxLongitude = maxLongitude;
-    
+
     return self;
 }
 
@@ -39,7 +41,7 @@
     return self;
 }
 
-- (id) copyWithZone:(NSZone *)zone
+- (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithDegreesMinLatitude:_minLatitude maxLatitude:_maxLatitude minLongitude:_minLongitude maxLongitude:_maxLongitude];
 }
@@ -101,6 +103,44 @@
         return NO;
 
     return YES;
+}
+
+- (void) computeReferencePoints:(WWGlobe*)globe
+           verticalExaggeration:(double)verticalExaggeration
+                         result:(NSMutableArray*)result
+{
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
+    }
+
+    WWVec4* swPoint = [result objectAtIndex:0];
+    WWVec4* sePoint = [result objectAtIndex:1];
+    WWVec4* nePoint = [result objectAtIndex:2];
+    WWVec4* nwPoint = [result objectAtIndex:3];
+    WWVec4* centerPoint = [result objectAtIndex:4];
+
+    double elevation = [globe getElevation:_minLatitude longitude:_minLongitude] * verticalExaggeration;
+    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:elevation outputPoint:swPoint];
+
+    elevation = [globe getElevation:_minLatitude longitude:_maxLongitude] * verticalExaggeration;
+    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:elevation outputPoint:sePoint];
+
+    elevation = [globe getElevation:_maxLatitude longitude:_maxLongitude] * verticalExaggeration;
+    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:elevation outputPoint:nePoint];
+
+    elevation = [globe getElevation:_maxLatitude longitude:_minLongitude] * verticalExaggeration;
+    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:elevation outputPoint:nwPoint];
+
+    double centerLat = 0.5 * (_minLatitude + _maxLatitude);
+    double centerLon = 0.5 * (_minLongitude + _maxLongitude);
+    elevation = [globe getElevation:centerLat longitude:centerLon] * verticalExaggeration;
+    [globe computePointFromPosition:centerLat longitude:centerLon altitude:elevation outputPoint:centerPoint];
 }
 
 @end

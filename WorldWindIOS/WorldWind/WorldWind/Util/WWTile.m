@@ -12,6 +12,10 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWTileFactory.h"
 #import "WorldWind/Util/WWLevelSet.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 
 @implementation WWTile
 
@@ -47,6 +51,13 @@
     _level = level;
     _row = row;
     _column = column;
+
+    _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
+    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
 
     return self;
 }
@@ -170,6 +181,114 @@
 
         minLat = maxLat;
     }
+}
+
+- (NSArray*) subdivide:(WWLevel*)nextLevel tileFactory:(id <WWTileFactory>)tileFactory
+{
+    if (nextLevel == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Next level is nil")
+    }
+
+    if (tileFactory == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile factory is nil")
+    }
+
+    NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:4];
+
+    double p0 = [_sector minLatitude];
+    double p2 = [_sector maxLatitude];
+    double p1 = 0.5 * (p0 + p2);
+
+    double t0 = [_sector minLongitude];
+    double t2 = [_sector maxLongitude];
+    double t1 = 0.5 * (t0 + t2);
+
+
+    int subRow = 2 * _row;
+    int subCol = 2 * _column;
+    WWSector* childSector = [[WWSector alloc] initWithDegreesMinLatitude:p0 maxLatitude:p1
+                                                            minLongitude:t0 maxLongitude:t1];
+    [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
+
+    subCol = 2 * _column + 1;
+    childSector = [[WWSector alloc] initWithDegreesMinLatitude:p0 maxLatitude:p1
+                                                  minLongitude:t1 maxLongitude:t2];
+    [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
+
+    subRow = 2 * _row + 1;
+    subCol = 2 * _column;
+    childSector = [[WWSector alloc] initWithDegreesMinLatitude:p1 maxLatitude:p2
+                                                  minLongitude:t0 maxLongitude:t1];
+    [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
+
+    subCol = 2 * _column + 1;
+    childSector = [[WWSector alloc] initWithDegreesMinLatitude:p1 maxLatitude:p2
+                                                  minLongitude:t1 maxLongitude:t2];
+    [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
+
+    return children;
+}
+
+- (BOOL) mustSubdivide:(WWDrawContext*)dc detailFactor:(double)detailFactor
+{
+    WWVec4* eyePoint = [[dc navigatorState] eyePoint];
+
+    double d1 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:0]];
+    double d2 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:1]];
+    double d3 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:2]];
+    double d4 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:3]];
+    double d5 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:4]];
+
+    // Find the minimum distance. Compute the cell height at the corresponding point. Cell height is radius * radian
+    // texel size.
+
+    double texelSize = [_level texelSize];
+
+    double minDistance = d1;
+    double cellHeight = [[_referencePoints objectAtIndex:0] length3] * texelSize;
+
+    if (d2 < minDistance)
+    {
+        minDistance = d2;
+        cellHeight = [[_referencePoints objectAtIndex:1] length3] * texelSize;
+    }
+    if (d3 < minDistance)
+    {
+        minDistance = d3;
+        cellHeight = [[_referencePoints objectAtIndex:2] length3] * texelSize;
+    }
+    if (d4 < minDistance)
+    {
+        minDistance = d4;
+        cellHeight = [[_referencePoints objectAtIndex:3] length3] * texelSize;
+    }
+    if (d5 < minDistance)
+    {
+        minDistance = d5;
+        cellHeight = [[_referencePoints objectAtIndex:4] length3] * texelSize;
+    }
+
+    // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye distance.
+    // The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the cell height
+    // becomes more than one thousandth of the eye distance. Another way to say it is, use the current tile if the cell
+    // height is less than the specified fraction of the eye distance.
+    //
+    // Note: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is window-
+    // size dependent and results in selecting an excessive number of tiles when the window is large.
+
+    return cellHeight > sqrt(minDistance) * pow(10, -detailFactor);
+}
+
+- (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
+{
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    [_sector computeReferencePoints:globe verticalExaggeration:verticalExaggeration result:_referencePoints];
 }
 
 @end
