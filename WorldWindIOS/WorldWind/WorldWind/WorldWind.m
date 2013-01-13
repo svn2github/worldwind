@@ -36,6 +36,9 @@ static NSOperationQueue* wwRetrievalQueue; // singleton instance
     else
         --numCalls;
 
+    if (numCalls < 0)
+        numCalls = 0;
+
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:numCalls > 0];
 }
 
