@@ -13,6 +13,7 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Layer/WWBMNGOneImageLayer.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
+#import "WWDAFIFLayer.h"
 
 @implementation ViewController
 
@@ -44,6 +45,9 @@
     WWLayerList* layers = [[wwv sceneController] layers];
 //    [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
     [layers addLayer:[[WWBMNGLayer alloc] init]];
+    //[layers addLayer:[WWDAFIFLayer dafifAirspaces]];
+    //[layers addLayer:[WWDAFIFLayer dafifRoutes]];
+    //[layers addLayer:[WWDAFIFLayer dafifPoints]];
 }
 
 /*!
