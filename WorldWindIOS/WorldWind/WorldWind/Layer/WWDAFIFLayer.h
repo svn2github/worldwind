@@ -37,44 +37,41 @@
 /// @name Creating Pre-Configured DAFIF Layers
 
 /**
-* Returns a DAFIF layer configured to display all DAFIF data layers.
+* Returns an allocated and initialized WWDAFIFLayer configured to display all DAFIF data layers.
 *
-* The returned layer's data is retrieved from the ESRI ArcGIS Map Service by configuring layers with an empty string.
+* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
 * @return A layer initialized to display all DAFIF data layers.
 */
 + (WWDAFIFLayer*) dafifAll;
 
 /**
-* Returns a DAFIF layer configured to display only the DAFIF class airspace data layer.
+* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers related to airports.
 *
-* The returned layer's data is retrieved from the ESRI ArcGIS Map Service by configuring layers as _layers=show:21_.
-* The layer's maximum active altitude is configured so that airspace data layer is displayed at the appropriate
-* altitude.
+* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display the DAFIF class airspace data layer.
+* @return A layer initialized to display DAFIF airport layers.
 */
-+ (WWDAFIFLayer*) dafifAirspaces;
++ (WWDAFIFLayer*) dafifAirports;
 
 /**
-* Returns a DAFIF layer configured to display only the DAFIF runway, airport, and waypoint data layers.
+* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers related to VFR and IFR flight
+* planning and navigation.
 *
-* The returned layer's data is retrieved from the ESRI ArcGIS Map Service by configuring layers as _layers=show:0,1,2_.
-* The layer's maximum active altitude is configured so these DAFIF data layers are displayed at the appropriate
- * altitude.
+* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display the DAFIF runway, airport, and waypoint data layers.
+* @return A layer initialized to display DAFIF navigation layers.
 */
-+ (WWDAFIFLayer*) dafifPoints;
++ (WWDAFIFLayer*) dafifNavigation;
 
 /**
-* Returns a DAFIF layer configured to display only the DAFIF ATS route data layer.
+* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers that delimit areas in which
+* military and other activities may interfere with or preclude General Aviation flight.
 *
-* The returned layer's data is retrieved from the ESRI ArcGIS Map Service by configuring layers as _layers=show:3_. The
-* layer's maximum active altitude is configured so that route data layer is displayed at the appropriate altitude.
+* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display the DAFIF ATS route data layer.
+* @return A layer initialized to display DAFIF General Aviation obstacle layers.
 */
-+ (WWDAFIFLayer*) dafifRoutes;
++ (WWDAFIFLayer*) dafifObstacles;
 
 @end

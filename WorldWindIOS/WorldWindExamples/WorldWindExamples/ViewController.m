@@ -45,9 +45,9 @@
     WWLayerList* layers = [[wwv sceneController] layers];
 //    [layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
     [layers addLayer:[[WWBMNGLayer alloc] init]];
-    //[layers addLayer:[WWDAFIFLayer dafifAirspaces]];
-    //[layers addLayer:[WWDAFIFLayer dafifRoutes]];
-    //[layers addLayer:[WWDAFIFLayer dafifPoints]];
+    //[layers addLayer:[WWDAFIFLayer dafifObstacles]];
+    //[layers addLayer:[WWDAFIFLayer dafifNavigation]];
+    //[layers addLayer:[WWDAFIFLayer dafifAirports]];
 }
 
 /*!

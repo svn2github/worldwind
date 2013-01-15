@@ -30,7 +30,7 @@
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:90 longitude:90]
-                       numLevels:10
+                       numLevels:14
                      imageFormat:@"image/png"
                        cachePath:cachePath];
 
@@ -46,32 +46,31 @@
 + (WWDAFIFLayer*) dafifAll
 {
     WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"" cacheName:@"DafifAll"];
-
-    return layer;
-}
-
-+ (WWDAFIFLayer*) dafifAirspaces
-{
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:21" cacheName:@"DafifAirspace"];
     [layer setMaxActiveAltitude:3000000];
 
     return layer;
 }
 
-+ (WWDAFIFLayer*) dafifPoints
++ (WWDAFIFLayer*) dafifAirports
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:0,1,2" cacheName:@"DafifPoint"];
-    [layer setMaxActiveAltitude:500000];
-    [layer setDetailHint:-0.2];
+    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:0,1,21" cacheName:@"DAFIFAirports"];
+    [layer setMaxActiveAltitude:3000000];
 
     return layer;
 }
 
-+ (WWDAFIFLayer*) dafifRoutes
++ (WWDAFIFLayer*) dafifNavigation
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:3" cacheName:@"DafifRoute"];
-    [layer setMaxActiveAltitude:100000];
-    [layer setDetailHint:-0.2];
+    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:2,4" cacheName:@"DAFIFNavigation"];
+    [layer setMaxActiveAltitude:750000];
+
+    return layer;
+}
+
++ (WWDAFIFLayer*) dafifObstacles
+{
+    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:13,17,24" cacheName:@"DAFIFObstacles"];
+    [layer setMaxActiveAltitude:3000000];
 
     return layer;
 }
