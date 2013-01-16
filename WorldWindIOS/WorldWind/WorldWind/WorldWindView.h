@@ -18,9 +18,9 @@
 @property (readonly, nonatomic) GLuint colorBuffer;
 @property (readonly, nonatomic) GLuint depthBuffer;
 @property (readonly, nonatomic) CGRect viewport;
-@property (readonly, nonatomic, strong) EAGLContext* context;
-@property (readonly, nonatomic, strong) WWSceneController* sceneController;
-@property (readonly, nonatomic, strong) id<WWNavigator> navigator;
+@property (readonly, nonatomic) EAGLContext* context;
+@property (readonly, nonatomic) WWSceneController* sceneController;
+@property (readonly, nonatomic) id<WWNavigator> navigator;
 @property BOOL redrawRequested;
 
 - (void) drawView;
