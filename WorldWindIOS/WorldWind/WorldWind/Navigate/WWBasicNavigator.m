@@ -38,58 +38,67 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
     }
 
-    self->view = viewToNavigate;
-    self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
-    self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
-    self->rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
-    self->verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
+    if (self != nil)
+    {
+        self->view = viewToNavigate;
+        self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
+        self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
+        self->rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
+        self->verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
 
-    [self->panGestureRecognizer setDelegate:self];
-    [self->pinchGestureRecognizer setDelegate:self];
-    [self->rotationGestureRecognizer setDelegate:self];
-    [self->verticalPanGestureRecognizer setDelegate:self];
-    [self->verticalPanGestureRecognizer setMinimumNumberOfTouches:2];
+        [self->panGestureRecognizer setDelegate:self];
+        [self->pinchGestureRecognizer setDelegate:self];
+        [self->rotationGestureRecognizer setDelegate:self];
+        [self->verticalPanGestureRecognizer setDelegate:self];
+        [self->verticalPanGestureRecognizer setMinimumNumberOfTouches:2];
 
-    [self->view addGestureRecognizer:self->panGestureRecognizer];
-    [self->view addGestureRecognizer:self->pinchGestureRecognizer];
-    [self->view addGestureRecognizer:self->rotationGestureRecognizer];
-    [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
+        [self->view addGestureRecognizer:self->panGestureRecognizer];
+        [self->view addGestureRecognizer:self->pinchGestureRecognizer];
+        [self->view addGestureRecognizer:self->rotationGestureRecognizer];
+        [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
 
-    self->displayLink = nil;
-    self->animators = 0;
+        self->animators = 0;
 
-    self->lastPanTranslation = CGPointMake(0, 0);
-    self->beginRange = 0;
-    self->beginHeading = 0;
-    self->beginTilt = 0;
-
-    self->_nearDistance = DEFAULT_NEAR_DISTANCE;
-    self->_farDistance = DEFAULT_FAR_DISTANCE;
-    self->_lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
-    self->_range = DEFAULT_ALTITUDE;
-    self->_heading = DEFAULT_HEADING;
-    self->_tilt = DEFAULT_TILT;
+        self->_nearDistance = DEFAULT_NEAR_DISTANCE;
+        self->_farDistance = DEFAULT_FAR_DISTANCE;
+        self->_lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
+        self->_range = DEFAULT_ALTITUDE;
+        self->_heading = DEFAULT_HEADING;
+        self->_tilt = DEFAULT_TILT;
+    }
 
     return self;
 }
 
 - (void) dealloc
 {
-    [self->view removeGestureRecognizer:self->panGestureRecognizer];
-    [self->view removeGestureRecognizer:self->pinchGestureRecognizer];
-    [self->view removeGestureRecognizer:self->rotationGestureRecognizer];
-    [self->view removeGestureRecognizer:self->verticalPanGestureRecognizer];
+    // Remove gesture recognizers from the parent view when the navigator is de-allocated. The view is a weak reference,
+    // so it may have been de-allocated. In this case it is unnecessary to remove these references.
+    if (self->view != nil)
+    {
+        [self->view removeGestureRecognizer:self->panGestureRecognizer];
+        [self->view removeGestureRecognizer:self->pinchGestureRecognizer];
+        [self->view removeGestureRecognizer:self->rotationGestureRecognizer];
+        [self->view removeGestureRecognizer:self->verticalPanGestureRecognizer];
+    }
 
+    // Invalidate the display link if the navigator is de-allocated before the display link can be cleaned up normally.
     if (self->displayLink != nil)
     {
         [self->displayLink invalidate];
-        self->displayLink = nil;
-        self->animators = 0;
     }
 }
 
 - (id<WWNavigatorState>) currentState
 {
+    // The view is a weak reference, so it may have been de-allocated. In this case currentState returns nil since it
+    // has no context with which to compute the current modelview and projection matrices.
+    if (self->view == nil)
+    {
+        WWLog(@"Unable to compute current navigator state: View is nil (deallocated)");
+        return nil;
+    }
+
     WWGlobe* globe = [[self->view sceneController] globe];
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
 
@@ -140,6 +149,10 @@
     // position. In order to convert from pixels to arc degrees we assume that this Navigator's range represents the
     // distance that the gesture is intended for. The translation is applied incrementally so that simultaneously
     // applied heading changes are correctly integratedinto the navigator's current location.
+
+    // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
+    // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
+    // after the view itself is de-allocated.
 
     UIGestureRecognizerState state = [recognizer state];
 
@@ -247,6 +260,10 @@
 
 - (void) handleVerticalPanFrom:(UIPanGestureRecognizer*)recognizer
 {
+    // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
+    // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
+    // after the view itself is de-allocated.
+
     UIGestureRecognizerState state = [recognizer state];
 
     if (state == UIGestureRecognizerStateBegan)
@@ -273,6 +290,10 @@
 
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer
 {
+    // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
+    // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
+    // after the view itself is de-allocated.
+
     if (gestureRecognizer == self->verticalPanGestureRecognizer)
     {
         CGPoint translation = [(UIPanGestureRecognizer*) gestureRecognizer translationInView:self->view];
@@ -333,7 +354,11 @@
 
 - (void) drawView
 {
-    [self->view drawView];
+    // The view is a weak reference, so it may have been de-allocated.
+    if (self->view != nil)
+    {
+        [self->view drawView];
+    }
 }
 
 @end

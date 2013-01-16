@@ -15,7 +15,7 @@
 @interface WWBasicNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
 {
 @protected
-    WorldWindView* view;
+    WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
     UIPanGestureRecognizer* panGestureRecognizer;
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
