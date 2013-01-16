@@ -7,6 +7,9 @@
 
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWVec4.h"
 
 double clamp(double value, double min, double max)
 {
@@ -96,3 +99,52 @@ double perspectiveSizePreservingMaxPixelSize(double viewportWidth, double viewpo
 
     return MAX(xPixelSize, yPixelSize);
 }
+
+@implementation WWMath
+
++ (NSArray*) computePrincipalAxesFromPoints:(NSArray*)points
+{
+    if (points == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil");
+    }
+
+    // Compute the covariance matrix.
+    WWMatrix* covariance = [[WWMatrix alloc] initWithCovarianceOfPoints:points];
+    if (covariance == nil)
+        return nil;
+
+    // Compute the eigenvectors and eigenvalues of the covariance matrix. Since the covariance matrix is symmetric by
+    // definition, we can safely use the "symmetric" method below.
+    NSMutableArray* eigenvalues = [[NSMutableArray alloc] initWithCapacity:3];
+    NSMutableArray* eigenvectors = [[NSMutableArray alloc] initWithCapacity:3];
+    [WWMatrix eigensystemFromSymmetricMatrix:covariance
+                           resultEigenvalues:eigenvalues
+                          resultEigenvectors:eigenvectors];
+
+    // Return the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
+    // normalized orthogonal vectors defining a coordinate system, with the vectors sorted from the most prominent
+    // axis to the lease prominent.
+    NSArray* indexArray = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:0],
+                                                           [NSNumber numberWithInt:1],
+                                                           [NSNumber numberWithInt:2], nil];
+    NSArray* sortedIndexArray = [indexArray sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+    {
+        NSUInteger indexA = (NSUInteger) [(NSNumber*) a intValue];
+        NSUInteger indexB = (NSUInteger) [(NSNumber*) b intValue];
+
+        return [[eigenvalues objectAtIndex:indexA] compare:[eigenvalues objectAtIndex:indexB]];
+    }];
+
+    NSUInteger index0 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:0] intValue];
+    NSUInteger index1 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:1] intValue];
+    NSUInteger index2 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:2] intValue];
+
+    NSMutableArray* resultArray = [[NSMutableArray alloc] initWithCapacity:3];
+    [resultArray addObject:[[eigenvectors objectAtIndex:index2] normalize3]];
+    [resultArray addObject:[[eigenvectors objectAtIndex:index1] normalize3]];
+    [resultArray addObject:[[eigenvectors objectAtIndex:index0] normalize3]];
+
+    return resultArray;
+}
+@end

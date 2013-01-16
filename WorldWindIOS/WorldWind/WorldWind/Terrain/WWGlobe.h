@@ -175,7 +175,7 @@
 *
 * @return the elevation at the specified location, or 0 if no elevation model is available at that location.
 */
-- (double) getElevation:(double)latitude longitude:(double)longitude;
+- (double) elevationForLatitude:(double)latitude longitude:(double)longitude;
 
 /**
 * Return a grid of elevations within a specified sector.
@@ -194,21 +194,30 @@
 * which elevations are drawn. (To compute radians from a distance, divide the distance by the radius of the globe,
 * ensuring that both the distance and the radius are in the same units.)
 * @param verticalExaggeration Elevation values are multiplied by this value prior to being returned.
-* @param outputArray The array of floats in which the elevations are returned. The array must be pre-allocated and
+* @param result The array of floats in which the elevations are returned. The array must be pre-allocated and
 * contain space for numLat x numLon floats.
 *
 * @return the horizontal resolution achieved, in radians, or FLT_MAX if individual elevations cannot be determined
 * for all of the locations. Returns 0 if an elevation model is not available.
 *
-* @exception NSInvalidArgumentException If sector is nil, the outputArray is nil or numLat or numLon are less than or
+* @exception NSInvalidArgumentException If sector is nil, the result is nil or numLat or numLon are less than or
  * equal to 0.
 */
-- (double) getElevations:(WWSector*)sector
-                numLat:(int)numLat
-                numLon:(int)numLon
-      targetResolution:(double)targetResolution
-  verticalExaggeration:(double)verticalExaggeration
-           outputArray:(double[])outputArray;
+- (double) elevationsForSector:(WWSector*)sector
+                        numLat:(int)numLat
+                        numLon:(int)numLon
+              targetResolution:(double)targetResolution
+          verticalExaggeration:(double)verticalExaggeration
+                        result:(double[])result;
+
+/**
+* Returns the minimum and maximum elevations for a specified sector.
+*
+* @param sector The sector whose minimum and maximum are to be found.
+* @param result An array in which to hold the returned minimum (index 0) and maximum (index 1). These elevations are
+* taken from those currently in memory, which may not reflect the highest terrain resolution the globe is capable of.
+*/
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result;
 
 
 @end

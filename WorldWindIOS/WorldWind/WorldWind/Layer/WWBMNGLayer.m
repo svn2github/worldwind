@@ -18,7 +18,7 @@
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"BMNG"];
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
-                  levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:90 longitude:90]
+                  levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
                        numLevels:7
                      imageFormat:@"image/jpeg"
                        cachePath:cachePath];

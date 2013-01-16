@@ -10,6 +10,7 @@
 
 @class WWMatrix;
 @class WWVec4;
+@class WWFrustum;
 
 /**
 * Provides an implementation of the WWNavigatorState protocol.
@@ -21,7 +22,7 @@
 /// The modelview matrix.
 @property (nonatomic, readonly) WWMatrix* modelview;
 
-/// The project matrix.
+/// The projection matrix.
 @property (nonatomic, readonly) WWMatrix* projection;
 
 /// The concatenation of the modelview and projection matrices.
@@ -29,6 +30,12 @@
 
 /// The eye point, in model coordinates.
 @property (nonatomic, readonly) WWVec4* eyePoint;
+
+/// The view frustum.
+@property (nonatomic, readonly) WWFrustum* frustum;
+
+// The view frustum in model coordinates.
+@property (nonatomic, readonly) WWFrustum* frustumInModelCoordinates;
 
 /// @name Initializing Navigator State
 

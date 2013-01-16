@@ -35,3 +35,20 @@ extern CGRect perspectiveSizePreservingFrustumRect(double viewportWidth, double 
 extern double perspectiveSizePreservingMaxNearDistance(double viewportWidth, double viewportHeight, double distanceToObject);
 
 extern double perspectiveSizePreservingMaxPixelSize(double viewportWidth, double viewportHeight, double distanceToObject);
+
+@interface WWMath : NSObject
+
+/**
+* Computes the principal axes of a specified list of points.
+*
+* @param points The list of points.
+*
+* @return An array containing three WWVec4 instances identifying the principal axes. The first vector in the array
+* corresponds to the longest axis. The third vector in the array corresponds to the shortest axis. The second vector
+* in the array correspond to the intermediate length axis. Returns nil if the principal axes could not be computed.
+*
+* @exception NSInvalidArgumentException if the specified list of points is nil.
+*/
++ (NSArray*) computePrincipalAxesFromPoints:(NSArray*)points;
+
+@end

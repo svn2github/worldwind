@@ -11,10 +11,13 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWFrustum.h"
+#import "WorldWind/Geometry/WWPlane.h"
+#import "WorldWind/Geometry/WWFrustum.h"
 
 @implementation WWMatrix
 
-- (id) copyWithZone:(NSZone *)zone
+- (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithMatrix:self];
 }
@@ -93,6 +96,35 @@
     return [self invertTransformMatrix:matrix];
 }
 
+- (WWMatrix*) initWithTranspose:(WWMatrix*)matrix
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    self = [super init];
+
+    self->m[0] = matrix->m[0];
+    self->m[1] = matrix->m[4];
+    self->m[2] = matrix->m[8];
+    self->m[3] = matrix->m[12];
+    self->m[4] = matrix->m[1];
+    self->m[5] = matrix->m[5];
+    self->m[6] = matrix->m[9];
+    self->m[7] = matrix->m[13];
+    self->m[8] = matrix->m[2];
+    self->m[9] = matrix->m[6];
+    self->m[10] = matrix->m[10];
+    self->m[11] = matrix->m[14];
+    self->m[12] = matrix->m[3];
+    self->m[13] = matrix->m[7];
+    self->m[14] = matrix->m[11];
+    self->m[15] = matrix->m[15];
+
+    return self;
+}
+
 - (WWMatrix*) initWithMultiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB
 {
     self = [super init];
@@ -130,6 +162,71 @@
     r[13] = ma[12] * mb[1] + ma[13] * mb[5] + ma[14] * mb[9] + ma[15] * mb[13];
     r[14] = ma[12] * mb[2] + ma[13] * mb[6] + ma[14] * mb[10] + ma[15] * mb[14];
     r[15] = ma[12] * mb[3] + ma[13] * mb[7] + ma[14] * mb[11] + ma[15] * mb[15];
+
+    return self;
+}
+
+- (WWMatrix*) initWithCovarianceOfPoints:(NSArray*)points
+{
+    if (points == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil");
+    }
+    
+    self = [super init];
+
+    WWVec4* mean = [[WWVec4 alloc] initWithAverageOfVectors:points];
+
+    int count = 0;
+    double c11 = 0;
+    double c22 = 0;
+    double c33 = 0;
+    double c12 = 0;
+    double c13 = 0;
+    double c23 = 0;
+
+    for (NSUInteger i = 0; i < [points count]; i++)
+    {
+        WWVec4* vec = [points objectAtIndex:i];
+
+        if (vec == nil)
+            continue;
+
+        ++count;
+        c11 += ([vec x] - [mean x]) * ([vec x] - [mean x]);
+        c22 += ([vec y] - [mean y]) * ([vec y] - [mean y]);
+        c33 += ([vec z] - [mean z]) * ([vec z] - [mean z]);
+        c12 += ([vec x] - [mean x]) * ([vec y] - [mean y]); // c12 = c21
+        c13 += ([vec x] - [mean x]) * ([vec z] - [mean z]); // c13 = c31
+        c23 += ([vec y] - [mean y]) * ([vec z] - [mean z]); // c23 = c32
+    }
+
+    if (count == 0)
+        return nil;
+
+    // Row 1
+    self->m[0] = c11 / (double) count;
+    self->m[1] = c12 / (double) count;
+    self->m[2] = c13 / (double) count;
+    self->m[3] = 0;
+
+    // Row 2
+    self->m[4] = c12 / (double) count;
+    self->m[5] = c22 / (double) count;
+    self->m[6] = c23 / (double) count;
+    self->m[7] = 0;
+
+    // Row 3
+    self->m[8] = c13 / (double) count;
+    self->m[9] = c23 / (double) count;
+    self->m[10] = c33 / (double) count;
+    self->m[11] = 0;
+
+    // Row 4
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = 0;
+    self->m[15] = 0;
 
     return self;
 }
@@ -181,7 +278,7 @@
     return self;
 }
 
-- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double) z
+- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z
 {
     // Row 1
     self->m[0] = 1;
@@ -330,9 +427,9 @@
 }
 
 - (WWMatrix*) setPerspectiveSizePreserving:(double)width
-                           viewportHeight:(double)height
-                             nearDistance:(double)near
-                              farDistance:(double)far
+                            viewportHeight:(double)height
+                              nearDistance:(double)near
+                               farDistance:(double)far
 {
     if (width <= 0)
     {
@@ -387,7 +484,7 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid");
     }
-    
+
     // Range transform. Moves the eye point along the positive z axis while keeping the center point in the center
     // of the viewport.
     [self setTranslation:0 y:0 z:-range];
@@ -564,7 +661,7 @@
     return self;
 }
 
-- (WWVec4*) multiplyVector:(WWVec4*)vector
+- (void) multiplyVector:(WWVec4*)vector
 {
     if (vector == nil)
     {
@@ -582,7 +679,7 @@
     double z = ms[8] * vx + ms[9] * vy + ms[10] * vz + ms[11] * vw;
     double w = ms[12] * vx + ms[13] * vy + ms[14] * vz + ms[15] * vw;
 
-    return [[WWVec4 alloc] initWithCoordinates:x y:y z:z w:w];
+    [vector set:x y:y z:z w:w];
 }
 
 - (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix
@@ -594,7 +691,7 @@
 
     double* ma = self->m;
     double* mb = matrix->m;
-    
+
     // Compute the transpose of the specified matrix's upper 3x3 portion, and store the result in this matrix's upper
     // 3x3 portion.
     ma[0] = mb[0];
@@ -621,6 +718,196 @@
     ma[15] = mb[15];
 
     return self;
+}
+
++ (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix
+                      resultEigenvalues:(NSMutableArray*)resultEigenvalues
+                     resultEigenvectors:(NSMutableArray*)resultEigenvectors
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    if (resultEigenvalues == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result eigenvalues array is nil");
+    }
+
+    if (matrix->m[1] != matrix->m[4] || matrix->m[2] != matrix->m[8] || matrix->m[6] != matrix->m[9])
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is not symmetric");
+    }
+
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
+    // listing 14.6 (pages 441-444).
+
+    double epsilon = 1.0e-10;
+
+    // Since the matrix is symmetric m12=m21, m13=m31 and m23=m32, therefore we can ignore the values m21,
+    // m32 and m32.
+    double m11 = matrix->m[0];
+    double m12 = matrix->m[1];
+    double m13 = matrix->m[2];
+    double m22 = matrix->m[5];
+    double m23 = matrix->m[6];
+    double m33 = matrix->m[10];
+
+    double r[3][3];
+    r[0][0] = r[1][1] = r[2][2] = 1;
+    r[0][1] = r[0][2] = r[1][0] = r[1][2] = r[2][0] = r[2][1] = 0;
+
+    int max_sweeps = 32;
+    for (int a = 0; a < max_sweeps; a++)
+    {
+        // Exit if off-diagonal entries small enough
+        if (fabs(m12) < epsilon && fabs(m13) < epsilon && fabs(m23) < epsilon)
+            break;
+
+        // Annihilate (1,2) entry.
+        if (m12 != 0)
+        {
+            double u = (m22 - m11) * 0.5 / m12;
+            double u2 = u * u;
+            double u2p1 = u2 + 1;
+            double t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (sqrt(u2p1) - fabs(u)) : 0.5 / u;
+            double c = 1 / sqrt(t * t + 1);
+            double s = c * t;
+
+            m11 -= t * m12;
+            m22 += t * m12;
+            m12 = 0;
+
+            double temp = c * m13 - s * m23;
+            m23 = s * m13 + c * m23;
+            m13 = temp;
+
+            for (int i = 0; i < 3; i++)
+            {
+                temp = c * r[i][0] - s * r[i][1];
+                r[i][1] = s * r[i][0] + c * r[i][1];
+                r[i][0] = temp;
+            }
+        }
+
+        // Annihilate (1,3) entry.
+        if (m13 != 0)
+        {
+            double u = (m33 - m11) * 0.5 / m13;
+            double u2 = u * u;
+            double u2p1 = u2 + 1;
+            double t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (sqrt(u2p1) - fabs(u)) : 0.5 / u;
+            double c = 1 / sqrt(t * t + 1);
+            double s = c * t;
+
+            m11 -= t * m13;
+            m33 += t * m13;
+            m13 = 0;
+
+            double temp = c * m12 - s * m23;
+            m23 = s * m12 + c * m23;
+            m12 = temp;
+
+            for (int i = 0; i < 3; i++)
+            {
+                temp = c * r[i][0] - s * r[i][2];
+                r[i][2] = s * r[i][0] + c * r[i][2];
+                r[i][0] = temp;
+            }
+        }
+
+        // Annihilate (2,3) entry.
+        if (m23 != 0)
+        {
+            double u = (m33 - m22) * 0.5 / m23;
+            double u2 = u * u;
+            double u2p1 = u2 + 1;
+            double t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (sqrt(u2p1) - fabs(u)) : 0.5 / u;
+            double c = 1 / sqrt(t * t + 1);
+            double s = c * t;
+
+            m22 -= t * m23;
+            m33 += t * m23;
+            m23 = 0;
+
+            double temp = c * m12 - s * m13;
+            m13 = s * m12 + c * m13;
+            m12 = temp;
+
+            for (int i = 0; i < 3; i++)
+            {
+                temp = c * r[i][1] - s * r[i][2];
+                r[i][2] = s * r[i][1] + c * r[i][2];
+                r[i][1] = temp;
+            }
+        }
+    }
+
+    [resultEigenvalues addObject:[NSNumber numberWithDouble:m11]];
+    [resultEigenvalues addObject:[NSNumber numberWithDouble:m22]];
+    [resultEigenvalues addObject:[NSNumber numberWithDouble:m33]];
+
+    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][0] y:r[1][0] z:r[2][0]]];
+    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][1] y:r[1][1] z:r[2][1]]];
+    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][2] y:r[1][2] z:r[2][2]]];
+}
+
+- (WWFrustum*) extractFrustum
+{
+    double* m1 = self->m;
+    double* m2 = &self->m[4];
+    double* m3 = &self->m[8];
+    double* m4 = &self->m[12];
+
+    // Left Plane = row 4 + row 1:
+    double x = m4[0] + m1[0];
+    double y = m4[1] + m1[1];
+    double z = m4[2] + m1[2];
+    double w = m4[3] + m1[3];
+    double d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* left = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Right Plane = row 4 - row 1:
+    x = m4[0] - m1[0];
+    y = m4[1] - m1[1];
+    z = m4[2] - m1[2];
+    w = m4[3] - m1[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* right = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Bottom Plane = row 4 + row 2:
+    x = m4[0] + m2[0];
+    y = m4[1] + m2[1];
+    z = m4[2] + m2[2];
+    w = m4[3] + m2[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* bottom = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Top Plane = row 4 - row 2:
+    x = m4[0] - m2[0];
+    y = m4[1] - m2[1];
+    z = m4[2] - m2[2];
+    w = m4[3] - m2[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* top = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Near Plane = row 4 + row 3:
+    x = m4[0] + m3[0];
+    y = m4[1] + m3[1];
+    z = m4[2] + m3[2];
+    w = m4[3] + m3[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* near = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Far Plane = row 4 - row 3:
+    x = m4[0] - m3[0];
+    y = m4[1] - m3[1];
+    z = m4[2] - m3[2];
+    w = m4[3] - m3[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* far = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    return [[WWFrustum alloc] initWithPlanes:left right:right bottom:bottom top:top near:near far:far];
 }
 
 @end

@@ -12,12 +12,18 @@
 @class WWDrawContext;
 @protocol WWTileFactory;
 @class WWGlobe;
+@protocol WWExtent;
+@class WWBoundingBox;
 
 /**
 * Provides a base class for texture tiles used by tiled image layers and elevation tiles used by elevation models.
 * Applications typically do not interact with this class.
 */
 @interface WWTile : NSObject
+{
+@protected
+    NSMutableArray* children;
+}
 
 /// @name Attributes
 
@@ -36,7 +42,9 @@
 /// The resolution of a single pixel or cell in a tile of this level set.
 @property(readonly, nonatomic) double resolution; // TODO: Is this property necessary?
 
-@property (readonly, nonatomic) NSMutableArray* referencePoints;
+@property(readonly, nonatomic) NSMutableArray* referencePoints;
+
+@property(readonly, nonatomic) WWBoundingBox* extent;
 
 /**
 * Indicates the width in pixels or cells of this tile's resource.
@@ -138,5 +146,13 @@
 * @exception NSInvalidArgumentException If the globe is nil.
 */
 - (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
+
+/**
+* Updates this tile's extent (bounding volume).
+*
+* @param globe The globe to use to compute this tile's extent.
+* @param verticalExaggeration The vertical exaggeration to use when computing the extent.
+*/
+- (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
 
 @end

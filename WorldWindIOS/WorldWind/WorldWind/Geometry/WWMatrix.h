@@ -9,6 +9,7 @@
 
 @class WWGlobe;
 @class WWVec4;
+@class WWFrustum;
 
 /**
 * Represents a 4x4 double precision matrix and provides operations on and between matrices.
@@ -75,6 +76,28 @@
 * @exception NSInvalidArgumentException if the specified matrix is nil.
 */
 - (WWMatrix*) initWithInverse:(WWMatrix*)matrix;
+
+/**
+* Initializes this matrix to the transpose of a specified matrix.
+*
+* @param matrix The matrix whose transposed is used to initialize this matrix.
+*
+* @return This matrix initialized to the transpose of the specified matrix.
+*
+* @exception NSInvalidArgumentException if the specified matrix is nil.
+*/
+- (WWMatrix*) initWithTranspose:(WWMatrix*)matrix;
+
+/**
+* Initializes this matrix with the covariance matrix for a specified list of points.
+*
+* @param points The points to consider.
+*
+* @return This matrix initialized to the covariant matrix for the specified list of points.
+*
+* @exception NSInvalidArgumentException if the specified list of points is nil.
+*/
+- (WWMatrix*) initWithCovarianceOfPoints:(NSArray*)points;
 
 /// @name Setting the Contents of Matrices
 
@@ -208,11 +231,9 @@
 *
 * @param vector The vector to multiply.
 *
-* @return A new vector that's the product of this matrix and the specified vector.
-*
 * @exception NSInvalidArgumentException if the specified vector is nil.
 */
-- (WWVec4*) multiplyVector:(WWVec4*)vector;
+- (void) multiplyVector:(WWVec4*)vector;
 
 /**
 * Inverts the specified matrix and stores the result in this matrix.
@@ -230,5 +251,25 @@
 * @exception NSInvalidArgumentException If the specified matrix is nil.
 */
 - (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix;
+
+/**
+* Computes the eigensystem of a specified matrix.
+*
+* @param matrix The matrix to consider.
+* @param resultEigenvalues An array in which to return the three eigenvalues.
+* @param resultEigenvectors An array in which to return the three eigenvectors.
+*
+* @exception NSInvalidArgumentException if any argument is nil.
+*/
++ (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix
+                      resultEigenvalues:(NSMutableArray*)resultEigenvalues
+                     resultEigenvectors:(NSMutableArray*)resultEigenvectors;
+
+/**
+* Extracts a frustum from this perspective matrix.
+*
+* @return The frustum represented by the specified perspective matrix.
+*/
+- (WWFrustum*) extractFrustum;
 
 @end

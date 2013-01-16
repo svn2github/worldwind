@@ -341,24 +341,24 @@
     [result normalize3];
 }
 
-- (double) getElevation:(double)latitude longitude:(double)longitude
+- (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
     return 0;
 }
 
-- (double) getElevations:(WWSector*)sector
-                numLat:(int)numLat
-                numLon:(int)numLon
-      targetResolution:(double)targetResolution
-  verticalExaggeration:(double)verticalExaggeration
-           outputArray:(double [])outputArray
+- (double) elevationsForSector:(WWSector*)sector
+                        numLat:(int)numLat
+                        numLon:(int)numLon
+              targetResolution:(double)targetResolution
+          verticalExaggeration:(double)verticalExaggeration
+                        result:(double [])result
 {
     if (sector == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
     }
 
-    if (outputArray == nil)
+    if (result == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
@@ -373,11 +373,27 @@
         for (int i = 0; i < numLon; i++)
         {
             int index = j * numLon + i;
-            outputArray[index] = 0;
+            result[index] = 0;
         }
     }
 
     return 1;
+}
+
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double [])result
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
+    }
+
+    result[0] = 0;
+    result[1] = 0;
 }
 
 @end

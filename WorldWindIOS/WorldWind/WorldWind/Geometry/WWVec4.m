@@ -7,6 +7,9 @@
 
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
+#import "WWFrustum.h"
+#import "WWPlane.h"
+#import "WWMatrix.h"
 
 @implementation WWVec4
 
@@ -34,6 +37,18 @@
     return self;
 }
 
+- (WWVec4*) initWithVector:(WWVec4*)vector
+{
+    self = [super init];
+
+    _x = [vector x];
+    _y = [vector y];
+    _z = [vector z];
+    _w = [vector w];
+
+    return self;
+}
+
 - (WWVec4*) initWithZeroVector
 {
     self = [super init];
@@ -42,6 +57,51 @@
     _y = 0;
     _z = 0;
     _w = 1;
+
+    return self;
+}
+
+- (WWVec4*) initWithAverageOfVectors:(NSArray*)vectors
+{
+    if (vectors == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vectors is nil")
+    }
+
+    self= [super init];
+
+    int count = 0;
+    _x = 0;
+    _y = 0;
+    _z = 0;
+    _w = 0;
+
+    for (NSUInteger i = 0; i < [vectors count]; i++)
+    {
+        WWVec4* vec = [vectors objectAtIndex:i];
+
+        if (vec == nil)
+            continue;
+
+        ++count;
+
+        _x += [vec x];
+        _y += [vec y];
+        _z += [vec z];
+        _w += [vec w];
+    }
+
+    if (count == 0)
+    {
+        // Return the zero vector.
+        count = 1;
+        _w = 1;
+    }
+
+    _x /= count;
+    _y /= count;
+    _z /= count;
+    _w /= count;
 
     return self;
 }
@@ -77,6 +137,21 @@
     _y = y;
     _z = z;
     _w = w;
+
+    return self;
+}
+
+- (WWVec4*) set:(WWVec4*)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    _x = [vector x];
+    _y = [vector y];
+    _z = [vector z];
+    _w = [vector w];
 
     return self;
 }
@@ -132,7 +207,16 @@
     return self;
 }
 
-- (double) distance3:(WWVec4*)vector
+- (WWVec4*) multiplyByScalar:(double)scalar
+{
+    _x *= scalar;
+    _y *= scalar;
+    _z *= scalar;
+
+    return self;
+}
+
+- (double) distanceTo3:(WWVec4*)vector
 {
     if (vector == nil)
     {
@@ -158,6 +242,11 @@
     double dz = [vector z] - _z;
 
     return dx * dx + dy * dy + dz * dz;
+}
+
+- (double) dot3:(WWVec4*)vector
+{
+    return _x * [vector x] + _y * [vector y] + _z * [vector z];
 }
 
 @end

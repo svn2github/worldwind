@@ -9,6 +9,7 @@
 
 @class WWMatrix;
 @class WWVec4;
+@class WWFrustum;
 
 /**
 * Provides viewing information computed by the navigator.
@@ -44,5 +45,19 @@
 * @return The eye point.
  */
 - (WWVec4*) eyePoint;
+
+/**
+* Returns the frustum.
+*
+* @return The frustum.
+*/
+- (WWFrustum*) frustum;
+
+/**
+* Returns the frustum in model coordinates.
+*
+* @return The frustum in model coordinates.
+*/
+- (WWFrustum*) frustumInModelCoordinates;
 
 @end

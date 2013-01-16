@@ -18,6 +18,7 @@
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
 
 #define NUM_LAT_SUBDIVISIONS 3
 #define NUM_LON_SUBDIVISIONS 6
@@ -98,11 +99,16 @@
         {
             [self regenerateGeometry:dc tile:tile];
         }
-        [tiles addTile:tile];
+
+        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+
+        if ([[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]])
+            [tiles addTile:tile];
     }
 
     tiles.sector = [[WWSector alloc] initWithFullSphere];
 
+//    NSLog(@"TERRAIN TILES %d", [tiles count]);
     return tiles;
 }
 
@@ -143,7 +149,7 @@
     double lat = 0.5 * (sector.minLatitude + tile.sector.maxLatitude);
     double lon = 0.5 * (sector.minLongitude + tile.sector.maxLongitude);
 
-    double elevation = [dc.globe getElevation:lat longitude:lon];
+    double elevation = [dc.globe elevationForLatitude:lat longitude:lon];
     elevation *= dc.verticalExaggeration;
 
     WWVec4* refCenter = [[WWVec4 alloc] initWithZeroVector];
@@ -161,12 +167,12 @@
     // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
     // exaggeration applied.
     double elevations[numLatVertices * numLonVertices];
-    [dc.globe getElevations:tile.sector
-                     numLat:numLatVertices
-                     numLon:numLonVertices
-           targetResolution:tile.resolution
-       verticalExaggeration:dc.verticalExaggeration
-                outputArray:elevations];
+    [dc.globe elevationsForSector:tile.sector
+                           numLat:numLatVertices
+                           numLon:numLonVertices
+                 targetResolution:tile.resolution
+             verticalExaggeration:dc.verticalExaggeration
+                           result:elevations];
 
     // The min elevation is used to determine the necessary depth of the tile skirts.
     double minElevation = dc.globe.minElevation * dc.verticalExaggeration;

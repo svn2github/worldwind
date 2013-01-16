@@ -16,6 +16,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Geometry/WWExtent.h"
 
 @implementation WWTile
 
@@ -51,13 +52,13 @@
     _level = level;
     _row = row;
     _column = column;
-
-    _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
-    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+//
+//    _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
+//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
 
     return self;
 }
@@ -195,7 +196,11 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile factory is nil")
     }
 
-    NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:4];
+//    NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:4];
+    if (self->children != nil)
+        return self->children;
+
+    self->children = [[NSMutableArray alloc] initWithCapacity:4];
 
     double p0 = [_sector minLatitude];
     double p2 = [_sector maxLatitude];
@@ -228,7 +233,7 @@
                                                   minLongitude:t1 maxLongitude:t2];
     [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
 
-    return children;
+    return self->children;
 }
 
 - (BOOL) mustSubdivide:(WWDrawContext*)dc detailFactor:(double)detailFactor
@@ -247,27 +252,27 @@
     double texelSize = [_level texelSize];
 
     double minDistance = d1;
-    double cellHeight = [[_referencePoints objectAtIndex:0] length3] * texelSize;
+    double cellSize = [[_referencePoints objectAtIndex:0] length3] * texelSize;
 
     if (d2 < minDistance)
     {
         minDistance = d2;
-        cellHeight = [[_referencePoints objectAtIndex:1] length3] * texelSize;
+        cellSize = [[_referencePoints objectAtIndex:1] length3] * texelSize;
     }
     if (d3 < minDistance)
     {
         minDistance = d3;
-        cellHeight = [[_referencePoints objectAtIndex:2] length3] * texelSize;
+        cellSize = [[_referencePoints objectAtIndex:2] length3] * texelSize;
     }
     if (d4 < minDistance)
     {
         minDistance = d4;
-        cellHeight = [[_referencePoints objectAtIndex:3] length3] * texelSize;
+        cellSize = [[_referencePoints objectAtIndex:3] length3] * texelSize;
     }
     if (d5 < minDistance)
     {
         minDistance = d5;
-        cellHeight = [[_referencePoints objectAtIndex:4] length3] * texelSize;
+        cellSize = [[_referencePoints objectAtIndex:4] length3] * texelSize;
     }
 
     // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye distance.
@@ -278,7 +283,7 @@
     // Note: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is window-
     // size dependent and results in selecting an excessive number of tiles when the window is large.
 
-    return cellHeight > sqrt(minDistance) * pow(10, -detailFactor);
+    return cellSize > sqrt(minDistance) * pow(10, -detailFactor);
 }
 
 - (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
@@ -288,7 +293,27 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
-    [_sector computeReferencePoints:globe verticalExaggeration:verticalExaggeration result:_referencePoints];
+    if (_referencePoints == nil)
+    {
+        _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
+        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        [_sector computeReferencePoints:globe verticalExaggeration:verticalExaggeration result:_referencePoints];
+    }
+}
+
+- (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
+{
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    if (_extent == nil)
+        _extent = [_sector computeBoundingBox:globe verticalExaggeration:verticalExaggeration];
 }
 
 @end

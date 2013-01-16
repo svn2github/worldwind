@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class WWMatrix;
+
 /**
 * Represents a 4D Cartesian coordinate or vector.
 *
@@ -66,6 +68,10 @@
 */
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z w:(double)w;
 
+- (WWVec4*) initWithVector:(WWVec4*)vector;
+
+- (WWVec4*) initWithAverageOfVectors:(NSArray*) vectors;
+
 /**
 * Initializes this vector to the zero vector, with X, Y and Z set to 0 and W set to 1.
 *
@@ -108,6 +114,8 @@
 */
 - (WWVec4*) set:(double)x y:(double)y z:(double)z w:(double)w;
 
+- (WWVec4*) set:(WWVec4*)vector;
+
 /// @name Operating on Vectors
 
 /**
@@ -141,6 +149,15 @@
 - (WWVec4*) subtract3:(WWVec4*)vector;
 
 /**
+* Multiplies this vector by a specified scalar.
+*
+* @param scalar The scalar to multiply.
+*
+* @return This matrix multiplied by the specified scalar.
+*/
+- (WWVec4*) multiplyByScalar:(double)scalar;
+
+/**
 * Computes the Cartesian distance between points represented by this vector and a specified vector.
 *
 * @param vector The vector identifying the distant point.
@@ -149,7 +166,7 @@
 *
 * @exception NSInvalidArgumentException if the specified vector is nil
 */
-- (double) distance3:(WWVec4*)vector;
+- (double) distanceTo3:(WWVec4*)vector;
 
 /**
 * Computes the square of the Cartesian distance between points represented by this vector and a specified vector.
@@ -163,5 +180,16 @@
 * @exception NSInvalidArgumentException if the specified vector is nil
 */
 - (double) distanceSquared3:(WWVec4*)vector;
+
+/**
+* Computes the X, Y, Z dot product of this matrix with a specified vector.
+*
+* @param The vector to dot with this vector.
+*
+* @return The dot product.
+*
+* @exception NSInvalidArgumentException if the specified vector is nil.
+*/
+- (double) dot3:(WWVec4*)vector;
 
 @end

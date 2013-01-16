@@ -21,6 +21,9 @@
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWFrustum.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
 
 @implementation WWTiledImageLayer
 
@@ -95,6 +98,7 @@
         return;
 
     [self assembleTiles:dc];
+//    NSLog(@"CURRENT TILES %d", [self->currentTiles count]);
 
     if ([self->currentTiles count] > 0)
     {
@@ -117,8 +121,17 @@
 {
     WWSector* visibleSector = [dc visibleSector];
 
-    // TODO: check against 3D extent
-    return visibleSector == nil || [visibleSector intersects:[tile sector]];
+    if (visibleSector != nil && ![visibleSector intersects:[tile sector]])
+        return NO;
+//    return YES;
+
+//    if (![[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]])
+//    {
+//        WWSector* s = [tile sector];
+//        NSLog(@"CULLING %f, %f, %f, %f", [s minLatitude], [s maxLatitude], [s minLongitude], [s maxLongitude]);
+//    }
+
+    return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
 }
 
 - (void) assembleTiles:(WWDrawContext*)dc
@@ -135,8 +148,7 @@
         WWTextureTile* tile = [self->topLevelTiles objectAtIndex:i];
 
         [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-
-        // TODO: update tile extent
+        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
         self->currentAncestorTile = nil;
 
@@ -149,12 +161,12 @@
 
 - (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    if ([[tile level] levelNumber] != 0) // level 0 tiles were updated in assembleTiles
-    {
-        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-        // TODO update tile extent
-    }
-
+//    if ([[tile level] levelNumber] != 0) // level 0 tiles were updated in assembleTiles
+//    {
+//        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+//        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+//    }
+//
     if ([self tileMeetsRenderCriteria:dc tile:tile])
     {
         [self addTile:dc tile:tile];
@@ -177,6 +189,10 @@
         for (NSUInteger i = 0; i < 4; i++)
         {
             WWTile* child = [subTiles objectAtIndex:i];
+
+            [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+            [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+
             if ([[self->levels sector] intersects:[child sector]]
                     && [self isTileVisible:dc tile:(WWTextureTile*) child])
             {

@@ -9,6 +9,7 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWFrustum.h"
 
 @implementation WWBasicNavigatorState
 
@@ -32,7 +33,15 @@
 
     // The eye point is computed by transforming the origin by the inverse of the modelview matrix.
     WWMatrix* invModelview = [[WWMatrix alloc] initWithInverse:_modelview];
-    _eyePoint = [invModelview multiplyVector:[[WWVec4 alloc] initWithZeroVector]];
+    _eyePoint = [[WWVec4 alloc] initWithZeroVector];
+    [invModelview multiplyVector:_eyePoint];
+
+    _frustum = [projectionMatrix extractFrustum]; // returns normalized frustum plane vectors
+
+    // The model-coordinate frustum is computed by transforming the frustum by the transpose of the modelview matrix.
+    WWMatrix* modelviewTranspose = [[WWMatrix alloc] initWithTranspose:_modelview];
+    _frustumInModelCoordinates = [[WWFrustum alloc] initWithTransformedFrustum:_frustum matrix:modelviewTranspose];
+    // TODO: Should the MC frustum plane vectors be normalized after applying the transform?
 
     return self;
 }
