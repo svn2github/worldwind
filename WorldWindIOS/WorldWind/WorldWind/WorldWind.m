@@ -11,6 +11,7 @@
 @implementation WorldWind
 
 static NSOperationQueue* wwRetrievalQueue; // singleton instance
+static NSLock* networkBusySignalLock;
 
 + (void) initialize
 {
@@ -19,6 +20,7 @@ static NSOperationQueue* wwRetrievalQueue; // singleton instance
     {
         initialized = YES;
         wwRetrievalQueue = [[NSOperationQueue alloc] init];
+        networkBusySignalLock = [[NSLock alloc] init];
     }
 }
 
@@ -31,15 +33,18 @@ static NSOperationQueue* wwRetrievalQueue; // singleton instance
 {
     static int numCalls = 0;
 
-    if (visible)
-        ++numCalls;
-    else
-        --numCalls;
+    @synchronized (networkBusySignalLock)
+    {
+        if (visible)
+            ++numCalls;
+        else
+            --numCalls;
 
-    if (numCalls < 0)
-        numCalls = 0;
+        if (numCalls < 0)
+            numCalls = 0;
 
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:numCalls > 0];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:numCalls > 0];
+    }
 }
 
 @end
