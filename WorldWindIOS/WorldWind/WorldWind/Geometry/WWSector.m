@@ -205,7 +205,7 @@
     double cLon = 0.5 * (_minLongitude + _maxLongitude);
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:cLat longitude:cLon altitude:minHeight outputPoint:pt];
+    [globe computePointFromPosition:cLat longitude:cLon altitude:maxHeight outputPoint:pt];
 
     // If the sector spans the equator then the curvature of all four edges needs to be considered. The extreme points
     // along the top and bottom edges are located at their mid-points and the extreme points along the left and right
@@ -265,7 +265,7 @@
         [result addObject:pt];
         [globe computePointFromPosition:cLat longitude:lon altitude:maxHeight outputPoint:pt];
 
-        // centroid latitude, longitude at mim longitude and max longitude.
+        // centroid latitude, longitude at min longitude and max longitude.
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
         [globe computePointFromPosition:cLat longitude:_minLongitude altitude:maxHeight outputPoint:pt];
