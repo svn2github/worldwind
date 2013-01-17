@@ -52,15 +52,15 @@
     WWSector* s = [tile sector];
 
     // Compose a URL string that defines an ArcGIS Export Map request.
-    NSMutableString* ms = [NSMutableString stringWithCapacity:256];
-    [ms appendString:[WWArcGisUrlBuilder fixExportMapString:_serviceLocation]];
+    NSMutableString* ms = [[NSMutableString alloc] initWithCapacity:256];
+    [ms appendString:[self fixExportMapString:_serviceLocation]];
     [ms appendFormat:@"v=%@", _arcGisVersion];
     [ms appendFormat:@"&layers=%@", _layers];
     [ms appendFormat:@"&bbox=%f,%f,%f,%f", [s minLongitude], [s minLatitude], [s maxLongitude], [s maxLatitude]];
     [ms appendString:@"&bboxSR=4326"]; // The bounding box is always in WGS 84 coordinates.
     [ms appendString:@"&f=image"]; // Request an image response format. The default is html.
     [ms appendFormat:@"&size=%d,%d", [tile tileWidth], [tile tileHeight]];
-    [ms appendFormat:@"&format=%@", [WWArcGisUrlBuilder formatForMimeType:imageFormat]];
+    [ms appendFormat:@"&format=%@", [self formatForMimeType:imageFormat]];
     [ms appendFormat:@"&imageSR=%@", _imageSR]; //
     [ms appendFormat:@"&transparent=%@", _transparent ? @"true" : @"false"];
 
@@ -68,21 +68,10 @@
     // result is a URL string that can be reliably used to initialize an NSURL.
     NSString* encodedUrlStr = [ms stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
-    return [NSURL URLWithString:encodedUrlStr];
+    return [[NSURL alloc] initWithString:encodedUrlStr];
 }
 
-+ (NSString*) formatForMimeType:(NSString*)mimeType
-{
-    if ([@"image/png" isEqualToString:mimeType])
-        return @"png";
-
-    if ([@"image/jpeg" isEqualToString:mimeType])
-        return @"jpg";
-
-    return nil;
-}
-
-+ (NSString*) fixExportMapString:(NSString*)ems
+- (NSString*) fixExportMapString:(NSString*)ems
 {
     ems = [ems stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
@@ -107,6 +96,17 @@
     }
 
     return ems;
+}
+
+- (NSString*) formatForMimeType:(NSString*)mimeType
+{
+    if ([@"image/png" isEqualToString:mimeType])
+        return @"png";
+
+    if ([@"image/jpeg" isEqualToString:mimeType])
+        return @"jpg";
+
+    return nil;
 }
 
 @end

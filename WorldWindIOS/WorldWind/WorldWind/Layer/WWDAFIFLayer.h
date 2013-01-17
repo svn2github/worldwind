@@ -23,55 +23,52 @@
 /// @name Initializing the DAFIF Layer
 
 /**
-* Initializes this DAFIF layer with the specified ArcGIS data layers and cache name.
+* Initializes this layer with the specified DAFIF data layers and cache name.
 *
 * @param layers Indicates which ArcGIS data layers are displayed by this layer. This may be an empty string indicating
-* that all layers are displayed, or a list of layers to include or exclude. See [WWArcGisUrlBuilder layers] for more
-* information.
+* that all layers should be displayed, or a list of layers to include or exclude. See [WWArcGisUrlBuilder layers] for
+* more information.
 * @param cacheName A unique alphanumeric string representing this layer's cache name.
 *
 * @return The initialized layer.
 */
 - (WWDAFIFLayer*) initWithLayers:(NSString*)layers cacheName:(NSString*)cacheName;
 
-/// @name Creating Pre-Configured DAFIF Layers
+/**
+* Initializes this layer to display all DAFIF data layers.
+*
+* This layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
+*
+* @return The layer initialized to display all DAFIF data layers.
+*/
+- (WWDAFIFLayer*) initWithAllLayers;
 
 /**
-* Returns an allocated and initialized WWDAFIFLayer configured to display all DAFIF data layers.
+* Initializes this layer to display DAFIF layers related to airports.
 *
-* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
+* This layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display all DAFIF data layers.
+* @return The layer initialized to display DAFIF airport layers.
 */
-+ (WWDAFIFLayer*) dafifAll;
+- (WWDAFIFLayer*) initWithAirportLayers;
 
 /**
-* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers related to airports.
+* Initializes this layer to display DAFIF layers related to VFR and IFR flight planning and navigation.
 *
-* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
+* This layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display DAFIF airport layers.
+* @return The layer initialized to display DAFIF navigation layers.
 */
-+ (WWDAFIFLayer*) dafifAirports;
+- (WWDAFIFLayer*) initWithNavigationLayers;
 
 /**
-* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers related to VFR and IFR flight
-* planning and navigation.
+* Initializes this layer to display DAFIF layers that delimit areas in which military and other activities may interfere
+* with or preclude General Aviation flight.
 *
-* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
+* This layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
 *
-* @return A layer initialized to display DAFIF navigation layers.
+* @return The layer initialized to display DAFIF special activity airspace layers.
 */
-+ (WWDAFIFLayer*) dafifNavigation;
-
-/**
-* Returns an allocated and initialized WWDAFIFLayer configured to display DAFIF layers that delimit areas in which
-* military and other activities may interfere with or preclude General Aviation flight.
-*
-* The layer's maximum active altitude is configured so that the DAFIF layers are displayed at the appropriate altitude.
-*
-* @return A layer initialized to display DAFIF General Aviation obstacle layers.
-*/
-+ (WWDAFIFLayer*) dafifObstacles;
+- (WWDAFIFLayer*) initWithSpecialActivityAirspaceLayers;
 
 @end

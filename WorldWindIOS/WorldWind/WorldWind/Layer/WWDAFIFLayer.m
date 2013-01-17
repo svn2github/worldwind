@@ -43,36 +43,52 @@
     return self;
 }
 
-+ (WWDAFIFLayer*) dafifAll
+- (WWDAFIFLayer*) initWithAllLayers
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"" cacheName:@"DafifAll"];
-    [layer setMaxActiveAltitude:3000000];
+    self = [self initWithLayers:@"" cacheName:@"DafifAll"];
 
-    return layer;
+    if (self != nil)
+    {
+        [self setMaxActiveAltitude:3000000];
+    }
+
+    return self;
 }
 
-+ (WWDAFIFLayer*) dafifAirports
+- (WWDAFIFLayer*) initWithAirportLayers
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:0,1,21" cacheName:@"DAFIFAirports"];
-    [layer setMaxActiveAltitude:3000000];
+    self = [self initWithLayers:@"show:0,1,21" cacheName:@"DAFIFAirport"];
 
-    return layer;
+    if (self != nil)
+    {
+        [self setMaxActiveAltitude:3000000];
+    }
+
+    return self;
 }
 
-+ (WWDAFIFLayer*) dafifNavigation
+- (WWDAFIFLayer*) initWithNavigationLayers
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:2,4" cacheName:@"DAFIFNavigation"];
-    [layer setMaxActiveAltitude:750000];
+    self = [self initWithLayers:@"show:2,4" cacheName:@"DAFIFNavigation"];
 
-    return layer;
+    if (self != nil)
+    {
+        [self setMaxActiveAltitude:750000];
+    }
+
+    return self;
 }
 
-+ (WWDAFIFLayer*) dafifObstacles
+- (WWDAFIFLayer*) initWithSpecialActivityAirspaceLayers
 {
-    WWDAFIFLayer* layer = [[WWDAFIFLayer alloc] initWithLayers:@"show:13,17,24" cacheName:@"DAFIFObstacles"];
-    [layer setMaxActiveAltitude:3000000];
+    self = [self initWithLayers:@"show:13,17,24" cacheName:@"DAFIFSpecialActivityAirspace"];
 
-    return layer;
+    if (self != nil)
+    {
+        [self setMaxActiveAltitude:3000000];
+    }
+
+    return self;
 }
 
 @end
