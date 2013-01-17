@@ -63,7 +63,7 @@
     _imageFormat = imageFormat;
     _cachePath = cachePath;
 
-    self->detailHintOrigin = 2.6;
+    self->detailHintOrigin = 2.5;
     self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
@@ -98,7 +98,14 @@
         return;
 
     [self assembleTiles:dc];
+
 //    NSLog(@"CURRENT TILES %d", [self->currentTiles count]);
+//    for (NSUInteger i = 0; i < [self->currentTiles count]; i++)
+//    {
+//        WWTextureTile* tile = [self->currentTiles objectAtIndex:i];
+//        WWSector* s = [tile sector];
+//        NSLog(@"SHOWING %f, %f, %f, %f", [s minLatitude], [s maxLatitude], [s minLongitude], [s maxLongitude]);
+//    }
 
     if ([self->currentTiles count] > 0)
     {
