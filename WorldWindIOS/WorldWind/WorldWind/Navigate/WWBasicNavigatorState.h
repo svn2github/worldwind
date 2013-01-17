@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 #import "WorldWind/Navigate/WWNavigatorState.h"
 
 @class WWMatrix;
@@ -50,5 +51,11 @@
 * @exception NSInvalidArgumentException if either the modelview or projection matrices are nil.
 */
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix projection:(WWMatrix*)projectionMatrix;
+//
+//- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
+//                                  projection:(WWMatrix*)projectionMatrix
+//                                        viewport:(CGRect)viewport
+//                                nearDistance:(double)nearDistance
+//                                 farDistance:(double)farDistance;
 
 @end
