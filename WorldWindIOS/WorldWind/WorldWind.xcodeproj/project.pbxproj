@@ -62,6 +62,7 @@
 		1BF9A3C17C3E3C794D32A13A /* WWPlane.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A4447A253D0713310486 /* WWPlane.h */; };
 		1BF9A3ECE8EE34120E93E447 /* WWRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB3FDFBEE30E437F3DB3 /* WWRetriever.m */; };
 		1BF9A430DCAEE9A5C8699F89 /* WWRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB3FDFBEE30E437F3DB3 /* WWRetriever.m */; };
+		1BF9A4EDA306C08A5C482F23 /* WWBoundingSphere.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A49F2963A16965611E0A /* WWBoundingSphere.h */; };
 		1BF9A4F1E2CDC30B85028280 /* WWMatrix.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A2E372DB4135FF2EC1BE /* WWMatrix.h */; };
 		1BF9A535A31B03ED8822A48A /* WWUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC163DFB1836313D6753 /* WWUtil.m */; };
 		1BF9A551DC123671B334744B /* WWSurfaceImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACDE465B228D7C8B1F7E /* WWSurfaceImage.m */; };
@@ -97,6 +98,7 @@
 		1BF9A93F36F124A6C134E7DF /* WWFrustum.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA9712B79F685F4D1C63 /* WWFrustum.m */; };
 		1BF9A982D0A49F09AC585BBA /* WWCacheable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A2F80E9426CE1E050DE2 /* WWCacheable.h */; };
 		1BF9A9D10E4DA9C2E75B16D1 /* WWGpuProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5C985BCED6294E81BB7 /* WWGpuProgram.m */; };
+		1BF9A9D6216BDC5429798AFE /* WWBoundingSphere.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A596B6AA7B7329F9C143 /* WWBoundingSphere.m */; };
 		1BF9A9DB1C6892FE69B4CDC4 /* WWBoundingBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A41B65D6DE7FE19EF43E /* WWBoundingBox.m */; };
 		1BF9AA2BDF76898898555357 /* WWUrlBuilder.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9ADD8426ACA2028F4F221 /* WWUrlBuilder.h */; };
 		1BF9AA589C954F47D2044975 /* WWSurfaceImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACDE465B228D7C8B1F7E /* WWSurfaceImage.m */; };
@@ -115,6 +117,7 @@
 		1BF9AD4AC3A36ADC3F1D8743 /* WWGpuProgram.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A8F5E1C7D3736FCEE7B6 /* WWGpuProgram.h */; };
 		1BF9AD8B72539DE2586B3538 /* WWTerrainGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8648BD4C7C61209B013 /* WWTerrainGeometry.m */; };
 		1BF9AD91EB21F7B81D5D920C /* MakeAPIDocs.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7ED912523CDC16FCB9B /* MakeAPIDocs.sh */; };
+		1BF9AD9D8838B154A5DDDE97 /* WWBoundingSphere.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A596B6AA7B7329F9C143 /* WWBoundingSphere.m */; };
 		1BF9ADAC90EBC44C608E0AA9 /* WWShowTessellationLayer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A0A70F6D11D38865459B /* WWShowTessellationLayer.h */; };
 		1BF9ADAFDD3D5F7FC047C52A /* WWTiledImageLayer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AF0E88CA650A01C2CEAF /* WWTiledImageLayer.h */; };
 		1BF9ADAFFA280D13485DD4F4 /* WWBMNGOneImageLayer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A0190BB1AD22DC16C586 /* WWBMNGOneImageLayer.h */; };
@@ -197,6 +200,7 @@
 				1BF9A3C17C3E3C794D32A13A /* WWPlane.h in CopyFiles */,
 				CC8CF51D3994426792D99CB4 /* WWArcGisUrlBuilder.h in CopyFiles */,
 				CC8CF4C56ED3D6EF20268DEF /* WWDAFIFLayer.h in CopyFiles */,
+				1BF9A4EDA306C08A5C482F23 /* WWBoundingSphere.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,7 +273,9 @@
 		1BF9A4447A253D0713310486 /* WWPlane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWPlane.h; path = Geometry/WWPlane.h; sourceTree = "<group>"; };
 		1BF9A45D6936A56D015BF6C3 /* WWLevelSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLevelSet.h; sourceTree = "<group>"; };
 		1BF9A4714353DEADEF474F63 /* SurfaceTileRenderer.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = SurfaceTileRenderer.vert; sourceTree = "<group>"; };
+		1BF9A49F2963A16965611E0A /* WWBoundingSphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWBoundingSphere.h; path = Geometry/WWBoundingSphere.h; sourceTree = "<group>"; };
 		1BF9A53EF0BA5B4E801B3CDD /* WWWmsUrlBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWWmsUrlBuilder.m; sourceTree = "<group>"; };
+		1BF9A596B6AA7B7329F9C143 /* WWBoundingSphere.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWBoundingSphere.m; path = Geometry/WWBoundingSphere.m; sourceTree = "<group>"; };
 		1BF9A5A4B9B3A33122681928 /* WWWmsUrlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWWmsUrlBuilder.h; sourceTree = "<group>"; };
 		1BF9A5C985BCED6294E81BB7 /* WWGpuProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuProgram.m; sourceTree = "<group>"; };
 		1BF9A5CA324B55F360E1EC7D /* WWGpuShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWGpuShader.h; sourceTree = "<group>"; };
@@ -552,6 +558,8 @@
 				1BF9A942822F362D2B3B2EC6 /* WWFrustum.h */,
 				1BF9A67433C66FC405B75724 /* WWPlane.m */,
 				1BF9A4447A253D0713310486 /* WWPlane.h */,
+				1BF9A596B6AA7B7329F9C143 /* WWBoundingSphere.m */,
+				1BF9A49F2963A16965611E0A /* WWBoundingSphere.h */,
 			);
 			name = Geometry;
 			sourceTree = "<group>";
@@ -724,6 +732,7 @@
 				1BF9A31E19DCD76D879602F9 /* WWPlane.m in Sources */,
 				CC8CF8F6BC8A651A037BE74B /* WWArcGisUrlBuilder.m in Sources */,
 				CC8CF98FBDBEEE1892023D1E /* WWDAFIFLayer.m in Sources */,
+				1BF9AD9D8838B154A5DDDE97 /* WWBoundingSphere.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,6 +781,7 @@
 				1BF9A9DB1C6892FE69B4CDC4 /* WWBoundingBox.m in Sources */,
 				1BF9A8737809BDC05A223D33 /* WWFrustum.m in Sources */,
 				1BF9A79C021472D5E5FBEE56 /* WWPlane.m in Sources */,
+				1BF9A9D6216BDC5429798AFE /* WWBoundingSphere.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
