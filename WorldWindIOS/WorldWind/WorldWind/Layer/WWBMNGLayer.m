@@ -19,7 +19,7 @@
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
-                       numLevels:7
+                       numLevels:5
                      imageFormat:@"image/jpeg"
                        cachePath:cachePath];
 
