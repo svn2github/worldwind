@@ -67,4 +67,9 @@
 */
 - (void) transformByMatrix:(WWMatrix*)matrix;
 
+/**
+* Normalizes this planes vector by dividing all four of the vector's components by the X, Y, Z length of the vector.
+*/
+- (void) normalize;
+
 @end

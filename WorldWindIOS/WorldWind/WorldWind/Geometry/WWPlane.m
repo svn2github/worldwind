@@ -67,4 +67,14 @@
     [matrix multiplyVector:_vector];
 }
 
+- (void) normalize
+{
+    double d = [_vector length3];
+
+    if (d != 0)
+    {
+        [_vector multiplyByScalar:1 / d];
+    }
+}
+
 @end
