@@ -16,7 +16,6 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Geometry/WWExtent.h"
 
 @implementation WWTile
 
