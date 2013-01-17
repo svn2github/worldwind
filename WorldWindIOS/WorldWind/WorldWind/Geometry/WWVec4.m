@@ -207,11 +207,21 @@
     return self;
 }
 
+- (WWVec4*) multiplyByScalar3:(double)scalar
+{
+    _x *= scalar;
+    _y *= scalar;
+    _z *= scalar;
+
+    return self;
+}
+
 - (WWVec4*) multiplyByScalar:(double)scalar
 {
     _x *= scalar;
     _y *= scalar;
     _z *= scalar;
+    _w *= scalar;
 
     return self;
 }

@@ -149,13 +149,22 @@
 - (WWVec4*) subtract3:(WWVec4*)vector;
 
 /**
-* Multiplies this vector by a specified scalar.
+* Multiplies all four components of this vector by a specified scalar.
 *
 * @param scalar The scalar to multiply.
 *
 * @return This matrix multiplied by the specified scalar.
 */
 - (WWVec4*) multiplyByScalar:(double)scalar;
+
+/**
+* Multiplies the X, Y and Z components of this vector by a specified scalar.
+*
+* @param scalar The scalar to multiply.
+*
+* @return This matrix multiplied by the specified scalar.
+*/
+- (WWVec4*) multiplyByScalar3:(double)scalar;
 
 /**
 * Computes the Cartesian distance between points represented by this vector and a specified vector.

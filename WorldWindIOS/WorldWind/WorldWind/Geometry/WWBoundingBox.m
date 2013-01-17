@@ -123,27 +123,27 @@
         maxDotT = minDotT + 1;
 
     _r = [[WWVec4 alloc] initWithVector:_ru];
-    [_r multiplyByScalar:(maxDotR - minDotR)];
+    [_r multiplyByScalar3:(maxDotR - minDotR)];
 
     _s = [[WWVec4 alloc] initWithVector:_su];
-    [_s multiplyByScalar:(maxDotS - minDotS)];
+    [_s multiplyByScalar3:(maxDotS - minDotS)];
 
     _t = [[WWVec4 alloc] initWithVector:_tu];
-    [_t multiplyByScalar:(maxDotT - minDotT)];
+    [_t multiplyByScalar3:(maxDotT - minDotT)];
 
     _rLength = [_r length3];
     _sLength = [_s length3];
     _tLength = [_t length3];
 
-    WWVec4* ruh = [[[WWVec4 alloc] initWithVector:_ru] multiplyByScalar:0.5 * (maxDotR + minDotR)];
-    WWVec4* suh = [[[WWVec4 alloc] initWithVector:_su] multiplyByScalar:0.5 * (maxDotS + minDotS)];
-    WWVec4* tuh = [[[WWVec4 alloc] initWithVector:_tu] multiplyByScalar:0.5 * (maxDotT + minDotT)];
+    WWVec4* ruh = [[[WWVec4 alloc] initWithVector:_ru] multiplyByScalar3:0.5 * (maxDotR + minDotR)];
+    WWVec4* suh = [[[WWVec4 alloc] initWithVector:_su] multiplyByScalar3:0.5 * (maxDotS + minDotS)];
+    WWVec4* tuh = [[[WWVec4 alloc] initWithVector:_tu] multiplyByScalar3:0.5 * (maxDotT + minDotT)];
     _center = [[WWVec4 alloc] initWithVector:ruh];
     [_center add3:suh];
     [_center add3:tuh];
 
     WWVec4* rHalf = [[WWVec4 alloc] initWithVector:_r];
-    [rHalf multiplyByScalar:0.5];
+    [rHalf multiplyByScalar3:0.5];
     _topCenter = [[WWVec4 alloc] initWithVector:_center];
     [_topCenter add3:rHalf];
     _bottomCenter = [[WWVec4 alloc] initWithVector:_center];
@@ -284,7 +284,7 @@
 
     [self->tmp3 set:endPoint2];
     [self->tmp3 subtract3:endPoint1];
-    [self->tmp3 multiplyByScalar:t];
+    [self->tmp3 multiplyByScalar3:t];
     [self->tmp3 add3:endPoint1];
 
     // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
