@@ -10,6 +10,7 @@
 @class WWLocation;
 @class WWGlobe;
 @class WWBoundingBox;
+@class WWBoundingSphere;
 
 /**
 * Represents a geographic region defined by a rectangle in degrees latitude and longitude. Sectors are used extensively
@@ -161,5 +162,6 @@
 * @exception NSInvalidArgumentException if the specified globe is nil.
 */
 - (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
+- (WWBoundingSphere*) computeBoundingSphere:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
 
 @end

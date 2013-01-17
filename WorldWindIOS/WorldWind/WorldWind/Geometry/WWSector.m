@@ -11,7 +11,8 @@
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWVec4.h"
-#import "WWBoundingBox.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWBoundingSphere.h"
 
 @implementation WWSector
 
@@ -282,6 +283,14 @@
     [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
 
     return [[WWBoundingBox alloc] initWithPoints:extremePoints];
+}
+
+- (WWBoundingSphere*) computeBoundingSphere:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
+{
+    NSMutableArray* extremePoints = [[NSMutableArray alloc] init];
+    [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
+
+    return [[WWBoundingSphere alloc] initWithPoints:extremePoints];
 }
 
 @end
