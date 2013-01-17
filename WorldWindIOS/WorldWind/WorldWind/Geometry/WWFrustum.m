@@ -75,6 +75,28 @@
 
     return self;
 }
+//
+//- (WWFrustum*) initWithViewportWidth:(double)viewportWidth
+//                    viewportHeight:(double)viewportHeight
+//                      nearDistance:(double)nearDistance
+//                       farDistance:(double)farDistance
+//{
+//    double focalLength = viewportWidth / viewportHeight;
+//    double aspect = viewportHeight/ viewportWidth;
+//    double lrLen = sqrt(focalLength * focalLength + 1);
+//    double btLen = sqrt(focalLength * focalLength + aspect * aspect);
+//
+//    _left = [[WWPlane alloc] initWithCoordinates:focalLength / lrLen y:0 z:-1 / lrLen distance:0];
+//    _right = [[WWPlane alloc] initWithCoordinates:-focalLength / lrLen y:0 z:-1 / lrLen distance:0];
+//
+//    _bottom = [[WWPlane alloc] initWithCoordinates:0 y:focalLength / btLen z:-aspect / btLen distance:0];
+//    _top = [[WWPlane alloc] initWithCoordinates:0 y:-focalLength / btLen z:-aspect / btLen distance:0];
+//
+//    _near = [[WWPlane alloc] initWithCoordinates:0 y:0 z:-1 distance:-nearDistance];
+//    _far = [[WWPlane alloc] initWithCoordinates:0 y:0 z:1 distance:farDistance];
+//
+//    return self;
+//}
 
 - (WWFrustum*) initWithTransformedFrustum:(WWFrustum*)frustum matrix:(WWMatrix*)matrix
 {
@@ -105,6 +127,16 @@
     [_far transformByMatrix:matrix];
 
     return self;
+}
+
+- (void) normalize
+{
+    [_left normalize];
+    [_right normalize];
+    [_bottom normalize];
+    [_top normalize];
+    [_near normalize];
+    [_far normalize];
 }
 
 @end
