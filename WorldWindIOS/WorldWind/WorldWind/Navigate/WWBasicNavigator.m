@@ -176,7 +176,9 @@
         self->lastPanTranslation = panTranslation;
 
         // Convert the translation from the view's local coordinate system to meters, assuming the translation is
-        // intended for an object that is 'range' meters away form the eye position.
+        // intended for an object that is 'range' meters away form the eye position. Convert from change in screen
+        // relative coordinates to change in model relative coordinates by inverting the change in X. There is no need
+        // to invert the change in Y because the Y axis coordinates are already inverted.
         CGRect viewport = [self->view viewport];
         double distance = MAX(1, self->_range);
         double metersPerPixel = [WWMath perspectiveSizePreservingMaxPixelSize:CGRectGetWidth(viewport)
@@ -191,10 +193,20 @@
         double radius = MAX([globe equatorialRadius], [globe polarRadius]);
         double forwardDegrees = DEGREES(forwardMeters / radius);
         double sideDegrees = DEGREES(sideMeters / radius);
-        double sideHeading = NormalizedDegreesHeading(self->_heading + 90);
 
-        [self->_lookAt setRhumbEndLocation:self->_lookAt azimuth:self->_heading distance:forwardDegrees];
-        [self->_lookAt setRhumbEndLocation:self->_lookAt azimuth:sideHeading distance:sideDegrees];
+        // Convert the translation from arc degrees to change in latitude and longitude relative to the current heading.
+        // The resultant translation in latitude and longitude is defined in the equirectangular coordinate system.
+        double sinHeading = sin(RADIANS(self->_heading));
+        double cosHeading = cos(RADIANS(self->_heading));
+        double latDegrees = forwardDegrees * cosHeading - sideDegrees * sinHeading;
+        double lonDegrees = forwardDegrees * sinHeading + sideDegrees * cosHeading;
+
+        // Apply the change in latitude and longitude to this navigator's lookAt property. Limit the new latitude to the
+        // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
+        // corresponding change in heading, which has not been implemented here in favor of simplicity.
+        double newLat = [WWMath clamp:([self->_lookAt latitude] + latDegrees) min:-90 max:90];
+        double newLon = NormalizedDegreesLongitude([self->_lookAt longitude] + lonDegrees);
+        [self->_lookAt setDegreesLatitude:newLat longitude:newLon];
     }
     else
     {
