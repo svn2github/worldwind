@@ -72,7 +72,7 @@ http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt-natives-linux-amd64.
 Follow instructions above to extract the archives into the World Wind release folder.
 
 
-New features and improvements in World Wind Java SDK 1.5.0
+New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.
 
@@ -104,6 +104,12 @@ New features and improvements in World Wind Java SDK 1.5.0
 - Fixed a bug in Triangle.intersectTriangleTypes preventing triangle strip intersection from operating correctly.
 - Fixed a bug in WMSTiledImageLayer causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
 - Fixed a bug in WMSBasicElevationModel causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
+- Fixed a bug where clicking in browser balloons or view controls prevents focus traversal.
+- Fixed a bug where the MeastureToolUsage example hangs on Mac.
+- Fixed a bug where the WorldWindDiagnostics app hangs on Mac.
+- Fixed a bug where the Path shape changes the default shape attributes and affects the color of other AbstractShapes.
+- Fixed a bug preventing the copying of text from browser balloons.
+- Fixed a bug where keyboard input did not work in browser balloons.
 - Modified MIL-STD-2525 symbol code parsing to correctly handle symbol modifier codes without an echelon in the second character.
 - Modified MIL-STD-2525 symbol code parsing to correctly compose the modifier code for the feint/dummy installation modifier.
 - Modified MIL-STD-2525 TacticalGraphicFactory to enable application configuration of MIL-STD-2525 implementation classes.
