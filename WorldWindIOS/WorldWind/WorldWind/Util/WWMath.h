@@ -8,35 +8,25 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
-extern double clamp(double value, double min, double max);
-
-/*!
-    Returns the distance between a globe's horizon and a viewer at the specified elevation. Only the globe's ellipsoid
-    is considered; terrain elevations are not incorporated. This returns zero if the specified elevation is less than or
-    equal to zero.
-
-    @param globeRadius
-        The globe's radius, in meters.
-    @param elevation
-        The viewer's elevation, in meters relative to mean sea level.
-    @result
-        The distance to the horizon, in meters.
- */
-extern double horizonDistance(double globeRadius, double elevation);
-
-extern CGRect perspectiveFieldOfViewFrustumRect(double horizontalFOV, double viewportWidth, double viewportHeight, double zDistance);
-
-extern double perspectiveFieldOfViewMaxNearDistance(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);
-
-extern double perspectiveFieldOfViewMaxPixelSize(double horizontalFOV, double viewportWidth, double viewportHeight, double distanceToObject);
-
-extern CGRect perspectiveSizePreservingFrustumRect(double viewportWidth, double viewportHeight, double zDistance);
-
-extern double perspectiveSizePreservingMaxNearDistance(double viewportWidth, double viewportHeight, double distanceToObject);
-
-extern double perspectiveSizePreservingMaxPixelSize(double viewportWidth, double viewportHeight, double distanceToObject);
-
+/**
+* A collection of class methods for computing various values.
+*/
 @interface WWMath : NSObject
+
+/// @name Commonly Used Math Operations
+
+/**
+* Adjusts a specified value to be within a specified minimum and maximum.
+*
+* @param value The value to clamp.
+* @param min The minimum value to clamp to.
+* @param max The maximum value to clamp to.
+*
+* @return The clamped value.
+*/
++ (double) clamp:(double)value min:(double)min max:(double)max;
+
+/// @name Computing Information About Shapes
 
 /**
 * Computes the principal axes of a specified list of points.
@@ -49,6 +39,105 @@ extern double perspectiveSizePreservingMaxPixelSize(double viewportWidth, double
 *
 * @exception NSInvalidArgumentException if the specified list of points is nil.
 */
-+ (NSArray*) computePrincipalAxesFromPoints:(NSArray*)points;
++ (NSArray*) principalAxesFromPoints:(NSArray*)points;
+
+/// @name Computing Viewing and Navigation Information
+
+/**
+Returns the distance between a globe's horizon and a viewer at the specified elevation.
+
+Only the globe's ellipsoid is considered; terrain elevations are not incorporated. This returns zero if the specified
+elevation is less than or equal to zero.
+
+@param globeRadius The globe's radius, in meters.
+@param elevation The viewer's elevation, in meters relative to mean sea level.
+
+@result The distance to the horizon, in meters.
+ */
++ (double) horizonDistance:(double)globeRadius elevation:(double)elevation;
+
+/**
+* TODO
+*
+* @param horizontalFOV The horizontal field of view.
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param zDistance TODO
+*
+* @return TODO
+*/
++ (CGRect) perspectiveFieldOfViewFrustumRect:(double)horizontalFOV
+                               viewportWidth:(double)viewportWidth
+                              viewportHeight:(double)viewportHeight
+                                   zDistance:(double)zDistance;
+
+/**
+* TODO
+*
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param zDistance TODO
+*
+* @return TODO
+*/
++ (CGRect) perspectiveSizePreservingFrustumRect:(double)viewportWidth
+                                 viewportHeight:(double)viewportHeight
+                                      zDistance:(double)zDistance;
+
+/**
+* TODO
+*
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveSizePreservingMaxNearDistance:(double)viewportWidth
+                                     viewportHeight:(double)viewportHeight
+                                   distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
+* @param horizontalFOV The horizontal field of view.
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveFieldOfViewMaxNearDistance:(double)horizontalFOV
+                                   viewportWidth:(double)viewportWidth
+                                  viewportHeight:(double)viewportHeight
+                                distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
+* @param horizontalFOV The horizontal field of view.
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveFieldOfViewMaxPixelSize:(double)horizontalFOV
+                                   viewportWidth:(double)viewportWidth
+                                  viewportHeight:(double)viewportHeight
+                                distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveSizePreservingMaxPixelSize:(double)viewportWidth
+                               viewportHeight:(double)viewportHeight
+                             distanceToObject:(double)distanceToObject;
 
 @end

@@ -71,7 +71,7 @@
     self->tmp2 = [[WWVec4 alloc] initWithZeroVector];
     self->tmp3 = [[WWVec4 alloc] initWithZeroVector];
 
-    NSArray* unitAxes = [WWMath computePrincipalAxesFromPoints:points];
+    NSArray* unitAxes = [WWMath principalAxesFromPoints:points];
     if (unitAxes == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Unable to compute principal axes")

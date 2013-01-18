@@ -101,6 +101,7 @@
 * @param plane The plane to test.
 * @param effRadius The effective radius of this box relative to the specified plane.
 * @param endPoint1 The first end point of the line of interest. Potentially truncated on return
+* @param endPoint2 The second end point of the line of interest. Potentially truncated on return.
 *
 * @return The parametric position along the point at which the line intersects the plane. If less than 0 the endpoints
 * are more distant from the plane than the effective radius and the line is on the negative side of the plane.

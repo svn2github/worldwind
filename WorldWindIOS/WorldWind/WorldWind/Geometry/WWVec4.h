@@ -193,7 +193,7 @@
 /**
 * Computes the X, Y, Z dot product of this matrix with a specified vector.
 *
-* @param The vector to dot with this vector.
+* @param vector The vector to dot with this vector.
 *
 * @return The dot product.
 *

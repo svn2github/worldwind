@@ -29,7 +29,7 @@
 /**
 * Initializes a bounding sphere to encompass a specified list of points.
 *
-* @param The points to bound.
+* @param points The points to bound.
 *
 * @return The bounding sphere set to encompass the specified points.
 *

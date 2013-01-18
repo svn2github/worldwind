@@ -50,7 +50,7 @@
 /**
 * Computes the full dot product (X, Y, Z, W) of this plane's normal vector with a specified vector.
 *
-* @param The vector to dot with this plane's normal vector.
+* @param vector The vector to dot with this plane's normal vector.
 *
 * @return The dot product.
 *

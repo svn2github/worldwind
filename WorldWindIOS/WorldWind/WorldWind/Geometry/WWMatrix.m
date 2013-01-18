@@ -410,7 +410,10 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
     }
 
-    CGRect nearRect = perspectiveFieldOfViewFrustumRect(horizontalFOV, width, height, near);
+    CGRect nearRect = [WWMath perspectiveFieldOfViewFrustumRect:horizontalFOV
+                                                  viewportWidth:width
+                                                 viewportHeight:height
+                                                      zDistance:near];
     double left = CGRectGetMinX(nearRect);
     double right = CGRectGetMaxX(nearRect);
     double bottom = CGRectGetMinY(nearRect);
@@ -451,7 +454,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
     }
 
-    CGRect nearRect = perspectiveSizePreservingFrustumRect(width, height, near);
+    CGRect nearRect = [WWMath perspectiveSizePreservingFrustumRect:width viewportHeight:height zDistance:near];
     double left = CGRectGetMinX(nearRect);
     double right = CGRectGetMaxX(nearRect);
     double bottom = CGRectGetMinY(nearRect);

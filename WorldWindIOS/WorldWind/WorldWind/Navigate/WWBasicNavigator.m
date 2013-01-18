@@ -122,11 +122,13 @@
     WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
 
-    self->_nearDistance = perspectiveSizePreservingMaxNearDistance(viewportWidth, viewportHeight, [eyePos altitude]);
+    self->_nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
+                                                            viewportHeight:viewportHeight
+                                                          distanceToObject:[eyePos altitude]];
     if (self->_nearDistance < MIN_NEAR_DISTANCE)
         self->_nearDistance = MIN_NEAR_DISTANCE;
 
-    self->_farDistance = horizonDistance(globeRadius, [eyePos altitude]);
+    self->_farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
     if (self->_farDistance < MIN_FAR_DISTANCE)
         self->_farDistance = MIN_FAR_DISTANCE;
 
@@ -177,7 +179,9 @@
         // intended for an object that is 'range' meters away form the eye position.
         CGRect viewport = [self->view viewport];
         double distance = MAX(1, self->_range);
-        double metersPerPixel = perspectiveSizePreservingMaxPixelSize(CGRectGetWidth(viewport), CGRectGetHeight(viewport), distance);
+        double metersPerPixel = [WWMath perspectiveSizePreservingMaxPixelSize:CGRectGetWidth(viewport)
+                                                               viewportHeight:CGRectGetHeight(viewport)
+                                                             distanceToObject:distance];
         double forwardMeters = dy * metersPerPixel;
         double sideMeters = -dx * metersPerPixel;
 
@@ -280,7 +284,7 @@
         CGPoint translation = [recognizer translationInView:self->view];
         CGRect bounds = [self->view bounds];
         double degrees = 90 * translation.y / CGRectGetHeight(bounds);
-        self->_tilt = clamp(self->beginTilt + degrees, 0, 90);
+        self->_tilt = [WWMath clamp:self->beginTilt + degrees min:0 max:90];
     }
     else
     {
