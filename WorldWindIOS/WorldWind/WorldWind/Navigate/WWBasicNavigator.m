@@ -294,15 +294,35 @@
     // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
     // after the view itself is de-allocated.
 
+    // Determine whether the vertical pan gesture recognizer should recognizer its gesture. This gesture recognizer is
+    // a UIPanGestureRecognizer configured with two or more touches. In order to limit its recognition to a vertical pan
+    // gesture, we place additional limitations on its recognition in this delegate.
     if (gestureRecognizer == self->verticalPanGestureRecognizer)
     {
-        CGPoint translation = [(UIPanGestureRecognizer*) gestureRecognizer translationInView:self->view];
-        return fabs(translation.y) > fabs(translation.x);
+        UIPanGestureRecognizer* pgr = (UIPanGestureRecognizer*) gestureRecognizer;
+
+        CGPoint translation = [pgr translationInView:self->view];
+        if (fabs(translation.x) > fabs(translation.y))
+        {
+            return NO; // Do not recognize the gesture; the pan is horizontal.
+        }
+
+        NSUInteger numTouches = [pgr numberOfTouches];
+        if (numTouches < 2)
+        {
+            return NO; // Do not recognize the gesture; not enough touches.
+        }
+
+        CGPoint touch1 = [pgr locationOfTouch:0 inView:self->view];
+        CGPoint touch2 = [pgr locationOfTouch:1 inView:self->view];
+        double slope = (touch2.y - touch1.y) / (touch2.x - touch1.x);
+        if (fabs(slope) > 1)
+        {
+            return NO; // Do not recognize the gesture; touches do not represent two fingers placed horizontally.
+        }
     }
-    else
-    {
-        return YES;
-    }
+
+    return YES;
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer
