@@ -105,7 +105,7 @@ New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 - Fixed a bug in WMSTiledImageLayer causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
 - Fixed a bug in WMSBasicElevationModel causing WMS 1.3 GetMap requests to use the WMS 1.1.1 "srs" query parameter for coordinate system.
 - Fixed a bug where clicking in browser balloons or view controls prevents focus traversal.
-- Fixed a bug where the MeastureToolUsage example hangs on Mac.
+- Fixed a bug where the MeasureToolUsage example hangs on Mac.
 - Fixed a bug where the WorldWindDiagnostics app hangs on Mac.
 - Fixed a bug where the Path shape changes the default shape attributes and affects the color of other AbstractShapes.
 - Fixed a bug preventing the copying of text from browser balloons.
