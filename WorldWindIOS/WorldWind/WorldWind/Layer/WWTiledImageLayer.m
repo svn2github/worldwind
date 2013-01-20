@@ -77,12 +77,6 @@
     return self;
 }
 
-- (void) setImageFormat:(NSString*)imageFormat
-{
-    _imageFormat = imageFormat;
-    self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
-}
-
 - (void) createTopLevelTiles
 {
     [self->topLevelTiles removeAllObjects];
