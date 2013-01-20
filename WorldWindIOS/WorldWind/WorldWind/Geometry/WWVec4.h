@@ -71,7 +71,7 @@
 /**
 * Initialize this vector to the values of a specified vector.
 *
-* @param The vector whose values to assign this instance's.
+* @param vector The vector whose values to assign this instance's.
 *
 * @result This vector initialize to the values in the specified vector.
 *
