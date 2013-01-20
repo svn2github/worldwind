@@ -68,8 +68,26 @@
 */
 - (WWVec4*) initWithCoordinates:(double)x y:(double)y z:(double)z w:(double)w;
 
+/**
+* Initialize this vector to the values of a specified vector.
+*
+* @param The vector whose values to assign this instance's.
+*
+* @result This vector initialize to the values in the specified vector.
+*
+* @exception NSInvalidArgumentException If the specified vector is nil.
+*/
 - (WWVec4*) initWithVector:(WWVec4*)vector;
 
+/**
+* Initialize this vector with the average of a specified list of vectors.
+*
+* @param vectors The vectors to average.
+*
+* @result This vector initialized to the average of the specified vectors.
+*
+* @exception NSInvalidArgumentException if the specified list is nil or empty.
+*/
 - (WWVec4*) initWithAverageOfVectors:(NSArray*) vectors;
 
 /**
@@ -200,5 +218,17 @@
 * @exception NSInvalidArgumentException if the specified vector is nil.
 */
 - (double) dot3:(WWVec4*)vector;
+
+/**
+* Computes a point on a specified line.
+*
+* @param origin The origin of the line.
+* @param direction The direction of the line.
+* @param t The distance in meters along the line at which to select the point.
+* @param result A WWVec4 instance in which to return the result.
+*
+* @exception NSInvalidArgumentException If either the origin or direction are nil.
+*/
++ (void) pointOnLine:(WWVec4*)origin direction:(WWVec4*)direction t:(double)t result:(WWVec4*)result;
 
 @end

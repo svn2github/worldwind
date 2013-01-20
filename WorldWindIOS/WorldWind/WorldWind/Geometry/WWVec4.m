@@ -7,9 +7,6 @@
 
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
-#import "WWFrustum.h"
-#import "WWPlane.h"
-#import "WWMatrix.h"
 
 @implementation WWVec4
 
@@ -63,12 +60,12 @@
 
 - (WWVec4*) initWithAverageOfVectors:(NSArray*)vectors
 {
-    if (vectors == nil)
+    if (vectors == nil || [vectors count] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vectors is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vectors is nil or empty")
     }
 
-    self= [super init];
+    self = [super init];
 
     int count = 0;
     _x = 0;
@@ -106,7 +103,26 @@
     return self;
 }
 
-- (id) copyWithZone:(NSZone *)zone
++ (void) pointOnLine:(WWVec4*)origin direction:(WWVec4*)direction t:(double)t result:(WWVec4*)result
+{
+    if (origin == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    if (direction == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    double x = [origin x] + [direction x] * t;
+    double y = [origin y] + [direction y] * t;
+    double z = [origin z] + [direction z] * t;
+
+    [result set:x y:y z:z];
+}
+
+- (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithCoordinates:_x y:_y z:_z w:_w];
 }
@@ -179,7 +195,7 @@
     return self;
 }
 
--(WWVec4*) add3:(WWVec4 *)vector
+- (WWVec4*) add3:(WWVec4*)vector
 {
     if (vector == nil)
     {
@@ -193,7 +209,7 @@
     return self;
 }
 
--(WWVec4*) subtract3:(WWVec4 *)vector
+- (WWVec4*) subtract3:(WWVec4*)vector
 {
     if (vector == nil)
     {
