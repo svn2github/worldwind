@@ -120,6 +120,8 @@
 */
 - (BOOL) intersects:(WWSector*)sector;
 
+- (BOOL) contains:(double)latitude longitude:(double)longitude;
+
 /// @name Other Information About Sectors
 
 /**
@@ -162,6 +164,5 @@
 * @exception NSInvalidArgumentException if the specified globe is nil.
 */
 - (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
-- (WWBoundingSphere*) computeBoundingSphere:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
 
 @end

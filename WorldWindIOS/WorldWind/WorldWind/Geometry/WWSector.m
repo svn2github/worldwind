@@ -107,6 +107,12 @@
     return YES;
 }
 
+- (BOOL) contains:(double)latitude longitude:(double)longitude
+{
+    return latitude >= _minLatitude && latitude <= _maxLatitude && longitude >= _minLongitude
+            && longitude <= _maxLongitude;
+}
+
 - (void) computeReferencePoints:(WWGlobe*)globe
            verticalExaggeration:(double)verticalExaggeration
                          result:(NSMutableArray*)result
@@ -165,7 +171,7 @@
     double minHeight = extremes[0] * verticalExaggeration;
     double maxHeight = extremes[1] * verticalExaggeration;
     if (minHeight == maxHeight)
-        maxHeight = minHeight + 10;
+        maxHeight = minHeight + 100e3;
 
     [result removeAllObjects];
 
@@ -283,14 +289,6 @@
     [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
 
     return [[WWBoundingBox alloc] initWithPoints:extremePoints];
-}
-
-- (WWBoundingSphere*) computeBoundingSphere:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
-{
-    NSMutableArray* extremePoints = [[NSMutableArray alloc] init];
-    [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
-
-    return [[WWBoundingSphere alloc] initWithPoints:extremePoints];
 }
 
 @end
