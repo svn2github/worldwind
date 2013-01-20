@@ -12,6 +12,7 @@
 @class WWDrawContext;
 @class WWTerrainGeometry;
 @class WWLevel;
+@class WWVec4;
 
 /**
 * Provides an elevation tile class for use within WWTessellator. Applications typically do not interact with this
@@ -88,5 +89,20 @@
 * @param dc The current draw context.
 */
 - (void) renderWireframe:(WWDrawContext*)dc;
+
+/// @name Operations on Terrain Tiles
+
+/**
+* Computes a point on the terrain at a specified latitude and longitude.
+*
+* @param latitude The point's latitude.
+* @param longitude The point's longitude.
+* @param offset An offset in meters from the terrain surface at which to place the point. The returned point is
+* displaced by this amount along the normal vector _to the globe_.
+* @param result A pointer to a vector in which to store the result.
+*
+* @exception NSInvalidArgumentException If the result pointer is nil.
+*/
+- (void) surfacePoint:(double)latitude longitude:(double)longitude offset:(double)offset result:(WWVec4*)result;
 
 @end

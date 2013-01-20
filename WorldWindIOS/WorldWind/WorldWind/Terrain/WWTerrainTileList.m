@@ -8,10 +8,13 @@
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WWTerrainTile.h"
+#import "WWSector.h"
 
 @implementation WWTerrainTileList
 
-- (WWTerrainTileList*) initWithTessellator:(WWTessellator*) tessellator
+- (WWTerrainTileList*) initWithTessellator:(WWTessellator*)tessellator
 {
     if (tessellator == nil)
     {
@@ -26,7 +29,7 @@
     return self;
 }
 
-- (void) addTile:(WWTerrainTile*) tile
+- (void) addTile:(WWTerrainTile*)tile
 {
     if (tile == nil)
     {
@@ -36,7 +39,7 @@
     [self->tiles addObject:tile];
 }
 
-- (WWTerrainTile*) objectAtIndex:(NSUInteger) index
+- (WWTerrainTile*) objectAtIndex:(NSUInteger)index
 {
     return [self->tiles objectAtIndex:index];
 }
@@ -46,14 +49,37 @@
     return [self->tiles count];
 }
 
-- (void) beginRendering:(WWDrawContext*) dc
+- (void) beginRendering:(WWDrawContext*)dc
 {
     [_tessellator beginRendering:dc];
 }
 
-- (void) endRendering:(WWDrawContext*) dc
+- (void) endRendering:(WWDrawContext*)dc
 {
     [_tessellator endRendering:dc];
+}
+
+- (BOOL) surfacePoint:(double)latitude
+            longitude:(double)longitude
+               offset:(double)offset
+               result:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    for (NSUInteger i = 0; i < [self->tiles count]; i++)
+    {
+        WWTerrainTile* tile = [self->tiles objectAtIndex:i];
+        if ([[tile sector] contains:latitude longitude:longitude])
+        {
+            [tile surfacePoint:latitude longitude:longitude offset:offset result:result];
+            return YES;
+        }
+    }
+
+    return NO;
 }
 
 @end
