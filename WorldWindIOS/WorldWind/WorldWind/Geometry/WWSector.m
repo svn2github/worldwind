@@ -171,7 +171,7 @@
     double minHeight = extremes[0] * verticalExaggeration;
     double maxHeight = extremes[1] * verticalExaggeration;
     if (minHeight == maxHeight)
-        maxHeight = minHeight + 100e3;
+        maxHeight = minHeight + 10;
 
     [result removeAllObjects];
 

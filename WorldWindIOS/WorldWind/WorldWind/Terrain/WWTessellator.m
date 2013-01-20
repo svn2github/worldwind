@@ -20,8 +20,8 @@
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 
-#define NUM_LAT_SUBDIVISIONS 4
-#define NUM_LON_SUBDIVISIONS 8
+#define NUM_LAT_SUBDIVISIONS 12
+#define NUM_LON_SUBDIVISIONS 24
 
 @implementation WWTessellator
 
