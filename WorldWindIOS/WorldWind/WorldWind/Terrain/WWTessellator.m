@@ -130,7 +130,7 @@
     // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
     // center here and establish a translation transform that is used later to move the tile coordinates into place
     // relative to the globe.
-    WWVec4* refCenter = [self computeReferenceCenter:dc tile:tile];
+    WWVec4* refCenter = [self referenceCenterForTile:dc tile:tile];
     terrainGeometry.referenceCenter = refCenter;
     double rcx = refCenter.x;
     double rcy = refCenter.y;
@@ -142,7 +142,7 @@
         [self buildSharedGeometry:tile];
 }
 
-- (WWVec4*) computeReferenceCenter:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (WWVec4*) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     WWSector* sector = tile.sector;
 

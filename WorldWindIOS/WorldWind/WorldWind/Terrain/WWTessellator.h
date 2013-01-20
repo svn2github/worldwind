@@ -50,7 +50,7 @@
 
 - (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
-- (WWVec4*) computeReferenceCenter:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (WWVec4*) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
