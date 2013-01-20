@@ -308,6 +308,25 @@
     [result normalize3];
 }
 
+- (void) surfaceNormalAtPoint:(WWVec4*)point result:(WWVec4*)result
+{
+    if (point == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    double eSquared = _equatorialRadius * _equatorialRadius;
+    double polSquared = _polarRadius * _polarRadius;
+
+    [result set:[point x] / eSquared y:[point y] / polSquared z:[point z] / eSquared];
+    [result normalize3];
+}
+
 - (void) computeNorthTangent:(double)latitude
                    longitude:(double)longitude
                  outputPoint:(WWVec4*)result

@@ -162,6 +162,16 @@
                    longitude:(double)longitude
                   outputPoint:(WWVec4*)result;
 
+/**
+* Computes the surface normal at a specified Cartesian point.
+*
+* @param point The point at which to compute the surface normal.
+* @param result An WWVec4 instance in which to return the surface normal.
+*
+* @exception NSInvalidArgumentException If either argument is nil.
+*/
+- (void) surfaceNormalAtPoint:(WWVec4*)point result:(WWVec4*)result;
+
 /// @name Retrieving Globe Elevations
 
 /**
