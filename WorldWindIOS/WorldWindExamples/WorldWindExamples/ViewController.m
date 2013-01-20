@@ -47,7 +47,7 @@
     //[layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
     [layers addLayer:[[WWBMNGLayer alloc] init]];
     [layers addLayer:[[WWI3LandsatLayer alloc] init]];
-//    [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
+    [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
 }
