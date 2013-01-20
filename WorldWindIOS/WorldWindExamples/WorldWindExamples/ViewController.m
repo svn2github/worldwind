@@ -13,7 +13,8 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Layer/WWBMNGOneImageLayer.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
-#import "WWDAFIFLayer.h"
+#import "WorldWind/Layer/WWDAFIFLayer.h"
+#import "WorldWind/Layer/WWI3LandsatLayer.h"
 
 @implementation ViewController
 
@@ -45,7 +46,8 @@
     WWLayerList* layers = [[wwv sceneController] layers];
     //[layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
     [layers addLayer:[[WWBMNGLayer alloc] init]];
-    //[layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
+    [layers addLayer:[[WWI3LandsatLayer alloc] init]];
+//    [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
 }
