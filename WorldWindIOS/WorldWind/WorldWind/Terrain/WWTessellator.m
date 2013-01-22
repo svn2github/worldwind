@@ -14,14 +14,17 @@
 #import "WorldWind/Terrain/WWTerrainGeometry.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Util/WWLevelSet.h"
+#import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWLocation.h"
 
-#define NUM_LAT_SUBDIVISIONS 12
-#define NUM_LON_SUBDIVISIONS 24
+#define NUM_LAT_SUBDIVISIONS 4 // 45 degree subdivisions
+#define NUM_LON_SUBDIVISIONS 8
 
 @implementation WWTessellator
 
@@ -36,6 +39,17 @@
 
     _globe = globe;
 
+    self->detailHintOrigin = 2.5;
+
+    double dLat = 180 / NUM_LAT_SUBDIVISIONS;
+    double dLon = 360 / NUM_LON_SUBDIVISIONS;
+    WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:dLat longitude:dLon];
+    self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
+                                       levelZeroDelta:levelZeroDelta
+                                            numLevels:10];
+
+    self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
+
     [self createTopLevelTiles];
 
     return self;
@@ -45,8 +59,8 @@
 {
     self->topLevelTiles = [[NSMutableArray alloc] init];
 
-    double deltaLat = 180.0 / NUM_LAT_SUBDIVISIONS;
-    double deltaLon = 360.0 / NUM_LON_SUBDIVISIONS;
+    double deltaLat = [[self->levels levelZeroDelta] latitude];
+    double deltaLon = [[self->levels levelZeroDelta] longitude];
 
     double lastLat = -90;
 
@@ -70,7 +84,8 @@
                                                                    maxLongitude:lon];
 
             WWTerrainTile* tile = [[WWTerrainTile alloc] initWithSector:tileSector
-                                                                  level:nil row:row
+                                                                  level:[self->levels firstLevel]
+                                                                    row:row
                                                                  column:col
                                                             tessellator:self];
             [self->topLevelTiles addObject:tile];
@@ -89,35 +104,89 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    WWTerrainTileList* tiles = [[WWTerrainTileList alloc] initWithTessellator:self];
+    [self->currentTiles removeAllTiles];
+    self->currentCoverage = nil;
 
     NSUInteger count = [self->topLevelTiles count];
     for (NSUInteger i = 0; i < count; i++)
     {
         WWTerrainTile* tile = [self->topLevelTiles objectAtIndex:i];
-        if ([self mustRegenerateGeometry:dc tile:tile])
-        {
-            [self regenerateGeometry:dc tile:tile];
-        }
 
+        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
         [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
         if ([[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]])
-            [tiles addTile:tile];
+            [self addTileOrDescendants:dc tile:tile];
     }
 
-    tiles.sector = [[WWSector alloc] initWithFullSphere];
+    [self->currentTiles setSector:self->currentCoverage];
 
-//    NSLog(@"TERRAIN TILES %d", [tiles count]);
-    return tiles;
+//    NSLog(@"TERRAIN TILES %d", [self->currentTiles count]);
+    return self->currentTiles;
 }
 
-- (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    return tile.terrainGeometry == nil;
+    if ([self tileMeetsRenderCriteria:dc tile:tile])
+    {
+        [self addTile:dc tile:tile];
+        return;
+    }
+
+    WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
+    NSArray* subTiles = [tile subdivide:nextLevel tileFactory:self];
+    for (NSUInteger i = 0; i < 4; i++)
+    {
+        WWTile* child = [subTiles objectAtIndex:i];
+
+        [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+        [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+
+        if ([[self->levels sector] intersects:[child sector]]
+                && [self isTileVisible:dc tile:(WWTerrainTile*) child])
+        {
+            [self addTileOrDescendants:dc tile:(WWTerrainTile*) child];
+        }
+    }
 }
 
-- (void) regenerateGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) addTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+{
+    if (tile.terrainGeometry == nil)
+    {
+        [self regenerateTileGeometry:dc tile:tile];
+    }
+
+    [self->currentTiles addTile:tile];
+
+    if (self->currentCoverage == nil)
+    {
+        self->currentCoverage = [[WWSector alloc] initWithSector:[tile sector]];
+    }
+    else
+    {
+        [self->currentCoverage union:[tile sector]];
+    }
+}
+
+- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+{
+    // TODO: Consider also using the best-resolution test in the desktop and android versions.
+    return [self->levels isLastLevel:[[tile level] levelNumber]]
+            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
+}
+
+- (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+{
+    return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
+}
+
+- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
+{
+    return [[WWTerrainTile alloc] initWithSector:sector level:level row:row column:column tessellator:self];
+}
+
+- (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     if (tile == nil)
     {

@@ -245,7 +245,7 @@
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
     return [self->levels isLastLevel:[[tile level] levelNumber]]
-            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
+            || ![tile mustSubdivide:dc detailFactor:(self->detailHintOrigin + _detailHint)];
 }
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column

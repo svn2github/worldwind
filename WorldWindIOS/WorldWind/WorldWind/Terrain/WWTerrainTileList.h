@@ -33,6 +33,8 @@
 
 - (NSUInteger) count;
 
+- (void) removeAllTiles;
+
 - (void) beginRendering:(WWDrawContext*)dc;
 
 - (void) endRendering:(WWDrawContext*)dc;

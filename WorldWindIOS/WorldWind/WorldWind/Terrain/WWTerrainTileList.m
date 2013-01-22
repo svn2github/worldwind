@@ -9,8 +9,8 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Geometry/WWVec4.h"
-#import "WWTerrainTile.h"
-#import "WWSector.h"
+#import "WorldWind/Terrain/WWTerrainTile.h"
+#import "WorldWind/Geometry/WWSector.h"
 
 @implementation WWTerrainTileList
 
@@ -47,6 +47,11 @@
 - (NSUInteger) count
 {
     return [self->tiles count];
+}
+
+- (void) removeAllTiles
+{
+    [self->tiles removeAllObjects];
 }
 
 - (void) beginRendering:(WWDrawContext*)dc

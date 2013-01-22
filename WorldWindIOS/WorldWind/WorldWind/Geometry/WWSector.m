@@ -12,7 +12,6 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Geometry/WWBoundingSphere.h"
 
 @implementation WWSector
 
@@ -39,6 +38,23 @@
     _maxLatitude = 90;
     _minLongitude = -180;
     _maxLongitude = 180;
+
+    return self;
+}
+
+- (WWSector*) initWithSector:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    self = [super init];
+
+    _minLatitude = [sector minLatitude];
+    _maxLatitude = [sector maxLatitude];
+    _minLongitude = [sector minLongitude];
+    _maxLongitude = [sector maxLongitude];
 
     return self;
 }
@@ -289,6 +305,23 @@
     [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
 
     return [[WWBoundingBox alloc] initWithPoints:extremePoints];
+}
+
+- (void) union:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if ([sector minLatitude] < _minLatitude)
+        _minLatitude = [sector minLatitude];
+    if ([sector maxLatitude] > _maxLatitude)
+        _maxLatitude = [sector maxLatitude];
+    if ([sector minLongitude] < _minLongitude)
+        _minLongitude = [sector minLongitude];
+    if ([sector maxLongitude] > _maxLongitude)
+        _maxLongitude = [sector maxLongitude];
 }
 
 @end

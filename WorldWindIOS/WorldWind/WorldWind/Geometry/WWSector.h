@@ -109,6 +109,17 @@
 */
 - (WWSector*) initWithFullSphere;
 
+/**
+* Initializes a sector to the values of a specified sector.
+*
+* @param sector The sector whose values to copy.
+*
+* @return This sector initialized to the latitudes and longitudes of the specified sector.
+*
+* @exception NSInvalidArgumentException If the specified sector is nil.
+*/
+- (WWSector*) initWithSector:(WWSector*)sector;
+
 /// @name Intersection and Inclusion Operations
 
 /**
@@ -121,6 +132,17 @@
 - (BOOL) intersects:(WWSector*)sector;
 
 - (BOOL) contains:(double)latitude longitude:(double)longitude;
+
+/// @name Operations on Sectors
+
+/**
+* Sets this sector to the union of this sector and a specified sector.
+*
+* @param sector The sector to union with this one.
+*
+* @exception NSInvalidArgumentException If the specified sector is nil.
+*/
+- (void) union:(WWSector*)sector;
 
 /// @name Other Information About Sectors
 
