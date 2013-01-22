@@ -20,6 +20,7 @@
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
 
@@ -36,6 +37,8 @@
     }
 
     self = [super init];
+
+    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1e6 lowWater:800e3];
 
     _globe = globe;
 
@@ -134,7 +137,7 @@
     }
 
     WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
-    NSArray* subTiles = [tile subdivide:nextLevel tileFactory:self];
+    NSArray* subTiles = [tile subdivide:nextLevel cache:self->tileCache tileFactory:self];
     for (NSUInteger i = 0; i < 4; i++)
     {
         WWTile* child = [subTiles objectAtIndex:i];

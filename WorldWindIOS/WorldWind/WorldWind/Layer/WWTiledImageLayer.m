@@ -24,6 +24,7 @@
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Util/WWMemoryCache.h"
 
 @implementation WWTiledImageLayer
 
@@ -59,6 +60,8 @@
     }
 
     self = [super init];
+
+    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500e3 lowWater:400e3];
 
     _imageFormat = imageFormat;
     _cachePath = cachePath;
@@ -124,13 +127,6 @@
 
     if (visibleSector != nil && ![visibleSector intersects:[tile sector]])
         return NO;
-//    return YES;
-
-//    if (![[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]])
-//    {
-//        WWSector* s = [tile sector];
-//        NSLog(@"CULLING %f, %f, %f, %f", [s minLatitude], [s maxLatitude], [s minLongitude], [s maxLongitude]);
-//    }
 
     return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
 }
@@ -162,12 +158,6 @@
 
 - (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-//    if ([[tile level] levelNumber] != 0) // level 0 tiles were updated in assembleTiles
-//    {
-//        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-//        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-//    }
-//
     if ([self tileMeetsRenderCriteria:dc tile:tile])
     {
         [self addTile:dc tile:tile];
@@ -186,7 +176,7 @@
 
         // TODO: Surround this loop with an autorelease pool since a lot of tiles are generated?
         WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
-        NSArray* subTiles = [tile subdivide:nextLevel tileFactory:self];
+        NSArray* subTiles = [tile subdivide:nextLevel cache:self->tileCache tileFactory:self];
         for (NSUInteger i = 0; i < 4; i++)
         {
             WWTile* child = [subTiles objectAtIndex:i];

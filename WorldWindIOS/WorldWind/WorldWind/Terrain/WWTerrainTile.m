@@ -15,11 +15,11 @@
 
 @implementation WWTerrainTile
 
-- (WWTerrainTile*) initWithSector:(WWSector*) sector
-                            level:(WWLevel*) level
-                              row:(int) row
-                           column:(int) column
-                      tessellator:(WWTessellator*) tessellator
+- (WWTerrainTile*) initWithSector:(WWSector*)sector
+                            level:(WWLevel*)level
+                              row:(int)row
+                           column:(int)column
+                      tessellator:(WWTessellator*)tessellator
 {
     // superclass checks sector, level, row and column arguments.
 
@@ -40,22 +40,37 @@
     return self;
 }
 
-- (void) beginRendering:(WWDrawContext*) dc
+- (long) sizeInBytes
+{
+    long terrainGeometrySize = (4 + 32) // reference center
+            + (4 + 128) // transformation matrix
+            + (4) // numPoints
+            + (4 + (_numLatCells + 3) * (_numLonCells + 3) * 3 * 4); // points
+
+    long size = terrainGeometrySize
+            + 4 // tessellator pointer
+            + (8) // numlat + numlon fields
+            + (4); // terrain geometry pointer
+
+    return size;
+}
+
+- (void) beginRendering:(WWDrawContext*)dc
 {
     [_tessellator beginRendering:dc tile:self];
 }
 
-- (void) endRendering:(WWDrawContext*) dc
+- (void) endRendering:(WWDrawContext*)dc
 {
     [_tessellator endRendering:dc tile:self];
 }
 
-- (void) render:(WWDrawContext*) dc
+- (void) render:(WWDrawContext*)dc
 {
     [_tessellator render:dc tile:self];
 }
 
-- (void) renderWireframe:(WWDrawContext*) dc
+- (void) renderWireframe:(WWDrawContext*)dc
 {
     [_tessellator renderWireFrame:dc tile:self];
 }
@@ -115,8 +130,8 @@
     // relative placement within the cell. The cell's vertices are defined in the following order: lower-left,
     // lower-right, upper-left, upper-right. The cell's diagonal starts at the lower-left vertex and ends at the
     // upper-right vertex.
-    double sf = (s < tileWidth ? s - (int)s : 1);
-    double tf = (t < tileHeight? t - (int) t : 1);
+    double sf = (s < tileWidth ? s - (int) s : 1);
+    double tf = (t < tileHeight ? t - (int) t : 1);
 
     if (sf < tf)
     {

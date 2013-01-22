@@ -36,6 +36,11 @@
     return self;
 }
 
+- (long) sizeInBytes
+{
+    return 8 + [_imagePath length];
+}
+
 - (BOOL) bind:(WWDrawContext*)dc
 {
     WWTexture* texture = [[dc gpuResourceCache] getTextureForKey:_imagePath];

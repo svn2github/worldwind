@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "WorldWind/Util/WWCacheable.h"
 
 @class WWSector;
 @class WWLevel;
@@ -14,15 +15,16 @@
 @class WWGlobe;
 @protocol WWExtent;
 @class WWBoundingBox;
+@class WWMemoryCache;
 
 /**
 * Provides a base class for texture tiles used by tiled image layers and elevation tiles used by elevation models.
 * Applications typically do not interact with this class.
 */
-@interface WWTile : NSObject
+@interface WWTile : NSObject <WWCacheable>
 {
 @protected
-    NSMutableArray* children;
+    NSString* tileKey;
 }
 
 /// @name Attributes
@@ -42,8 +44,10 @@
 /// The resolution of a single pixel or cell in a tile of this level set.
 @property(readonly, nonatomic) double resolution; // TODO: Is this property necessary?
 
+/// Cartesian coordinates of the tile's corners, center and potentially other key locations on the tile.
 @property(readonly, nonatomic) NSMutableArray* referencePoints;
 
+/// The tile's Cartesian bounding box.
 @property(readonly, nonatomic) WWBoundingBox* extent;
 
 /**
@@ -118,6 +122,7 @@
                     tilesOut:(NSMutableArray*)tilesOut;
 
 - (NSArray*) subdivide:(WWLevel*)nextLevel tileFactory:(id <WWTileFactory>)tileFactory;
+- (NSArray*) subdivide:(WWLevel*)nextLevel cache:(WWMemoryCache*)cache tileFactory:(id <WWTileFactory>)tileFactory;
 
 /**
 * Determines whether the tile should be subdivided based on the current navigation state and a specified detail factor.

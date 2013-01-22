@@ -17,6 +17,7 @@
 @class WWDrawContext;
 @class WWVec4;
 @class WWLevelSet;
+@class WWMemoryCache;
 
 /**
 * Provides tessellation of a globe. Applications typically do not interact with a tessellator. Tessellators are
@@ -28,6 +29,7 @@
     NSMutableArray* topLevelTiles;
     WWLevelSet* levels;
     double detailHintOrigin;
+    WWMemoryCache* tileCache;
 
     // Stuff computed each frame.
     WWTerrainTileList* currentTiles;

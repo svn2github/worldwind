@@ -17,6 +17,7 @@
 @class WWTextureTile;
 @protocol WWUrlBuilder;
 @class WWLevel;
+@class WWMemoryCache;
 
 /**
 * Provides a layer that displays multi-resolution imagery arranged as adjacent tiles. This is the primary World
@@ -43,6 +44,7 @@
     NSMutableArray* topLevelTiles;
     double detailHintOrigin;
     NSString* formatSuffix; // determined at initialization and cached here
+    WWMemoryCache* tileCache;
 
     // Stuff computed each frame.
     NSMutableArray* currentTiles;

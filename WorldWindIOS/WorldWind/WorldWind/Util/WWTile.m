@@ -16,6 +16,8 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWMemoryCache.h"
+#import "WorldWind/Util/WWTileList.h"
 
 @implementation WWTile
 
@@ -28,12 +30,11 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile sector is nil")
     }
-    // TODO: Uncomment below when elevation model is implemented. Right now (1/10/13) it doesn't use levels.
-//
-//    if (level == nil)
-//    {
-//        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile level is nil")
-//    }
+
+    if (level == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile level is nil")
+    }
 
     if (row < 0)
     {
@@ -51,15 +52,23 @@
     _level = level;
     _row = row;
     _column = column;
-//
-//    _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
-//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-//    [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+
+    self->tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
 
     return self;
+}
+
+- (long) sizeInBytes
+{
+    long size = 4 // child pointer
+    + (4 + 32) // sector
+    + (4) // level pointer (the level is common to the layer or tessellator so not included here
+    + (8) // row and column
+    + (8) // resolution
+    + (4 + 5 * 32) // reference points
+    + (4 + 676); // bounding box
+
+    return size;
 }
 
 - (int) tileWidth
@@ -183,6 +192,32 @@
     }
 }
 
+- (NSArray*) subdivide:(WWLevel*)nextLevel cache:(WWMemoryCache*)cache tileFactory:(id <WWTileFactory>)tileFactory
+{
+    if (nextLevel == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Next level is nil")
+    }
+
+    if (tileFactory == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile factory is nil")
+    }
+
+    WWTileList* childList = [cache getValueForKey:self->tileKey];
+    if (childList != nil)
+    {
+        return [childList tiles];
+    }
+    else
+    {
+        NSArray* childTiles = [self subdivide:nextLevel tileFactory:tileFactory];
+        childList = [[WWTileList alloc] initWithTiles:childTiles];
+        [cache putValue:childList forKey:self->tileKey];
+        return childTiles;
+    }
+}
+
 - (NSArray*) subdivide:(WWLevel*)nextLevel tileFactory:(id <WWTileFactory>)tileFactory
 {
     if (nextLevel == nil)
@@ -195,11 +230,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile factory is nil")
     }
 
-//    NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:4];
-    if (self->children != nil)
-        return self->children;
-
-    self->children = [[NSMutableArray alloc] initWithCapacity:4];
+    NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:4];
 
     double p0 = [_sector minLatitude];
     double p2 = [_sector maxLatitude];
@@ -208,7 +239,6 @@
     double t0 = [_sector minLongitude];
     double t2 = [_sector maxLongitude];
     double t1 = 0.5 * (t0 + t2);
-
 
     int subRow = 2 * _row;
     int subCol = 2 * _column;
@@ -232,7 +262,7 @@
                                                   minLongitude:t1 maxLongitude:t2];
     [children addObject:[tileFactory createTile:childSector level:nextLevel row:subRow column:subCol]];
 
-    return self->children;
+    return children;
 }
 
 - (BOOL) mustSubdivide:(WWDrawContext*)dc detailFactor:(double)detailFactor
