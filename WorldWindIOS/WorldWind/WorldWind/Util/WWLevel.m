@@ -57,4 +57,9 @@
     return [_parent sector];
 }
 
+- (BOOL) isLastLevel
+{
+    return [_parent lastLevel] == self;
+}
+
 @end

@@ -52,6 +52,8 @@
 */
 - (WWSector*) sector;
 
+- (BOOL) isLastLevel;
+
 /// @name Initializing Levels
 
 /**
