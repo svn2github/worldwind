@@ -14,10 +14,8 @@
 
 @property (nonatomic) WWVec4* referenceCenter;
 @property (nonatomic) WWMatrix* transformationMatrix;
-@property (nonatomic) NSObject* vboCacheKey;
 @property (nonatomic) int numPoints;
 @property (nonatomic) float* points;
-@property (nonatomic) BOOL mustRegenerateVbos;
 
 
 @end
