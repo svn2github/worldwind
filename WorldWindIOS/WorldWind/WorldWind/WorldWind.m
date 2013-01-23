@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import "SystemConfiguration/SystemConfiguration.h"
 #import "UIKit/UIKit.h"
 #import "WorldWind/WorldWind.h"
 
@@ -63,6 +64,25 @@ static NSLock* wwOfflineModeLock;
     @synchronized (wwOfflineModeLock)
     {
         return wwOfflineMode;
+    }
+}
+
++ (BOOL) isNetworkAvailable
+{
+    SCNetworkReachabilityFlags flags;
+    BOOL receivedFlags;
+
+    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(CFAllocatorGetDefault(),
+            [@"google.com" UTF8String]);
+    receivedFlags = SCNetworkReachabilityGetFlags(reachability, &flags);
+    CFRelease(reachability);
+
+    if (!receivedFlags || (flags == 0))
+    {
+        return NO;
+    } else
+    {
+        return YES;
     }
 }
 

@@ -47,4 +47,11 @@
 */
 + (BOOL) isOfflineMode;
 
+/**
+* Indicates whether the network is reachable.
+*
+* @return YES if the network is reachable, otherwise NO.
+*/
++ (BOOL) isNetworkAvailable;
+
 @end

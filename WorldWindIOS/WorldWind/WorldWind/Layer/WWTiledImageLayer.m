@@ -277,7 +277,7 @@
 
 - (void) retrieveTileImage:(WWTextureTile*)tile
 {
-    if ([WorldWind isOfflineMode])
+    if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
         return;
 
     if ([self->currentRetrievals containsObject:[tile imagePath]])

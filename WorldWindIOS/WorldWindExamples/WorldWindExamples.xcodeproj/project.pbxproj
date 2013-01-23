@@ -20,6 +20,7 @@
 		0B98142B165FFB1200193E50 /* libWorldWind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B981428165FFB1200193E50 /* libWorldWind.a */; };
 		0B98142C165FFB1200193E50 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B981429165FFB1200193E50 /* OpenGLES.framework */; };
 		0B98142D165FFB1200193E50 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B98142A165FFB1200193E50 /* QuartzCore.framework */; };
+		0BA1E9DE16B09B92004F3619 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		0B981428165FFB1200193E50 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
 		0B981429165FFB1200193E50 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		0B98142A165FFB1200193E50 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BA1E9DE16B09B92004F3619 /* SystemConfiguration.framework in Frameworks */,
 				0B98142B165FFB1200193E50 /* libWorldWind.a in Frameworks */,
 				0B98142C165FFB1200193E50 /* OpenGLES.framework in Frameworks */,
 				0B98142D165FFB1200193E50 /* QuartzCore.framework in Frameworks */,
@@ -63,6 +66,7 @@
 		0B9813F9165FFA4900193E50 = {
 			isa = PBXGroup;
 			children = (
+				0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */,
 				0B98140E165FFA4900193E50 /* WorldWindExamples */,
 				0B981407165FFA4900193E50 /* Frameworks */,
 				0B981405165FFA4900193E50 /* Products */,
