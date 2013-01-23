@@ -5,13 +5,19 @@
  @version $Id$
  */
 
-#import "WWTileList.h"
+#import "WorldWind/Util/WWTileList.h"
+#import "WorldWind/WWLog.h"
 
 
 @implementation WWTileList
 
 - (WWTileList*) initWithTiles:(NSArray*)tiles
 {
+    if (tiles == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tessellator is nil")
+    }
+
     self = [super init];
 
     _tiles = tiles;

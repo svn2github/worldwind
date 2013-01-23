@@ -121,7 +121,29 @@
                  tileFactory:(id <WWTileFactory>)tileFactory
                     tilesOut:(NSMutableArray*)tilesOut;
 
+/**
+* Returns the four children formed by subdividing this tile.
+*
+* @param nextLevel The level of the children.
+* @param tileFactory The tile factory to use to create the children.
+*
+* @return An array of four child tiles.
+*
+* @exception NSInvalidArgumentException If either the nextLevel or tileFactory parameters are nil.
+*/
 - (NSArray*) subdivide:(WWLevel*)nextLevel tileFactory:(id <WWTileFactory>)tileFactory;
+
+/**
+* Returns the four children formed by subdividing this tile, drawing from and adding to a specified cache.
+*
+* @param nextLevel The level of the children.
+* @param cache The cache to use for the tiles.
+* @param tileFactory The tile factory to use to create the children.
+*
+* @return An array of four child tiles.
+*
+* @exception NSInvalidArgumentException If either the nextLevel or tileFactory parameters are nil.
+*/
 - (NSArray*) subdivide:(WWLevel*)nextLevel cache:(WWMemoryCache*)cache tileFactory:(id <WWTileFactory>)tileFactory;
 
 /**
