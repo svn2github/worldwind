@@ -70,7 +70,7 @@
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
 
 /// The current detail hint.
-@property (nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
+@property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
 
 /// @name Initializing Tiled Image Layers
 
@@ -246,5 +246,14 @@
 * @return YES if the tile's texture is local, otherwise NO.
 */
 - (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
+* Responds to WW_RETRIEVAL_STATUS notifications.
+*
+* @param notification The notification, which contains the URL (WW_URL), image path (WW_FILE_PATH) and retrieval
+* status (WW_RETRIEVAL_STATUS) in its dictionary. The retrieval status is one of WW_RETRIEVAL_SUCCEEDED,
+* WW_RETRIEVAL_FAILED or WW_RETRIEVAL_CANCELED.
+*/
+- (void) handleRetrievalNotification:(NSNotification*)notification;
 
 @end

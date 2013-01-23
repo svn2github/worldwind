@@ -22,9 +22,9 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Util/WWMemoryCache.h"
+#import "WorldWind/WorldWind.h"
 
 @implementation WWTiledImageLayer
 
@@ -77,7 +77,36 @@
     self->topLevelTiles = [[NSMutableArray alloc] init];
     self->currentRetrievals = [[NSMutableSet alloc] init];
 
+    // Set up to handle retrieval monitoring.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRetrievalNotification:)
+                                                 name:WW_RETRIEVAL_STATUS
+                                               object:self];
+
     return self;
+}
+
+- (void) handleRetrievalNotification:(NSNotification*)notification
+{
+    NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
+    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+
+    if ([retrievalStatus isEqualToString:WW_RETRIEVAL_SUCCEEDED])
+    {
+        [self->currentRetrievals removeObject:imagePath];
+
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
+    else if ([retrievalStatus isEqualToString:WW_RETRIEVAL_FAILED])
+    {
+        [self->currentRetrievals removeObject:imagePath];
+    }
+    else if ([retrievalStatus isEqualToString:WW_RETRIEVAL_CANCELED])
+    {
+        [self->currentRetrievals removeObject:imagePath];
+    }
 }
 
 - (void) createTopLevelTiles
@@ -248,16 +277,16 @@
 
 - (void) retrieveTileImage:(WWTextureTile*)tile
 {
+    if ([WorldWind isOfflineMode])
+        return;
+
     if ([self->currentRetrievals containsObject:[tile imagePath]])
         return;
     [self->currentRetrievals addObject:[tile imagePath]];
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_imageFormat];
-    NSString* filePath = [tile imagePath];
 
-    NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath notification:notification];
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
     [retriever addToQueue:retriever];
 }
 

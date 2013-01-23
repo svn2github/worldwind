@@ -10,6 +10,11 @@
 /**
 * Provides retrieval and caching of resources. This class is typically used to retrieve image and elevation resources
  * from the internet and save them to the local World Wind file system cache.
+ *
+ * When a retrieval is complete, a notification is sent indicating retrieval status. The notification's user info
+ * dictionary includes the retrieval status (WW_RETRIEVAL_STATUS) of either WW_RETRIEVAL_SUCCEEDED,
+ * WW_RETRIEVAL_FAILED or WW_RETRIEVAL_CANCELED. The dictionary also includes the retriever's URL (WW_URL) and its
+ * file path (WW_FILE_PATH).
 */
 @interface WWRetriever : NSOperation
 
@@ -21,29 +26,23 @@
 /// The full path and name of the file in which to store the resource.
 @property (nonatomic, readonly) NSString* filePath;
 
-/// A notification instance to send to the default iOS Notification Center when the resource is successfully retrieved
-// and stored.
-@property (nonatomic, readonly) NSNotification* notification;
+@property (nonatomic, readonly) id object;
 
 /// @name Initializing Retrievers
 
 /**
-* Initialize a retriever with a specified URL, file path and optional notification.
-*
-* The notification, if not nil, is sent to the default iOS Notification Center if the retrieval and storage
-* operations are successful.
+* Initialize a retriever with a specified URL, file path and notification source.
 *
 * @param url The URL from which to retrieve the resource.
 * @param filePath The full path and name of the file in which to write the resource. If the directories in the path
 * do not exist they are created.
-* @param notification An optional notification to sent to the notification center when retrieval and storage are
-* complete and successful. May be nil.
+* @param object The object to specify as the source in the WW_RETRIEVAL_STATUS notification.
 *
 * @return The initialized retriever.
 *
 * @exception NSInvalidArgumentException If the url or file path are nil.
 */
-- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath notification:(NSNotification*)notification;
+- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object;
 
 /**
 * Adds the retriever to the World Wind retrieval queue, from which it runs asynchronously.
