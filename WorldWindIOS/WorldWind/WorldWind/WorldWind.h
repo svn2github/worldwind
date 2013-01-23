@@ -30,4 +30,21 @@
 */
 + (void) setNetworkBusySignalVisible:(BOOL)visible;
 
+/**
+* Enables or disables offline mode.
+*
+* Offline mode determines whether World Wind is allowed to make requests to the network. If the mode is YES,
+* World Wind does not make network requests.
+*
+* @param offlineMode YES to set World Wind to offline mode. NO to set it to normal mode.
+*/
++ (void) setOfflineMode:(BOOL)offlineMode;
+
+/**
+* Indicates whether offline mode is active.
+*
+* @result YES if offline mode is active, otherwise NO (the default).
+*/
++ (BOOL) isOfflineMode;
+
 @end

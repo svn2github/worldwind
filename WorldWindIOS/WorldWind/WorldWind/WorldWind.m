@@ -11,7 +11,9 @@
 @implementation WorldWind
 
 static NSOperationQueue* wwRetrievalQueue; // singleton instance
-static NSLock* networkBusySignalLock;
+static NSLock* wwNetworkBusySignalLock;
+static BOOL wwOfflineMode = NO;
+static NSLock* wwOfflineModeLock;
 
 + (void) initialize
 {
@@ -20,7 +22,8 @@ static NSLock* networkBusySignalLock;
     {
         initialized = YES;
         wwRetrievalQueue = [[NSOperationQueue alloc] init];
-        networkBusySignalLock = [[NSLock alloc] init];
+        wwNetworkBusySignalLock = [[NSLock alloc] init];
+        wwOfflineModeLock = [[NSLock alloc] init];
     }
 }
 
@@ -33,7 +36,7 @@ static NSLock* networkBusySignalLock;
 {
     static int numCalls = 0;
 
-    @synchronized (networkBusySignalLock)
+    @synchronized (wwNetworkBusySignalLock)
     {
         if (visible)
             ++numCalls;
@@ -44,6 +47,22 @@ static NSLock* networkBusySignalLock;
             numCalls = 0;
 
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:numCalls > 0];
+    }
+}
+
++ (void) setOfflineMode:(BOOL)offlineMode
+{
+    @synchronized (wwOfflineModeLock)
+    {
+        wwOfflineMode = offlineMode;
+    }
+}
+
++ (BOOL) isOfflineMode
+{
+    @synchronized (wwOfflineModeLock)
+    {
+        return wwOfflineMode;
     }
 }
 
