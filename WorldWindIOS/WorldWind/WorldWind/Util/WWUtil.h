@@ -46,4 +46,6 @@
 */
 + (NSString*) suffixForMimeType:(NSString*)mimeType;
 
++ (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix;
+
 @end

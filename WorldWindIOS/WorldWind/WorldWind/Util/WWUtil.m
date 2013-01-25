@@ -85,4 +85,9 @@
     return nil;
 }
 
++ (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix // TODO
+{
+    return nil;
+}
+
 @end
