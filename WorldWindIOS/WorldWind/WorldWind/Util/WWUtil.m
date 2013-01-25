@@ -85,9 +85,9 @@
     return nil;
 }
 
-+ (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix // TODO
++ (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix
 {
-    return nil;
+    return [[path stringByDeletingPathExtension] stringByAppendingPathExtension:newSuffix];
 }
 
 @end
