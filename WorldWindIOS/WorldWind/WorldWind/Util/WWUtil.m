@@ -77,10 +77,10 @@
 + (NSString*) suffixForMimeType:(NSString*)mimeType
 {
     if ([@"image/png" isEqualToString:mimeType])
-        return @".png";
+        return @"png";
 
     if ([@"image/jpeg" isEqualToString:mimeType])
-        return @".jpg";
+        return @"jpg";
 
     return nil;
 }

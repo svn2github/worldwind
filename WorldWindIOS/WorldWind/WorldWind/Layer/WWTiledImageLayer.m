@@ -25,6 +25,7 @@
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 
 @implementation WWTiledImageLayer
 
@@ -61,13 +62,12 @@
 
     self = [super init];
 
-    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500e3 lowWater:400e3];
+    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
 
     _imageFormat = imageFormat;
     _cachePath = cachePath;
 
     self->detailHintOrigin = 2.5;
-    self->formatSuffix = [WWUtil suffixForMimeType:_imageFormat];
 
     self->levels = [[WWLevelSet alloc] initWithSector:sector
                                        levelZeroDelta:levelZeroDelta
@@ -95,6 +95,11 @@
     if ([retrievalStatus isEqualToString:WW_RETRIEVAL_SUCCEEDED])
     {
         [self->currentRetrievals removeObject:imagePath];
+
+        if (_compressTextures)
+        {
+            [WWPVRTCImage compressFile:[[notification userInfo] valueForKey:WW_FILE_PATH]];
+        }
 
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
@@ -269,8 +274,10 @@
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d%@",
-                                                     _cachePath, [level levelNumber], row, row, column, self->formatSuffix];
+    NSString* formatSuffix = _compressTextures ? @"pvr" : [WWUtil suffixForMimeType:_imageFormat];
+
+    NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
+                                                     _cachePath, [level levelNumber], row, row, column, formatSuffix];
 
     return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }
@@ -286,8 +293,20 @@
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_imageFormat];
 
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
-    [retriever addToQueue:retriever];
+    if (_compressTextures)
+    {
+        // Download to a file with the download format suffix. The image will be compressed when the
+        // notification of download success is received in handleNotification above.
+        NSString* suffix = [WWUtil suffixForMimeType:_imageFormat];
+        NSString* filePath = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:suffix];
+        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self];
+        [retriever addToQueue:retriever];
+    }
+    else
+    {
+        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
+        [retriever addToQueue:retriever];
+    }
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat

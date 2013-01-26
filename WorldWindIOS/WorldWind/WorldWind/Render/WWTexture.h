@@ -20,9 +20,7 @@
 * needed.
 */
 @interface WWTexture : NSObject <WWDisposable, WWCacheable>
-{
-    void* imageData;
-}
+
 /// @name Texture Attributes
 
 /// The full file system path to the image used as a texture.
@@ -81,24 +79,23 @@
 /// @name Supporting Methods of Interest only to Subclasses
 
 /**
-* Load the texture image from disk.
+* Load the texture image from disk and pass it to the GPU.
 *
 * Called by the bind method the first time that method is called. This method loads the texture from disk and
-* converts it to a form suitable for use as an OpenGL texture. It stores the data for this converted image in the
-* imageData field of this instance.
+* converts it to a form suitable for use as an OpenGL texture.
 *
 * If texture creation fails, this instance's textureCreationFailed flag is set to YES.
 */
-- (void) loadTextureDataFromFile;
+- (void) loadTexture;
 
 /**
-* Establish the texture image data read by loadTextureDataFromFile as an OpenGL texture.
+* Load the compressed texture from disk and pass it to the GPU.
 *
-* An OpenGL context must be current when this method is called.
+* Called by the bind method the first time that method is called. This method loads the texture from disk and
+* converts it to a form suitable for use as an OpenGL texture.
 *
-* This method generates the OpenGL texture ID, sets the necessary texture parameters and passes the texture data to
-* OpenGL. If mipmaps must be generated it requests OpenGL to generate them.
+* If texture creation fails, this instance's textureCreationFailed flag is set to YES.
 */
-- (void) establishTexture;
+- (void) loadCompressedTexture;
 
 @end

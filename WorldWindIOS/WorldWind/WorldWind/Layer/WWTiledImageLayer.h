@@ -43,15 +43,13 @@
     WWLevelSet* levels;
     NSMutableArray* topLevelTiles;
     double detailHintOrigin;
-    NSString* formatSuffix; // determined at initialization and cached here
     WWMemoryCache* tileCache;
 
     // Stuff computed each frame.
     NSMutableArray* currentTiles;
     WWTextureTile* currentAncestorTile;
 
-    // TODO: The following field is used to prevent duplicate retrievals, but entries are only added to it, never
-    // removed. It therefore grows unbounded. Add logic to remove retrieved resources.
+    // The following field is used to prevent duplicate retrievals.
     NSMutableSet* currentRetrievals;
 }
 
@@ -65,12 +63,15 @@
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS
 // tiled image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be
-// specified prior to using the layer. Although it is initalized to nil, it may not be nil when the layer becomes
+// specified prior to using the layer. Although it is initialized to nil, it may not be nil when the layer becomes
 // active.
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
 
 /// The current detail hint.
 @property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
+
+/// Indicates whether this layer uses compressed textures.
+@property (nonatomic) BOOL compressTextures;
 
 /// @name Initializing Tiled Image Layers
 
