@@ -38,7 +38,7 @@
 
 - (long) sizeInBytes
 {
-    return 8 + [_imagePath length];
+    return 8 + [_imagePath length] + [super sizeInBytes];
 }
 
 - (BOOL) bind:(WWDrawContext*)dc

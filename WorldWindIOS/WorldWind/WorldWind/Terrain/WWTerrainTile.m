@@ -52,7 +52,7 @@
             + (8) // numlat + numlon fields
             + (4); // terrain geometry pointer
 
-    return size;
+    return size + [super sizeInBytes];
 }
 
 - (void) beginRendering:(WWDrawContext*)dc
