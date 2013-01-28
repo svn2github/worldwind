@@ -6,9 +6,10 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 
 /**
-* Represents a geographic location as a latitude/longitude pair and provides operations on and between location
+* Represents a geographic location as a latitude longitude pair and provides operations on and between location
 * coordinates.
 *
 * @warning WWLocation instances are mutable. Most methods of this class modify the instance, itself.
@@ -30,7 +31,7 @@
 /// @name Initializing Locations
 
 /**
-* Initializes a location to specified latitude and longitude.
+* Initializes a location to the specified latitude and longitude.
 *
 * @param latitude The location's latitude in degrees.
 * @param longitude The location's longitude in degrees.
@@ -38,6 +39,48 @@
 * @return The initialized location.
 */
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude;
+
+/**
+* Initializes a location to the specified latitude and longitude.
+*
+* The location's longitude is derived from the specified time zone. The time zone is converted from a time offset
+* relative to Greenwich Mean Time into a longitude offset relative to the prime meridian. For example, an offset of +12
+* hours is converted into a longitude offset of +180 degrees, while an offset of -12 hours is converted into a longitude
+* offset of -180 degrees. This conversion ignores differences in time zone offsets at different points in the year such
+* as Daylight Savings Time.
+*
+* @param latitude The location's latitude in degrees.
+* @param timeZone The time zone associated with the location's longitude.
+*
+* @return The initialized location.
+*
+* @exception NSInvalidArgumentException If the specified time zone is nil.
+*/
+- (WWLocation*) initWithDegreesLatitude:(double) latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
+
+/**
+* Initializes a location to the latitude and longitude of a specified location.
+*
+* @param location The location containing the latitude and longitude.
+*
+* @return The initialized location.
+*
+* @exception NSInvalidArgumentException If the specified location is nil.
+*/
+- (WWLocation*) initWithLocation:(WWLocation*)location;
+
+/**
+* Initializes a location to the latitude and longitude of a specified CLLocation.
+*
+* The location's latitude and longitude are taken directly from the specified CLLocation's coordinate property.
+*
+* @param location The location containing the latitude and longitude.
+*
+* @return The initialized location.
+*
+* @exception NSInvalidArgumentException If the specified location is nil.
+*/
+- (WWLocation*) initWithCLLocation:(CLLocation*)location;
 
 /// @name Setting the Contents of Locations
 
@@ -52,6 +95,24 @@
 - (WWLocation*) setDegreesLatitude:(double)latitude longitude:(double)longitude;
 
 /**
+* Specifies a location's latitude and longitude.
+*
+* The location's longitude is derived from the specified time zone. The time zone is converted from a time offset
+* relative to Greenwich Mean Time into a longitude offset relative to the prime meridian. For example, an offset of +12
+* hours is converted into a longitude offset of +180 degrees, while an offset of -12 hours is converted into a longitude
+* offset of -180 degrees. This conversion ignores differences in time zone offsets at different points in the year such
+* as Daylight Savings Time.
+*
+* @param latitude The location's latitude in degrees.
+* @param timeZone The time zone associated with the location's longitude.
+*
+* @return This location with the specified latitude and longitude.
+*
+* @exception NSInvalidArgumentException If the specified time zone is nil.
+*/
+- (WWLocation*) setDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
+
+/**
 * Sets a location to the latitude and longitude of a specified location.
 *
 * @param location The location containing the new latitude and longitude.
@@ -61,6 +122,19 @@
 * @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) setLocation:(WWLocation*)location;
+
+/**
+* Sets a location to the latitude and longitude of a specified CLLocation.
+*
+* The location's latitude and longitude are taken directly from the specified CLLocation's coordinate property.
+*
+* @param location The location containing the new latitude and longitude.
+*
+* @return This location with the specified latitude and longitude.
+*
+* @exception NSInvalidArgumentException If the specified location is nil.
+*/
+- (WWLocation*) setCLLocation:(CLLocation*)location;
 
 /**
 * Sets this location to the end of a great circle path specified by an azimuth and distance.

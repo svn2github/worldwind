@@ -5,9 +5,12 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/WWLog.h"
+
+#define LONGITUDE_FOR_TIMEZONE(tz) 180.0 * [tz secondsFromGMT] / 43200.0
 
 @implementation WWLocation
 
@@ -18,6 +21,52 @@
     _latitude = latitude;
     _longitude = longitude;
     
+    return self;
+}
+
+- (WWLocation*) initWithDegreesLatitude:(double) latitude timeZoneForLongitude:(NSTimeZone*)timeZone
+{
+    if (timeZone == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Time zone is nil")
+    }
+
+    self = [super init];
+
+    _latitude = latitude;
+    _longitude = LONGITUDE_FOR_TIMEZONE(timeZone);
+
+    return self;
+}
+
+- (WWLocation*) initWithLocation:(WWLocation*)location
+{
+    self = [super init];
+
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    _latitude = location->_latitude;
+    _longitude = location->_longitude;
+
+    return self;
+}
+
+- (WWLocation*) initWithCLLocation:(CLLocation*)location
+{
+    self = [super init];
+
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    CLLocationCoordinate2D coord = [location coordinate];
+    _latitude = coord.latitude;
+    _longitude = coord.longitude;
+
     return self;
 }
 
@@ -34,6 +83,19 @@
     return self;
 }
 
+- (WWLocation*) setDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone
+{
+    if (timeZone == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Time zone is nil")
+    }
+
+    _latitude = latitude;
+    _longitude = LONGITUDE_FOR_TIMEZONE(timeZone);
+
+    return self;
+}
+
 - (WWLocation*) setLocation:(WWLocation*)location
 {
     if (location == nil)
@@ -43,6 +105,20 @@
 
     _latitude = location->_latitude;
     _longitude = location->_longitude;
+
+    return self;
+}
+
+- (WWLocation*) setCLLocation:(CLLocation*)location
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    CLLocationCoordinate2D coord = [location coordinate];
+    _latitude = coord.latitude;
+    _longitude = coord.longitude;
 
     return self;
 }
@@ -126,7 +202,6 @@
 
     return self;
 }
-
 
 -(WWLocation*) addLocation:(WWLocation *)location
 {
