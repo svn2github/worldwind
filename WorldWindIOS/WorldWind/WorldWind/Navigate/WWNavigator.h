@@ -8,8 +8,11 @@
 #import <Foundation/Foundation.h>
 
 @protocol WWNavigatorState;
+@class WWLocation;
 
 @protocol WWNavigator
+
+- (void) gotoLocation:(WWLocation*)location;
 
 - (id<WWNavigatorState>) currentState;
 

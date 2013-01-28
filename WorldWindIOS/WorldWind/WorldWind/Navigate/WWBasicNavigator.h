@@ -10,7 +10,6 @@
 #import "WorldWind/Navigate/WWNavigator.h"
 
 @class WorldWindView;
-@class WWLocation;
 
 @interface WWBasicNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
 {
@@ -37,6 +36,8 @@
 
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
+- (void) gotoLocation:(WWLocation*)location;
+
 - (id<WWNavigatorState>) currentState;
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer;
@@ -50,5 +51,7 @@
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer;
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer;
+
+- (void) setInitialLocation;
 
 @end

@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/Navigate/WWBasicNavigatorState.h"
 #import "WorldWind/Render/WWSceneController.h"
@@ -65,6 +66,8 @@
         self->_range = DEFAULT_ALTITUDE;
         self->_heading = DEFAULT_HEADING;
         self->_tilt = DEFAULT_TILT;
+
+        [self setInitialLocation];
     }
 
     return self;
@@ -87,6 +90,39 @@
     {
         [self->displayLink invalidate];
     }
+}
+
+- (void) setInitialLocation
+{
+    [self->_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
+
+    if (![CLLocationManager locationServicesEnabled])
+    {
+        WWLog(@"Location services is disabled; Using default navigator location.");
+        return;
+    }
+
+    CLLocationManager* locationManager = [[CLLocationManager alloc] init];
+    CLLocation* location = [locationManager location];
+    if (location == nil)
+    {
+        WWLog(@"Location services has no previous location; Using default navigator location.");
+        return;
+    }
+
+    WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
+    [self->_lookAt setCLLocation:location];
+}
+
+- (void) gotoLocation:(WWLocation*)location
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    [_lookAt setLocation:location];
+    [self->view drawView];
 }
 
 - (id<WWNavigatorState>) currentState
