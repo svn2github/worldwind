@@ -6,7 +6,6 @@
  */
 
 #import "ViewController.h"
-#import "WorldWind/WorldWindView.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
@@ -21,7 +20,17 @@
 
 - (id) init
 {
-    return [super initWithNibName:nil bundle:nil];
+    self = [super initWithNibName:nil bundle:nil];
+
+    if (self != nil)
+    {
+        self->initialLocationController = [[LocationController alloc] init];
+        self->trackingLocationController = [[LocationController alloc] init];
+        [self->initialLocationController setRepeats:NO];
+        [self->trackingLocationController setRepeats:YES];
+    }
+
+    return self;
 }
 
 - (void) loadView
@@ -52,6 +61,17 @@
     [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
     //[layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
+
+    // Start a non-repeating location controller in order to navigate to the device's current location after the
+    // World Wind view loads.
+    [self->trackingLocationController setView:wwv];
+    [self->initialLocationController setView:wwv];
+    [self->initialLocationController startUpdatingLocation];
+
+    // Install a double tap gesture recognizer to initiate location tracking mode.
+    self->doubleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTapFrom:)];
+    [self->doubleTapGestureRecognizer setNumberOfTapsRequired:2];
+    [wwv addGestureRecognizer:self->doubleTapGestureRecognizer];
 }
 
 /*!
@@ -76,6 +96,27 @@
         return YES;
     else // UIUserInterfaceIdiomPhone
         return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+}
+
+- (void) handleDoubleTapFrom:(UITapGestureRecognizer*)recognizer
+{
+    // Stop the initial location controller if it's still running. We're starting a new location controller to
+    // continuously track the device's current location, and have no need for the initial location if it's not already
+    // resolved.
+    if ([self->initialLocationController isUpdatingLocation])
+    {
+        [self->initialLocationController stopUpdatingLocation];
+    }
+
+    // Toggle the state of the repeating location controller in order to track the device's current location.
+    if ([self->trackingLocationController isUpdatingLocation])
+    {
+        [self->trackingLocationController stopUpdatingLocation];
+    }
+    else
+    {
+        [self->trackingLocationController startUpdatingLocation];
+    }
 }
 
 @end

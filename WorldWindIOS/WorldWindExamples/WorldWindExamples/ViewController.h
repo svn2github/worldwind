@@ -6,6 +6,14 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "LocationController.h"
 
 @interface ViewController : UIViewController
+{
+@protected
+    LocationController* initialLocationController;
+    LocationController* trackingLocationController;
+    UITapGestureRecognizer* doubleTapGestureRecognizer;
+}
+
 @end

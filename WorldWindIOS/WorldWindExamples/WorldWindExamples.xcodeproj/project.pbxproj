@@ -21,6 +21,8 @@
 		0B98142C165FFB1200193E50 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B981429165FFB1200193E50 /* OpenGLES.framework */; };
 		0B98142D165FFB1200193E50 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B98142A165FFB1200193E50 /* QuartzCore.framework */; };
 		0BA1E9DE16B09B92004F3619 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */; };
+		CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF093F6C9A5804AC013C5 /* LocationController.m */; };
+		CC8CFC1F474B48BA559D4087 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFF7D04745580967268D4 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,9 @@
 		0B981429165FFB1200193E50 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		0B98142A165FFB1200193E50 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		CC8CF068410F278887E31045 /* LocationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationController.h; sourceTree = "<group>"; };
+		CC8CF093F6C9A5804AC013C5 /* LocationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationController.m; sourceTree = "<group>"; };
+		CC8CFF7D04745580967268D4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +62,7 @@
 				0B981409165FFA4900193E50 /* UIKit.framework in Frameworks */,
 				0B98140B165FFA4900193E50 /* Foundation.framework in Frameworks */,
 				0B98140D165FFA4900193E50 /* CoreGraphics.framework in Frameworks */,
+				CC8CFC1F474B48BA559D4087 /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +96,7 @@
 				0B981408165FFA4900193E50 /* UIKit.framework */,
 				0B98140A165FFA4900193E50 /* Foundation.framework */,
 				0B98140C165FFA4900193E50 /* CoreGraphics.framework */,
+				CC8CFF7D04745580967268D4 /* CoreLocation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -102,6 +109,8 @@
 				0B98140F165FFA4900193E50 /* Supporting Files */,
 				0B981425165FFA9C00193E50 /* ViewController.h */,
 				0B981426165FFA9C00193E50 /* ViewController.m */,
+				CC8CF093F6C9A5804AC013C5 /* LocationController.m */,
+				CC8CF068410F278887E31045 /* LocationController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -188,6 +197,7 @@
 				0B981415165FFA4900193E50 /* main.m in Sources */,
 				0B981419165FFA4900193E50 /* AppDelegate.m in Sources */,
 				0B981427165FFA9C00193E50 /* ViewController.m in Sources */,
+				CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
