@@ -11,7 +11,6 @@
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Layer/WWBMNGOneImageLayer.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
@@ -36,14 +35,11 @@
 
 - (void) loadView
 {
-    self.view = [[WorldWindView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
-    if (self.view == nil)
-    {
-        NSLog(@"Unable to create a WorldWindView");
-        return;
-    }
+    self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+    self.view.autoresizesSubviews = YES;
 
-    self.view.opaque = YES;
+    [self createToolbar];
+    [self createWorldWindView];
 }
 
 - (void) viewDidLoad
@@ -52,9 +48,7 @@
 
     WWLog(@"View Did Load");
 
-    WorldWindView* wwv =  (WorldWindView*) self.view;
-
-    WWLayerList* layers = [[wwv sceneController] layers];
+    WWLayerList* layers = [[_wwv sceneController] layers];
     //[layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
     [layers addLayer:[[WWBMNGLayer alloc] init]];
     [layers addLayer:[[WWI3LandsatLayer alloc] init]];
@@ -65,14 +59,14 @@
 
     // Start a non-repeating location controller in order to navigate to the device's current location after the
     // World Wind view loads.
-    [self->trackingLocationController setView:wwv];
-    [self->initialLocationController setView:wwv];
+    [self->trackingLocationController setView:_wwv];
+    [self->initialLocationController setView:_wwv];
     [self->initialLocationController startUpdatingLocation];
 
     // Install a double tap gesture recognizer to initiate location tracking mode.
     self->doubleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTapFrom:)];
     [self->doubleTapGestureRecognizer setNumberOfTapsRequired:2];
-    [wwv addGestureRecognizer:self->doubleTapGestureRecognizer];
+    [_wwv addGestureRecognizer:self->doubleTapGestureRecognizer];
 
     // Set up to observe navigator gesture changes.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -103,6 +97,54 @@
         return YES;
     else // UIUserInterfaceIdiomPhone
         return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+}
+
+- (void) createWorldWindView
+{
+    CGFloat wwvWidth = self.view.bounds.size.width;
+    CGFloat wwvHeight = self.view.bounds.size.height - _toolbar.bounds.size.height;
+    CGFloat wwvOriginY = self.view.bounds.origin.y + _toolbar.bounds.size.height;
+
+    _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, wwvOriginY, wwvWidth, wwvHeight)];
+    if (_wwv == nil)
+    {
+        NSLog(@"Unable to create a WorldWindView");
+        return;
+    }
+
+    [self.view addSubview:_wwv];
+}
+
+- (void) createToolbar
+{
+    _toolbar = [[UIToolbar alloc] init];
+    _toolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, 44);
+    [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+
+    [self.view addSubview:_toolbar];
+
+    UIBarButtonItem* layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
+                                                                    style:UIBarButtonItemStylePlain
+                                                                   target:nil action:nil];
+    UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
+                                                                    style:UIBarButtonItemStylePlain
+                                                                   target:nil action:nil];
+
+    UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, 44)];
+    UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
+
+    UIBarButtonItem* flexibleSpace1 = [[UIBarButtonItem alloc]
+            initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    UIBarButtonItem* flexibleSpace2 = [[UIBarButtonItem alloc]
+            initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+
+    [_toolbar setItems:[NSArray arrayWithObjects:
+            layerButton,
+            flexibleSpace1,
+            trackButton,
+            flexibleSpace2,
+            searchBarButtonItem,
+            nil]];
 }
 
 - (void) handleDoubleTapFrom:(UITapGestureRecognizer*)recognizer

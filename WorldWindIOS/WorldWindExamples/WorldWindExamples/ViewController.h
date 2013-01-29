@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import "LocationController.h"
 
+@class WorldWindView;
+
 @interface ViewController : UIViewController
 {
 @protected
@@ -15,5 +17,9 @@
     LocationController* trackingLocationController;
     UITapGestureRecognizer* doubleTapGestureRecognizer;
 }
+
+@property (nonatomic, readonly) WorldWindView* wwv;
+@property (nonatomic, readonly) UIToolbar* toolbar;
+
 
 @end

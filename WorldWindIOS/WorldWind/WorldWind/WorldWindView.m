@@ -24,6 +24,7 @@
     {
         CAEAGLLayer* eaglLayer = (CAEAGLLayer*) super.layer;
         eaglLayer.opaque = YES;
+        self.clearsContextBeforeDrawing = NO;
 
         self->_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         [EAGLContext setCurrentContext:self.context];
@@ -37,6 +38,7 @@
         // Allocate storage for the color and depth renderbuffers. This computes the correct and consistent dimensions
         // for the renderbuffers, and assigns the viewport property.
         [self resizeWithLayer:eaglLayer];
+        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
 
         // Configure the framebuffer's color and depth attachments, then validate the framebuffer's status.
         glBindFramebuffer(GL_FRAMEBUFFER, self->_frameBuffer);
