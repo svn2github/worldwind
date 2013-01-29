@@ -120,6 +120,8 @@
     _toolbar = [[UIToolbar alloc] init];
     _toolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, 44);
     [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [_toolbar setBarStyle:UIBarStyleBlack];
+    [_toolbar setTranslucent:NO];
 
     [self.view addSubview:_toolbar];
 
