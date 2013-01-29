@@ -32,6 +32,16 @@
     return [[[_wwv sceneController] layers] count];
 }
 
+- (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    // Set the selected layer's visibility.
+
+    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
+    [layer setEnabled:[layer enabled] ? NO : YES];
+    [[self tableView] reloadData];
+    [_wwv drawView];
+}
+
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     static NSString* cellIdentifier = @"cell";
@@ -44,6 +54,7 @@
 
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
+    [cell setAccessoryType:[layer enabled] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone];
 
     return cell;
 }

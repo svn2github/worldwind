@@ -59,8 +59,11 @@
     [layers addLayer:[[WWI3LandsatLayer alloc] init]];
     [layers addLayer:[[WWBingLayer alloc] init]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
-    //[layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
-    //[layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
+    [layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
+    [layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
+    [[layers layerAtIndex:3] setEnabled:NO];
+    [[layers layerAtIndex:4] setEnabled:NO];
+    [[layers layerAtIndex:5] setEnabled:NO];
 
     // Start a non-repeating location controller in order to navigate to the device's current location after the
     // World Wind view loads.
