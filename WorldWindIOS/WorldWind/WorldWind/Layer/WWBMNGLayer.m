@@ -22,6 +22,7 @@
                        numLevels:5
                      imageFormat:@"image/jpeg"
                        cachePath:cachePath];
+    [self setDisplayName:@"Blue Marble"];
 
     NSString* serviceLocation = @"http://data.worldwind.arc.nasa.gov/wms";
     WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation

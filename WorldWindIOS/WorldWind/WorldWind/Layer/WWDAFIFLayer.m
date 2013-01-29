@@ -50,6 +50,7 @@
     if (self != nil)
     {
         [self setMaxActiveAltitude:3000000];
+        [self setDisplayName:@"DAFIF"];
     }
 
     return self;
@@ -62,6 +63,7 @@
     if (self != nil)
     {
         [self setMaxActiveAltitude:3000000];
+        [self setDisplayName:@"DAFIF Airports"];
     }
 
     return self;
@@ -74,6 +76,7 @@
     if (self != nil)
     {
         [self setMaxActiveAltitude:750000];
+        [self setDisplayName:@"DAFIF Navigation"];
     }
 
     return self;
@@ -86,6 +89,7 @@
     if (self != nil)
     {
         [self setMaxActiveAltitude:3000000];
+        [self setDisplayName:@"DAFIF Special Activity"];
     }
 
     return self;

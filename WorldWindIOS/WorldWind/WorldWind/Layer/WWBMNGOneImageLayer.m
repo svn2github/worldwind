@@ -21,6 +21,8 @@
     NSString* networkLocation = @"http://worldwind.arc.nasa.gov/mobile";
     NSString* imageFileName = @"BMNG_world.topo.bathy.200405.3.2048x1024.jpeg";
 
+    [self setDisplayName:@"Blue Marble Image"];
+
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask,
             YES) objectAtIndex:0];
     NSString* filePath = [cacheDir stringByAppendingPathComponent:imageFileName];

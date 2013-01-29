@@ -21,6 +21,7 @@
                        numLevels:11
                      imageFormat:@"image/png"
                        cachePath:cachePath];
+    [self setDisplayName:@"Landsat"];
 
     NSString* serviceLocation = @"http://data.worldwind.arc.nasa.gov/wms";
     WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation

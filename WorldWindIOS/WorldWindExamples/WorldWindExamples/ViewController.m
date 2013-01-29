@@ -15,8 +15,13 @@
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
+#import "LayerListController.h"
 
 @implementation ViewController
+{
+    UIBarButtonItem* layerButton;
+    UIPopoverController* layerListPopoverController;
+}
 
 - (id) init
 {
@@ -38,8 +43,8 @@
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
     self.view.autoresizesSubviews = YES;
 
-    [self createToolbar];
     [self createWorldWindView];
+    [self createToolbar];
 }
 
 - (void) viewDidLoad
@@ -125,12 +130,15 @@
 
     [self.view addSubview:_toolbar];
 
-    UIBarButtonItem* layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
-                                                                    style:UIBarButtonItemStylePlain
-                                                                   target:nil action:nil];
+    self->layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
+                                                         style:UIBarButtonItemStylePlain
+                                                        target:self action:@selector(handleLayerButtonTap)];
+    LayerListController* llc = [[LayerListController alloc] initWithWorldWindView:_wwv];
+    self->layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:llc];
+
     UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
                                                                     style:UIBarButtonItemStylePlain
-                                                                   target:nil action:nil];
+                                                                   target:self action:nil];
 
     UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, 44)];
     UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
@@ -147,6 +155,12 @@
             flexibleSpace2,
             searchBarButtonItem,
             nil]];
+}
+
+- (void) handleLayerButtonTap
+{
+    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton 
+                                       permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 - (void) handleDoubleTapFrom:(UITapGestureRecognizer*)recognizer
