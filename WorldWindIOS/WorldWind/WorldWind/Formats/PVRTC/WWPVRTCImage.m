@@ -928,7 +928,9 @@ unsigned long PackPvrBlock(RawImage* imageLo, RawImage* imageHi, RawImage* image
         }
     }
 
-    unsigned long block = ((unsigned long) wts) | (((unsigned long) rgbHi) << 48) | (((unsigned long) rgbLo) << 32);
+    unsigned long long block = ((unsigned long) wts) | (((unsigned long long) rgbHi) << 48) | (((unsigned long long)
+    rgbLo) <<
+        32);
     return block;
 }
 
