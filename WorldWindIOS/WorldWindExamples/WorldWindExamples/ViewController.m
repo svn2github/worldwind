@@ -159,8 +159,8 @@
 
 - (void) handleLayerButtonTap
 {
-    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton 
-                                       permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
+                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleDoubleTapFrom:(UITapGestureRecognizer*)recognizer
