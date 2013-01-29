@@ -6,6 +6,7 @@
  */
 
 #import "ViewController.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
@@ -72,6 +73,12 @@
     self->doubleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTapFrom:)];
     [self->doubleTapGestureRecognizer setNumberOfTapsRequired:2];
     [wwv addGestureRecognizer:self->doubleTapGestureRecognizer];
+
+    // Set up to observe navigator gesture changes.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleNotification:)
+                                                 name:WW_NAVIGATOR_GESTURE_RECOGNIZED
+                                               object:nil];
 }
 
 /*!
@@ -116,6 +123,22 @@
     else
     {
         [self->trackingLocationController startUpdatingLocation];
+    }
+}
+
+- (void) handleNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    {
+        if ([self->initialLocationController isUpdatingLocation])
+        {
+            [self->initialLocationController stopUpdatingLocation];
+        }
+
+        if ([self->trackingLocationController isUpdatingLocation])
+        {
+            [self->trackingLocationController stopUpdatingLocation];
+        }
     }
 }
 

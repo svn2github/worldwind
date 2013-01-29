@@ -8,6 +8,7 @@
 extern NSString* const WW_FILE_PATH;
 extern NSString* const WW_GPU_PROGRAM;
 extern NSString* const WW_GPU_TEXTURE;
+extern NSString* const WW_NAVIGATOR_GESTURE_RECOGNIZED;
 extern NSString* const WW_REQUEST_REDRAW;
 extern NSString* const WW_RETRIEVAL_CANCELED;
 extern NSString* const WW_RETRIEVAL_FAILED;

@@ -15,6 +15,7 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
@@ -197,11 +198,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->lastPanTranslation = CGPointMake(0, 0);
-        [self startAnimation];
+        [self gestureDidBegin];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self stopAnimation];
+        [self gestureDidEnd];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -266,11 +267,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginRange = self->_range;
-        [self startAnimation];
+        [self gestureDidBegin];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self stopAnimation];
+        [self gestureDidEnd];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -293,11 +294,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginHeading = self->_heading;
-        [self startAnimation];
+        [self gestureDidBegin];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self stopAnimation];
+        [self gestureDidEnd];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -321,11 +322,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginTilt = self->_tilt;
-        [self startAnimation];
+        [self gestureDidBegin];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self stopAnimation];
+        [self gestureDidEnd];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -398,6 +399,23 @@
     {
         return NO;
     }
+}
+
+- (void) gestureDidBegin
+{
+    [self postGestureRecognized];
+    [self startAnimation];
+}
+
+- (void) gestureDidEnd
+{
+    [self stopAnimation];
+}
+
+- (void) postGestureRecognized
+{
+    NSNotification* gestureNotification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:gestureNotification];
 }
 
 // TODO: Consider adding a capability similar to startAnimation/stopAnimation to WorldWindView.
