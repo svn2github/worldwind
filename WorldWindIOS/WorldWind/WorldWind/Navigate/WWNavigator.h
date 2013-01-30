@@ -12,7 +12,11 @@
 
 @protocol WWNavigator
 
-- (void) gotoLocation:(WWLocation*)location;
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
+
+- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration;
+
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
 
 - (id<WWNavigatorState>) currentState;
 

@@ -19,12 +19,23 @@
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
     UIPanGestureRecognizer * verticalPanGestureRecognizer;
+
     CGPoint lastPanTranslation;
+    WWLocation* beginLookAt;
+    WWLocation* endLookAt;
     double beginRange;
+    double endRange;
     double beginHeading;
     double beginTilt;
+
     CADisplayLink* displayLink;
-    int animators;
+    int displayLinkObservers;
+
+    NSDate* animationBeginDate;
+    NSDate* animationEndDate;
+    double animationLookAtAzimuth;
+    double animationLookAtDistance;
+    BOOL animating;
 }
 
 @property (readonly, nonatomic) double nearDistance;
@@ -36,7 +47,11 @@
 
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
-- (void) gotoLocation:(WWLocation*)location;
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
+
+- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration;
+
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
 
 - (id<WWNavigatorState>) currentState;
 

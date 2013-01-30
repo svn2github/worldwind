@@ -28,6 +28,7 @@
 #define DEFAULT_TILT 0
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
+#define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation WWBasicNavigator
 
@@ -59,7 +60,8 @@
         [self->view addGestureRecognizer:self->rotationGestureRecognizer];
         [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
 
-        self->animators = 0;
+        self->beginLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+        self->endLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
 
         self->_nearDistance = DEFAULT_NEAR_DISTANCE;
         self->_farDistance = DEFAULT_FAR_DISTANCE;
@@ -67,7 +69,6 @@
         self->_range = DEFAULT_ALTITUDE;
         self->_heading = DEFAULT_HEADING;
         self->_tilt = DEFAULT_TILT;
-
         [self setInitialLocation];
     }
 
@@ -115,15 +116,99 @@
     [self->_lookAt setCLLocation:location];
 }
 
-- (void) gotoLocation:(WWLocation*)location
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
 {
     if (location == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
 
-    [_lookAt setLocation:location];
-    [self->view drawView];
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    [self gotoLocation:location fromRange:_range overDuration:duration];
+}
+
+- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    if (range < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid")
+    }
+
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    // The view is a weak reference, so it may have been de-allocated.
+    if (self->view == nil)
+    {
+        WWLog(@"Unable to navigate: View is nil (deallocated)");
+        return;
+    }
+
+    if (duration == 0)
+    {
+        // When the specified duration is zero we apply the specified values immediately. This overrides any currently
+        // active animation. Calling stopAnimation has no effect if there is no currently active animation.
+        [self stopAnimation];
+        [_lookAt setLocation:location];
+        _range = range;
+        [self->view drawView];
+    }
+    else
+    {
+        // When the specified duration is greater than zero we start an animation to smoothly transition from the
+        // current values to the specified values. This overrides any currently active animation. We override rather
+        // than explicitly start and stop in order to keep the display link running and seamlessly transition from one
+        // animation to the next.
+        [self->beginLookAt setLocation:_lookAt];
+        [self->endLookAt setLocation:location];
+        self->beginRange = _range;
+        self->endRange = range;
+        [self startAnimationWithDuration:duration];
+    }
+}
+
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
+{
+    if (center == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
+    }
+
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    // The view is a weak reference, so it may have been de-allocated.
+    if (self->view == nil)
+    {
+        WWLog(@"Unable to navigate: View is nil (deallocated)");
+        return;
+    }
+
+    CGRect viewport = [self->view viewport];
+    double regionSize = 2 * radius;
+    double range = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
+                                                        viewportWidth:CGRectGetWidth(viewport)
+                                                       viewportHeight:CGRectGetHeight(viewport)];
+
+    [self gotoLocation:center fromRange:range overDuration:duration];
 }
 
 - (id<WWNavigatorState>) currentState
@@ -403,13 +488,20 @@
 
 - (void) gestureDidBegin
 {
+    // Post a notification that the navigator has recognized a gesture, then start the display link in order to provide
+    // a smooth continuous redraw while the gesture is active.
     [self postGestureRecognized];
-    [self startAnimation];
+    [self startDisplayLink];
+
+    // Navigator gestures override any currently active animation. We stop animations after starting the display link
+    // rather than vice versa in order to keep the display link running and seamlessly transition from an animation to a
+    // gesture. This has no effect if there is no currently active animation.
+    [self stopAnimation];
 }
 
 - (void) gestureDidEnd
 {
-    [self stopAnimation];
+    [self stopDisplayLink];
 }
 
 - (void) postGestureRecognized
@@ -418,36 +510,108 @@
     [[NSNotificationCenter defaultCenter] postNotification:gestureNotification];
 }
 
-// TODO: Consider adding a capability similar to startAnimation/stopAnimation to WorldWindView.
-// This would enable multiple components to synchronize their requests for a redraw, and avoid duplicate redraws.
-- (void) startAnimation
+- (void) startDisplayLink
 {
-    if (self->animators == 0)
+    if (self->displayLinkObservers == 0)
     {
-        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
+        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire)];
+        [self->displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
         [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
 
-    self->animators++;
+    self->displayLinkObservers++;
 }
 
-- (void) stopAnimation
+- (void) stopDisplayLink
 {
-    self->animators--;
+    self->displayLinkObservers--;
 
-    if (self->animators == 0)
+    if (self->displayLinkObservers == 0)
     {
         [self->displayLink invalidate];
         self->displayLink = nil;
     }
 }
 
-- (void) drawView
+- (void) displayLinkDidFire
 {
+    if (self->animating)
+    {
+        NSDate* now = [NSDate date];
+        [self updateAnimationForDate:now];
+    }
+
     // The view is a weak reference, so it may have been de-allocated.
     if (self->view != nil)
     {
         [self->view drawView];
+    }
+}
+
+- (void) startAnimationWithDuration:(NSTimeInterval)duration
+{
+    // Compute the animation's time range and reusable values. This overrides any currently active animation. We
+    // override rather than explicitly stop and start in order to keep the display link running and seamlessly
+    // transition from one animation to the next.
+
+    // Compute the animation's begin and end date based on the implicit start time and the specified duration.
+    self->animationBeginDate = [NSDate date];
+    self->animationEndDate = [NSDate dateWithTimeInterval:duration sinceDate:self->animationBeginDate];
+
+    // Compute the great circle azimuth and distance between the navigator's begin and end look at values. These values
+    // are computed once here and used repeatedly in updateAnimationForDate.
+    self->animationLookAtAzimuth = [WWLocation greatCircleAzimuth:self->beginLookAt endLocation:self->endLookAt];
+    self->animationLookAtDistance = [WWLocation greatCircleDistance:self->beginLookAt endLocation:self->endLookAt];
+
+    if (!self->animating)
+    {
+        // If the navigator is not already animating, start the display link in order to provide a smooth continuous
+        // redraw while the animation is active.
+        [self startDisplayLink];
+        self->animating = YES;
+    }
+}
+
+- (void) stopAnimation
+{
+    if (self->animating)
+    {
+        [self stopDisplayLink];
+        self->animating = NO;
+    }
+}
+
+- (void) updateAnimationForDate:(NSDate*)date
+{
+    NSTimeInterval totalTime = [self->animationEndDate timeIntervalSinceDate:self->animationBeginDate];
+    NSTimeInterval elapsedTime = [date timeIntervalSinceDate:self->animationBeginDate];
+
+    if (elapsedTime >= totalTime)
+    {
+        // The animation has reached its scheduled end based on the implicit start time and specified duration.
+        // Explicitly set the current values to the specified end values rather than computing a interpolated values to
+        // ensure that the end values are set exactly as the caller requested.
+        [_lookAt setLocation:self->endLookAt];
+        _range = self->endRange;
+        [self stopAnimation];
+    }
+    else
+    {
+        // The animation is currently between the implicit start time and specified duration. Compute the fraction of
+        // time that has passed as a value between 0 and 1, then use the fraction to interpolate between the begin and
+        // end values.
+        double fractionalTime = elapsedTime / totalTime;
+
+        // Interpolate the navigator's look at location using a great circle arc between the begin and end location.
+        [WWLocation greatCircleLocation:self->beginLookAt
+                                azimuth:self->animationLookAtAzimuth
+                               distance:fractionalTime * self->animationLookAtDistance
+                         outputLocation:_lookAt];
+
+        // Interpolate the navigator's range using simple linear interpolation between the begin and end range.
+        _range = [WWMath interpolateValue1:self->beginRange
+                                    value2:self->endRange
+                                    amount:fractionalTime];
     }
 }
 
