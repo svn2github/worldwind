@@ -8,22 +8,31 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/Geometry/WWLocation.h"
+
+typedef enum
+{
+    LocationControllerStateDisabled,
+    LocationControllerStateShowInitial,
+    LocationControllerStateForecast
+} LocationControllerState;
 
 @interface LocationController : NSObject <CLLocationManagerDelegate>
 {
 @protected
     CLLocationManager* locationManager;
-    NSTimeInterval startTime;
+    NSDate* locationManagerStartDate;
+    BOOL locationManagerActive;
+
+    CADisplayLink* displayLink;
+    BOOL displayLinkActive;
+
+    CLLocation* lastLocation;
+    WWLocation* forecastLocation;
 }
 
 @property (nonatomic) WorldWindView* view;
 
-@property (nonatomic, getter=isUpdatingLocation) BOOL updatingLocation;
-
-@property (nonatomic, getter=isRepeats) BOOL repeats;
-
-- (void) startUpdatingLocation;
-
-- (void) stopUpdatingLocation;
+@property (nonatomic) LocationControllerState state;
 
 @end

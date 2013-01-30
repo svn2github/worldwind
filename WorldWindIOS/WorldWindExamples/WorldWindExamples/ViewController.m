@@ -16,6 +16,7 @@
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "LayerListController.h"
+#import "LocationController.h"
 
 #define TOOLBAR_HEIGHT 44
 
@@ -23,6 +24,7 @@
 {
     UIBarButtonItem* layerButton;
     UIPopoverController* layerListPopoverController;
+    LocationController* locationController;
 }
 
 - (id) init
@@ -31,10 +33,14 @@
 
     if (self != nil)
     {
-        self->initialLocationController = [[LocationController alloc] init];
-        self->trackingLocationController = [[LocationController alloc] init];
-        [self->initialLocationController setRepeats:NO];
-        [self->trackingLocationController setRepeats:YES];
+        self->locationController = [[LocationController alloc] init];
+        [self->locationController setState:LocationControllerStateShowInitial];
+
+        // Set up to observe notifications when the navigator recognizes a gesture.
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleNotification:)
+                                                     name:WW_NAVIGATOR_GESTURE_RECOGNIZED
+                                                   object:nil];
     }
 
     return self;
@@ -67,22 +73,7 @@
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
 
-    // Start a non-repeating location controller in order to navigate to the device's current location after the
-    // World Wind view loads.
-    [self->trackingLocationController setView:_wwv];
-    [self->initialLocationController setView:_wwv];
-    [self->initialLocationController startUpdatingLocation];
-
-    // Install a double tap gesture recognizer to initiate location tracking mode.
-    self->doubleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTapFrom:)];
-    [self->doubleTapGestureRecognizer setNumberOfTapsRequired:2];
-    [_wwv addGestureRecognizer:self->doubleTapGestureRecognizer];
-
-    // Set up to observe navigator gesture changes.
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleNotification:)
-                                                 name:WW_NAVIGATOR_GESTURE_RECOGNIZED
-                                               object:nil];
+    [self->locationController setView:_wwv];
 }
 
 /*!
@@ -146,7 +137,7 @@
 
     UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
                                                                     style:UIBarButtonItemStylePlain
-                                                                   target:self action:nil];
+                                                                   target:self action:@selector(handleLocationButtonTap)];
 
     UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
@@ -176,24 +167,21 @@
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
-- (void) handleDoubleTapFrom:(UITapGestureRecognizer*)recognizer
+- (void) handleLocationButtonTap
 {
-    // Stop the initial location controller if it's still running. We're starting a new location controller to
-    // continuously track the device's current location, and have no need for the initial location if it's not already
-    // resolved.
-    if ([self->initialLocationController isUpdatingLocation])
-    {
-        [self->initialLocationController stopUpdatingLocation];
-    }
+    LocationControllerState state = [self->locationController state];
 
-    // Toggle the state of the repeating location controller in order to track the device's current location.
-    if ([self->trackingLocationController isUpdatingLocation])
+    if (state == LocationControllerStateDisabled || state == LocationControllerStateShowInitial)
     {
-        [self->trackingLocationController stopUpdatingLocation];
+        [self->locationController setState:LocationControllerStateForecast];
+    }
+    else if (state == LocationControllerStateForecast)
+    {
+        [self->locationController setState:LocationControllerStateDisabled];
     }
     else
     {
-        [self->trackingLocationController startUpdatingLocation];
+        WWLog(@"Unknown location controller state: %d", state);
     }
 }
 
@@ -201,15 +189,7 @@
 {
     if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
     {
-        if ([self->initialLocationController isUpdatingLocation])
-        {
-            [self->initialLocationController stopUpdatingLocation];
-        }
-
-        if ([self->trackingLocationController isUpdatingLocation])
-        {
-            [self->trackingLocationController stopUpdatingLocation];
-        }
+        [self->locationController setState:LocationControllerStateDisabled];
     }
 }
 
