@@ -11,62 +11,208 @@
 
 @class WorldWindView;
 
+/**
+* TODO
+*/
 @interface WWBasicNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
-{
-@protected
-    WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
-    UIPanGestureRecognizer* panGestureRecognizer;
-    UIPinchGestureRecognizer* pinchGestureRecognizer;
-    UIRotationGestureRecognizer* rotationGestureRecognizer;
-    UIPanGestureRecognizer * verticalPanGestureRecognizer;
 
-    CGPoint lastPanTranslation;
-    WWLocation* beginLookAt;
-    WWLocation* endLookAt;
-    double beginRange;
-    double endRange;
-    double beginHeading;
-    double beginTilt;
+/// @name Attributes
 
-    CADisplayLink* displayLink;
-    int displayLinkObservers;
-
-    NSDate* animationBeginDate;
-    NSDate* animationEndDate;
-    double animationLookAtAzimuth;
-    double animationLookAtDistance;
-    BOOL animating;
-}
-
+/**
+* TODO
+*/
 @property (readonly, nonatomic) double nearDistance;
+
+/**
+* TODO
+*/
 @property (readonly, nonatomic) double farDistance;
+
+/**
+* TODO
+*/
 @property (nonatomic) WWLocation* lookAt;
+
+/**
+* TODO
+*/
 @property (nonatomic) double range;
+
+/**
+* TODO
+*/
 @property (nonatomic) double heading;
+
+/**
+* TODO
+*/
 @property (nonatomic) double tilt;
 
+/// @name Initializing the Navigator
+
+/**
+* TODO
+*
+* @param viewToNavigate TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
+/// @name Getting a Navigator State Snapshot
 
-- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration;
-
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
-
+/**
+* TODO
+*
+* @return TODO
+*/
 - (id<WWNavigatorState>) currentState;
 
+/// @name Changing the Location of Interest
+
+/**
+* TODO
+*
+* @param location TODO
+* @param duration TODO
+*
+* @exception TODO
+*/
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
+
+/**
+* TODO
+*
+* @param location TODO
+* @param range TODO
+* @param duration TODO
+*
+* @exception TODO
+*/
+- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration;
+
+/**
+* TODO
+*
+* @param center TODO
+* @param radius TODO
+* @param duration TODO
+*
+* @exception TODO
+*/
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
+
+/// @name Methods of Interest Only to Subclasses
+
+/**
+* TODO
+*/
+- (void) setInitialLocation;
+
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer;
 
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
 - (void) handlePinchFrom:(UIPinchGestureRecognizer*)recognizer;
 
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
 - (void) handleRotationFrom:(UIRotationGestureRecognizer*)recognizer;
 
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
 - (void) handleVerticalPanFrom:(UIPanGestureRecognizer*)recognizer;
 
-- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer;
+/**
+* TODO
+*
+* @param recognizer TODO
+* @param otherRecognizer TODO
+*
+* @return TODO
+*/
+- (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer;
 
-- (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer;
+/**
+* TODO
+*
+* @param recognizer TODO
+*
+* @return TODO
+*/
+- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer;
 
-- (void) setInitialLocation;
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
+- (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer;
+
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
+- (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer;
+
+/**
+* TODO
+*
+* @param recognizer TODO
+*/
+- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer;
+
+/**
+* TODO
+*/
+- (void) startDisplayLink;
+
+/**
+* TODO
+*/
+- (void) stopDisplayLink;
+
+/**
+* TODO
+*
+* @param aDisplayLink TODO
+*/
+- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink;
+
+/**
+* TODO
+*
+* @param duration TODO
+*/
+- (void) startAnimationWithDuration:(NSTimeInterval)duration;
+
+/**
+* TODO
+*/
+- (void) stopAnimation;
+
+/**
+* TODO
+*
+* @param date TODO
+*/
+- (void) updateAnimationForDate:(NSDate*)date;
 
 @end

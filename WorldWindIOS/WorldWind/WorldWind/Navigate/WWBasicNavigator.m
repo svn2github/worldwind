@@ -31,6 +31,31 @@
 #define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation WWBasicNavigator
+{
+    WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
+    UIPanGestureRecognizer* panGestureRecognizer;
+    UIPinchGestureRecognizer* pinchGestureRecognizer;
+    UIRotationGestureRecognizer* rotationGestureRecognizer;
+    UIPanGestureRecognizer* verticalPanGestureRecognizer;
+
+    CGPoint lastPanTranslation;
+    WWLocation* beginLookAt;
+    WWLocation* endLookAt;
+    double beginRange;
+    double midRange;
+    double endRange;
+    double beginHeading;
+    double beginTilt;
+
+    CADisplayLink* displayLink;
+    int displayLinkObservers;
+
+    NSDate* animationBeginDate;
+    NSDate* animationEndDate;
+    double animationLookAtAzimuth;
+    double animationLookAtDistance;
+    BOOL animating;
+}
 
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate
 {
@@ -94,26 +119,59 @@
     }
 }
 
-- (void) setInitialLocation
+- (id<WWNavigatorState>) currentState
 {
-    [self->_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
-
-    if (![CLLocationManager locationServicesEnabled])
+    // The view is a weak reference, so it may have been de-allocated. In this case currentState returns nil since it
+    // has no context with which to compute the current modelview and projection matrices.
+    if (self->view == nil)
     {
-        WWLog(@"Location services is disabled; Using default navigator location.");
-        return;
+        WWLog(@"Unable to compute current navigator state: View is nil (deallocated)");
+        return nil;
     }
 
-    CLLocationManager* locationManager = [[CLLocationManager alloc] init];
-    CLLocation* location = [locationManager location];
-    if (location == nil)
-    {
-        WWLog(@"Location services has no previous location; Using default navigator location.");
-        return;
-    }
+    WWGlobe* globe = [[self->view sceneController] globe];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
 
-    WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
-    [self->_lookAt setCLLocation:location];
+    CGRect viewport = [self->view viewport];
+    double viewportWidth = CGRectGetWidth(viewport);
+    double viewportHeight = CGRectGetHeight(viewport);
+
+    // Compute the current modelview matrix based on this Navigator's look-at location and range.
+    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
+    [modelview setLookAt:globe
+          centerLatitude:[self->_lookAt latitude]
+         centerLongitude:[self->_lookAt longitude]
+          centerAltitude:0
+           rangeInMeters:self->_range
+                 heading:self->_heading
+                    tilt:self->_tilt];
+
+    // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
+    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
+    WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
+    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
+    [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
+
+    self->_nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
+                                                            viewportHeight:viewportHeight
+                                                          distanceToObject:[eyePos altitude]];
+    if (self->_nearDistance < MIN_NEAR_DISTANCE)
+        self->_nearDistance = MIN_NEAR_DISTANCE;
+
+    self->_farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
+    if (self->_farDistance < MIN_FAR_DISTANCE)
+        self->_farDistance = MIN_FAR_DISTANCE;
+
+    // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
+    // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
+    // actual render buffer dimension, whereas the bounds contain the view's dimension in screen points.
+    WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
+    [projection setPerspectiveSizePreserving:viewportWidth
+                              viewportHeight:viewportHeight
+                                nearDistance:self->_nearDistance
+                                 farDistance:self->_farDistance];
+
+    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
 
 - (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
@@ -211,59 +269,26 @@
     [self gotoLocation:center fromRange:range overDuration:duration];
 }
 
-- (id<WWNavigatorState>) currentState
+- (void) setInitialLocation
 {
-    // The view is a weak reference, so it may have been de-allocated. In this case currentState returns nil since it
-    // has no context with which to compute the current modelview and projection matrices.
-    if (self->view == nil)
+    [self->_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
+
+    if (![CLLocationManager locationServicesEnabled])
     {
-        WWLog(@"Unable to compute current navigator state: View is nil (deallocated)");
-        return nil;
+        WWLog(@"Location services is disabled; Using default navigator location.");
+        return;
     }
 
-    WWGlobe* globe = [[self->view sceneController] globe];
-    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    CLLocationManager* locationManager = [[CLLocationManager alloc] init];
+    CLLocation* location = [locationManager location];
+    if (location == nil)
+    {
+        WWLog(@"Location services has no previous location; Using default navigator location.");
+        return;
+    }
 
-    CGRect viewport = [self->view viewport];
-    double viewportWidth = CGRectGetWidth(viewport);
-    double viewportHeight = CGRectGetHeight(viewport);
-
-    // Compute the current modelview matrix based on this Navigator's look-at location and range.
-    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview setLookAt:globe
-          centerLatitude:[self->_lookAt latitude]
-         centerLongitude:[self->_lookAt longitude]
-          centerAltitude:0
-           rangeInMeters:self->_range
-                 heading:self->_heading
-                    tilt:self->_tilt];
-
-    // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
-    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
-    WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
-    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
-    [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
-
-    self->_nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
-                                                            viewportHeight:viewportHeight
-                                                          distanceToObject:[eyePos altitude]];
-    if (self->_nearDistance < MIN_NEAR_DISTANCE)
-        self->_nearDistance = MIN_NEAR_DISTANCE;
-
-    self->_farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
-    if (self->_farDistance < MIN_FAR_DISTANCE)
-        self->_farDistance = MIN_FAR_DISTANCE;
-
-    // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
-    // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
-    // actual render buffer dimension, whereas the bounds contain the view's dimension in screen points.
-    WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
-    [projection setPerspectiveSizePreserving:viewportWidth
-                              viewportHeight:viewportHeight
-                                nearDistance:self->_nearDistance
-                                 farDistance:self->_farDistance];
-
-    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
+    WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
+    [self->_lookAt setCLLocation:location];
 }
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
@@ -283,11 +308,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->lastPanTranslation = CGPointMake(0, 0);
-        [self gestureDidBegin];
+        [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self gestureDidEnd];
+        [self gestureRecognizerDidEnd:recognizer];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -352,11 +377,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginRange = self->_range;
-        [self gestureDidBegin];
+        [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self gestureDidEnd];
+        [self gestureRecognizerDidEnd:recognizer];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -379,11 +404,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginHeading = self->_heading;
-        [self gestureDidBegin];
+        [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self gestureDidEnd];
+        [self gestureRecognizerDidEnd:recognizer];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -407,11 +432,11 @@
     if (state == UIGestureRecognizerStateBegan)
     {
         self->beginTilt = self->_tilt;
-        [self gestureDidBegin];
+        [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self gestureDidEnd];
+        [self gestureRecognizerDidEnd:recognizer];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
@@ -426,7 +451,30 @@
     }
 }
 
-- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer
+- (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer
+{
+    if (recognizer == self->panGestureRecognizer)
+    {
+        return otherRecognizer == self->pinchGestureRecognizer
+                || otherRecognizer == self->rotationGestureRecognizer;
+    }
+    else if (recognizer == self->pinchGestureRecognizer)
+    {
+        return otherRecognizer == self->panGestureRecognizer
+                || otherRecognizer == self->rotationGestureRecognizer;
+    }
+    else if (recognizer == self->rotationGestureRecognizer)
+    {
+        return otherRecognizer == self->panGestureRecognizer
+                || otherRecognizer == self->pinchGestureRecognizer;
+    }
+    else
+    {
+        return NO;
+    }
+}
+
+- (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer
 {
     // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
     // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
@@ -435,9 +483,9 @@
     // Determine whether the vertical pan gesture recognizer should recognizer its gesture. This gesture recognizer is
     // a UIPanGestureRecognizer configured with two or more touches. In order to limit its recognition to a vertical pan
     // gesture, we place additional limitations on its recognition in this delegate.
-    if (gestureRecognizer == self->verticalPanGestureRecognizer)
+    if (recognizer == self->verticalPanGestureRecognizer)
     {
-        UIPanGestureRecognizer* pgr = (UIPanGestureRecognizer*) gestureRecognizer;
+        UIPanGestureRecognizer* pgr = (UIPanGestureRecognizer*) recognizer;
 
         CGPoint translation = [pgr translationInView:self->view];
         if (fabs(translation.x) > fabs(translation.y))
@@ -463,34 +511,11 @@
     return YES;
 }
 
-- (BOOL) gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer
-{
-    if (gestureRecognizer == self->panGestureRecognizer)
-    {
-        return otherGestureRecognizer == self->pinchGestureRecognizer
-            || otherGestureRecognizer == self->rotationGestureRecognizer;
-    }
-    else if (gestureRecognizer == self->pinchGestureRecognizer)
-    {
-        return otherGestureRecognizer == self->panGestureRecognizer
-            || otherGestureRecognizer == self->rotationGestureRecognizer;
-    }
-    else if (gestureRecognizer == self->rotationGestureRecognizer)
-    {
-        return otherGestureRecognizer == self->panGestureRecognizer
-            || otherGestureRecognizer == self->pinchGestureRecognizer;
-    }
-    else
-    {
-        return NO;
-    }
-}
-
-- (void) gestureDidBegin
+- (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer
 {
     // Post a notification that the navigator has recognized a gesture, then start the display link in order to provide
     // a smooth continuous redraw while the gesture is active.
-    [self postGestureRecognized];
+    [self postGestureRecognized:recognizer];
     [self startDisplayLink];
 
     // Navigator gestures override any currently active animation. We stop animations after starting the display link
@@ -499,12 +524,12 @@
     [self stopAnimation];
 }
 
-- (void) gestureDidEnd
+- (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
 {
     [self stopDisplayLink];
 }
 
-- (void) postGestureRecognized
+- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer
 {
     NSNotification* gestureNotification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
     [[NSNotificationCenter defaultCenter] postNotification:gestureNotification];
@@ -514,7 +539,7 @@
 {
     if (self->displayLinkObservers == 0)
     {
-        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire)];
+        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
         [self->displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
         [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
@@ -533,7 +558,7 @@
     }
 }
 
-- (void) displayLinkDidFire
+- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink
 {
     if (self->animating)
     {
