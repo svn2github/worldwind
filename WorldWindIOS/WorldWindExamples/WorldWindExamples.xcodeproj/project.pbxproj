@@ -35,6 +35,7 @@
 		1BF9ABA85CFA76FF0DFD4111 /* LayerList@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */; };
 		1BF9AC9C0A8DF0CD36DDD97E /* DAFIFActivity.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8106AD0719A3DE1CA18 /* DAFIFActivity.png */; };
 		CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF093F6C9A5804AC013C5 /* LocationController.m */; };
+		CC8CF9C44307A4EB5E329F68 /* AnyGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */; };
 		CC8CFC1F474B48BA559D4087 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFF7D04745580967268D4 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +75,8 @@
 		1BF9AFD7D0F15F26EC2CBC9F /* Landsat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Landsat.png; sourceTree = "<group>"; };
 		CC8CF068410F278887E31045 /* LocationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationController.h; sourceTree = "<group>"; };
 		CC8CF093F6C9A5804AC013C5 /* LocationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationController.m; sourceTree = "<group>"; };
+		CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AnyGestureRecognizer.m; sourceTree = "<group>"; };
+		CC8CFECC533D137E906ABAC3 /* AnyGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnyGestureRecognizer.h; sourceTree = "<group>"; };
 		CC8CFF7D04745580967268D4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -140,6 +143,8 @@
 				CC8CF068410F278887E31045 /* LocationController.h */,
 				1BF9A33B6444E14E329DF631 /* LayerListController.m */,
 				1BF9A733BBE27F55CE4009C9 /* LayerListController.h */,
+				CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */,
+				CC8CFECC533D137E906ABAC3 /* AnyGestureRecognizer.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -252,6 +257,7 @@
 				0B981427165FFA9C00193E50 /* ViewController.m in Sources */,
 				CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */,
 				1BF9A7A5B73DAF4595B19E9D /* LayerListController.m in Sources */,
+				CC8CF9C44307A4EB5E329F68 /* AnyGestureRecognizer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -18,6 +18,7 @@
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "LayerListController.h"
 #import "LocationController.h"
+#import "AnyGestureRecognizer.h"
 
 #define TOOLBAR_HEIGHT 44
 
@@ -26,7 +27,9 @@
     UIBarButtonItem* layerButton;
     UIPopoverController* layerListPopoverController;
     LocationController* locationController;
+    UISearchBar* searchBar;
     CLGeocoder* geocoder;
+    AnyGestureRecognizer* anyGestureRecognizer;
 }
 
 - (id) init
@@ -38,6 +41,7 @@
         self->locationController = [[LocationController alloc] init];
         [self->locationController setState:LocationControllerStateShowInitial];
         self->geocoder = [[CLGeocoder alloc] init];
+        self->anyGestureRecognizer = [[AnyGestureRecognizer alloc] initWithTarget:self action:@selector(handleAnyGestureFrom:)];
 
         // Set up to observe notifications when the navigator recognizes a gesture.
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -142,9 +146,9 @@
                                                                     style:UIBarButtonItemStylePlain
                                                                    target:self action:@selector(handleLocationButtonTap)];
 
-    UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
-    UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
-    [searchBar setDelegate:self];
+    self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
+    UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self->searchBar];
+    [self->searchBar setDelegate:self];
 
     UIBarButtonItem* flexibleSpace1 = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -158,22 +162,6 @@
             flexibleSpace2,
             searchBarButtonItem,
             nil]];
-}
-
-- (void) searchBarSearchButtonClicked:(UISearchBar*)searchBar
-{
-    NSString* searchText = [searchBar text];
-    if (searchText != nil && [searchText length] > 0)
-    {
-        [self->geocoder geocodeAddressString:searchText
-                           completionHandler:^(NSArray* placemarks, NSError* error)
-                           {
-                               [self handleSearchbarResult:searchBar placemarks:placemarks error:error];
-                           }
-        ];
-    };
-
-    [searchBar resignFirstResponder];
 }
 
 - (void) handleLayerButtonTap
@@ -205,7 +193,42 @@
     }
 }
 
-- (void) handleSearchbarResult:(UISearchBar*)searchBar placemarks:(NSArray*)placemarks error:(NSError*)error
+- (void) handleNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    {
+        [self->locationController setState:LocationControllerStateDisabled];
+    }
+}
+
+- (void) dismissSearchBar
+{
+    [self->searchBar resignFirstResponder];
+    [_wwv removeGestureRecognizer:self->anyGestureRecognizer];
+}
+
+- (void) searchBarTextDidBeginEditing:(UISearchBar*)aSearchBar
+{
+    [_wwv addGestureRecognizer:self->anyGestureRecognizer];
+}
+
+- (void) searchBarSearchButtonClicked:(UISearchBar*)aSearchBar
+{
+    NSString* searchText = [aSearchBar text];
+    if (searchText != nil && [searchText length] > 0)
+    {
+        [self->geocoder geocodeAddressString:searchText
+                           completionHandler:^(NSArray* placemarks, NSError* error)
+                           {
+                               [self handleGeocodeResults:placemarks error:error];
+                           }
+        ];
+    };
+
+    [self dismissSearchBar];
+}
+
+- (void) handleGeocodeResults:(NSArray*)placemarks error:(NSError*)error
 {
     if (placemarks != nil && [placemarks count] > 0)
     {
@@ -227,11 +250,12 @@
     }
 }
 
-- (void) handleNotification:(NSNotification*)notification
+- (void) handleAnyGestureFrom:(AnyGestureRecognizer*)recognizer
 {
-    if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    UIGestureRecognizerState state = [recognizer state];
+    if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
     {
-        [self->locationController setState:LocationControllerStateDisabled];
+        [self dismissSearchBar];
     }
 }
 
