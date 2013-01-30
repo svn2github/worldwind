@@ -17,6 +17,8 @@
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "LayerListController.h"
 
+#define TOOLBAR_HEIGHT 44
+
 @implementation ViewController
 {
     UIBarButtonItem* layerButton;
@@ -110,8 +112,8 @@
 - (void) createWorldWindView
 {
     CGFloat wwvWidth = self.view.bounds.size.width;
-    CGFloat wwvHeight = self.view.bounds.size.height - _toolbar.bounds.size.height;
-    CGFloat wwvOriginY = self.view.bounds.origin.y + _toolbar.bounds.size.height;
+    CGFloat wwvHeight = self.view.bounds.size.height - TOOLBAR_HEIGHT;
+    CGFloat wwvOriginY = self.view.bounds.origin.y + TOOLBAR_HEIGHT;
 
     _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, wwvOriginY, wwvWidth, wwvHeight)];
     if (_wwv == nil)
@@ -126,7 +128,7 @@
 - (void) createToolbar
 {
     _toolbar = [[UIToolbar alloc] init];
-    _toolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, 44);
+    _toolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, TOOLBAR_HEIGHT);
     [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [_toolbar setBarStyle:UIBarStyleBlack];
     [_toolbar setTranslucent:NO];
@@ -137,13 +139,16 @@
                                                          style:UIBarButtonItemStylePlain
                                                         target:self action:@selector(handleLayerButtonTap)];
     LayerListController* llc = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    self->layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:llc];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        self->layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:llc];
+    }
 
     UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
                                                                     style:UIBarButtonItemStylePlain
                                                                    target:self action:nil];
 
-    UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, 44)];
+    UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
 
     UIBarButtonItem* flexibleSpace1 = [[UIBarButtonItem alloc]
@@ -162,6 +167,11 @@
 
 - (void) handleLayerButtonTap
 {
+    if (!UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        return; // popovers not supported on iPhone
+    }
+
     [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
