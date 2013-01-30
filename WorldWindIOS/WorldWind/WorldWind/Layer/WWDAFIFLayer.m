@@ -64,6 +64,7 @@
     {
         [self setMaxActiveAltitude:3000000];
         [self setDisplayName:@"DAFIF Airports"];
+        [self setImageFile:@"DAFIFAirports"];
     }
 
     return self;
@@ -77,6 +78,7 @@
     {
         [self setMaxActiveAltitude:750000];
         [self setDisplayName:@"DAFIF Navigation"];
+        [self setImageFile:@"DAFIFNavigation"];
     }
 
     return self;
@@ -90,6 +92,7 @@
     {
         [self setMaxActiveAltitude:3000000];
         [self setDisplayName:@"DAFIF Special Activity"];
+        [self setImageFile:@"DAFIFActivity"];
     }
 
     return self;

@@ -23,6 +23,7 @@
                      imageFormat:@"image/png"
                        cachePath:cachePath];
     [self setDisplayName:@"Bing"];
+    [self setImageFile:@"Bing"];
 
     NSString* serviceLocation = @"http://worldwind27.arc.nasa.gov/wms/virtualearth";
     WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation

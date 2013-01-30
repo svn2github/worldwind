@@ -54,6 +54,7 @@
 
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
+    [[cell imageView] setImage:[UIImage imageNamed:[layer imageFile]]];
     [cell setAccessoryType:[layer enabled] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone];
 
     return cell;

@@ -39,6 +39,9 @@
 /// Indicates whether the layer may retrieve resources from the network.
 @property(nonatomic) BOOL networkRetrievalEnabled;
 
+/// Indicates the name of the image file for this layer. The image is shown in the layer list.
+@property (nonatomic) NSString* imageFile;
+
 /// @name Initializing Layers
 
 /**

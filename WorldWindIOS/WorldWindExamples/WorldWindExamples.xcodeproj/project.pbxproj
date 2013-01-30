@@ -24,10 +24,16 @@
 		1BF9A1F56C3FEB0A8EF83D17 /* LocationArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB1691F5F503DA190C9D /* LocationArrow.png */; };
 		1BF9A2C0316413875D9C87B4 /* LocationArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */; };
 		1BF9A3808E7422E619393F4F /* LayerList.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF7CA370D26918C6F6C2 /* LayerList.png */; };
+		1BF9A4DA110F2CFCCB0E7DE2 /* Landsat.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFD7D0F15F26EC2CBC9F /* Landsat.png */; };
+		1BF9A7830E2D849E7A74FD16 /* BlueMarble.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A2EDD97CD1BFF90B30C4 /* BlueMarble.png */; };
 		1BF9A7A5B73DAF4595B19E9D /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A33B6444E14E329DF631 /* LayerListController.m */; };
+		1BF9A9D755FF75A77AFAACD5 /* DAFIFNavigation.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A9916D50BC454D917FEF /* DAFIFNavigation.png */; };
+		1BF9AA566C9301B15AD9F177 /* DAFIFAirports.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A44E461D7C8201E3E01F /* DAFIFAirports.png */; };
 		1BF9AA78132C53846348F275 /* LocationArrowWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */; };
+		1BF9AB681E22DD6EF980EE33 /* Bing.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A858C4D87CED7F41A7B1 /* Bing.png */; };
 		1BF9AB9434B6C975724AC5AF /* LocationArrowWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */; };
 		1BF9ABA85CFA76FF0DFD4111 /* LayerList@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */; };
+		1BF9AC9C0A8DF0CD36DDD97E /* DAFIFActivity.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8106AD0719A3DE1CA18 /* DAFIFActivity.png */; };
 		CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF093F6C9A5804AC013C5 /* LocationController.m */; };
 		CC8CFC1F474B48BA559D4087 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFF7D04745580967268D4 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
@@ -53,13 +59,19 @@
 		0B98142A165FFB1200193E50 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWhite.png; sourceTree = "<group>"; };
+		1BF9A2EDD97CD1BFF90B30C4 /* BlueMarble.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BlueMarble.png; sourceTree = "<group>"; };
 		1BF9A33B6444E14E329DF631 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
+		1BF9A44E461D7C8201E3E01F /* DAFIFAirports.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DAFIFAirports.png; sourceTree = "<group>"; };
 		1BF9A733BBE27F55CE4009C9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
+		1BF9A8106AD0719A3DE1CA18 /* DAFIFActivity.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DAFIFActivity.png; sourceTree = "<group>"; };
+		1BF9A858C4D87CED7F41A7B1 /* Bing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bing.png; sourceTree = "<group>"; };
 		1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWhite@2x.png"; sourceTree = "<group>"; };
+		1BF9A9916D50BC454D917FEF /* DAFIFNavigation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DAFIFNavigation.png; sourceTree = "<group>"; };
 		1BF9AB1691F5F503DA190C9D /* LocationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrow.png; sourceTree = "<group>"; };
 		1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrow@2x.png"; sourceTree = "<group>"; };
 		1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LayerList@2x.png"; sourceTree = "<group>"; };
 		1BF9AF7CA370D26918C6F6C2 /* LayerList.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LayerList.png; sourceTree = "<group>"; };
+		1BF9AFD7D0F15F26EC2CBC9F /* Landsat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Landsat.png; sourceTree = "<group>"; };
 		CC8CF068410F278887E31045 /* LocationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationController.h; sourceTree = "<group>"; };
 		CC8CF093F6C9A5804AC013C5 /* LocationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationController.m; sourceTree = "<group>"; };
 		CC8CFF7D04745580967268D4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -148,6 +160,12 @@
 				1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */,
 				1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */,
 				1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */,
+				1BF9A2EDD97CD1BFF90B30C4 /* BlueMarble.png */,
+				1BF9A858C4D87CED7F41A7B1 /* Bing.png */,
+				1BF9A8106AD0719A3DE1CA18 /* DAFIFActivity.png */,
+				1BF9A44E461D7C8201E3E01F /* DAFIFAirports.png */,
+				1BF9A9916D50BC454D917FEF /* DAFIFNavigation.png */,
+				1BF9AFD7D0F15F26EC2CBC9F /* Landsat.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -213,6 +231,12 @@
 				1BF9A2C0316413875D9C87B4 /* LocationArrow@2x.png in Resources */,
 				1BF9AB9434B6C975724AC5AF /* LocationArrowWhite.png in Resources */,
 				1BF9AA78132C53846348F275 /* LocationArrowWhite@2x.png in Resources */,
+				1BF9A7830E2D849E7A74FD16 /* BlueMarble.png in Resources */,
+				1BF9AB681E22DD6EF980EE33 /* Bing.png in Resources */,
+				1BF9AC9C0A8DF0CD36DDD97E /* DAFIFActivity.png in Resources */,
+				1BF9AA566C9301B15AD9F177 /* DAFIFAirports.png in Resources */,
+				1BF9A9D755FF75A77AFAACD5 /* DAFIFNavigation.png in Resources */,
+				1BF9A4DA110F2CFCCB0E7DE2 /* Landsat.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
