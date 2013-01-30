@@ -7,6 +7,7 @@
 
 #import "ViewController.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
@@ -25,6 +26,7 @@
     UIBarButtonItem* layerButton;
     UIPopoverController* layerListPopoverController;
     LocationController* locationController;
+    CLGeocoder* geocoder;
 }
 
 - (id) init
@@ -35,6 +37,7 @@
     {
         self->locationController = [[LocationController alloc] init];
         [self->locationController setState:LocationControllerStateShowInitial];
+        self->geocoder = [[CLGeocoder alloc] init];
 
         // Set up to observe notifications when the navigator recognizes a gesture.
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -141,6 +144,7 @@
 
     UISearchBar* searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
+    [searchBar setDelegate:self];
 
     UIBarButtonItem* flexibleSpace1 = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -154,6 +158,22 @@
             flexibleSpace2,
             searchBarButtonItem,
             nil]];
+}
+
+- (void) searchBarSearchButtonClicked:(UISearchBar*)searchBar
+{
+    NSString* searchText = [searchBar text];
+    if (searchText != nil && [searchText length] > 0)
+    {
+        [self->geocoder geocodeAddressString:searchText
+                           completionHandler:^(NSArray* placemarks, NSError* error)
+                           {
+                               [self handleSearchbarResult:searchBar placemarks:placemarks error:error];
+                           }
+        ];
+    };
+
+    [searchBar resignFirstResponder];
 }
 
 - (void) handleLayerButtonTap
@@ -182,6 +202,28 @@
     else
     {
         WWLog(@"Unknown location controller state: %d", state);
+    }
+}
+
+- (void) handleSearchbarResult:(UISearchBar*)searchBar placemarks:(NSArray*)placemarks error:(NSError*)error
+{
+    if (placemarks != nil && [placemarks count] > 0)
+    {
+        [self->locationController setState:LocationControllerStateDisabled];
+
+        CLPlacemark* lastPlacemark = [placemarks lastObject];
+        CLRegion* region = [lastPlacemark region];
+        WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
+        double radius = [region radius];
+        [[_wwv navigator] gotoRegionWithCenter:center radius:radius overDuration:0.0];
+    }
+    else
+    {
+        [[[UIAlertView alloc] initWithTitle:@"No Results Found"
+                                    message:nil
+                                   delegate:nil
+                          cancelButtonTitle:nil
+                          otherButtonTitles:@"OK", nil] show];
     }
 }
 

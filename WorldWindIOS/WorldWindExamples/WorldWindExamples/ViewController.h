@@ -9,7 +9,7 @@
 
 @class WorldWindView;
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <UISearchBarDelegate>
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 @property (nonatomic, readonly) UIToolbar* toolbar;
