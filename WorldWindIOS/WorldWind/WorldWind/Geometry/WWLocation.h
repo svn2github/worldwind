@@ -83,6 +83,18 @@
 */
 - (WWLocation*) initWithCLLocation:(CLLocation*)location;
 
+/**
+* Initializes a location to the latitude and longitude of a specified CLLocationCoordinate2D.
+*
+* The location's latitude and longitude are taken directly from the specified CLLocationCoordinate2D's latitude
+* and longitude fields.
+*
+* @param locationCoordinate The location coordinate containing the latitude and longitude.
+*
+* @return The initialized location.
+*/
+- (WWLocation*) initWithCLCoordinate:(CLLocationCoordinate2D)locationCoordinate;
+
 /// @name Setting the Contents of Locations
 
 /**
@@ -136,6 +148,18 @@
 * @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) setCLLocation:(CLLocation*)location;
+
+/**
+* Sets a location to the latitude and longitude of a specified CLLocationCoordinate2D.
+*
+* The location's latitude and longitude are taken directly from the specified CLLocationCoordinate2D's latitude
+* and longitude fields.
+*
+* @param locationCoordinate The location coordinate containing the latitude and longitude.
+*
+* @return This location with the specified latitude and longitude.
+*/
+- (WWLocation*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate;
 
 /// @name Operations on Locations
 

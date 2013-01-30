@@ -71,6 +71,16 @@
     return self;
 }
 
+- (WWLocation*) initWithCLCoordinate:(CLLocationCoordinate2D)locationCoordinate
+{
+    self = [super init];
+
+    _latitude = locationCoordinate.latitude;
+    _longitude = locationCoordinate.longitude;
+
+    return self;
+}
+
 - (id) copyWithZone:(NSZone *)zone
 {
     return [[[self class] alloc] initWithDegreesLatitude:_latitude longitude:_longitude];
@@ -120,6 +130,14 @@
     CLLocationCoordinate2D coord = [location coordinate];
     _latitude = coord.latitude;
     _longitude = coord.longitude;
+
+    return self;
+}
+
+- (WWLocation*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate
+{
+    _latitude = locationCoordinate.latitude;
+    _longitude = locationCoordinate.longitude;
 
     return self;
 }
