@@ -12,12 +12,14 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
-#define LOCATION_MIN_ACCURACY 10000.0
-#define INITIAL_LOCATION_MAX_TIME 2.0
 #define DISPLAY_LINK_FRAME_INTERVAL 3
-#define NAVIGATOR_INITIAL_DURATION 0.5
-#define NAVIGATOR_FORECAST_INTERPOLANT 0.1
-#define NAVIGATOR_FORECAST_RANGE_MIN 1000
+#define FORECAST_LOCATION_INTERPOLANT 0.1
+#define FORECAST_LOCATION_MIN_ACCURACY 100.0
+#define FORECAST_LOCATION_MIN_AGE 2.0
+#define FORECAST_LOCATION_MIN_RANGE 1000
+#define INITIAL_LOCATION_DURATION 0.5
+#define INITIAL_LOCATION_MIN_ACCURACY 10000.0
+#define INITIAL_LOCATION_MAX_TIME 2.0
 
 @implementation LocationController
 
@@ -84,7 +86,7 @@
 
     NSTimeInterval elapsedTime = -[self->locationManagerStartDate timeIntervalSinceNow];
 
-    if ([self locationMeetsCriteria:location] || elapsedTime >= INITIAL_LOCATION_MAX_TIME)
+    if ([self locationMeetsInitialCriteria:location] || elapsedTime >= INITIAL_LOCATION_MAX_TIME)
     {
         // This controller has a last known location that meets its accuracy criteria, or enough time has passed that
         // we use the last known location anyway. Start a smooth animation that takes the navigator from its current
@@ -92,7 +94,7 @@
         // controller's state to disabled to suppress any additional initial location calls.
         WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator];
         WWLocation* wwLocation = [[WWLocation alloc] initWithCLLocation:location];
-        [navigator gotoLocation:wwLocation overDuration:NAVIGATOR_INITIAL_DURATION];
+        [navigator gotoLocation:wwLocation overDuration:INITIAL_LOCATION_DURATION];
         [self setState:LocationControllerStateDisabled];
     }
 }
@@ -108,7 +110,7 @@
     // navigating a fraction of the distance between the navigator's current location and distance from the globe.
 
     WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator];
-    double interpolant = NAVIGATOR_FORECAST_INTERPOLANT;
+    double interpolant = FORECAST_LOCATION_INTERPOLANT;
 
     WWLocation* beginLocation = [navigator lookAt];
     WWLocation* interpolatedLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
@@ -118,15 +120,22 @@
                         outputLocation:interpolatedLocation];
 
     double beginRange = [navigator range];
-    double endRange = MIN(beginRange, NAVIGATOR_FORECAST_RANGE_MIN);
+    double endRange = MIN(beginRange, FORECAST_LOCATION_MIN_RANGE);
     double interpolatedRange = [WWMath interpolateValue1:beginRange value2:endRange amount:interpolant];
 
     [navigator gotoLocation:interpolatedLocation fromRange:interpolatedRange overDuration:0];
 }
 
-- (BOOL) locationMeetsCriteria:(CLLocation*)location
+- (BOOL) locationMeetsInitialCriteria:(CLLocation*)location
 {
-    return [location horizontalAccuracy] <= LOCATION_MIN_ACCURACY;
+    return [location horizontalAccuracy] <= INITIAL_LOCATION_MIN_ACCURACY;
+}
+
+- (BOOL) locationMeetsForecastCriteria:(CLLocation*)location
+{
+    NSTimeInterval age = -[[self->lastLocation timestamp] timeIntervalSinceNow];
+
+    return [location horizontalAccuracy] <= FORECAST_LOCATION_MIN_ACCURACY && age <= FORECAST_LOCATION_MIN_AGE;
 }
 
 - (void) startLocationManager
@@ -219,7 +228,7 @@
     if ([CLLocationManager locationServicesEnabled])
     {
         if (_state == LocationControllerStateForecast && _view != nil && self->lastLocation != nil
-                && [self locationMeetsCriteria:self->lastLocation])
+                && [self locationMeetsForecastCriteria:self->lastLocation])
         {
             // This controller has a last known location that meets its accuracy criteria. Forecast the current location
             // from the last known location, then forward the forecast location to updateViewWithForecastLocation.
