@@ -18,12 +18,12 @@
     return value < min ? min : (value > max ? max : value);
 }
 
-+ (double) horizonDistance:(double)globeRadius elevation:(double)elevation
++ (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount
 {
-    if (elevation <= 0)
-        return 0;
+    // The form for interpolation below requires one fewer operation than the standard form of (1-t)*a + t*b. Since both
+    // forms are straightforward to implement and understand, we have used the somewhat more efficient form below.
 
-    return sqrt(elevation * (2 * globeRadius + elevation));
+    return value1 + amount * (value2 - value1);
 }
 
 + (NSArray*) principalAxesFromPoints:(NSArray*)points
@@ -70,6 +70,14 @@
     [resultArray addObject:[[eigenvectors objectAtIndex:index0] normalize3]];
 
     return resultArray;
+}
+
++ (double) horizonDistance:(double)globeRadius elevation:(double)elevation
+{
+    if (elevation <= 0)
+        return 0;
+
+    return sqrt(elevation * (2 * globeRadius + elevation));
 }
 
 + (CGRect) perspectiveFieldOfViewFrustumRect:(double)horizontalFOV
@@ -166,6 +174,19 @@
     double yPixelSize = CGRectGetHeight(frustRect) / viewportHeight;
 
     return MAX(xPixelSize, yPixelSize);
+}
+
++ (double) perspectiveSizePreservingFitObjectWithSize:(double)size
+                                        viewportWidth:(double)viewportWidth
+                                       viewportHeight:(double)viewportHeight
+{
+    // The Z distance needed to fill the smaller of either viewport dimensions with an object of a specified size is
+    // just the object's size. This method exists to provide a layer of indirection for the details of the size
+    // preserving perspective. This enables coordination of changes such as adding a field of view without the need
+    // to find inline computations based on assumptions of how the size preserving perspective worked at one point in
+    // time.
+
+    return size;
 }
 
 @end

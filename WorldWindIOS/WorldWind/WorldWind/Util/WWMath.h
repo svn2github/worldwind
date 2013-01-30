@@ -26,6 +26,17 @@
 */
 + (double) clamp:(double)value min:(double)min max:(double)max;
 
+/**
+* TODO
+*
+* @param value1 TODO
+* @param value2 TODO
+* @param amount TODO
+*
+* @return TODO
+*/
++ (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount;
+
 /// @name Computing Information About Shapes
 
 /**
@@ -74,6 +85,36 @@ elevation is less than or equal to zero.
 /**
 * TODO
 *
+* @param horizontalFOV The horizontal field of view.
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveFieldOfViewMaxNearDistance:(double)horizontalFOV
+                                   viewportWidth:(double)viewportWidth
+                                  viewportHeight:(double)viewportHeight
+                                distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
+* @param horizontalFOV The horizontal field of view.
+* @param viewportWidth The viewport width.
+* @param viewportHeight The viewport height.
+* @param distanceToObject TODO
+*
+* @return TODO
+*/
++ (double) perspectiveFieldOfViewMaxPixelSize:(double)horizontalFOV
+                                viewportWidth:(double)viewportWidth
+                               viewportHeight:(double)viewportHeight
+                             distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
 * @param viewportWidth The viewport width.
 * @param viewportHeight The viewport height.
 * @param zDistance TODO
@@ -100,36 +141,6 @@ elevation is less than or equal to zero.
 /**
 * TODO
 *
-* @param horizontalFOV The horizontal field of view.
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
-*
-* @return TODO
-*/
-+ (double) perspectiveFieldOfViewMaxNearDistance:(double)horizontalFOV
-                                   viewportWidth:(double)viewportWidth
-                                  viewportHeight:(double)viewportHeight
-                                distanceToObject:(double)distanceToObject;
-
-/**
-* TODO
-*
-* @param horizontalFOV The horizontal field of view.
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
-*
-* @return TODO
-*/
-+ (double) perspectiveFieldOfViewMaxPixelSize:(double)horizontalFOV
-                                   viewportWidth:(double)viewportWidth
-                                  viewportHeight:(double)viewportHeight
-                                distanceToObject:(double)distanceToObject;
-
-/**
-* TODO
-*
 * @param viewportWidth The viewport width.
 * @param viewportHeight The viewport height.
 * @param distanceToObject TODO
@@ -139,5 +150,18 @@ elevation is less than or equal to zero.
 + (double) perspectiveSizePreservingMaxPixelSize:(double)viewportWidth
                                viewportHeight:(double)viewportHeight
                              distanceToObject:(double)distanceToObject;
+
+/**
+* TODO
+*
+* @param size TODO
+* @param viewportWidth TODO
+* @param viewportHeight TODO
+*
+* @return TODO
+*/
++ (double) perspectiveSizePreservingFitObjectWithSize:(double)size
+                                        viewportWidth:(double)viewportWidth
+                                       viewportHeight:(double)viewportHeight;
 
 @end

@@ -8,13 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+@class WWGlobe;
+
 /**
 * Represents a geographic location as a latitude longitude pair and provides operations on and between location
 * coordinates.
 *
 * @warning WWLocation instances are mutable. Most methods of this class modify the instance, itself.
 */
-
 @interface WWLocation : NSObject <NSCopying>
 
 /// @name Location Attributes
@@ -136,32 +137,6 @@
 */
 - (WWLocation*) setCLLocation:(CLLocation*)location;
 
-/**
-* Sets this location to the end of a great circle path specified by an azimuth and distance.
-*
-* @param startLocation The beginning location of the great circle path.
-* @param azimuth The direction, in degrees clockwise from north, of the great circle path.
-* @param distance The angular distance, in degrees, between the start location of the path and its end location.
-*
-* @return This instance set to the end position of the specified great circle path.
-*
-* @exception NSInvalidArgumentException If the specified start location is nil.
-*/
-- (WWLocation*) setGreatCircleEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)distance;
-
-/**
-* Sets this location to the end of a rhumb path specified by an azimuth and distance.
-*
-* @param startLocation The beginning location of the rhumb path.
-* @param azimuth The direction, in degrees clockwise from north, of the rhumb path.
-* @param distance The angular distance, in degrees, between the start location of the path and its end location.
-*
-* @return This instance set to the end position of the specified rhumb path.
-*
-* @exception NSInvalidArgumentException If the specified start location is nil.
-*/
-- (WWLocation*) setRhumbEndLocation:(WWLocation*)startLocation azimuth:(double)azimuth distance:(double)distance;
-
 /// @name Operations on Locations
 
 /**
@@ -185,5 +160,130 @@
 * @exception NSInvalidArgumentException If the specified location is nil.
 */
 - (WWLocation*) subtractLocation:(WWLocation*)location;
+
+/// @name Common Geographic Operations
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) greatCircleAzimuth:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) greatCircleDistance:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* Computes a location on the great circle path specified by a beginning location, azimuth and distance.
+*
+* @param beginLocation The beginning location of the great circle path.
+* @param azimuth The direction of the great circle path in degrees clockwise from north.
+* @param distance The angular distance between the begin location of the path and the desired location, in degrees.
+* @param result TODO
+*
+* @exception NSInvalidArgumentException If either the begin location or the result is nil.
+*/
++ (void) greatCircleLocation:(WWLocation*)beginLocation
+                     azimuth:(double)azimuth
+                    distance:(double)distance
+              outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) greatCircleInterpolate:(WWLocation*)beginLocation
+                    endLocation:(WWLocation*)endLocation
+                         amount:(double)amount
+                 outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) rhumbAzimuth:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) rhumbDistance:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* Computes this location on the rhumb path specified by a beginning location, azimuth and distance.
+*
+* @param beginLocation The beginning location of the rhumb path.
+* @param azimuth The direction of the rhumb path in degrees clockwise from north.
+* @param distance The angular distance, between the begin location of the path and the desired location, in degrees.
+* @param result TODO
+*
+* @exception NSInvalidArgumentException If either the begin location or the result is nil.
+*/
++ (void) rhumbLocation:(WWLocation*)beginLocation
+               azimuth:(double)azimuth
+              distance:(double)distance
+        outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) rhumbInterpolate:(WWLocation*)beginLocation
+              endLocation:(WWLocation*)endLocation
+                   amount:(double)amount
+           outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
+* @param location TODO
+* @param date TODO
+* @param globe TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) forecastLocation:(CLLocation*)location
+                  forDate:(NSDate*)date
+                 withGobe:(WWGlobe*)globe
+           outputLocation:(WWLocation*)result;
 
 @end
