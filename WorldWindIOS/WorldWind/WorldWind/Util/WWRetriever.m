@@ -46,21 +46,21 @@
         {
             if ([WWUtil retrieveUrl:_url toFile:_filePath])
             {
-                [dict setObject:WW_RETRIEVAL_SUCCEEDED forKey:WW_RETRIEVAL_STATUS];
+                [dict setObject:WW_SUCCEEDED forKey:WW_RETRIEVAL_STATUS];
             }
             else
             {
-                [dict setObject:WW_RETRIEVAL_FAILED forKey:WW_RETRIEVAL_STATUS];
+                [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
             }
         }
         else
         {
-            [dict setObject:WW_RETRIEVAL_CANCELED forKey:WW_RETRIEVAL_STATUS];
+            [dict setObject:WW_CANCELED forKey:WW_RETRIEVAL_STATUS];
         }
     }
     @catch (NSException* exception)
     {
-        [dict setObject:WW_RETRIEVAL_FAILED forKey:WW_RETRIEVAL_STATUS];
+        [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
 
         NSString* msg = [NSString stringWithFormat:@"Retrieving %@ to %@", _url, _filePath];
         WWLogE(msg, exception);

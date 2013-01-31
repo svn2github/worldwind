@@ -49,13 +49,7 @@
         return [texture bind:dc];
     }
 
-    texture = [[WWTexture alloc] initWithImagePath:_imagePath];
-    if ([texture bind:dc])
-    {
-        [[dc gpuResourceCache] putTexture:texture forKey:_imagePath];
-        return YES;
-    }
-    else if (_fallbackTile != nil)
+    if (_fallbackTile != nil)
     {
         return [_fallbackTile bind:dc];
     }

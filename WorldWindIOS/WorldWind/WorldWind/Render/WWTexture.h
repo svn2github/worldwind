@@ -11,36 +11,49 @@
 #import "WorldWind/Util/WWCacheable.h"
 
 @class WWDrawContext;
+@class WWGpuResourceCache;
 
 /**
 * Represents a texture. This class is used to wrap images used as textures. It handles loading of the image from
 * disk, conversion of the image to an OpenGL texture, and binding of the texture during rendering.
 *
+* This class is an NSOperation so that it can load its image file from disk on a non-main thread.
+*
 * Applications typically do not interact directly with WWTexture instances. They are created and used internally as
 * needed.
 */
-@interface WWTexture : NSObject <WWDisposable, WWCacheable>
+@interface WWTexture : NSOperation <WWDisposable, WWCacheable>
+{
+@protected
+    void* imageData; // holds image bits between the time they're read and the time they're passed to OpenGL
+}
 
 /// @name Texture Attributes
 
 /// The full file system path to the image used as a texture.
-@property (nonatomic) NSString* filePath;
+@property(nonatomic) NSString* filePath;
 
 /// The texture's width.
-@property (readonly, nonatomic) int imageWidth;
+@property(readonly, nonatomic) int imageWidth;
 
 /// The texture's height.
-@property (readonly, nonatomic) int imageHeight;
+@property(readonly, nonatomic) int imageHeight;
 
 /// The OpenGL textureID for the texture. Available only after the bind method is called at least once.
-@property (readonly, nonatomic) GLuint textureID;
+@property(readonly, nonatomic) GLuint textureID;
 
 /// The size of the texture in bytes.
-@property (readonly, nonatomic) long textureSize;
+@property(readonly, nonatomic) long textureSize;
 
 /// If YES, indicates that texture creation failed. This flag is set if texture creation fails during the first call
 /// to the bind method.
-@property (readonly, nonatomic) BOOL textureCreationFailed;
+@property(readonly, nonatomic) BOOL textureCreationFailed;
+
+/// The object to send notification to when the image file is read.
+@property(nonatomic, readonly) id object;
+
+/// The texture cache to add this texture to when its image file is read.
+@property(nonatomic, readonly) WWGpuResourceCache* textureCache;
 
 /// @name Initializing Textures
 
@@ -48,12 +61,14 @@
 * Initialize a texture using an image at a specified file system location.
 *
 * @param filePath The full file-system path to the image.
+* @param cache The GPU resource cache into which this texture should add itself when its image file is read.
+* @param object The object to send notification to when the image file is read.
 *
 * @return This texture initialized with the specified image.
 *
 * @exception NSInvalidArgumentException If the file path is nil or empty.
 */
-- (WWTexture*) initWithImagePath:(NSString*)filePath;
+- (WWTexture*) initWithImagePath:(NSString*)filePath cache:(WWGpuResourceCache*)cache object:(id)object;
 
 /// @name Operations on Textures
 
@@ -62,8 +77,7 @@
 *
 * An OpenGL context must be current when this method is called.
 *
-* This method causes the texture image to be loaded from disk and converted to an OpenGL texture the first time it is
- * called.
+* This method causes the texture image to be passed to OpenGL the first time it is called.
  *
  * @param dc The current draw context.
 */
@@ -79,23 +93,28 @@
 /// @name Supporting Methods of Interest only to Subclasses
 
 /**
-* Load the texture image from disk and pass it to the GPU.
+* Loads the texture from disk and converts it to a form suitable for use as an OpenGL texture.
 *
-* Called by the bind method the first time that method is called. This method loads the texture from disk and
-* converts it to a form suitable for use as an OpenGL texture.
+* This method does not pass the texture to OpenGL because it is typically performed on a non-main thread. The texture
+ * is passed to OpenGL in the bind method.
 *
 * If texture creation fails, this instance's textureCreationFailed flag is set to YES.
 */
 - (void) loadTexture;
 
 /**
-* Load the compressed texture from disk and pass it to the GPU.
+* Loads the texture from a PVRTC image file on disk and converts it to a form suitable for use as an OpenGL texture.
 *
-* Called by the bind method the first time that method is called. This method loads the texture from disk and
-* converts it to a form suitable for use as an OpenGL texture.
+* This method does not pass the texture to OpenGL because it is typically performed on a non-main thread. The texture
+ * is passed to OpenGL in the bind method.
 *
 * If texture creation fails, this instance's textureCreationFailed flag is set to YES.
 */
 - (void) loadCompressedTexture;
+
+/**
+* Passes the texture to OpenGL. This method is called by the bind method the first time the texture is displayed.
+*/
+- (void) loadGL;
 
 @end

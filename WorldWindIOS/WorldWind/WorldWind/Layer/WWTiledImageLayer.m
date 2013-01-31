@@ -26,6 +26,7 @@
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
+#import "WorldWind/Render/WWTexture.h"
 
 @implementation WWTiledImageLayer
 
@@ -76,23 +77,31 @@
     self->currentTiles = [[NSMutableArray alloc] init];
     self->topLevelTiles = [[NSMutableArray alloc] init];
     self->currentRetrievals = [[NSMutableSet alloc] init];
+    self->currentLoads = [[NSMutableSet alloc] init];
 
-    // Set up to handle retrieval monitoring.
+    // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleRetrievalNotification:)
-                                                 name:WW_RETRIEVAL_STATUS
+                                             selector:@selector(handleTextureRetrievalNotification:)
+                                                 name:WW_RETRIEVAL_STATUS // retrieval from net
+                                               object:self];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleTextureReadNotification:)
+                                                 name:WW_REQUEST_STATUS // opening image file on disk
                                                object:self];
 
     return self;
 }
 
-- (void) handleRetrievalNotification:(NSNotification*)notification
+- (void) handleTextureRetrievalNotification:(NSNotification*)notification
 {
     NSDictionary* avList = [notification userInfo];
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    if ([retrievalStatus isEqualToString:WW_RETRIEVAL_SUCCEEDED])
+    [self->currentRetrievals removeObject:imagePath];
+
+    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
         [self->currentRetrievals removeObject:imagePath];
 
@@ -104,13 +113,22 @@
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
     }
-    else if ([retrievalStatus isEqualToString:WW_RETRIEVAL_FAILED])
+}
+
+- (void) handleTextureReadNotification:(NSNotification*)notification
+{
+    NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
+    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+
+    [self->currentLoads removeObject:imagePath];
+
+    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
-        [self->currentRetrievals removeObject:imagePath];
-    }
-    else if ([retrievalStatus isEqualToString:WW_RETRIEVAL_CANCELED])
-    {
-        [self->currentRetrievals removeObject:imagePath];
+        [self->currentLoads removeObject:imagePath];
+
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
     }
 }
 
@@ -244,7 +262,7 @@
         return;
     }
 
-    [self retrieveTileImage:tile];
+    [self retrieveTileImage:dc tile:tile];
 
     if (self->currentAncestorTile != nil)
     {
@@ -255,15 +273,14 @@
         }
         else if ([[self->currentAncestorTile level] levelNumber] == 0)
         {
-            [self retrieveTileImage:self->currentAncestorTile];
+            [self retrieveTileImage:dc tile:self->currentAncestorTile];
         }
     }
 }
 
 - (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    return [dc.gpuResourceCache containsKey:[tile imagePath]]
-            || [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
+    return [dc.gpuResourceCache containsKey:[tile imagePath]];
 }
 
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
@@ -282,8 +299,25 @@
     return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }
 
-- (void) retrieveTileImage:(WWTextureTile*)tile
+- (void) retrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
+    // See if it's already on disk.
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
+    {
+        if ([self->currentLoads containsObject:[tile imagePath]])
+            return;
+        [self->currentLoads addObject:[tile imagePath]];
+
+        WWTexture* texture = [[WWTexture alloc] initWithImagePath:[tile imagePath]
+                                                            cache:[dc gpuResourceCache]
+                                                           object:self];
+        [texture setThreadPriority:0.1];
+        [[WorldWind retrievalQueue] addOperation:texture];
+        return;
+    }
+
+    // If the app is connected to the network, retrieve the image from there.
+
     if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
         return;
 
@@ -305,6 +339,7 @@
     else
     {
         WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
+        [retriever setThreadPriority:0.0];
         [retriever addToQueue:retriever];
     }
 }

@@ -12,8 +12,8 @@
  * from the internet and save them to the local World Wind file system cache.
  *
  * When a retrieval is complete, a notification is sent indicating retrieval status. The notification's user info
- * dictionary includes the retrieval status (WW_RETRIEVAL_STATUS) of either WW_RETRIEVAL_SUCCEEDED,
- * WW_RETRIEVAL_FAILED or WW_RETRIEVAL_CANCELED. The dictionary also includes the retriever's URL (WW_URL) and its
+ * dictionary includes the retrieval status (WW_RETRIEVAL_STATUS) of either WW_SUCCEEDED,
+ * WW_FAILED or WW_CANCELED. The dictionary also includes the retriever's URL (WW_URL) and its
  * file path (WW_FILE_PATH).
 */
 @interface WWRetriever : NSOperation

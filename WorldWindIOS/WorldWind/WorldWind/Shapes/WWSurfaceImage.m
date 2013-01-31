@@ -43,7 +43,7 @@
         return [texture bind:dc];
     }
 
-    texture = [[WWTexture alloc] initWithImagePath:_imagePath];
+    texture = [[WWTexture alloc] initWithImagePath:_imagePath cache:[dc gpuResourceCache] object:self];
     BOOL yn = [texture bind:dc];
 
     if (yn)

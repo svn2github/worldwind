@@ -31,7 +31,7 @@
                                                                         wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:300e3];
-    [self setMinActiveAltitude:10e3];
+//    [self setMinActiveAltitude:10e3];
 
     return self;
 }

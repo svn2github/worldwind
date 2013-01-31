@@ -12,6 +12,9 @@
 #import "WorldWind/WorldWindConstants.h"
 
 @implementation WorldWindView
+{
+    NSLock* redrawRequestLock;
+}
 
 + (Class) layerClass
 {
@@ -22,6 +25,8 @@
 {
     if (self = [super initWithFrame:frame])
     {
+        self->redrawRequestLock = [[NSLock alloc] init];
+
         CAEAGLLayer* eaglLayer = (CAEAGLLayer*) super.layer;
         eaglLayer.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
@@ -100,7 +105,10 @@
 
 - (void) drawView
 {
-    [self setRedrawRequested:NO];
+    @synchronized (self->redrawRequestLock)
+    {
+        [self setRedrawRequested:NO];
+    }
 
     [EAGLContext setCurrentContext:self.context];
 
@@ -157,10 +165,13 @@
 {
     if ([[notification name] isEqualToString:WW_REQUEST_REDRAW])
     {
-        if (![self redrawRequested])
+        @synchronized (self->redrawRequestLock)
         {
-            [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
-            [self setRedrawRequested:YES];
+            if (![self redrawRequested])
+            {
+                [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
+                [self setRedrawRequested:YES];
+            }
         }
     }
 }
