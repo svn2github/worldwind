@@ -76,6 +76,16 @@
 * TODO
 *
 * @param location TODO
+* @param animate TODO
+*
+* @exception TODO
+*/
+- (void) gotoLocation:(WWLocation*)location animate:(BOOL)animate;
+
+/**
+* TODO
+*
+* @param location TODO
 * @param duration TODO
 *
 * @exception TODO
@@ -86,12 +96,34 @@
 * TODO
 *
 * @param location TODO
-* @param range TODO
+* @param distance TODO
+* @param animate TODO
+*
+* @exception TODO
+*/
+- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance animate:(BOOL)animate;
+
+/**
+* TODO
+*
+* @param location TODO
+* @param distance TODO
 * @param duration TODO
 *
 * @exception TODO
 */
-- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration;
+- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance overDuration:(NSTimeInterval)duration;
+
+/**
+* TODO
+*
+* @param center TODO
+* @param radius TODO
+* @param animate TODO
+*
+* @exception TODO
+*/
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius animate:(BOOL)animate;
 
 /**
 * TODO
@@ -110,6 +142,23 @@
 * TODO
 */
 - (void) setInitialLocation;
+
+/**
+* TODO
+*/
+- (void) startDisplayLink;
+
+/**
+* TODO
+*/
+- (void) stopDisplayLink;
+
+/**
+* TODO
+*
+* @param aDisplayLink TODO
+*/
+- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink;
 
 /**
 * TODO
@@ -181,27 +230,14 @@
 
 /**
 * TODO
-*/
-- (void) startDisplayLink;
-
-/**
-* TODO
-*/
-- (void) stopDisplayLink;
-
-/**
-* TODO
-*
-* @param aDisplayLink TODO
-*/
-- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink;
-
-/**
-* TODO
 *
 * @param duration TODO
 */
-- (void) startAnimationWithDuration:(NSTimeInterval)duration;
+- (void) startAnimationWithBeginLocation:(WWLocation*)beginLocation
+                             endLocation:(WWLocation*)endLocation
+                              beginRange:(double)beginRange
+                                endRange:(double)endRange
+                                duration:(NSTimeInterval)duration;
 
 /**
 * TODO
@@ -214,5 +250,27 @@
 * @param date TODO
 */
 - (void) updateAnimationForDate:(NSDate*)date;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+* @param beginRange TODO
+* @param endRange TODO
+*/
+- (double) durationForAnimationWithBeginLocation:(WWLocation*)beginLocation
+                                     endLocation:(WWLocation*)endLocation
+                                      beginRange:(double)beginRange
+                                        endRange:(double)endRange;
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*/
+- (double) rangeToFitBeginLocation:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
 
 @end

@@ -14,11 +14,16 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
+#define ANIMATE_DURATION_MIN 1.0
+#define ANIMATE_DURATION_MAX 5.0
+#define ANIMATE_DISTANCE_MIN 1000
+#define ANIMATE_DISTANCE_MAX 1000000
 #define DEFAULT_NEAR_DISTANCE 1
 #define DEFAULT_FAR_DISTANCE 1000000000
 #define DEFAULT_LATITUDE 0
@@ -26,34 +31,35 @@
 #define DEFAULT_ALTITUDE 10000000
 #define DEFAULT_HEADING 0
 #define DEFAULT_TILT 0
+#define DISPLAY_LINK_FRAME_INTERVAL 3
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
-#define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation WWBasicNavigator
 {
     WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
+
     UIPanGestureRecognizer* panGestureRecognizer;
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
     UIPanGestureRecognizer* verticalPanGestureRecognizer;
-
     CGPoint lastPanTranslation;
-    WWLocation* beginLookAt;
-    WWLocation* endLookAt;
-    double beginRange;
-    double midRange;
-    double endRange;
-    double beginHeading;
-    double beginTilt;
+    double gestureBeginRange;
+    double gestureBeginHeading;
+    double gestureBeginTilt;
 
     CADisplayLink* displayLink;
     int displayLinkObservers;
 
-    NSDate* animationBeginDate;
-    NSDate* animationEndDate;
-    double animationLookAtAzimuth;
-    double animationLookAtDistance;
+    WWLocation* animBeginLocation;
+    WWLocation* animEndLocation;
+    double animAzimuth;
+    double animDistance;
+    double animBeginRange;
+    double animMidRange;
+    double animEndRange;
+    NSDate* animBeginDate;
+    NSDate* animEndDate;
     BOOL animating;
 }
 
@@ -85,8 +91,8 @@
         [self->view addGestureRecognizer:self->rotationGestureRecognizer];
         [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
 
-        self->beginLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
-        self->endLookAt = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+        self->animBeginLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+        self->animEndLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
 
         self->_nearDistance = DEFAULT_NEAR_DISTANCE;
         self->_farDistance = DEFAULT_FAR_DISTANCE;
@@ -174,6 +180,16 @@
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
 
+- (void) gotoLocation:(WWLocation*)location animate:(BOOL)animate
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    [self gotoLocation:location fromDistance:_range animate:animate];
+}
+
 - (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
 {
     if (location == nil)
@@ -186,19 +202,39 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    [self gotoLocation:location fromRange:_range overDuration:duration];
+    [self gotoLocation:location fromDistance:_range overDuration:duration];
 }
 
-- (void) gotoLocation:(WWLocation*)location fromRange:(double)range overDuration:(NSTimeInterval)duration
+- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance animate:(BOOL)animate
 {
     if (location == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
 
-    if (range < 0)
+    if (distance < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is invalid")
+    }
+
+    double duration = animate ? [self durationForAnimationWithBeginLocation:_lookAt
+                                                                endLocation:location
+                                                                 beginRange:_range
+                                                                   endRange:distance] : 0;
+
+    [self gotoLocation:location fromDistance:distance overDuration:duration];
+}
+
+- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance overDuration:(NSTimeInterval)duration
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    if (distance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is invalid")
     }
 
     if (duration < 0)
@@ -219,7 +255,7 @@
         // active animation. Calling stopAnimation has no effect if there is no currently active animation.
         [self stopAnimation];
         [_lookAt setLocation:location];
-        _range = range;
+        _range = distance;
         [self->view drawView];
     }
     else
@@ -228,12 +264,39 @@
         // current values to the specified values. This overrides any currently active animation. We override rather
         // than explicitly start and stop in order to keep the display link running and seamlessly transition from one
         // animation to the next.
-        [self->beginLookAt setLocation:_lookAt];
-        [self->endLookAt setLocation:location];
-        self->beginRange = _range;
-        self->endRange = range;
-        [self startAnimationWithDuration:duration];
+        [self startAnimationWithBeginLocation:_lookAt
+                                  endLocation:location
+                                   beginRange:_range
+                                     endRange:distance
+                                     duration:duration];
     }
+}
+
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius animate:(BOOL)animate
+{
+    if (center == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
+    }
+
+    if (self->view == nil)
+    {
+        WWLog(@"Unable to navigate: View is nil (deallocated)");
+        return;
+    }
+
+    CGRect viewport = [self->view viewport];
+    double regionSize = 2 * radius;
+    double distance = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
+                                                           viewportWidth:CGRectGetWidth(viewport)
+                                                          viewportHeight:CGRectGetHeight(viewport)];
+
+    [self gotoLocation:center fromDistance:distance animate:animate];
 }
 
 - (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
@@ -262,11 +325,11 @@
 
     CGRect viewport = [self->view viewport];
     double regionSize = 2 * radius;
-    double range = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
-                                                        viewportWidth:CGRectGetWidth(viewport)
-                                                       viewportHeight:CGRectGetHeight(viewport)];
+    double distance = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
+                                                          viewportWidth:CGRectGetWidth(viewport)
+                                                         viewportHeight:CGRectGetHeight(viewport)];
 
-    [self gotoLocation:center fromRange:range overDuration:duration];
+    [self gotoLocation:center fromDistance:distance overDuration:duration];
 }
 
 - (void) setInitialLocation
@@ -289,6 +352,44 @@
 
     WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
     [self->_lookAt setCLLocation:location];
+}
+
+- (void) startDisplayLink
+{
+    if (self->displayLinkObservers == 0)
+    {
+        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
+        [self->displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
+        [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    }
+
+    self->displayLinkObservers++;
+}
+
+- (void) stopDisplayLink
+{
+    self->displayLinkObservers--;
+
+    if (self->displayLinkObservers == 0)
+    {
+        [self->displayLink invalidate];
+        self->displayLink = nil;
+    }
+}
+
+- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink
+{
+    if (self->animating)
+    {
+        NSDate* now = [NSDate date];
+        [self updateAnimationForDate:now];
+    }
+
+    // The view is a weak reference, so it may have been de-allocated.
+    if (self->view != nil)
+    {
+        [self->view drawView];
+    }
 }
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
@@ -337,9 +438,9 @@
         // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context to
         // perform this conversion.
         WWGlobe* globe = [[self->view sceneController] globe];
-        double radius = MAX([globe equatorialRadius], [globe polarRadius]);
-        double forwardDegrees = DEGREES(forwardMeters / radius);
-        double sideDegrees = DEGREES(sideMeters / radius);
+        double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+        double forwardDegrees = DEGREES(forwardMeters / globeRadius);
+        double sideDegrees = DEGREES(sideMeters / globeRadius);
 
         // Convert the translation from arc degrees to change in latitude and longitude relative to the current heading.
         // The resultant translation in latitude and longitude is defined in the equirectangular coordinate system.
@@ -351,7 +452,7 @@
         // Apply the change in latitude and longitude to this navigator's lookAt property. Limit the new latitude to the
         // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
         // corresponding change in heading, which has not been implemented here in favor of simplicity.
-        double newLat = [WWMath clamp:([self->_lookAt latitude] + latDegrees) min:-90 max:90];
+        double newLat = [WWMath clampValue:([self->_lookAt latitude] + latDegrees) min:-90 max:90];
         double newLon = NormalizedDegreesLongitude([self->_lookAt longitude] + lonDegrees);
         [self->_lookAt setDegreesLatitude:newLat longitude:newLon];
     }
@@ -376,7 +477,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->beginRange = self->_range;
+        self->gestureBeginRange = self->_range;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -389,7 +490,7 @@
         // between two and three fingers while pinching.
         CGFloat scale = [recognizer scale];
         if (scale != 0)
-            self->_range = self->beginRange / scale;
+            self->_range = self->gestureBeginRange / scale;
     }
     else
     {
@@ -403,7 +504,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->beginHeading = self->_heading;
+        self->gestureBeginHeading = self->_heading;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -413,7 +514,7 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         double rotationInDegrees = DEGREES([recognizer rotation]);
-        self->_heading = NormalizedDegreesHeading(self->beginHeading - rotationInDegrees);
+        self->_heading = NormalizedDegreesHeading(self->gestureBeginHeading - rotationInDegrees);
     }
     else
     {
@@ -431,7 +532,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->beginTilt = self->_tilt;
+        self->gestureBeginTilt = self->_tilt;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -443,7 +544,7 @@
         CGPoint translation = [recognizer translationInView:self->view];
         CGRect bounds = [self->view bounds];
         double degrees = 90 * translation.y / CGRectGetHeight(bounds);
-        self->_tilt = [WWMath clamp:self->beginTilt + degrees min:0 max:90];
+        self->_tilt = [WWMath clampValue:self->gestureBeginTilt + degrees min:0 max:90];
     }
     else
     {
@@ -535,58 +636,34 @@
     [[NSNotificationCenter defaultCenter] postNotification:gestureNotification];
 }
 
-- (void) startDisplayLink
-{
-    if (self->displayLinkObservers == 0)
-    {
-        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
-        [self->displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
-        [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    }
-
-    self->displayLinkObservers++;
-}
-
-- (void) stopDisplayLink
-{
-    self->displayLinkObservers--;
-
-    if (self->displayLinkObservers == 0)
-    {
-        [self->displayLink invalidate];
-        self->displayLink = nil;
-    }
-}
-
-- (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink
-{
-    if (self->animating)
-    {
-        NSDate* now = [NSDate date];
-        [self updateAnimationForDate:now];
-    }
-
-    // The view is a weak reference, so it may have been de-allocated.
-    if (self->view != nil)
-    {
-        [self->view drawView];
-    }
-}
-
-- (void) startAnimationWithDuration:(NSTimeInterval)duration
+- (void) startAnimationWithBeginLocation:(WWLocation*)beginLocation
+                             endLocation:(WWLocation*)endLocation
+                              beginRange:(double)beginRange
+                                endRange:(double)endRange
+                                duration:(NSTimeInterval)duration
 {
     // Compute the animation's time range and reusable values. This overrides any currently active animation. We
     // override rather than explicitly stop and start in order to keep the display link running and seamlessly
     // transition from one animation to the next.
 
-    // Compute the animation's begin and end date based on the implicit start time and the specified duration.
-    self->animationBeginDate = [NSDate date];
-    self->animationEndDate = [NSDate dateWithTimeInterval:duration sinceDate:self->animationBeginDate];
+    // Compute the great circle azimuth and distance between the navigator's begin and end locations. These values are
+    // computed once here and used repeatedly in updateAnimationForDate.
+    [self->animBeginLocation setLocation:beginLocation];
+    [self->animEndLocation setLocation:endLocation];
+    self->animAzimuth = [WWLocation greatCircleAzimuth:beginLocation endLocation:endLocation];
+    self->animDistance = [WWLocation greatCircleDistance:beginLocation endLocation:endLocation];
 
-    // Compute the great circle azimuth and distance between the navigator's begin and end look at values. These values
-    // are computed once here and used repeatedly in updateAnimationForDate.
-    self->animationLookAtAzimuth = [WWLocation greatCircleAzimuth:self->beginLookAt endLocation:self->endLookAt];
-    self->animationLookAtDistance = [WWLocation greatCircleDistance:self->beginLookAt endLocation:self->endLookAt];
+    // Compute the mid range used as an intermediate range during animation. If the begin and end locations are not
+    // visible from the begin or end range, the mid range is defined as a value greater than the begin and end ranges.
+    // This maintains the user's geographic context for the animation's beginning and end.
+    double fitRange = [self rangeToFitBeginLocation:beginLocation endLocation:endLocation];
+    self->animBeginRange = beginRange;
+    self->animMidRange = (fitRange < beginRange || fitRange < endRange) ? -1 : fitRange;
+    self->animEndRange = endRange;
+
+    // Compute the animation's begin and end date based on the implicit start time and the specified duration.
+    self->animBeginDate = [NSDate date];
+    self->animEndDate = [NSDate dateWithTimeInterval:duration sinceDate:self->animBeginDate];
 
     if (!self->animating)
     {
@@ -608,36 +685,95 @@
 
 - (void) updateAnimationForDate:(NSDate*)date
 {
-    NSTimeInterval totalTime = [self->animationEndDate timeIntervalSinceDate:self->animationBeginDate];
-    NSTimeInterval elapsedTime = [date timeIntervalSinceDate:self->animationBeginDate];
+    NSTimeInterval beginTime = [self->animBeginDate timeIntervalSinceReferenceDate];
+    NSTimeInterval endTime = [self->animEndDate timeIntervalSinceReferenceDate];
+    NSTimeInterval midTime = (beginTime + endTime) / 2;
+    NSTimeInterval now = [date timeIntervalSinceReferenceDate];
 
-    if (elapsedTime >= totalTime)
+    if (now <= beginTime)
+    {
+        // The animation has yet to start or has just started. Explicitly set the current values to the specified begin
+        // values rather than computing a interpolated values to ensure that the begin values are set exactly as the
+        // caller requested.
+        [_lookAt setLocation:self->animBeginLocation];
+        _range = self->animBeginRange;
+    }
+    else if (now >= endTime)
     {
         // The animation has reached its scheduled end based on the implicit start time and specified duration.
         // Explicitly set the current values to the specified end values rather than computing a interpolated values to
         // ensure that the end values are set exactly as the caller requested.
-        [_lookAt setLocation:self->endLookAt];
-        _range = self->endRange;
+        [_lookAt setLocation:self->animEndLocation];
+        _range = self->animEndRange;
         [self stopAnimation];
     }
     else
     {
         // The animation is currently between the implicit start time and specified duration. Compute the fraction of
         // time that has passed as a value between 0 and 1, then use the fraction to interpolate between the begin and
-        // end values.
-        double fractionalTime = elapsedTime / totalTime;
+        // end values. This uses hermite interpolation via WWMath's smoothStepValue method to ease in and ease out of
+        // the begin and end values, respectively.
 
         // Interpolate the navigator's look at location using a great circle arc between the begin and end location.
-        [WWLocation greatCircleLocation:self->beginLookAt
-                                azimuth:self->animationLookAtAzimuth
-                               distance:fractionalTime * self->animationLookAtDistance
+        double locationPct = [WWMath smoothStepValue:now min:beginTime max:endTime];
+        [WWLocation greatCircleLocation:self->animBeginLocation
+                                azimuth:self->animAzimuth
+                               distance:self->animDistance * locationPct
                          outputLocation:_lookAt];
 
-        // Interpolate the navigator's range using simple linear interpolation between the begin and end range.
-        _range = [WWMath interpolateValue1:self->beginRange
-                                    value2:self->endRange
-                                    amount:fractionalTime];
+        if (self->animMidRange < 0)
+        {
+            // The animation is not using a mid range value. Interpolate the navigator's range between the begin and end
+            // range.
+            double rangePct = [WWMath smoothStepValue:now min:beginTime max:endTime];
+            _range = [WWMath interpolateValue1:self->animBeginRange value2:self->animEndRange amount:rangePct];
+        }
+        else if (now <= midTime)
+        {
+            // The animation is using a mid range value, and is in the first half of its duration. Interpolate the
+            // navigator's range between the begin and mid range.
+            double rangePct = [WWMath smoothStepValue:now min:beginTime max:midTime];
+            _range = [WWMath interpolateValue1:self->animBeginRange value2:self->animMidRange amount:rangePct];
+        }
+        else
+        {
+            // The animation is using a mid range value, and is in the second half of its duration. Interpolate the
+            // navigator's range between the mid and end range.
+            double rangePct = [WWMath smoothStepValue:now min:midTime max:endTime];
+            _range = [WWMath interpolateValue1:self->animMidRange value2:self->animEndRange amount:rangePct];
+        }
     }
+}
+
+- (double) durationForAnimationWithBeginLocation:(WWLocation*)beginLocation
+                                     endLocation:(WWLocation*)endLocation
+                                      beginRange:(double)beginRange
+                                        endRange:(double)endRange
+{
+    WWVec4* beginPoint = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* endPoint  = [[WWVec4 alloc] initWithZeroVector];
+    WWGlobe* globe = [[self->view sceneController] globe];
+    [globe computePointFromPosition:[beginLocation latitude] longitude:[beginLocation longitude] altitude:beginRange outputPoint:beginPoint];
+    [globe computePointFromPosition:[endLocation latitude] longitude:[endLocation longitude] altitude:endRange outputPoint:endPoint];
+
+    double distance = [beginPoint distanceTo3:endPoint];
+    double stepDistance = [WWMath stepValue:distance min:ANIMATE_DISTANCE_MIN max:ANIMATE_DISTANCE_MAX];
+
+    return [WWMath interpolateValue1:ANIMATE_DURATION_MIN value2:ANIMATE_DURATION_MAX amount:stepDistance];
+}
+
+- (double) rangeToFitBeginLocation:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation
+{
+    WWVec4* beginPoint = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* endPoint  = [[WWVec4 alloc] initWithZeroVector];
+    WWGlobe* globe = [[self->view sceneController] globe];
+    [globe computePointFromPosition:[beginLocation latitude] longitude:[beginLocation longitude] altitude:0 outputPoint:beginPoint];
+    [globe computePointFromPosition:[endLocation latitude] longitude:[endLocation longitude] altitude:0 outputPoint:endPoint];
+
+    double distance = [beginPoint distanceTo3:endPoint];
+    CGRect viewport = [self->view viewport];
+
+    return [WWMath perspectiveSizePreservingFitObjectWithSize:distance viewportWidth:CGRectGetWidth(viewport) viewportHeight:CGRectGetHeight(viewport)];
 }
 
 @end

@@ -123,7 +123,7 @@
     double endRange = MIN(beginRange, FORECAST_LOCATION_MIN_RANGE);
     double interpolatedRange = [WWMath interpolateValue1:beginRange value2:endRange amount:interpolant];
 
-    [navigator gotoLocation:interpolatedLocation fromRange:interpolatedRange overDuration:0];
+    [navigator gotoLocation:interpolatedLocation fromDistance:interpolatedRange animate:NO];
 }
 
 - (BOOL) locationMeetsInitialCriteria:(CLLocation*)location

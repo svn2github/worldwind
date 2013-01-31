@@ -24,7 +24,29 @@
 *
 * @return The clamped value.
 */
-+ (double) clamp:(double)value min:(double)min max:(double)max;
++ (double) clampValue:(double)value min:(double)min max:(double)max;
+
+/**
+* TODO
+*
+* @param value TODO
+* @param min TODO
+* @param max TODO
+*
+* @return TODO
+*/
++ (double) stepValue:(double)value min:(double)min max:(double)max;
+
+/**
+* TODO
+*
+* @param value TODO
+* @param min TODO
+* @param max TODO
+*
+* @return TODO
+*/
++ (double) smoothStepValue:(double)value min:(double)min max:(double)max;
 
 /**
 * TODO

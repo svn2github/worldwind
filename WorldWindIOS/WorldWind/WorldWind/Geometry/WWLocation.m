@@ -504,8 +504,8 @@
 
         // Convert the distance from meters to arc degrees. The globe's radius provides the necessary context to perform
         // this conversion.
-        double radius = MAX([globe equatorialRadius], [globe polarRadius]);
-        double distanceDegrees = DEGREES(distanceMeters / radius);
+        double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+        double distanceDegrees = DEGREES(distanceMeters / globeRadius);
 
         // Forecast the location at the specified date using the location's course and distance travelled in arc
         // degrees. The forecast location starts at the last known location and travels along a great circle arc with

@@ -13,15 +13,57 @@
 
 @implementation WWMath
 
-+ (double) clamp:(double)value min:(double)min max:(double)max
++ (double) clampValue:(double)value min:(double)min max:(double)max
 {
     return value < min ? min : (value > max ? max : value);
 }
 
++ (double) stepValue:(double)value min:(double)min max:(double)max
+{
+    // When the min and max are equivalent this cannot distinguish between the two. In this case, this returns 0 if the
+    // value is on or before the min, and 1 if the value is after the max. The case that would cause a divide by zero
+    // error is never evaluated. The value is always less than, equal to, or greater than the min/max.
+
+    if (value <= min)
+    {
+        return 0;
+    }
+    else if (value >= max)
+    {
+        return 1;
+    }
+    else
+    {
+        return (value - min) / (max - min);
+    }
+}
+
++ (double) smoothStepValue:(double)value min:(double)min max:(double)max
+{
+    // When the min and max are equivalent this cannot distinguish between the two. In this case, this returns 0 if the
+    // value is on or before the min, and 1 if the value is after the max. The case that would cause a divide by zero
+    // error is never evaluated. The value is always less than, equal to, or greater than the min/max.
+
+    if (value <= min)
+    {
+        return 0;
+    }
+    else if (value >= max)
+    {
+        return 1;
+    }
+    else
+    {
+        double step = (value - min) / (max - min);
+        return step * step * (3 - 2 * step);
+    }
+}
+
 + (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount
 {
-    // The form for interpolation below requires one fewer operation than the standard form of (1-t)*a + t*b. Since both
-    // forms are straightforward to implement and understand, we have used the somewhat more efficient form below.
+    // The form for interpolation below a + t*(b-a) requires one fewer operation than the standard form of
+    // (1-t)*a + t*b. Since both forms are straightforward to implement and understand, we have used the somewhat more
+    // efficient form below.
 
     return value1 + amount * (value2 - value1);
 }
