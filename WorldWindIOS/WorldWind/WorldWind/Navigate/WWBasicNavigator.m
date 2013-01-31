@@ -94,12 +94,12 @@
         self->animBeginLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
         self->animEndLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
 
-        self->_nearDistance = DEFAULT_NEAR_DISTANCE;
-        self->_farDistance = DEFAULT_FAR_DISTANCE;
-        self->_lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
-        self->_range = DEFAULT_ALTITUDE;
-        self->_heading = DEFAULT_HEADING;
-        self->_tilt = DEFAULT_TILT;
+        _nearDistance = DEFAULT_NEAR_DISTANCE;
+        _farDistance = DEFAULT_FAR_DISTANCE;
+        _lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
+        _range = DEFAULT_ALTITUDE;
+        _heading = DEFAULT_HEADING;
+        _tilt = DEFAULT_TILT;
         [self setInitialLocation];
     }
 
@@ -145,12 +145,12 @@
     // Compute the current modelview matrix based on this Navigator's look-at location and range.
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
     [modelview setLookAt:globe
-          centerLatitude:[self->_lookAt latitude]
-         centerLongitude:[self->_lookAt longitude]
+          centerLatitude:[_lookAt latitude]
+         centerLongitude:[_lookAt longitude]
           centerAltitude:0
-           rangeInMeters:self->_range
-                 heading:self->_heading
-                    tilt:self->_tilt];
+           rangeInMeters:_range
+                 heading:_heading
+                    tilt:_tilt];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
     // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
@@ -158,15 +158,15 @@
     WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
 
-    self->_nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
-                                                            viewportHeight:viewportHeight
-                                                          distanceToObject:[eyePos altitude]];
-    if (self->_nearDistance < MIN_NEAR_DISTANCE)
-        self->_nearDistance = MIN_NEAR_DISTANCE;
+    _nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
+                                                      viewportHeight:viewportHeight
+                                                    distanceToObject:[eyePos altitude]];
+    if (_nearDistance < MIN_NEAR_DISTANCE)
+        _nearDistance = MIN_NEAR_DISTANCE;
 
-    self->_farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
-    if (self->_farDistance < MIN_FAR_DISTANCE)
-        self->_farDistance = MIN_FAR_DISTANCE;
+    _farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
+    if (_farDistance < MIN_FAR_DISTANCE)
+        _farDistance = MIN_FAR_DISTANCE;
 
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
     // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
@@ -174,8 +174,8 @@
     WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
     [projection setPerspectiveSizePreserving:viewportWidth
                               viewportHeight:viewportHeight
-                                nearDistance:self->_nearDistance
-                                 farDistance:self->_farDistance];
+                                nearDistance:_nearDistance
+                                 farDistance:_farDistance];
 
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
 }
@@ -252,10 +252,14 @@
     if (duration == 0)
     {
         // When the specified duration is zero we apply the specified values immediately. This overrides any currently
-        // active animation. Calling stopAnimation has no effect if there is no currently active animation.
-        [self stopAnimation];
+        // active animation.
         [_lookAt setLocation:location];
         _range = distance;
+
+        // Stop any currently active animation and cause the World Wind view to redraw itself. This has the effect of
+        // rendering the view with the specified navigator location and range. Calling stopAnimation has no effect if
+        // there is no currently active animation.
+        [self stopAnimation];
         [self->view drawView];
     }
     else
@@ -334,7 +338,7 @@
 
 - (void) setInitialLocation
 {
-    [self->_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
+    [_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
 
     if (![CLLocationManager locationServicesEnabled])
     {
@@ -351,7 +355,7 @@
     }
 
     WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
-    [self->_lookAt setCLLocation:location];
+    [_lookAt setCLLocation:location];
 }
 
 - (void) startDisplayLink
@@ -428,7 +432,7 @@
         // relative coordinates to change in model relative coordinates by inverting the change in X. There is no need
         // to invert the change in Y because the Y axis coordinates are already inverted.
         CGRect viewport = [self->view viewport];
-        double distance = MAX(1, self->_range);
+        double distance = MAX(1, _range);
         double metersPerPixel = [WWMath perspectiveSizePreservingMaxPixelSize:CGRectGetWidth(viewport)
                                                                viewportHeight:CGRectGetHeight(viewport)
                                                              distanceToObject:distance];
@@ -444,17 +448,17 @@
 
         // Convert the translation from arc degrees to change in latitude and longitude relative to the current heading.
         // The resultant translation in latitude and longitude is defined in the equirectangular coordinate system.
-        double sinHeading = sin(RADIANS(self->_heading));
-        double cosHeading = cos(RADIANS(self->_heading));
+        double sinHeading = sin(RADIANS(_heading));
+        double cosHeading = cos(RADIANS(_heading));
         double latDegrees = forwardDegrees * cosHeading - sideDegrees * sinHeading;
         double lonDegrees = forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
         // Apply the change in latitude and longitude to this navigator's lookAt property. Limit the new latitude to the
         // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
         // corresponding change in heading, which has not been implemented here in favor of simplicity.
-        double newLat = [WWMath clampValue:([self->_lookAt latitude] + latDegrees) min:-90 max:90];
-        double newLon = NormalizedDegreesLongitude([self->_lookAt longitude] + lonDegrees);
-        [self->_lookAt setDegreesLatitude:newLat longitude:newLon];
+        double newLat = [WWMath clampValue:([_lookAt latitude] + latDegrees) min:-90 max:90];
+        double newLon = NormalizedDegreesLongitude([_lookAt longitude] + lonDegrees);
+        [_lookAt setDegreesLatitude:newLat longitude:newLon];
     }
     else
     {
@@ -477,7 +481,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginRange = self->_range;
+        self->gestureBeginRange = _range;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -490,7 +494,9 @@
         // between two and three fingers while pinching.
         CGFloat scale = [recognizer scale];
         if (scale != 0)
-            self->_range = self->gestureBeginRange / scale;
+        {
+            _range = self->gestureBeginRange / scale;
+        }
     }
     else
     {
@@ -504,7 +510,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginHeading = self->_heading;
+        self->gestureBeginHeading = _heading;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -514,7 +520,7 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         double rotationInDegrees = DEGREES([recognizer rotation]);
-        self->_heading = NormalizedDegreesHeading(self->gestureBeginHeading - rotationInDegrees);
+        _heading = NormalizedDegreesHeading(self->gestureBeginHeading - rotationInDegrees);
     }
     else
     {
@@ -532,7 +538,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginTilt = self->_tilt;
+        self->gestureBeginTilt = _tilt;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -544,7 +550,7 @@
         CGPoint translation = [recognizer translationInView:self->view];
         CGRect bounds = [self->view bounds];
         double degrees = 90 * translation.y / CGRectGetHeight(bounds);
-        self->_tilt = [WWMath clampValue:self->gestureBeginTilt + degrees min:0 max:90];
+        _tilt = [WWMath clampValue:self->gestureBeginTilt + degrees min:0 max:90];
     }
     else
     {
@@ -556,18 +562,15 @@
 {
     if (recognizer == self->panGestureRecognizer)
     {
-        return otherRecognizer == self->pinchGestureRecognizer
-                || otherRecognizer == self->rotationGestureRecognizer;
+        return otherRecognizer == self->pinchGestureRecognizer || otherRecognizer == self->rotationGestureRecognizer;
     }
     else if (recognizer == self->pinchGestureRecognizer)
     {
-        return otherRecognizer == self->panGestureRecognizer
-                || otherRecognizer == self->rotationGestureRecognizer;
+        return otherRecognizer == self->panGestureRecognizer || otherRecognizer == self->rotationGestureRecognizer;
     }
     else if (recognizer == self->rotationGestureRecognizer)
     {
-        return otherRecognizer == self->panGestureRecognizer
-                || otherRecognizer == self->pinchGestureRecognizer;
+        return otherRecognizer == self->panGestureRecognizer || otherRecognizer == self->pinchGestureRecognizer;
     }
     else
     {
