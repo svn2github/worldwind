@@ -6,6 +6,7 @@
  */
 
 #import "LocationController.h"
+#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Terrain/WWGlobe.h"
@@ -22,6 +23,17 @@
 #define INITIAL_LOCATION_MAX_TIME 2.0
 
 @implementation LocationController
+{
+    CLLocationManager* locationManager;
+    NSDate* locationManagerStartDate;
+    BOOL locationManagerActive;
+
+    CADisplayLink* displayLink;
+    BOOL displayLinkActive;
+
+    CLLocation* lastLocation;
+    WWLocation* forecastLocation;
+}
 
 - (LocationController*) init
 {

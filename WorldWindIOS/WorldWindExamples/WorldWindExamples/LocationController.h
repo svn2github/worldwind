@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import "WorldWind/WorldWindView.h"
-#import "WorldWind/Geometry/WWLocation.h"
 
 typedef enum
 {
@@ -18,18 +17,6 @@ typedef enum
 } LocationControllerState;
 
 @interface LocationController : NSObject <CLLocationManagerDelegate>
-{
-@protected
-    CLLocationManager* locationManager;
-    NSDate* locationManagerStartDate;
-    BOOL locationManagerActive;
-
-    CADisplayLink* displayLink;
-    BOOL displayLinkActive;
-
-    CLLocation* lastLocation;
-    WWLocation* forecastLocation;
-}
 
 @property (nonatomic) WorldWindView* view;
 

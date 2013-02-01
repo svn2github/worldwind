@@ -7,11 +7,12 @@
 
 #import "ViewController.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
@@ -21,6 +22,7 @@
 #import "AnyGestureRecognizer.h"
 
 #define TOOLBAR_HEIGHT 44
+#define SEARCHBAR_PLACEHOLDER @"Search or Address"
 
 @implementation ViewController
 {
@@ -147,6 +149,7 @@
                                                                    target:self action:@selector(handleLocationButtonTap)];
 
     self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
+    [self->searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
     UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self->searchBar];
     [self->searchBar setDelegate:self];
 
@@ -234,7 +237,7 @@
     {
         [self->locationController setState:LocationControllerStateDisabled];
 
-        CLPlacemark* lastPlacemark = [placemarks lastObject];
+        CLPlacemark* lastPlacemark = [placemarks objectAtIndex:0];
         CLRegion* region = [lastPlacemark region];
         WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
         double radius = [region radius];
