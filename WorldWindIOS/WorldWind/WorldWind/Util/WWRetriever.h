@@ -44,13 +44,4 @@
 */
 - (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object;
 
-/**
-* Adds the retriever to the World Wind retrieval queue, from which it runs asynchronously.
-*
-* @param retriever The retriever to run.
-*
-* @exception NSInvalidArgumentException If the retriever is nil.
-*/
-- (void) addToQueue:(WWRetriever*)retriever;
-
 @end

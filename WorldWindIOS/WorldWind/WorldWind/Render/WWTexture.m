@@ -11,6 +11,7 @@
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWUtil.h"
 
 @implementation WWTexture
 
@@ -110,14 +111,73 @@
     return _textureID != 0;
 }
 
+- (void) loadGL
+{
+    if ([[_filePath pathExtension] isEqualToString:@"pvr"])
+    {
+        [self loadGLCompressed];
+    }
+    else
+    {
+        glGenTextures(1, &_textureID);
+        glBindTexture(GL_TEXTURE_2D, _textureID);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _imageWidth, _imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                [self->imageData bytes]);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    self->imageData = nil; // image bytes are no longer needed
+}
+
+- (void) loadGLCompressed // TODO
+{
+}
+
 - (void) loadTexture
 {
     if ([[_filePath pathExtension] isEqualToString:@"pvr"])
     {
         [self loadCompressedTexture];
-        return;
     }
+    else if ([[_filePath pathExtension] isEqualToString:@"raw"])
+    {
+        [self loadRawTexture];
+    }
+    else
+    {
+        [self loadEncodedTexture];
+    }
+}
 
+- (void) loadCompressedTexture
+{
+    WWPVRTCImage* image = [[WWPVRTCImage alloc] initWithContentsOfFile:_filePath];
+
+    _imageWidth = [image imageWidth];
+    _imageHeight = [image imageHeight];
+    _textureSize = [image imageSize];
+
+    // TODO: Assign compressed bits of image to self->imageData.
+}
+
+- (void) loadRawTexture
+{
+    self->imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
+
+    _textureSize = [self->imageData length];
+    _imageWidth = (int) sqrt([self->imageData length] / 4);
+    _imageHeight = _imageWidth;
+}
+
+- (void) loadEncodedTexture
+{
     UIImage* uiImage = [UIImage imageWithContentsOfFile:_filePath];
     if (uiImage == nil)
     {
@@ -138,23 +198,23 @@
     }
 
     _textureSize = _imageWidth * _imageHeight * 4; // assume 4 bytes per pixel
-    self->imageData = malloc((size_t) _textureSize); // allocate space for the image
+    void* data = malloc((size_t) _textureSize); // allocate space for the image
 
     CGContextRef context;
     @try
     {
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        context = CGBitmapContextCreate(self->imageData, (size_t) _imageWidth, (size_t) _imageHeight,
+        context = CGBitmapContextCreate(data, (size_t) _imageWidth, (size_t) _imageHeight,
                 8, (size_t) (4 * _imageWidth), colorSpace, kCGImageAlphaPremultipliedLast);
         CGRect rect = CGRectMake(0, 0, _imageWidth, _imageHeight);
         CGContextClearRect(context, rect);
         CGContextDrawImage(context, rect, cgImage);
+
+        self->imageData = [NSData dataWithBytesNoCopy:data length:(NSUInteger) _textureSize];
     }
     @catch (NSException* exception)
     {
         _textureCreationFailed = YES;
-
-        free(self->imageData);
         self->imageData = nil;
 
         NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", _filePath];
@@ -167,43 +227,53 @@
     }
 }
 
-- (void) loadGL
++ (void) convertTextureToRaw:(NSString*)imagePath
 {
-    if ([[_filePath pathExtension] isEqualToString:@"pvr"])
+    NSString* outputPath = [WWUtil replaceSuffixInPath:imagePath newSuffix:@"raw"];
+
+    UIImage* uiImage = [UIImage imageWithContentsOfFile:imagePath];
+    if (uiImage == nil)
     {
-        // TODO: Pass compressed texture to OpenGL
+        WWLog(@"Unable to load image file %@", imagePath);
         return;
     }
 
-    glGenTextures(1, &_textureID);
-    glBindTexture(GL_TEXTURE_2D, _textureID);
+    CGImageRef cgImage = [uiImage CGImage];
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    int imageWidth = CGImageGetWidth(cgImage);
+    int imageHeight = CGImageGetHeight(cgImage);
+    if (imageWidth == 0 || imageHeight == 0)
+    {
+        WWLog(@"Image size is zero for file %@", imagePath);
+        return;
+    }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _imageWidth, _imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, self->imageData);
+    int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
+    void* imageData = malloc((size_t) textureSize); // allocate space for the image
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    CGContextRef context;
+    @try
+    {
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        context = CGBitmapContextCreate(imageData, (size_t) imageWidth, (size_t) imageHeight,
+                8, (size_t) (4 * imageWidth), colorSpace, kCGImageAlphaPremultipliedLast);
+        CGRect rect = CGRectMake(0, 0, imageWidth, imageHeight);
+        CGContextClearRect(context, rect);
+        CGContextDrawImage(context, rect, cgImage);
 
-    free(self->imageData);
-    self->imageData = nil;
-}
-
-- (void) loadCompressedTexture
-{
-    WWPVRTCImage* image = [[WWPVRTCImage alloc] initWithContentsOfFile:_filePath];
-
-    _imageWidth = [image imageWidth];
-    _imageHeight = [image imageHeight];
-    _textureSize = [image imageSize];
-
-    int tid = [image loadGL];
-    if (tid >= 0)
-        _textureID = (GLuint) tid;
-    else
-        _textureCreationFailed = YES;
+        NSData* outData = [NSData dataWithBytesNoCopy:imageData length:(NSUInteger) textureSize];
+        [outData writeToFile:outputPath atomically:YES];
+    }
+    @catch (NSException* exception)
+    {
+        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
+        WWLogE(msg, exception);
+    }
+    @finally
+    {
+        // The image has been drawn into the allocated memory, so release the no-longer-needed context.
+        CGContextRelease(context);
+    }
 }
 
 @end

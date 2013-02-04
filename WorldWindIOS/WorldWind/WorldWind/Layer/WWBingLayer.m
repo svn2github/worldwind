@@ -20,7 +20,7 @@
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
                        numLevels:16
-                     imageFormat:@"image/png"
+            retrievalImageFormat:@"image/png"
                        cachePath:cachePath];
     [self setDisplayName:@"Bing"];
     [self setImageFile:@"Bing"];

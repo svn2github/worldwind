@@ -71,14 +71,4 @@
     }
 }
 
-- (void) addToQueue:(WWRetriever*)retriever
-{
-    if (retriever == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Retriever is nil")
-    }
-
-    [[WorldWind retrievalQueue] addOperation:retriever];
-}
-
 @end

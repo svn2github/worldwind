@@ -60,7 +60,7 @@
 @property(nonatomic, readonly) NSString* cachePath;
 
 /// The image format to request from the remote server. The default is _image/png_.
-@property(nonatomic, readonly) NSString* imageFormat;
+@property(nonatomic, readonly) NSString* retrievalImageFormat;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS
 // tiled image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be
@@ -72,7 +72,9 @@
 @property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
 
 /// Indicates whether this layer uses compressed textures.
-@property (nonatomic) BOOL compressTextures;
+@property(nonatomic) BOOL useCompressedTextures;
+
+@property(nonatomic) BOOL useRawTextures;
 
 /// @name Initializing Tiled Image Layers
 
@@ -84,7 +86,7 @@
 * @param numLevels The number of levels to define for the layer. Each level is successively one power of two higher
 * resolution than the next lower-numbered level. (0 is the lowest resolution level, 1 is twice that resolution, etc.)
 * Each level contains four times as many tiles as the next lower-numbered level, each 1/4 the geographic size.
-* @param imageFormat The mime type of the image format for the layer's tiles, e.g., _image/png_.
+* @param retrievalImageFormat The mime type of the image format for the layer's tiles, e.g., _image/png_.
 * @param cachePath The local file system location in which to store the layer's retrieved imagery.
 *
 * @return This tiled image layer, initialized.
@@ -95,7 +97,7 @@
 - (WWTiledImageLayer*) initWithSector:(WWSector*)sector
                        levelZeroDelta:(WWLocation*)levelZeroDelta
                             numLevels:(int)numLevels
-                          imageFormat:(NSString*)imageFormat
+                 retrievalImageFormat:(NSString*)retrievalImageFormat
                             cachePath:(NSString*)cachePath;
 
 /// @name Methods of Interest Only to Subclasses

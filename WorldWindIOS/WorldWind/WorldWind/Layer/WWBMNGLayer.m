@@ -20,7 +20,7 @@
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
                        numLevels:5
-                     imageFormat:@"image/jpeg"
+            retrievalImageFormat:@"image/jpeg"
                        cachePath:cachePath];
     [self setDisplayName:@"Blue Marble"];
     [self setImageFile:@"BlueMarble"];

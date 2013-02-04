@@ -25,7 +25,8 @@
 @interface WWTexture : NSOperation <WWDisposable, WWCacheable>
 {
 @protected
-    void* imageData; // holds image bits between the time they're read and the time they're passed to OpenGL
+    NSData* imageData; // holds image bits between the time they're read from disk and the time they're passed to
+    // OpenGL
 }
 
 /// @name Texture Attributes
@@ -100,7 +101,7 @@
 *
 * If texture creation fails, this instance's textureCreationFailed flag is set to YES.
 */
-- (void) loadTexture;
+- (void) loadEncodedTexture;
 
 /**
 * Loads the texture from a PVRTC image file on disk and converts it to a form suitable for use as an OpenGL texture.
@@ -113,8 +114,26 @@
 - (void) loadCompressedTexture;
 
 /**
+* Loads the texture from a raw RGBA image file on disk and converts it to a form suitable for use as an OpenGL texture.
+*
+* This method does not pass the texture to OpenGL because it is typically performed on a non-main thread. The texture
+ * is passed to OpenGL in the bind method.
+*
+* If texture creation fails, this instance's textureCreationFailed flag is set to YES.
+*/
+- (void) loadRawTexture;
+
+/**
 * Passes the texture to OpenGL. This method is called by the bind method the first time the texture is displayed.
 */
 - (void) loadGL;
+
+/**
+* Passes the PVRTC texture to OpenGL. This method is called via the bind method the first time the texture is
+* displayed.
+*/
+- (void) loadGLCompressed;
+
++ (void) convertTextureToRaw:(NSString*)imagePath;
 
 @end

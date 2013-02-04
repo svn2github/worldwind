@@ -31,7 +31,7 @@
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:90 longitude:90]
                        numLevels:14
-                     imageFormat:@"image/png"
+            retrievalImageFormat:@"image/png"
                        cachePath:cachePath];
 
     NSString* serviceLocation = @"http://faaservices-1551414968.us-east-1.elb.amazonaws.com/ArcGIS/rest/services/201101_AirportsGIS_BH/Dafif/MapServer";

@@ -33,7 +33,7 @@
 - (WWTiledImageLayer*) initWithSector:(WWSector*)sector
                        levelZeroDelta:(WWLocation*)levelZeroDelta
                             numLevels:(int)numLevels
-                          imageFormat:(NSString*)imageFormat
+                 retrievalImageFormat:(NSString*)retrievalImageFormat
                             cachePath:(NSString*)cachePath
 {
     if (sector == nil)
@@ -51,7 +51,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Number of levels is less than 1")
     }
 
-    if (imageFormat == nil)
+    if (retrievalImageFormat == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Image format is nil")
     }
@@ -65,8 +65,10 @@
 
     self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
 
-    _imageFormat = imageFormat;
+    _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
+
+    _useRawTextures = YES;
 
     self->detailHintOrigin = 2.5;
 
@@ -105,9 +107,15 @@
     {
         [self->currentRetrievals removeObject:imagePath];
 
-        if (_compressTextures)
+        if (_useCompressedTextures)
         {
-            [WWPVRTCImage compressFile:[[notification userInfo] valueForKey:WW_FILE_PATH]];
+            [WWPVRTCImage compressFile:imagePath];
+            [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        }
+        else if (_useRawTextures)
+        {
+            [WWTexture convertTextureToRaw:imagePath];
+            [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
         }
 
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
@@ -291,7 +299,8 @@
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSString* formatSuffix = _compressTextures ? @"pvr" : [WWUtil suffixForMimeType:_imageFormat];
+    NSString* formatSuffix = _useCompressedTextures ? @"pvr" : _useRawTextures ? @"raw"
+            : [WWUtil suffixForMimeType:_retrievalImageFormat];
 
     NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
                                                      _cachePath, [level levelNumber], row, row, column, formatSuffix];
@@ -325,23 +334,24 @@
         return;
     [self->currentRetrievals addObject:[tile imagePath]];
 
-    NSURL* url = [self resourceUrlForTile:tile imageFormat:_imageFormat];
+    NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
-    if (_compressTextures)
+    WWRetriever* retriever;
+    if (_useCompressedTextures || _useRawTextures)
     {
-        // Download to a file with the download format suffix. The image will be compressed when the
-        // notification of download success is received in handleNotification above.
-        NSString* suffix = [WWUtil suffixForMimeType:_imageFormat];
+        // Download to a file with the download format suffix. The image will be decoded and possibly compressed when
+        // the notification of download success is received in handleNotification above.
+        NSString* suffix = [WWUtil suffixForMimeType:_retrievalImageFormat];
         NSString* filePath = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:suffix];
-        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self];
-        [retriever addToQueue:retriever];
+        retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self];
     }
     else
     {
-        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
-        [retriever setThreadPriority:0.0];
-        [retriever addToQueue:retriever];
+        retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
     }
+
+    [retriever setThreadPriority:0.0];
+    [[WorldWind retrievalQueue] addOperation:retriever];
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat
