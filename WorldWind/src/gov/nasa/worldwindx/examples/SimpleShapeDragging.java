@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
+
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.*;
@@ -14,6 +20,8 @@ import javax.swing.*;
 /**
  * This example demonstrates the use of the {@link gov.nasa.worldwind.util.BasicDragger} class for dragging a shape
  * across the globe.
+ *
+ * @version $Id$
  */
 public class SimpleShapeDragging extends JFrame
 {

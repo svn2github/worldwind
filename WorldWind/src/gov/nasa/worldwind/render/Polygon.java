@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.GpuResourceCache;
@@ -18,7 +18,7 @@ import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import javax.xml.stream.*;
 import java.io.*;
@@ -502,7 +502,7 @@ public class Polygon extends AbstractShape
         int size = 2 * (texCoordCount + (closeIt ? 1 : 0));
         if (this.textureCoordsBuffer == null || this.textureCoordsBuffer.capacity() < size)
         {
-            this.textureCoordsBuffer = BufferUtil.newFloatBuffer(size);
+            this.textureCoordsBuffer = Buffers.newDirectFloatBuffer(size);
         }
         else
         {
@@ -664,7 +664,8 @@ public class Polygon extends AbstractShape
         {
             // Push an identity texture matrix. This prevents drawSides() from leaking GL texture matrix state. The
             // texture matrix stack is popped from OGLStackHandler.pop(), in the finally block below.
-            ogsh.pushTextureIdentity(dc.getGL());
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            ogsh.pushTextureIdentity(gl);
         }
 
         return ogsh;
@@ -688,7 +689,7 @@ public class Polygon extends AbstractShape
 
     protected void doDrawOutlineVA(DrawContext dc, ShapeData shapeData)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.coordBuffer.rewind());
 
@@ -709,7 +710,7 @@ public class Polygon extends AbstractShape
 
     protected void doDrawOutlineVBO(DrawContext dc, int[] vboIds, ShapeData shapeData)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
@@ -730,7 +731,7 @@ public class Polygon extends AbstractShape
 
     protected void doDrawInterior(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode() && mustApplyTexture(dc) && this.getTexture().bind(dc)) // bind initiates retrieval
         {
@@ -738,12 +739,12 @@ public class Polygon extends AbstractShape
 
             gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.textureCoordsBuffer.rewind());
             dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         }
         else
         {
             dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         }
 
         if (this.shouldUseVBOs(dc))
@@ -762,7 +763,7 @@ public class Polygon extends AbstractShape
 
     protected void doDrawInteriorVA(DrawContext dc, ShapeData shapeData)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode() && this.mustApplyLighting(dc, null))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.normalBuffer.rewind());
@@ -776,7 +777,7 @@ public class Polygon extends AbstractShape
 
     protected void doDrawInteriorVBO(DrawContext dc, int[] vboIds, ShapeData shapeData)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
         gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[1]);
@@ -961,7 +962,7 @@ public class Polygon extends AbstractShape
         if (shapeData.coordBuffer != null && shapeData.coordBuffer.capacity() >= size)
             shapeData.coordBuffer.clear();
         else
-            shapeData.coordBuffer = BufferUtil.newFloatBuffer(size);
+            shapeData.coordBuffer = Buffers.newDirectFloatBuffer(size);
 
         // Capture the position position at which normals buffer starts (in case there are normals)
         shapeData.normalBufferPosition = this.numPositions * 3;
@@ -1168,22 +1169,20 @@ public class Polygon extends AbstractShape
      */
     protected void tessellatePolygon(ShapeData shapeData, Vec4 normal)
     {
-        GLU glu = new GLU();
-
         GLUTessellatorSupport glts = new GLUTessellatorSupport();
         shapeData.cb = new GLUTessellatorSupport.CollectIndexListsCallback();
 
-        glts.beginTessellation(glu, shapeData.cb, normal);
+        glts.beginTessellation(shapeData.cb, normal);
         try
         {
             double[] coords = new double[3];
 
-            glu.gluTessBeginPolygon(glts.getGLUtessellator(), null);
+            GLU.gluTessBeginPolygon(glts.getGLUtessellator(), null);
 
             int k = 0;
             for (BoundaryInfo boundary : shapeData)
             {
-                glu.gluTessBeginContour(glts.getGLUtessellator());
+                GLU.gluTessBeginContour(glts.getGLUtessellator());
                 FloatBuffer vBuf = boundary.vertexBuffer;
                 for (int i = 0; i < boundary.positions.size(); i++)
                 {
@@ -1191,19 +1190,19 @@ public class Polygon extends AbstractShape
                     coords[1] = vBuf.get(i * 3 + 1);
                     coords[2] = vBuf.get(i * 3 + 2);
 
-                    glu.gluTessVertex(glts.getGLUtessellator(), coords, 0, k++);
+                    GLU.gluTessVertex(glts.getGLUtessellator(), coords, 0, k++);
                 }
-                glu.gluTessEndContour(glts.getGLUtessellator());
+                GLU.gluTessEndContour(glts.getGLUtessellator());
             }
 
-            glu.gluTessEndPolygon(glts.getGLUtessellator());
+            GLU.gluTessEndPolygon(glts.getGLUtessellator());
         }
         finally
         {
             // Free any heap memory used for tessellation immediately. If tessellation has consumed all available
             // heap memory, we must free memory used by tessellation immediately or subsequent operations such as
             // message logging will fail.
-            glts.endTessellation(glu);
+            glts.endTessellation();
         }
     }
 
@@ -1213,7 +1212,7 @@ public class Polygon extends AbstractShape
         int size = this.countTriangleVertices(cb.getPrims(), cb.getPrimTypes());
 
         if (shapeData.interiorIndicesBuffer == null || shapeData.interiorIndicesBuffer.capacity() < size)
-            shapeData.interiorIndicesBuffer = BufferUtil.newIntBuffer(size);
+            shapeData.interiorIndicesBuffer = Buffers.newDirectIntBuffer(size);
         else
             shapeData.interiorIndicesBuffer.clear();
 

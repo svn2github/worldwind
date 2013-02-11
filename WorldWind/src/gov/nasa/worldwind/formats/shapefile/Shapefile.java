@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.formats.shapefile;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.*;
@@ -1532,7 +1532,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
                 DoubleBuffer doubleBuffer;
                 try
                 {
-                    doubleBuffer = BufferUtil.newDoubleBuffer(2 * totalPointsEstimate);
+                    doubleBuffer = Buffers.newDirectDoubleBuffer(2 * totalPointsEstimate);
                 }
                 catch (OutOfMemoryError e)
                 {
@@ -1557,7 +1557,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
      *
      * @return a liberal estimate of the number of points in the shapefile.
      */
-    @SuppressWarnings( {"StringEquality"})
+    @SuppressWarnings({"StringEquality"})
     protected int computeNumberOfPointsEstimate()
     {
         // Compute the header overhead, subtract it from the file size, then divide by point size to get the estimate.
@@ -1653,7 +1653,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
      *
      * @return a buffer containing the point coordinates.
      */
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected DoubleBuffer readUnspecifiedPoints(ShapefileRecord record, ByteBuffer buffer)
     {
         // Create a view of the buffer as a doubles.
@@ -1698,7 +1698,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
      *
      * @throws WWRuntimeException if the Shapefile's projection is unsupported.
      */
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected DoubleBuffer readProjectedPoints(ShapefileRecord record, ByteBuffer buffer)
     {
         Object o = this.getValue(AVKey.PROJECTION_NAME);

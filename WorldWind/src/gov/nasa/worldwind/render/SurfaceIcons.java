@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.SurfaceTileDrawContext;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.geom.*;
 import java.util.*;
 
@@ -69,8 +69,8 @@ public class SurfaceIcons extends SurfaceIcon
         if (this.locations == null)
             return;
 
-        GL gl = dc.getGL();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         double drawScale = 1;
         TextureCoords textureCoords = new TextureCoords(0, 0, 1, 1);
 

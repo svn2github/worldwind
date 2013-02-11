@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -8,7 +8,7 @@ package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.avlist.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.nio.*;
 
 /**
@@ -1245,7 +1245,7 @@ public abstract class BufferWrapper
 
         public int getGLDataType()
         {
-            return GL.GL_INT;
+            return GL2.GL_INT;
         }
 
         public long getSizeInBytes()
@@ -1687,7 +1687,7 @@ public abstract class BufferWrapper
 
         public int getGLDataType()
         {
-            return GL.GL_DOUBLE;
+            return GL2.GL_DOUBLE;
         }
 
         public long getSizeInBytes()

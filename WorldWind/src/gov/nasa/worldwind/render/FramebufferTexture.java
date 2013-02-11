@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
 
@@ -117,7 +117,7 @@ public class FramebufferTexture implements WWTexture
             t = this.initializeTexture(dc);
 
         if (t != null)
-            t.bind();
+            t.bind(dc.getGL());
 
         return t != null;
     }
@@ -156,12 +156,12 @@ public class FramebufferTexture implements WWTexture
         if (!this.generateTexture(dc, this.width, this.height))
             return null;
 
-        TextureData td = new TextureData(GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
-            false, false, false, null, null);
-        Texture t = TextureIO.newTexture(td);
-        t.bind(); // must do this after generating texture because another texture is bound then
+        GL gl = dc.getGL();
 
-        GL gl = GLContext.getCurrent().getGL();
+        TextureData td = new TextureData(gl.getGLProfile(), GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA,
+            GL.GL_UNSIGNED_BYTE, false, false, false, null, null);
+        Texture t = TextureIO.newTexture(td);
+        t.bind(gl); // must do this after generating texture because another texture is bound then
 
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
@@ -178,17 +178,17 @@ public class FramebufferTexture implements WWTexture
 
     protected boolean generateTexture(DrawContext dc, int width, int height)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         Matrix geoToCartesian = this.computeGeographicToCartesianTransform(this.sector);
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_COLOR_BUFFER_BIT
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT);
 
             // Fill the frame buffer with transparent black.
             gl.glClearColor(0f, 0f, 0f, 0f);
@@ -219,14 +219,14 @@ public class FramebufferTexture implements WWTexture
                     this.sourceTexture.applyInternalTransform(dc);
 
                     // Setup the texture to replace the fragment color at each pixel.
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
 
                     int tessellationDensity = this.getTessellationDensity();
                     this.drawQuad(dc, geoToCartesian, tessellationDensity, tessellationDensity);
                 }
                 finally
                 {
-                    gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
+                    gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
                     gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
                 }
             }
@@ -271,9 +271,9 @@ public class FramebufferTexture implements WWTexture
         Vec4 ul = this.transformToQuadCoordinates(geoToCartesian, this.corners.get(3));
         BilinearInterpolator interp = new BilinearInterpolator(ll, lr, ur, ul);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glBegin(GL.GL_TRIANGLE_STRIP);
+        gl.glBegin(GL2.GL_TRIANGLE_STRIP);
         try
         {
             this.drawQuad(dc, interp, slices, stacks);
@@ -290,7 +290,7 @@ public class FramebufferTexture implements WWTexture
         double du = 1.0f / (float) slices;
         double dv = 1.0f / (float) stacks;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         for (int vi = 0; vi < stacks; vi++)
         {

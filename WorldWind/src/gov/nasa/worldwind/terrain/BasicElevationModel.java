@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.terrain;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
@@ -554,7 +554,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         {
             WWIO.saveBuffer(buffer, tempFile);
             BufferedImage image = ImageIO.read(tempFile);
-            ByteBuffer byteBuffer = BufferUtil.newByteBuffer(image.getWidth() * image.getHeight() * 2);
+            ByteBuffer byteBuffer = Buffers.newDirectByteBuffer(image.getWidth() * image.getHeight() * 2);
             byteBuffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
             ShortBuffer bilBuffer = byteBuffer.asShortBuffer();
 
@@ -1652,7 +1652,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     public ByteBuffer generateExtremeElevations(int levelNumber)
     {
         return null;
@@ -1870,9 +1870,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         return b != null && b;
     }
 
-    /**
-     * Starts retrieving non-tile resources associated with this model in a non-rendering thread.
-     */
+    /** Starts retrieving non-tile resources associated with this model in a non-rendering thread. */
     protected void startResourceRetrieval()
     {
         Thread t = new Thread(new Runnable()
@@ -2358,7 +2356,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void doRestoreStateForObject(RestorableSupport rs, RestorableSupport.StateObject so)
     {
         if (so == null)

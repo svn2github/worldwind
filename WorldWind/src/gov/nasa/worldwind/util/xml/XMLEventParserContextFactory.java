@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -24,7 +24,7 @@ import java.util.logging.Level;
  * Wind and the application are used.
  *
  * @author tag
- * @version $ID$
+ * @version $Id$
  */
 public class XMLEventParserContextFactory
 {

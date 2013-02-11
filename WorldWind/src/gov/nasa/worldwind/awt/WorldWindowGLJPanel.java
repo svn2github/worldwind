@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -15,6 +15,7 @@ import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
+import javax.media.opengl.awt.GLJPanel;
 import java.beans.*;
 import java.util.*;
 
@@ -52,15 +53,15 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
 {
     /**
      * Returns a {@link GLCapabilities} identifying default graphics features to request. The capabilities instance
-     * returned requests a frame buffer with 8 bits each of red, green, blue and alpha, a 24-bit depth buffer, double
-     * buffering, and if the Java property "gov.nasa.worldwind.stereo.mode" is set to "device", device-supported
-     * stereo.
+     * returned requests an OpenGL 1.3 - 2.0 profile, a frame buffer with 8 bits each of red, green, blue and alpha, a
+     * 24-bit depth buffer, double buffering, and if the Java property "gov.nasa.worldwind.stereo.mode" is set to
+     * "device", device-supported stereo.
      *
      * @return a new capabilities instance identifying desired graphics features.
      */
     protected static GLCapabilities getCaps()
     {
-        GLCapabilities caps = new GLCapabilities();
+        GLCapabilities caps = new GLCapabilities(Configuration.getMaxCompatibleGLProfile());
 
         caps.setAlphaBits(8);
         caps.setRedBits(8);
@@ -110,7 +111,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      * @param shareWith a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
      *                  resources are not shared.
      *
-     * @see GLJPanel#GLJPanel(javax.media.opengl.GLCapabilities, javax.media.opengl.GLCapabilitiesChooser,
+     * @see GLJPanel#GLJPanel(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
      *      javax.media.opengl.GLContext)
      */
     public WorldWindowGLJPanel(WorldWindow shareWith)
@@ -150,7 +151,8 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      * @param chooser      a chooser object that customizes the specified capabilities. May be null, in which case a
      *                     default chooser is used.
      *
-     * @see GLJPanel#GLJPanel(GLCapabilities, GLCapabilitiesChooser, GLContext)
+     * @see GLJPanel#GLJPanel(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
+     *      javax.media.opengl.GLContext)
      */
     public WorldWindowGLJPanel(WorldWindow shareWith, GLCapabilities capabilities,
         GLCapabilitiesChooser chooser)

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2001, 2006 United States Government as represented by the Administrator of the National Aeronautics and Space
- * Administration. All Rights Reserved.
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
  */
 package gov.nasa.worldwindx.examples;
 
@@ -9,7 +10,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -18,8 +19,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 
 /**
- * This example illustrates how to change the size of the pick frustum, and how a smaller pick frustum
- * can give better performance.
+ * This example illustrates how to change the size of the pick frustum, and how a smaller pick frustum can give better
+ * performance.
  *
  * @author Jeff Addison
  * @version $Id$
@@ -68,7 +69,7 @@ public class PickFrustum extends ApplicationTemplate
 
         public void draw(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             boolean attribsPushed = false;
             boolean modelviewPushed = false;
             boolean projectionPushed = false;
@@ -80,8 +81,8 @@ public class PickFrustum extends ApplicationTemplate
 
             try
             {
-                gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT | GL.GL_ENABLE_BIT
-                    | GL.GL_TRANSFORM_BIT | GL.GL_VIEWPORT_BIT | GL.GL_CURRENT_BIT);
+                gl.glPushAttrib(GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_COLOR_BUFFER_BIT | GL2.GL_ENABLE_BIT
+                    | GL2.GL_TRANSFORM_BIT | GL2.GL_VIEWPORT_BIT | GL2.GL_CURRENT_BIT);
                 attribsPushed = true;
 
                 gl.glEnable(GL.GL_BLEND);
@@ -91,13 +92,13 @@ public class PickFrustum extends ApplicationTemplate
                 // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
                 // into the GL projection matrix.
                 java.awt.Rectangle viewport = dc.getView().getViewport();
-                gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPushMatrix();
                 projectionPushed = true;
                 gl.glLoadIdentity();
                 gl.glOrtho(0d, viewport.width, 0d, viewport.height, -1, 1);
 
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
                 gl.glPushMatrix();
                 modelviewPushed = true;
                 gl.glLoadIdentity();
@@ -110,7 +111,7 @@ public class PickFrustum extends ApplicationTemplate
                 {
                     Rectangle rect = frustum.getScreenRect();
 
-                    gl.glBegin(GL.GL_LINE_STRIP);
+                    gl.glBegin(GL2.GL_LINE_STRIP);
                     gl.glVertex3d(rect.getX(), rect.getY(), 0);
                     gl.glVertex3d(rect.getX() + rect.getWidth(), rect.getY(), 0);
                     gl.glVertex3d(rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight(), 0);
@@ -123,12 +124,12 @@ public class PickFrustum extends ApplicationTemplate
             {
                 if (projectionPushed)
                 {
-                    gl.glMatrixMode(GL.GL_PROJECTION);
+                    gl.glMatrixMode(GL2.GL_PROJECTION);
                     gl.glPopMatrix();
                 }
                 if (modelviewPushed)
                 {
-                    gl.glMatrixMode(GL.GL_MODELVIEW);
+                    gl.glMatrixMode(GL2.GL_MODELVIEW);
                     gl.glPopMatrix();
                 }
                 if (attribsPushed)

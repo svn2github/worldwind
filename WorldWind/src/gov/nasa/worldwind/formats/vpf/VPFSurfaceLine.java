@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -62,7 +62,8 @@ public class VPFSurfaceLine extends SurfacePolyline // TODO: consolidate with Su
     {
         // Apply the geographic to surface tile coordinate transform.
         Matrix modelview = sdc.getModelviewMatrix();
-        dc.getGL().glMultMatrixd(modelview.toArray(new double[16], 0, false), 0);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glMultMatrixd(modelview.toArray(new double[16], 0, false), 0);
     }
 
     @Override

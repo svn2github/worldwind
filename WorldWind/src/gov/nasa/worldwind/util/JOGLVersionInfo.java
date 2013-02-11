@@ -1,18 +1,17 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.util;
 
 /**
+ * This program returns the version and implementation information for the Java Bindings for OpenGL (R) implementation
+ * found in the CLASSPATH.  This information is also found in the manifest for jogl-all.jar, and this program uses the
+ * java.lang.Package class to retrieve it programmatically.
+ *
  * @version $Id$
- * <p/>
- * This program returns the version and implementation information for the Java Bindings for OpenGL (R)
- * implementation found in the CLASSPATH.  This information is also found in the manifest for jogl.jar, and this
- * program uses the java.lang.Package class to retrieve it programatically.
  */
-
 public class JOGLVersionInfo
 {
     private static JOGLVersionInfo svi = new JOGLVersionInfo();
@@ -27,7 +26,7 @@ public class JOGLVersionInfo
     private static Package pkgInfo(ClassLoader classLoader, String pkgName, String className)
     {
         Package p = null;
-        
+
         try
         {
             classLoader.loadClass(pkgName + "." + className);
@@ -35,7 +34,7 @@ public class JOGLVersionInfo
             // TODO: message logging
             p = Package.getPackage(pkgName);
             if (p == null)
-                System.out.println("WARNING: Package.getPackage(" + pkgName +") is null");
+                System.out.println("WARNING: Package.getPackage(" + pkgName + ") is null");
         }
         catch (ClassNotFoundException e)
         {
@@ -91,8 +90,10 @@ public class JOGLVersionInfo
         System.out.println(JOGLVersionInfo.isCompatibleWith("1.0"));
         System.out.println(JOGLVersionInfo.isCompatibleWith("1.1.1"));
         System.out.println(JOGLVersionInfo.isCompatibleWith("1.2.1"));
-        System.out.println(JOGLVersionInfo.getImplementationVersion().compareToIgnoreCase("1.1.1-pre-20070511-02:12:11"));
-        System.out.println(JOGLVersionInfo.getImplementationVersion().compareToIgnoreCase("1.1.1-pre-20070512-02:12:11"));
+        System.out.println(
+            JOGLVersionInfo.getImplementationVersion().compareToIgnoreCase("1.1.1-pre-20070511-02:12:11"));
+        System.out.println(
+            JOGLVersionInfo.getImplementationVersion().compareToIgnoreCase("1.1.1-pre-20070512-02:12:11"));
         System.out.println(JOGLVersionInfo.getImplementationVersion().compareToIgnoreCase("1.1.1"));
     }
 }

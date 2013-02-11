@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -8,6 +8,9 @@ package gov.nasa.worldwind.geom;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.*;
 
 /**
  * Represents a sphere in three dimensional space. <p/> Instances of <code>Sphere</code> are immutable. </p>
@@ -419,15 +422,15 @@ public final class Sphere implements Extent, Renderable
             throw new IllegalArgumentException(msg);
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glPushAttrib(javax.media.opengl.GL.GL_ENABLE_BIT | javax.media.opengl.GL.GL_CURRENT_BIT);
+        gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
 
-        gl.glMatrixMode(javax.media.opengl.GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glTranslated(this.center.x, this.center.y, this.center.z);
-        javax.media.opengl.glu.GLUquadric quadric = dc.getGLU().gluNewQuadric();
-        dc.getGLU().gluQuadricDrawStyle(quadric, javax.media.opengl.glu.GLU.GLU_LINE);
+        GLUquadric quadric = dc.getGLU().gluNewQuadric();
+        dc.getGLU().gluQuadricDrawStyle(quadric, GLU.GLU_LINE);
         dc.getGLU().gluSphere(quadric, this.radius, 10, 10);
         gl.glPopMatrix();
         dc.getGLU().gluDeleteQuadric(quadric);

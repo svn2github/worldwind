@@ -1,13 +1,20 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.util;
 
+import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
+import com.jogamp.opengl.util.texture.spi.DDSImage;
 import gov.nasa.worldwind.geom.Vec4;
 
-import javax.media.opengl.GL;
+import javax.imageio.ImageIO;
+import javax.media.opengl.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.URL;
 
 /**
  * A collection of OpenGL utility methods, all static.
@@ -17,19 +24,19 @@ import javax.media.opengl.GL;
  */
 public class OGLUtil
 {
-    public final static int DEFAULT_TEX_ENV_MODE = GL.GL_MODULATE;
-    public final static int DEFAULT_TEXTURE_GEN_MODE = GL.GL_EYE_LINEAR;
+    public final static int DEFAULT_TEX_ENV_MODE = GL2.GL_MODULATE;
+    public final static int DEFAULT_TEXTURE_GEN_MODE = GL2.GL_EYE_LINEAR;
     public final static double[] DEFAULT_TEXTURE_GEN_S_OBJECT_PLANE = new double[] {1, 0, 0, 0};
     public final static double[] DEFAULT_TEXTURE_GEN_T_OBJECT_PLANE = new double[] {0, 1, 0, 0};
 
-    public final static int DEFAULT_SRC0_RGB = GL.GL_TEXTURE;
-    public final static int DEFAULT_SRC1_RGB = GL.GL_PREVIOUS;
-    public final static int DEFAULT_SRC2_RGB = GL.GL_CONSTANT;
-    public final static int DEFAULT_SRC0_ALPHA = GL.GL_TEXTURE;
-    public final static int DEFAULT_SRC1_ALPHA = GL.GL_PREVIOUS;
-    public final static int DEFAULT_SRC2_ALPHA = GL.GL_CONSTANT;
-    public final static int DEFAULT_COMBINE_ALPHA = GL.GL_MODULATE;
-    public final static int DEFAULT_COMBINE_RGB = GL.GL_MODULATE;
+    public final static int DEFAULT_SRC0_RGB = GL2.GL_TEXTURE;
+    public final static int DEFAULT_SRC1_RGB = GL2.GL_PREVIOUS;
+    public final static int DEFAULT_SRC2_RGB = GL2.GL_CONSTANT;
+    public final static int DEFAULT_SRC0_ALPHA = GL2.GL_TEXTURE;
+    public final static int DEFAULT_SRC1_ALPHA = GL2.GL_PREVIOUS;
+    public final static int DEFAULT_SRC2_ALPHA = GL2.GL_CONSTANT;
+    public final static int DEFAULT_COMBINE_ALPHA = GL2.GL_MODULATE;
+    public final static int DEFAULT_COMBINE_RGB = GL2.GL_MODULATE;
 
     protected static final String GL_EXT_BLEND_FUNC_SEPARATE = "GL_EXT_blend_func_separate";
 
@@ -46,7 +53,7 @@ public class OGLUtil
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static void applyBlending(GL gl, boolean havePremultipliedColors)
+    public static void applyBlending(GL2 gl, boolean havePremultipliedColors)
     {
         if (gl == null)
         {
@@ -55,8 +62,8 @@ public class OGLUtil
             throw new IllegalArgumentException(message);
         }
 
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         if (havePremultipliedColors)
         {
@@ -98,7 +105,7 @@ public class OGLUtil
      * @throws IllegalArgumentException if the GL is null, if the Color is null, if the opacity is less than 0, or if
      *                                  the opacity is greater than 1.
      */
-    public static void applyColor(GL gl, java.awt.Color color, double opacity, boolean premultiplyColors)
+    public static void applyColor(GL2 gl, java.awt.Color color, double opacity, boolean premultiplyColors)
     {
         if (gl == null)
         {
@@ -148,7 +155,7 @@ public class OGLUtil
      * @throws IllegalArgumentException if the GL is null, if the Color is null, if the opacity is less than 0, or if
      *                                  the opacity is greater than 1.
      */
-    public static void applyColor(GL gl, java.awt.Color color, boolean premultiplyColors)
+    public static void applyColor(GL2 gl, java.awt.Color color, boolean premultiplyColors)
     {
         if (gl == null)
         {
@@ -189,7 +196,7 @@ public class OGLUtil
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static void applyLightingDirectionalFromViewer(GL gl, int light, Vec4 direction)
+    public static void applyLightingDirectionalFromViewer(GL2 gl, int light, Vec4 direction)
     {
         if (gl == null)
         {
@@ -206,15 +213,15 @@ public class OGLUtil
         float[] specular = {1f, 1f, 1f, 0f};
         float[] position = {(float) direction.x, (float) direction.y, (float) direction.z, 0.0f};
 
-        gl.glLightfv(light, GL.GL_AMBIENT, ambient, 0);
-        gl.glLightfv(light, GL.GL_DIFFUSE, diffuse, 0);
-        gl.glLightfv(light, GL.GL_SPECULAR, specular, 0);
+        gl.glLightfv(light, GL2.GL_AMBIENT, ambient, 0);
+        gl.glLightfv(light, GL2.GL_DIFFUSE, diffuse, 0);
+        gl.glLightfv(light, GL2.GL_SPECULAR, specular, 0);
 
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushModelviewIdentity(gl);
         try
         {
-            gl.glLightfv(light, GL.GL_POSITION, position, 0);
+            gl.glLightfv(light, GL2.GL_POSITION, position, 0);
         }
         finally
         {
@@ -225,34 +232,34 @@ public class OGLUtil
     /**
      * Returns an OpenGL pixel format corresponding to the specified texture internal format. This maps internal format
      * to pixel format as follows: <code> <table> <tr><th>Internal Format</th><th>Pixel Format</th></tr>
-     * <tr><td>GL.GL_ALPHA</td><td>GL.GL_ALPHA</td></tr> <tr><td>GL.GL_ALPHA4</td><td>GL.GL_ALPHA</td></tr>
-     * <tr><td>GL.GL_ALPHA8</td><td>GL.GL_ALPHA</td></tr> <tr><td>GL.GL_ALPHA12</td><td>GL.GL_ALPHA</td></tr>
-     * <tr><td>GL.GL_ALPHA16</td><td>GL.GL_ALPHA</td></tr> <tr><td>GL.GL_COMPRESSED_ALPHA</td><td>GL.GL_ALPHA</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_LUMINANCE</td><td>GL.GL_LUMINANCE</td></tr> <tr><td>GL.GL_COMPRESSED_LUMINANCE_ALPHA</td><td>GL.GL_LUMINANCE_ALPHA</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_INTENSITY</td><td>GL.GL_RED</td></tr> <tr><td>GL.GL_COMPRESSED_RGB</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_RGBA</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_DEPTH_COMPONENT</td><td>GL.GL_RED</td></tr>
-     * <tr><td>GL.GL_DEPTH_COMPONENT16</td><td>GL.GL_RED</td></tr> <tr><td>GL.GL_DEPTH_COMPONENT24</td><td>GL.GL_RED</td></tr>
-     * <tr><td>GL.GL_DEPTH_COMPONENT32</td><td>GL.GL_RED</td></tr> <tr><td>GL.GL_LUMINANCE</td><td>GL.GL_LUMINANCE</td></tr>
-     * <tr><td>GL.GL_LUMINANCE4</td><td>GL.GL_LUMINANCE</td></tr> <tr><td>GL.GL_LUMINANCE8</td><td>GL.GL_LUMINANCE</td></tr>
-     * <tr><td>GL.GL_LUMINANCE12</td><td>GL.GL_LUMINANCE</td></tr> <tr><td>GL.GL_LUMINANCE16</td><td>GL.GL_LUMINANCE</td></tr>
-     * <tr><td>GL.GL_LUMINANCE_ALPHA</td><td>GL.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL.GL_LUMINANCE4_ALPHA4</td><td>GL.GL_LUMINANCE_ALPHA</td></tr>
-     * <tr><td>GL.GL_LUMINANCE6_ALPHA2</td><td>GL.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL.GL_LUMINANCE8_ALPHA8</td><td>GL.GL_LUMINANCE_ALPHA</td></tr>
-     * <tr><td>GL.GL_LUMINANCE12_ALPHA4</td><td>GL.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL.GL_LUMINANCE12_ALPHA12</td><td>GL.GL_LUMINANCE_ALPHA</td></tr>
-     * <tr><td>GL.GL_LUMINANCE16_ALPHA16</td><td>GL.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL.GL_INTENSITY</td><td>GL.GL_RED</td></tr>
-     * <tr><td>GL.GL_INTENSITY4</td><td>GL.GL_RED</td></tr> <tr><td>GL.GL_INTENSITY8</td><td>GL.GL_RED</td></tr>
-     * <tr><td>GL.GL_INTENSITY12</td><td>GL.GL_RED</td></tr> <tr><td>GL.GL_INTENSITY16</td><td>GL.GL_RED</td></tr>
-     * <tr><td>GL.GL_R3_G3_B2</td><td>GL.GL_RGB</td></tr> <tr><td>GL.GL_RGB</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_RGB4</td><td>GL.GL_RGB</td></tr> <tr><td>GL.GL_RGB5</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_RGB8</td><td>GL.GL_RGB</td></tr> <tr><td>GL.GL_RGB10</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_RGB12</td><td>GL.GL_RGB</td></tr> <tr><td>GL.GL_RGB16</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_RGBA</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_RGBA2</td><td>GL.GL_RGBA</td></tr>
-     * <tr><td>GL.GL_RGBA4</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_RGB5_A1</td><td>GL.GL_RGBA</td></tr>
-     * <tr><td>GL.GL_RGBA8</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_RGB10_A2</td><td>GL.GL_RGBA</td></tr>
-     * <tr><td>GL.GL_RGBA12</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_RGBA16</td><td>GL.GL_RGBA</td></tr>
-     * <tr><td>GL.GL_SLUMINANCE</td><td>GL.GL_LUMINANCE</td></tr> <tr><td>GL.GL_SLUMINANCE8</td><td>GL.GL_LUMINANCE</td></tr>
-     * <tr><td>GL.GL_SLUMINANCE_ALPHA</td><td>GL.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL.GL_SLUMINANCE8_ALPHA8</td><td>GL.GL_LUMINANCE_ALPHA<td></tr>
-     * <tr><td>GL.GL_SRGB</td><td>GL.GL_RGB</td></tr> <tr><td>GL.GL_SRGB8</td><td>GL.GL_RGB</td></tr>
-     * <tr><td>GL.GL_SRGB_ALPHA</td><td>GL.GL_RGBA</td></tr> <tr><td>GL.GL_SRGB8_ALPHA8</td><td>GL.GL_RGBA</td></tr>
+     * <tr><td>GL2.GL_ALPHA</td><td>GL2.GL_ALPHA</td></tr> <tr><td>GL2.GL_ALPHA4</td><td>GL2.GL_ALPHA</td></tr>
+     * <tr><td>GL2.GL_ALPHA8</td><td>GL2.GL_ALPHA</td></tr> <tr><td>GL2.GL_ALPHA12</td><td>GL2.GL_ALPHA</td></tr>
+     * <tr><td>GL2.GL_ALPHA16</td><td>GL2.GL_ALPHA</td></tr> <tr><td>GL2.GL_COMPRESSED_ALPHA</td><td>GL2.GL_ALPHA</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_LUMINANCE</td><td>GL2.GL_LUMINANCE</td></tr> <tr><td>GL2.GL_COMPRESSED_LUMINANCE_ALPHA</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_INTENSITY</td><td>GL2.GL_RED</td></tr> <tr><td>GL2.GL_COMPRESSED_RGB</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_RGBA</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_DEPTH_COMPONENT</td><td>GL2.GL_RED</td></tr>
+     * <tr><td>GL2.GL_DEPTH_COMPONENT16</td><td>GL2.GL_RED</td></tr> <tr><td>GL2.GL_DEPTH_COMPONENT24</td><td>GL2.GL_RED</td></tr>
+     * <tr><td>GL2.GL_DEPTH_COMPONENT32</td><td>GL2.GL_RED</td></tr> <tr><td>GL2.GL_LUMINANCE</td><td>GL2.GL_LUMINANCE</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE4</td><td>GL2.GL_LUMINANCE</td></tr> <tr><td>GL2.GL_LUMINANCE8</td><td>GL2.GL_LUMINANCE</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE12</td><td>GL2.GL_LUMINANCE</td></tr> <tr><td>GL2.GL_LUMINANCE16</td><td>GL2.GL_LUMINANCE</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE_ALPHA</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL2.GL_LUMINANCE4_ALPHA4</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE6_ALPHA2</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL2.GL_LUMINANCE8_ALPHA8</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE12_ALPHA4</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL2.GL_LUMINANCE12_ALPHA12</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE16_ALPHA16</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL2.GL_INTENSITY</td><td>GL2.GL_RED</td></tr>
+     * <tr><td>GL2.GL_INTENSITY4</td><td>GL2.GL_RED</td></tr> <tr><td>GL2.GL_INTENSITY8</td><td>GL2.GL_RED</td></tr>
+     * <tr><td>GL2.GL_INTENSITY12</td><td>GL2.GL_RED</td></tr> <tr><td>GL2.GL_INTENSITY16</td><td>GL2.GL_RED</td></tr>
+     * <tr><td>GL2.GL_R3_G3_B2</td><td>GL2.GL_RGB</td></tr> <tr><td>GL2.GL_RGB</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_RGB4</td><td>GL2.GL_RGB</td></tr> <tr><td>GL2.GL_RGB5</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_RGB8</td><td>GL2.GL_RGB</td></tr> <tr><td>GL2.GL_RGB10</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_RGB12</td><td>GL2.GL_RGB</td></tr> <tr><td>GL2.GL_RGB16</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_RGBA</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_RGBA2</td><td>GL2.GL_RGBA</td></tr>
+     * <tr><td>GL2.GL_RGBA4</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_RGB5_A1</td><td>GL2.GL_RGBA</td></tr>
+     * <tr><td>GL2.GL_RGBA8</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_RGB10_A2</td><td>GL2.GL_RGBA</td></tr>
+     * <tr><td>GL2.GL_RGBA12</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_RGBA16</td><td>GL2.GL_RGBA</td></tr>
+     * <tr><td>GL2.GL_SLUMINANCE</td><td>GL2.GL_LUMINANCE</td></tr> <tr><td>GL2.GL_SLUMINANCE8</td><td>GL2.GL_LUMINANCE</td></tr>
+     * <tr><td>GL2.GL_SLUMINANCE_ALPHA</td><td>GL2.GL_LUMINANCE_ALPHA</td></tr> <tr><td>GL2.GL_SLUMINANCE8_ALPHA8</td><td>GL2.GL_LUMINANCE_ALPHA<td></tr>
+     * <tr><td>GL2.GL_SRGB</td><td>GL2.GL_RGB</td></tr> <tr><td>GL2.GL_SRGB8</td><td>GL2.GL_RGB</td></tr>
+     * <tr><td>GL2.GL_SRGB_ALPHA</td><td>GL2.GL_RGBA</td></tr> <tr><td>GL2.GL_SRGB8_ALPHA8</td><td>GL2.GL_RGBA</td></tr>
      * </code>
      * <p/>
      * This returns 0 if the internal format is not one of the recognized types.
@@ -267,73 +274,73 @@ public class OGLUtil
         switch (internalFormat)
         {
             // Alpha pixel format.
-            case GL.GL_ALPHA:
-            case GL.GL_ALPHA4:
-            case GL.GL_ALPHA8:
-            case GL.GL_ALPHA12:
-            case GL.GL_ALPHA16:
-            case GL.GL_COMPRESSED_ALPHA:
-                return GL.GL_ALPHA;
+            case GL2.GL_ALPHA:
+            case GL2.GL_ALPHA4:
+            case GL2.GL_ALPHA8:
+            case GL2.GL_ALPHA12:
+            case GL2.GL_ALPHA16:
+            case GL2.GL_COMPRESSED_ALPHA:
+                return GL2.GL_ALPHA;
             // Luminance pixel format.
-            case GL.GL_COMPRESSED_LUMINANCE:
-            case GL.GL_LUMINANCE:
-            case GL.GL_LUMINANCE4:
-            case GL.GL_LUMINANCE8:
-            case GL.GL_LUMINANCE12:
-            case GL.GL_LUMINANCE16:
-            case GL.GL_SLUMINANCE:
-            case GL.GL_SLUMINANCE8:
-                return GL.GL_LUMINANCE;
+            case GL2.GL_COMPRESSED_LUMINANCE:
+            case GL2.GL_LUMINANCE:
+            case GL2.GL_LUMINANCE4:
+            case GL2.GL_LUMINANCE8:
+            case GL2.GL_LUMINANCE12:
+            case GL2.GL_LUMINANCE16:
+            case GL2.GL_SLUMINANCE:
+            case GL2.GL_SLUMINANCE8:
+                return GL2.GL_LUMINANCE;
             // Luminance-alpha pixel format.
-            case GL.GL_COMPRESSED_LUMINANCE_ALPHA:
-            case GL.GL_LUMINANCE_ALPHA:
-            case GL.GL_LUMINANCE4_ALPHA4:
-            case GL.GL_LUMINANCE6_ALPHA2:
-            case GL.GL_LUMINANCE8_ALPHA8:
-            case GL.GL_LUMINANCE12_ALPHA4:
-            case GL.GL_LUMINANCE12_ALPHA12:
-            case GL.GL_LUMINANCE16_ALPHA16:
-            case GL.GL_SLUMINANCE_ALPHA:
-            case GL.GL_SLUMINANCE8_ALPHA8:
-                return GL.GL_LUMINANCE_ALPHA;
+            case GL2.GL_COMPRESSED_LUMINANCE_ALPHA:
+            case GL2.GL_LUMINANCE_ALPHA:
+            case GL2.GL_LUMINANCE4_ALPHA4:
+            case GL2.GL_LUMINANCE6_ALPHA2:
+            case GL2.GL_LUMINANCE8_ALPHA8:
+            case GL2.GL_LUMINANCE12_ALPHA4:
+            case GL2.GL_LUMINANCE12_ALPHA12:
+            case GL2.GL_LUMINANCE16_ALPHA16:
+            case GL2.GL_SLUMINANCE_ALPHA:
+            case GL2.GL_SLUMINANCE8_ALPHA8:
+                return GL2.GL_LUMINANCE_ALPHA;
             // Unspecified single component (red) pixel format.
-            case GL.GL_COMPRESSED_INTENSITY:
-            case GL.GL_DEPTH_COMPONENT:
-            case GL.GL_DEPTH_COMPONENT16:
-            case GL.GL_DEPTH_COMPONENT24:
-            case GL.GL_DEPTH_COMPONENT32:
-            case GL.GL_INTENSITY:
-            case GL.GL_INTENSITY4:
-            case GL.GL_INTENSITY8:
-            case GL.GL_INTENSITY12:
-            case GL.GL_INTENSITY16:
-                return GL.GL_RED;
+            case GL2.GL_COMPRESSED_INTENSITY:
+            case GL2.GL_DEPTH_COMPONENT:
+            case GL2.GL_DEPTH_COMPONENT16:
+            case GL2.GL_DEPTH_COMPONENT24:
+            case GL2.GL_DEPTH_COMPONENT32:
+            case GL2.GL_INTENSITY:
+            case GL2.GL_INTENSITY4:
+            case GL2.GL_INTENSITY8:
+            case GL2.GL_INTENSITY12:
+            case GL2.GL_INTENSITY16:
+                return GL2.GL_RED;
             // RGB pixel format.
-            case GL.GL_COMPRESSED_RGB:
-            case GL.GL_R3_G3_B2:
-            case GL.GL_RGB:
-            case GL.GL_RGB4:
-            case GL.GL_RGB5:
-            case GL.GL_RGB8:
-            case GL.GL_RGB10:
-            case GL.GL_RGB12:
-            case GL.GL_RGB16:
-            case GL.GL_SRGB:
-            case GL.GL_SRGB8:
-                return GL.GL_RGB;
+            case GL2.GL_COMPRESSED_RGB:
+            case GL2.GL_R3_G3_B2:
+            case GL2.GL_RGB:
+            case GL2.GL_RGB4:
+            case GL2.GL_RGB5:
+            case GL2.GL_RGB8:
+            case GL2.GL_RGB10:
+            case GL2.GL_RGB12:
+            case GL2.GL_RGB16:
+            case GL2.GL_SRGB:
+            case GL2.GL_SRGB8:
+                return GL2.GL_RGB;
             // RGBA pixel format.
-            case GL.GL_COMPRESSED_RGBA:
-            case GL.GL_RGBA:
-            case GL.GL_RGBA2:
-            case GL.GL_RGBA4:
-            case GL.GL_RGB5_A1:
-            case GL.GL_RGBA8:
-            case GL.GL_RGB10_A2:
-            case GL.GL_RGBA12:
-            case GL.GL_RGBA16:
-            case GL.GL_SRGB_ALPHA:
-            case GL.GL_SRGB8_ALPHA8:
-                return GL.GL_RGBA;
+            case GL2.GL_COMPRESSED_RGBA:
+            case GL2.GL_RGBA:
+            case GL2.GL_RGBA2:
+            case GL2.GL_RGBA4:
+            case GL2.GL_RGB5_A1:
+            case GL2.GL_RGBA8:
+            case GL2.GL_RGB10_A2:
+            case GL2.GL_RGBA12:
+            case GL2.GL_RGBA16:
+            case GL2.GL_SRGB_ALPHA:
+            case GL2.GL_SRGB8_ALPHA8:
+                return GL2.GL_RGBA;
             default:
                 return 0;
         }
@@ -342,38 +349,38 @@ public class OGLUtil
     /**
      * Returns an OpenGL pixel format corresponding to the specified texture internal format. This maps internal format
      * to pixel format as follows: <code> <table> <tr><th>Internal Format</th><th>Estimated Bits Per Pixel</th></tr>
-     * <tr><td>GL.GL_ALPHA</td><td>8</td></tr> <tr><td>GL.GL_ALPHA4</td><td>4</td></tr>
-     * <tr><td>GL.GL_ALPHA8</td><td>8</td></tr> <tr><td>GL.GL_ALPHA12</td><td>12</td></tr>
-     * <tr><td>GL.GL_ALPHA16</td><td>16</td></tr> <tr><td>GL.GL_COMPRESSED_ALPHA</td><td>0</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_LUMINANCE</td><td>0</td></tr> <tr><td>GL.GL_COMPRESSED_LUMINANCE_ALPHA</td><td>0</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_INTENSITY</td><td>0</td></tr> <tr><td>GL.GL_COMPRESSED_RGB</td><td>0</td></tr>
-     * <tr><td>GL.GL_COMPRESSED_RGBA</td><td>0</td></tr> <tr><td>GL.GL_DEPTH_COMPONENT</td><td>24</td></tr>
-     * <tr><td>GL.GL_DEPTH_COMPONENT16</td><td>16</td></tr> <tr><td>GL.GL_DEPTH_COMPONENT24</td><td>24</td></tr>
-     * <tr><td>GL.GL_DEPTH_COMPONENT32</td><td>32</td></tr> <tr><td>GL.GL_LUMINANCE</td><td>8</td></tr>
-     * <tr><td>GL.GL_LUMINANCE4</td><td>4</td></tr> <tr><td>GL.GL_LUMINANCE8</td><td>8</td></tr>
-     * <tr><td>GL.GL_LUMINANCE12</td><td>12</td></tr> <tr><td>GL.GL_LUMINANCE16</td><td>16</td></tr>
-     * <tr><td>GL.GL_LUMINANCE_ALPHA</td><td>16</td></tr> <tr><td>GL.GL_LUMINANCE4_ALPHA4</td><td>8</td></tr>
-     * <tr><td>GL.GL_LUMINANCE6_ALPHA2</td><td>8</td></tr> <tr><td>GL.GL_LUMINANCE8_ALPHA8</td><td>16</td></tr>
-     * <tr><td>GL.GL_LUMINANCE12_ALPHA4</td><td>16</td></tr> <tr><td>GL.GL_LUMINANCE12_ALPHA12</td><td>24</td></tr>
-     * <tr><td>GL.GL_LUMINANCE16_ALPHA16</td><td>32</td></tr> <tr><td>GL.GL_INTENSITY</td><td>8</td></tr>
-     * <tr><td>GL.GL_INTENSITY4</td><td>4</td></tr> <tr><td>GL.GL_INTENSITY8</td><td>8</td></tr>
-     * <tr><td>GL.GL_INTENSITY12</td><td>12</td></tr> <tr><td>GL.GL_INTENSITY16</td><td>16</td></tr>
-     * <tr><td>GL.GL_R3_G3_B2</td><td>8</td></tr> <tr><td>GL.GL_RGB</td><td>24</td></tr>
-     * <tr><td>GL.GL_RGB4</td><td>12</td></tr> <tr><td>GL.GL_RGB5</td><td>16 (assume the driver allocates 16 bits per
-     * pixel)</td></tr> <tr><td>GL.GL_RGB8</td><td>24</td></tr> <tr><td>GL.GL_RGB10</td><td>32 (assume the driver
-     * allocates 32 bits per pixel)</td></tr> <tr><td>GL.GL_RGB12</td><td>36</td></tr>
-     * <tr><td>GL.GL_RGB16</td><td>48</td></tr> <tr><td>GL.GL_RGBA</td><td>32</td></tr>
-     * <tr><td>GL.GL_RGBA2</td><td>8</td></tr> <tr><td>GL.GL_RGBA4</td><td>16</td></tr>
-     * <tr><td>GL.GL_RGB5_A1</td><td>16</td></tr> <tr><td>GL.GL_RGBA8</td><td>32</td></tr>
-     * <tr><td>GL.GL_RGB10_A2</td><td>32</td></tr> <tr><td>GL.GL_RGBA12</td><td>48</td></tr>
-     * <tr><td>GL.GL_RGBA16</td><td>64</td></tr> <tr><td>GL.GL_SLUMINANCE</td><td>8</td></tr>
-     * <tr><td>GL.GL_SLUMINANCE8</td><td>8</td></tr> <tr><td>GL.GL_SLUMINANCE_ALPHA</td><td>16</td></tr>
-     * <tr><td>GL.GL_SLUMINANCE8_ALPHA8</td><td>16<td></tr> <tr><td>GL.GL_SRGB</td><td>24</td></tr>
-     * <tr><td>GL.GL_SRGB8</td><td>24</td></tr> <tr><td>GL.GL_SRGB_ALPHA</td><td>32</td></tr>
-     * <tr><td>GL.GL_SRGB8_ALPHA8</td><td>32</td></tr> </code>
+     * <tr><td>GL2.GL_ALPHA</td><td>8</td></tr> <tr><td>GL2.GL_ALPHA4</td><td>4</td></tr>
+     * <tr><td>GL2.GL_ALPHA8</td><td>8</td></tr> <tr><td>GL2.GL_ALPHA12</td><td>12</td></tr>
+     * <tr><td>GL2.GL_ALPHA16</td><td>16</td></tr> <tr><td>GL2.GL_COMPRESSED_ALPHA</td><td>0</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_LUMINANCE</td><td>0</td></tr> <tr><td>GL2.GL_COMPRESSED_LUMINANCE_ALPHA</td><td>0</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_INTENSITY</td><td>0</td></tr> <tr><td>GL2.GL_COMPRESSED_RGB</td><td>0</td></tr>
+     * <tr><td>GL2.GL_COMPRESSED_RGBA</td><td>0</td></tr> <tr><td>GL2.GL_DEPTH_COMPONENT</td><td>24</td></tr>
+     * <tr><td>GL2.GL_DEPTH_COMPONENT16</td><td>16</td></tr> <tr><td>GL2.GL_DEPTH_COMPONENT24</td><td>24</td></tr>
+     * <tr><td>GL2.GL_DEPTH_COMPONENT32</td><td>32</td></tr> <tr><td>GL2.GL_LUMINANCE</td><td>8</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE4</td><td>4</td></tr> <tr><td>GL2.GL_LUMINANCE8</td><td>8</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE12</td><td>12</td></tr> <tr><td>GL2.GL_LUMINANCE16</td><td>16</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE_ALPHA</td><td>16</td></tr> <tr><td>GL2.GL_LUMINANCE4_ALPHA4</td><td>8</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE6_ALPHA2</td><td>8</td></tr> <tr><td>GL2.GL_LUMINANCE8_ALPHA8</td><td>16</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE12_ALPHA4</td><td>16</td></tr> <tr><td>GL2.GL_LUMINANCE12_ALPHA12</td><td>24</td></tr>
+     * <tr><td>GL2.GL_LUMINANCE16_ALPHA16</td><td>32</td></tr> <tr><td>GL2.GL_INTENSITY</td><td>8</td></tr>
+     * <tr><td>GL2.GL_INTENSITY4</td><td>4</td></tr> <tr><td>GL2.GL_INTENSITY8</td><td>8</td></tr>
+     * <tr><td>GL2.GL_INTENSITY12</td><td>12</td></tr> <tr><td>GL2.GL_INTENSITY16</td><td>16</td></tr>
+     * <tr><td>GL2.GL_R3_G3_B2</td><td>8</td></tr> <tr><td>GL2.GL_RGB</td><td>24</td></tr>
+     * <tr><td>GL2.GL_RGB4</td><td>12</td></tr> <tr><td>GL2.GL_RGB5</td><td>16 (assume the driver allocates 16 bits per
+     * pixel)</td></tr> <tr><td>GL2.GL_RGB8</td><td>24</td></tr> <tr><td>GL2.GL_RGB10</td><td>32 (assume the driver
+     * allocates 32 bits per pixel)</td></tr> <tr><td>GL2.GL_RGB12</td><td>36</td></tr>
+     * <tr><td>GL2.GL_RGB16</td><td>48</td></tr> <tr><td>GL2.GL_RGBA</td><td>32</td></tr>
+     * <tr><td>GL2.GL_RGBA2</td><td>8</td></tr> <tr><td>GL2.GL_RGBA4</td><td>16</td></tr>
+     * <tr><td>GL2.GL_RGB5_A1</td><td>16</td></tr> <tr><td>GL2.GL_RGBA8</td><td>32</td></tr>
+     * <tr><td>GL2.GL_RGB10_A2</td><td>32</td></tr> <tr><td>GL2.GL_RGBA12</td><td>48</td></tr>
+     * <tr><td>GL2.GL_RGBA16</td><td>64</td></tr> <tr><td>GL2.GL_SLUMINANCE</td><td>8</td></tr>
+     * <tr><td>GL2.GL_SLUMINANCE8</td><td>8</td></tr> <tr><td>GL2.GL_SLUMINANCE_ALPHA</td><td>16</td></tr>
+     * <tr><td>GL2.GL_SLUMINANCE8_ALPHA8</td><td>16<td></tr> <tr><td>GL2.GL_SRGB</td><td>24</td></tr>
+     * <tr><td>GL2.GL_SRGB8</td><td>24</td></tr> <tr><td>GL2.GL_SRGB_ALPHA</td><td>32</td></tr>
+     * <tr><td>GL2.GL_SRGB8_ALPHA8</td><td>32</td></tr> </code>
      * <p/>
      * The returned estimate assumes that the driver provides does not convert the formats to another supported, such
-     * converting as <code>GL.GL_ALPHA4</code> to <code>GL.GL_ALPHA8</code>. This returns 0 if the internal format is
+     * converting as <code>GL2.GL_ALPHA4</code> to <code>GL2.GL_ALPHA8</code>. This returns 0 if the internal format is
      * not one of the recognized types. This does not attempt to estimate a memory size for compressed internal
      * formats.
      *
@@ -420,83 +427,175 @@ public class OGLUtil
         switch (internalFormat)
         {
             // 4 bits per pixel.
-            case GL.GL_ALPHA4:
-            case GL.GL_LUMINANCE4:
-            case GL.GL_INTENSITY4:
+            case GL2.GL_ALPHA4:
+            case GL2.GL_LUMINANCE4:
+            case GL2.GL_INTENSITY4:
                 return numPixels / 2;
             // 8 bits per pixel.
-            case GL.GL_ALPHA:
-            case GL.GL_ALPHA8:
-            case GL.GL_LUMINANCE:
-            case GL.GL_LUMINANCE8:
-            case GL.GL_LUMINANCE4_ALPHA4:
-            case GL.GL_LUMINANCE6_ALPHA2:
-            case GL.GL_INTENSITY:
-            case GL.GL_INTENSITY8:
-            case GL.GL_R3_G3_B2:
-            case GL.GL_RGBA2:
-            case GL.GL_SLUMINANCE:
-            case GL.GL_SLUMINANCE8:
+            case GL2.GL_ALPHA:
+            case GL2.GL_ALPHA8:
+            case GL2.GL_LUMINANCE:
+            case GL2.GL_LUMINANCE8:
+            case GL2.GL_LUMINANCE4_ALPHA4:
+            case GL2.GL_LUMINANCE6_ALPHA2:
+            case GL2.GL_INTENSITY:
+            case GL2.GL_INTENSITY8:
+            case GL2.GL_R3_G3_B2:
+            case GL2.GL_RGBA2:
+            case GL2.GL_SLUMINANCE:
+            case GL2.GL_SLUMINANCE8:
                 return numPixels;
             // 12 bits per pixel.
-            case GL.GL_ALPHA12:
-            case GL.GL_LUMINANCE12:
-            case GL.GL_INTENSITY12:
-            case GL.GL_RGB4:
+            case GL2.GL_ALPHA12:
+            case GL2.GL_LUMINANCE12:
+            case GL2.GL_INTENSITY12:
+            case GL2.GL_RGB4:
                 return 12 * numPixels / 8;
             // 16 bits per pixel.
-            case GL.GL_ALPHA16:
-            case GL.GL_DEPTH_COMPONENT16:
-            case GL.GL_LUMINANCE16:
-            case GL.GL_LUMINANCE_ALPHA:
-            case GL.GL_LUMINANCE8_ALPHA8:
-            case GL.GL_LUMINANCE12_ALPHA4:
-            case GL.GL_INTENSITY16:
-            case GL.GL_RGB5: // Assume the driver allocates 16 bits per pixel for GL_RGB5.
-            case GL.GL_RGBA4:
-            case GL.GL_RGB5_A1:
-            case GL.GL_SLUMINANCE_ALPHA:
-            case GL.GL_SLUMINANCE8_ALPHA8:
+            case GL2.GL_ALPHA16:
+            case GL2.GL_DEPTH_COMPONENT16:
+            case GL2.GL_LUMINANCE16:
+            case GL2.GL_LUMINANCE_ALPHA:
+            case GL2.GL_LUMINANCE8_ALPHA8:
+            case GL2.GL_LUMINANCE12_ALPHA4:
+            case GL2.GL_INTENSITY16:
+            case GL2.GL_RGB5: // Assume the driver allocates 16 bits per pixel for GL_RGB5.
+            case GL2.GL_RGBA4:
+            case GL2.GL_RGB5_A1:
+            case GL2.GL_SLUMINANCE_ALPHA:
+            case GL2.GL_SLUMINANCE8_ALPHA8:
                 return 2 * numPixels;
             // 24 bits per pixel.
-            case GL.GL_DEPTH_COMPONENT:
-            case GL.GL_DEPTH_COMPONENT24:
-            case GL.GL_LUMINANCE12_ALPHA12:
-            case GL.GL_RGB:
-            case GL.GL_RGB8:
-            case GL.GL_SRGB:
-            case GL.GL_SRGB8:
+            case GL2.GL_DEPTH_COMPONENT:
+            case GL2.GL_DEPTH_COMPONENT24:
+            case GL2.GL_LUMINANCE12_ALPHA12:
+            case GL2.GL_RGB:
+            case GL2.GL_RGB8:
+            case GL2.GL_SRGB:
+            case GL2.GL_SRGB8:
                 return 3 * numPixels;
             // 32 bits per pixel.
-            case GL.GL_DEPTH_COMPONENT32:
-            case GL.GL_LUMINANCE16_ALPHA16:
-            case GL.GL_RGB10: // Assume the driver allocates 32 bits per pixel for GL_RGB10.
-            case GL.GL_RGBA:
-            case GL.GL_RGBA8:
-            case GL.GL_RGB10_A2:
-            case GL.GL_SRGB_ALPHA:
-            case GL.GL_SRGB8_ALPHA8:
+            case GL2.GL_DEPTH_COMPONENT32:
+            case GL2.GL_LUMINANCE16_ALPHA16:
+            case GL2.GL_RGB10: // Assume the driver allocates 32 bits per pixel for GL_RGB10.
+            case GL2.GL_RGBA:
+            case GL2.GL_RGBA8:
+            case GL2.GL_RGB10_A2:
+            case GL2.GL_SRGB_ALPHA:
+            case GL2.GL_SRGB8_ALPHA8:
                 return 4 * numPixels;
             // 36 bits per pixel.
-            case GL.GL_RGB12:
+            case GL2.GL_RGB12:
                 return 36 * numPixels / 8;
             // 48 bits per pixel.
-            case GL.GL_RGB16:
-            case GL.GL_RGBA12:
+            case GL2.GL_RGB16:
+            case GL2.GL_RGBA12:
                 return 6 * numPixels;
             // 64 bits per pixel.
-            case GL.GL_RGBA16:
+            case GL2.GL_RGBA16:
                 return 8 * numPixels;
             // Compressed internal formats. Don't try to estimate a size for compressed formats.
-            case GL.GL_COMPRESSED_ALPHA:
-            case GL.GL_COMPRESSED_LUMINANCE:
-            case GL.GL_COMPRESSED_LUMINANCE_ALPHA:
-            case GL.GL_COMPRESSED_INTENSITY:
-            case GL.GL_COMPRESSED_RGB:
-            case GL.GL_COMPRESSED_RGBA:
+            case GL2.GL_COMPRESSED_ALPHA:
+            case GL2.GL_COMPRESSED_LUMINANCE:
+            case GL2.GL_COMPRESSED_LUMINANCE_ALPHA:
+            case GL2.GL_COMPRESSED_INTENSITY:
+            case GL2.GL_COMPRESSED_RGB:
+            case GL2.GL_COMPRESSED_RGBA:
                 return 0;
             default:
                 return 0;
         }
+    }
+
+    /**
+     * Creates TextureData from the given URL. Does no OpenGL work.
+     *
+     * @param glp        the OpenGL Profile this texture data should be created for.
+     * @param url        the URL from which to read the texture data
+     * @param useMipMaps whether mipmaps should be produced for this texture either by auto-generating them or reading
+     *                   them from the file. Some file formats support multiple mipmaps in a single file in which case
+     *                   those mipmaps will be used rather than generating them.
+     *
+     * @return the texture data from the URL, or null if none of the registered texture providers could read the URL
+     *
+     * @throws IOException if an error occurred while reading the URL
+     */
+    public static TextureData newTextureData(GLProfile glp, URL url, boolean useMipMaps) throws IOException
+    {
+        InputStream stream = new BufferedInputStream(url.openStream());
+        try
+        {
+            return newTextureData(glp, stream, useMipMaps);
+        }
+        finally
+        {
+            stream.close();
+        }
+    }
+
+    /**
+     * Creates TextureData from an InputStream. Does no OpenGL work.
+     *
+     * @param glp        the OpenGL Profile this texture data should be created for.
+     * @param stream     the stream from which to read the texture data
+     * @param useMipMaps whether mipmaps should be produced for this texture either by auto-generating them or reading
+     *                   them from the file. Some file formats support multiple mipmaps in a single file in which case
+     *                   those mipmaps will be used rather than generating them.
+     *
+     * @return the texture data from the URL, or null if none of the registered texture providers could read the URL
+     *
+     * @throws IOException if an error occurred while reading the URL
+     */
+    public static TextureData newTextureData(GLProfile glp, InputStream stream, boolean useMipMaps) throws IOException
+    {
+        // Wrap stream in BufferedInputStream so that DDS detection will work. This is a work around for JOGL issue 4764639/4892246.
+        if (!(stream instanceof BufferedInputStream))
+        {
+            stream = new BufferedInputStream(stream);
+        }
+
+        boolean ddsFormat = DDSImage.isDDSImage(stream);
+
+        // If the image is not in DDS format, attempt to load it using ImageIO. This works around an issue with the
+        // JOGL PNG reader (WWJ-369). However, ImageIO does not support DDS, so in this case just send the image to
+        // TextureIO, for better performance.
+        if (!ddsFormat)
+        {
+            BufferedImage img = ImageIO.read(stream);
+            if (img != null)
+                return AWTTextureIO.newTextureData(glp, img, useMipMaps);
+        }
+
+        return TextureIO.newTextureData(glp, stream, useMipMaps, null);
+    }
+
+    /**
+     * Creates TextureData from a File. Does no OpenGL work.
+     *
+     * @param glp        the OpenGL Profile this texture data should be created for.
+     * @param file       the file from which to read the texture data
+     * @param useMipMaps whether mipmaps should be produced for this texture either by auto-generating them or reading
+     *                   them from the file. Some file formats support multiple mipmaps in a single file in which case
+     *                   those mipmaps will be used rather than generating them.
+     *
+     * @return the texture data from the URL, or null if none of the registered texture providers could read the URL
+     *
+     * @throws IOException if an error occurred while reading the URL
+     */
+    public static TextureData newTextureData(GLProfile glp, File file, boolean useMipMaps) throws IOException
+    {
+        boolean ddsFormat = "dds".equalsIgnoreCase(WWIO.getSuffix(file.getPath()));
+
+        // If the image is not in DDS format, attempt to load it using ImageIO. This works around an issue with the
+        // JOGL PNG reader (WWJ-369). However, ImageIO does not support DDS, so in this case just send the image to
+        // TextureIO, for better performance.
+        if (!ddsFormat)
+        {
+            BufferedImage img = ImageIO.read(file);
+            if (img != null)
+                return AWTTextureIO.newTextureData(glp, img, useMipMaps);
+        }
+
+        return TextureIO.newTextureData(glp, file, useMipMaps, null);
     }
 }

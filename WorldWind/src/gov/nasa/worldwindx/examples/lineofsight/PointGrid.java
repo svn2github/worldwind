@@ -1,13 +1,12 @@
 /*
-Copyright (C) 2001, 2010 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 
 package gov.nasa.worldwindx.examples.lineofsight;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.*;
@@ -16,7 +15,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.*;
@@ -24,7 +23,7 @@ import java.util.List;
 
 /**
  * @author tag
- * @version $ID$
+ * @version $Id$
  */
 public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highlightable
 {
@@ -499,19 +498,19 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        int attrMask = GL.GL_POINT_BIT
-            | GL.GL_CURRENT_BIT // for current color
-            | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-            | GL.GL_ENABLE_BIT; // for enable/disable changes
+        int attrMask = GL2.GL_POINT_BIT
+            | GL2.GL_CURRENT_BIT // for current color
+            | GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
+            | GL2.GL_ENABLE_BIT; // for enable/disable changes
 
         if (dc.isPickingMode())
             attrMask |=
-                GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
-                    | GL.GL_TRANSFORM_BIT // for modelview and perspective
-                    | GL.GL_VIEWPORT_BIT // for depth range
-                    | GL.GL_DEPTH_BUFFER_BIT; // for depth func
+                GL2.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
+                    | GL2.GL_TRANSFORM_BIT // for modelview and perspective
+                    | GL2.GL_VIEWPORT_BIT // for depth range
+                    | GL2.GL_DEPTH_BUFFER_BIT; // for depth func
 
         gl.glPushAttrib(attrMask);
 
@@ -529,7 +528,8 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
      */
     protected void endDrawing(DrawContext dc)
     {
-        dc.getGL().glPopAttrib();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glPopAttrib();
     }
 
     /**
@@ -547,7 +547,7 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
 
     protected void pickPoints(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         OGLStackHandler osh = new OGLStackHandler();
         try
@@ -570,7 +570,7 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
 
             FloatBuffer points = this.currentPoints;
             points.rewind();
-            gl.glBegin(GL.GL_POINTS);
+            gl.glBegin(GL2.GL_POINTS);
             try
             {
                 while (points.hasRemaining())
@@ -613,13 +613,13 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
 
     protected void drawPoints(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         this.setPointColor(dc, null);
         this.setPointSize(dc, null);
 
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
         dc.pushProjectionOffest(0.99);
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.currentPoints.rewind());
         gl.glDrawArrays(GL.GL_POINTS, 0, this.currentPoints.limit() / 3);
@@ -639,7 +639,7 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
                     this.setPointSize(dc, this.determineHighlightPointSize());
 
                     dc.pushProjectionOffest(0.98);
-                    gl.glBegin(GL.GL_POINTS);
+                    gl.glBegin(GL2.GL_POINTS);
                     gl.glVertex3d(highlightPoint.x, highlightPoint.y, highlightPoint.z);
                     gl.glEnd();
                     dc.popProjectionOffest();
@@ -656,13 +656,13 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
         if (color == null)
             color = DEFAULT_POINT_COLOR;
 
-        dc.getGL().glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(),
-            (byte) color.getAlpha());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(), (byte) color.getAlpha());
     }
 
     protected void setPointSize(DrawContext dc, Double size)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (size == null)
             size = this.getActiveAttributes().getPointSize();
@@ -693,8 +693,8 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
 
         if (!dc.isPickingMode() && this.getActiveAttributes().isEnablePointSmoothing())
         {
-            gl.glEnable(GL.GL_POINT_SMOOTH);
-            gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
+            gl.glEnable(GL2.GL_POINT_SMOOTH);
+            gl.glHint(GL2.GL_POINT_SMOOTH_HINT, GL2.GL_NICEST);
         }
     }
 
@@ -725,7 +725,7 @@ public class PointGrid extends WWObjectImpl implements OrderedRenderable, Highli
         int numCoords = 3 * this.numPositions;
 
         if (coords == null || coords.capacity() < numCoords || coords.capacity() > 1.5 * numCoords)
-            coords = BufferUtil.newFloatBuffer(numCoords);
+            coords = Buffers.newDirectFloatBuffer(numCoords);
         coords.rewind();
 
         Iterator<? extends Position> posIter = this.positions.iterator();

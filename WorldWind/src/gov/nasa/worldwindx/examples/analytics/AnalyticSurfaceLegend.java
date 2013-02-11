@@ -1,19 +1,20 @@
-/* Copyright (C) 2001, 2009 United States Government as represented by 
-the Administrator of the National Aeronautics and Space Administration. 
-All Rights Reserved. 
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.examples.analytics;
 
-import com.sun.opengl.util.j2d.*;
-import gov.nasa.worldwind.avlist.*;
+import com.jogamp.opengl.util.awt.TextRenderer;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
-import java.text.*;
-import java.util.*;
+import java.text.Format;
+import java.util.ArrayList;
 
 /**
  * @author dcollins

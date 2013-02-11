@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.formats.rpf.RPFColorMap;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: CompressionLookupRecord Apr 17, 2007 3:29:33 PM lado
+ * @version $Id$
  */
 class CompressionLookupRecord
 {

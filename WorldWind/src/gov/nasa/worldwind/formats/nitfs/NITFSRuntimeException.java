@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.util.Logging;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: NitfsRuntimeException Mar 31, 2007 7:41:31 AM
+ * @version $Id$
  */
 public final class NITFSRuntimeException extends java.lang.RuntimeException
 {

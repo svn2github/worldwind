@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.nio.DoubleBuffer;
 
@@ -168,11 +168,11 @@ public class FrameFactory
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         // Set up
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glVertexPointer(2, GL.GL_DOUBLE, 0, verts);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glVertexPointer(2, GL2.GL_DOUBLE, 0, verts);
         // Draw
         gl.glDrawArrays(mode, 0, count);
         // Restore
@@ -204,13 +204,13 @@ public class FrameFactory
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         // Set up
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-        gl.glVertexPointer(2, GL.GL_DOUBLE, 0, verts);
-        gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, coords);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+        gl.glVertexPointer(2, GL2.GL_DOUBLE, 0, verts);
+        gl.glTexCoordPointer(2, GL2.GL_DOUBLE, 0, coords);
         // Draw
         gl.glDrawArrays(mode, 0, count);
         // Restore
@@ -429,7 +429,7 @@ public class FrameFactory
             buffer.clear();
 
         if (buffer == null || buffer.capacity() < numCoords)
-            buffer = BufferUtil.newDoubleBuffer(numCoords);
+            buffer = Buffers.newDirectDoubleBuffer(numCoords);
 
         return buffer;
     }

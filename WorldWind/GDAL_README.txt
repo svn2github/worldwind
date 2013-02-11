@@ -1,4 +1,10 @@
-$Id$
+#
+# Copyright (C) 2012 United States Government as represented by the Administrator of the
+# National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
+
+# $Id$
 
 This document provides guidance on deploying applications that use the World Wind GDAL libraries.
 

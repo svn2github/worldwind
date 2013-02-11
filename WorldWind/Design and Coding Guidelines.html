@@ -1,5 +1,11 @@
-<body>
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
 <!-- $Id$ -->
+<body>
 <h1>World Wind Multi-Platform Design and Coding Guidelines</h1>
 
 <h2>General</h2>
@@ -31,7 +37,7 @@
     <li>
         The buffers one must use to pass arrays of info to JOGL must have their byte order set to that of the machine
         they're used on. Call nativeByteOrder() on NIO buffers when you deal with them, use the methods in
-        com.sun.opengl.util.BufferUtil.
+        com.jogamp.common.nio.Buffers.
     </li>
     <li>
         Favor immutability (all fields final) in classes representing some small entity like a Point or Vector.
@@ -230,7 +236,7 @@
     <li>
         When creating a new file, the Id subversion keyword has to be explicitly set via Version Control --> Set
         Property --> Property name: svn:keywords, and the term Id included in the text box. If the property is not
-        included in this list then Subversion doesnÕt replace the property string when updating the file.
+        included in this list then Subversion doesnï¿½t replace the property string when updating the file.
     </li>
     <li>
         Resolve all IDEA warnings before checking in a file. If the warning refers to an intentional case, add an
@@ -267,10 +273,10 @@ The books we go back to again and again are the following:
         <i>Concurrent Programming in Java</i>, Lea, Addison Wesley
     </li>
     <li>
-        <i>Java Threads</i>, Oaks & Wong, OÕReilly
+        <i>Java Threads</i>, Oaks & Wong, Oï¿½Reilly
     </li>
     <li>
-        <i>Java Cookbook</i>, Darwin, OÕReilly
+        <i>Java Cookbook</i>, Darwin, Oï¿½Reilly
     </li>
     <li>
         <i>OpenGL Programming Guide</i>, Shreiner & Woo & et al, Addison Wesley. Be sure to get the version covering

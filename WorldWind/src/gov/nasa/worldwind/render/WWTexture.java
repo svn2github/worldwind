@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Represents a texture derived from an image source such as an image file or a {@link java.awt.image.BufferedImage}.

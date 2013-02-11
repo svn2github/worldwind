@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -133,12 +133,12 @@ public class SkyGradientLayer extends AbstractLayer
     @Override
     public void doRender(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_TRANSFORM_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
             int[] dlId = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
             if (!this.isValid(dc))
@@ -167,7 +167,7 @@ public class SkyGradientLayer extends AbstractLayer
 
     protected void applyDrawTransform(DrawContext dc, OGLStackHandler ogsh)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         View view = dc.getView();
         ogsh.pushModelview(gl);
         // Place sky - TODO: find another ellipsoid friendlier way (the sky dome is not exactly normal...
@@ -181,7 +181,7 @@ public class SkyGradientLayer extends AbstractLayer
 
     protected void applyDrawProjection(DrawContext dc, OGLStackHandler ogsh)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         View view = dc.getView();
         double viewportWidth = view.getViewport().getWidth();
         double viewportHeight = view.getViewport().getHeight();
@@ -262,7 +262,7 @@ public class SkyGradientLayer extends AbstractLayer
     protected int[] makeSkyDome(DrawContext dc, float radius, double startLat, double endLat,
         int slices, int stacks, float zenithOpacity, float gradientBias)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int[] dlResource = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
         if (dlResource != null)
@@ -274,7 +274,7 @@ public class SkyGradientLayer extends AbstractLayer
 
         try
         {
-            gl.glNewList(dlResource[0], GL.GL_COMPILE);
+            gl.glNewList(dlResource[0], GL2.GL_COMPILE);
             this.drawSkyDome(dc, radius, startLat, endLat, slices, stacks, zenithOpacity, gradientBias);
             gl.glEndList();
         }
@@ -308,7 +308,7 @@ public class SkyGradientLayer extends AbstractLayer
         double latitude, longitude, latitudeTop = endLat;
 
         // GL setup
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // TODO: Simplify code
         double linear, linearTop, k, kTop, colorFactorZ, colorFactorZTop = 0;
@@ -317,7 +317,7 @@ public class SkyGradientLayer extends AbstractLayer
 
         // bottom fade
         latitude = startLat - Math.max((endLat - startLat) / 4, 3);
-        gl.glBegin(GL.GL_QUAD_STRIP);
+        gl.glBegin(GL2.GL_QUAD_STRIP);
         for (int slice = 0; slice <= slices; slice++)
         {
             longitude = 180 - ((float) slice / slices * (float) 360);
@@ -348,7 +348,7 @@ public class SkyGradientLayer extends AbstractLayer
             colorFactorHTop = 1 - colorFactorZTop;                      // coef horizon color
             alphaFactorTop = 1 - Math.pow(linearTop, 4) * (1 - zenithOpacity);            // coef alpha transparency
             // Draw stack
-            gl.glBegin(GL.GL_QUAD_STRIP);
+            gl.glBegin(GL2.GL_QUAD_STRIP);
             for (int slice = 0; slice <= slices; slice++)
             {
                 longitude = 180 - ((float) slice / slices * (float) 360);
@@ -371,7 +371,7 @@ public class SkyGradientLayer extends AbstractLayer
         }
 
         // Top fade
-        gl.glBegin(GL.GL_QUAD_STRIP);
+        gl.glBegin(GL2.GL_QUAD_STRIP);
         for (int slice = 0; slice <= slices; slice++)
         {
             longitude = 180 - ((float) slice / slices * (float) 360);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -13,7 +13,7 @@ import java.io.IOException;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: NitfsMessage Apr 4, 2007 4:11:55 PM lado
+ * @version $Id$
  */
 public class NITFSMessage
 {

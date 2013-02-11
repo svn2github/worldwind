@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.util.tree;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import com.sun.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.WWObjectImpl;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.beans.*;
@@ -640,8 +640,8 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
 
 //            // Draw a box around the node bounds. Useful for debugging node layout
 //
-//            GL gl = dc.getGL();
-//            gl.glBegin(GL.GL_LINE_LOOP);
+//            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+//            gl.glBegin(GL2.GL_LINE_LOOP);
 //            gl.glVertex2d(layout.screenBounds.getMinX(), layout.screenBounds.getMinY());
 //            gl.glVertex2d(layout.screenBounds.getMaxX(), layout.screenBounds.getMinY());
 //            gl.glVertex2d(layout.screenBounds.getMaxX(), layout.screenBounds.getMaxY());
@@ -698,11 +698,11 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      */
     protected void pickTextAndIcon(DrawContext dc, Iterable<NodeLayout> nodes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         try
         {
-            gl.glBegin(GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
 
             for (NodeLayout layout : nodes)
             {
@@ -737,7 +737,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      */
     protected void drawText(DrawContext dc, Iterable<NodeLayout> nodes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         TreeAttributes attributes = this.getActiveAttributes();
         Color color = attributes.getColor();
@@ -746,7 +746,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
             attributes.getFont(), true, false, false);
 
-        gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+        gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
 
         try
         {
@@ -821,11 +821,11 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      */
     protected void drawIcons(DrawContext dc, Iterable<NodeLayout> nodes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         try
         {
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glEnable(GL.GL_TEXTURE_2D);
 
             TreeAttributes attributes = this.getActiveAttributes();
@@ -905,7 +905,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
         // 2) Draw check marks for selected nodes
         // 3) Draw checkbox outlines
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         Dimension symbolSize;
 
@@ -927,7 +927,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
         // separate line loop
         if (dc.isPickingMode())
         {
-            gl.glBegin(GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
         }
         try
         {
@@ -943,7 +943,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
                 if (!dc.isPickingMode())
                 {
                     // Draw a hollow box uses a line loop
-                    gl.glBegin(GL.GL_LINE_LOOP);
+                    gl.glBegin(GL2.GL_LINE_LOOP);
                     try
                     {
                         gl.glVertex2f(x + width, y + symbolSize.height + 0.5f);
@@ -1001,16 +1001,16 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
         Dimension selectedSymbolSize = this.getSelectedSymbolSize();
         TreeAttributes attributes = this.getActiveAttributes();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         Color[] colors = attributes.getCheckBoxColor();
 
         try
         {
             gl.glLineWidth(1f);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             // Fill box with a diagonal gradient
-            gl.glBegin(GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
 
             for (NodeLayout layout : nodes)
             {
@@ -1054,14 +1054,14 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
 
         Color color = attributes.getColor();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Draw checkmarks for selected nodes
         OGLUtil.applyColor(gl, color, 1, false);
         try
         {
             gl.glEnable(GL.GL_LINE_SMOOTH);
-            gl.glBegin(GL.GL_LINES);
+            gl.glBegin(GL2.GL_LINES);
 
             for (NodeLayout layout : nodes)
             {
@@ -1098,7 +1098,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      */
     protected void drawTriangles(DrawContext dc, Iterable<NodeLayout> nodes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         Dimension symbolSize = this.getNodeStateSymbolSize();
 
@@ -1114,15 +1114,15 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
 
             Color color = attributes.getColor();
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glLineWidth(1f);
             OGLUtil.applyColor(gl, color, 1, false);
 
-            gl.glBegin(GL.GL_TRIANGLES);
+            gl.glBegin(GL2.GL_TRIANGLES);
         }
         else
         {
-            gl.glBegin(GL.GL_QUADS); // Draw pick areas as rectangles, not triangles
+            gl.glBegin(GL2.GL_QUADS); // Draw pick areas as rectangles, not triangles
         }
 
         try
@@ -1697,7 +1697,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      * @param text Text to get bounds of.
      * @param font Font applied to the text.
      *
-     * @return A rectangle that describes the node bounds. See com.sun.opengl.util.j2d.TextRenderer.getBounds for
+     * @return A rectangle that describes the node bounds. See com.jogamp.opengl.util.awt.TextRenderer.getBounds for
      *         information on how this rectangle should be interpreted.
      */
     protected Rectangle2D getTextBounds(DrawContext dc, String text, Font font)
@@ -1724,7 +1724,7 @@ public class BasicTreeLayout extends WWObjectImpl implements TreeLayout, Scrolla
      * @param text Text to find bounds of.
      * @param font Font applied to the text.
      *
-     * @return A rectangle that describes the node bounds. See com.sun.opengl.util.j2d.TextRenderer.getBounds for
+     * @return A rectangle that describes the node bounds. See com.jogamp.opengl.util.awt.TextRenderer.getBounds for
      *         information on how this rectangle should be interpreted.
      */
     protected Rectangle2D getMultilineTextBounds(DrawContext dc, String text, Font font)

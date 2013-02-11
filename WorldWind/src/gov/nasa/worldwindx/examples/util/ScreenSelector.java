@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.applications.worldwindow.util.Util;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -229,16 +229,16 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
 
         protected void drawOrderedRenderable(DrawContext dc)
         {
-            int attrs = GL.GL_COLOR_BUFFER_BIT // For blend enable, alpha enable, blend func, alpha func.
-                | GL.GL_CURRENT_BIT // For current color.
-                | GL.GL_DEPTH_BUFFER_BIT; // For depth test disable.
+            int attrs = GL2.GL_COLOR_BUFFER_BIT // For blend enable, alpha enable, blend func, alpha func.
+                | GL2.GL_CURRENT_BIT // For current color.
+                | GL2.GL_DEPTH_BUFFER_BIT; // For depth test disable.
 
             Rectangle viewport = dc.getView().getViewport();
             Rectangle selection = this.getSelection();
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             this.BEogsh.pushAttrib(gl, attrs);
-            this.BEogsh.pushClientAttrib(gl, GL.GL_VERTEX_ARRAY);
+            this.BEogsh.pushClientAttrib(gl, GL2.GL_VERTEX_ARRAY);
             try
             {
                 // Configure the modelview-projection matrix to transform vertex points from screen rectangle
@@ -272,7 +272,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             }
             finally
             {
-                this.BEogsh.pop(dc.getGL());
+                this.BEogsh.pop(gl);
             }
         }
     }
@@ -511,7 +511,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.sendMessage(new Message(SELECTION_STARTED, this));
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected void selectionEnded(MouseEvent mouseEvent)
     {
         this.selectionRect.clearSelection();

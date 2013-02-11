@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import java.nio.channels.FileChannel;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: NitfsUtil Mar 30, 2007 12:43:29 PM lado
+ * @version $Id$
  */
 public class NITFSUtil
 {

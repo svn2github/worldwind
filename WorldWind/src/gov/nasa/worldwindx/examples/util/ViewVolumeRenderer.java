@@ -1,14 +1,15 @@
-/* Copyright (C) 2001, 2010 United States Government as represented by 
-the Administrator of the National Aeronautics and Space Administration. 
-All Rights Reserved. 
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.examples.util;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -55,11 +56,11 @@ public class ViewVolumeRenderer
         Vec4 y = origin.add3(Vec4.UNIT_Y.transformBy4(modelviewInv).multiply3(this.getSize()));
         Vec4 z = origin.add3(Vec4.UNIT_Z.transformBy4(modelviewInv).multiply3(this.getSize()));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT
-            | GL.GL_LINE_BIT
-            | GL.GL_POINT_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT
+            | GL2.GL_LINE_BIT
+            | GL2.GL_POINT_BIT);
         try
         {
             gl.glEnable(GL.GL_BLEND);
@@ -68,7 +69,7 @@ public class ViewVolumeRenderer
             OGLUtil.applyBlending(gl, false);
 
             gl.glColor3ub((byte) 255, (byte) 255, (byte) 255); // Set the current RGB color to White.
-            gl.glBegin(GL.GL_POINTS);
+            gl.glBegin(GL2.GL_POINTS);
             gl.glVertex3d(origin.x, origin.y, origin.z);
             gl.glEnd();
 
@@ -87,10 +88,11 @@ public class ViewVolumeRenderer
 
     protected void drawClipVolume(DrawContext dc, Matrix modelview, Matrix projection, Rectangle viewport)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl,
-            GL.GL_CURRENT_BIT | GL.GL_COLOR_BUFFER_BIT | GL.GL_LINE_BIT | GL.GL_ENABLE_BIT | GL.GL_DEPTH_BUFFER_BIT);
+            GL2.GL_CURRENT_BIT | GL2.GL_COLOR_BUFFER_BIT | GL2.GL_LINE_BIT | GL2.GL_ENABLE_BIT
+                | GL2.GL_DEPTH_BUFFER_BIT);
         try
         {
             gl.glLineWidth(1f);
@@ -118,7 +120,7 @@ public class ViewVolumeRenderer
             new Vec4(viewport.width, viewport.height, 1));
         Vec4 far_ul = worldPointFromScreenPoint(dc, viewport, modelview, projection, new Vec4(0, viewport.height, 1));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Draw the active view volume
         gl.glColor4ub((byte) 255, (byte) 255, (byte) 0, (byte) 128); // Above ground color is 50% transparent Yellow.
@@ -130,7 +132,7 @@ public class ViewVolumeRenderer
         drawQuad(dc, far_ll, far_lr, far_ur, far_ul);
 
         // Draw it again with GL_GREATER in order to draw the underground portion
-        gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT);
+        gl.glPushAttrib(GL2.GL_DEPTH_BUFFER_BIT);
         gl.glDepthFunc(GL.GL_GREATER);
         gl.glColor4ub((byte) 255, (byte) 255, (byte) 0, (byte) 51); // below ground portion is less opaque
         drawQuad(dc, near_ul, near_ur, far_ur, far_ul);
@@ -173,8 +175,8 @@ public class ViewVolumeRenderer
 
     protected static void drawLine(DrawContext dc, Vec4 a, Vec4 b)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_LINES);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_LINES);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);
         gl.glEnd();
@@ -182,8 +184,8 @@ public class ViewVolumeRenderer
 
     protected static void drawQuad(DrawContext dc, Vec4 ll, Vec4 lr, Vec4 ur, Vec4 ul)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_QUADS);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_QUADS);
         gl.glVertex3d(ll.x, ll.y, ll.z);
         gl.glVertex3d(lr.x, lr.y, lr.z);
         gl.glVertex3d(ur.x, ur.y, ur.z);
@@ -193,8 +195,8 @@ public class ViewVolumeRenderer
 
     protected static void drawTriangle(DrawContext dc, Vec4 a, Vec4 b, Vec4 c)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_TRIANGLES);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_TRIANGLES);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);
         gl.glVertex3d(c.x, c.y, c.z);

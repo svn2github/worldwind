@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import java.net.URL;
 
 /**
  * @author lado
- * @version $Id: TileUrlBuilder   Jun 19, 2007  12:47:51 AM
+ * @version $Id$
  */
 public interface TileUrlBuilder
 {

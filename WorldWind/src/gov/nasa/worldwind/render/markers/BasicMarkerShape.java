@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -13,7 +13,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.glu.*;
 import java.util.ArrayList;
 
@@ -39,7 +39,7 @@ public class BasicMarkerShape
     public static final String ORIENTED_CONE_LINE = "gov.nasa.worldwind.render.markers.DirectionalConeLine";
     public static final String ORIENTED_CYLINDER_LINE = "gov.nasa.worldwind.render.markers.DirectionalCylinderLine";
 
-    @SuppressWarnings( {"StringEquality"})
+    @SuppressWarnings({"StringEquality"})
     public static MarkerShape createShapeInstance(String shapeType)
     {
         if (shapeType == null)
@@ -249,14 +249,16 @@ public class BasicMarkerShape
             if (!this.isInitialized)
                 this.initialize(dc);
 
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
             if (!isRelative)
             {
                 dc.getView().pushReferenceCenter(dc, point);
             }
             else
             {
-                dc.getGL().glPushMatrix();
-                dc.getGL().glTranslated(point.x, point.y, point.z);
+                gl.glPushMatrix();
+                gl.glTranslated(point.x, point.y, point.z);
             }
 
             int[] dlResource = (int[]) dc.getGpuResourceCache().get(this.displayListCacheKey);
@@ -270,7 +272,7 @@ public class BasicMarkerShape
             }
             else
             {
-                dc.getGL().glPopMatrix();
+                gl.glPopMatrix();
             }
         }
 
@@ -307,19 +309,20 @@ public class BasicMarkerShape
 
         protected int[] createDisplayList(DrawContext dc, double radius)
         {
-            int[] dlResource = new int[] {dc.getGL().glGenLists(1), 1};
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            int[] dlResource = new int[] {gl.glGenLists(1), 1};
 
             int size;
             try
             {
-                dc.getGL().glNewList(dlResource[0], GL.GL_COMPILE);
+                gl.glNewList(dlResource[0], GL2.GL_COMPILE);
                 size = this.drawShape(dc, radius);
-                dc.getGL().glEndList();
+                gl.glEndList();
             }
             catch (Exception e)
             {
-                dc.getGL().glEndList();
-                dc.getGL().glDeleteLists(dlResource[0], dlResource[1]);
+                gl.glEndList();
+                gl.glDeleteLists(dlResource[0], dlResource[1]);
                 return null;
             }
 
@@ -345,8 +348,9 @@ public class BasicMarkerShape
         protected void doRender(DrawContext dc, Marker marker, Vec4 point, double radius, int[] dlResource)
         {
             // Sphere is symmetric about all axes, so no need to apply heading, pitch, or roll.
-            dc.getGL().glScaled(radius, radius, radius);
-            dc.getGL().glCallList(dlResource[0]);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glScaled(radius, radius, radius);
+            gl.glCallList(dlResource[0]);
         }
 
         @Override
@@ -388,9 +392,9 @@ public class BasicMarkerShape
             // Normal vectors for each face
             float[][] n = {{0, 1, 0}, {1, 0, 0}, {0, 0, 1}, {-1, 0, 0}, {0, 0, -1}, {0, -1, 0}};
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-            gl.glBegin(GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
 
             for (int i = 0; i < faces.length; i++)
             {
@@ -426,7 +430,7 @@ public class BasicMarkerShape
             Vec4 rotatedY = Vec4.UNIT_NEGATIVE_Y.transformBy3(Matrix.fromAxisAngle(angle, A / L, B / L, 0));
             Angle northAngle = rotatedY.angleBetween3(north);
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate cube normal to globe
 
             gl.glRotated(northAngle.degrees, 0, 0, 1); // rotate to face north
@@ -483,10 +487,11 @@ public class BasicMarkerShape
             double B = orientation.x;
             double L = Math.sqrt(A * A + B * B);
 
-            dc.getGL().glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
 
-            dc.getGL().glScaled(size, size, size);                 // scale
-            dc.getGL().glCallList(dlResource[0]);
+            gl.glScaled(size, size, size);                 // scale
+            gl.glCallList(dlResource[0]);
         }
 
         @Override
@@ -539,10 +544,11 @@ public class BasicMarkerShape
             double B = orientation.x;
             double L = Math.sqrt(A * A + B * B);
 
-            dc.getGL().glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
 
-            dc.getGL().glScaled(size, size, size);                 // scale
-            dc.getGL().glCallList(dlResource[0]);
+            gl.glScaled(size, size, size);                 // scale
+            gl.glCallList(dlResource[0]);
         }
 
         @Override
@@ -552,11 +558,14 @@ public class BasicMarkerShape
             int stacks = 1;
             int loops = 1;
 
-            dc.getGLU().gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
-            dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
-            dc.getGL().glTranslated(0, 0, 2);
-            dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
-            dc.getGL().glTranslated(0, 0, -2);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            GLU glu = dc.getGLU();
+
+            glu.gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
+            glu.gluDisk(quadric, 0d, 1d, slices, loops);
+            gl.glTranslated(0, 0, 2);
+            glu.gluDisk(quadric, 0d, 1d, slices, loops);
+            gl.glTranslated(0, 0, -2);
 
             return slices * 2 * 6 * 4; // top and bottom vertices and normals, assume float coords (4 bytes)
         }
@@ -577,7 +586,7 @@ public class BasicMarkerShape
 
         protected void doRender(DrawContext dc, Marker marker, Vec4 point, double size, int[] dlResource)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             MarkerAttributes attrs = marker.getAttributes();
 
             if (marker.getHeading() == null)
@@ -588,9 +597,9 @@ public class BasicMarkerShape
                 && !attrs.getHeadingMaterial().equals(attrs.getMaterial()))
             {
                 if (attrs.getOpacity() < 1)
-                    attrs.getHeadingMaterial().apply(dc.getGL(), GL.GL_FRONT, (float) attrs.getOpacity());
+                    attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT, (float) attrs.getOpacity());
                 else
-                    attrs.getHeadingMaterial().apply(dc.getGL(), GL.GL_FRONT);
+                    attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT);
             }
 
             // To compute rotation of the line axis toward the proper heading, find a second point in that direction.
@@ -622,11 +631,12 @@ public class BasicMarkerShape
         @Override
         protected int drawShape(DrawContext dc, double radius)
         {
-            dc.getGL().glBegin(GL.GL_LINE_STRIP);
-            dc.getGL().glNormal3f(0f, 1f, 0f);
-            dc.getGL().glVertex3f(0, 0, 0);
-            dc.getGL().glVertex3f(0, 0, 1);
-            dc.getGL().glEnd();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glBegin(GL2.GL_LINE_STRIP);
+            gl.glNormal3f(0f, 1f, 0f);
+            gl.glVertex3f(0, 0, 0);
+            gl.glVertex3f(0, 0, 1);
+            gl.glEnd();
 
             return 3 * 3 * 4; // three vertices and a normal each with 3 float coordinates
         }
@@ -648,7 +658,7 @@ public class BasicMarkerShape
 
         protected void doRender(DrawContext dc, Marker marker, Vec4 point, double size, int[] dlResource)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             MarkerAttributes attrs = marker.getAttributes();
 
             if (marker.getHeading() == null)
@@ -659,9 +669,9 @@ public class BasicMarkerShape
                 && !attrs.getHeadingMaterial().equals(attrs.getMaterial()))
             {
                 if (attrs.getOpacity() < 1)
-                    attrs.getHeadingMaterial().apply(dc.getGL(), GL.GL_FRONT, (float) attrs.getOpacity());
+                    attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT, (float) attrs.getOpacity());
                 else
-                    attrs.getHeadingMaterial().apply(dc.getGL(), GL.GL_FRONT);
+                    attrs.getHeadingMaterial().apply(gl, GL2.GL_FRONT);
             }
 
             // To compute rotation of the arrow axis toward the proper heading, find a second point in that direction.
@@ -701,13 +711,14 @@ public class BasicMarkerShape
         @Override
         protected int drawShape(DrawContext dc, double radius)
         {
-            dc.getGL().glBegin(GL.GL_POLYGON);
-            dc.getGL().glNormal3f(0f, 1f, 0f);
-            dc.getGL().glVertex3f(-.5f, 0, 0);
-            dc.getGL().glVertex3f(0, 0, 1);
-            dc.getGL().glVertex3f(0.5f, 0, 0);
-            dc.getGL().glVertex3f(-0.5f, 0, 0);
-            dc.getGL().glEnd();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glBegin(GL2.GL_POLYGON);
+            gl.glNormal3f(0f, 1f, 0f);
+            gl.glVertex3f(-.5f, 0, 0);
+            gl.glVertex3f(0, 0, 1);
+            gl.glVertex3f(0.5f, 0, 0);
+            gl.glVertex3f(-0.5f, 0, 0);
+            gl.glEnd();
 
             return 5 * 3 * 4; // 5 vertices and a normal each with 3 float coordinates
         }

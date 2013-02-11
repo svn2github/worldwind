@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -14,7 +14,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -272,16 +272,16 @@ public class Curtain extends AbstractAirspace
         this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
         this.clearElevationMap();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         int[] lightModelTwoSide = new int[1];
         try
         {
-            gl.glGetIntegerv(GL.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide, 0);
+            gl.glGetIntegerv(GL2.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide, 0);
             dc.getView().pushReferenceCenter(dc, referenceCenter);
 
             if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
             {
-                gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
+                gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
 
                 this.drawCurtainFill(dc, count, locationArray, pathType, splitThreshold, altitudes, terrainConformant,
                     referenceCenter);
@@ -295,7 +295,7 @@ public class Curtain extends AbstractAirspace
         finally
         {
             dc.getView().popReferenceCenter(dc);
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide[0]);
+            gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide[0]);
         }
     }
 
@@ -659,7 +659,7 @@ public class Curtain extends AbstractAirspace
         int numSubsegments = (int) Math.ceil(arcLength / this.getSplitThreshold());
         double segmentIncrement = segmentDistance.radians / (double) numSubsegments;
 
-        for (double s = 0; s < segmentDistance.radians;)
+        for (double s = 0; s < segmentDistance.radians; )
         {
             // If we've reached or passed the second location, then add the second location and break. We handle this
             // case specially to ensure that the actual second location is added, instead of a computed location very

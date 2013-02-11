@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.util;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.render.TextRendererCache;
 
 /**
@@ -92,7 +92,8 @@ public class OGLTextRenderer extends TextRenderer
             throw new IllegalArgumentException(message);
         }
 
-        TextRendererCache.CacheKey key = new TextRendererCache.CacheKey(font, antialiased, useFractionalMetrics, mipmap);
+        TextRendererCache.CacheKey key = new TextRendererCache.CacheKey(font, antialiased, useFractionalMetrics,
+            mipmap);
 
         TextRenderer value = cache.get(key);
         if (value == null)

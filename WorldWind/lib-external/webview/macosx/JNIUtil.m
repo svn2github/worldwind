@@ -1,8 +1,8 @@
 /*
-Copyright (C) 2001, 2011 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 #import "JNIUtil.h"
 #import <JavaNativeFoundation/JavaNativeFoundation.h> // Helper framework for Cocoa and JNI development.
 

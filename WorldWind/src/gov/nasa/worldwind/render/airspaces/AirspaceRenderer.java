@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.nio.Buffer;
 import java.util.Iterator;
@@ -642,9 +642,9 @@ public class AirspaceRenderer
         {
             if (this.isEnableLighting())
             {
-                dc.getGL().glGetIntegerv(GL.GL_LIGHTING, lightEnabledState, 0);
+                dc.getGL().glGetIntegerv(GL2.GL_LIGHTING, lightEnabledState, 0);
                 if (lightEnabledState[0] == GL.GL_TRUE)
-                    dc.getGL().glDisable(GL.GL_LIGHTING);
+                    dc.getGL().glDisable(GL2.GL_LIGHTING);
             }
 
             airspace.getAttributes().applyOutline(dc, false);
@@ -654,37 +654,37 @@ public class AirspaceRenderer
 
         if (!dc.isPickingMode() && this.isEnableLighting() && lightEnabledState[0] == GL.GL_TRUE)
         {
-            dc.getGL().glEnable(GL.GL_LIGHTING);
+            dc.getGL().glEnable(GL2.GL_LIGHTING);
         }
     }
 
     protected void beginRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 
         if (!dc.isPickingMode())
         {
             int attribMask =
-                GL.GL_COLOR_BUFFER_BIT
+                GL2.GL_COLOR_BUFFER_BIT
                     // For color write mask. If blending is enabled: for blending src and func, and alpha func.
-                    | GL.GL_CURRENT_BIT // For current color.
-                    | GL.GL_LINE_BIT // For line width, line smoothing.
-                    | GL.GL_POLYGON_BIT // For polygon mode, polygon offset.
-                    | GL.GL_TRANSFORM_BIT; // For matrix mode.
+                    | GL2.GL_CURRENT_BIT // For current color.
+                    | GL2.GL_LINE_BIT // For line width, line smoothing.
+                    | GL2.GL_POLYGON_BIT // For polygon mode, polygon offset.
+                    | GL2.GL_TRANSFORM_BIT; // For matrix mode.
             gl.glPushAttrib(attribMask);
 
             if (this.isDrawWireframe())
-                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE);
+                gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
 
             if (this.isEnableBlending())
                 this.setBlending(dc);
 
             if (this.isEnableLighting())
             {
-                gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
                 dc.beginStandardLighting();
             }
 
@@ -694,16 +694,16 @@ public class AirspaceRenderer
         else
         {
             int attribMask =
-                GL.GL_CURRENT_BIT // For current color.
-//                    | GL.GL_DEPTH_BUFFER_BIT // For depth test and depth func.
-                    | GL.GL_LINE_BIT; // For line width.
+                GL2.GL_CURRENT_BIT // For current color.
+//                    | GL2.GL_DEPTH_BUFFER_BIT // For depth test and depth func.
+                    | GL2.GL_LINE_BIT; // For line width.
             gl.glPushAttrib(attribMask);
         }
     }
 
     protected void endRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         dc.endStandardLighting();
         gl.glPopAttrib();
@@ -713,7 +713,8 @@ public class AirspaceRenderer
     protected void bindPickableObject(DrawContext dc, Object pickedObject, PickSupport pickSupport)
     {
         java.awt.Color pickColor = dc.getUniquePickColor();
-        dc.getGL().glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
 
         if (pickedObject instanceof Locatable)
         {
@@ -756,7 +757,7 @@ public class AirspaceRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int minElementIndex, maxElementIndex;
         int size, glType, stride;
@@ -776,7 +777,7 @@ public class AirspaceRenderer
                 normalBuffer = geom.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
                 {
-                    gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
                 }
                 else
                 {
@@ -799,7 +800,7 @@ public class AirspaceRenderer
             if (this.isEnableLighting())
             {
                 if (normalBuffer == null)
-                    gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             }
             this.logGeometryStatistics(dc, geom);
         }
@@ -894,13 +895,13 @@ public class AirspaceRenderer
             throw new IllegalStateException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (this.isUseEXTBlendFuncSeparate())
             this.setHaveEXTBlendFuncSeparate(gl.isExtensionAvailable(EXT_BLEND_FUNC_SEPARATE_STRING));
 
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         gl.glEnable(GL.GL_BLEND);
         // The separate blend function correctly handles regular (non-premultiplied) colors. We want

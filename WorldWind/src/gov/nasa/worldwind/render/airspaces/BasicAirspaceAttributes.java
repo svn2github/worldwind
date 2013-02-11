@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 
 /**
  * A container for common attributes applied to renderable shapes.
@@ -357,13 +357,13 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
 
     protected void applyMaterial(DrawContext dc, Material material, double opacity, boolean enableMaterial)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (material != null)
         {
             if (enableMaterial)
             {
-                material.apply(gl, GL.GL_FRONT_AND_BACK, (float) opacity);
+                material.apply(gl, GL2.GL_FRONT_AND_BACK, (float) opacity);
             }
             else
             {

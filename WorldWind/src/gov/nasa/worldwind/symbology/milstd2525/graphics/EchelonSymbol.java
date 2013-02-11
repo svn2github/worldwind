@@ -14,7 +14,7 @@ import gov.nasa.worldwind.symbology.AbstractTacticalSymbol;
 import gov.nasa.worldwind.symbology.milstd2525.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -185,7 +185,7 @@ public class EchelonSymbol extends AbstractTacticalSymbol
     protected void drawIcon(DrawContext dc)
     {
         boolean matrixPushed = false;
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         try
         {
             if (this.rotation != null)

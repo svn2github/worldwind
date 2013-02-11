@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
+
 package gov.nasa.worldwind;
 
+import com.jogamp.opengl.util.texture.TextureIO;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.exception.WWAbsentRequirementException;
@@ -15,6 +17,7 @@ import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.dashboard.DashboardController;
 
 import javax.media.opengl.*;
+import javax.media.opengl.awt.AWTGLAutoDrawable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -126,7 +129,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
     public void shutdown()
     {
         this.shuttingDown = true;
-        this.drawable.display(); // Invokes a repaint, where the rest of the shutdown work is done.
+        this.redrawNow(); // Invokes a repaint, where the rest of the shutdown work is done.
     }
 
     protected void doShutdown()
@@ -150,13 +153,17 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             throw new IllegalArgumentException(msg);
         }
 
-        if (this.drawable != null)
-            this.drawable.repaint(); // Queue a JOGL repaint request.
+        this.redraw(); // Queue a JOGL display request.
     }
 
     public GLContext getContext()
     {
         return this.drawable.getContext();
+    }
+
+    protected boolean isGLContextCompatible(GLContext context)
+    {
+        return context != null && context.isGL2();
     }
 
     protected String[] getRequiredOglFunctions()
@@ -176,6 +183,13 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
      */
     public void init(GLAutoDrawable glAutoDrawable)
     {
+        if (!this.isGLContextCompatible(glAutoDrawable.getContext()))
+        {
+            String msg = Logging.getMessage("WorldWindowGLAutoDrawable.IncompatibleGLContext",
+                glAutoDrawable.getContext());
+            this.callRenderingExceptionListeners(new WWAbsentRequirementException(msg));
+        }
+
         for (String funcName : this.getRequiredOglFunctions())
         {
             if (!glAutoDrawable.getGL().isFunctionAvailable(funcName))
@@ -199,10 +213,24 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
         else
             this.reinitialize(glAutoDrawable);
 
+        // Disables use of the OpenGL extension GL_ARB_texture_rectangle by JOGL's Texture creation utility.
+        //
+        // Between version 1.1.1 and version 2.x, JOGL modified its texture creation utility to favor
+        // GL_ARB_texture_rectangle over GL_ARB_texture_non_power_of_two on Mac OS X machines with ATI graphics cards. See
+        // the following URL for details on the texture rectangle extension: http://www.opengl.org/registry/specs/ARB/texture_rectangle.txt
+        //
+        // There are two problems with favoring texture rectangle for non power of two textures:
+        // 1) As of November 2012, we cannot find any evidence that the GL_ARB_texture_non_power_of_two extension is
+        //    problematic on Mac OS X machines with ATI graphics cards. The texture rectangle extension is more limiting
+        //    than the NPOT extension, and therefore not preferred.
+        // 2) World Wind assumes that a texture's target is always GL_TEXTURE_2D, and therefore incorrectly displays
+        //    textures with the target GL_TEXTURE_RECTANGLE.
+        TextureIO.setTexRectEnabled(false);
+
 //        this.drawable.setGL(new DebugGL(this.drawable.getGL())); // uncomment to use the debug drawable
     }
 
-    @SuppressWarnings( {"UnusedParameters"})
+    @SuppressWarnings({"UnusedParameters"})
     protected void reinitialize(GLAutoDrawable glAutoDrawable)
     {
         // Clear the gpu resource cache if the window is reinitializing, most likely with a new gl hardware context.
@@ -210,6 +238,29 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             this.getGpuResourceCache().clear();
 
         this.getSceneController().reinitialize();
+    }
+
+    /**
+     * See {@link GLEventListener#init(GLAutoDrawable)}.
+     * <p/>
+     * GLEventListener's dispose method indicates that the GL context has been released, and provides the listener an
+     * opportunity to clean up any resources. Dispose does not imply that the component's lifecycle has ended or that
+     * the application is closing. There are three cases in which dispose may be called:
+     * <p/>
+     * <ul> <li>The WorldWindow is removed from its parent component.</li> <li>The WorldWindow's parent frame is
+     * closed.</li> <li>The application calls either GLCanvas.dispose or GLJPanel.dispose.</li> </ul>
+     * <p/>
+     * This implementation is left empty. In the case when a WorldWindow or a World Wind application has reached its end
+     * of life, its resources should be released by calling {@link gov.nasa.worldwind.WorldWindow#shutdown()} or {@link
+     * gov.nasa.worldwind.WorldWind#shutDown()}, respectively. In the case when a WorldWindow is removed from its parent
+     * frame or that frame is closed without a call to shutdown, it is assumed that the application intends to reuse the
+     * WorldWindow. Resources associated with the previous GL context are released in the subsequent call to init.
+     *
+     * @param glAutoDrawable the drawable
+     */
+    @Override
+    public void dispose(GLAutoDrawable glAutoDrawable)
+    {
     }
 
     /**
@@ -241,8 +292,9 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             SceneController sc = this.getSceneController();
             if (sc == null)
             {
-                Logging.logger().severe("WorldWindowGLCanvas.ScnCntrllerNullOnRepaint");
-                throw new IllegalStateException(Logging.getMessage("WorldWindowGLCanvas.ScnCntrllerNullOnRepaint"));
+                String msg = Logging.getMessage("WorldWindowGLCanvas.ScnCntrllerNullOnRepaint");
+                Logging.logger().severe(msg);
+                throw new IllegalStateException(msg);
             }
 
             // Determine if the view has changed since the last frame.
@@ -271,7 +323,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
                     {
                         public void actionPerformed(ActionEvent actionEvent)
                         {
-                            drawable.repaint();
+                            redraw();
                             redrawTimer = null;
                         }
                     });
@@ -413,21 +465,11 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
         ((Component) glAutoDrawable).setMinimumSize(new Dimension(0, 0));
     }
 
-    /**
-     * See {@link GLEventListener#displayChanged(GLAutoDrawable, boolean, boolean)}.
-     *
-     * @param glAutoDrawable the drawable
-     */
-    public void displayChanged(GLAutoDrawable glAutoDrawable, boolean b, boolean b1)
-    {
-        Logging.logger().finest("WorldWindowGLCanvas.DisplayEventListenersDisplayChangedMethodCalled");
-    }
-
     @Override
     public void redraw()
     {
         if (this.drawable != null)
-            this.drawable.repaint();
+            ((AWTGLAutoDrawable) this.drawable).repaint();
     }
 
     public void redrawNow()

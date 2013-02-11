@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -190,7 +190,7 @@ public class SurfacePolylines extends AbstractSurfaceShape
         if (dlResource == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.applyOutlineState(dc, this.getActiveAttributes());
         gl.glCallList(dlResource[0]);
 
@@ -212,12 +212,12 @@ public class SurfacePolylines extends AbstractSurfaceShape
 
     protected int[] tessellateOutline(DrawContext dc, LatLon referenceLocation)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.crossesDateLine = false;
 
-        int[] dlResource = new int[] {dc.getGL().glGenLists(1), 1};
+        int[] dlResource = new int[] {gl.glGenLists(1), 1};
 
-        gl.glNewList(dlResource[0], GL.GL_COMPILE);
+        gl.glNewList(dlResource[0], GL2.GL_COMPILE);
         try
         {
             // Tessellate each part, note if crossing date line
@@ -242,12 +242,12 @@ public class SurfacePolylines extends AbstractSurfaceShape
         return dlResource;
     }
 
-    protected boolean tessellatePart(GL gl, VecBuffer vecBuffer, LatLon referenceLocation)
+    protected boolean tessellatePart(GL2 gl, VecBuffer vecBuffer, LatLon referenceLocation)
     {
         Iterable<double[]> iterable = vecBuffer.getCoords(3);
         boolean dateLineCrossed = false;
 
-        gl.glBegin(GL.GL_LINE_STRIP);
+        gl.glBegin(GL2.GL_LINE_STRIP);
         try
         {
             int sign = 0; // hemisphere offset direction

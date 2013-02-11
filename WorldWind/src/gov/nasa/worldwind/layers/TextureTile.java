@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.*;
@@ -162,7 +162,7 @@ public class TextureTile extends Tile implements SurfaceTile
     {
         return this.updateTime.get();
     }
-    
+
     public boolean isTextureExpired()
     {
         return this.isTextureExpired(this.getLevel().getExpiryTime());
@@ -357,7 +357,7 @@ public class TextureTile extends Tile implements SurfaceTile
         }
 
         this.setTexture(dc.getTextureCache(), t);
-        t.bind();
+        t.bind(dc.getGL());
 
         this.setTextureParameters(dc, t);
 
@@ -452,7 +452,7 @@ public class TextureTile extends Tile implements SurfaceTile
         }
 
         if (t != null)
-            t.bind();
+            t.bind(dc.getGL());
 
         return t != null;
     }
@@ -466,6 +466,8 @@ public class TextureTile extends Tile implements SurfaceTile
             throw new IllegalStateException(message);
         }
 
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         Texture t;
         if (this.getTextureData() != null) // Reinitialize if new texture data
             t = this.initializeTexture(dc);
@@ -476,10 +478,9 @@ public class TextureTile extends Tile implements SurfaceTile
         {
             if (t.getMustFlipVertically())
             {
-                GL gl = GLContext.getCurrent().getGL();
                 if (!textureIdentityActive)
                 {
-                    gl.glMatrixMode(GL.GL_TEXTURE);
+                    gl.glMatrixMode(GL2.GL_TEXTURE);
                     gl.glLoadIdentity();
                 }
                 gl.glScaled(1, -1, 1);
@@ -501,10 +502,9 @@ public class TextureTile extends Tile implements SurfaceTile
             return;
 
         // Apply necessary transforms to the fallback texture.
-        GL gl = GLContext.getCurrent().getGL();
         if (!textureIdentityActive)
         {
-            gl.glMatrixMode(GL.GL_TEXTURE);
+            gl.glMatrixMode(GL2.GL_TEXTURE);
             gl.glLoadIdentity();
         }
 
@@ -539,8 +539,9 @@ public class TextureTile extends Tile implements SurfaceTile
         double sShift = oneOverTwoToTheN * (this.getColumn() % twoToTheN);
         double tShift = oneOverTwoToTheN * (this.getRow() % twoToTheN);
 
-        dc.getGL().glTranslated(sShift, tShift, 0);
-        dc.getGL().glScaled(oneOverTwoToTheN, oneOverTwoToTheN, 1);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glTranslated(sShift, tShift, 0);
+        gl.glScaled(oneOverTwoToTheN, oneOverTwoToTheN, 1);
     }
 
     @Override

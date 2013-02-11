@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.util.webview;
 
-import com.sun.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.Texture;
 import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;

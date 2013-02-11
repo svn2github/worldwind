@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -13,7 +13,7 @@ import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.webview.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -1095,27 +1095,27 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int attrMask =
-            GL.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
-                | GL.GL_CURRENT_BIT // For current color
-                | GL.GL_DEPTH_BUFFER_BIT // For depth test enable/disable, depth func, depth mask.
-                | GL.GL_LINE_BIT // For line smooth enable, line stipple enable, line width, line stipple factor,
+            GL2.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
+                | GL2.GL_CURRENT_BIT // For current color
+                | GL2.GL_DEPTH_BUFFER_BIT // For depth test enable/disable, depth func, depth mask.
+                | GL2.GL_LINE_BIT // For line smooth enable, line stipple enable, line width, line stipple factor,
                 // line stipple pattern.
-                | GL.GL_POLYGON_BIT // For polygon mode.
-                | GL.GL_VIEWPORT_BIT; // For depth range.
+                | GL2.GL_POLYGON_BIT // For polygon mode.
+                | GL2.GL_VIEWPORT_BIT; // For depth range.
 
         this.osh.clear(); // Reset the stack handler's internal state.
         this.osh.pushAttrib(gl, attrMask);
-        this.osh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT); // For vertex array enable, vertex array pointers.
+        this.osh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT); // For vertex array enable, pointers.
         this.osh.pushProjectionIdentity(gl);
         // The browser balloon is drawn using a parallel projection sized to fit the viewport.
         gl.glOrtho(0d, dc.getView().getViewport().width, 0d, dc.getView().getViewport().height, -1d, 1d);
         this.osh.pushTextureIdentity(gl);
         this.osh.pushModelviewIdentity(gl);
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // All drawing uses vertex arrays.
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY); // All drawing uses vertex arrays.
 
         if (!dc.isPickingMode())
         {
@@ -1126,12 +1126,13 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
     protected void endDrawing(DrawContext dc)
     {
-        this.osh.pop(dc.getGL());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        this.osh.pop(gl);
     }
 
     protected void doDrawOrderedRenderable(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (dc.isPickingMode())
         {
@@ -1239,7 +1240,8 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
         // Bind the balloon's vertex buffer as source of GL vertex coordinates. This buffer is used by both interior
         // and outline rendering. We bind it once here to avoid loading the buffer twice.
-        dc.getGL().glVertexPointer(2, GL.GL_FLOAT, 0, this.frameInfo.vertexBuffer);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glVertexPointer(2, GL.GL_FLOAT, 0, this.frameInfo.vertexBuffer);
 
         if (this.isDrawInterior(dc))
         {
@@ -1274,7 +1276,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         if (this.frameInfo.vertexBuffer == null) // This should never happen, but we check anyway.
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         boolean textureApplied = false;
         try
@@ -1291,8 +1293,8 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
                 // internal format must be RGBA to work correctly, and we assume that the WebView's texture format
                 // is RGBA.
                 gl.glEnable(GL.GL_TEXTURE_2D);
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-                gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+                gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_DECAL);
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.frameInfo.vertexBuffer);
                 // Denote that the texture has been applied and that we need to restore the default texture state.
                 textureApplied = true;
@@ -1311,9 +1313,9 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
             if (textureApplied)
             {
                 gl.glDisable(GL.GL_TEXTURE_2D);
-                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, null);
             }
         }
@@ -1331,7 +1333,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
     protected void prepareToDrawInterior(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode())
         {
@@ -1345,7 +1347,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
     protected void prepareToDrawOutline(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode())
         {
@@ -1364,7 +1366,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
             if (this.getActiveAttributes().getOutlineStippleFactor() > 0)
             {
-                gl.glEnable(GL.GL_LINE_STIPPLE);
+                gl.glEnable(GL2.GL_LINE_STIPPLE);
                 gl.glLineStipple(this.getActiveAttributes().getOutlineStippleFactor(),
                     this.getActiveAttributes().getOutlineStipplePattern());
             }
@@ -1556,7 +1558,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         if (!texture.bind(dc))
             return false;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Set up the texture matrix to transform texture coordinates from the balloon's screen space vertex
         // coordinates into WebView texture space. This places the WebView's texture in the WebView's screen
@@ -1568,18 +1570,18 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         // is in screen coordinates, we translate the texture coordinates by the offset from the screenRect
         // origin to the webViewRect origin.
         texture.applyInternalTransform(dc);
-        gl.glMatrixMode(GL.GL_TEXTURE);
+        gl.glMatrixMode(GL2.GL_TEXTURE);
         gl.glScalef(1f / this.webViewRect.width, 1f / this.webViewRect.height, 1f);
         gl.glTranslatef(this.screenRect.x - this.webViewRect.x, this.screenRect.y - this.webViewRect.y, 0f);
         // Restore the matrix mode.
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
 
         return true;
     }
 
     protected void drawWebViewLinks(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (this.webView == null)
             return;
@@ -1613,7 +1615,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
             int x = this.webViewRect.x - this.screenRect.x;
             int y = this.webViewRect.y - this.screenRect.y;
 
-            gl.glBegin(GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
             try
             {
                 for (Rectangle rect : (Rectangle[]) linkParams.getValue(AVKey.RECTANGLES))
@@ -1645,7 +1647,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         if (this.frameInfo.vertexBuffer == null) // This should never happen, but we check anyway.
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Compute the screen rectangle in AWT coordinates (origin top left).
         Rectangle awtScreenRect = new Rectangle(this.screenRect.x,
@@ -1703,7 +1705,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         if (rect.isEmpty())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushTextureIdentity(gl);
         ogsh.pushModelviewIdentity(gl);
@@ -1776,7 +1778,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
 
     protected void drawTitleBar(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Apply the balloon's outline color, but use the interior opacity.
         Color color = this.getActiveAttributes().getOutlineMaterial().getDiffuse();
@@ -1792,7 +1794,7 @@ public abstract class AbstractBrowserBalloon extends AbstractBalloon implements 
         int x = this.webViewRect.x - this.screenRect.x;
         int y = this.webViewRect.y - this.screenRect.y;
 
-        gl.glBegin(GL.GL_LINES);
+        gl.glBegin(GL2.GL_LINES);
         try
         {
             gl.glVertex2i(x, y + this.webViewRect.height);

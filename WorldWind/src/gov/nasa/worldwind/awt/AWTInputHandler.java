@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GLJPanel;
+import javax.media.opengl.awt.GLJPanel;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;

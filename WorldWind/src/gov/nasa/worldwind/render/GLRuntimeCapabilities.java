@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -113,8 +113,8 @@ public class GLRuntimeCapabilities
             {
                 // The maxAnisotropy value can be any real value. A value less than 2.0 indicates that the graphics
                 // context does not support texture anisotropy.
-                double[] params = new double[1];
-                glContext.getGL().glGetDoublev(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, params, 0);
+                float[] params = new float[1];
+                gl.glGetFloatv(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, params, 0);
                 this.maxTextureAnisotropy = params[0];
             }
         }
@@ -122,7 +122,7 @@ public class GLRuntimeCapabilities
         if (this.numTextureUnits == 0)
         {
             int[] params = new int[1];
-            gl.glGetIntegerv(GL.GL_MAX_TEXTURE_UNITS, params, 0);
+            gl.glGetIntegerv(GL2.GL_MAX_TEXTURE_UNITS, params, 0);
             this.numTextureUnits = params[0];
         }
 

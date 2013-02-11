@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.LatLon;
 
 /**
  * @author lado
- * @version $Id: RpfFrameFileComponents Mar 31, 2007 10:06:22 PM
+ * @version $Id$
  */
 public class RPFFrameFileComponents
 {

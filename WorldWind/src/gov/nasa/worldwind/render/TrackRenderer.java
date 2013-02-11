@@ -1,23 +1,22 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.tracks.*;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.tracks.TrackPoint;
+import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.*;
-import javax.media.opengl.glu.GLUquadric;
-import javax.media.opengl.glu.GLU;
-import java.util.*;
+import javax.media.opengl.glu.*;
+import java.util.Iterator;
 
 /**
  * @author tag
@@ -123,12 +122,13 @@ public class TrackRenderer implements Disposable
         if (!this.shape.isInitialized)
             this.shape.initialize(dc);
 
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         Vec4 lastPointDrawn = null;
 
         this.begin(dc);
         {
             if (!dc.isPickingMode())
-                this.material.apply(dc.getGL(), GL.GL_FRONT);
+                this.material.apply(gl, GL2.GL_FRONT);
 
             Vec4 previousDrawnPoint = null;
             double radius;
@@ -154,7 +154,7 @@ public class TrackRenderer implements Disposable
                         this.getClient() != null ? this.getClient() : tp.getPosition(), tp.getPosition(), false);
                     po.setValue(AVKey.PICKED_OBJECT_ID, index);
                     this.pickSupport.addPickableObject(po);
-                    dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+                    gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
                 }
 
                 radius = this.computeMarkerRadius(dc, point);
@@ -269,20 +269,20 @@ public class TrackRenderer implements Disposable
 
     protected void begin(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         Vec4 cameraPosition = dc.getView().getEyePoint();
 
         if (dc.isPickingMode())
         {
             this.pickSupport.beginPicking(dc);
 
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_TRANSFORM_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
         }
         else
         {
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_LIGHTING_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
 
             float[] lightPosition =
@@ -291,28 +291,28 @@ public class TrackRenderer implements Disposable
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
 
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
 
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, lightSpecular, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPosition, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, lightDiffuse, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightAmbient, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, lightSpecular, 0);
 
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GL2.GL_LIGHT0);
+            gl.glEnable(GL2.GL_LIGHT1);
+            gl.glEnable(GL2.GL_LIGHTING);
+            gl.glEnable(GL2.GL_NORMALIZE);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
     }
 
     protected void end(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPopMatrix();
 
         if (dc.isPickingMode())
@@ -321,10 +321,10 @@ public class TrackRenderer implements Disposable
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHT0);
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisable(GL.GL_NORMALIZE);
+            gl.glDisable(GL2.GL_LIGHT1);
+            gl.glEnable(GL2.GL_LIGHT0);
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glDisable(GL2.GL_NORMALIZE);
         }
 
         gl.glPopAttrib();
@@ -356,12 +356,15 @@ public class TrackRenderer implements Disposable
 
         protected void initialize(DrawContext dc)
         {
-            this.glListId = dc.getGL().glGenLists(1);
-            this.quadric = dc.getGLU().gluNewQuadric();
-            dc.getGLU().gluQuadricDrawStyle(quadric, GLU.GLU_FILL);
-            dc.getGLU().gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
-            dc.getGLU().gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
-            dc.getGLU().gluQuadricTexture(quadric, false);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            GLU glu = dc.getGLU();
+
+            this.glListId = gl.glGenLists(1);
+            this.quadric = glu.gluNewQuadric();
+            glu.gluQuadricDrawStyle(quadric, GLU.GLU_FILL);
+            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+            glu.gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
+            glu.gluQuadricTexture(quadric, false);
         }
 
         private void dispose()
@@ -373,10 +376,11 @@ public class TrackRenderer implements Disposable
                 this.isInitialized = false;
 
                 GLContext glc = GLContext.getCurrent();
-                if (glc == null)
+                if (glc == null || glc.getGL() == null)
                     return;
 
-                glc.getGL().glDeleteLists(this.glListId, 1);
+                GL2 gl = glc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+                gl.glDeleteLists(this.glListId, 1);
 
                 this.glListId = -1;
             }
@@ -401,17 +405,21 @@ public class TrackRenderer implements Disposable
             int slices = 36;
             int stacks = 18;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
-            dc.getGLU().gluSphere(this.quadric, radius, slices, stacks);
-            dc.getGL().glEndList();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            GLU glu = dc.getGLU();
+
+            gl.glNewList(this.glListId, GL2.GL_COMPILE);
+            glu.gluSphere(this.quadric, radius, slices, stacks);
+            gl.glEndList();
 
             this.isInitialized = true;
         }
 
         protected void doRender(DrawContext dc, Vec4 point, double radius)
         {
-            dc.getGL().glScaled(radius, radius, radius);
-            dc.getGL().glCallList(this.glListId);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glScaled(radius, radius, radius);
+            gl.glCallList(this.glListId);
         }
     }
 
@@ -426,11 +434,14 @@ public class TrackRenderer implements Disposable
             int stacks = 30;
             int loops = 2;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
-            dc.getGLU().gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
-            dc.getGLU().gluCylinder(quadric, 1d, 0d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
-            dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
-            dc.getGL().glEndList();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            GLU glu = dc.getGLU();
+
+            gl.glNewList(this.glListId, GL2.GL_COMPILE);
+            glu.gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
+            glu.gluCylinder(quadric, 1d, 0d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
+            glu.gluDisk(quadric, 0d, 1d, slices, loops);
+            gl.glEndList();
 
             this.isInitialized = true;
         }
@@ -439,11 +450,12 @@ public class TrackRenderer implements Disposable
         {
             PolarPoint p = PolarPoint.fromCartesian(point);
 
-            dc.getGL().glScaled(size, size, size);
-            dc.getGL().glRotated(p.getLongitude().getDegrees(), 0, 1, 0);
-            dc.getGL().glRotated(Math.abs(p.getLatitude().getDegrees()), Math.signum(p.getLatitude().getDegrees()) * -1,
-                0, 0);
-            dc.getGL().glCallList(this.glListId);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+            gl.glScaled(size, size, size);
+            gl.glRotated(p.getLongitude().getDegrees(), 0, 1, 0);
+            gl.glRotated(Math.abs(p.getLatitude().getDegrees()), Math.signum(p.getLatitude().getDegrees()) * -1, 0, 0);
+            gl.glCallList(this.glListId);
         }
     }
 
@@ -458,13 +470,16 @@ public class TrackRenderer implements Disposable
             int stacks = 1;
             int loops = 1;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
-            dc.getGLU().gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
-            dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
-            dc.getGL().glTranslated(0, 0, 2);
-            dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
-            dc.getGL().glTranslated(0, 0, -2);
-            dc.getGL().glEndList();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            GLU glu = dc.getGLU();
+
+            gl.glNewList(this.glListId, GL2.GL_COMPILE);
+            glu.gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
+            glu.gluDisk(quadric, 0d, 1d, slices, loops);
+            gl.glTranslated(0, 0, 2);
+            glu.gluDisk(quadric, 0d, 1d, slices, loops);
+            gl.glTranslated(0, 0, -2);
+            gl.glEndList();
 
             this.isInitialized = true;
         }
@@ -473,11 +488,12 @@ public class TrackRenderer implements Disposable
         {
             PolarPoint p = PolarPoint.fromCartesian(point);
 
-            dc.getGL().glScaled(size, size, size);
-            dc.getGL().glRotated(p.getLongitude().getDegrees(), 0, 1, 0);
-            dc.getGL().glRotated(Math.abs(p.getLatitude().getDegrees()), Math.signum(p.getLatitude().getDegrees()) * -1,
-                0, 0);
-            dc.getGL().glCallList(this.glListId);
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+            gl.glScaled(size, size, size);
+            gl.glRotated(p.getLongitude().getDegrees(), 0, 1, 0);
+            gl.glRotated(Math.abs(p.getLatitude().getDegrees()), Math.signum(p.getLatitude().getDegrees()) * -1, 0, 0);
+            gl.glCallList(this.glListId);
         }
     }
 }

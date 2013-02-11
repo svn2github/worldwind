@@ -6,11 +6,11 @@
 
 package gov.nasa.worldwind.util;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
@@ -184,7 +184,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
 
         public void render(DrawContext dc)
         {
-            javax.media.opengl.GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             PointPlacemarkAttributes attrs = this.placemark.getAttributes();
             Font font = attrs != null ? attrs.getLabelFont() : null;
             if (font == null)
@@ -193,14 +193,14 @@ public class PlacemarkClutterFilter implements ClutterFilter
             OGLStackHandler osh = new OGLStackHandler();
 
             int attrMask =
-                GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
-                    | GL.GL_TRANSFORM_BIT // for modelview and perspective
-                    | GL.GL_VIEWPORT_BIT // for depth range
-                    | GL.GL_CURRENT_BIT // for current color
-                    | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                    | GL.GL_DEPTH_BUFFER_BIT // for depth func
-                    | GL.GL_ENABLE_BIT // for enable/disable changes
-                    | GL.GL_HINT_BIT | GL.GL_LINE_BIT; // for antialiasing and line attrs
+                GL2.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
+                    | GL2.GL_TRANSFORM_BIT // for modelview and perspective
+                    | GL2.GL_VIEWPORT_BIT // for depth range
+                    | GL2.GL_CURRENT_BIT // for current color
+                    | GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
+                    | GL2.GL_DEPTH_BUFFER_BIT // for depth func
+                    | GL2.GL_ENABLE_BIT // for enable/disable changes
+                    | GL2.GL_HINT_BIT | GL2.GL_LINE_BIT; // for antialiasing and line attrs
             osh.pushAttrib(gl, attrMask);
 
             osh.pushProjectionIdentity(gl);
@@ -250,9 +250,9 @@ public class PlacemarkClutterFilter implements ClutterFilter
 
         protected void drawDeclutterLabel(DrawContext dc, Font font, Vec4 textPoint, String labelText)
         {
-            javax.media.opengl.GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glLoadIdentity();
 
             TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
@@ -272,15 +272,15 @@ public class PlacemarkClutterFilter implements ClutterFilter
 
         protected void drawDeclutterLine(DrawContext dc, Vec4 startPoint, Vec4 endPoint)
         {
-            javax.media.opengl.GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
             gl.glLineWidth(1);
 
             Color color = Color.WHITE;
-            dc.getGL().glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(),
+            gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(),
                 (byte) color.getAlpha());
 
-            gl.glBegin(GL.GL_LINE_STRIP);
+            gl.glBegin(GL2.GL_LINE_STRIP);
             gl.glVertex3d(startPoint.x(), startPoint.y, startPoint.z);
             gl.glVertex3d(endPoint.x, endPoint.y(), endPoint.z);
             gl.glEnd();

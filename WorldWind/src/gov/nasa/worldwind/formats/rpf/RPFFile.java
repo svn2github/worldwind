@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import java.io.*;
 
 /**
  * @author lado
- * @version $Id: RpfFile Apr 8, 2007 8:53:48 AM
+ * @version $Id$
  */
 public class RPFFile
 {

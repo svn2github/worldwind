@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -15,7 +15,7 @@ import java.awt.image.WritableRaster;
 
 /**
  * @author lado
- * @version $Id: RpfImageFile Apr 8, 2007 8:51:57 AM
+ * @version $Id$
  */
 public class RPFImageFile extends RPFFile
 {

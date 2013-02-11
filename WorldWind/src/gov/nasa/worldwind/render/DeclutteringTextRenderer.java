@@ -6,12 +6,12 @@
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import java.awt.*;
 import java.awt.geom.*;
@@ -130,26 +130,26 @@ public class DeclutteringTextRenderer
             throw new IllegalArgumentException(msg);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         int attribBits =
-            GL.GL_ENABLE_BIT // for enable/disable changes
-                | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                | GL.GL_CURRENT_BIT      // for current color
-                | GL.GL_DEPTH_BUFFER_BIT // for depth test, depth func, and depth mask
-                | GL.GL_TRANSFORM_BIT    // for modelview and perspective
-                | GL.GL_VIEWPORT_BIT;    // for depth range
+            GL2.GL_ENABLE_BIT // for enable/disable changes
+                | GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
+                | GL2.GL_CURRENT_BIT      // for current color
+                | GL2.GL_DEPTH_BUFFER_BIT // for depth test, depth func, and depth mask
+                | GL2.GL_TRANSFORM_BIT    // for modelview and perspective
+                | GL2.GL_VIEWPORT_BIT;    // for depth range
         gl.glPushAttrib(attribBits);
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadIdentity();
         glu.gluOrtho2D(0, dc.getView().getViewport().width, 0, dc.getView().getViewport().height);
 
-        gl.glMatrixMode(GL.GL_TEXTURE);
+        gl.glMatrixMode(GL2.GL_TEXTURE);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
@@ -161,8 +161,8 @@ public class DeclutteringTextRenderer
         gl.glDisable(GL.GL_CULL_FACE);
 
         // Suppress any fully transparent image pixels
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
     }
 
     protected void endRendering(DrawContext dc)
@@ -174,13 +174,13 @@ public class DeclutteringTextRenderer
             throw new IllegalArgumentException(msg);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glPopMatrix();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPopMatrix();
-        gl.glMatrixMode(GL.GL_TEXTURE);
+        gl.glMatrixMode(GL2.GL_TEXTURE);
         gl.glPopMatrix();
 
         gl.glPopAttrib();
@@ -196,7 +196,7 @@ public class DeclutteringTextRenderer
         }
 
         GeographicText geographicText = uText.getText();
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         final CharSequence charSequence = geographicText.getText();
         if (charSequence == null)

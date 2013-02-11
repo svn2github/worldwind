@@ -1,33 +1,27 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!--$Id$-->
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
+<!-- $Id$ -->
 <project name="util">
 
-    <!-- Jar signing support target. The Jar to sign is specified by the parameter "jarfile". Keystore information is
-         read from a keystore properties file 'keystore.properties'. If this file exists, and its contents specify a
-         valid keystore, the specified jar is signed. The keystore properties file must be a Java properties file, with
-         at least the following properties defined:
+    <!-- JAR signing support target. Verifies that a file named 'keystore.properties' is located in the World Wind
+         project root folder, and outputs a warning message otherwise. The result of this verification is stored in the
+         signjar.enabled property. The keystore.properties file must define the following properties:
             keystore.file
             keystore.alias
             keystore.storepass
             keystore.tsaurl
-         These properties coincide with the jarsigner properties of the same name. -->
-    <target name="jarsigner" depends="jarsigner-check,keystore-setup,keystore-missing" if="keystore.available">
-        <signjar jar="${jarfile}"
-                 keystore="${keystore.file}"
-                 alias="${keystore.alias}"
-                 storepass="${keystore.storepass}"
-                 tsaurl="${keystore.tsaurl}"/>
-    </target>
-
-    <target name="jarsigner-check">
-        <fail unless="jarfile" message="Jar file not specified. Set the property 'jarfile'."/>
-    </target>
-
-    <target name="keystore-missing" unless="keystore.available">
-        <echo level="info">Jar '${jarfile}' will NOT be signed. The keystore file cannot be found.
+        These properties coincide with the jarsigner properties of the same name. -->
+    <target name="signjar.setup" depends="signjar.verify" unless="signjar.enabled">
+        <echo level="info">JAR files will not be signed. The keystore.properties file cannot be found, or does not
+            contain the required properties.
             (to suppress this message, enable the quiet option: -quiet, -q)
 
-            Follow these instructions to enable Jar file signing:
+            Follow these instructions to enable JAR file signing:
 
             1. Create a plain text file named 'keystore.properties' in the World Wind project root folder.
 
@@ -42,17 +36,17 @@
             keytool -genkey -Keystore ./[myKeystore] -alias [myAlias]
             keytool -selfcert -Keystore ./[myKeystore] -alias [myAlias]
 
-            For help with keystores or signing Jar files, see
+            For help with keystores or signing JAR files, see
             http://java.sun.com/j2se/1.5.0/docs/guide/security/SecurityToolsSummary.html
         </echo>
     </target>
 
-    <target name="keystore-setup">
+    <target name="signjar.verify">
         <copy todir="${basedir}">
             <fileset dir="${keystore.dir}"/>
         </copy>
         <property file="${keystore.properties}"/>
-        <condition property="keystore.available">
+        <condition property="signjar.enabled">
             <and>
                 <isset property="keystore.file"/>
                 <isset property="keystore.alias"/>
@@ -192,8 +186,7 @@
 
          The Java compiler version used by the javac task is defined by the build parameter 'worldwind.jdk.version'.
          By default, this parameter is defined in the file 'build/build.properties'. -->
-    <target name="build.util.compile"
-            description="Compiles all World Wind build utility sources under the 'build/util/src' folder into Java class files under the 'build/util/classes' folder.">
+    <target name="build.util.compile">
         <mkdir dir="${build.util.classes.dir}"/>
         <javac srcdir="${build.util.src.dir}"
                destdir="${build.util.classes.dir}"
@@ -207,8 +200,7 @@
     <!-- Builds the World Wind build utility Jar file 'worldwind-buildutil.jar'. Includes all World Wind build utility
          class files. Excludes files added by Subversion, and files added by the operating system. The resultant Jar
          file is dependent only on the Java Runtime. -->
-    <target name="build.util.jarfile" depends="build.util.compile"
-            description="Builds the World Wind core build utility JAR file 'worldwind-buildutil.jar'.">
+    <target name="build.util.jarfile" depends="build.util.compile">
         <jar jarfile="${basedir}/build/util/${build.util.jarfile}">
             <!-- Include the World Wind build package gov.nasa.worldwindx.buildutil. -->
             <fileset dir="${build.util.classes.dir}">
@@ -216,6 +208,27 @@
                 <type type="file"/>
             </fileset>
         </jar>
+    </target>
+
+    <!-- Builds the WebView native library for the current platform. The native libraries are placed in the World Wind
+         project root folder and overwrite any existing files of the same name.
+
+         On Mac OS X this compiles the Objective-C sources under the folder 'lib-external/webview/macosx' into
+         'libwebview.jnilib', and requires that the XCode and Java development toolkits for Mac are installed.
+
+         On Windows this compiles the C and C++ sources under 'lib-external/webview/windows' into 'WebView32.dll' and
+         'WebView64.dll', and requires that the Microsoft Visual C++ build tools are avialable on the path. -->
+    <target name="webview.libraries">
+        <!-- Build the WebView library on Mac OSX. -->
+        <exec os="Mac OS X" dir="${basedir}/lib-external/webview/macosx" executable="/bin/sh" failonerror="true">
+            <arg value="build.sh"/>
+        </exec>
+        <!-- Build the WebView library on Windows. This target requires that the Microsoft Visual C++ build tools are
+             available on the path. -->
+        <exec osfamily="Windows" dir="${basedir}/lib-external/webview/windows" executable="nmake" failonerror="true">
+            <arg value="clean"/>
+            <arg value="all"/>
+        </exec>
     </target>
 
     <!-- Individual clean targets corresponding to each build target above. -->
@@ -227,6 +240,6 @@
     </target>
     <!-- Main clean target for resource build targets. Removes all files and directories created by all resource build
          targets. -->
-    <target name="clean.build.util.all" depends="clean.build.util.classes,clean.build.util.jarfile"/>
+    <target name="clean.build.util.all" depends="clean.build.util.classes, clean.build.util.jarfile"/>
 
 </project>

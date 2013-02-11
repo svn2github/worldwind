@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -1020,13 +1020,13 @@ public class Box implements Extent, Renderable
         Vec4 c = this.s.add3(this.t).multiply3(0.5);
         Vec4 d = this.t.subtract3(this.s).multiply3(0.5);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
-            | GL.GL_CURRENT_BIT // For current color.
-            | GL.GL_LINE_BIT // For line width.
-            | GL.GL_TRANSFORM_BIT // For matrix mode.
-            | GL.GL_DEPTH_BUFFER_BIT); // For depth test enable, depth func.
+        ogsh.pushAttrib(gl, GL2.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
+            | GL2.GL_CURRENT_BIT // For current color.
+            | GL2.GL_LINE_BIT // For line width.
+            | GL2.GL_TRANSFORM_BIT // For matrix mode.
+            | GL2.GL_DEPTH_BUFFER_BIT); // For depth test enable, depth func.
         try
         {
             gl.glLineWidth(1f);
@@ -1052,7 +1052,7 @@ public class Box implements Extent, Renderable
     {
         Vec4 e = a.add3(this.r);
         Vec4 f = d.add3(this.r);
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         dc.getView().pushReferenceCenter(dc, this.bottomCenter);
         OGLStackHandler ogsh = new OGLStackHandler();
@@ -1092,8 +1092,8 @@ public class Box implements Extent, Renderable
 
     protected void drawOutline(DrawContext dc, Vec4 a, Vec4 b, Vec4 c, Vec4 d)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_LINE_LOOP);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_LINE_LOOP);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);
         gl.glVertex3d(c.x, c.y, c.z);

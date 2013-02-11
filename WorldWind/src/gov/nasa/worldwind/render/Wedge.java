@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.airspaces.Geometry;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.io.IOException;
 import java.nio.*;
@@ -23,7 +23,7 @@ import java.util.List;
  * A general cylinder volume defined by a center position, height and radius, or alternatively, by three axis radii.
  *
  * @author ccrick
- * @version $ID$
+ * @version $Id$
  */
 public class Wedge extends RigidShape
 {
@@ -436,10 +436,10 @@ public class Wedge extends RigidShape
         GeometryBuilder.IndexedTriangleBuffer itb =
             gb.tessellateWedgeBuffer(radius, subdivisions, this.wedgeAngle);
 
-        FloatBuffer normalBuffer = BufferUtil.newFloatBuffer(3 * itb.getVertexCount());
+        FloatBuffer normalBuffer = Buffers.newDirectFloatBuffer(3 * itb.getVertexCount());
         gb.makeIndexedTriangleBufferNormals(itb, normalBuffer);
 
-        FloatBuffer textureCoordBuffer = BufferUtil.newFloatBuffer(2 * itb.getVertexCount());
+        FloatBuffer textureCoordBuffer = Buffers.newDirectFloatBuffer(2 * itb.getVertexCount());
         gb.makeWedgeTextureCoordinates(textureCoordBuffer, subdivisions, this.wedgeAngle);
 
         dest.setElementData(GL.GL_TRIANGLES, itb.getIndexCount(), itb.getIndices());
@@ -479,10 +479,10 @@ public class Wedge extends RigidShape
             GeometryBuilder.IndexedTriangleBuffer itb =
                 gb.tessellateWedgeBuffer(index, radius, subdivisions, this.wedgeAngle);
 
-            FloatBuffer normalBuffer = BufferUtil.newFloatBuffer(3 * itb.getVertexCount());
+            FloatBuffer normalBuffer = Buffers.newDirectFloatBuffer(3 * itb.getVertexCount());
             gb.makeIndexedTriangleBufferNormals(itb, normalBuffer);
 
-            FloatBuffer textureCoordBuffer = BufferUtil.newFloatBuffer(2 * itb.getVertexCount());
+            FloatBuffer textureCoordBuffer = Buffers.newDirectFloatBuffer(2 * itb.getVertexCount());
             gb.makeUnitWedgeTextureCoordinates(index, textureCoordBuffer, subdivisions, this.wedgeAngle);
 
             dest = new Geometry();
@@ -525,7 +525,7 @@ public class Wedge extends RigidShape
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int size, glType, stride;
         Buffer vertexBuffer, normalBuffer;
@@ -543,7 +543,7 @@ public class Wedge extends RigidShape
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
                 {
-                    gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
                 }
                 else
                 {
@@ -583,7 +583,7 @@ public class Wedge extends RigidShape
         }
 
         // turn off normals rescaling, which was turned on because shape had to be scaled
-        gl.glDisable(GL.GL_RESCALE_NORMAL);
+        gl.glDisable(GL2.GL_RESCALE_NORMAL);
 
         // disable back face culling
         // gl.glDisable(GL.GL_CULL_FACE);
@@ -596,7 +596,7 @@ public class Wedge extends RigidShape
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)
-                    gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             }
             // this.logGeometryStatistics(dc, geom);
         }

@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.geom.Position;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -51,7 +51,7 @@ public abstract class AbstractAnnotationLayout implements AnnotationLayoutManage
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.stackHandler.pushModelview(gl);
     }
 
@@ -64,7 +64,7 @@ public abstract class AbstractAnnotationLayout implements AnnotationLayoutManage
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.stackHandler.pop(gl);
     }
 
@@ -93,7 +93,7 @@ public abstract class AbstractAnnotationLayout implements AnnotationLayoutManage
         {
             if (this.pickSupport != null)
                 annotation.setPickSupport(this.pickSupport);
-            
+
             annotation.draw(dc, width, height, opacity, pickPosition);
         }
         catch (Exception e)

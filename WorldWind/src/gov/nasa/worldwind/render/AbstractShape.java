@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -18,7 +18,7 @@ import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.awt.*;
 import java.io.*;
@@ -32,7 +32,7 @@ import java.io.*;
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
  *
  * @author tag
- * @version $ID$
+ * @version $Id$
  */
 public abstract class AbstractShape extends WWObjectImpl
     implements Highlightable, OrderedRenderable, Movable, ExtentHolder, GeographicExtent, Exportable, Restorable
@@ -1104,7 +1104,7 @@ public abstract class AbstractShape extends WWObjectImpl
      */
     protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         dc.getView().setReferenceCenter(dc, this.getCurrentData().getReferencePoint());
 
@@ -1163,18 +1163,18 @@ public abstract class AbstractShape extends WWObjectImpl
      */
     protected OGLStackHandler beginDrawing(DrawContext dc, int attrMask)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.BEogsh.clear();
 
         // Note: While it's tempting to set each of these conditionally on whether the feature is actually enabled
         // for this shape, e.g. if (mustApplyBlending...), it doesn't work with batch rendering because subsequent
         // shapes in the batch may have the feature enabled.
-        attrMask |= GL.GL_CURRENT_BIT
-            | GL.GL_DEPTH_BUFFER_BIT
-            | GL.GL_LINE_BIT | GL.GL_HINT_BIT // for outlines
-            | GL.GL_COLOR_BUFFER_BIT // for blending
-            | GL.GL_TRANSFORM_BIT // for texture
-            | GL.GL_POLYGON_BIT; // for culling
+        attrMask |= GL2.GL_CURRENT_BIT
+            | GL2.GL_DEPTH_BUFFER_BIT
+            | GL2.GL_LINE_BIT | GL2.GL_HINT_BIT // for outlines
+            | GL2.GL_COLOR_BUFFER_BIT // for blending
+            | GL2.GL_TRANSFORM_BIT // for texture
+            | GL2.GL_POLYGON_BIT; // for culling
 
         this.BEogsh.pushAttrib(gl, attrMask);
 
@@ -1193,8 +1193,8 @@ public abstract class AbstractShape extends WWObjectImpl
 
         dc.getGL().glDisable(GL.GL_CULL_FACE);
 
-        this.BEogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
+        this.BEogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
 
         dc.getView().pushReferenceCenter(dc, this.getCurrentData().getReferencePoint());
 
@@ -1210,7 +1210,7 @@ public abstract class AbstractShape extends WWObjectImpl
      */
     protected void endDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         dc.getView().popReferenceCenter(dc);
 
@@ -1253,7 +1253,7 @@ public abstract class AbstractShape extends WWObjectImpl
         if (activeAttrs == null || !activeAttrs.isDrawOutline())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode())
         {
@@ -1263,10 +1263,10 @@ public abstract class AbstractShape extends WWObjectImpl
 
             if (this.mustApplyLighting(dc, activeAttrs))
             {
-                material.apply(gl, GL.GL_FRONT_AND_BACK, (float) activeAttrs.getOutlineOpacity());
+                material.apply(gl, GL2.GL_FRONT_AND_BACK, (float) activeAttrs.getOutlineOpacity());
 
-                gl.glEnable(GL.GL_LIGHTING);
-                gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glEnable(GL2.GL_LIGHTING);
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             }
             else
             {
@@ -1275,8 +1275,8 @@ public abstract class AbstractShape extends WWObjectImpl
                 gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
                     (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
 
-                gl.glDisable(GL.GL_LIGHTING);
-                gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glDisable(GL2.GL_LIGHTING);
+                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
             }
 
             gl.glHint(GL.GL_LINE_SMOOTH_HINT, activeAttrs.isEnableAntialiasing() ? GL.GL_NICEST : GL.GL_DONT_CARE);
@@ -1289,15 +1289,15 @@ public abstract class AbstractShape extends WWObjectImpl
 
         if (activeAttrs.getOutlineStippleFactor() > 0)
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(activeAttrs.getOutlineStippleFactor(), activeAttrs.getOutlineStipplePattern());
         }
         else
         {
-            gl.glDisable(GL.GL_LINE_STIPPLE);
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
         }
 
-        dc.getGL().glDisable(GL.GL_TEXTURE_2D);
+        gl.glDisable(GL.GL_TEXTURE_2D);
     }
 
     /**
@@ -1327,7 +1327,7 @@ public abstract class AbstractShape extends WWObjectImpl
         if (!activeAttrs.isDrawInterior())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode())
         {
@@ -1337,10 +1337,10 @@ public abstract class AbstractShape extends WWObjectImpl
 
             if (this.mustApplyLighting(dc, activeAttrs))
             {
-                material.apply(gl, GL.GL_FRONT_AND_BACK, (float) activeAttrs.getInteriorOpacity());
+                material.apply(gl, GL2.GL_FRONT_AND_BACK, (float) activeAttrs.getInteriorOpacity());
 
-                gl.glEnable(GL.GL_LIGHTING);
-                gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glEnable(GL2.GL_LIGHTING);
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             }
             else
             {
@@ -1349,8 +1349,8 @@ public abstract class AbstractShape extends WWObjectImpl
                 gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
                     (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
 
-                gl.glDisable(GL.GL_LIGHTING);
-                gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glDisable(GL2.GL_LIGHTING);
+                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
             }
 
             if (activeAttrs.getInteriorOpacity() < 1)

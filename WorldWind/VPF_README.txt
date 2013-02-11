@@ -1,4 +1,10 @@
-$Id$
+#
+# Copyright (C) 2012 United States Government as represented by the Administrator of the
+# National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
+
+# $Id$
 
 This document describes (1) purpose of the JAR file "vpf-symbols.jar", (2) when it is necessary to use it, and (3) how
 to build it.

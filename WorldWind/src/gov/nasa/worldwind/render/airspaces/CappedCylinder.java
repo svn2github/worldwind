@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -437,7 +437,7 @@ public class CappedCylinder extends AbstractAirspace
         this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
         this.clearElevationMap();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
         try
         {
@@ -462,7 +462,7 @@ public class CappedCylinder extends AbstractAirspace
             {
                 if (this.enableCaps)
                 {
-                    ogsh.pushAttrib(gl, GL.GL_POLYGON_BIT);
+                    ogsh.pushAttrib(gl, GL2.GL_POLYGON_BIT);
                     gl.glEnable(GL.GL_CULL_FACE);
                     gl.glFrontFace(GL.GL_CCW);
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -17,7 +17,7 @@ import java.awt.image.*;
  * target="_blank">Icon Retriever Usage Guide</a> for more information.
  *
  * @author ccrick
- * @version $Id: IconRetriever.java 90 2011-17-10 23:58:29Z ccrick $
+ * @version $Id$
  */
 public interface IconRetriever
 {

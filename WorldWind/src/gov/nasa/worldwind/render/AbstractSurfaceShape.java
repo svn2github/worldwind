@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.exception.WWRuntimeException;
@@ -15,7 +15,7 @@ import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.measure.AreaMeasurer;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import javax.xml.stream.XMLStreamException;
 import java.awt.*;
@@ -581,25 +581,25 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected void beginDrawing(DrawContext dc, SurfaceTileDrawContext sdc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         this.stackHandler.pushAttrib(gl,
-            GL.GL_COLOR_BUFFER_BIT      // For alpha test func and ref, blend func
-                | GL.GL_CURRENT_BIT     // For current color.
-                | GL.GL_ENABLE_BIT      // For disable depth test.
-                | GL.GL_LINE_BIT        // For line width, line smooth, line stipple.
-                | GL.GL_POLYGON_BIT     // For cull enable and cull face.
-                | GL.GL_TRANSFORM_BIT); // For matrix mode.
+            GL2.GL_COLOR_BUFFER_BIT      // For alpha test func and ref, blend func
+                | GL2.GL_CURRENT_BIT     // For current color.
+                | GL2.GL_ENABLE_BIT      // For disable depth test.
+                | GL2.GL_LINE_BIT        // For line width, line smooth, line stipple.
+                | GL2.GL_POLYGON_BIT     // For cull enable and cull face.
+                | GL2.GL_TRANSFORM_BIT); // For matrix mode.
 
-        this.stackHandler.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+        this.stackHandler.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
         this.stackHandler.pushTextureIdentity(gl);
         this.stackHandler.pushProjection(gl);
         this.stackHandler.pushModelview(gl);
 
         // Enable the alpha test.
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         // Disable the depth test.
         gl.glDisable(GL.GL_DEPTH_TEST);
@@ -609,7 +609,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         gl.glCullFace(GL.GL_BACK);
 
         // Enable client vertex arrays.
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 
         // Enable blending.
         if (!dc.isPickingMode())
@@ -622,18 +622,18 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected void endDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (texture != null && !dc.isPickingMode())
         {
-            gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, OGLUtil.DEFAULT_TEXTURE_GEN_MODE);
-            gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, OGLUtil.DEFAULT_TEXTURE_GEN_MODE);
-            gl.glTexGendv(GL.GL_S, GL.GL_OBJECT_PLANE, OGLUtil.DEFAULT_TEXTURE_GEN_S_OBJECT_PLANE, 0);
-            gl.glTexGendv(GL.GL_T, GL.GL_OBJECT_PLANE, OGLUtil.DEFAULT_TEXTURE_GEN_T_OBJECT_PLANE, 0);
+            gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, OGLUtil.DEFAULT_TEXTURE_GEN_MODE);
+            gl.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, OGLUtil.DEFAULT_TEXTURE_GEN_MODE);
+            gl.glTexGendv(GL2.GL_S, GL2.GL_OBJECT_PLANE, OGLUtil.DEFAULT_TEXTURE_GEN_S_OBJECT_PLANE, 0);
+            gl.glTexGendv(GL2.GL_T, GL2.GL_OBJECT_PLANE, OGLUtil.DEFAULT_TEXTURE_GEN_T_OBJECT_PLANE, 0);
             gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
         }
 
-        this.stackHandler.pop(dc.getGL());
+        this.stackHandler.pop(gl);
     }
 
     protected void doDrawGeographic(DrawContext dc, SurfaceTileDrawContext sdc)
@@ -661,7 +661,8 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             modelview = modelview.multiply(refMatrix);
         }
 
-        dc.getGL().glMultMatrixd(modelview.toArray(new double[16], 0, false), 0);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glMultMatrixd(modelview.toArray(new double[16], 0, false), 0);
     }
 
     /** Determines which attributes -- normal, highlight or default -- to use each frame. */
@@ -938,7 +939,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected void drawOutline(DrawContext dc, SurfaceTileDrawContext sdc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (this.getActiveGeometry().isEmpty())
             return;
@@ -952,7 +953,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         for (List<LatLon> drawLocations : this.getActiveGeometry())
         {
             if (vertexBuffer == null || vertexBuffer.capacity() < 2 * drawLocations.size())
-                vertexBuffer = BufferUtil.newFloatBuffer(2 * drawLocations.size());
+                vertexBuffer = Buffers.newDirectFloatBuffer(2 * drawLocations.size());
             vertexBuffer.clear();
 
             for (LatLon ll : drawLocations)
@@ -1030,7 +1031,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     protected void applyInteriorState(DrawContext dc, SurfaceTileDrawContext sdc, ShapeAttributes attributes,
         WWTexture texture, LatLon refLocation)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (texture != null && !dc.isPickingMode())
         {
@@ -1051,14 +1052,14 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
             // Disable textures.
             gl.glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisable(GL.GL_TEXTURE_GEN_S);
-            gl.glDisable(GL.GL_TEXTURE_GEN_T);
+            gl.glDisable(GL2.GL_TEXTURE_GEN_S);
+            gl.glDisable(GL2.GL_TEXTURE_GEN_T);
         }
     }
 
     protected void applyOutlineState(DrawContext dc, ShapeAttributes attributes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Apply line width state
         double lineWidth = attributes.getOutlineWidth();
@@ -1082,11 +1083,11 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         // Apply line stipple state.
         if (dc.isPickingMode() || (attributes.getOutlineStippleFactor() <= 0))
         {
-            gl.glDisable(GL.GL_LINE_STIPPLE);
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
         }
         else
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(
                 attributes.getOutlineStippleFactor(),
                 attributes.getOutlineStipplePattern());
@@ -1105,14 +1106,14 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         // Disable textures.
         gl.glDisable(GL.GL_TEXTURE_2D);
-        gl.glDisable(GL.GL_TEXTURE_GEN_S);
-        gl.glDisable(GL.GL_TEXTURE_GEN_T);
+        gl.glDisable(GL2.GL_TEXTURE_GEN_S);
+        gl.glDisable(GL2.GL_TEXTURE_GEN_T);
     }
 
     protected void applyInteriorTextureState(DrawContext dc, SurfaceTileDrawContext sdc, ShapeAttributes attributes,
         WWTexture texture, LatLon refLocation)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!texture.bind(dc))
             return;
@@ -1128,12 +1129,12 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         // Apply texture coordinate generation.
         double[] planeS = new double[] {1, 0, 0, 1};
         double[] planeT = new double[] {0, 1, 0, 1};
-        gl.glEnable(GL.GL_TEXTURE_GEN_S);
-        gl.glEnable(GL.GL_TEXTURE_GEN_T);
-        gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGendv(GL.GL_S, GL.GL_OBJECT_PLANE, planeS, 0);
-        gl.glTexGendv(GL.GL_T, GL.GL_OBJECT_PLANE, planeT, 0);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_S);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_T);
+        gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGendv(GL2.GL_S, GL2.GL_OBJECT_PLANE, planeS, 0);
+        gl.glTexGendv(GL2.GL_T, GL2.GL_OBJECT_PLANE, planeT, 0);
 
         // Apply texture transform.
         Matrix transform = Matrix.IDENTITY;
@@ -1156,11 +1157,11 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         transform = Matrix.fromScale(drawScale, drawScale, 1d).multiply(transform); // Pre multiply
         // Apply texture coordinates transform
         double[] matrixArray = transform.toArray(new double[16], 0, false);
-        gl.glMatrixMode(GL.GL_TEXTURE);
+        gl.glMatrixMode(GL2.GL_TEXTURE);
         gl.glLoadIdentity();
         texture.applyInternalTransform(dc);
         gl.glMultMatrixd(matrixArray, 0);
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
 
         // Apply texture environment and parameters.
         gl.glEnable(GL.GL_TEXTURE_2D);
@@ -1288,27 +1289,27 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected Integer doTessellateInterior(DrawContext dc)
     {
-        GLU glu = dc.getGLU();
-        GLUtessellatorCallback cb = GLUTessellatorSupport.createOGLDrawPrimitivesCallback(dc.getGL());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        GLUtessellatorCallback cb = GLUTessellatorSupport.createOGLDrawPrimitivesCallback(gl);
 
         // Create a tessellator with the default winding rule: GLU_TESS_WINDING_ODD. This winding rule produces the
         // expected tessellation when the shape's contours all have a counter-clockwise winding.
         GLUTessellatorSupport glts = new GLUTessellatorSupport();
-        glts.beginTessellation(glu, cb, new Vec4(0, 0, 1));
+        glts.beginTessellation(cb, new Vec4(0, 0, 1));
         try
         {
-            return this.tessellateInteriorVertices(glu, glts.getGLUtessellator());
+            return this.tessellateInteriorVertices(glts.getGLUtessellator());
         }
         finally
         {
             // Free any heap memory used for tessellation immediately. If tessellation has consumed all available heap
             // memory, we must free memory used by tessellation immediately or subsequent operations such as message
             // logging will fail.
-            glts.endTessellation(glu);
+            glts.endTessellation();
         }
     }
 
-    protected Integer tessellateInteriorVertices(GLU glu, GLUtessellator tess)
+    protected Integer tessellateInteriorVertices(GLUtessellator tess)
     {
         if (this.getActiveGeometry().isEmpty())
             return null;
@@ -1318,23 +1319,23 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             return null;
 
         int numBytes = 0;
-        glu.gluTessBeginPolygon(tess, null);
+        GLU.gluTessBeginPolygon(tess, null);
 
         for (List<LatLon> drawLocations : this.getActiveGeometry())
         {
-            glu.gluTessBeginContour(tess);
+            GLU.gluTessBeginContour(tess);
             for (LatLon ll : drawLocations)
             {
                 double[] vertex = new double[3];
                 vertex[0] = ll.getLongitude().degrees - referencePos.getLongitude().degrees;
                 vertex[1] = ll.getLatitude().degrees - referencePos.getLatitude().degrees;
-                glu.gluTessVertex(tess, vertex, 0, vertex);
+                GLU.gluTessVertex(tess, vertex, 0, vertex);
                 numBytes += 3 * 8; // 3 coords of 8 bytes each
             }
-            glu.gluTessEndContour(tess);
+            GLU.gluTessEndContour(tess);
         }
 
-        glu.gluTessEndPolygon(tess);
+        GLU.gluTessEndPolygon(tess);
 
         return numBytes;
     }

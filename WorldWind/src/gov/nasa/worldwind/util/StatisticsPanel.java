@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -14,6 +14,9 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.util.Arrays;
 
+/**
+ * @version $Id$
+ */
 public class StatisticsPanel extends JPanel
 {
     private JPanel statsPanel;

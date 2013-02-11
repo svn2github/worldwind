@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -72,15 +72,15 @@ import java.awt.*;
  * AnnotationAttributes geoFeature = new AnnotationAttributes();
  * geoFeature.setFrameShape(AVKey.SHAPE_ELLIPSE);
  * geoFeature.setInsets(new Insets(12, 12, 12, 12));
- * <p/>
+ *
  * AnnotationAttributes waterBody = new AnnotationAttributes();
  * waterBody.setTextColor(Color.BLUE);
  * waterBoby.setDefaults(geoFeature);
- * <p/>
+ *
  * AnnotationAttributes mountain = new AnnotationAttributes();
  * mountain.setTextColor(Color.GREEN);
  * mountain.setDefaults(geoFeature);
- * <p/>
+ *
  * layer.addAnnotation(new GlobeAnnotation("Spirit Lake", Position.fromDegrees(46.26, -122.15), waterBody);
  * layer.addAnnotation(new GlobeAnnotation("Mt St-Helens", Position.fromDegrees(46.20, -122.19), mountain);
  * </pre>
@@ -448,7 +448,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         double finalScale = scale * this.computeScale(dc);
         java.awt.Point offset = this.getAttributes().getDrawOffset();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glTranslated(x, y, 0);
         gl.glScaled(finalScale, finalScale, 1);
         gl.glTranslated(offset.x, offset.y, 0);
@@ -555,13 +555,13 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
 
     protected void beginDraw(DrawContext dc, OGLStackHandler stackHandler)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         stackHandler.pushModelviewIdentity(gl);
     }
 
     protected void endDraw(DrawContext dc, OGLStackHandler stackHandler)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         stackHandler.pop(gl);
     }
 
@@ -600,10 +600,10 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
     protected void doDrawBackgroundTexture(DrawContext dc, int width, int height, double opacity, Position pickPosition,
         WWTexture texture)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Save the current texture matrix state, and configure the texture matrix with the identity matrix.
-        gl.glMatrixMode(GL.GL_TEXTURE);
+        gl.glMatrixMode(GL2.GL_TEXTURE);
         gl.glPushMatrix();
         gl.glLoadIdentity();
         try
@@ -630,7 +630,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         {
             // Restore the previous texture matrix and the matrix mode.
             gl.glPopMatrix();
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
 
             // Restore the previous texture state. We do this to avoid pushing and popping the texture attribute
             // bit, which is expensive. We disabling textures and bind texture id 0. We don't set the texture coord
@@ -649,9 +649,9 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         // Apply texture wrap state.
         String imageRepeat = this.getAttributes().getImageRepeat();
         int sWrap = (imageRepeat.equals(AVKey.REPEAT_X) || imageRepeat.equals(AVKey.REPEAT_XY)) ?
-            GL.GL_REPEAT : GL.GL_CLAMP_TO_BORDER;
+            GL.GL_REPEAT : GL2.GL_CLAMP_TO_BORDER;
         int tWrap = (imageRepeat.equals(AVKey.REPEAT_Y) || imageRepeat.equals(AVKey.REPEAT_XY)) ?
-            GL.GL_REPEAT : GL.GL_CLAMP_TO_BORDER;
+            GL.GL_REPEAT : GL2.GL_CLAMP_TO_BORDER;
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, sWrap);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, tWrap);
 
@@ -673,7 +673,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
      */
     protected void transformImageCoordsToBackgroundImageCoords(DrawContext dc, WWTexture texture)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Apply texture's internal transform state. This ensures we start with standard GL coordinates: the origin is
         // in the texture's lower left corner, and the Y axis points up.
@@ -705,7 +705,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
     protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height,
         WWTexture texture)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Apply the Annotation's image scale. The scale is applied inversely because texture coordinates and the
         // texture's size on the Annotation are inversely related.
@@ -736,7 +736,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         if (this.getAttributes().getBorderWidth() <= 0)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Apply line smoothing state.
         if (dc.isPickingMode())
@@ -752,11 +752,11 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         // Apply line stipple state.
         if (dc.isPickingMode() || (this.getAttributes().getBorderStippleFactor() <= 0))
         {
-            gl.glDisable(GL.GL_LINE_STIPPLE);
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
         }
         else
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(
                 this.getAttributes().getBorderStippleFactor(),
                 this.getAttributes().getBorderStipplePattern());
@@ -950,7 +950,8 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
         Object object = (this.delegateOwner != null) ? this.delegateOwner : this;
         this.pickSupport.addPickableObject(colorCode, object, position, false);
 
-        dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
     }
 
     protected void drawCallout(DrawContext dc, int mode, int width, int height, boolean useTexCoords)
@@ -1000,7 +1001,7 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
 
         double finalOpacity = opacity * (color.getAlpha() / 255.0);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glEnable(GL.GL_BLEND);
         OGLUtil.applyBlending(gl, premultiplyColors);
         OGLUtil.applyColor(gl, color, finalOpacity, premultiplyColors);
@@ -1018,7 +1019,8 @@ public abstract class AbstractAnnotation extends AVListImpl implements Annotatio
     protected java.awt.Rectangle transformByModelview(DrawContext dc, java.awt.Rectangle rectangle)
     {
         double[] compArray = new double[16];
-        dc.getGL().glGetDoublev(GL.GL_MODELVIEW_MATRIX, compArray, 0);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, compArray, 0);
         Matrix modelview = Matrix.fromArray(compArray, 0, false);
 
         Vec4 origin = new Vec4(rectangle.x, rectangle.y, 1);

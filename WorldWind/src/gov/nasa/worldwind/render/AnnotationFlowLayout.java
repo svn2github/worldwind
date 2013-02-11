@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -9,7 +9,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 
 /**
  * @author dcollins
@@ -283,8 +283,8 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
         {
             align = getDefaultAlignment(AVKey.HORIZONTAL);
         }
-        
-        GL gl = dc.getGL();
+
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         for (Annotation annotation : annotations)
@@ -310,7 +310,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
             align = getDefaultAlignment(AVKey.VERTICAL);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         for (Annotation annotation : annotations)
@@ -330,7 +330,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
     @SuppressWarnings({"StringEquality"})
     protected void alignHorizontal(DrawContext dc, java.awt.Rectangle bounds, java.awt.Dimension size, String align)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (align == AVKey.BOTTOM)
         {
@@ -351,7 +351,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
     @SuppressWarnings({"StringEquality"})
     protected void alignVertical(DrawContext dc, java.awt.Rectangle bounds, java.awt.Dimension size, String align)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (align == AVKey.LEFT)
         {
@@ -371,13 +371,13 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
 
     protected void beginHorizontal(DrawContext dc, java.awt.Rectangle bounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glTranslated(bounds.getMinX(), bounds.getMinY(), 0);
     }
 
     protected void beginVertical(DrawContext dc, java.awt.Rectangle bounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glTranslated(bounds.getMinX(), bounds.getMaxY(), 0);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 
@@ -202,17 +202,17 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
 
     protected void begin(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (dc.isPickingMode())
         {
             this.pickSupport.beginPicking(dc);
-            gl.glPushAttrib(GL.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_CURRENT_BIT | GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_TRANSFORM_BIT);
         }
         else
         {
-            gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_HINT_BIT
-                | GL.GL_LIGHTING_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT | GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_HINT_BIT
+                | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT);
 
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
@@ -226,9 +226,9 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
             // before lighting is computed. In this case we're scaling by a constant factor, so GL_RESCALE_NORMAL
             // is sufficient and potentially less expensive than GL_NORMALIZE (or computing unique normal vectors
             // for each value of radius). GL_RESCALE_NORMAL was introduced in OpenGL version 1.2.
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glEnable(GL2.GL_NORMALIZE);
 
-            gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
+            gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
         }
 
         if (this.isEnableDepthTest())
@@ -240,13 +240,13 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
             gl.glDisable(GL.GL_DEPTH_TEST);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
     }
 
     protected void end(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         gl.glPopMatrix();
 
@@ -284,10 +284,11 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
                 float[] compArray = new float[4];
                 Color color = this.getControlPointMarker().getAttributes().getMaterial().getDiffuse();
                 color.getRGBComponents(compArray);
-                dc.getGL().glColor4fv(compArray, 0);                
+                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+                gl.glColor4fv(compArray, 0);
             }
         }
-        
+
         for (AirspaceControlPoint p : controlPoints)
         {
             this.drawMarker(dc, p);
@@ -305,7 +306,8 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
             int colorCode = color.getRGB();
             PickedObject po = new PickedObject(colorCode, controlPoint);
             this.pickSupport.addPickableObject(po);
-            dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
         }
 
         Vec4 point = controlPoint.getPoint();
@@ -380,34 +382,34 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
 
     protected void setupLighting(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        float[] modelAmbient  = new float[4];
+        float[] modelAmbient = new float[4];
         modelAmbient[0] = 1.0f;
         modelAmbient[1] = 1.0f;
         modelAmbient[2] = 1.0f;
         modelAmbient[3] = 0.0f;
 
-        gl.glEnable(GL.GL_LIGHTING);
-        gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, modelAmbient, 0);
-        gl.glLightModeli(GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
-        gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_FALSE);
-        gl.glShadeModel(GL.GL_SMOOTH);
+        gl.glEnable(GL2.GL_LIGHTING);
+        gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, modelAmbient, 0);
+        gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL2.GL_TRUE);
+        gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_FALSE);
+        gl.glShadeModel(GL2.GL_SMOOTH);
 
         // The alpha value at a vertex is taken only from the diffuse material's alpha channel, without any
         // lighting computations applied. Therefore we specify alpha=0 for all lighting ambient, specular and
         // emission values. This will have no effect on material alpha.
-        float[] ambient  = new float[4];
-        float[] diffuse  = new float[4];
+        float[] ambient = new float[4];
+        float[] diffuse = new float[4];
         float[] specular = new float[4];
         getLightMaterial().getDiffuse().getRGBColorComponents(diffuse);
         getLightMaterial().getSpecular().getRGBColorComponents(specular);
         ambient[3] = diffuse[3] = specular[3] = 0.0f;
 
-        gl.glEnable(GL.GL_LIGHT0);
-        gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT, ambient, 0);
-        gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE, diffuse, 0);
-        gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR, specular, 0);
+        gl.glEnable(GL2.GL_LIGHT0);
+        gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambient, 0);
+        gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuse, 0);
+        gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, specular, 0);
 
         // Setup the light as a directional light coming from the viewpoint. This requires two state changes
         // (a) Set the light position as direction x, y, z, and set the w-component to 0, which tells OpenGL this is
@@ -422,11 +424,11 @@ public class BasicAirspaceControlPointRenderer implements AirspaceControlPointRe
         params[2] = (float) vec.z;
         params[3] = 0.0f;
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, params, 0);
+        gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, params, 0);
 
         gl.glPopMatrix();
     }

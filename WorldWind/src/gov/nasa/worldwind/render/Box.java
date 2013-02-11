@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.airspaces.Geometry;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.io.IOException;
 import java.nio.*;
@@ -23,7 +23,7 @@ import java.util.List;
  * A general box volume defined by a center position and three axis radii.
  *
  * @author ccrick
- * @version $ID$
+ * @version $Id$
  */
 public class Box extends RigidShape
 {
@@ -202,10 +202,10 @@ public class Box extends RigidShape
         GeometryBuilder.IndexedTriangleBuffer itb =
             gb.tessellateBoxBuffer(radius, subdivisions);
 
-        FloatBuffer normalBuffer = BufferUtil.newFloatBuffer(3 * itb.getVertexCount());
+        FloatBuffer normalBuffer = Buffers.newDirectFloatBuffer(3 * itb.getVertexCount());
         gb.makeIndexedTriangleBufferNormals(itb, normalBuffer);
 
-        FloatBuffer textureCoordBuffer = BufferUtil.newFloatBuffer(2 * itb.getVertexCount());
+        FloatBuffer textureCoordBuffer = Buffers.newDirectFloatBuffer(2 * itb.getVertexCount());
         gb.makeUnitBoxTextureCoordinates(textureCoordBuffer, itb.getVertexCount());
 
         dest.setElementData(GL.GL_TRIANGLES, itb.getIndexCount(), itb.getIndices());
@@ -236,10 +236,10 @@ public class Box extends RigidShape
             GeometryBuilder.IndexedTriangleBuffer itb =
                 gb.tessellateBoxBuffer(index, radius, subdivisions);
 
-            FloatBuffer normalBuffer = BufferUtil.newFloatBuffer(3 * itb.getVertexCount());
+            FloatBuffer normalBuffer = Buffers.newDirectFloatBuffer(3 * itb.getVertexCount());
             gb.makeIndexedTriangleBufferNormals(itb, normalBuffer);
 
-            FloatBuffer textureCoordBuffer = BufferUtil.newFloatBuffer(2 * itb.getVertexCount());
+            FloatBuffer textureCoordBuffer = Buffers.newDirectFloatBuffer(2 * itb.getVertexCount());
             gb.makeUnitBoxTextureCoordinates(index, textureCoordBuffer, itb.getVertexCount());
 
             dest = new Geometry();
@@ -281,7 +281,8 @@ public class Box extends RigidShape
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-        GL gl = dc.getGL();
+
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int size, glType, stride;
         Buffer vertexBuffer, normalBuffer;
@@ -299,7 +300,7 @@ public class Box extends RigidShape
                 normalBuffer = mesh.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
                 {
-                    gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
                 }
                 else
                 {
@@ -339,7 +340,7 @@ public class Box extends RigidShape
         }
 
         // turn off normals rescaling, which was turned on because shape had to be scaled
-        gl.glDisable(GL.GL_RESCALE_NORMAL);
+        gl.glDisable(GL2.GL_RESCALE_NORMAL);
 
         // Testing: restore VBO state
         // dc.getGLRuntimeCapabilities().setVertexBufferObjectEnabled(false);
@@ -353,7 +354,7 @@ public class Box extends RigidShape
             {
                 // re-enable normals if we temporarily turned them off earlier
                 if (normalBuffer == null)
-                    gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
             }
             // this.logGeometryStatistics(dc, geom);
         }

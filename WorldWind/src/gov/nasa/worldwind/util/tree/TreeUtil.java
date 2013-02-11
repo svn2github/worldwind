@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -39,7 +39,7 @@ public class TreeUtil
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         Color color = dc.getUniquePickColor();
         int colorCode = color.getRGB();
@@ -55,7 +55,7 @@ public class TreeUtil
      * @param gl     GL
      * @param bounds Bounds of the rectangle, in GL coordinates.
      */
-    public static void drawRect(GL gl, Rectangle bounds)
+    public static void drawRect(GL2 gl, Rectangle bounds)
     {
         if (gl == null)
         {
@@ -74,7 +74,8 @@ public class TreeUtil
         gl.glRecti(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
     }
 
-    public static void drawRectWithGradient(GL gl, Rectangle bounds, Color color1, Color color2, double opacity, String gradientDirection)
+    public static void drawRectWithGradient(GL2 gl, Rectangle bounds, Color color1, Color color2, double opacity,
+        String gradientDirection)
     {
         if (gl == null)
         {
@@ -90,7 +91,7 @@ public class TreeUtil
             throw new IllegalArgumentException(message);
         }
 
-        gl.glBegin(GL.GL_QUADS);
+        gl.glBegin(GL2.GL_QUADS);
 
         if (AVKey.HORIZONTAL.equals(gradientDirection))
         {

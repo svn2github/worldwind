@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.formats.nitfs.*;
 
 /**
  * @author lado
- * @version $Id: RpfColorMap Apr 2, 2007 9:43:32 PM
+ * @version $Id$
  */
 public class RPFColorMap
 {

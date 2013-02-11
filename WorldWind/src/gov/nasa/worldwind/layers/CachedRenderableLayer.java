@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -12,7 +12,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.Collection;
 
 /**
@@ -268,6 +268,7 @@ public class CachedRenderableLayer extends AbstractLayer
 
     protected void doPick(DrawContext dc, Iterable<? extends Renderable> renderables, java.awt.Point pickPoint)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.pickSupport.clearPickList();
         this.pickSupport.beginPicking(dc);
 
@@ -280,9 +281,9 @@ public class CachedRenderableLayer extends AbstractLayer
                 if (renderable != null)
                 {
                     float[] inColor = new float[4];
-                    dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, inColor, 0);
+                    gl.glGetFloatv(GL2.GL_CURRENT_COLOR, inColor, 0);
                     java.awt.Color color = dc.getUniquePickColor();
-                    dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+                    gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
 
                     try
                     {
@@ -295,7 +296,7 @@ public class CachedRenderableLayer extends AbstractLayer
                         continue; // go on to next renderable
                     }
 
-                    dc.getGL().glColor4fv(inColor, 0);
+                    gl.glColor4fv(inColor, 0);
 
                     if (renderable instanceof Locatable)
                     {

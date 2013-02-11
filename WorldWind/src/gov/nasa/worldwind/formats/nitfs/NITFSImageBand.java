@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -8,7 +8,7 @@ package gov.nasa.worldwind.formats.nitfs;
 
 /**
  * @author Lado Garakanidze
- * @version $Id: NitfsImageBand Apr 17, 2007 3:22:33 PM lado
+ * @version $Id$
  */
 class NITFSImageBand
 {

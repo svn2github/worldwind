@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.Movable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
-import java.nio.*;
+import java.nio.DoubleBuffer;
 
 /**
  * @author tag
@@ -139,7 +139,7 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
 
     private void intializeGeometry(DrawContext dc)
     {
-        DoubleBuffer verts = BufferUtil.newDoubleBuffer(12);
+        DoubleBuffer verts = Buffers.newDirectDoubleBuffer(12);
 
         Vec4[] p = new Vec4[4];
 
@@ -170,7 +170,7 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
 
     protected void initializeTextureCoordinates()
     {
-        this.textureCoordinates = BufferUtil.newDoubleBuffer(8);
+        this.textureCoordinates = Buffers.newDirectDoubleBuffer(8);
 
         this.textureCoordinates.put(0).put(0); // sw
         this.textureCoordinates.put(1).put(0); // se
@@ -190,22 +190,22 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
         if (this.vertices == null)
             this.intializeGeometry(dc);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         boolean textureMatrixPushed = false;
 
-        int attrBits = GL.GL_HINT_BIT | GL.GL_CURRENT_BIT | GL.GL_COLOR_BUFFER_BIT;
+        int attrBits = GL2.GL_HINT_BIT | GL2.GL_CURRENT_BIT | GL2.GL_COLOR_BUFFER_BIT;
 
         if (!dc.isPickingMode())
         {
             if (this.color.getAlpha() != 255)
-                attrBits |= GL.GL_COLOR_BUFFER_BIT;
+                attrBits |= GL2.GL_COLOR_BUFFER_BIT;
 
             if (this.texture != null)
-                attrBits |= GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT;
+                attrBits |= GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT;
         }
 
         gl.glPushAttrib(attrBits);
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
         dc.getView().pushReferenceCenter(dc, this.referenceCenter);
 
         try
@@ -218,12 +218,12 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
                     gl.glEnable(GL.GL_BLEND);
                     gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
                 }
-                dc.getGL().glColor4ub((byte) this.color.getRed(), (byte) this.color.getGreen(),
+                gl.glColor4ub((byte) this.color.getRed(), (byte) this.color.getGreen(),
                     (byte) this.color.getBlue(), (byte) (this.color.getAlpha() * layerOpacity));
 
                 if (this.texture != null)
                 {
-                    gl.glMatrixMode(GL.GL_TEXTURE);
+                    gl.glMatrixMode(GL2.GL_TEXTURE);
                     gl.glPushMatrix();
                     textureMatrixPushed = true;
                     gl.glLoadIdentity();
@@ -233,8 +233,8 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
 
                     if (this.textureCoordinates == null)
                         this.initializeTextureCoordinates();
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-                    gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, this.textureCoordinates.rewind());
+                    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+                    gl.glTexCoordPointer(2, GL2.GL_DOUBLE, 0, this.textureCoordinates.rewind());
 
                     gl.glEnable(GL.GL_BLEND);
                     gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
@@ -243,16 +243,16 @@ public class Quadrilateral implements Renderable, Movable // TODO: rename this c
                 }
             }
 
-            gl.glHint(GL.GL_POLYGON_SMOOTH_HINT, this.antiAliasHint);
-            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-            gl.glVertexPointer(3, GL.GL_DOUBLE, 0, this.vertices.rewind());
-            gl.glDrawArrays(GL.GL_QUADS, 0, 4);
+            gl.glHint(GL2.GL_POLYGON_SMOOTH_HINT, this.antiAliasHint);
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+            gl.glVertexPointer(3, GL2.GL_DOUBLE, 0, this.vertices.rewind());
+            gl.glDrawArrays(GL2.GL_QUADS, 0, 4);
         }
         finally
         {
             if (textureMatrixPushed)
             {
-                gl.glMatrixMode(GL.GL_TEXTURE);
+                gl.glMatrixMode(GL2.GL_TEXTURE);
                 gl.glPopMatrix();
             }
 

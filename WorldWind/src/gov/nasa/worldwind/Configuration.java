@@ -1,13 +1,9 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-/**
- *
- @version $Id$
- @author Tom Gaskins
- */
+
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.avlist.AVKey;
@@ -15,6 +11,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
+import javax.media.opengl.GLProfile;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.util.*;
@@ -60,6 +57,9 @@ import java.util.logging.Level;
  * World Wind no longer contains a <code>worldwind.properties</code> file. If <code>worldwind.properties</code> or its
  * replacement as specified through the Java property exists at run-time and can be found via the classpath,
  * configuration values specified by that mechanism are given precedence over values specified by the new mechanism.
+ *
+ * @version $Id$
+ * @author Tom Gaskins
  */
 public class Configuration // Singleton
 {
@@ -641,6 +641,21 @@ public class Configuration // Singleton
         {
         }
         return ver;
+    }
+
+    /**
+     * Returns the highest OpenGL profile available on the current graphics device that is compatible with World Wind.
+     * The returned profile favors hardware acceleration over software acceleration. With JOGL version 2.0-rc11, this
+     * returns the highest available profile from the following list:
+     * <p/>
+     * <ul> <li>OpenGL compatibility profile 4.x</li> <li>OpenGL compatibility profile 3.x</li> <li>OpenGL profile 1.x
+     * up to 3.0</li> </ul>
+     *
+     * @return the highest compatible OpenGL profile.
+     */
+    public static GLProfile getMaxCompatibleGLProfile()
+    {
+        return GLProfile.getMaxFixedFunc(true); // Favor a hardware rasterizer.
     }
 
     /**

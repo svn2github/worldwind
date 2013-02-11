@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -334,13 +334,13 @@ public class ScalebarLayer extends AbstractLayer
     // Rendering
     public void draw(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_TRANSFORM_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
             gl.glDisable(GL.GL_DEPTH_TEST);
 
@@ -477,8 +477,8 @@ public class ScalebarLayer extends AbstractLayer
     // Draw scale rectangle
     private void drawRectangle(DrawContext dc, double width, double height)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_POLYGON);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_POLYGON);
         gl.glVertex3d(0, height, 0);
         gl.glVertex3d(0, 0, 0);
         gl.glVertex3d(width, 0, 0);
@@ -490,14 +490,14 @@ public class ScalebarLayer extends AbstractLayer
     // Draw scale graphic
     private void drawScale(DrawContext dc, double width, double height)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_LINE_STRIP);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_LINE_STRIP);
         gl.glVertex3d(0, height, 0);
         gl.glVertex3d(0, 0, 0);
         gl.glVertex3d(width, 0, 0);
         gl.glVertex3d(width, height, 0);
         gl.glEnd();
-        gl.glBegin(GL.GL_LINE_STRIP);
+        gl.glBegin(GL2.GL_LINE_STRIP);
         gl.glVertex3d(width / 2, 0, 0);
         gl.glVertex3d(width / 2, height / 2, 0);
         gl.glEnd();

@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.util.*;
 
@@ -206,7 +206,7 @@ public class StarsConvertor
 
             starsReader.close();
 
-            ByteBuffer buf = BufferUtil.newByteBuffer(tmpBuffer.size() * 4);
+            ByteBuffer buf = Buffers.newDirectByteBuffer(tmpBuffer.size() * 4);
             buf.order(ByteOrder.LITTLE_ENDIAN);
             FloatBuffer fBuf = buf.asFloatBuffer();
 

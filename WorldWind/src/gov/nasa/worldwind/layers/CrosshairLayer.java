@@ -1,28 +1,28 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.io.*;
 
 /**
  * Renders a crosshair icon in the viewport center or at a specified location.
- * 
+ *
  * @author Patrick Murris
  * @version $Id$
  */
-public class CrosshairLayer  extends AbstractLayer
+public class CrosshairLayer extends AbstractLayer
 {
     private String iconFilePath = "images/32x32-crosshair-simple.png"; // TODO: make configurable
     private double toViewportScale = 1d; // TODO: make configurable
@@ -35,7 +35,8 @@ public class CrosshairLayer  extends AbstractLayer
     // Draw it as ordered with an eye distance of 0 so that it shows up in front of most other things.
     private OrderedIcon orderedImage = new OrderedIcon();
 
-    private class OrderedIcon implements OrderedRenderable {
+    private class OrderedIcon implements OrderedRenderable
+    {
         public double getDistanceFromEye()
         {
             return 0;
@@ -74,8 +75,9 @@ public class CrosshairLayer  extends AbstractLayer
     }
 
     /**
-     * Sets the crosshair icon's image location. The layer first searches for this location in the current Java classpath.
-     * If not found then the specified path is assumed to refer to the local file system. found there then the
+     * Sets the crosshair icon's image location. The layer first searches for this location in the current Java
+     * classpath. If not found then the specified path is assumed to refer to the local file system. found there then
+     * the
      *
      * @param iconFilePath the path to the icon's image file
      */
@@ -103,8 +105,8 @@ public class CrosshairLayer  extends AbstractLayer
     /**
      * Sets the scale factor applied to the viewport size to determine the displayed size of the crosshair icon. This
      * scale factor is used only when the layer's resize behavior is AVKey.RESIZE_STRETCH or AVKey.RESIZE_SHRINK_ONLY.
-     * The icon's width is adjusted to occupy the proportion of the viewport's width indicated by
-     * this factor. The icon's height is adjusted to maintain the crosshair image's native aspect ratio.
+     * The icon's width is adjusted to occupy the proportion of the viewport's width indicated by this factor. The
+     * icon's height is adjusted to maintain the crosshair image's native aspect ratio.
      *
      * @param toViewportScale the compass to viewport scale factor
      */
@@ -124,10 +126,10 @@ public class CrosshairLayer  extends AbstractLayer
     }
 
     /**
-     * Sets the scale factor defining the displayed size of the crosshair icon relative to the icon's width and height in
-     * its image file. Values greater than 1 magify the image, values less than one minify it. If the layer's resize
-     * behavior is other than AVKey.RESIZE_KEEP_FIXED_SIZE, the icon's displayed sized is further affected by the
-     * value specified by {@link #setToViewportScale(double)} and the current viewport size.
+     * Sets the scale factor defining the displayed size of the crosshair icon relative to the icon's width and height
+     * in its image file. Values greater than 1 magify the image, values less than one minify it. If the layer's resize
+     * behavior is other than AVKey.RESIZE_KEEP_FIXED_SIZE, the icon's displayed sized is further affected by the value
+     * specified by {@link #setToViewportScale(double)} and the current viewport size.
      *
      * @param iconScale the icon scale factor
      */
@@ -149,12 +151,12 @@ public class CrosshairLayer  extends AbstractLayer
     /**
      * Sets the behavior the layer uses to size the crosshair icon when the viewport size changes, typically when the
      * World Wind window is resized. If the value is AVKey.RESIZE_KEEP_FIXED_SIZE, the icon size is kept to the size
-     * specified in its image file scaled by the layer's current icon scale. If the value is AVKey.RESIZE_STRETCH,
-     * the icon is resized to have a constant size relative to the current viewport size. If the viewport shrinks the
-     * icon size decreases; if it expands then the icon file enlarges. The relative size is determined by the current
+     * specified in its image file scaled by the layer's current icon scale. If the value is AVKey.RESIZE_STRETCH, the
+     * icon is resized to have a constant size relative to the current viewport size. If the viewport shrinks the icon
+     * size decreases; if it expands then the icon file enlarges. The relative size is determined by the current
      * crosshair-to-viewport scale and by the icon's image file size scaled by the current icon scale. If the value is
-     * AVKey.RESIZE_SHRINK_ONLY (the default), icon sizing behaves as for AVKey.RESIZE_STRETCH but the icon will
-     * not grow larger than the size specified in its image file scaled by the current icon scale.
+     * AVKey.RESIZE_SHRINK_ONLY (the default), icon sizing behaves as for AVKey.RESIZE_STRETCH but the icon will not
+     * grow larger than the size specified in its image file scaled by the current icon scale.
      *
      * @param resizeBehavior the desired resize behavior
      */
@@ -164,8 +166,9 @@ public class CrosshairLayer  extends AbstractLayer
     }
 
     /**
-     * Get the crosshair location inside the viewport. If this location is null, the crosshair is drawn in the
-     * viewport center.
+     * Get the crosshair location inside the viewport. If this location is null, the crosshair is drawn in the viewport
+     * center.
+     *
      * @return the crosshair location inside the viewport.
      */
     public Vec4 getLocationCenter()
@@ -176,6 +179,7 @@ public class CrosshairLayer  extends AbstractLayer
     /**
      * Set the crosshair location inside the viewport. If this location is null, the crosshair will be drawn in the
      * viewport center.
+     *
      * @param locationCenter the crosshair location inside the viewport.
      */
     public void setLocationCenter(Vec4 locationCenter)
@@ -193,7 +197,7 @@ public class CrosshairLayer  extends AbstractLayer
         if (this.getIconFilePath() == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -201,12 +205,12 @@ public class CrosshairLayer  extends AbstractLayer
 
         try
         {
-            gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+            gl.glPushAttrib(GL2.GL_DEPTH_BUFFER_BIT
+                | GL2.GL_COLOR_BUFFER_BIT
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             Texture iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
@@ -222,7 +226,7 @@ public class CrosshairLayer  extends AbstractLayer
             }
 
             gl.glEnable(GL.GL_TEXTURE_2D);
-            iconTexture.bind();
+            iconTexture.bind(gl);
 
             gl.glColor4d(1d, 1d, 1d, this.getOpacity());
             gl.glEnable(GL.GL_BLEND);
@@ -235,14 +239,14 @@ public class CrosshairLayer  extends AbstractLayer
             // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
             // into the GL projection matrix.
             java.awt.Rectangle viewport = dc.getView().getViewport();
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             double maxwh = width > height ? width : height;
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -0.6 * maxwh, 0.6 * maxwh);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -250,7 +254,7 @@ public class CrosshairLayer  extends AbstractLayer
             double scale = this.computeScale(viewport);
             Vec4 locationSW = this.computeLocation(viewport, scale);
 
-            gl.glTranslated((int)locationSW.x, (int)locationSW.y, (int)locationSW.z);
+            gl.glTranslated((int) locationSW.x, (int) locationSW.y, (int) locationSW.z);
             gl.glScaled(scale, scale, 1);
 
             TextureCoords texCoords = iconTexture.getImageTexCoords();
@@ -260,15 +264,15 @@ public class CrosshairLayer  extends AbstractLayer
         finally
         {
             gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
-            
+
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)
@@ -337,6 +341,8 @@ public class CrosshairLayer  extends AbstractLayer
         if (iconTexture != null)
             return;
 
+        GL gl = dc.getGL();
+
         try
         {
             InputStream iconStream = this.getClass().getResourceAsStream("/" + this.getIconFilePath());
@@ -349,8 +355,9 @@ public class CrosshairLayer  extends AbstractLayer
                 }
             }
 
-            iconTexture = TextureIO.newTexture(iconStream, false, null);
-            iconTexture.bind();
+            TextureData textureData = OGLUtil.newTextureData(gl.getGLProfile(), iconStream, false);
+            iconTexture = TextureIO.newTexture(textureData);
+            iconTexture.bind(gl);
             this.iconWidth = iconTexture.getWidth();
             this.iconHeight = iconTexture.getHeight();
             dc.getTextureCache().put(this.getIconFilePath(), iconTexture);
@@ -362,7 +369,6 @@ public class CrosshairLayer  extends AbstractLayer
             throw new WWRuntimeException(msg, e);
         }
 
-        GL gl = dc.getGL();
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);//_MIPMAP_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -7,7 +7,7 @@
 package gov.nasa.worldwind.formats.nitfs;
 /**
  * @author Lado Garakanidze
- * @version $Id: NitfsTextSegment Mar 31, 2007 12:59:42 AM
+ * @version $Id$
  */
 class NITFSTextSegment extends NITFSSegment
 {

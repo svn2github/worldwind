@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -475,15 +475,15 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             throw new IllegalStateException(message);
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glPushAttrib(GL.GL_VIEWPORT_BIT | GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT);
+        gl.glPushAttrib(GL2.GL_VIEWPORT_BIT | GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT);
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
@@ -499,12 +499,12 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
     protected void finalizeFrame(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPopMatrix();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glPopMatrix();
 
         gl.glPopAttrib();
@@ -913,7 +913,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
                 Model model = dc.getModel();
 
                 float[] previousColor = new float[4];
-                dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, previousColor, 0);
+                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+                gl.glGetFloatv(GL2.GL_CURRENT_COLOR, previousColor, 0);
 
                 for (SectorGeometry sg : dc.getSurfaceGeometry())
                 {
@@ -922,12 +923,12 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
                     if (model.isShowTessellationBoundingVolumes())
                     {
-                        dc.getGL().glColor3d(1, 0, 0);
+                        gl.glColor3d(1, 0, 0);
                         sg.renderBoundingVolume(dc);
                     }
                 }
 
-                dc.getGL().glColor4fv(previousColor, 0);
+                gl.glColor4fv(previousColor, 0);
             }
         }
         catch (Throwable e)
@@ -943,7 +944,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
      *
      * @param dc the relevant <code>DrawContext</code>
      */
-    @SuppressWarnings( {"UNUSED_SYMBOL", "UnusedDeclaration"})
+    @SuppressWarnings({"UNUSED_SYMBOL", "UnusedDeclaration"})
     protected void checkGLErrors(DrawContext dc)
     {
         GL gl = dc.getGL();
@@ -1088,10 +1089,10 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             return;
 
         int attributeMask =
-            GL.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func, blend ref.
-                | GL.GL_POLYGON_BIT; // For cull face enable, cull face, polygon mode.
+            GL2.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func, blend ref.
+                | GL2.GL_POLYGON_BIT; // For cull face enable, cull face, polygon mode.
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl, attributeMask);
         try
@@ -1099,7 +1100,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             gl.glEnable(GL.GL_BLEND);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             // Enable blending in premultiplied color mode. The color components in each surface object tile are
             // premultiplied by the alpha component.
             OGLUtil.applyBlending(gl, true);
@@ -1110,7 +1111,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         }
         finally
         {
-            ogsh.pop(dc.getGL());
+            ogsh.pop(gl);
         }
     }
 

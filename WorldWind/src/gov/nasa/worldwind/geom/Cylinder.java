@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import java.util.*;
 
@@ -873,10 +873,10 @@ public class Cylinder implements Extent, Renderable
         double[] matrixArray = new double[16];
         transformMatrix.toArray(matrixArray, 0, false);
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT | GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT | GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         try
         {
             // The cylinder is drawn with as a wireframe plus a center axis. It's drawn in two passes in order to
@@ -889,14 +889,14 @@ public class Cylinder implements Extent, Renderable
             // Draw the axis
             gl.glDepthFunc(GL.GL_LEQUAL); // draw the part that would normally be visible
             gl.glColor4f(1f, 1f, 1f, 0.4f);
-            gl.glBegin(GL.GL_LINES);
+            gl.glBegin(GL2.GL_LINES);
             gl.glVertex3d(this.bottomCenter.x, this.bottomCenter.y, this.bottomCenter.z);
             gl.glVertex3d(this.topCenter.x, this.topCenter.y, this.topCenter.z);
             gl.glEnd();
 
             gl.glDepthFunc(GL.GL_GREATER); // draw the part that is behind an intersecting surface
             gl.glColor4f(1f, 0f, 1f, 0.4f);
-            gl.glBegin(GL.GL_LINES);
+            gl.glBegin(GL2.GL_LINES);
             gl.glVertex3d(this.bottomCenter.x, this.bottomCenter.y, this.bottomCenter.z);
             gl.glVertex3d(this.topCenter.x, this.topCenter.y, this.topCenter.z);
             gl.glEnd();

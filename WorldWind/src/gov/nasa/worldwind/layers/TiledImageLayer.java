@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.xpath.XPath;
 import java.awt.image.*;
 import java.io.*;
@@ -629,19 +629,19 @@ public abstract class TiledImageLayer extends AbstractLayer
             sortedTiles = this.currentTiles.toArray(sortedTiles);
             Arrays.sort(sortedTiles, levelComparer);
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
             if (this.isUseTransparentTextures() || this.getOpacity() < 1)
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT | GL.GL_CURRENT_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_CURRENT_BIT);
                 this.setBlendingFunction(dc);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 
@@ -687,7 +687,7 @@ public abstract class TiledImageLayer extends AbstractLayer
         // color as a premultiplied color, so that any incoming premultiplied color will be properly combined with the
         // base color.
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         double alpha = this.getOpacity();
         gl.glColor4d(alpha, alpha, alpha, alpha);
@@ -768,9 +768,10 @@ public abstract class TiledImageLayer extends AbstractLayer
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
             java.awt.Font.decode("Arial-Plain-13"));
 
-        dc.getGL().glDisable(GL.GL_DEPTH_TEST);
-        dc.getGL().glDisable(GL.GL_BLEND);
-        dc.getGL().glDisable(GL.GL_TEXTURE_2D);
+        GL gl = dc.getGL();
+        gl.glDisable(GL.GL_DEPTH_TEST);
+        gl.glDisable(GL.GL_BLEND);
+        gl.glDisable(GL.GL_TEXTURE_2D);
 
         textRenderer.beginRendering(viewport.width, viewport.height);
         textRenderer.setColor(java.awt.Color.YELLOW);
@@ -793,9 +794,11 @@ public abstract class TiledImageLayer extends AbstractLayer
 
     protected void drawBoundingVolumes(DrawContext dc, ArrayList<TextureTile> tiles)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         float[] previousColor = new float[4];
-        dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, previousColor, 0);
-        dc.getGL().glColor3d(0, 1, 0);
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, previousColor, 0);
+        gl.glColor3d(0, 1, 0);
 
         for (TextureTile tile : tiles)
         {
@@ -804,10 +807,10 @@ public abstract class TiledImageLayer extends AbstractLayer
         }
 
         Box c = Sector.computeBoundingBox(dc.getGlobe(), dc.getVerticalExaggeration(), this.levels.getSector());
-        dc.getGL().glColor3d(1, 1, 0);
+        gl.glColor3d(1, 1, 0);
         c.render(dc);
 
-        dc.getGL().glColor4fv(previousColor, 0);
+        gl.glColor4fv(previousColor, 0);
     }
 
     //**************************************************************//

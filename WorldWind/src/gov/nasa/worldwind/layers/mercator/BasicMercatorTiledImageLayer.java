@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.layers.mercator;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
@@ -197,7 +197,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
     {
         try
         {
-            return TextureIO.newTextureData(url, useMipMaps, null);
+            return OGLUtil.newTextureData(Configuration.getMaxCompatibleGLProfile(), url, useMipMaps);
         }
         catch (Exception e)
         {
@@ -248,9 +248,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         else
         {
             Logging.logger().severe(
-                Logging.getMessage(
-                    "layers.TextureLayer.UnknownRetrievalProtocol", url
-                        .toString()));
+                Logging.getMessage("layers.TextureLayer.UnknownRetrievalProtocol", url.toString()));
             return;
         }
 
@@ -487,8 +485,8 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             for (int x = 0; x < image.getWidth(); x++)
             {
                 trans.setRGB(x, y, image.getRGB(x, iy));
-			}
-		}
-		return trans;
-	}
+            }
+        }
+        return trans;
+    }
 }

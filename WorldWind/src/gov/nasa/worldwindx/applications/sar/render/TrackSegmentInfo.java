@@ -1,17 +1,18 @@
-/* Copyright (C) 2001, 2009 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.applications.sar.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwindx.applications.sar.*;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwindx.applications.sar.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -237,11 +238,11 @@ public class TrackSegmentInfo implements Renderable
 
         protected void drawText(DrawContext dc, String text, int x, int y, Font font, Color color)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             Rectangle viewport = dc.getView().getViewport();
 
             OGLStackHandler stackHandler = new OGLStackHandler();
-            stackHandler.pushAttrib(gl, GL.GL_CURRENT_BIT); // For current color.
+            stackHandler.pushAttrib(gl, GL2.GL_CURRENT_BIT); // For current color.
             try
             {
                 MultiLineTextRenderer tr = this.getTextRendererFor(dc, font);

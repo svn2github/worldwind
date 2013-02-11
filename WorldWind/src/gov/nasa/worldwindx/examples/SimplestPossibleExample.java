@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
+
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.BasicModel;
@@ -5,7 +11,11 @@ import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 
 import javax.swing.*;
 
-/** This example demonstrates the simplest possible way to create a WorldWind application. */
+/**
+ * This example demonstrates the simplest possible way to create a WorldWind application.
+ *
+ * @version $Id$
+ */
 public class SimplestPossibleExample extends JFrame
 {
     public SimplestPossibleExample()

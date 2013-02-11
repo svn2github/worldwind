@@ -1,20 +1,19 @@
 /*
- * Copyright (C) 2001, 2011 United States Government
- * as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwindx.examples.util;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.nio.*;
 import java.util.List;
 
@@ -215,7 +214,7 @@ public class DirectedPath extends Path
         final int FLOATS_PER_ARROWHEAD = 9; // 3 points * 3 coordinates per point
         FloatBuffer buffer = (FloatBuffer) pathData.getValue(ARROWS_KEY);
         if (buffer == null || buffer.capacity() < numPositions * FLOATS_PER_ARROWHEAD)
-            buffer = BufferUtil.newFloatBuffer(FLOATS_PER_ARROWHEAD * numPositions);
+            buffer = Buffers.newDirectFloatBuffer(FLOATS_PER_ARROWHEAD * numPositions);
         pathData.setValue(ARROWS_KEY, buffer);
 
         buffer.clear();
@@ -398,7 +397,7 @@ public class DirectedPath extends Path
      */
     protected void drawDirectionArrows(DrawContext dc, PathData pathData)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         boolean projectionOffsetPushed = false; // keep track for error recovery
 
         try

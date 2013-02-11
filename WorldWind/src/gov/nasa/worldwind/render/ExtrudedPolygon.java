@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.ShapeDataCache;
@@ -18,7 +18,7 @@ import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.terrain.Terrain;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import javax.xml.stream.*;
 import java.io.*;
@@ -736,7 +736,7 @@ public class ExtrudedPolygon extends AbstractShape
         // Determine whether the tex-coord list needs to be closed.
         boolean closeIt = texCoords[0] != texCoords[texCoordCount - 2] || texCoords[1] != texCoords[texCoordCount - 1];
 
-        this.capTextureCoords = BufferUtil.newFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
+        this.capTextureCoords = Buffers.newDirectFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
         for (int i = 0; i < 2 * texCoordCount; i++)
         {
             this.capTextureCoords.put(texCoords[i]);
@@ -1267,7 +1267,8 @@ public class ExtrudedPolygon extends AbstractShape
         {
             // Push an identity texture matrix. This prevents drawSides() from leaking GL texture matrix state. The
             // texture matrix stack is popped from OGLStackHandler.pop() within {@link #endRendering}.
-            ogsh.pushTextureIdentity(dc.getGL());
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            ogsh.pushTextureIdentity(gl);
         }
 
         return ogsh;
@@ -1317,7 +1318,7 @@ public class ExtrudedPolygon extends AbstractShape
     {
         this.prepareToDrawOutline(dc, this.getActiveCapAttributes(), defaultAttributes);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         for (ExtrudedBoundaryInfo boundary : shapeData)
         {
@@ -1344,7 +1345,7 @@ public class ExtrudedPolygon extends AbstractShape
     {
         this.prepareToDrawOutline(dc, this.getActiveSideAttributes(), defaultSideAttributes);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         for (ExtrudedBoundaryInfo boundary : shapeData)
         {
@@ -1387,7 +1388,7 @@ public class ExtrudedPolygon extends AbstractShape
     {
         super.prepareToDrawInterior(dc, this.getActiveCapAttributes(), defaultAttributes);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode() && this.mustApplyLighting(dc, this.getActiveCapAttributes()))
             gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.capNormalBuffer.rewind());
@@ -1400,12 +1401,12 @@ public class ExtrudedPolygon extends AbstractShape
 
             gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.capTextureCoords.rewind());
             dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         }
         else
         {
             dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
         }
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.capVertexBuffer.rewind());
@@ -1427,7 +1428,7 @@ public class ExtrudedPolygon extends AbstractShape
     {
         super.prepareToDrawInterior(dc, this.getActiveSideAttributes(), defaultSideAttributes);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         for (ExtrudedBoundaryInfo boundary : shapeData)
         {
@@ -1437,13 +1438,13 @@ public class ExtrudedPolygon extends AbstractShape
             if (!dc.isPickingMode() && boundary.sideTextureCoords != null)
             {
                 gl.glEnable(GL.GL_TEXTURE_2D);
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, boundary.sideTextureCoords.rewind());
             }
             else
             {
                 gl.glDisable(GL.GL_TEXTURE_2D);
-                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
             }
 
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, boundary.sideVertexBuffer.rewind());
@@ -1676,7 +1677,7 @@ public class ExtrudedPolygon extends AbstractShape
         if (shapeData.sideVertexBuffer != null && shapeData.sideVertexBuffer.capacity() >= vertexCoordCount)
             shapeData.sideVertexBuffer.clear();
         else
-            shapeData.sideVertexBuffer = BufferUtil.newFloatBuffer(vertexCoordCount);
+            shapeData.sideVertexBuffer = Buffers.newDirectFloatBuffer(vertexCoordCount);
 
         // Create individual buffer slices for each boundary.
         for (ExtrudedBoundaryInfo boundary : shapeData)
@@ -1695,7 +1696,7 @@ public class ExtrudedPolygon extends AbstractShape
         if (shapeData.sideNormalBuffer != null && shapeData.sideNormalBuffer.capacity() >= vertexCoordCount)
             shapeData.sideNormalBuffer.clear();
         else
-            shapeData.sideNormalBuffer = BufferUtil.newFloatBuffer(vertexCoordCount);
+            shapeData.sideNormalBuffer = Buffers.newDirectFloatBuffer(vertexCoordCount);
 
         // Create individual buffer slices for each boundary.
         for (ExtrudedBoundaryInfo boundary : shapeData)
@@ -1726,7 +1727,7 @@ public class ExtrudedPolygon extends AbstractShape
                 if (boundary.sideTextureCoords != null && boundary.sideTextureCoords.capacity() >= texCoordSize)
                     boundary.sideTextureCoords.clear();
                 else
-                    boundary.sideTextureCoords = BufferUtil.newFloatBuffer(texCoordSize);
+                    boundary.sideTextureCoords = Buffers.newDirectFloatBuffer(texCoordSize);
 
                 this.fillSideTexCoordBuffer(boundary.capVertices, boundary.baseVertices,
                     boundary.sideTextureCoords);
@@ -1747,7 +1748,7 @@ public class ExtrudedPolygon extends AbstractShape
             && shapeData.capVertexBuffer.capacity() >= this.totalNumLocations * 3)
             shapeData.capVertexBuffer.clear();
         else
-            shapeData.capVertexBuffer = BufferUtil.newFloatBuffer(this.totalNumLocations * 3);
+            shapeData.capVertexBuffer = Buffers.newDirectFloatBuffer(this.totalNumLocations * 3);
 
         // Fill the vertex buffer. Simultaneously create individual buffer slices for each boundary. These are used to
         // draw the outline.
@@ -1771,7 +1772,7 @@ public class ExtrudedPolygon extends AbstractShape
             && shapeData.capNormalBuffer.capacity() >= this.totalNumLocations * 3)
             shapeData.capNormalBuffer.clear();
         else
-            shapeData.capNormalBuffer = BufferUtil.newFloatBuffer(shapeData.capVertexBuffer.capacity());
+            shapeData.capNormalBuffer = Buffers.newDirectFloatBuffer(shapeData.capVertexBuffer.capacity());
 
         for (ExtrudedBoundaryInfo boundary : shapeData)
         {
@@ -1937,7 +1938,7 @@ public class ExtrudedPolygon extends AbstractShape
             return ib;
 
         // The edges are two-point lines connecting vertex pairs.
-        ib = BufferUtil.newIntBuffer(2 * (n - 1) * 3);
+        ib = Buffers.newDirectIntBuffer(2 * (n - 1) * 3);
         for (int i = 0; i < n - 1; i++)
         {
             ib.put(i).put(i + 1);
@@ -1964,7 +1965,7 @@ public class ExtrudedPolygon extends AbstractShape
         // Compute them if not already computed. Each side is two triangles defined by one triangle strip. All edges
         // can't be combined into one tri-strip because each side may have its own texture and therefore different
         // texture coordinates.
-        ib = BufferUtil.newIntBuffer(n * 4);
+        ib = Buffers.newDirectIntBuffer(n * 4);
         for (int i = 0; i < n; i++)
         {
             ib.put(4 * i + 3).put(4 * i).put(4 * i + 2).put(4 * i + 1);
@@ -1992,7 +1993,7 @@ public class ExtrudedPolygon extends AbstractShape
 
         // The edges are two-point lines connecting vertex pairs.
 
-        ib = BufferUtil.newIntBuffer((2 * nn) * 3); // 2n each for top, bottom and corners
+        ib = Buffers.newDirectIntBuffer((2 * nn) * 3); // 2n each for top, bottom and corners
 
         // Top. Keep this first so that the top edge can be turned off independently.
         for (int i = 0; i < nn; i++)
@@ -2093,22 +2094,20 @@ public class ExtrudedPolygon extends AbstractShape
      */
     protected void tessellatePolygon(ShapeData shapeData, Vec4 normal)
     {
-        GLU glu = new GLU();
-
         GLUTessellatorSupport glts = new GLUTessellatorSupport();
         shapeData.cb = new GLUTessellatorSupport.CollectIndexListsCallback();
 
-        glts.beginTessellation(glu, shapeData.cb, normal);
+        glts.beginTessellation(shapeData.cb, normal);
         try
         {
             double[] coords = new double[3];
 
-            glu.gluTessBeginPolygon(glts.getGLUtessellator(), null);
+            GLU.gluTessBeginPolygon(glts.getGLUtessellator(), null);
 
             int k = 0;
             for (ExtrudedBoundaryInfo boundary : shapeData)
             {
-                glu.gluTessBeginContour(glts.getGLUtessellator());
+                GLU.gluTessBeginContour(glts.getGLUtessellator());
                 FloatBuffer vBuf = boundary.capVertexBuffer;
                 for (int i = 0; i < boundary.locations.size(); i++)
                 {
@@ -2116,19 +2115,19 @@ public class ExtrudedPolygon extends AbstractShape
                     coords[1] = vBuf.get(i * 3 + 1);
                     coords[2] = vBuf.get(i * 3 + 2);
 
-                    glu.gluTessVertex(glts.getGLUtessellator(), coords, 0, k++);
+                    GLU.gluTessVertex(glts.getGLUtessellator(), coords, 0, k++);
                 }
-                glu.gluTessEndContour(glts.getGLUtessellator());
+                GLU.gluTessEndContour(glts.getGLUtessellator());
             }
 
-            glu.gluTessEndPolygon(glts.getGLUtessellator());
+            GLU.gluTessEndPolygon(glts.getGLUtessellator());
         }
         finally
         {
             // Free any heap memory used for tessellation immediately. If tessellation has consumed all available
             // heap memory, we must free memory used by tessellation immediately or subsequent operations such as
             // message logging will fail.
-            glts.endTessellation(glu);
+            glts.endTessellation();
         }
     }
 
@@ -2142,7 +2141,7 @@ public class ExtrudedPolygon extends AbstractShape
         GLUTessellatorSupport.CollectIndexListsCallback cb = shapeData.cb;
 
         if (shapeData.capFillIndices == null || shapeData.capFillIndices.capacity() < cb.getNumIndices())
-            shapeData.capFillIndices = BufferUtil.newIntBuffer(cb.getNumIndices());
+            shapeData.capFillIndices = Buffers.newDirectIntBuffer(cb.getNumIndices());
         else
             shapeData.capFillIndices.clear();
 

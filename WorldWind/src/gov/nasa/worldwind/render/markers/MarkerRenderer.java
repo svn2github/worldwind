@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -8,13 +8,12 @@ package gov.nasa.worldwind.render.markers;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.geom.Sphere;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -199,7 +198,8 @@ public class MarkerRenderer
             if (this.enablePickSizeReturn)
                 po.setValue(AVKey.PICKED_OBJECT_SIZE, 2 * radius);
             this.pickSupport.addPickableObject(po);
-            dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
         }
 
         MarkerAttributes attrs = marker.getAttributes();
@@ -276,20 +276,20 @@ public class MarkerRenderer
 
     protected void begin(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         Vec4 cameraPosition = dc.getView().getEyePoint();
 
         if (dc.isPickingMode())
         {
             this.pickSupport.beginPicking(dc);
 
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_TRANSFORM_BIT);
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_TRANSFORM_BIT);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
         }
         else
         {
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_LIGHTING_BIT | GL.GL_TRANSFORM_BIT
-                    | GL.GL_COLOR_BUFFER_BIT);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_COLOR_BUFFER_BIT);
 
             float[] lightPosition =
                 {(float) (cameraPosition.x * 2), (float) (cameraPosition.y / 2), (float) (cameraPosition.z), 0.0f};
@@ -297,24 +297,24 @@ public class MarkerRenderer
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
 
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
 
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, lightSpecular, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPosition, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, lightDiffuse, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightAmbient, 0);
+            gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, lightSpecular, 0);
 
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GL2.GL_LIGHT0);
+            gl.glEnable(GL2.GL_LIGHT1);
+            gl.glEnable(GL2.GL_LIGHTING);
+            gl.glEnable(GL2.GL_NORMALIZE);
 
             // Set up for opacity, either explictly via attributes or implicitly as alpha in the marker color
             dc.getGL().glEnable(GL.GL_BLEND);
             dc.getGL().glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPushMatrix();
 
         // We're beginning a new sequence of marker rendering. Clear the previous attributes to ensure that no rendering
@@ -324,9 +324,9 @@ public class MarkerRenderer
 
     protected void end(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glPopMatrix();
 
         if (dc.isPickingMode())
@@ -335,10 +335,10 @@ public class MarkerRenderer
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHT0);
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisable(GL.GL_NORMALIZE);
+            gl.glDisable(GL2.GL_LIGHT1);
+            gl.glEnable(GL2.GL_LIGHT0);
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glDisable(GL2.GL_NORMALIZE);
         }
 
         gl.glPopAttrib();

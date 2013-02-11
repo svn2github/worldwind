@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.util.webview;
 
-import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.texture.*;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.logging.Level;
 
@@ -27,7 +27,7 @@ public class WebViewTexture extends BasicWWTexture
     {
         // Create a new unique object to use as the cache key.
         super(new Object(), useMipMaps); // Do not generate mipmaps for the texture.
-        
+
         this.frameSize = frameSize;
         this.flipVertically = flipVertically;
     }
@@ -66,10 +66,13 @@ public class WebViewTexture extends BasicWWTexture
             return null;
 
         Texture t;
+        GL gl = dc.getGL();
+
         try
         {
             // Allocate a texture with the proper dimensions and texture internal format, but with no data.
             TextureData td = new TextureData(
+                gl.getGLProfile(), // GL profile
                 GL.GL_RGBA, // texture internal format
                 this.frameSize.width, // texture image with
                 this.frameSize.height, // texture image height
@@ -79,20 +82,19 @@ public class WebViewTexture extends BasicWWTexture
                 false, // mipmap
                 false, // dataIsCompressed
                 this.flipVertically,
-                BufferUtil.newByteBuffer(4 * this.frameSize.width * this.frameSize.height), // buffer
+                Buffers.newDirectByteBuffer(4 * this.frameSize.width * this.frameSize.height), // buffer
                 null); // flusher
             t = TextureIO.newTexture(td);
 
             dc.getTextureCache().put(imageSource, t);
-            t.bind();
+            t.bind(gl);
 
             // Configure the texture to use nearest-neighbor filtering. This ensures that the texels are aligned exactly
             // with screen pixels, and eliminates blurry artifacts from linear filtering.
-            GL gl = dc.getGL();
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_BORDER);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_BORDER);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_BORDER);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_BORDER);
         }
         catch (Exception e)
         {

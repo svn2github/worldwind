@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -125,8 +125,8 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         this.pickSupport.clearPickList();
         this.pickSupport.beginPicking(dc);
 
-        GL gl = dc.getGL();
-        gl.glShadeModel(GL.GL_FLAT);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glShadeModel(GL2.GL_FLAT);
 
         try
         {
@@ -135,7 +135,7 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
             for (SectorGeometry sector : this)
             {
                 Color color = dc.getUniquePickColor();
-                dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+                gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
                 sector.render(dc);
                 // lat/lon/elevation not used in this case
                 this.pickSupport.addPickableObject(color.getRGB(), sector, Position.ZERO, true);
@@ -152,7 +152,7 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         finally
         {
             this.endRendering(dc);
-            gl.glShadeModel(GL.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
+            gl.glShadeModel(GL2.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
             gl.glDepthFunc(GL.GL_LESS); // restore to default explicitly to avoid more expensive pushAttrib
 
             this.pickSupport.endPicking(dc);
@@ -187,8 +187,8 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         this.pickSupport.clearPickList();
         this.pickSupport.beginPicking(dc);
 
-        GL gl = dc.getGL();
-        gl.glShadeModel(GL.GL_FLAT);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glShadeModel(GL2.GL_FLAT);
 
         try
         {
@@ -197,7 +197,7 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
             for (SectorGeometry sector : this)
             {
                 Color color = dc.getUniquePickColor();
-                dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+                gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
                 sector.render(dc);
                 // lat/lon/elevation not used in this case
                 this.pickSupport.addPickableObject(color.getRGB(), sector, Position.ZERO, true);
@@ -251,7 +251,7 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         finally
         {
             this.endRendering(dc);
-            gl.glShadeModel(GL.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
+            gl.glShadeModel(GL2.GL_SMOOTH); // restore to default explicitly to avoid more expensive pushAttrib
             gl.glDepthFunc(GL.GL_LESS); // restore to default explicitly to avoid more expensive pushAttrib
 
             this.pickSupport.endPicking(dc);

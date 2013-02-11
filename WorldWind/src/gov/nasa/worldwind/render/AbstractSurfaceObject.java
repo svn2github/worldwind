@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -15,7 +15,7 @@ import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -516,7 +516,8 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
 
         // Draw an individual representation of this object in a unique pick color. This representation is created
         // during the preRender pass in makeOrderedPreRenderable().
-        dc.getGL().glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
         this.drawPickRepresentation(dc);
     }
 
@@ -674,20 +675,20 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
             return;
 
         // Draw the pickable representation of this surface object created during preRendering.
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_POLYGON_BIT); // For cull face enable, cull face, polygon mode.
+        ogsh.pushAttrib(gl, GL2.GL_POLYGON_BIT); // For cull face enable, cull face, polygon mode.
         try
         {
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
 
             dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.pickTiles);
         }
         finally
         {
-            ogsh.pop(dc.getGL());
+            ogsh.pop(gl);
             // Clear the list of pick tiles to avoid retaining references to them in case we're never picked again.
             this.pickTiles.clear();
         }
@@ -703,7 +704,7 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
      */
     protected SurfaceObjectTileBuilder createPickTileBuilder()
     {
-        return new SurfaceObjectTileBuilder(new Dimension(512, 512), GL.GL_ALPHA8, false, false);
+        return new SurfaceObjectTileBuilder(new Dimension(512, 512), GL2.GL_ALPHA8, false, false);
     }
 
     //**************************************************************//
@@ -727,12 +728,12 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
         if (sectors == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int attributeMask =
-            GL.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func.
-                | GL.GL_CURRENT_BIT  // For current color.
-                | GL.GL_LINE_BIT;    // For line smooth, line width.
+            GL2.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func.
+                | GL2.GL_CURRENT_BIT  // For current color.
+                | GL2.GL_LINE_BIT;    // For line smooth, line width.
 
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl, attributeMask);
@@ -749,12 +750,12 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
 
             // Set the model-view matrix to transform from geographic coordinates to viewport coordinates.
             Matrix matrix = sdc.getModelviewMatrix();
-            dc.getGL().glMultMatrixd(matrix.toArray(new double[16], 0, false), 0);
+            gl.glMultMatrixd(matrix.toArray(new double[16], 0, false), 0);
 
             for (Sector s : sectors)
             {
                 LatLon[] corners = s.getCorners();
-                gl.glBegin(GL.GL_LINE_LOOP);
+                gl.glBegin(GL2.GL_LINE_LOOP);
                 gl.glVertex2f((float) corners[0].getLongitude().degrees, (float) corners[0].getLatitude().degrees);
                 gl.glVertex2f((float) corners[1].getLongitude().degrees, (float) corners[1].getLatitude().degrees);
                 gl.glVertex2f((float) corners[2].getLongitude().degrees, (float) corners[2].getLatitude().degrees);
@@ -801,7 +802,7 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
         }
 
         @Override
-        @SuppressWarnings( {"SimplifiableIfStatement"})
+        @SuppressWarnings({"SimplifiableIfStatement"})
         public boolean equals(Object o)
         {
             if (this == o)

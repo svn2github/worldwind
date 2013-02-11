@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -9,7 +9,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.render.DrawContext;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 
@@ -201,13 +201,13 @@ public class PickSupport
 
     public void beginPicking(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+        gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
 
         gl.glDisable(GL.GL_DITHER);
-        gl.glDisable(GL.GL_LIGHTING);
-        gl.glDisable(GL.GL_FOG);
+        gl.glDisable(GL2.GL_LIGHTING);
+        gl.glDisable(GL2.GL_FOG);
         gl.glDisable(GL.GL_BLEND);
         gl.glDisable(GL.GL_TEXTURE_2D);
 
@@ -217,7 +217,8 @@ public class PickSupport
 
     public void endPicking(DrawContext dc)
     {
-        dc.getGL().glPopAttrib();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glPopAttrib();
     }
 
     protected Map<Integer, PickedObject> getPickableObjects()

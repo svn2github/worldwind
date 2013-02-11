@@ -1,7 +1,8 @@
-/* Copyright (C) 2001, 2008 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.applications.sar.segmentplane;
 
 import gov.nasa.worldwind.avlist.*;
@@ -9,7 +10,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.*;
 
@@ -43,7 +44,7 @@ public class SegmentPlaneAttributes
                 Logging.logger().severe(message);
                 throw new IllegalArgumentException(message);
             }
-            
+
             this.visible = true;
             this.pickEnabled = true;
             this.material = material;
@@ -192,7 +193,7 @@ public class SegmentPlaneAttributes
         private double minActiveDistance;
         private double maxActiveDistance;
         private Vec4 offset;
-        
+
         public LabelAttributes(Color color, Font font, String horizontalAlignment, String verticalAlignment)
         {
             if (color == null)
@@ -574,11 +575,11 @@ public class SegmentPlaneAttributes
 
     protected static void applyMaterial(DrawContext dc, Material material, double opacity, boolean enableMaterial)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (enableMaterial)
         {
-            material.apply(gl, GL.GL_FRONT_AND_BACK, (float) opacity);
+            material.apply(gl, GL2.GL_FRONT_AND_BACK, (float) opacity);
         }
         else
         {

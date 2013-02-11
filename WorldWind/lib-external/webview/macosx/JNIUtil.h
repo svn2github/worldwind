@@ -2,10 +2,10 @@
 #define JAVA_UTIL_H
 
 /*
-Copyright (C) 2001, 2011 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 #import <Cocoa/Cocoa.h>
 #import <Carbon/Carbon.h>
 #import <JavaVM/jni.h> // Java JNI header.

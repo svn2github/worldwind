@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.*;
@@ -34,7 +34,7 @@ import java.util.List;
  * surface tiles can be rendered by a {@link gov.nasa.worldwind.render.SurfaceTileRenderer}.
  * <p/>
  * By default, SurfaceObjectTileBuilder creates texture tiles with a width and height of 512 pixels, and with internal
- * format <code>GL.GL_RGBA</code>. These parameters are configurable by calling {@link
+ * format <code>GL_RGBA</code>. These parameters are configurable by calling {@link
  * #setTileDimension(java.awt.Dimension)} or {@link #setTileTextureFormat(int)}.
  * <p/>
  * The most common usage pattern for SurfaceObjectTileBuilder is to build the surface tiles from a set of SurfaceObjects
@@ -207,26 +207,24 @@ public class SurfaceObjectTileBuilder
 
     /**
      * Specifies the surface tile's OpenGL texture format. A value of 0 indicates that the default format should be
-     * used. Otherwise, the texture format may be one of the following: <code> <ul> <li>GL.GL_ALPHA</li>
-     * <li>GL.GL_ALPHA4</li> <li>GL.GL_ALPHA8</li> <li>GL.GL_ALPHA12</li> <li>GL.GL_ALPHA16</li>
-     * <li>GL.GL_COMPRESSED_ALPHA</li> <li>GL.GL_COMPRESSED_LUMINANCE</li> <li>GL.GL_COMPRESSED_LUMINANCE_ALPHA</li>
-     * <li>GL.GL_COMPRESSED_INTENSITY</li> <li>GL.GL_COMPRESSED_RGB</li> <li>GL.GL_COMPRESSED_RGBA</li>
-     * <li>GL.GL_DEPTH_COMPONENT</li> <li>GL.GL_DEPTH_COMPONENT16</li> <li>GL.GL_DEPTH_COMPONENT24</li>
-     * <li>GL.GL_DEPTH_COMPONENT32</li> <li>GL.GL_LUMINANCE</li> <li>GL.GL_LUMINANCE4</li> <li>GL.GL_LUMINANCE8</li>
-     * <li>GL.GL_LUMINANCE12</li> <li>GL.GL_LUMINANCE16</li> <li>GL.GL_LUMINANCE_ALPHA</li>
-     * <li>GL.GL_LUMINANCE4_ALPHA4</li> <li>GL.GL_LUMINANCE6_ALPHA2</li> <li>GL.GL_LUMINANCE8_ALPHA8</li>
-     * <li>GL.GL_LUMINANCE12_ALPHA4</li> <li>GL.GL_LUMINANCE12_ALPHA12</li> <li>GL.GL_LUMINANCE16_ALPHA16</li>
-     * <li>GL.GL_INTENSITY</li> <li>GL.GL_INTENSITY4</li> <li>GL.GL_INTENSITY8</li> <li>GL.GL_INTENSITY12</li>
-     * <li>GL.GL_INTENSITY16</li> <li>GL.GL_R3_G3_B2</li> <li>GL.GL_RGB</li> <li>GL.GL_RGB4</li> <li>GL.GL_RGB5</li>
-     * <li>GL.GL_RGB8</li> <li>GL.GL_RGB10</li> <li>GL.GL_RGB12</li> <li>GL.GL_RGB16</li> <li>GL.GL_RGBA</li>
-     * <li>GL.GL_RGBA2</li> <li>GL.GL_RGBA4</li> <li>GL.GL_RGB5_A1</li> <li>GL.GL_RGBA8</li> <li>GL.GL_RGB10_A2</li>
-     * <li>GL.GL_RGBA12</li> <li>GL.GL_RGBA16</li> <li>GL.GL_SLUMINANCE</li> <li>GL.GL_SLUMINANCE8</li>
-     * <li>GL.GL_SLUMINANCE_ALPHA</li> <li>GL.GL_SLUMINANCE8_ALPHA8</li> <li>GL.GL_SRGB</li> <li>GL.GL_SRGB8</li>
-     * <li>GL.GL_SRGB_ALPHA</li> <li>GL.GL_SRGB8_ALPHA8</li> </ul> </code>
+     * used. Otherwise, the texture format may be one of the following: <code> <ul> <li>GL_ALPHA</li> <li>GL_ALPHA4</li>
+     * <li>GL_ALPHA8</li> <li>GL_ALPHA12</li> <li>GL_ALPHA16</li> <li>GL_COMPRESSED_ALPHA</li>
+     * <li>GL_COMPRESSED_LUMINANCE</li> <li>GL_COMPRESSED_LUMINANCE_ALPHA</li> <li>GL_COMPRESSED_INTENSITY</li>
+     * <li>GL_COMPRESSED_RGB</li> <li>GL_COMPRESSED_RGBA</li> <li>GL_DEPTH_COMPONENT</li> <li>GL_DEPTH_COMPONENT16</li>
+     * <li>GL_DEPTH_COMPONENT24</li> <li>GL_DEPTH_COMPONENT32</li> <li>GL_LUMINANCE</li> <li>GL_LUMINANCE4</li>
+     * <li>GL_LUMINANCE8</li> <li>GL_LUMINANCE12</li> <li>GL_LUMINANCE16</li> <li>GL_LUMINANCE_ALPHA</li>
+     * <li>GL_LUMINANCE4_ALPHA4</li> <li>GL_LUMINANCE6_ALPHA2</li> <li>GL_LUMINANCE8_ALPHA8</li>
+     * <li>GL_LUMINANCE12_ALPHA4</li> <li>GL_LUMINANCE12_ALPHA12</li> <li>GL_LUMINANCE16_ALPHA16</li>
+     * <li>GL_INTENSITY</li> <li>GL_INTENSITY4</li> <li>GL_INTENSITY8</li> <li>GL_INTENSITY12</li>
+     * <li>GL_INTENSITY16</li> <li>GL_R3_G3_B2</li> <li>GL_RGB</li> <li>GL_RGB4</li> <li>GL_RGB5</li> <li>GL_RGB8</li>
+     * <li>GL_RGB10</li> <li>GL_RGB12</li> <li>GL_RGB16</li> <li>GL_RGBA</li> <li>GL_RGBA2</li> <li>GL_RGBA4</li>
+     * <li>GL_RGB5_A1</li> <li>GL_RGBA8</li> <li>GL_RGB10_A2</li> <li>GL_RGBA12</li> <li>GL_RGBA16</li>
+     * <li>GL_SLUMINANCE</li> <li>GL_SLUMINANCE8</li> <li>GL_SLUMINANCE_ALPHA</li> <li>GL_SLUMINANCE8_ALPHA8</li>
+     * <li>GL_SRGB</li> <li>GL_SRGB8</li> <li>GL_SRGB_ALPHA</li> <li>GL_SRGB8_ALPHA8</li> </ul> </code>
      * <p/>
-     * If the texture format is any of <code>GL.GL_RGB, GL.GL_RGB8, GL.GL_RGBA, or GL.GL_RGBA8</code>, the tile builder
-     * attempts to use OpenGL framebuffer objects to render shapes to the texture tiles. Otherwise, this renders shapes
-     * to the framebuffer and copies the framebuffer contents to the texture tiles.
+     * If the texture format is any of <code>GL_RGB, GL_RGB8, GL_RGBA, or GL_RGBA8</code>, the tile builder attempts to
+     * use OpenGL framebuffer objects to render shapes to the texture tiles. Otherwise, this renders shapes to the
+     * framebuffer and copies the framebuffer contents to the texture tiles.
      *
      * @param textureFormat the OpenGL texture format, or 0 to use the default format.
      */
@@ -567,7 +565,7 @@ public class SurfaceObjectTileBuilder
      * Returns a new surface tile texture for use on the specified draw context with the specified width and height.
      * <p/>
      * The returned texture's internal format is specified by <code>tilePixelFormat</code>. If
-     * <code>tilePixelFormat</code> is zero, this returns a texture with internal format <code>GL.GL_RGBA8</code>.
+     * <code>tilePixelFormat</code> is zero, this returns a texture with internal format <code>GL_RGBA8</code>.
      * <p/>
      * The returned texture's parameters are configured as follows: <table> <tr><th>Parameter
      * Name</th><th>Value</th></tr> <tr><td><code>GL.GL_TEXTURE_MIN_FILTER</code></td><td><code>GL_LINEAR_MIPMAP_LINEAR</code>
@@ -598,6 +596,7 @@ public class SurfaceObjectTileBuilder
         GL gl = dc.getGL();
 
         TextureData td = new TextureData(
+            gl.getGLProfile(),    // GL profile
             internalFormat,       // internal format
             width, height,        // dimension
             0,                    // border
@@ -625,7 +624,7 @@ public class SurfaceObjectTileBuilder
         };
 
         t = TextureIO.newTexture(td);
-        t.bind();
+        t.bind(gl);
 
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, this.isUseLinearFilter() ?
             (this.isUseMipmaps() ? GL.GL_LINEAR_MIPMAP_LINEAR : GL.GL_LINEAR) : GL.GL_NEAREST);

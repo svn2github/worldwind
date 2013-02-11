@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.gx.GXConstants;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.io.*;
 import java.net.URL;
@@ -260,7 +260,7 @@ public class SurfaceImage extends WWObjectImpl
         if (this.sourceTexture == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         try
         {
             if (!dc.isPickingMode())
@@ -270,23 +270,23 @@ public class SurfaceImage extends WWObjectImpl
 
                 if (opacity < 1)
                 {
-                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT | GL.GL_CURRENT_BIT);
+                    gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_CURRENT_BIT);
                     // Enable blending using white premultiplied by the current opacity.
                     gl.glColor4d(opacity, opacity, opacity, opacity);
                 }
                 else
                 {
-                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT);
+                    gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
                 }
                 gl.glEnable(GL.GL_BLEND);
                 gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 

@@ -61,19 +61,6 @@
             </SvnBranchConfiguration>
           </value>
         </entry>
-        <entry key="$PROJECT_DIR$/servers">
-          <value>
-            <SvnBranchConfiguration>
-              <option name="branchUrls">
-                <list>
-                  <option value="https://worldwind23.arc.nasa.gov/svn/branches" />
-                  <option value="https://worldwind23.arc.nasa.gov/svn/tags" />
-                </list>
-              </option>
-              <option name="trunkUrl" value="https://worldwind23.arc.nasa.gov/svn/trunk" />
-            </SvnBranchConfiguration>
-          </value>
-        </entry>
       </map>
     </option>
     <option name="myVersion" value="124" />

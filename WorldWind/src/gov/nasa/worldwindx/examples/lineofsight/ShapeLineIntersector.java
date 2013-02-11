@@ -1,9 +1,8 @@
 /*
-Copyright (C) 2001, 2010 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 
 package gov.nasa.worldwindx.examples.lineofsight;
 
@@ -20,7 +19,7 @@ import java.util.*;
  * #setReferencePosition(gov.nasa.worldwind.geom.Position)} and {@link #setRenderables(Iterable)}.
  *
  * @author tag
- * @version $ID$
+ * @version $Id$
  */
 public class ShapeLineIntersector extends LineIntersector
 {

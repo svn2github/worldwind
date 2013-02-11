@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
@@ -16,7 +16,7 @@ import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -608,17 +608,17 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int attrMask =
-            GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
-                | GL.GL_TRANSFORM_BIT // for modelview and perspective
-                | GL.GL_VIEWPORT_BIT // for depth range
-                | GL.GL_CURRENT_BIT // for current color
-                | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                | GL.GL_DEPTH_BUFFER_BIT // for depth func
-                | GL.GL_ENABLE_BIT // for enable/disable changes
-                | GL.GL_HINT_BIT | GL.GL_LINE_BIT; // for antialiasing and line attrs
+            GL2.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
+                | GL2.GL_TRANSFORM_BIT // for modelview and perspective
+                | GL2.GL_VIEWPORT_BIT // for depth range
+                | GL2.GL_CURRENT_BIT // for current color
+                | GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
+                | GL2.GL_DEPTH_BUFFER_BIT // for depth func
+                | GL2.GL_ENABLE_BIT // for enable/disable changes
+                | GL2.GL_HINT_BIT | GL2.GL_LINE_BIT; // for antialiasing and line attrs
 
         gl.glPushAttrib(attrMask);
 
@@ -636,8 +636,9 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void endDrawing(DrawContext dc)
     {
-        dc.getGL().glBindTexture(GL.GL_TEXTURE_2D, 0);
-        dc.getGL().glPopAttrib();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
+        gl.glPopAttrib();
     }
 
     /**
@@ -726,7 +727,7 @@ public class PointPlacemark extends WWObjectImpl
             return;
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         OGLStackHandler osh = new OGLStackHandler();
         try
@@ -735,9 +736,9 @@ public class PointPlacemark extends WWObjectImpl
             {
                 // Set up to replace the non-transparent texture colors with the single pick color.
                 gl.glEnable(GL.GL_TEXTURE_2D);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
 
                 Color pickColor = dc.getUniquePickColor();
                 pickCandidates.addPickableObject(this.createPickedObject(dc, pickColor));
@@ -763,8 +764,8 @@ public class PointPlacemark extends WWObjectImpl
             gl.glDepthMask(false);
 
             // Suppress any fully transparent image pixels.
-            gl.glEnable(GL.GL_ALPHA_TEST);
-            gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
+            gl.glEnable(GL2.GL_ALPHA_TEST);
+            gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
 
             // Adjust depth of image to bring it slightly forward
             double depth = screenPoint.z - (8d * 0.00048875809d);
@@ -832,9 +833,9 @@ public class PointPlacemark extends WWObjectImpl
         {
             if (dc.isPickingMode())
             {
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, OGLUtil.DEFAULT_SRC0_RGB);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, OGLUtil.DEFAULT_COMBINE_RGB);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, OGLUtil.DEFAULT_SRC0_RGB);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, OGLUtil.DEFAULT_COMBINE_RGB);
             }
 
             gl.glDisable(GL.GL_TEXTURE_2D);
@@ -973,9 +974,9 @@ public class PointPlacemark extends WWObjectImpl
         x += offset.x;
         y += offset.y;
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
 
         Double labelScale = this.getActiveAttributes().getLabelScale();
@@ -1013,7 +1014,7 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void drawLine(DrawContext dc, PickSupport pickCandidates)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if ((!dc.isDeepPickingEnabled()))
             gl.glEnable(GL.GL_DEPTH_TEST);
@@ -1027,7 +1028,7 @@ public class PointPlacemark extends WWObjectImpl
             this.setLineWidth(dc);
             this.setLineColor(dc, pickCandidates);
 
-            gl.glBegin(GL.GL_LINE_STRIP);
+            gl.glBegin(GL2.GL_LINE_STRIP);
             gl.glVertex3d(Vec4.ZERO.x, Vec4.ZERO.y, Vec4.ZERO.z);
             gl.glVertex3d(this.terrainPoint.x - this.placePoint.x, this.terrainPoint.y - this.placePoint.y,
                 this.terrainPoint.z - this.placePoint.z);
@@ -1047,12 +1048,12 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void drawPoint(DrawContext dc, PickSupport pickCandidates)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         OGLStackHandler osh = new OGLStackHandler();
         try
         {
-            osh.pushAttrib(gl, GL.GL_POINT_BIT);
+            osh.pushAttrib(gl, GL2.GL_POINT_BIT);
 
             this.setLineColor(dc, pickCandidates);
             this.setPointSize(dc);
@@ -1069,8 +1070,8 @@ public class PointPlacemark extends WWObjectImpl
             gl.glDepthMask(false);
 
             // Suppress any fully transparent pixels.
-            gl.glEnable(GL.GL_ALPHA_TEST);
-            gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
+            gl.glEnable(GL2.GL_ALPHA_TEST);
+            gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
 
             // Adjust depth of point to bring it slightly forward
             double depth = this.screenPoint.z - (8d * 0.00048875809d);
@@ -1078,7 +1079,7 @@ public class PointPlacemark extends WWObjectImpl
             gl.glDepthFunc(GL.GL_LESS);
             gl.glDepthRange(depth, depth);
 
-            gl.glBegin(GL.GL_POINTS);
+            gl.glBegin(GL2.GL_POINTS);
             gl.glVertex3d(this.screenPoint.x, this.screenPoint.y, 0);
             gl.glEnd();
 
@@ -1145,7 +1146,7 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void setPointSize(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         Double scale = this.getActiveAttributes().getScale();
         if (scale == null)
@@ -1158,8 +1159,8 @@ public class PointPlacemark extends WWObjectImpl
 
         if (!dc.isPickingMode())
         {
-            gl.glEnable(GL.GL_POINT_SMOOTH);
-            gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
+            gl.glEnable(GL2.GL_POINT_SMOOTH);
+            gl.glHint(GL2.GL_POINT_SMOOTH_HINT, GL2.GL_NICEST);
         }
     }
 
@@ -1171,19 +1172,21 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void setLineColor(DrawContext dc, PickSupport pickCandidates)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         if (!dc.isPickingMode())
         {
             Color color = this.getActiveAttributes().getLineColor();
             if (color == null)
                 color = PointPlacemarkAttributes.DEFAULT_LINE_COLOR;
-            dc.getGL().glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(),
+            gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(),
                 (byte) color.getAlpha());
         }
         else
         {
             Color pickColor = dc.getUniquePickColor();
             pickCandidates.addPickableObject(pickColor.getRGB(), this, this.getPosition());
-            dc.getGL().glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
+            gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
         }
     }
 

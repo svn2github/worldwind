@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -308,7 +308,7 @@ public class ToolTipRenderer
         java.awt.Point screenPoint = this.adjustDrawPointToViewport(x, y, bgBounds, viewport);
         java.awt.geom.Point2D textTranslation = this.computeTextTranslation(dc, textBounds, attributes.getInsets());
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         stackHandler.pushModelview(gl);
@@ -336,13 +336,13 @@ public class ToolTipRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        int attribMask = GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
-            | GL.GL_CURRENT_BIT // for current color
-            | GL.GL_ENABLE_BIT // for enable/disable
-            | GL.GL_LINE_BIT // for line width
-            | GL.GL_TRANSFORM_BIT; // for matrix mode
+        int attribMask = GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
+            | GL2.GL_CURRENT_BIT // for current color
+            | GL2.GL_ENABLE_BIT // for enable/disable
+            | GL2.GL_LINE_BIT // for line width
+            | GL2.GL_TRANSFORM_BIT; // for matrix mode
         stackHandler.pushAttrib(gl, attribMask);
 
         stackHandler.pushTextureIdentity(gl);
@@ -352,8 +352,8 @@ public class ToolTipRenderer
         stackHandler.pushModelviewIdentity(gl);
 
         // Enable the alpha test.
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         // Enable blending in premultiplied color mode.
         gl.glEnable(GL.GL_BLEND);
@@ -361,7 +361,7 @@ public class ToolTipRenderer
 
         gl.glDisable(GL.GL_CULL_FACE);
         gl.glDisable(GL.GL_DEPTH_TEST);
-        gl.glDisable(GL.GL_LIGHTING);
+        gl.glDisable(GL2.GL_LIGHTING);
         gl.glDisable(GL.GL_TEXTURE_2D);
     }
 
@@ -374,7 +374,7 @@ public class ToolTipRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         stackHandler.pop(gl);
     }
@@ -385,7 +385,7 @@ public class ToolTipRenderer
 
     protected void drawToolTipInterior(DrawContext dc, double width, double height, ToolTipAttributes attributes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         this.applyColor(dc, attributes.getInteriorColor(), attributes.getInteriorOpacity());
 
@@ -395,7 +395,7 @@ public class ToolTipRenderer
 
     protected void drawToolTipOutline(DrawContext dc, double width, double height, ToolTipAttributes attributes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         this.applyColor(dc, attributes.getOutlineColor(), attributes.getOutlineOpacity());
         gl.glLineWidth((float) getOutlineWidth());
@@ -403,7 +403,7 @@ public class ToolTipRenderer
         // Draw a line loop around the background rectangle. Inset the lines slightly to compensate for OpenGL's line
         // rasterization algorithm. We want the line to straddle the rectangle pixels.
         double inset = 0.5;
-        gl.glBegin(GL.GL_LINE_LOOP);
+        gl.glBegin(GL2.GL_LINE_LOOP);
         gl.glVertex2d(inset, inset);
         gl.glVertex2d(width - inset, inset);
         gl.glVertex2d(width - inset, height - inset);
@@ -442,7 +442,8 @@ public class ToolTipRenderer
             return;
 
         double finalOpacity = opacity * (color.getAlpha() / 255.0);
-        OGLUtil.applyColor(dc.getGL(), color, finalOpacity, true);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        OGLUtil.applyColor(gl, color, finalOpacity, true);
     }
 
     protected java.awt.Color modulateColorOpacity(java.awt.Color color, double opacity)

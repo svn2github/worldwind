@@ -1,4 +1,10 @@
-$Id$
+#
+# Copyright (C) 2012 United States Government as represented by the Administrator of the
+# National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
+
+# $Id$
 
 This document provides links on getting started with the World Wind Java SDK, provides instructions on running the a
 World Wind demo application, and outlines the key changes between each World Wind Java SDK release.
@@ -9,12 +15,10 @@ Getting Started With the World Wind Java SDK
 
 Key files and folders in the World Wind Java SDK:
 - build.xml: Apache ANT build file for the World Wind Java SDK.
-- src: Contains all Java source files for the World Wind Java SDK, except the World Wind WMS Server.
-- server: Contains the World Wind WMS Server Java source files, build file, and deployment files.
+- src: Contains all Java source files for the World Wind Java SDK.
 - lib-external/gdal: Contains the GDAL native binaries libraries that may optionally be distributed with World Wind.
 
-Links to important World Wind sites that will help you get started using the World Wind Java SDK in your
-application:
+Links to important World Wind sites that will help you get started using the World Wind Java SDK in your application:
 
 World Wind Developer's Guide:
 http://goworldwind.org/
@@ -26,7 +30,7 @@ World Wind Forum:
 http://forum.worldwindcentral.com/forumdisplay.php?f=37
 
 World Wind API Documentation:
-http://builds.worldwind.arc.nasa.gov/worldwind-releases/1.5/docs/api/index.html
+http://builds.worldwind.arc.nasa.gov/worldwind-releases/2.0/docs/api/index.html
 
 World Wind Bug Base:
 http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ
@@ -53,26 +57,20 @@ This will most likely be either NVIDIA, ATI or Intel. The drivers are typically 
 than the graphics card manufacturer's.
 
 
-Using World Wind on Windows or Linux 64-bit
+New features and improvements in World Wind Java SDK 2.0.0
 ------------------------------------------------------------
-NOTE: Running World Wind on Linux currently (1/21/13) causes a JVM crash. We have not been able to run release 1.5.0
-on Linux, including Ubuntu, CentOS and Fedora versions using the current Oracle JVM (both Java 6 and Java 7). See
-http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-390 to track this issue.
+- See http://goworldwind.org/releases/ for a description of this release's major features.
 
-To run World Wind on Windows with a 64-bit Java Virtual Machine, you must extract the 64-bit native libraries:
-    1) Open a terminal.
-    2) cd to the World Wind release folder.
-    3) jar xf jogl-natives-windows-amd64.jar
-    4) jar xf gluegen-rt-natives-windows-amd64.jar
-
-This will replace the 32-bit JOGL libraries with 64-bit libraries.
-
-64-bit libraries for Linux are not included with the release, but can be downloaded from:
-
-http://worldwind.arc.nasa.gov/java/jogl/webstart/jogl-natives-linux-amd64.jar
-http://worldwind.arc.nasa.gov/java/jogl/webstart/gluegen-rt-natives-linux-amd64.jar
-
-Follow instructions above to extract the archives into the World Wind release folder.
+- Migrated World Wind's usage of the JOGL library to JOGL version 2.0.
+- Redesigned the World Wind Java Web Start site to work with JOGL 2.0 and Java 7 on all platforms..
+- Redesigned the World Wind Java applet examples to work with JOGL 2.0 and Java 7 on all platforms.
+  New applets leverage the same Java Web Start resources used by applications.
+- Redesigned the World Wind Java demos for simplicity, and consolidated all demo resources in a single place.
+- Added a new ANT target webstart.site that creates a self-contained and deployable World Wind Web Start site.
+- Removed the World Wind servers module, and its associated packages in the World Wind client:
+  gov.nasa.worldwind.database, gov.nasa.worldwind.ows, gov.nasa.worldwind.wfs, gov.nasa.worldwind.wss
+- Removed the need for the separate performance JAR file worldwind-performance.jar.
+  Moved the performance package into gov.nasa.worldwindx.performance.
 
 
 New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013

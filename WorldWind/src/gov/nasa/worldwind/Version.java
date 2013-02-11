@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
+
 package gov.nasa.worldwind;
 
 /**
@@ -11,11 +12,11 @@ package gov.nasa.worldwind;
  */
 public class Version
 {
-    private static final String MAJOR_VALUE = "1";
-    private static final String MINOR_VALUE = "5";
+    private static final String MAJOR_VALUE = "2";
+    private static final String MINOR_VALUE = "0";
     private static final String DOT_VALUE = "0";
     private static final String versionNumber = MAJOR_VALUE + "." + MINOR_VALUE + "." + DOT_VALUE;
-    private static final String versionName = "NASA World Wind Java 1.5";
+    private static final String versionName = "NASA World Wind Java 2.0";
 
     public static String getVersion()
     {

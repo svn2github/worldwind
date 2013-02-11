@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -13,7 +13,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -323,16 +323,16 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
 
     protected void beginDrawAnnotations(DrawContext dc, OGLStackHandler stackHandler)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        int attributeMask = GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
-            | GL.GL_CURRENT_BIT // for current color
-            | GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask, depth func
-            | GL.GL_ENABLE_BIT // for enable/disable changes
-            | GL.GL_HINT_BIT // for line smoothing hint
-            | GL.GL_LINE_BIT // for line width, line stipple
-            | GL.GL_TRANSFORM_BIT // for matrix mode
-            | GL.GL_VIEWPORT_BIT; // for viewport, depth range
+        int attributeMask = GL2.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
+            | GL2.GL_CURRENT_BIT // for current color
+            | GL2.GL_DEPTH_BUFFER_BIT // for depth test, depth mask, depth func
+            | GL2.GL_ENABLE_BIT // for enable/disable changes
+            | GL2.GL_HINT_BIT // for line smoothing hint
+            | GL2.GL_LINE_BIT // for line width, line stipple
+            | GL2.GL_TRANSFORM_BIT // for matrix mode
+            | GL2.GL_VIEWPORT_BIT; // for viewport, depth range
         stackHandler.pushAttrib(gl, attributeMask);
 
         // Load a parallel projection with dimensions (viewportWidth, viewportHeight)
@@ -344,8 +344,8 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
         stackHandler.pushModelviewIdentity(gl);
 
         // Enable the alpha test.
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0.0f);
 
         // Apply the depth buffer but don't change it.
         if ((!dc.isDeepPickingEnabled()))
@@ -353,7 +353,7 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
         gl.glDepthMask(false);
 
         // Disable lighting and backface culling.
-        gl.glDisable(GL.GL_LIGHTING);
+        gl.glDisable(GL2.GL_LIGHTING);
         gl.glDisable(GL.GL_CULL_FACE);
 
         if (!dc.isPickingMode())
@@ -370,7 +370,7 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
 
     protected void endDrawAnnotations(DrawContext dc, OGLStackHandler stackHandler)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (dc.isPickingMode())
         {

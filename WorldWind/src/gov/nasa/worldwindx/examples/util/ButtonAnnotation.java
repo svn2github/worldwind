@@ -1,7 +1,8 @@
-/* Copyright (C) 2001, 2009 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.examples.util;
 
 import gov.nasa.worldwind.event.*;
@@ -9,7 +10,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 
 /**
  * @author dcollins
@@ -130,7 +131,7 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
     protected void setupAnnotationAttributes(Annotation annotation)
     {
         super.setupAnnotationAttributes(annotation);
-        
+
         annotation.setPickEnabled(true);
     }
 
@@ -202,7 +203,7 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
                     event = new java.awt.event.ActionEvent(this, id, this.getActionCommand(), when, modifiers);
                 }
 
-                ((java.awt.event.ActionListener) listeners[i+1]).actionPerformed(event);
+                ((java.awt.event.ActionListener) listeners[i + 1]).actionPerformed(event);
             }
         }
     }
@@ -241,7 +242,7 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
         // the button depressed mask colors with the button colors.
         if (this.getPressedMaskTexture() == texture)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendFunc(GL.GL_ZERO, GL.GL_SRC_COLOR);
             gl.glColor4f(1f, 1f, 1f, 1f);
@@ -257,9 +258,9 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
 
         // Push state for blend enable, blending function, and current color. We set these OGL states in
         // applyBackgroundTextureState(), which is invoked by doDrawBackgroundTexture().
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT);
         try
         {
             this.doDrawBackgroundTexture(dc, width, height, 1, pickPosition, texture);

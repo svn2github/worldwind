@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.cache;
 
-import com.sun.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.Texture;
 
 /**
  * Implements a cache of OpenGL resources that are stored on the GPU or registered with it. This includes texture,
@@ -14,7 +14,7 @@ import com.sun.opengl.util.texture.Texture;
  * recently used resources that fit within its capacity.
  *
  * @author tag
- * @version $ID$
+ * @version $Id$
  */
 public interface GpuResourceCache
 {
@@ -40,7 +40,7 @@ public interface GpuResourceCache
      * @param resourceType the type of resource, one of the resource-type constants described above.
      * @param size         the size of the resource, expressed as the number of bytes it requires on the GPU.
      *
-     * @see #put(Object, com.sun.opengl.util.texture.Texture)
+     * @see #put(Object, com.jogamp.opengl.util.texture.Texture)
      */
     void put(Object key, Object resource, String resourceType, long size);
 

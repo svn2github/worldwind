@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!--$Id$-->
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
+<!-- $Id$ -->
 <project name="release">
 
     <!-- Creates the World Wind SDK release in the folder 'worldwind-release'. Includes the entire contents of the World
-         Wind project and the World Wind core and World Wind extensions Jar files. Includes the WebView Jar files for
-         Java Web Start under the 'jws' folder. All Jar files created for the release are signed with a digital
-         signature when the signature files are available. -->
+         Wind project, the World Wind core JAR file, and the World Wind extensions JAR file. -->
     <target name="worldwind.release" depends="clean.build,
-                                              clean.webview.webstart.jarfiles,
                                               clean.worldwind.release,
-                                              build,
-                                              webview.webstart.jarfiles"
+                                              build"
             description="Creates the World Wind SDK release in the folder 'worldwind-release'.">
         <mkdir dir="${worldwind.release.dir}"/>
         <copy todir="${worldwind.release.dir}">
@@ -18,16 +20,15 @@
                 <include name=".idea/**"/>
                 <include name="build/**"/>
                 <include name="build.xml"/>
-                <include name="demosite/**"/>
+                <include name="demos/**"/>
                 <include name="doc/**"/>
-                <include name="jws/**"/>
                 <include name="lib-external/**"/>
                 <include name="resources/**"/>
                 <include name="schemas/**"/>
-                <include name="servers/**"/>
                 <include name="src/**"/>
                 <include name="test/**"/>
                 <include name="testData/**"/>
+                <include name="webstart/**"/>
                 <include name="**/*.iml"/>
                 <include name="*.bash"/>
                 <include name="*.bat"/>
@@ -38,9 +39,6 @@
                 <include name="*.properties"/>
                 <include name="*.so"/>
                 <include name="*.txt"/>
-                <!-- Exclude the WebView Jar files for Java Web Start, which are explicitly copied to the jws folder. -->
-                <exclude name="${webview.webstart.jarfile.macosx}"/>
-                <exclude name="${webview.webstart.jarfile.windows}"/>
                 <!-- Exclude the digital signature files.-->
                 <exclude name="**/keystore.*"/>
                 <exclude name="**/*wwstore*"/>
@@ -49,27 +47,6 @@
                 <type type="file"/>
             </fileset>
         </copy>
-        <!-- Copy the WebView Jar files for Java Web Start to the 'jws' folder under the release folder. -->
-        <copy todir="${worldwind.release.dir}/jws">
-            <fileset dir="${basedir}">
-                <include name="${webview.webstart.jarfile.macosx}"/>
-                <include name="${webview.webstart.jarfile.windows}"/>
-                <type type="file"/>
-            </fileset>
-        </copy>
-        <!-- Sign all Jar files built for the World Wind release. -->
-        <antcall target="jarsigner">
-            <param name="jarfile" value="${worldwind.release.dir}/${worldwind.jarfile}"/>
-        </antcall>
-        <antcall target="jarsigner">
-            <param name="jarfile" value="${worldwind.release.dir}/${worldwind.extensions.jarfile}"/>
-        </antcall>
-        <antcall target="jarsigner">
-            <param name="jarfile" value="${worldwind.release.dir}/jws/${webview.webstart.jarfile.macosx}"/>
-        </antcall>
-        <antcall target="jarsigner">
-            <param name="jarfile" value="${worldwind.release.dir}/jws/${webview.webstart.jarfile.windows}"/>
-        </antcall>
         <!-- Change the permissions of any unix scripts in the root folder to make them executable. -->
         <chmod perm="ugo+rwx">
             <fileset dir="${worldwind.release.dir}">

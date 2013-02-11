@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -68,16 +68,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
 
     final String COUNTER_CLOCKWISE = "gov.nasa.worldwind.avkey.CounterClockWise";
 
-    final String DATABASE_CONNECTION_POOL_CLASS_NAME = "gov.nasa.worldwind.avkey.Database.ConnectionPoolClassName";
-    final String DATABASE_CONNECTION_POOL_FACTORY_CLASS_NAME
-        = "gov.nasa.worldwind.avkey.Database.ConnectionPoolFactoryClassName";
-    final String DATABASE_CONNECTION_STRING = "gov.nasa.worldwind.avkey.Database.ConnectionString";
-    final String DATABASE_DRIVER_CLASS_NAME = "gov.nasa.worldwind.avkey.Database.DriverClassName";
-    final String DATABASE_PASSWORD = "gov.nasa.worldwind.avkey.Database.Password";
-    final String DATABASE_POLICY_INITIAL_CONNECTIONS = "gov.nasa.worldwind.avkey.DatabasePolicy.InitialConnections";
-    final String DATABASE_POLICY_MAXIMUM_CONNECTIONS = "gov.nasa.worldwind.avkey.DatabasePolicy.MaximumConnections";
-    final String DATABASE_POLICY_WAIT_IF_BUSY = "gov.nasa.worldwind.avkey.DatabasePolicy.WaitIfBusy";
-    final String DATABASE_USERNAME = "gov.nasa.worldwind.avkey.Database.Username";
     final String DATA_CACHE_NAME = "gov.nasa.worldwind.avkey.DataCacheNameKey";
     final String DATA_FILE_STORE_CLASS_NAME = "gov.nasa.worldwind.avkey.DataFileStoreClassName";
     final String DATA_FILE_STORE_CONFIGURATION_FILE_NAME
@@ -157,13 +147,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String HORIZONTAL = "gov.nasa.worldwind.avkey.Horizontal";
     final String HOT_SPOT = "gov.nasa.worldwind.avkey.HotSpot";
     final String HOVER_TEXT = "gov.nasa.worldwind.avkey.HoverText";
-    final String HTTP_FILE_UPLOAD_AUTH_TOKEN = "gov.nasa.worldwind.avkey.HTTP.FileUpload.AuthToken";
-    final String HTTP_FILE_UPLOAD_LOCATION = "gov.nasa.worldwind.avkey.HTTP.FileUpload.TempLocation";
-    final String HTTP_FILE_UPLOAD_TEMP_LOCATION = "gov.nasa.worldwind.avkey.HTTP.FileUpload.TempLocation";
-    final String HTTP_SERVER_ALLOW_FILE_UPLOAD = "gov.nasa.worldwind.avkey.HTTP.Server.Allow.FileUpload";
-    final String HTTP_SERVER_ALLOW_GET = "gov.nasa.worldwind.avkey.HTTP.Server.Allow.GET";
-    final String HTTP_SERVER_ALLOW_POST = "gov.nasa.worldwind.avkey.HTTP.Server.Allow.POST";
-    final String HTTP_SERVER_FILE_UPLOAD_MAX_SIZE = "gov.nasa.worldwind.avkey.HTTP.Server.FileUpload.MaxSize";
     final String HTTP_SSL_CONTEXT = "gov.nasa.worldwind.avkey.HTTP.SSLContext";
 
     final String ICON_NAME = "gov.nasa.worldwind.avkey.IconName";
@@ -188,10 +171,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String INT16 = "gov.nasa.worldwind.avkey.Int16";
     final String INT32 = "gov.nasa.worldwind.avkey.Int32";
     final String INT64 = "gov.nasa.worldwind.avkey.Int64";
-
-    final String KEYSTORE_PATH = "gov.nasa.worldwind.avkey.KeystorePath";
-    final String KEYSTORE_USER = "gov.nasa.worldwind.avkey.KeystoreUser";
-    final String KEYSTORE_PASSWORD = "gov.nasa.worldwind.avkey.KeystorePassword";
 
     final String LAST_UPDATE = "gov.nasa.worldwind.avkey.LastUpdateKey";
     final String LAYER = "gov.nasa.worldwind.avkey.LayerObject";
@@ -278,8 +257,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
      */
     final String ORDINAL_LIST = "gov.nasa.worldwind.avkey.OrdinalList";
     final String ORIGIN = "gov.nasa.worldwind.avkey.Origin";
-
-    final String OVERVIEW_FILE_NAME = "gov.nasa.worldwind.avkey.Overview.FileName";
 
     final String PARENT_LAYER_NAME = "gov.nasa.worldwind.avkey.ParentLayerName";
 
@@ -376,8 +353,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String RIGHT_OF_CENTER = "gov.nasa.worldwind.avkey.RightOfCenter";
     final String ROLLOVER_TEXT = "gov.nasa.worldwind.avkey.RolloverText";
 
-    final String SCALE_HINT_MIN = "gov.nasa.worldwind.avkey.ScaleHintMin";
-    final String SCALE_HINT_MAX = "gov.nasa.worldwind.avkey.ScaleHintMax";
     final String SCHEDULED_TASK_POOL_SIZE = "gov.nasa.worldwind.avkey.ScheduledTaskPoolSize";
     final String SCHEDULED_TASK_SERVICE_CLASS_NAME = "gov.nasa.worldwind.avkey.ScheduledTaskServiceClassName";
     final String SCENE_CONTROLLER = "gov.nasa.worldwind.avkey.SceneControllerObject";
@@ -395,26 +370,11 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String SECTOR_UPPER_RIGHT = "gov.nasa.worldwind.avkey.Sector.UpperRight";
     final String SENDER = "gov.nasa.worldwind.avkey.Sender";
     final String SERVER = "gov.nasa.worldwind.avkey.Server";
-    final String SERVER_APP_CLASS_NAME = "gov.nasa.worldwind.avkey.Server.Application.ClassName";
-    final String SERVER_APP_CONFIG_FILE = "gov.nasa.worldwind.avkey.Server.Application.ConfigFile";
-    final String SERVER_APP_CTX = "gov.nasa.worldwind.avkey.Server.Application.Context";
-    final String SERVER_APP_URL = "gov.nasa.worldwind.avkey.Server.Application.URL";
-    final String SERVER_APPLICATION_POOL_CONNECTION_TIMEOUT
-        = "gov.nasa.worldwind.avkey.Server.ApplicationPool.ConnectionTimeout";
-    final String SERVER_APPLICATION_POOL_SIZE = "gov.nasa.worldwind.avkey.Server.ApplicationPool.Size";
-    final String SERVER_APPLICATION_POOL_THREAD_TIMEOUT
-        = "gov.nasa.worldwind.avkey.Server.ApplicationPool.ThreadTimeout";
-    final String SERVER_CAPABILITIES_ONLINE_RESOURCE = "gov.nasa.worldwind.avkey.Server.Capabilities.OnlineResource";
-    final String SERVER_PORT = "gov.nasa.worldwind.avkey.Server.Port";
-    final String SERVER_REDIRECT_TO = "gov.nasa.worldwind.avkey.Server.RedirectTo";
-    final String SERVER_TEMP_DIRECTORY = "gov.nasa.worldwind.avkey.Server.TempDirectory";
     final String SERVICE = "gov.nasa.worldwind.avkey.ServiceURLKey";
     final String SERVICE_CLASS = "gov.nasa.worldwind.avkey.ServiceClass";
-    final String SERVER_CERTIFICATE = "gov.nasa.worldwind.avkey.Server.Certificate";
     final String SERVICE_NAME = "gov.nasa.worldwind.avkey.ServiceName";
     final String SERVICE_NAME_LOCAL_RASTER_SERVER = "LocalRasterServer";
     final String SERVICE_NAME_OFFLINE = "Offline";
-    final String SERVER_VIRTUAL_DIRECTORY = "gov.nasa.worldwind.avkey.Server.VirtualDirectory";
     final String SESSION_CACHE_CLASS_NAME = "gov.nasa.worldwind.avkey.SessionCacheClassName";
     final String SHAPE_ATTRIBUTES = "gov.nasa.worldwind.avkey.ShapeAttributes";
     final String SHAPE_CIRCLE = "gov.nasa.worldwind.avkey.ShapeCircle";
@@ -525,8 +485,6 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String WEST = "gov.nasa.worldwind.avkey.West";
     final String WIDTH = "gov.nasa.worldwind.avkey.Width";
     final String WMS_BACKGROUND_COLOR = "gov.nasa.worldwind.avkey.BackgroundColor";
-
-    final String CAPABILITIES_TEMPLATE_PATH = "gov.nasa.worldwind.avkey.CapabilitiesTemplatePath";
 
     final String WFS_URL = "gov.nasa.worldwind.avkey.WFS.URL";
     final String WMS_VERSION = "gov.nasa.worldwind.avkey.WMSVersion";

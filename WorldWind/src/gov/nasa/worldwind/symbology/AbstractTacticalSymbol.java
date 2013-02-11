@@ -1,13 +1,14 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.symbology;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -16,7 +17,7 @@ import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
@@ -148,7 +149,8 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
                     return null;
                 }
 
-                return TextureIO.newTextureData(image, this.isUseMipMaps());
+                return AWTTextureIO.newTextureData(Configuration.getMaxCompatibleGLProfile(), image,
+                    this.isUseMipMaps());
             }
             catch (Exception e)
             {
@@ -1912,12 +1914,12 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
     protected void beginDrawing(DrawContext dc, int attrMask)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        attrMask |= GL.GL_DEPTH_BUFFER_BIT // for depth test enable, depth func, depth mask
-            | GL.GL_COLOR_BUFFER_BIT // for alpha test enable, alpha func, blend enable, blend func
-            | GL.GL_CURRENT_BIT // for current color
-            | GL.GL_LINE_BIT; // for line smooth enable and line width
+        attrMask |= GL2.GL_DEPTH_BUFFER_BIT // for depth test enable, depth func, depth mask
+            | GL2.GL_COLOR_BUFFER_BIT // for alpha test enable, alpha func, blend enable, blend func
+            | GL2.GL_CURRENT_BIT // for current color
+            | GL2.GL_LINE_BIT; // for line smooth enable and line width
 
         Rectangle viewport = dc.getView().getViewport();
 
@@ -1929,13 +1931,13 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
         // Enable OpenGL vertex arrays for all symbols by default. All tactical symbol drawing code specifies its data
         // to OpenGL using vertex arrays.
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
         // Enable the alpha test to suppress any fully transparent image pixels. We do this for both normal rendering
         // and picking because it eliminates fully transparent texture data from contributing to the pick frame.
-        gl.glEnable(GL.GL_ALPHA_TEST);
-        gl.glAlphaFunc(GL.GL_GREATER, 0f);
+        gl.glEnable(GL2.GL_ALPHA_TEST);
+        gl.glAlphaFunc(GL2.GL_GREATER, 0f);
 
         // Apply the depth buffer but don't change it (for screen-space symbols).
         if (!dc.isDeepPickingEnabled())
@@ -1955,9 +1957,9 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         if (dc.isPickingMode())
         {
             // Set up to replace the non-transparent texture colors with the single pick color.
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
 
             // Give symbol modifier lines a thicker width during picking in order to make them easier to select.
             gl.glLineWidth(9f);
@@ -1979,11 +1981,11 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
     protected void endDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Restore the default OpenGL vertex array state.
-        gl.glDisableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
         // Restore the default OpenGL polygon offset state.
         gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
@@ -1995,9 +1997,9 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
         if (dc.isPickingMode())
         {
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, OGLUtil.DEFAULT_SRC0_RGB);
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, OGLUtil.DEFAULT_COMBINE_RGB);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, OGLUtil.DEFAULT_TEX_ENV_MODE);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, OGLUtil.DEFAULT_SRC0_RGB);
+            gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, OGLUtil.DEFAULT_COMBINE_RGB);
         }
 
         this.BEogsh.pop(gl);
@@ -2005,7 +2007,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
     protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (dc.isPickingMode())
         {
@@ -2052,14 +2054,14 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         // coordinate so that the symbol's depth values are appropriately computed by OpenGL according to its
         // distance from the eye. The orthographic projection matrix configured in beginRendering correctly maps
         // the screen point's Z coordinate to its corresponding depth value.
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glLoadIdentity(); // Assumes that the current matrix mode is GL_MODELVIEW.
         gl.glTranslated(this.screenPoint.x, this.screenPoint.y, this.screenPoint.z);
     }
 
     protected void draw(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         try
         {
             gl.glPushMatrix();
@@ -2121,7 +2123,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         if (!this.activeIconTexture.bind(dc))
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         try
         {
             gl.glPushMatrix();
@@ -2153,7 +2155,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         if (!this.glyphAtlas.bind(dc))
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         for (IconAtlasElement atlasElem : this.currentGlyphs)
         {
@@ -2221,7 +2223,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         Double opacity = this.getActiveAttributes().getOpacity() != null ? this.getActiveAttributes().getOpacity()
             : BasicTacticalSymbolAttributes.DEFAULT_OPACITY;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         try
         {
@@ -2242,7 +2244,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
             {
                 try
                 {
-                    gl.glBegin(GL.GL_LINE_STRIP);
+                    gl.glBegin(GL2.GL_LINE_STRIP);
 
                     for (Point2D p : lm.getPoints())
                     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -7,7 +7,7 @@ package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.Vec4;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.glu.*;
 import java.util.*;
 
@@ -15,12 +15,12 @@ import java.util.*;
  * GLUTessellatorSupport is a utility class for configuring and using a {@link javax.media.opengl.glu.GLUtessellator} to
  * tessellate complex polygons into triangles.
  * <p/>
- * The standard pattern for using GLUTessellatorSupport to prepare a GLUtessellator is as follows: <code> GLU glu = new
- * GLU();<br/> GLUTessellatorSupport glts = new GLUTessellatorSupport();<br/> GLUtessellatorCallback cb = ...; //
- * Reference to an implementation of GLUtessellatorCallback.<br/> Vec4 normal = new Vec4(0, 0, 1); // The polygon's
- * normal. This example shows an appropriate normal for tessellating x-y coordinates.<br/> <br/><br/>
- * glts.beginTessellation(glu, cb, new Vec4(0, 0, 1));<br/> try<br/> {<br/> GLUtessellator tess =
- * glts.getGLUtessellator();<br/> }<br/> finally<br/> {<br/> glts.endTessellation(glu);<br/> }<br/> </code>
+ * The standard pattern for using GLUTessellatorSupport to prepare a GLUtessellator is as follows: <code>
+ * GLUTessellatorSupport glts = new GLUTessellatorSupport();<br/> GLUtessellatorCallback cb = ...; // Reference to an
+ * implementation of GLUtessellatorCallback.<br/> Vec4 normal = new Vec4(0, 0, 1); // The polygon's normal. This example
+ * shows an appropriate normal for tessellating x-y coordinates.<br/> <br/><br/> glts.beginTessellation(cb, new Vec4(0,
+ * 0, 1));<br/> try<br/> {<br/> GLUtessellator tess = glts.getGLUtessellator();<br/> }<br/> finally<br/> {<br/>
+ * glts.endTessellation();<br/> }<br/> </code>
  *
  * @author dcollins
  * @version $Id$
@@ -36,9 +36,8 @@ public class GLUTessellatorSupport
 
     /**
      * Returns this GLUTessellatorSupport's internal {@link javax.media.opengl.glu.GLUtessellator} instance. This
-     * returns a valid GLUtessellator instance if called between {@link #beginTessellation(javax.media.opengl.glu.GLU,
-     * javax.media.opengl.glu.GLUtessellatorCallback, gov.nasa.worldwind.geom.Vec4)} and {@link
-     * #endTessellation(javax.media.opengl.glu.GLU)}. This returns null if called from outside a
+     * returns a valid GLUtessellator instance if called between {@link #beginTessellation(javax.media.opengl.glu.GLUtessellatorCallback,
+     * gov.nasa.worldwind.geom.Vec4)} and {@link #endTessellation()}. This returns null if called from outside a
      * beginTessellation/endTessellation block.
      *
      * @return the internal GLUtessellator instance, or null if called from outside a beginTessellation/endTessellation
@@ -56,21 +55,13 @@ public class GLUTessellatorSupport
      * int, javax.media.opengl.glu.GLUtessellatorCallback)} and {@link javax.media.opengl.glu.GLU#gluTessNormal(javax.media.opengl.glu.GLUtessellator,
      * double, double, double)}, respectively.
      *
-     * @param glu      a GLU context.
      * @param callback the callback to configure the GLU tessellator with.
      * @param normal   the normal to configure the GLU tessellator with.
      *
-     * @throws IllegalArgumentException if any of the GLU, the callback, or the normal is null.
+     * @throws IllegalArgumentException if the callback or the normal is null.
      */
-    public void beginTessellation(GLU glu, GLUtessellatorCallback callback, Vec4 normal)
+    public void beginTessellation(GLUtessellatorCallback callback, Vec4 normal)
     {
-        if (glu == null)
-        {
-            String message = Logging.getMessage("nullValue.GLUIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
         if (callback == null)
         {
             String message = Logging.getMessage("nullValue.CallbackIsNull");
@@ -85,35 +76,24 @@ public class GLUTessellatorSupport
             throw new IllegalArgumentException(message);
         }
 
-        this.tess = glu.gluNewTess();
-        glu.gluTessNormal(this.tess, normal.x, normal.y, normal.z);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_BEGIN, callback);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_VERTEX, callback);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_END, callback);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_COMBINE, callback);
+        this.tess = GLU.gluNewTess();
+        GLU.gluTessNormal(this.tess, normal.x, normal.y, normal.z);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_BEGIN, callback);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_VERTEX, callback);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_END, callback);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_COMBINE, callback);
     }
 
     /**
      * Frees any GLU resources used by this GLUTessellatorSupport, and invalidates this instance's internal GLU
      * tessellator.
-     *
-     * @param glu a GLU context.
-     *
-     * @throws IllegalArgumentException if the GLU is null.
      */
-    public void endTessellation(GLU glu)
+    public void endTessellation()
     {
-        if (glu == null)
-        {
-            String message = Logging.getMessage("nullValue.GLUIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_BEGIN, null);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_VERTEX, null);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_END, null);
-        glu.gluTessCallback(this.tess, GLU.GLU_TESS_COMBINE, null);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_BEGIN, null);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_VERTEX, null);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_END, null);
+        GLU.gluTessCallback(this.tess, GLU.GLU_TESS_COMBINE, null);
         this.tess = null;
     }
 
@@ -127,7 +107,7 @@ public class GLUTessellatorSupport
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static GLUtessellatorCallback createOGLDrawPrimitivesCallback(GL gl)
+    public static GLUtessellatorCallback createOGLDrawPrimitivesCallback(GL2 gl)
     {
         if (gl == null)
         {
@@ -141,9 +121,9 @@ public class GLUTessellatorSupport
 
     protected static class OGLDrawPrimitivesCallback extends GLUtessellatorCallbackAdapter
     {
-        protected final GL gl;
+        protected final GL2 gl;
 
-        public OGLDrawPrimitivesCallback(GL gl)
+        public OGLDrawPrimitivesCallback(GL2 gl)
         {
             if (gl == null)
             {

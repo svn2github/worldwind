@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.io.*;
 import java.nio.*;
 
@@ -198,7 +198,7 @@ public class StarsLayer extends RenderableLayer
         if (this.starsBuffer == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
@@ -220,7 +220,7 @@ public class StarsLayer extends RenderableLayer
             gl.glRotatef((float) -this.latitudeOffset.degrees, 1.0f, 0.0f, 0.0f);
 
             // Draw
-            ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
@@ -241,9 +241,9 @@ public class StarsLayer extends RenderableLayer
 
     protected void drawWithVertexArray(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glInterleavedArrays(GL.GL_C3F_V3F, 0, this.starsBuffer);
+        gl.glInterleavedArrays(GL2.GL_C3F_V3F, 0, this.starsBuffer);
         gl.glDrawArrays(GL.GL_POINTS, 0, this.numStars);
     }
 
@@ -258,10 +258,10 @@ public class StarsLayer extends RenderableLayer
                 return false;
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
-        gl.glInterleavedArrays(GL.GL_C3F_V3F, 0, 0);
+        gl.glInterleavedArrays(GL2.GL_C3F_V3F, 0, 0);
         gl.glDrawArrays(GL.GL_POINTS, 0, this.numStars);
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 

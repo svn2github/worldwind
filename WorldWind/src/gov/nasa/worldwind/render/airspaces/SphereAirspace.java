@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.util.*;
 
 /**
@@ -357,8 +357,8 @@ public class SphereAirspace extends AbstractAirspace
 
         this.setExpiryTime(-1L); // Sphere geometry never expires.
 
-        GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_POLYGON_BIT | GL.GL_TRANSFORM_BIT);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glPushAttrib(GL2.GL_POLYGON_BIT | GL2.GL_TRANSFORM_BIT);
         try
         {
             gl.glEnable(GL.GL_CULL_FACE);
@@ -368,9 +368,9 @@ public class SphereAirspace extends AbstractAirspace
             // before lighting is computed. In this case we're scaling by a constant factor, so GL_RESCALE_NORMAL
             // is sufficient and potentially less expensive than GL_NORMALIZE (or computing unique normal vectors
             // for each value of radius). GL_RESCALE_NORMAL was introduced in OpenGL version 1.2.
-            gl.glEnable(GL.GL_RESCALE_NORMAL);
+            gl.glEnable(GL2.GL_RESCALE_NORMAL);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             try
             {

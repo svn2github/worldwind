@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -507,11 +507,11 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 //                return null;
 //            }
 //
-//            vertices.add(BufferUtil.newFloatBuffer(tile.ri.vertices.length).put(tile.ri.vertices));
+//            vertices.add(Buffers.newDirectFloatBuffer(tile.ri.vertices.length).put(tile.ri.vertices));
 //            refCenters.add(tile.ri.referenceCenter);
 //        }
 //
-//        return BufferUtil.newIntBuffer(this.indices.length).put(this.indices);
+//        return Buffers.newDirectIntBuffer(this.indices.length).put(this.indices);
 //    }
 
     /** Computes the row and column dimensions of the tile array. */

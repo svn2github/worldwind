@@ -1,9 +1,8 @@
 /*
-Copyright (C) 2001, 2008 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.Configuration;
@@ -19,7 +18,7 @@ import gov.nasa.worldwind.view.orbit.*;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.*;
@@ -130,7 +129,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 }
             });
             this.updater.start();
-            
+
             // Download earthquakes
             startEarthquakeDownload();
         }
@@ -638,7 +637,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             {
                 double finalScale = scale * this.computeScale(dc);
 
-                GL gl = dc.getGL();
+                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
                 gl.glTranslated(x, y, 0);
                 gl.glScaled(finalScale, finalScale, 1);
             }
@@ -659,7 +658,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 int size = 32;
                 if (this.shapeBuffer == null)
                     this.shapeBuffer = FrameFactory.createShapeBuffer(AVKey.SHAPE_ELLIPSE, size, size, 0, null);
-                dc.getGL().glTranslated(-size/2, -size/2, 0);
+                GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+                gl.glTranslated(-size/2, -size/2, 0);
                 FrameFactory.drawBuffer(dc, GL.GL_TRIANGLE_FAN, this.shapeBuffer);
             }
         }

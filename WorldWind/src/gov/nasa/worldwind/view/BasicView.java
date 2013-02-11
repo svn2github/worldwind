@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -13,7 +13,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * A base class from which {@link View} implementations can be derived. Currently {@link
@@ -797,16 +797,16 @@ public class BasicView extends WWObjectImpl implements View
         if (modelview != null)
             matrix = modelview.multiply(Matrix.fromTranslation(referenceCenter));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Store the current matrix-mode state.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_TRANSFORM_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
 
             // Push and load a new model-view matrix to the current OpenGL context held by 'dc'.
             gl.glPushMatrix();
@@ -855,9 +855,9 @@ public class BasicView extends WWObjectImpl implements View
         if (matrix == null)
             return null;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
 
         double[] matrixArray = new double[16];
         matrix.toArray(matrixArray, 0, false);
@@ -889,16 +889,16 @@ public class BasicView extends WWObjectImpl implements View
             throw new IllegalStateException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         // Store the current matrix-mode state.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_TRANSFORM_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
 
             // Pop the top model-view matrix.
             gl.glPopMatrix();
@@ -1048,16 +1048,16 @@ public class BasicView extends WWObjectImpl implements View
 
         double[] matrixArray = new double[16];
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         // Store the current matrix-mode state.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_TRANSFORM_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_TRANSFORM_BIT);
 
             // Apply the model-view matrix to the current OpenGL context.
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             if (modelview != null)
             {
                 modelview.toArray(matrixArray, 0, false);
@@ -1069,7 +1069,7 @@ public class BasicView extends WWObjectImpl implements View
             }
 
             // Apply the projection matrix to the current OpenGL context.
-            gl.glMatrixMode(GL.GL_PROJECTION);
+            gl.glMatrixMode(GL2.GL_PROJECTION);
             if (projection != null)
             {
                 projection.toArray(matrixArray, 0, false);

@@ -5,7 +5,7 @@
   ~ All Rights Reserved.
   -->
 
-<!--$Id$-->
+<!-- $Id$ -->
 <project name="resources">
 
     <!-- Rasterization height for the Forward Edge of Battle (FEBA, 2.X.2.4.2.1) image. -->

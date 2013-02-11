@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -11,7 +11,7 @@ import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.glu.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -138,7 +138,7 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
         if (dlResource == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         this.applyInteriorState(dc, sdc, this.getActiveAttributes(), this.getTexture(), referencePos);
         gl.glCallList(dlResource[0]);
 
@@ -203,19 +203,18 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
 
     protected int[] doTessellateInterior(DrawContext dc, LatLon referenceLocation)
     {
-        GL gl = dc.getGL();
-        GLU glu = dc.getGLU();
-        GLUtessellatorCallback cb = GLUTessellatorSupport.createOGLDrawPrimitivesCallback(dc.getGL());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        GLUtessellatorCallback cb = GLUTessellatorSupport.createOGLDrawPrimitivesCallback(gl);
 
-        int[] dlResource = new int[] {dc.getGL().glGenLists(1), 1};
+        int[] dlResource = new int[] {gl.glGenLists(1), 1};
         GLUTessellatorSupport glts = new GLUTessellatorSupport();
 
         try
         {
-            glts.beginTessellation(glu, cb, new Vec4(0, 0, 1));
-            dc.getGL().glNewList(dlResource[0], GL.GL_COMPILE);
-            int numBytes = this.tessellateInteriorVertices(glu, glts.getGLUtessellator(), referenceLocation);
-            glts.endTessellation(glu);
+            glts.beginTessellation(cb, new Vec4(0, 0, 1));
+            gl.glNewList(dlResource[0], GL2.GL_COMPILE);
+            int numBytes = this.tessellateInteriorVertices(glts.getGLUtessellator(), referenceLocation);
+            glts.endTessellation();
             gl.glEndList();
             this.needsInteriorTessellation = false;
 
@@ -230,8 +229,8 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
             // memory, we must free memory used by tessellation immediately or subsequent operations such as message
             // logging will fail.
             gl.glEndList();
-            glts.endTessellation(glu);
-            dc.getGL().glDeleteLists(dlResource[0], dlResource[1]);
+            glts.endTessellation();
+            gl.glDeleteLists(dlResource[0], dlResource[1]);
 
             String message = Logging.getMessage("generic.ExceptionWhileTessellating", this);
             Logging.logger().log(Level.SEVERE, message, e);
@@ -258,10 +257,10 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
         this.onGeometryChanged();
     }
 
-    protected int tessellateInteriorVertices(GLU glu, GLUtessellator tess, LatLon referenceLocation)
+    protected int tessellateInteriorVertices(GLUtessellator tess, LatLon referenceLocation)
     {
         // Setup the winding order to correctly tessellate the outer and inner rings.
-        glu.gluTessProperty(tess, GLU.GLU_TESS_WINDING_RULE, this.windingRule.equals(AVKey.CLOCKWISE) ?
+        GLU.gluTessProperty(tess, GLU.GLU_TESS_WINDING_RULE, this.windingRule.equals(AVKey.CLOCKWISE) ?
             GLU.GLU_TESS_WINDING_NEGATIVE : GLU.GLU_TESS_WINDING_POSITIVE);
 
         this.crossesDateLine = false;
@@ -283,18 +282,18 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
                 if (WWMath.computeWindingOrderOfLocations(vecBuffer.getLocations()).equals(this.getWindingRule()))
                 {
                     if (inBeginPolygon)
-                        glu.gluTessEndPolygon(tess);
+                        GLU.gluTessEndPolygon(tess);
 
-                    glu.gluTessBeginPolygon(tess, null);
+                    GLU.gluTessBeginPolygon(tess, null);
                     inBeginPolygon = true;
                 }
 
-                if (tessellateRing(glu, tess, vecBuffer, referenceLocation))
+                if (tessellateRing(tess, vecBuffer, referenceLocation))
                     this.crossesDateLine = true;
             }
 
             if (inBeginPolygon)
-                glu.gluTessEndPolygon(tess);
+                GLU.gluTessEndPolygon(tess);
         }
         else
         {
@@ -306,29 +305,29 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
                 int groupLength = (group == numGroups - 1) ? numRings - groupStart
                     : this.polygonRingGroups[group + 1] - groupStart;
 
-                glu.gluTessBeginPolygon(tess, null);
+                GLU.gluTessBeginPolygon(tess, null);
                 for (int i = 0; i < groupLength; i++)
                 {
                     VecBuffer subBuffer = this.buffer.subBuffer(groupStart + i);
                     numBytes += subBuffer.getSize() * 3 * 4; // 3 float coords per vertex
-                    if (tessellateRing(glu, tess, subBuffer, referenceLocation))
+                    if (tessellateRing(tess, subBuffer, referenceLocation))
                         this.crossesDateLine = true;
                 }
-                glu.gluTessEndPolygon(tess);
+                GLU.gluTessEndPolygon(tess);
             }
         }
 
         return numBytes;
     }
 
-    protected boolean tessellateRing(GLU glu, GLUtessellator tess, VecBuffer vecBuffer, LatLon referenceLocation)
+    protected boolean tessellateRing(GLUtessellator tess, VecBuffer vecBuffer, LatLon referenceLocation)
     {
         // Check for pole wrapping shape
         List<double[]> dateLineCrossingPoints = this.computeDateLineCrossingPoints(vecBuffer);
         int pole = this.computePole(dateLineCrossingPoints);
         double[] poleWrappingPoint = this.computePoleWrappingPoint(pole, dateLineCrossingPoints);
 
-        glu.gluTessBeginContour(tess);
+        GLU.gluTessBeginContour(tess);
         Iterable<double[]> iterable = vecBuffer.getCoords(3);
         boolean dateLineCrossed = false;
         int sign = 0;
@@ -349,15 +348,15 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
                 polePoint2[0] *= -1;
 
                 // Move to date line then to pole
-                tessVertex(glu, tess, dateLinePoint1, referenceLocation);
-                tessVertex(glu, tess, polePoint1, referenceLocation);
+                tessVertex(tess, dateLinePoint1, referenceLocation);
+                tessVertex(tess, polePoint1, referenceLocation);
 
                 // Move to the other side of the date line
-                tessVertex(glu, tess, polePoint2, referenceLocation);
-                tessVertex(glu, tess, dateLinePoint2, referenceLocation);
+                tessVertex(tess, polePoint2, referenceLocation);
+                tessVertex(tess, dateLinePoint2, referenceLocation);
 
                 // Finally, draw current point past the date line
-                tessVertex(glu, tess, coords, referenceLocation);
+                tessVertex(tess, coords, referenceLocation);
 
                 dateLineCrossed = true;
             }
@@ -373,20 +372,20 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
                 previousPoint = coords.clone();
 
                 coords[0] += sign * 360;   // apply hemisphere offset
-                tessVertex(glu, tess, coords, referenceLocation);
+                tessVertex(tess, coords, referenceLocation);
             }
         }
-        glu.gluTessEndContour(tess);
+        GLU.gluTessEndContour(tess);
 
         return dateLineCrossed;
     }
 
-    private static void tessVertex(GLU glu, GLUtessellator tess, double[] coords, LatLon referenceLocation)
+    private static void tessVertex(GLUtessellator tess, double[] coords, LatLon referenceLocation)
     {
         double[] vertex = new double[3];
         vertex[0] = coords[0] - referenceLocation.getLongitude().degrees;
         vertex[1] = coords[1] - referenceLocation.getLatitude().degrees;
-        glu.gluTessVertex(tess, vertex, 0, vertex);
+        GLU.gluTessVertex(tess, vertex, 0, vertex);
     }
 
     // --- Pole wrapping shapes handling ---

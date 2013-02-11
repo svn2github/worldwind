@@ -15,7 +15,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.OGLUtil;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
@@ -114,9 +114,9 @@ public class Cube extends ApplicationTemplate implements OrderedRenderable
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        int attrMask = GL.GL_CURRENT_BIT | GL.GL_COLOR_BUFFER_BIT;
+        int attrMask = GL2.GL_CURRENT_BIT | GL2.GL_COLOR_BUFFER_BIT;
 
         gl.glPushAttrib(attrMask);
 
@@ -128,13 +128,13 @@ public class Cube extends ApplicationTemplate implements OrderedRenderable
 
             // Were applying a scale transform on the modelview matrix, so the normal vectors must be re-normalized
             // before lighting is computed.
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glEnable(GL2.GL_NORMALIZE);
         }
 
         // Multiply the modelview matrix by a surface orientation matrix to set up a local coordinate system with the
         // origin at the cube's center position, the Y axis pointing North, the X axis pointing East, and the Z axis
         // normal to the globe.
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
 
         Matrix matrix = dc.getGlobe().computeSurfaceOrientationAtPosition(this.position);
         matrix = dc.getView().getModelviewMatrix().multiply(matrix);
@@ -151,7 +151,7 @@ public class Cube extends ApplicationTemplate implements OrderedRenderable
      */
     protected void endDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         if (!dc.isPickingMode())
             dc.endStandardLighting();
@@ -201,7 +201,7 @@ public class Cube extends ApplicationTemplate implements OrderedRenderable
         this.beginDrawing(dc);
         try
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
             if (dc.isPickingMode())
             {
                 Color pickColor = dc.getUniquePickColor();
@@ -238,8 +238,8 @@ public class Cube extends ApplicationTemplate implements OrderedRenderable
 
         // Note: draw the cube in OpenGL immediate mode for simplicity. Real applications should use vertex arrays
         // or vertex buffer objects to achieve better performance.
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_QUADS);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glBegin(GL2.GL_QUADS);
         try
         {
             for (int i = 0; i < faces.length; i++)

@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.Layer;
@@ -15,7 +15,7 @@ import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import javax.xml.stream.*;
 import java.awt.*;
 import java.io.*;
@@ -580,7 +580,7 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
         if (this.screenLocation == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -588,29 +588,29 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
 
         try
         {
-            gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+            gl.glPushAttrib(GL2.GL_DEPTH_BUFFER_BIT
+                | GL2.GL_COLOR_BUFFER_BIT
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             // Don't depth buffer.
             gl.glDisable(GL.GL_DEPTH_TEST);
 
             // Suppress any fully transparent image pixels
-            gl.glEnable(GL.GL_ALPHA_TEST);
-            gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
+            gl.glEnable(GL2.GL_ALPHA_TEST);
+            gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
 
             java.awt.Rectangle viewport = dc.getView().getViewport();
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -1, 1);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -685,12 +685,12 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
         {
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)

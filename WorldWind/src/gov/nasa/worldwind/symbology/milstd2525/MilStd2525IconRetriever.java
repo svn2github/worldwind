@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -41,7 +41,7 @@ import java.util.*;
  * applied to the icon itself. The fill color has no effect if Show Fill is False.</td></tr> </table>
  *
  * @author ccrick
- * @version $Id: MilStd2525IconRetriever.java 90 2011-17-10 23:58:29Z ccrick $
+ * @version $Id$
  */
 public class MilStd2525IconRetriever extends AbstractIconRetriever
 {

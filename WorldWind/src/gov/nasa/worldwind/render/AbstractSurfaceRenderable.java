@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
@@ -10,7 +10,7 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -150,7 +150,7 @@ public abstract class AbstractSurfaceRenderable extends AbstractSurfaceObject
         return 0;
     }
 
-    protected void applyPremultipliedAlphaColor(GL gl, Color color, double opacity)
+    protected void applyPremultipliedAlphaColor(GL2 gl, Color color, double opacity)
     {
         float[] compArray = new float[4];
         color.getRGBComponents(compArray);
@@ -161,7 +161,7 @@ public abstract class AbstractSurfaceRenderable extends AbstractSurfaceObject
         gl.glColor4fv(compArray, 0);
     }
 
-    protected void applyNonPremultipliedAlphaColor(GL gl, Color color, double opacity)
+    protected void applyNonPremultipliedAlphaColor(GL2 gl, Color color, double opacity)
     {
         float[] compArray = new float[4];
         color.getRGBComponents(compArray);

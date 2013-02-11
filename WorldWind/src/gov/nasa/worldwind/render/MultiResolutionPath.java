@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.Logging;
 
@@ -191,7 +191,7 @@ public class MultiResolutionPath extends Path
 
         MultiResolutionPathData mrpd = (MultiResolutionPathData) pathData;
         if (mrpd.positionOrdinals == null || mrpd.positionOrdinals.capacity() < this.numPositions)
-            mrpd.positionOrdinals = BufferUtil.newIntBuffer(this.numPositions);
+            mrpd.positionOrdinals = Buffers.newDirectIntBuffer(this.numPositions);
         else
             mrpd.positionOrdinals.clear();
 

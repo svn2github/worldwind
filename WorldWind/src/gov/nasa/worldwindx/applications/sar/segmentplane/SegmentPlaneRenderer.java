@@ -1,11 +1,12 @@
-/* Copyright (C) 2001, 2009 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+/*
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.applications.sar.segmentplane;
 
-import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -17,7 +18,7 @@ import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.nio.*;
 import java.util.*;
@@ -334,23 +335,23 @@ public class SegmentPlaneRenderer
 
     protected void begin(DrawContext dc, OGLStackHandler ogsh)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        int attribMask = GL.GL_CURRENT_BIT  // For current RGBA color.
-            | GL.GL_LINE_BIT     // For line width.
-            | GL.GL_POLYGON_BIT // For cull face, polygon offset.
-            | (!dc.isPickingMode() ? GL.GL_COLOR_BUFFER_BIT : 0) // for blend func
-            | (!dc.isPickingMode() ? GL.GL_LIGHTING_BIT : 0) // for lighting.
-            | (!dc.isPickingMode() ? GL.GL_TRANSFORM_BIT : 0); // for normalize state.
+        int attribMask = GL2.GL_CURRENT_BIT  // For current RGBA color.
+            | GL2.GL_LINE_BIT     // For line width.
+            | GL2.GL_POLYGON_BIT // For cull face, polygon offset.
+            | (!dc.isPickingMode() ? GL2.GL_COLOR_BUFFER_BIT : 0) // for blend func
+            | (!dc.isPickingMode() ? GL2.GL_LIGHTING_BIT : 0) // for lighting.
+            | (!dc.isPickingMode() ? GL2.GL_TRANSFORM_BIT : 0); // for normalize state.
         ogsh.pushAttrib(gl, attribMask);
 
         int clientAttribMask =
-            GL.GL_CLIENT_VERTEX_ARRAY_BIT; // For vertex and element pointers.
+            GL2.GL_CLIENT_VERTEX_ARRAY_BIT; // For vertex and element pointers.
         ogsh.pushClientAttrib(gl, clientAttribMask);
 
         gl.glDisable(GL.GL_CULL_FACE);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
 
         if (!dc.isPickingMode())
         {
@@ -360,23 +361,23 @@ public class SegmentPlaneRenderer
             OGLUtil.applyBlending(gl, false);
 
             // Enable lighting with GL_LIGHT1.
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GL2.GL_COLOR_MATERIAL);
+            gl.glDisable(GL2.GL_LIGHT0);
+            gl.glEnable(GL2.GL_LIGHTING);
+            gl.glEnable(GL2.GL_LIGHT1);
+            gl.glEnable(GL2.GL_NORMALIZE);
             // Configure the lighting model for two-sided smooth shading.
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
-            gl.glShadeModel(GL.GL_SMOOTH);
+            gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL2.GL_TRUE);
+            gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
+            gl.glShadeModel(GL2.GL_SMOOTH);
             // Configure GL_LIGHT1 as a white light eminating from the viewer's eye point.
-            OGLUtil.applyLightingDirectionalFromViewer(gl, GL.GL_LIGHT1, new Vec4(1.0, 0.5, 1.0).normalize3());
+            OGLUtil.applyLightingDirectionalFromViewer(gl, GL2.GL_LIGHT1, new Vec4(1.0, 0.5, 1.0).normalize3());
         }
     }
 
     protected void end(DrawContext dc, OGLStackHandler ogsh)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         ogsh.pop(gl);
     }
@@ -439,7 +440,8 @@ public class SegmentPlaneRenderer
     {
         java.awt.Color pickColor = dc.getUniquePickColor();
         int colorCode = pickColor.getRGB();
-        dc.getGL().glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
 
         PickedObject po = new PickedObject(colorCode, userObject);
         po.setValue(AVKey.PICKED_OBJECT_ID, objectId);
@@ -617,7 +619,7 @@ public class SegmentPlaneRenderer
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void drawPlaneOutline(DrawContext dc, SegmentPlane segmentPlane, RenderInfo renderInfo,
         java.awt.Point pickPoint, Layer layer)
     {
@@ -626,14 +628,14 @@ public class SegmentPlaneRenderer
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glDisable(GL.GL_LIGHTING);
+            dc.getGL().glDisable(GL2.GL_LIGHTING);
         }
 
         this.drawPlaneOutlineElements(dc, renderInfo);
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glEnable(GL.GL_LIGHTING);
+            dc.getGL().glEnable(GL2.GL_LIGHTING);
         }
     }
 
@@ -645,14 +647,14 @@ public class SegmentPlaneRenderer
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glDisable(GL.GL_LIGHTING);
+            dc.getGL().glDisable(GL2.GL_LIGHTING);
         }
 
         this.drawPlaneGridElements(dc, renderInfo);
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glEnable(GL.GL_LIGHTING);
+            dc.getGL().glEnable(GL2.GL_LIGHTING);
         }
         else
         {
@@ -662,8 +664,9 @@ public class SegmentPlaneRenderer
 
     protected void bindPlaneVertexGeometry(DrawContext dc, RenderInfo renderInfo)
     {
-        dc.getGL().glVertexPointer(3, GL.GL_DOUBLE, 0, renderInfo.planeVertices);
-        dc.getGL().glNormalPointer(GL.GL_DOUBLE, 0, renderInfo.planeNormals);
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glVertexPointer(3, GL2.GL_DOUBLE, 0, renderInfo.planeVertices);
+        gl.glNormalPointer(GL2.GL_DOUBLE, 0, renderInfo.planeNormals);
     }
 
     protected void drawPlaneFillElements(DrawContext dc, RenderInfo renderInfo)
@@ -689,7 +692,7 @@ public class SegmentPlaneRenderer
             renderInfo.planeGridIndices);
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void resolvePlaneBackgroundPick(DrawContext dc, SegmentPlane segmentPlane, RenderInfo renderInfo,
         java.awt.Point pickPoint, Layer layer)
     {
@@ -774,7 +777,7 @@ public class SegmentPlaneRenderer
     //********************  Border Rendering  **********************//
     //**************************************************************//
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void drawPlaneBorder(DrawContext dc, SegmentPlane segmentPlane, RenderInfo renderInfo,
         java.awt.Point pickPoint, Layer layer)
     {
@@ -800,7 +803,7 @@ public class SegmentPlaneRenderer
             dc.isPickingMode());
         double height = altitudes[1] - altitudes[0];
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler oglsh = new OGLStackHandler();
         oglsh.pushModelview(gl);
         try
@@ -822,7 +825,7 @@ public class SegmentPlaneRenderer
 
     protected void drawBorder(DrawContext dc, RenderInfo renderInfo, Matrix modelview, double radius, double height)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         double[] compArray = new double[16];
 
         Matrix transform = Matrix.IDENTITY;
@@ -850,7 +853,7 @@ public class SegmentPlaneRenderer
 
     protected void drawBorderCylinder(DrawContext dc, RenderInfo renderInfo)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, renderInfo.borderCylinderVertices);
         gl.glNormalPointer(GL.GL_FLOAT, 0, renderInfo.borderCylinderNormals);
         gl.glDrawElements(GL.GL_TRIANGLE_STRIP, renderInfo.borderCylinderIndexCount, GL.GL_UNSIGNED_INT,
@@ -859,7 +862,7 @@ public class SegmentPlaneRenderer
 
     protected void drawBorderCap(DrawContext dc, RenderInfo renderInfo)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, renderInfo.borderCapVertices);
         gl.glNormalPointer(GL.GL_FLOAT, 0, renderInfo.borderCapNormals);
         gl.glDrawElements(GL.GL_TRIANGLE_STRIP, renderInfo.borderCapIndexCount, GL.GL_UNSIGNED_INT,
@@ -877,7 +880,7 @@ public class SegmentPlaneRenderer
         this.drawSegmentAltimeterLabel(dc, segmentPlane, renderInfo, pickPoint, layer);
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void drawSegmentAltimeterGeometry(DrawContext dc, SegmentPlane segmentPlane,
         RenderInfo renderInfo, java.awt.Point pickPoint, Layer layer)
     {
@@ -899,22 +902,22 @@ public class SegmentPlaneRenderer
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glDisable(GL.GL_LIGHTING);
+            dc.getGL().glDisable(GL2.GL_LIGHTING);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler oglsh = new OGLStackHandler();
 
         // Modify the projection transform to shift the depth values slightly toward the camera in order to
         // ensure the lines are selected during depth buffering.
         double[] pm = new double[16];
-        gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, pm, 0);
+        gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, pm, 0);
         pm[10] *= 0.99; // TODO: See Lengyel 2 ed. Section 9.1.2 to compute optimal/minimal offset
         oglsh.pushProjectionIdentity(gl);
         gl.glLoadMatrixd(pm, 0);
 
         dc.getView().pushReferenceCenter(dc, referenceCenter);
-        gl.glBegin(GL.GL_LINES);
+        gl.glBegin(GL2.GL_LINES);
 
         try
         {
@@ -930,11 +933,11 @@ public class SegmentPlaneRenderer
 
         if (!dc.isPickingMode())
         {
-            dc.getGL().glEnable(GL.GL_LIGHTING);
+            dc.getGL().glEnable(GL2.GL_LIGHTING);
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void drawSegmentAltimeterLabel(DrawContext dc, SegmentPlane segmentPlane,
         RenderInfo renderInfo, java.awt.Point pickPoint, Layer layer)
     {
@@ -1019,7 +1022,7 @@ public class SegmentPlaneRenderer
         if (attributes == null || !attributes.isVisible())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         View view = dc.getView();
         Globe globe = dc.getGlobe();
 
@@ -1079,7 +1082,7 @@ public class SegmentPlaneRenderer
         this.drawLabel(dc, segmentPlane, position, values, controlPoint.getKey());
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void resolveControlPointPick(DrawContext dc, SegmentPlane segmentPlane, RenderInfo renderInfo,
         java.awt.Point pickPoint, Layer layer)
     {
@@ -1122,7 +1125,7 @@ public class SegmentPlaneRenderer
     //********************  Axis Label Rendering  ******************//
     //**************************************************************//
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void drawAxisLabels(DrawContext dc, SegmentPlane segmentPlane, RenderInfo renderInfo,
         java.awt.Point pickPoint, Layer layer)
     {
@@ -1417,16 +1420,16 @@ public class SegmentPlaneRenderer
 
         protected void begin(DrawContext dc, OGLStackHandler ogsh)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-            int attribBits = GL.GL_CURRENT_BIT; // For current color.
+            int attribBits = GL2.GL_CURRENT_BIT; // For current color.
 
             ogsh.pushAttrib(gl, attribBits);
         }
 
         protected void end(DrawContext dc, OGLStackHandler ogsh)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
             ogsh.pop(gl);
         }
@@ -1510,32 +1513,32 @@ public class SegmentPlaneRenderer
         if (renderInfo.planeFillIndices == null
             || renderInfo.planeFillIndices.capacity() < renderInfo.planeFillIndexCount)
         {
-            renderInfo.planeFillIndices = BufferUtil.newIntBuffer(renderInfo.planeFillIndexCount);
+            renderInfo.planeFillIndices = Buffers.newDirectIntBuffer(renderInfo.planeFillIndexCount);
         }
 
         renderInfo.planeOutlineIndexCount = getPlaneOutlineIndexCount(uStacks, vStacks, mask);
         if (renderInfo.planeOutlineIndices == null
             || renderInfo.planeOutlineIndices.capacity() < renderInfo.planeOutlineIndexCount)
         {
-            renderInfo.planeOutlineIndices = BufferUtil.newIntBuffer(renderInfo.planeOutlineIndexCount);
+            renderInfo.planeOutlineIndices = Buffers.newDirectIntBuffer(renderInfo.planeOutlineIndexCount);
         }
 
         renderInfo.planeGridIndexCount = getPlaneGridIndexCount(uStacks, vStacks);
         if (renderInfo.planeGridIndices == null
             || renderInfo.planeGridIndices.capacity() < renderInfo.planeGridIndexCount)
         {
-            renderInfo.planeGridIndices = BufferUtil.newIntBuffer(renderInfo.planeGridIndexCount);
+            renderInfo.planeGridIndices = Buffers.newDirectIntBuffer(renderInfo.planeGridIndexCount);
         }
 
         int vertexCount = getPlaneVertexCount(uStacks, vStacks);
         int coordCount = 3 * vertexCount;
         if (renderInfo.planeVertices == null || renderInfo.planeVertices.capacity() < coordCount)
         {
-            renderInfo.planeVertices = BufferUtil.newDoubleBuffer(coordCount);
+            renderInfo.planeVertices = Buffers.newDirectDoubleBuffer(coordCount);
         }
         if (renderInfo.planeNormals == null || renderInfo.planeNormals.capacity() < coordCount)
         {
-            renderInfo.planeNormals = BufferUtil.newDoubleBuffer(coordCount);
+            renderInfo.planeNormals = Buffers.newDirectDoubleBuffer(coordCount);
         }
 
         computePlaneFillIndices(uStacks, vStacks, renderInfo.planeFillIndices);
@@ -1721,7 +1724,7 @@ public class SegmentPlaneRenderer
         }
     }
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void computePlaneNormals(Globe globe, SegmentPlane segmentPlane, int indexCount, int vertexCount,
         IntBuffer indices, DoubleBuffer vertices, DoubleBuffer buffer)
     {
@@ -1754,7 +1757,7 @@ public class SegmentPlaneRenderer
 
     // TODO: investigate necessary changes to create a general-use cylinder with caps, a height, and a radius.
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void createBorderGeometry(Globe globe, SegmentPlane segmentPlane, RenderInfo renderInfo)
     {
         int slices = 16;
@@ -1767,14 +1770,14 @@ public class SegmentPlaneRenderer
         if (renderInfo.borderCylinderIndices == null
             || renderInfo.borderCylinderIndices.capacity() < renderInfo.borderCylinderIndexCount)
         {
-            renderInfo.borderCylinderIndices = BufferUtil.newIntBuffer(renderInfo.borderCylinderIndexCount);
+            renderInfo.borderCylinderIndices = Buffers.newDirectIntBuffer(renderInfo.borderCylinderIndexCount);
         }
 
         renderInfo.borderCapIndexCount = gb.getDiskIndexCount(slices, loops);
         if (renderInfo.borderCapIndices == null
             || renderInfo.borderCapIndices.capacity() < renderInfo.borderCapIndexCount)
         {
-            renderInfo.borderCapIndices = BufferUtil.newIntBuffer(renderInfo.borderCapIndexCount);
+            renderInfo.borderCapIndices = Buffers.newDirectIntBuffer(renderInfo.borderCapIndexCount);
         }
 
         int cylinderVertexCount = gb.getCylinderVertexCount(slices, stacks);
@@ -1782,12 +1785,12 @@ public class SegmentPlaneRenderer
         if (renderInfo.borderCylinderVertices == null
             || renderInfo.borderCylinderVertices.capacity() < cylinderCoordCount)
         {
-            renderInfo.borderCylinderVertices = BufferUtil.newFloatBuffer(cylinderCoordCount);
+            renderInfo.borderCylinderVertices = Buffers.newDirectFloatBuffer(cylinderCoordCount);
         }
         if (renderInfo.borderCylinderNormals == null
             || renderInfo.borderCylinderNormals.capacity() < cylinderCoordCount)
         {
-            renderInfo.borderCylinderNormals = BufferUtil.newFloatBuffer(cylinderCoordCount);
+            renderInfo.borderCylinderNormals = Buffers.newDirectFloatBuffer(cylinderCoordCount);
         }
 
         int capVertexCount = gb.getDiskVertexCount(slices, loops);
@@ -1795,12 +1798,12 @@ public class SegmentPlaneRenderer
         if (renderInfo.borderCapVertices == null
             || renderInfo.borderCapVertices.capacity() < capCoordCount)
         {
-            renderInfo.borderCapVertices = BufferUtil.newFloatBuffer(capCoordCount);
+            renderInfo.borderCapVertices = Buffers.newDirectFloatBuffer(capCoordCount);
         }
         if (renderInfo.borderCapNormals == null
             || renderInfo.borderCapNormals.capacity() < capCoordCount)
         {
-            renderInfo.borderCapNormals = BufferUtil.newFloatBuffer(capCoordCount);
+            renderInfo.borderCapNormals = Buffers.newDirectFloatBuffer(capCoordCount);
         }
 
         int[] indices = new int[renderInfo.borderCylinderIndexCount];
@@ -1838,7 +1841,7 @@ public class SegmentPlaneRenderer
     //********************  Control Point Construction  ************//
     //**************************************************************//
 
-    @SuppressWarnings( {"UnusedDeclaration"})
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void createControlPointGeometry(Globe globe, SegmentPlane segmentPlane, RenderInfo renderInfo)
     {
         if (renderInfo.markerShapeMap == null)

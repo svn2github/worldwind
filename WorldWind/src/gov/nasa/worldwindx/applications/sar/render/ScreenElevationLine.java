@@ -1,20 +1,19 @@
 /*
-Copyright (C) 2001, 2009 United States Government as represented by
-the Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ */
 package gov.nasa.worldwindx.applications.sar.render;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 
 /**
- * Display an horizontal line across the viewport when a plane at a given elevation cuts
- * through the view near plane.
+ * Display an horizontal line across the viewport when a plane at a given elevation cuts through the view near plane.
  *
  * @author Patrick Murris
  * @version $Id$
@@ -112,7 +111,7 @@ public class ScreenElevationLine implements Renderable
         if (lineY == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -120,12 +119,12 @@ public class ScreenElevationLine implements Renderable
 
         try
         {
-            gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+            gl.glPushAttrib(GL2.GL_DEPTH_BUFFER_BIT
+                | GL2.GL_COLOR_BUFFER_BIT
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             gl.glEnable(GL.GL_BLEND);
@@ -135,13 +134,13 @@ public class ScreenElevationLine implements Renderable
             // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
             // into the GL projection matrix.
             Rectangle viewport = dc.getView().getViewport();
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -1, 1);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -154,22 +153,21 @@ public class ScreenElevationLine implements Renderable
             }
 
             // Draw line
-            gl.glBegin(GL.GL_LINE_STRIP);
+            gl.glBegin(GL2.GL_LINE_STRIP);
             gl.glVertex3d(0, lineY, 0);
             gl.glVertex3d(viewport.width, lineY, 0);
             gl.glEnd();
-
         }
         finally
         {
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GL2.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GL2.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)

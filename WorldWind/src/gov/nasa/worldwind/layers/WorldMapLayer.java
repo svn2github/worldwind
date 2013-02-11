@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.exception.WWRuntimeException;
@@ -14,7 +14,7 @@ import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 /**
  * Displays a world map overlay with a current-position crosshair in a screen corner.
  * <p/>
- * A {@link gov.nasa.worldwindx.examples.ClickAndGoSelectListener} can be used in conjunction with this layer to move the
- * view to a selected location when that location is clicked within the layer's map. Specify
+ * A {@link gov.nasa.worldwindx.examples.ClickAndGoSelectListener} can be used in conjunction with this layer to move
+ * the view to a selected location when that location is clicked within the layer's map. Specify
  * <code>WorldMapLayer.class</code> when constructing the <code>ClickAndGoSelectListener</code>.
  * <p/>
  * Note: This layer may not be shared among multiple {@link WorldWindow}s.
@@ -341,7 +341,7 @@ public class WorldMapLayer extends AbstractLayer
         if (this.getIconFilePath() == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
@@ -393,7 +393,7 @@ public class WorldMapLayer extends AbstractLayer
                 // Draw world map icon
                 gl.glColor4d(1d, 1d, 1d, this.getOpacity());
                 gl.glEnable(GL.GL_TEXTURE_2D);
-                iconTexture.bind();
+                iconTexture.bind(gl);
 
                 TextureCoords texCoords = iconTexture.getImageTexCoords();
                 dc.drawUnitQuad(texCoords);
@@ -417,11 +417,11 @@ public class WorldMapLayer extends AbstractLayer
                     int y = (int) (height * (groundPos.getLatitude().degrees + 90) / 180);
                     int w = 10; // cross branch length
                     // Draw
-                    gl.glBegin(GL.GL_LINE_STRIP);
+                    gl.glBegin(GL2.GL_LINE_STRIP);
                     gl.glVertex3d(x - w, y, 0);
                     gl.glVertex3d(x + w + 1, y, 0);
                     gl.glEnd();
-                    gl.glBegin(GL.GL_LINE_STRIP);
+                    gl.glBegin(GL2.GL_LINE_STRIP);
                     gl.glVertex3d(x, y - w, 0);
                     gl.glVertex3d(x, y + w + 1, 0);
                     gl.glEnd();
@@ -433,7 +433,7 @@ public class WorldMapLayer extends AbstractLayer
                     this.footPrintPositions = this.computeViewFootPrint(dc, 32);
                     if (this.footPrintPositions != null)
                     {
-                        gl.glBegin(GL.GL_LINE_STRIP);
+                        gl.glBegin(GL2.GL_LINE_STRIP);
                         LatLon p1 = this.footPrintPositions.get(0);
                         for (LatLon p2 : this.footPrintPositions)
                         {
@@ -445,7 +445,7 @@ public class WorldMapLayer extends AbstractLayer
                                 int y1 = (int) (height * (p1.getLatitude().degrees + 90) / 180);
                                 gl.glVertex3d(x < width / 2 ? width : 0, (y1 + y) / 2, 0);
                                 gl.glEnd();
-                                gl.glBegin(GL.GL_LINE_STRIP);
+                                gl.glBegin(GL2.GL_LINE_STRIP);
                                 gl.glVertex3d(x < width / 2 ? 0 : width, (y1 + y) / 2, 0);
                             }
                             gl.glVertex3d(x, y, 0);
@@ -455,7 +455,7 @@ public class WorldMapLayer extends AbstractLayer
                     }
                 }
                 // Draw 1px border around and inside the map
-                gl.glBegin(GL.GL_LINE_STRIP);
+                gl.glBegin(GL2.GL_LINE_STRIP);
                 gl.glVertex3d(0, 0, 0);
                 gl.glVertex3d(width, 0, 0);
                 gl.glVertex3d(width, height - 1, 0);
@@ -577,6 +577,8 @@ public class WorldMapLayer extends AbstractLayer
         if (iconTexture != null)
             return;
 
+        GL gl = dc.getGL();
+
         try
         {
             InputStream iconStream = this.getClass().getResourceAsStream("/" + this.getIconFilePath());
@@ -589,8 +591,9 @@ public class WorldMapLayer extends AbstractLayer
                 }
             }
 
-            iconTexture = TextureIO.newTexture(iconStream, false, null);
-            iconTexture.bind();
+            TextureData textureData = OGLUtil.newTextureData(gl.getGLProfile(), iconStream, false);
+            iconTexture = TextureIO.newTexture(textureData);
+            iconTexture.bind(gl);
             this.iconWidth = iconTexture.getWidth();
             this.iconHeight = iconTexture.getHeight();
             dc.getTextureCache().put(this.getIconFilePath(), iconTexture);
@@ -602,7 +605,6 @@ public class WorldMapLayer extends AbstractLayer
             throw new WWRuntimeException(msg, e);
         }
 
-        GL gl = dc.getGL();
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);//_MIPMAP_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);

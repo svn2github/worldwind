@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2011 United States Government as represented by the Administrator of the
+ * Copyright (C) 2012 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
 package gov.nasa.worldwind.layers.mercator;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
@@ -15,7 +15,7 @@ import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL;
+import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
@@ -42,7 +42,7 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private boolean levelZeroLoaded = false;
     private boolean retainLevelZeroTiles = false;
     private String tileCountName;
-    @SuppressWarnings( {"FieldCanBeLocal"})
+    @SuppressWarnings({"FieldCanBeLocal"})
     private double splitScale = 0.9; // TODO: Make configurable
     private boolean useMipMaps = false;
     private ArrayList<String> supportedImageFormats = new ArrayList<String>();
@@ -549,22 +549,22 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
             sortedTiles = this.currentTiles.toArray(sortedTiles);
             Arrays.sort(sortedTiles, levelComparer);
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
             if (this.isUseTransparentTextures() || this.getOpacity() < 1)
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT
-                    | GL.GL_CURRENT_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT
+                    | GL2.GL_CURRENT_BIT);
                 gl.glColor4d(1d, 1d, 1d, this.getOpacity());
                 gl.glEnable(GL.GL_BLEND);
                 gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 
@@ -697,21 +697,23 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private void drawBoundingVolumes(DrawContext dc,
         ArrayList<MercatorTextureTile> tiles)
     {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
         float[] previousColor = new float[4];
-        dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, previousColor, 0);
-        dc.getGL().glColor3d(0, 1, 0);
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, previousColor, 0);
+        gl.glColor3d(0, 1, 0);
 
         for (MercatorTextureTile tile : tiles)
         {
             ((Cylinder) tile.getExtent(dc)).render(dc);
         }
 
-        Cylinder c = Sector.computeBoundingCylinder(dc.getGlobe(),
-            dc.getVerticalExaggeration(), this.levels.getSector());
-        dc.getGL().glColor3d(1, 1, 0);
+        Cylinder c = Sector.computeBoundingCylinder(dc.getGlobe(), dc.getVerticalExaggeration(),
+            this.levels.getSector());
+        gl.glColor3d(1, 1, 0);
         c.render(dc);
 
-        dc.getGL().glColor4fv(previousColor, 0);
+        gl.glColor4fv(previousColor, 0);
     }
 
     // ============== Image Composition ======================= //
