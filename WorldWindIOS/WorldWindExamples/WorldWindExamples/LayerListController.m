@@ -36,7 +36,7 @@
 {
     // Set the selected layer's visibility.
 
-    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
+    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [layer setEnabled:[layer enabled] ? NO : YES];
     [[self tableView] reloadData];
     [_wwv drawView];
@@ -52,12 +52,21 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
 
-    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
+    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
     [[cell imageView] setImage:[UIImage imageNamed:[layer imageFile]]];
     [cell setAccessoryType:[layer enabled] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone];
 
     return cell;
+}
+
+- (void) viewWillAppear:(BOOL)animated
+{
+    UIViewController* parent = [self parentViewController];
+    if ([parent isKindOfClass:[UINavigationController class]])
+    {
+        [((UINavigationController*) parent) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 @end

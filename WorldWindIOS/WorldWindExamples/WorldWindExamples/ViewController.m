@@ -27,6 +27,7 @@
 @implementation ViewController
 {
     UIBarButtonItem* layerButton;
+    LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
     LocationController* locationController;
     UISearchBar* searchBar;
@@ -138,10 +139,11 @@
     self->layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
                                                          style:UIBarButtonItemStylePlain
                                                         target:self action:@selector(handleLayerButtonTap)];
-    LayerListController* llc = [[LayerListController alloc] initWithWorldWindView:_wwv];
+    layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
     {
-        self->layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:llc];
+        self->layerListPopoverController =
+                [[UIPopoverController alloc] initWithContentViewController:layerListController];
     }
 
     UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
@@ -169,13 +171,15 @@
 
 - (void) handleLayerButtonTap
 {
-    if (!UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
     {
-        return; // popovers not supported on iPhone
+        [((UINavigationController*) [self parentViewController]) pushViewController:layerListController animated:YES];
     }
-
-    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
-                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    else
+    {
+        [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
+                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
 }
 
 - (void) handleLocationButtonTap
@@ -261,6 +265,11 @@
     {
         [self dismissSearchBar];
     }
+}
+
+- (void) viewWillAppear:(BOOL)animated
+{
+    [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
 }
 
 @end
