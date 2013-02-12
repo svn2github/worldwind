@@ -498,7 +498,12 @@ public class PlaceNameLayer extends AbstractLayer implements BulkRetrievable
         {
             int beginIndex = textIndexArray[index];
             int endIndex = (index + 1 < numEntries) ? textIndexArray[index + 1] : textArray.length();
-            return this.textArray.subSequence(beginIndex, endIndex);
+
+            // Cast the textArray CharBuffer to a CharSequence before calling subSequence. Java 7 broke interface
+            // compatibility on this method by changing the return type to a CharBuffer. Compiling
+            // CharBuffer.subSequence on Java 7 results in a NoSuchMethodError on Java 6. We cast to a CharSequence in
+            // order to ensure that this code works on both Java 6 and Java 7 when compiled with Java 7.
+            return ((CharSequence) this.textArray).subSequence(beginIndex, endIndex);
         }
 
         public long getSizeInBytes()
