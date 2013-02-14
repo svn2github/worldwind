@@ -7,6 +7,9 @@
 
 #import "WorldWind/WorldWindConstants.h"
 
+NSString* const WW_ALTITUDE_MODE_ABSOLUTE = @"gov.nasa.worldwind.AltitudeMode.Absolute";
+NSString* const WW_ALTITUDE_MODE_CLAMP_TO_GROUND = @"gov.nasa.worldwind.AltitudeMode.ClampToGround";
+NSString* const WW_ALTITUDE_MODE_RELATIVE_TO_GROUND = @"gov.nasa.worldwind.AltitudeMode.RelativeToGround";
 NSString* const WW_FILE_PATH = @"gov.nasa.worldwind.FilePath";
 NSString* const WW_GPU_PROGRAM = @"gov.nasa.worldwind.GpuProgram";
 NSString* const WW_GPU_TEXTURE = @"gov.nasa.worldwind.GpuTexture";

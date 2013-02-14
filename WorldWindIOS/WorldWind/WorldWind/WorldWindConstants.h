@@ -5,6 +5,9 @@
  @version $Id$
  */
 
+extern NSString* const WW_ALTITUDE_MODE_ABSOLUTE;
+extern NSString* const WW_ALTITUDE_MODE_CLAMP_TO_GROUND;
+extern NSString* const WW_ALTITUDE_MODE_RELATIVE_TO_GROUND;
 extern NSString* const WW_FILE_PATH;
 extern NSString* const WW_GPU_PROGRAM;
 extern NSString* const WW_GPU_TEXTURE;
