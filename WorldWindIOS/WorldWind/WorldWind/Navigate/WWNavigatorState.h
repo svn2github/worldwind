@@ -60,4 +60,13 @@
 */
 - (WWFrustum*) frustumInModelCoordinates;
 
+/**
+* Indicates the approximate size of a pixel, in meters, at a specified distance from the current eye point.
+*
+* @param distance The distance from the eye point at which to determine pixel size.
+*
+* @return The approximate pixel size, in meters, at the specified distance from the eye point.
+*/
+- (double) pixelSizeAtDistance:(double)distance;
+
 @end

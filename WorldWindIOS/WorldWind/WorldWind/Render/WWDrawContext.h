@@ -17,49 +17,64 @@
 @class WWGpuResourceCache;
 @protocol WWNavigatorState;
 @class WWPosition;
+@protocol WWExtent;
+@protocol WWOrderedRenderable;
+@protocol WWOutlinedShape;
+@protocol WWTerrain;
 
 /**
 * Provides current state during rendering. The current draw context is passed to most rendering methods in order to
 * make those methods aware of current state.
 */
 @interface WWDrawContext : NSObject
+{
+@protected
+    NSMutableArray* orderedRenderables;
+}
 
 /// @name Draw Context Attributes
 
 /// The time at which this draw context was most recently reset or initialized. This is the time at which the current
 /// frame started.
-@property (readonly, nonatomic) NSDate* timestamp;
+@property(readonly, nonatomic) NSDate* timestamp;
 
 /// The globe being rendered.
-@property (nonatomic) WWGlobe* globe;
+@property(nonatomic) WWGlobe* globe;
 
 /// The current layer list.
-@property (nonatomic) WWLayerList* layers;
+@property(nonatomic) WWLayerList* layers;
 
 /// The current navigator state. This state contains the current viewing information.
-@property (nonatomic) id <WWNavigatorState> navigatorState;
+@property(nonatomic) id <WWNavigatorState> navigatorState;
 
 /// The current set of terrain tiles visible in the frame. This set enables more precise determination of the
 /// geographic area visible in the current frame than can be determined from the visibleSector field.
-@property (nonatomic) WWTerrainTileList* surfaceGeometry;
+@property(nonatomic) WWTerrainTileList* surfaceGeometry;
 
 /// The union of all the terrain tile sectors. This is a very gross measure of the visible geographic area.
-@property (nonatomic) WWSector* visibleSector;
+@property(nonatomic) WWSector* visibleSector;
 
 /// The GPU program currently established with OpenGL.
-@property (nonatomic) WWGpuProgram* currentProgram;
+@property(nonatomic) WWGpuProgram* currentProgram;
 
 /// The current vertical exaggeration, as specified by the application to the scene controller, WWSceneController.
-@property (nonatomic) double verticalExaggeration;
+@property(nonatomic) double verticalExaggeration;
 
 /// The current renderer used to draw terrain tiles and the imagery placed on them.
-@property (readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
+@property(readonly, nonatomic) WWSurfaceTileRenderer* surfaceTileRenderer;
 
 /// The cache containing all currently active GPU resources such as textures, programs and vertex buffers. This is an
 /// LRU cache. It assumes the responsibility of freeing GPU resources when they are evicted from the cache.
-@property (nonatomic) WWGpuResourceCache* gpuResourceCache;
+@property(nonatomic) WWGpuResourceCache* gpuResourceCache;
 
-@property (nonatomic, readonly) WWPosition* eyePosition;
+/// The current eye position.
+@property(nonatomic, readonly) WWPosition* eyePosition;
+
+/// Indicates whether the scene controller is in ordered rendering mode.
+@property(nonatomic) BOOL orderedRenderingMode;
+
+/// The current tessellated terrain.
+@property(nonatomic, readonly) id <WWTerrain> terrain;
 
 /// @name Initializing a Draw Context
 
@@ -91,5 +106,35 @@
 * navigation state.
 */
 - (void) update;
+
+/**
+* Indicates whether a specified extent is smaller than a specified number of pixels.
+*
+* This method is typically used to avoid drawing shapes that are too small to be seen.
+*
+* @param extent The extent to test.
+* @param numPixels The threshold number of pixels at or below which the extent is considered small.
+*
+* @return YES if the shape is determined to be small or the specified extent is nil, otherwise NO.
+*/
+- (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels;
+
+/**
+* Adds a specified shape to the scene controller's ordered renderable list.
+*
+* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
+* renderable list is not modified.
+*/
+- (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable;
+
+/**
+* Draw the specified shape, potentially using a multi-path algorithm to coordinate the proper drawing of the shape's
+* outline over its interior.
+*
+* @param shape The shape to draw.
+*
+* @exception NSInvalidArgumentException If the specified shape is nil.
+*/
+- (void) drawOutlinedShape:(id <WWOutlinedShape>)shape;
 
 @end

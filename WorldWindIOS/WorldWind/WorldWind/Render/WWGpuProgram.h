@@ -12,6 +12,7 @@
 
 @class WWGpuShader;
 @class WWMatrix;
+@class WWColor;
 
 /**
 * Represents an OpenGL shading language (GLSL) shader program and provides methods for identifying and accessing shader
@@ -122,6 +123,19 @@
 * @exception NSInvalidArgumentException If the specified sampler name is nil or empty or the sampler does not exist.
 */
 - (void) loadUniformSampler:(NSString*)samplerName value:(int)value;
+
+/**
+* Sets the value of a named uniform color to a specified value.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param colorName The name of the uniform color.
+* @param color The value to set the color to.
+*
+* @exception NSInvalidArgumentException If the specified color name is nil or empty,
+* the color does not exist or the specified color is nil.
+*/
+- (void) loadUniformColor:(NSString*)colorName color:(WWColor*)color;
 
 /// @name Supporting Methods
 

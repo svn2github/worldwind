@@ -90,4 +90,9 @@
 //    return self;
 //}
 
+- (double) pixelSizeAtDistance:(double)distance // TODO
+{
+    return 1;
+}
+
 @end

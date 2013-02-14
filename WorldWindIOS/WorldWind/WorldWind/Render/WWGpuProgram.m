@@ -9,6 +9,7 @@
 #import "WorldWind/Render/WWGpuShader.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWColor.h"
 
 
 @implementation WWGpuProgram
@@ -239,6 +240,28 @@
     }
 
     glUniform1i(location, value);
+}
+
+- (void) loadUniformColor:(NSString*)colorName color:(WWColor*)color
+{
+    if (colorName == nil || colorName.length == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is empty")
+    }
+
+    int location = [self getUniformLocation:colorName];
+    if (location < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is invalid")
+    }
+
+    if (color == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color is nil")
+    }
+
+
+    glUniform4f(location, [color r], [color g], [color b], [color a]);
 }
 
 @end
