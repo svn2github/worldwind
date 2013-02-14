@@ -77,10 +77,6 @@ New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.
 
-NOTE: Running World Wind on Linux currently (1/21/13) causes a JVM crash. We have not been able to run release 1.5.0
-on Linux, including Ubuntu, CentOS and Fedora using the current Oracle JVM (both Java 6 and Java 7). See
-http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-390 to track this issue.
-
 - Added global text decluttering. See the ClutterFilter and Declutterable interfaces.
 - Added support for refreshing KML icons.
 - Added support for applying Earth Gravitational Model offsets (EGM96) to EllipsoidalGlobe.
