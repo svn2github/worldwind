@@ -13,6 +13,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.awt.*;
 
 /**
@@ -80,9 +81,9 @@ public class ViewUtil
     /**
      * Create an animator to animate heading.
      *
-     * @param view View to animate
+     * @param view  View to animate
      * @param begin starting heading
-     * @param end final heading
+     * @param end   final heading
      *
      * @return An Animator to animate heading.
      */
@@ -108,9 +109,9 @@ public class ViewUtil
     /**
      * Create an animator to animate pitch.
      *
-     * @param view View to animate
+     * @param view  View to animate
      * @param begin starting pitch
-     * @param end final pitch
+     * @param end   final pitch
      *
      * @return An Animator to animate pitch.
      */
@@ -136,9 +137,9 @@ public class ViewUtil
     /**
      * Create an animator to animate roll.
      *
-     * @param view View to animate
+     * @param view  View to animate
      * @param begin starting roll
-     * @param end final roll
+     * @param end   final roll
      *
      * @return An Animator to animate roll.
      */
@@ -708,7 +709,7 @@ public class ViewUtil
             throw new IllegalArgumentException(message);
         }
 
-        GLU glu = new GLU();
+        GLU glu = new GLUgl2();
 
         // GLU expects matrices as column-major arrays.
         double[] modelviewArray = new double[16];
@@ -778,7 +779,7 @@ public class ViewUtil
             throw new IllegalArgumentException(message);
         }
 
-        GLU glu = new GLU();
+        GLU glu = new GLUgl2();
 
         // GLU expects matrices as column-major arrays.
         double[] modelviewArray = modelview.toArray(new double[16], 0, false);

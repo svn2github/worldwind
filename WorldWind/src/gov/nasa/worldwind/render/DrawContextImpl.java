@@ -18,6 +18,7 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.awt.*;
 import java.nio.*;
 import java.util.*;
@@ -33,7 +34,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     protected long frameTimestamp;
     protected GLContext glContext;
     protected GLRuntimeCapabilities glRuntimeCaps;
-    protected GLU glu = new GLU();
+    protected GLU glu = new GLUgl2();
     protected View view;
     protected Model model;
     protected Globe globe;

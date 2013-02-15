@@ -15,6 +15,7 @@ import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.*;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.util.ArrayList;
 
 /**
@@ -201,7 +202,7 @@ public class BasicMarkerShape
         {
             if (this.isInitialized)
             {
-                GLU glu = new GLU();
+                GLU glu = new GLUgl2();
                 glu.gluDeleteQuadric(this.quadric);
                 this.isInitialized = false;
             }

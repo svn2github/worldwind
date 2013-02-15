@@ -16,6 +16,7 @@ import gov.nasa.worldwind.util.Logging;
 
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.util.Iterator;
 
 /**
@@ -371,7 +372,7 @@ public class TrackRenderer implements Disposable
         {
             if (this.isInitialized)
             {
-                GLU glu = new GLU();
+                GLU glu = new GLUgl2();
                 glu.gluDeleteQuadric(this.quadric);
                 this.isInitialized = false;
 

@@ -13,6 +13,7 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class DeclutteringTextRenderer
     protected static final Font DEFAULT_FONT = Font.decode("Arial-PLAIN-12");
     protected static final Color DEFAULT_COLOR = Color.white;
 
-    protected final GLU glu = new GLU();
+    protected final GLU glu = new GLUgl2();
 
     // Flag indicating a JOGL text rendering problem. Set to avoid continual exception logging.
     protected boolean hasJOGLv111Bug = false;

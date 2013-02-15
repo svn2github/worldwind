@@ -15,6 +15,7 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.gl2.GLUgl2;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.IOException;
@@ -27,7 +28,7 @@ import java.util.*;
 public class GeographicTextRenderer
 {
     private TextRenderer lastTextRenderer = null;
-    private final GLU glu = new GLU();
+    private final GLU glu = new GLUgl2();
 
     private static final Font DEFAULT_FONT = Font.decode("Arial-PLAIN-12");
     private static final Color DEFAULT_COLOR = Color.white;
