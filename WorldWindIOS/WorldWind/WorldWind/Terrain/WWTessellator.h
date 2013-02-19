@@ -135,6 +135,14 @@
 - (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 /**
+* Draws an outline representation of a specified tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to draw.
+*/
+- (void) renderOutline:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
 * Computes the Cartesian reference center point for a specified tile.
 *
 * @param dc The current draw context.

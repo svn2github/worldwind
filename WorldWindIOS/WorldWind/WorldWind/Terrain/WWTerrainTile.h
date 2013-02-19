@@ -90,6 +90,13 @@
 */
 - (void) renderWireframe:(WWDrawContext*)dc;
 
+/**
+* Draw an outline representation of the tile that displays the tile's top, bottom, left and right edges on the surface.
+*
+* @param dc The current draw context.
+*/
+- (void) renderOutline:(WWDrawContext*)dc;
+
 /// @name Operations on Terrain Tiles
 
 /**

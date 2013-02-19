@@ -24,8 +24,8 @@
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
 
-#define NUM_LAT_SUBDIVISIONS 4 // 45 degree subdivisions
-#define NUM_LON_SUBDIVISIONS 8
+#define LEVEL_ZERO_DELTA 45
+#define NUM_LEVELS 10
 
 @implementation WWTessellator
 
@@ -38,66 +38,33 @@
 
     self = [super init];
 
-    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1e6 lowWater:800e3];
+    if (self != nil)
+    {
+        _globe = globe;
 
-    _globe = globe;
+        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1e6 lowWater:800e3];
+        self->detailHintOrigin = 2.5;
 
-    self->detailHintOrigin = 2.5;
+        WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:LEVEL_ZERO_DELTA
+                                                                       longitude:LEVEL_ZERO_DELTA];
+        self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
+                                           levelZeroDelta:levelZeroDelta
+                                                numLevels:NUM_LEVELS];
 
-    double dLat = 180 / NUM_LAT_SUBDIVISIONS;
-    double dLon = 360 / NUM_LON_SUBDIVISIONS;
-    WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:dLat longitude:dLon];
-    self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
-                                       levelZeroDelta:levelZeroDelta
-                                            numLevels:10];
-
-    self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
-
-    [self createTopLevelTiles];
+        self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
+        self->topLevelTiles = [[NSMutableArray alloc] init];
+    }
 
     return self;
 }
 
 - (void) createTopLevelTiles
 {
-    self->topLevelTiles = [[NSMutableArray alloc] init];
+    [self->topLevelTiles removeAllObjects];
 
-    double deltaLat = [[self->levels levelZeroDelta] latitude];
-    double deltaLon = [[self->levels levelZeroDelta] longitude];
-
-    double lastLat = -90;
-
-    for (int row = 0; row < NUM_LAT_SUBDIVISIONS; row++)
-    {
-        double lat = lastLat + deltaLat;
-        if (lat + 1 > 90)
-            lat = 90;
-
-        double lastLon = -180;
-
-        for (int col = 0; col < NUM_LON_SUBDIVISIONS; col++)
-        {
-            double lon = lastLon + deltaLon;
-            if (lon + 1 > 180)
-                lon = 180;
-
-            WWSector* tileSector = [[WWSector alloc] initWithDegreesMinLatitude:lastLat
-                                                                    maxLatitude:lat
-                                                                   minLongitude:lastLon
-                                                                   maxLongitude:lon];
-
-            WWTerrainTile* tile = [[WWTerrainTile alloc] initWithSector:tileSector
-                                                                  level:[self->levels firstLevel]
-                                                                    row:row
-                                                                 column:col
-                                                            tessellator:self];
-            [self->topLevelTiles addObject:tile];
-
-            lastLon = lon;
-        }
-
-        lastLat = lat;
-    }
+    [WWTile createTilesForLevel:[self->levels firstLevel]
+                    tileFactory:self
+                       tilesOut:self->topLevelTiles];
 }
 
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
@@ -110,21 +77,24 @@
     [self->currentTiles removeAllTiles];
     self->currentCoverage = nil;
 
-    NSUInteger count = [self->topLevelTiles count];
-    for (NSUInteger i = 0; i < count; i++)
+    if ([self->topLevelTiles count] == 0)
     {
-        WWTerrainTile* tile = [self->topLevelTiles objectAtIndex:i];
+        [self createTopLevelTiles];
+    }
 
+    for (WWTerrainTile* tile in self->topLevelTiles)
+    {
         [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
         [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
-        if ([[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]])
+        if ([self isTileVisible:dc tile:tile])
+        {
             [self addTileOrDescendants:dc tile:tile];
+        }
     }
 
     [self->currentTiles setSector:self->currentCoverage];
 
-//    NSLog(@"TERRAIN TILES %d", [self->currentTiles count]);
     return self->currentTiles;
 }
 
@@ -138,17 +108,15 @@
 
     WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
     NSArray* subTiles = [tile subdivide:nextLevel cache:self->tileCache tileFactory:self];
-    for (NSUInteger i = 0; i < 4; i++)
-    {
-        WWTile* child = [subTiles objectAtIndex:i];
 
+    for (WWTerrainTile* child in subTiles)
+    {
         [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
         [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
-        if ([[self->levels sector] intersects:[child sector]]
-                && [self isTileVisible:dc tile:(WWTerrainTile*) child])
+        if ([[self->levels sector] intersects:[child sector]] && [self isTileVisible:dc tile:child])
         {
-            [self addTileOrDescendants:dc tile:(WWTerrainTile*) child];
+            [self addTileOrDescendants:dc tile:child];
         }
     }
 }
@@ -388,6 +356,12 @@
                                                         tileHeight:tile.numLatCells
                                                      numIndicesOut:&count];
     _sharedGeometry.numWireframeIndices = count;
+
+    // Build the outline indices.
+    _sharedGeometry.outlineIndices = [self buildOutlineIndices:tile.numLonCells
+                                                    tileHeight:tile.numLatCells
+                                                 numIndicesOut:&count];
+    _sharedGeometry.numOutlineIndices = count;
 }
 
 - (float*) buildTexCoords:(int)tileWidth tileHeight:(int)tileHeight numCoordsOut:(int*)numCoordsOut
@@ -443,10 +417,10 @@
     int numLatVertices = tileHeight + 3;
     int numLonVertices = tileWidth + 3;
 
-    // Allocate a native short array to hold the indices used to draw a tile of the specified width and height as
-    // a triangle strip. Shorts are the largest primitive that OpenGL ES allows for an index buffer. The largest
-    // tileWidth and tileHeight that can be indexed by a short is 256x256 (excluding the extra rows and columns to
-    // convert between cell count and vertex count, and the extra rows and columns for the tile skirt).
+    // Allocate an array to hold the indices used to draw a tile of the specified width and height as a triangle strip.
+    // Shorts are the largest primitive that OpenGL ES allows for an index buffer. The largest tileWidth and tileHeight
+    // that can be indexed by a short is 256x256 (excluding the extra rows and columns to convert between cell count and
+    // vertex count, and the extra rows and columns for the tile skirt).
     int numIndices = 2 * (numLatVertices - 1) * numLonVertices + 2 * (numLatVertices - 2);
     short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
 
@@ -487,8 +461,8 @@
     int numLatVertices = tileHeight + 1;
     int numLonVertices = tileWidth + 1;
 
-    int numIndices = 2 * tileWidth * (tileHeight + 1) + 2 * tileHeight * (tileWidth + 1);
     // Allocate an array to hold the computed indices.
+    int numIndices = 2 * tileWidth * (tileHeight + 1) + 2 * tileHeight * (tileWidth + 1);
     short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
 
     // Add two columns of vertices to the row stride to account for the west and east skirt vertices.
@@ -504,9 +478,8 @@
         for (int i = 0; i < tileWidth; i++)
         {
             int vertex = offset + i + j * rowStride;
-            indices[k] = (short) vertex;
-            indices[k + 1] = (short) (vertex + 1);
-            k += 2;
+            indices[k++] = (short) vertex;
+            indices[k++] = (short) (vertex + 1);
         }
     }
 
@@ -517,10 +490,63 @@
         for (int j = 0; j < tileHeight; j++)
         {
             int vertex = offset + i + j * rowStride;
-            indices[k] = (short) vertex;
-            indices[k + 1] = (short) (vertex + rowStride);
-            k += 2;
+            indices[k++] = (short) vertex;
+            indices[k++] = (short) (vertex + rowStride);
         }
+    }
+
+    *numIndicesOut = numIndices; // let the caller know how many indices were computed
+
+    return indices;
+}
+
+- (short*) buildOutlineIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut
+{
+    // The outline representation traces the tile's outer edge on the surface.
+
+    // The number of vertices in each dimension is 1 more than the number of cells.
+    int numLatVertices = tileHeight + 1;
+    int numLonVertices = tileWidth + 1;
+
+    // Allocate an array to hold the computed indices. The outline indices ignore the extra rows and columns for the
+    // tile skirt.
+    int numIndices = 2 * (numLatVertices - 1) + 2 * numLonVertices - 1;
+    short* indices = (short*) malloc((size_t) (numIndices * sizeof(short)));
+
+    // Add two columns of vertices to the row stride to account for the two additional vertices that provide an
+    // outer row/column for the tile skirt.
+    int rowStride = numLonVertices + 2;
+
+    // Bottom row. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt.
+    int offset = rowStride + 1;
+    int k = 0;
+    for (int i = 0; i < numLonVertices; i++)
+    {
+        indices[k++] = (short) (offset + i);
+    }
+
+    // Rightmost column. Offset by rowStride - 2 to start at the lower right corner, ignoring the tile skirt. Skips
+    // the bottom vertex, which is already included in the bottom row.
+    offset = 2 * rowStride - 2;
+    for (int j = 1; j < numLatVertices; j++)
+    {
+        indices[k++] = (short) (offset + j * rowStride);
+    }
+
+    // Top row. Offset by tileHeight* rowStride + 1 to start at the top left corner, ignoring the tile skirt. Skips
+    // the rightmost vertex, which is already included in the rightmost column.
+    offset = numLatVertices * rowStride + 1;
+    for (int i = numLonVertices - 2; i >= 0; i--)
+    {
+        indices[k++] = (short) (offset + i);
+    }
+
+    // Leftmost column. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt. Skips
+    // the topmost vertex, which is already included in the top row.
+    offset = rowStride + 1;
+    for (int j = numLatVertices - 2; j >= 0; j--)
+    {
+        indices[k++] = (short) (offset + j * rowStride);
     }
 
     *numIndicesOut = numIndices; // let the caller know how many indices were computed
@@ -672,4 +698,30 @@
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
     glDrawElements(GL_LINES, _sharedGeometry.numWireframeIndices, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);
 }
+
+- (void) renderOutline:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+{
+    if (dc == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
+    }
+
+    if (tile == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
+    }
+
+    // Must turn off texture coordinates, which were turned on in beginRendering.
+    int location = [dc.currentProgram getAttributeLocation:@"vertexTexCoord"];
+    if (location >= 0)
+    {
+        glDisableVertexAttribArray((GLuint) location);
+    }
+
+    location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+    glDrawElements(GL_LINE_LOOP, _sharedGeometry.numOutlineIndices, GL_UNSIGNED_SHORT, _sharedGeometry.outlineIndices);
+}
+
 @end

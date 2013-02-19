@@ -12,6 +12,7 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Terrain/WWTerrainGeometry.h"
+#import "WWDrawContext.h"
 
 @implementation WWTerrainTile
 
@@ -73,6 +74,11 @@
 - (void) renderWireframe:(WWDrawContext*)dc
 {
     [_tessellator renderWireFrame:dc tile:self];
+}
+
+- (void) renderOutline:(WWDrawContext*)dc
+{
+    [_tessellator renderOutline:dc tile:self];
 }
 
 - (void) surfacePoint:(double)latitude longitude:(double)longitude offset:(double)offset result:(WWVec4*)result
