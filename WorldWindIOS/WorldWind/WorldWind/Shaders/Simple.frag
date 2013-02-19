@@ -1,9 +1,9 @@
 const char* SimpleFragmentShader = STRINGIFY(
 
-varying lowp vec4 DestinationColor;
+uniform lowp vec4 color;
 
 void main(void)
 {
-    gl_FragColor = DestinationColor;
+    gl_FragColor = color;
 }
 );

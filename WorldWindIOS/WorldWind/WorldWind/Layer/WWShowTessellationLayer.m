@@ -16,6 +16,7 @@
 #define STRINGIFY(A) #A
 #import "WorldWind/Shaders/Simple.vert"
 #import "WorldWind/Shaders/Simple.frag"
+#import "WorldWind/Util/WWColor.h"
 
 @implementation WWShowTessellationLayer
 
@@ -41,6 +42,9 @@
     if (_gpuProgram == nil)
         return;
 
+    WWColor* wireframeColor = [[WWColor alloc] initWithR:1 g:1 b:1 a:1];
+    WWColor* outlineColor = [[WWColor alloc] initWithR:1 g:0 b:0 a:1];
+
     [self beginRendering:dc];
 
     @try
@@ -53,7 +57,10 @@
             WWTerrainTile* tile = [surfaceTiles objectAtIndex:i];
 
             [tile beginRendering:dc];
+            [_gpuProgram loadUniformColor:@"color" color:wireframeColor];
             [tile renderWireframe:dc];
+            [_gpuProgram loadUniformColor:@"color" color:outlineColor];
+            [tile renderOutline:dc];
             [tile endRendering:dc];
         }
     }
@@ -69,12 +76,14 @@
 {
     [_gpuProgram bind];
     [dc setCurrentProgram:_gpuProgram];
+    glDepthMask(false); // Disable depth buffer writes. The diagnostics should not occlude any other objects.
 }
 
 - (void) endRendering:(WWDrawContext*)dc
 {
     [dc setCurrentProgram:nil];
     glUseProgram(0);
+    glDepthMask(true); // Re-enable depth buffer writes.
 }
 
 - (void) makeGpuProgram
