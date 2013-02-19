@@ -14,6 +14,7 @@
 @class WWPosition;
 @class WWSector;
 @class WWVec4;
+@protocol WWElevationModel;
 
 /**
 * Represents a globe. The default values represent Earth.
@@ -43,6 +44,16 @@
 
 /// The WWTessellator used to generate the globe's terrain geometry.
 @property(readonly, nonatomic) WWTessellator* tessellator;
+
+/**
+* The elevation model used to provide the globe with elevation data.
+*
+* The elevation model is used by the methods elevationForLatitude:longitude:,
+* elevationsForSector:numLat:numLon:targetResolution:verticalExaggeration:result:, and
+* minAndMaxElevationsForSector:result:. Additionally, the elevation model is used indirectly used by the tessellator
+* to supply the terrain geometry with elevations at each tessellated location. Initialized to WWZeroElevationModel.
+*/
+@property(nonatomic) id<WWElevationModel> elevationModel;
 
 /// @name Initializing a Globe
 
@@ -183,7 +194,7 @@
 * @param latitude The location's latitude.
 * @param longitude The location's longitude.
 *
-* @return the elevation at the specified location, or 0 if no elevation model is available at that location.
+* @return The elevation at the specified location, or 0 if no elevation model is available at that location.
 */
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude;
 
@@ -194,7 +205,7 @@
 *
 * If a location within the globe's elevation model's coverage area cannot currently be determined,
 * the elevation model's minimum extreme elevation is returned for that location. If a location is outside the
-* elevation model's coverage area, the output buffer for that location is not modified; it retains the buffer's
+* elevation model's coverage area, the output array for that location is not modified; it retains the array's
 * original value.
 *
 * @param sector The sector over which to generate the grid of elevations.
@@ -207,11 +218,11 @@
 * @param result The array of floats in which the elevations are returned. The array must be pre-allocated and
 * contain space for numLat x numLon floats.
 *
-* @return the horizontal resolution achieved, in radians, or FLT_MAX if individual elevations cannot be determined
+* @return The horizontal resolution achieved, in radians, or FLT_MAX if individual elevations cannot be determined
 * for all of the locations. Returns 0 if an elevation model is not available.
 *
-* @exception NSInvalidArgumentException If sector is nil, the result is nil or numLat or numLon are less than or
- * equal to 0.
+* @exception NSInvalidArgumentException If the sector is nil, the result is nil or numLat or numLon are less than or
+* equal to 0.
 */
 - (double) elevationsForSector:(WWSector*)sector
                         numLat:(int)numLat
@@ -226,8 +237,9 @@
 * @param sector The sector whose minimum and maximum are to be found.
 * @param result An array in which to hold the returned minimum (index 0) and maximum (index 1). These elevations are
 * taken from those currently in memory, which may not reflect the highest terrain resolution the globe is capable of.
+*
+* @exception NSInvalidArgumentException If either the sector or the result is nil.
 */
 - (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result;
-
 
 @end

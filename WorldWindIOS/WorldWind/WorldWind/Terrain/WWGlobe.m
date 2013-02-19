@@ -7,6 +7,8 @@
 
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Terrain/WWElevationModel.h"
+#import "WorldWind/Terrain/WWZeroElevationModel.h"
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
@@ -24,6 +26,7 @@
     _es = 0.00669437999013;
     _minElevation = 0;
     _tessellator = [[WWTessellator alloc] initWithGlobe:self];
+    _elevationModel = [[WWZeroElevationModel alloc] init];
 
     return self;
 }
@@ -362,7 +365,7 @@
 
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
-    return 0;
+    return [_elevationModel elevationForLatitude:latitude longitude:longitude];
 }
 
 - (double) elevationsForSector:(WWSector*)sector
@@ -370,7 +373,7 @@
                         numLon:(int)numLon
               targetResolution:(double)targetResolution
           verticalExaggeration:(double)verticalExaggeration
-                        result:(double [])result
+                        result:(double[])result
 {
     if (sector == nil)
     {
@@ -387,19 +390,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"A dimension is <= 0")
     }
 
-    for (int j = 0; j < numLat; j++)
-    {
-        for (int i = 0; i < numLon; i++)
-        {
-            int index = j * numLon + i;
-            result[index] = 0;
-        }
-    }
-
-    return 1;
+    return [_elevationModel elevationsForSector:sector
+                                         numLat:numLat
+                                         numLon:numLon
+                               targetResolution:targetResolution
+                           verticalExaggeration:verticalExaggeration
+                                         result:result];
 }
 
-- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double [])result
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result
 {
     if (sector == nil)
     {
@@ -411,8 +410,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    result[0] = 0;
-    result[1] = 0;
+    [_elevationModel minAndMaxElevationsForSector:sector result:result];
 }
 
 @end
