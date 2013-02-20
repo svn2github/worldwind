@@ -17,6 +17,7 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Geometry/WWAngle.h"
 
 @implementation WWPath
 
@@ -37,25 +38,96 @@
 
     [self setReferencePosition:[positions count] < 1 ? nil : [positions objectAtIndex:0]];
 
-    self->tessellatedPositions = [[NSMutableArray alloc] init];
-    self->tessellationPoints = [[NSMutableArray alloc] init];
-
     return self;
+}
+
+- (void) dealloc
+{
+    if (self->points != nil)
+    {
+        free(self->points);
+    }
 }
 
 - (void) reset
 {
-    [self->tessellationPoints removeAllObjects];
+    if (self->points != nil)
+    {
+        free(self->points);
+        self->points = nil;
+    }
+
+    self->numPoints = 0;
+}
+
+- (void) setPositions:(NSArray*)positions
+{
+    if (positions == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Positions array is nil")
+    }
+
+    _positions = positions;
+
+    [self setReferencePosition:[positions count] < 1 ? nil : [positions objectAtIndex:0]];
+
+    [self reset];
+}
+
+- (void) setFollowTerrain:(BOOL)followTerrain
+{
+    if (_followTerrain != followTerrain)
+    {
+        [self reset];
+    }
+
+    _followTerrain = followTerrain;
+}
+
+- (void) setNumSubsegments:(int)numSubsegments
+{
+    if (numSubsegments < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Number of subsegments is less than 0")
+    }
+
+    _numSubsegments = numSubsegments;
+
+    [self reset];
+}
+
+- (void) setPathType:(NSString*)pathType
+{
+    if (pathType == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Path type is nil")
+    }
+
+    _pathType = pathType;
+
+    [self reset];
+}
+
+- (void) setTerrainConformance:(double)terrainConformance
+{
+    if (terrainConformance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain conformance is less than 0")
+    }
+
+    _terrainConformance = terrainConformance;
+
+    [self reset];
 }
 
 - (BOOL) mustDrawInterior
 {
-    return NO;
+    return NO; // TODO: implement Path interior
 }
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc
 {
-    return [self->tessellationPoints count] == 0 || self->verticalExaggeration != [dc verticalExaggeration];
+    return self->points == nil || self->verticalExaggeration != [dc verticalExaggeration];
 }
 
 - (BOOL) isSurfacePath
@@ -65,13 +137,21 @@
 
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
 {
-    if ([self referencePosition] == nil)
+    // Free the previously generated tessellation points.
+    if (self->points != nil)
+    {
+        free(self->points);
+        self->numPoints = 0;
+    }
+
+    // A nil reference position is a signal that there are no positions to render.
+    WWPosition* refPos = [self referencePosition];
+    if (refPos == nil)
     {
         return;
     }
 
     // Set the transformation matrix to correspond to the reference position.
-    WWPosition* refPos = [self referencePosition];
     [[dc terrain] surfacePointAtLatitude:[refPos latitude]
                                longitude:[refPos longitude]
                                   offset:[refPos altitude]
@@ -80,30 +160,32 @@
     WWVec4* rpt = self->referencePoint;
     [self->transformationMatrix setTranslation:[rpt x] y:[rpt y] z:[rpt z]];
 
-    [self makeTessellatedPositions:dc];
-    if ([self->tessellatedPositions count] < 2)
+    // Tessellate the path in geographic coordinates.
+    NSArray* tessellatedPositions = [self makeTessellatedPositions:dc];
+    if ([tessellatedPositions count] < 2)
     {
         return;
     }
 
-    [self computeRenderedPath:dc];
+    // Convert the tessellated geographic coordinates to the Cartesian coordinates that will be rendered.
+    NSArray* tessellationPoints = [self computeRenderedPath:dc positions:tessellatedPositions];
 
-    WWBoundingBox* box = [[WWBoundingBox alloc] initWithPoints:self->tessellationPoints];
+    // No longer need the tessellated positions.
+    tessellatedPositions = nil;
+
+    // Create the extent from the Cartesian points. Those points are relative to this path's reference point, so
+    // translate the computed extent to the reference point.
+    WWBoundingBox* box = [[WWBoundingBox alloc] initWithPoints:tessellationPoints];
     [box translate:self->referencePoint];
     [self setExtent:box];
 
-    self->verticalExaggeration = [dc verticalExaggeration];
-
-    if (![[self extent] intersects:[[dc navigatorState] frustumInModelCoordinates]]
-            || [dc isSmall:[self extent] numPixels:1])
-    {
-        return;
-    }
+    // No longer need the tessellated points.
+    tessellationPoints = nil;
 }
 
-- (BOOL) orderedRenderableValid:(WWDrawContext*)dc
+- (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
 {
-    return [self->tessellationPoints count] > 1;
+    return self->points != nil && self->numPoints > 1;
 }
 
 - (void) addOrderedRenderable:(WWDrawContext*)dc
@@ -123,7 +205,7 @@
     if ([self isSurfacePath])
     {
         // Modify the standard modelview-projection matrix by applying a depth offset to the perspective matrix.
-        // This pulls the line forward just a bit to ensure it shows over the terrain.
+        // This pulls the path towards the eye just a bit to ensure it shows over the terrain.
         WWMatrix* mvp = [[WWMatrix alloc] initWithMatrix:[[dc navigatorState] projection]];
         [mvp offsetPerspectiveDepth:-0.01];
 
@@ -139,34 +221,19 @@
 
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
-    int numPoints = [self->tessellationPoints count];
-    float* points = malloc((size_t)(numPoints * 3 * sizeof(float_t)));
-
-    for (GLuint i = 0; i < numPoints; i++)
-    {
-        WWVec4* pt = [self->tessellationPoints objectAtIndex:i];
-
-        int k = 3 * i;
-        points[k] = (float) [pt x];
-        points[k + 1] = (float) [pt y];
-        points[k + 2] = (float) [pt z];
-    }
-
     int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, points);
-    glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-
-    free(points);
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, self->points);
+    glDrawArrays(GL_LINE_STRIP, 0, self->numPoints);
 }
 
-- (void) makeTessellatedPositions:(WWDrawContext*)dc
+- (NSArray*) makeTessellatedPositions:(WWDrawContext*)dc
 {
-    [self->tessellatedPositions removeAllObjects];
+    NSMutableArray* tessellatedPositions = [[NSMutableArray alloc] init];
 
-    [self->tessellatedPositions addObject:[_positions objectAtIndex:0]];
+    [tessellatedPositions addObject:[_positions objectAtIndex:0]];
 
-    WWVec4* ptA = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* ptB = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* ptA = [[WWVec4 alloc] initWithZeroVector]; // temp variable
+    WWVec4* ptB = [[WWVec4 alloc] initWithZeroVector]; // temp variable
 
     WWPosition* posA = [_positions objectAtIndex:0];
 
@@ -190,28 +257,36 @@
         double pixelSize = [navState pixelSizeAtDistance:eyeDistance];
         if ([ptA distanceTo3:ptB] < pixelSize * 8)
         {
-            [self->tessellatedPositions addObject:posB];
+            [tessellatedPositions addObject:posB]; // distance is short, so no need for subsegments
         }
         else
         {
-            [self makeSegment:dc posA:posA posB:posB ptA:ptA ptB:ptB];
+            [self makeSegment:dc posA:posA posB:posB ptA:ptA ptB:ptB positions:tessellatedPositions];
         }
 
         posA = posB;
         ptA = ptB;
     }
+
+    return tessellatedPositions;
 }
 
-- (void) makeSegment:(WWDrawContext*)dc posA:(WWPosition*)posA posB:(WWPosition*)posB ptA:(WWVec4*)ptA ptB:(WWVec4*)ptB
+- (void) makeSegment:(WWDrawContext*)dc
+                posA:(WWPosition*)posA
+                posB:(WWPosition*)posB
+                 ptA:(WWVec4*)ptA
+                 ptB:(WWVec4*)ptB
+           positions:(NSMutableArray*)tessellatedPositions
 {
     double arcLength = [[self pathType] isEqualToString:WW_LINEAR]
             ? [ptA distanceTo3:ptB] : [self computeSegmentLength:dc posA:posA posB:posB];
 
     if (arcLength <= 0 || ([[self pathType] isEqualToString:WW_LINEAR] && !_followTerrain))
     {
+        // Segment is zero length or a straight line.
         if (![ptA isEqual:ptB])
         {
-            [self->tessellatedPositions addObject:posB];
+            [tessellatedPositions addObject:posB];
         }
         return;
     }
@@ -221,7 +296,12 @@
 
     double segmentAzimuth;
     double segmentDistance;
-    if ([_pathType isEqualToString:WW_RHUMB] || [_pathType isEqualToString:WW_LINEAR])
+    if ([_pathType isEqualToString:WW_LINEAR])
+    {
+        segmentAzimuth = [WWLocation linearAzimuth:posA endLocation:posB];
+        segmentDistance = [WWLocation linearDistance:posA endLocation:posB];
+    }
+    else if ([_pathType isEqualToString:WW_RHUMB])
     {
         segmentAzimuth = [WWLocation rhumbAzimuth:posA endLocation:posB];
         segmentDistance = [WWLocation rhumbDistance:posA endLocation:posB];
@@ -232,7 +312,7 @@
         segmentDistance = [WWLocation greatCircleDistance:posA endLocation:posB];
     }
 
-    for (double s = 0, p = 0; s < 1;)
+    for (double s = 0, p = 0; s < 1;) // p is length along path. s is relative length ([0,1]) along path.
     {
         if (_followTerrain)
         {
@@ -250,24 +330,32 @@
         {
             pos = posB;
         }
-        else if ([_pathType isEqualToString:WW_RHUMB] || [_pathType isEqualToString:WW_LINEAR])
+        else if ([_pathType isEqualToString:WW_LINEAR])
         {
             double distance = s * segmentDistance;
-            WWLocation* latLon = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
-            [WWLocation rhumbLocation:posA azimuth:segmentAzimuth distance:distance outputLocation:latLon];
-            pos = [[WWPosition alloc] initWithDegreesLatitude:[latLon latitude] longitude:[latLon longitude]
+            WWLocation* tmp = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+            [WWLocation linearLocation:posA azimuth:segmentAzimuth distance:distance outputLocation:tmp];
+            pos = [[WWPosition alloc] initWithDegreesLatitude:[tmp latitude] longitude:[tmp longitude]
+                                                     altitude:(1 - s) * [posA altitude] + s * [posB altitude]];
+        }
+        else if ([_pathType isEqualToString:WW_RHUMB])
+        {
+            double distance = s * segmentDistance;
+            WWLocation* tmp = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+            [WWLocation rhumbLocation:posA azimuth:segmentAzimuth distance:distance outputLocation:tmp];
+            pos = [[WWPosition alloc] initWithDegreesLatitude:[tmp latitude] longitude:[tmp longitude]
                                                      altitude:(1 - s) * [posA altitude] + s * [posB altitude]];
         }
         else
         {
             double distance = s * segmentDistance;
-            WWLocation* latLon = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
-            [WWLocation greatCircleLocation:posA azimuth:segmentAzimuth distance:distance outputLocation:latLon];
-            pos = [[WWPosition alloc] initWithDegreesLatitude:[latLon latitude] longitude:[latLon longitude]
+            WWLocation* tmp = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+            [WWLocation greatCircleLocation:posA azimuth:segmentAzimuth distance:distance outputLocation:tmp];
+            pos = [[WWPosition alloc] initWithDegreesLatitude:[tmp latitude] longitude:[tmp longitude]
                                                      altitude:(1 - s) * [posA altitude] + s * [posB altitude]];
         }
 
-        [self->tessellatedPositions addObject:pos];
+        [tessellatedPositions addObject:pos];
 
         ptA = ptB;
     }
@@ -275,7 +363,7 @@
 
 - (double) computeSegmentLength:(WWDrawContext*)dc posA:(WWPosition*)posA posB:(WWPosition*)posB
 {
-    double length = [WWLocation greatCircleDistance:posA endLocation:posB] * [[dc globe] equatorialRadius];
+    double length = RADIANS([WWLocation greatCircleDistance:posA endLocation:posB]) * [[dc globe] equatorialRadius];
 
     if (![[self altitudeMode] isEqualToString:WW_ALTITUDE_MODE_CLAMP_TO_GROUND])
     {
@@ -286,37 +374,46 @@
     return length;
 }
 
-- (void) computeRenderedPath:(WWDrawContext*)dc
+- (NSArray*) computeRenderedPath:(WWDrawContext*)dc positions:(NSArray*)tessellatedPositions
 {
     id <WWTerrain> terrain = [dc terrain];
     NSString* altMode = [self altitudeMode];
-    double eyeDist2 = DBL_MAX;
+    double eyeDistSquared = DBL_MAX;
     WWVec4* eyePoint = [[dc navigatorState] eyePoint];
 
-    [self->tessellationPoints removeAllObjects];
+    NSMutableArray* tessellationPoints = [[NSMutableArray alloc] initWithCapacity:[tessellatedPositions count]];
 
-    for (GLuint i = 0; i < [self->tessellatedPositions count]; i++)
+    self->points = malloc((size_t) [tessellatedPositions count] * 3 * sizeof(float));
+
+    for (NSUInteger i = 0; i < [tessellatedPositions count]; i++)
     {
-        WWPosition* pos = [self->tessellatedPositions objectAtIndex:i];
+        WWPosition* pos = [tessellatedPositions objectAtIndex:i];
 
         WWVec4* pt = [[WWVec4 alloc] initWithZeroVector];
         [terrain surfacePointAtLatitude:[pos latitude] longitude:[pos longitude] offset:[pos altitude]
                            altitudeMode:altMode result:pt];
 
-        double d2 = [pt distanceTo3:eyePoint];
-        if (d2 < eyeDist2)
+        double dSquared = [pt distanceSquared3:eyePoint];
+        if (dSquared < eyeDistSquared)
         {
-            eyeDist2 = d2;
+            eyeDistSquared = dSquared;
         }
 
         [pt subtract3:self->referencePoint];
 
-        [self->tessellationPoints addObject:pt];
+        [tessellationPoints addObject:pt];
+
+        int k = 3 * i;
+        self->points[k] = (float) [pt x];
+        self->points[k + 1] = (float) [pt y];
+        self->points[k + 2] = (float) [pt z];
     }
 
-    [self setEyeDistance:sqrt(eyeDist2)];
+    [self setEyeDistance:sqrt(eyeDistSquared)];
 
-    [self->tessellatedPositions removeAllObjects];
+    self->numPoints = [tessellationPoints count];
+
+    return tessellationPoints;
 }
 
 @end

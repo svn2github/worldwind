@@ -23,11 +23,11 @@
 /**
 * This location's latitude in degrees.
 */
-@property (nonatomic) double latitude;
+@property(nonatomic) double latitude;
 /**
 * This location's longitude in degrees.
 */
-@property (nonatomic) double longitude;
+@property(nonatomic) double longitude;
 
 /// @name Initializing Locations
 
@@ -57,7 +57,7 @@
 *
 * @exception NSInvalidArgumentException If the specified time zone is nil.
 */
-- (WWLocation*) initWithDegreesLatitude:(double) latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
+- (WWLocation*) initWithDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
 
 /**
 * Initializes a location to the latitude and longitude of a specified location.
@@ -294,6 +294,45 @@
               endLocation:(WWLocation*)endLocation
                    amount:(double)amount
            outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) linearAzimuth:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* TODO
+*
+* @param beginLocation TODO
+* @param endLocation TODO
+*
+* @return TODO
+*
+* @exception TODO
+*/
++ (double) linearDistance:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+
+/**
+* Computes this location on the rhumb path specified by a beginning location, azimuth and distance.
+*
+* @param beginLocation The beginning location of the rhumb path.
+* @param azimuth The direction of the rhumb path in degrees clockwise from north.
+* @param distance The angular distance, between the begin location of the path and the desired location, in degrees.
+* @param result TODO
+*
+* @exception NSInvalidArgumentException If either the begin location or the result is nil.
+*/
++ (void) linearLocation:(WWLocation*)beginLocation
+                azimuth:(double)azimuth
+               distance:(double)distance
+         outputLocation:(WWLocation*)result;
 
 /**
 * TODO

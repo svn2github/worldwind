@@ -124,9 +124,12 @@
     if ([self mustRegenerateGeometry:dc])
     {
         [self doMakeOrderedRenderable:dc];
+
+        // Remember the vertical exaggeration used to make this path.
+        self->verticalExaggeration = [dc verticalExaggeration];
     }
 
-    if ([self orderedRenderableValid:dc])
+    if ([self isOrderedRenderableValid:dc] && [self intersectsFrustum:dc] && ![dc isSmall:_extent numPixels:1])
     {
         [self addOrderedRenderable:dc];
     }
@@ -137,7 +140,7 @@
     // Must be implemented by subclass
 }
 
-- (BOOL) orderedRenderableValid:(WWDrawContext*)dc
+- (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
 {
     // Must be implemented by subclass
 
@@ -304,6 +307,7 @@
 
 // STRINGIFY is used in the shader files.
 #define STRINGIFY(A) #A
+
 #import "WorldWind/Shaders/AbstractShape.vert"
 #import "WorldWind/Shaders/AbstractShape.frag"
 

@@ -18,14 +18,14 @@
 - (WWLocation*) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
 {
     self = [super init];
-    
+
     _latitude = latitude;
     _longitude = longitude;
-    
+
     return self;
 }
 
-- (WWLocation*) initWithDegreesLatitude:(double) latitude timeZoneForLongitude:(NSTimeZone*)timeZone
+- (WWLocation*) initWithDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone
 {
     if (timeZone == nil)
     {
@@ -81,7 +81,7 @@
     return self;
 }
 
-- (id) copyWithZone:(NSZone *)zone
+- (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithDegreesLatitude:_latitude longitude:_longitude];
 }
@@ -142,7 +142,7 @@
     return self;
 }
 
--(WWLocation*) addLocation:(WWLocation *)location
+- (WWLocation*) addLocation:(WWLocation*)location
 {
     if (location == nil)
     {
@@ -151,20 +151,20 @@
 
     _latitude += location.latitude;
     _longitude += location.longitude;
-    
+
     return self;
 }
 
--(WWLocation*) subtractLocation:(WWLocation *)location
+- (WWLocation*) subtractLocation:(WWLocation*)location
 {
     if (location == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
-    
+
     _latitude -= location.latitude;
     _longitude -= location.longitude;
-    
+
     return self;
 }
 
@@ -464,6 +464,130 @@
     double fractionalDistance = amount * distance;
 
     [WWLocation rhumbLocation:beginLocation azimuth:azimuth distance:fractionalDistance outputLocation:result];
+}
+
++ (double) linearAzimuth:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation
+{
+    if (beginLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin location is nil")
+    }
+
+    if (endLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End location is nil")
+    }
+
+    // Taken from http://www.movable-type.co.uk/scripts/latlong.html
+
+    double lat1 = RADIANS(beginLocation->_latitude);
+    double lon1 = RADIANS(beginLocation->_longitude);
+    double lat2 = RADIANS(endLocation->_latitude);
+    double lon2 = RADIANS(endLocation->_longitude);
+
+    if (lat1 == lat2 && lon1 == lon2)
+    {
+        return 0;
+    }
+
+    double dLon = lon2 - lon1;
+    double dLat = lat2 - lat1;
+
+    // If lonChange over 180 take shorter rhumb across 180 meridian.
+    if (fabs(dLon) > M_PI)
+    {
+        dLon = dLon > 0 ? -(2 * M_PI - dLon) : (2 * M_PI + dLon);
+    }
+
+    double azimuthRadians = atan2(dLon, dLat);
+
+    return isnan(azimuthRadians) ? 0 : DEGREES(azimuthRadians);
+}
+
++ (double) linearDistance:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation
+{
+    if (beginLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin location is nil")
+    }
+
+    if (endLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End location is nil")
+    }
+
+    // Taken from http://www.movable-type.co.uk/scripts/latlong.html
+
+    double lat1 = RADIANS(beginLocation->_latitude);
+    double lon1 = RADIANS(beginLocation->_longitude);
+    double lat2 = RADIANS(endLocation->_latitude);
+    double lon2 = RADIANS(endLocation->_longitude);
+
+    if (lat1 == lat2 && lon1 == lon2)
+    {
+        return 0;
+    }
+
+    double dLat = lat2 - lat1;
+    double dLon = lon2 - lon1;
+
+    // If lonChange over 180 take shorter rhumb across 180 meridian.
+    if (fabs(dLon) > M_PI)
+    {
+        dLon = dLon > 0 ? -(2 * M_PI - dLon) : (2 * M_PI + dLon);
+    }
+
+    double distanceRadians = hypot(dLat, dLon);
+
+    return isnan(distanceRadians) ? 0 : DEGREES(distanceRadians);
+}
+
++ (void) linearLocation:(WWLocation*)beginLocation
+                azimuth:(double)azimuth
+               distance:(double)distance
+         outputLocation:(WWLocation*)result;
+{
+    if (beginLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin location is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output location is nil")
+    }
+
+    // Taken from http://www.movable-type.co.uk/scripts/latlong.html
+
+    double latitude = beginLocation->_latitude;
+    double longitude = beginLocation->_longitude;
+
+    if (distance != 0)
+    {
+        double lat1 = RADIANS(latitude);
+        double lon1 = RADIANS(longitude);
+        double a = RADIANS(azimuth);
+        double d = RADIANS(distance);
+
+        double lat2 = lat1 + d * cos(a);
+
+        // Handle latitude passing over either pole.
+        if (fabs(lat2) > M_PI_2)
+        {
+            lat2 = lat2 > 0 ? M_PI - lat2 : -M_PI - lat2;
+        }
+
+        double lon2 = fmod(lon1 + d * sin(a) + M_PI, (2 * M_PI)) - M_PI;
+
+        if (!isnan(lat2) && !isnan(lon2))
+        {
+            latitude = NormalizedDegreesLatitude(DEGREES(lat2));
+            longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+        }
+    }
+
+    result->_latitude = latitude;
+    result->_longitude = longitude;
 }
 
 + (void) forecastLocation:(CLLocation*)location

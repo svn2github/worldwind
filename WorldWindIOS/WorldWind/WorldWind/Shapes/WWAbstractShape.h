@@ -63,7 +63,7 @@
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc;
 
-- (BOOL) orderedRenderableValid:(WWDrawContext*)dc;
+- (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc;
 
 - (BOOL) mustDrawInterior;
 
