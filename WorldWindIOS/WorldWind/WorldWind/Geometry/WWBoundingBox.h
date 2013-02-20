@@ -88,6 +88,17 @@
 */
 - (WWBoundingBox*) initWithPoints:(NSArray*)points;
 
+/// @name Operations on Bounding Boxes
+
+/**
+* Translates this box by a specified translation vector.
+*
+* @param translation The translation vector.
+*
+* @exception NSInvalidArgumentException If the specified translation vector is nil.
+*/
+- (void) translate:(WWVec4*)translation;
+
 /// @name Methods of Interest Only to Subclasses
 
 /**

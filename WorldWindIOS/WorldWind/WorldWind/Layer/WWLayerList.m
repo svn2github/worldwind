@@ -6,7 +6,7 @@
  */
 
 #import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWInd/Layer/WWLayer.h"
+#import "WorldWind/Layer/WWLayer.h"
 
 @implementation WWLayerList
 

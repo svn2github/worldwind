@@ -120,14 +120,6 @@
 - (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels;
 
 /**
-* Adds a specified shape to the scene controller's ordered renderable list.
-*
-* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
-* renderable list is not modified.
-*/
-- (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable;
-
-/**
 * Draw the specified shape, potentially using a multi-path algorithm to coordinate the proper drawing of the shape's
 * outline over its interior.
 *
@@ -136,5 +128,39 @@
 * @exception NSInvalidArgumentException If the specified shape is nil.
 */
 - (void) drawOutlinedShape:(id <WWOutlinedShape>)shape;
+
+
+/// @name Ordered Renderable Operations on Draw Context
+
+/**
+* Adds a specified shape to the scene controller's ordered renderable list.
+*
+* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
+* renderable list is not modified.
+*/
+- (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable;
+
+/**
+* Adds a specified shape to the back of the scene controller's ordered renderable list.
+*
+* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
+* renderable list is not modified.
+*/
+- (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable;
+
+/**
+* Returns the ordered renderable at the front of the ordered renderable queue without removing it from the queue.
+*
+* @return The ordered renderable at the front of the ordered renderable queue.
+*/
+- (id <WWOrderedRenderable>) peekOrderedRenderables;
+
+/**
+* Returns the ordered renderable at the front of the ordered renderable queue and removes it from the queue.
+*
+* @return The ordered renderable at the front of the ordered renderable queue.
+*/
+- (id <WWOrderedRenderable>) pollOrderedRenderables;
+
 
 @end

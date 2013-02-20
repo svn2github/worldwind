@@ -6,6 +6,24 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "WWAbstractShape.h"
 
-@interface WWPath : NSObject
+@class WWPosition;
+
+@interface WWPath : WWAbstractShape
+{
+@protected
+    NSMutableArray* tessellatedPositions;
+    NSMutableArray* tessellationPoints;
+}
+
+@property (nonatomic) NSArray* positions;
+@property (nonatomic) WWPosition* referencePosition;
+@property (nonatomic) NSString* pathType;
+@property (nonatomic) BOOL followTerrain;
+@property (nonatomic) double terrainConformance;
+@property (nonatomic) int numSubsegments;
+
+- (WWPath*) initWithPositions:(NSArray*)positions;
+
 @end

@@ -272,4 +272,14 @@
 */
 - (WWFrustum*) extractFrustum;
 
+/**
+* Applies a specified offset to this projection matrix.
+*
+* The offset is typically used to draw subsequent shapes slightly closer to the user's eye in order to give those
+* shapes visual priority over terrain or surface shapes.
+*
+* @param depthOffset The amount of offset to apply.
+*/
+- (void) offsetPerspectiveDepth:(double)depthOffset;
+
 @end

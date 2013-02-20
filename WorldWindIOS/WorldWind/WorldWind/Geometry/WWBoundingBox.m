@@ -296,4 +296,21 @@
     return t;
 }
 
+- (void) translate:(WWVec4*)translation
+{
+    if (translation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Translation is nil")
+    }
+
+    [_bottomCenter add3:translation];
+    [_topCenter add3:translation];
+    [_center add3:translation];
+
+    for (NSUInteger i = 0; i < [_planes count]; i++)
+    {
+        [[_planes objectAtIndex:i] translate:translation];
+    }
+}
+
 @end

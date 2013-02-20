@@ -20,6 +20,9 @@
 #import "LayerListController.h"
 #import "LocationController.h"
 #import "AnyGestureRecognizer.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/Shapes/WWPath.h"
+#import "WorldWind/Geometry/WWPosition.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -83,7 +86,25 @@
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
 
+    [self createPathsLayer];
+
     [self->locationController setView:_wwv];
+}
+
+- (void) createPathsLayer
+{
+    WWLayerList* layers = [[_wwv sceneController] layers];
+
+    WWRenderableLayer* renderableLayer = [[WWRenderableLayer alloc] init];
+    [renderableLayer setDisplayName:@"Paths"];
+    [layers addLayer:renderableLayer];
+
+    NSMutableArray* positions = [[NSMutableArray alloc] init];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:1000]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:1 longitude:1 altitude:1000]];
+
+    WWPath* path01 = [[WWPath alloc] initWithPositions:positions];
+    [renderableLayer addRenderable:path01];
 }
 
 /*!
@@ -251,10 +272,7 @@
     else
     {
         [[[UIAlertView alloc] initWithTitle:@"No Results Found"
-                                    message:nil
-                                   delegate:nil
-                          cancelButtonTitle:nil
-                          otherButtonTitles:@"OK", nil] show];
+                                    message:nil delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil] show];
     }
 }
 

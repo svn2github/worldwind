@@ -913,4 +913,9 @@
     return [[WWFrustum alloc] initWithPlanes:left right:right bottom:bottom top:top near:near far:far];
 }
 
+- (void) offsetPerspectiveDepth:(double)depthOffset
+{
+    self->m[10] *= 1 + depthOffset;
+}
+
 @end

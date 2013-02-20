@@ -27,6 +27,7 @@
     WWShapeAttributes* activeAttributes;
     WWMatrix* transformationMatrix;
     WWVec4* referencePoint;
+    double verticalExaggeration;
 
     // Volatile values used only during frame generation.
     NSString* programKey;
@@ -45,6 +46,8 @@
 @property(nonatomic) id <WWExtent> extent;
 
 - (WWAbstractShape*) init;
+
+- (void) reset;
 
 - (void) setDefaultAttributes;
 

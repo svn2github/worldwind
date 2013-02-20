@@ -40,6 +40,10 @@
     return self;
 }
 
+- (void) reset
+{
+}
+
 - (void) setDefaultAttributes
 {
     [self->defaultAttributes setInteriorEnabled:NO];
@@ -106,7 +110,7 @@
 
 - (BOOL) intersectsFrustum:(WWDrawContext*)dc
 {
-    return _extent != nil && [_extent intersects:[[dc navigatorState] frustumInModelCoordinates]];
+    return _extent == nil || [_extent intersects:[[dc navigatorState] frustumInModelCoordinates]];
 }
 
 - (void) makeOrderedRenderable:(WWDrawContext*)dc
@@ -124,7 +128,7 @@
 
     if ([self orderedRenderableValid:dc])
     {
-        [dc addOrderedRenderable:self];
+        [self addOrderedRenderable:dc];
     }
 }
 
@@ -138,6 +142,11 @@
     // Must be implemented by subclass
 
     return NO;
+}
+
+- (void) addOrderedRenderable:(WWDrawContext*)dc
+{
+    [dc addOrderedRenderable:self];
 }
 
 - (void) drawOrderedRenderable:(WWDrawContext*)dc

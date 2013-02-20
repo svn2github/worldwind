@@ -68,6 +68,15 @@
 - (void) transformByMatrix:(WWMatrix*)matrix;
 
 /**
+* Translates this plane by a specified translation vector.
+*
+* @param translation The translation vector.
+*
+* @exception NSInvalidArgumentException If the specified translation vector is nil.
+*/
+- (void) translate:(WWVec4*)translation;
+
+/**
 * Normalizes this planes vector by dividing all four of the vector's components by the X, Y, Z length of the vector.
 */
 - (void) normalize;

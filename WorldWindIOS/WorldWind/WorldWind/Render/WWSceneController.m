@@ -13,6 +13,7 @@
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Render/WWOrderedRenderable.h"
 
 @implementation WWSceneController
 
@@ -136,6 +137,24 @@
 
 - (void) drawOrderedRenderables
 {
+    [self->drawContext setOrderedRenderingMode:YES];
+
+    while ([self->drawContext peekOrderedRenderables] != nil)
+    {
+        id <WWOrderedRenderable> or = [self->drawContext pollOrderedRenderables];
+
+        @try
+        {
+            [or render:self->drawContext];
+        }
+        @catch (NSException* exception)
+        {
+            NSString* msg = [NSString stringWithFormat:@"rendering shape"];
+            WWLogE(msg, exception);
+        }
+    }
+
+    [self->drawContext setOrderedRenderingMode:NO];
 }
 
 @end

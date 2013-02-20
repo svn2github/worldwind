@@ -9,7 +9,7 @@
 #import "WorldWind/Geometry/WWPlane.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
-#import "WWMatrix.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 
 
 @implementation WWPlane
@@ -65,6 +65,16 @@
     }
 
     [matrix multiplyVector:_vector];
+}
+
+- (void) translate:(WWVec4*)translation
+{
+    if (translation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Translation is nil")
+    }
+
+    [_vector set:[_vector x] y:[_vector y] z:[_vector z] w:[_vector w] - [_vector dot3:translation]];
 }
 
 - (void) normalize

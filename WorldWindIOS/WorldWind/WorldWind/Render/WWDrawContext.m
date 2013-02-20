@@ -50,24 +50,54 @@
     [_globe computePositionFromPoint:[ep x] y:[ep y] z:[ep z] outputPosition:_eyePosition];
 }
 
-- (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels
+- (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels // TODO: enable when pixelSizeAtDistance implemented
 {
-    if (extent == nil)
+//    if (extent == nil)
         return NO;
 
-    double distance = [[_navigatorState eyePoint] distanceTo3:[extent center]];
-    double extentDiameter = 2 * [extent radius];
-    double pixelsSize = numPixels * [_navigatorState pixelSizeAtDistance:distance];
-
-    return extentDiameter <= pixelsSize;
+//    double distance = [[_navigatorState eyePoint] distanceTo3:[extent center]];
+//    double extentDiameter = 2 * [extent radius];
+//    double pixelsSize = numPixels * [_navigatorState pixelSizeAtDistance:distance];
+//
+//    return extentDiameter <= pixelsSize;
 }
 
 - (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable
 {
+    // TODO: Add according to eye-distance priority.
+
     if (orderedRenderable != nil)
     {
         [self->orderedRenderables addObject:orderedRenderable];
     }
+}
+
+- (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable
+{
+    // TODO: Add item and assign it lowest visual priority.
+
+    if (orderedRenderable != nil)
+    {
+        [self->orderedRenderables addObject:orderedRenderable];
+    }
+}
+
+- (id <WWOrderedRenderable>) peekOrderedRenderables
+{
+    return [self->orderedRenderables count] == 0 ? nil : [self->orderedRenderables objectAtIndex:0];
+}
+
+- (id <WWOrderedRenderable>) pollOrderedRenderables
+{
+    if ([self->orderedRenderables count] == 0)
+    {
+        return nil;
+    }
+
+    id <WWOrderedRenderable> or = [self->orderedRenderables objectAtIndex:0];
+    [self->orderedRenderables removeObjectAtIndex:0];
+
+    return or;
 }
 
 - (void) drawOutlinedShape:(id <WWOutlinedShape>)shape
