@@ -30,25 +30,22 @@
 /// @name Attributes
 
 /// The sector this tile spans.
-@property(readonly, nonatomic) WWSector* sector;
+@property(nonatomic, readonly) WWSector* sector;
 
 /// The level this tile is associated with.
-@property(readonly, nonatomic) WWLevel* level;
+@property(nonatomic, readonly) WWLevel* level;
 
 /// The tile's row in the associated level.
-@property(readonly, nonatomic) int row;
+@property(nonatomic, readonly) int row;
 
 /// The tile's column in the associated level.
-@property(readonly, nonatomic) int column;
-
-/// The resolution of a single pixel or cell in a tile of this level set.
-@property(readonly, nonatomic) double resolution; // TODO: Is this property necessary?
+@property(nonatomic, readonly) int column;
 
 /// Cartesian coordinates of the tile's corners, center and potentially other key locations on the tile.
-@property(readonly, nonatomic) NSMutableArray* referencePoints;
+@property(nonatomic, readonly) NSMutableArray* referencePoints;
 
 /// The tile's Cartesian bounding box.
-@property(readonly, nonatomic) WWBoundingBox* extent;
+@property(nonatomic, readonly) WWBoundingBox* extent;
 
 /**
 * Indicates the width in pixels or cells of this tile's resource.
@@ -63,6 +60,13 @@
 * @return The requested height.
 */
 - (int) tileHeight;
+
+/**
+ * Indicates the size of pixels or elevation cells of this tile's resource, in radians per pixel.
+ *
+ * @return The requested size.
+ */
+- (double) texelSize;
 
 /**
 * Computes a row number for a tile within a level given its latitude.

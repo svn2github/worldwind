@@ -38,18 +38,18 @@
 
 /// The width in pixels of images associated with tiles in this level set, or the number of sample points in the
 // longitudinal direction of elevation tiles associate with this level set. The default width is 256.
-@property(nonatomic) int tileWidth;
+@property(nonatomic, readonly) int tileWidth;
 
 /// The height in pixels of images associated with tiles in this level set, or the number of sample points in the
 // latitudinal direction of elevation tiles associate with this level set. The default height is 256.
-@property(nonatomic) int tileHeight;
+@property(nonatomic, readonly) int tileHeight;
+
+/// The number of longitudinal cells in level 0 of this level set.
+@property(nonatomic, readonly) int numLevelZeroColumns;
 
 /// The time at which resources in this level set most recently expired. Resources with dates later than this time
 // are valid, but resources with dates prior to this time are not.
 @property(nonatomic) NSTimeInterval expiryTime;
-
-/// The number of longitudinal cells in level 0 of this level set.
-@property(nonatomic, readonly) int numLevelZeroColumns;
 
 /**
 * Returns the level for a specified level number.
@@ -75,15 +75,6 @@
 - (WWLevel*) lastLevel;
 
 /**
-* Indicates the number of longitudinal cells in a specified level.
-*
-* @param level The level of interest.
-*
-* @return The number of columns in the specified level.
-*/
-- (int) numColumnsInLevel:(WWLevel*)level;
-
-/**
 * Indicates whether a specified level number indicates the highest resolution level in the level set.
 *
 * @param levelNumber The level number of interest.
@@ -92,10 +83,19 @@
 */
 - (BOOL) isLastLevel:(int)levelNumber;
 
+/**
+* Indicates the number of longitudinal cells in a specified level.
+*
+* @param level The level of interest.
+*
+* @return The number of columns in the specified level.
+*/
+- (int) numColumnsInLevel:(WWLevel*)level;
+
 /// @name Initializing Level Sets
 
 /**
-* Initialize a level set.
+* Initialize a level set with the default tile width and tile height of 256.
 *
 * @param sector The sector spanned by this level set.
 * @param levelZeroDelta The geographic size of tiles in the lowest resolution level of this level set.
@@ -109,5 +109,27 @@
 - (WWLevelSet*) initWithSector:(WWSector*)sector
                 levelZeroDelta:(WWLocation*)levelZeroDelta
                      numLevels:(int)numLevels;
+
+/**
+* Initialize a level set with a specified tile width and tile height.
+*
+* @param sector The sector spanned by this level set.
+* @param levelZeroDelta The geographic size of tiles in the lowest resolution level of this level set.
+* @param numLevels The number of levels in the level set.
+* @param tileWidth The height in pixels of images associated with tiles in this level set, or the number of sample
+* points in the longitudinal direction of elevation tiles associate with this level set.
+* @param tileHeight The height in pixels of images associated with tiles in this level set, or the number of sample
+* points in the latitudinal direction of elevation tiles associate with this level set.
+*
+* @return The level set, initialized.
+*
+* @exception NSInvalidArgumentException If the specified sector or level zero tile delta are nil, the number of levels
+* is less than 1, or either tile size is less than 1.
+*/
+- (WWLevelSet*) initWithSector:(WWSector*)sector
+                levelZeroDelta:(WWLocation*)levelZeroDelta
+                     numLevels:(int)numLevels
+                     tileWidth:(int)tileWidth
+                    tileHeight:(int)tileHeight;
 
 @end

@@ -81,6 +81,11 @@
     return [[_level parent] tileHeight];
 }
 
+- (double) texelSize
+{
+    return [_level texelSize];
+}
+
 + (int) computeRow:(double)delta latitude:(double)latitude
 {
     if (delta <= 0)

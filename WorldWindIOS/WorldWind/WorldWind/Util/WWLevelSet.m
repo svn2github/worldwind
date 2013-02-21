@@ -6,12 +6,13 @@
  */
 
 #import "WorldWind/Util/WWLevelSet.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/WWLog.h"
+
+#define DEFAULT_TILE_SIZE 256
 
 @implementation WWLevelSet
 
@@ -34,32 +35,65 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Number of levels is less than 1")
     }
 
+    return [self initWithSector:sector
+                 levelZeroDelta:levelZeroDelta
+                      numLevels:numLevels
+                      tileWidth:DEFAULT_TILE_SIZE
+                     tileHeight:DEFAULT_TILE_SIZE];
+}
+
+- (WWLevelSet*) initWithSector:(WWSector*)sector
+                levelZeroDelta:(WWLocation*)levelZeroDelta
+                     numLevels:(int)numLevels
+                     tileWidth:(int)tileWidth
+                    tileHeight:(int)tileHeight
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (levelZeroDelta == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Level 0 delta is nil")
+    }
+
+    if (numLevels < 1)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Number of levels is less than 1")
+    }
+
+    if (tileWidth < 1 || tileHeight < 1)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile width or height is less than 1")
+    }
+
     self = [super init];
 
-    _sector = sector;
-    _levelZeroDelta = levelZeroDelta;
-    _numLevels = numLevels;
-
-    _tileWidth = 256;
-    _tileHeight = 256;
-
-    int firstLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude]
-                                           longitude:[_sector minLongitude]];
-    int lastLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude]
-                                          longitude:[_sector maxLongitude]];
-    _numLevelZeroColumns = MAX(1, lastLevelZeroColumn - firstLevelZeroColumn + 1);
-
-    self->levels = [[NSMutableArray alloc] init];
-
-    for (int i = 0; i < _numLevels; i++)
+    if (self != nil)
     {
-        double n = pow(2, i);
-        double latDelta = [_levelZeroDelta latitude] / n;
-        double lonDelta = [_levelZeroDelta longitude] / n;
-        WWLocation* tileDelta = [[WWLocation alloc] initWithDegreesLatitude:latDelta longitude:lonDelta];
+        _sector = sector;
+        _levelZeroDelta = levelZeroDelta;
+        _numLevels = numLevels;
+        _tileWidth = tileWidth;
+        _tileHeight = tileHeight;
 
-        WWLevel* level = [[WWLevel alloc] initWithLevelNumber:i tileDelta:tileDelta parent:self];
-        [self->levels addObject:level];
+        int firstLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude] longitude:[_sector minLongitude]];
+        int lastLevelZeroColumn = [WWTile computeColumn:[_levelZeroDelta longitude] longitude:[_sector maxLongitude]];
+        _numLevelZeroColumns = MAX(1, lastLevelZeroColumn - firstLevelZeroColumn + 1);
+
+        self->levels = [[NSMutableArray alloc] init];
+
+        for (int i = 0; i < _numLevels; i++)
+        {
+            double n = pow(2, i);
+            double latDelta = [_levelZeroDelta latitude] / n;
+            double lonDelta = [_levelZeroDelta longitude] / n;
+            WWLocation* tileDelta = [[WWLocation alloc] initWithDegreesLatitude:latDelta longitude:lonDelta];
+
+            WWLevel* level = [[WWLevel alloc] initWithLevelNumber:i tileDelta:tileDelta parent:self];
+            [self->levels addObject:level];
+        }
     }
 
     return self;
@@ -97,4 +131,5 @@
 
     return (int) twoToTheN * _numLevelZeroColumns;
 }
+
 @end

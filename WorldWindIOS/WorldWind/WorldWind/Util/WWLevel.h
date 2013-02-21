@@ -52,6 +52,11 @@
 */
 - (WWSector*) sector;
 
+/**
+* Indicates whether this level number is the highest resolution level within its parent level set.
+*
+* @return YES if this level is the highest resolution level in the level set, otherwise NO.
+*/
 - (BOOL) isLastLevel;
 
 /// @name Initializing Levels

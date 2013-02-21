@@ -26,6 +26,7 @@
 
 #define LEVEL_ZERO_DELTA 45
 #define NUM_LEVELS 10
+#define TILE_SIZE 5
 
 @implementation WWTessellator
 
@@ -43,15 +44,15 @@
         _globe = globe;
 
         self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1e6 lowWater:800e3];
-        self->detailHintOrigin = 2.5;
+        self->detailHintOrigin = 0.8;
 
         WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:LEVEL_ZERO_DELTA
                                                                        longitude:LEVEL_ZERO_DELTA];
         self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
                                            levelZeroDelta:levelZeroDelta
-                                                numLevels:NUM_LEVELS];
-        [self->levels setTileWidth:5];
-        [self->levels setTileHeight:5];
+                                                numLevels:NUM_LEVELS
+                                                tileWidth:TILE_SIZE
+                                               tileHeight:TILE_SIZE];
 
         self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
         self->topLevelTiles = [[NSMutableArray alloc] init];
@@ -145,8 +146,7 @@
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     // TODO: Consider also using the best-resolution test in the desktop and android versions.
-    return [self->levels isLastLevel:[[tile level] levelNumber]]
-            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
+    return [[tile level] isLastLevel] || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
 }
 
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -212,7 +212,7 @@
     [dc.globe elevationsForSector:tile.sector
                            numLat:numLatVertices
                            numLon:numLonVertices
-                 targetResolution:tile.resolution
+                 targetResolution:tile.texelSize
              verticalExaggeration:dc.verticalExaggeration
                            result:elevations];
 

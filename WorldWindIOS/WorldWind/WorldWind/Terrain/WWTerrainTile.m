@@ -33,8 +33,6 @@
 
     _tessellator = tessellator;
 
-    //TODO: set the resolution (if that property is still necessary).
-
     return self;
 }
 
