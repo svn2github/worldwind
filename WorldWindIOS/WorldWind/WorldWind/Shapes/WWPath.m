@@ -265,7 +265,7 @@
         }
 
         posA = posB;
-        ptA = ptB;
+        [ptA set:[ptB x] y:[ptB y] z:[ptB z]];
     }
 
     return tessellatedPositions;

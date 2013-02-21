@@ -33,9 +33,6 @@
 
     _tessellator = tessellator;
 
-    _numLonCells = 5;
-    _numLatCells = 5;
-
     //TODO: set the resolution (if that property is still necessary).
 
     return self;
@@ -46,7 +43,7 @@
     long terrainGeometrySize = (4 + 32) // reference center
             + (4 + 128) // transformation matrix
             + (4) // numPoints
-            + (4 + (_numLatCells + 3) * (_numLonCells + 3) * 3 * 4); // points
+            + (4 + ([self tileHeight] + 3) * ([self tileWidth] + 3) * 3 * 4); // points
 
     long size = terrainGeometrySize
             + 4 // tessellator pointer
@@ -119,16 +116,16 @@
 
     float* vertices = [_terrainGeometry points];
     float points[12]; // temporary working buffer
-    int k = 3 * (si + ti * rowStride); // lower-left and lower-right vertices
+    int k = 3 * (si + 1 + ti * rowStride); // lower-left and lower-right vertices
     for (int i = 0; i < 6; i++)
     {
         points[i] = vertices[k + i];
     }
 
-    k = 3 * (si + (ti + 1) * rowStride); // upper-left and upper-right vertices
+    k = 3 * (si + 1 + (ti + 1) * rowStride); // upper-left and upper-right vertices
     for (int i = 6; i < 12; i++)
     {
-        points[i] = vertices[k + i];
+        points[i] = vertices[k + (i - 6)];
     }
 
     // Compute the location's corresponding point on the cell in tile local coordinates,

@@ -23,6 +23,8 @@
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Shapes/WWShapeAttributes.h"
+#import "WorldWind/Util/WWColor.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -100,11 +102,30 @@
     [layers addLayer:renderableLayer];
 
     NSMutableArray* positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:1000]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:1 longitude:1 altitude:1000]];
-
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:100]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:10 longitude:10 altitude:100]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:100]];
     WWPath* path01 = [[WWPath alloc] initWithPositions:positions];
+    [path01 setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
+    [path01 setPathType:WW_GREAT_CIRCLE];
+//    [path01 setFollowTerrain:YES];
+    WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+    [path01 setAttributes:attrs];
     [renderableLayer addRenderable:path01];
+
+    positions = [[NSMutableArray alloc] init];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10]];
+    WWPath* path02 = [[WWPath alloc] initWithPositions:positions];
+    [path02 setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
+    [path02 setPathType:WW_LINEAR];
+//    [path02 setFollowTerrain:YES];
+    attrs = [[WWShapeAttributes alloc] init];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:1 b:0 a:1]];
+    [path02 setAttributes:attrs];
+    [renderableLayer addRenderable:path02];
 }
 
 /*!

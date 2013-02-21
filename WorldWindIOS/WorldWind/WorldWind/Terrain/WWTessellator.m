@@ -50,6 +50,8 @@
         self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
                                            levelZeroDelta:levelZeroDelta
                                                 numLevels:NUM_LEVELS];
+        [self->levels setTileWidth:5];
+        [self->levels setTileHeight:5];
 
         self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
         self->topLevelTiles = [[NSMutableArray alloc] init];
@@ -201,8 +203,8 @@
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     // The number of vertices in each dimension is 1 more than the number of cells.
-    int numLatVertices = tile.numLonCells + 1;
-    int numLonVertices = tile.numLatCells + 1;
+    int numLatVertices = tile.tileWidth + 1;
+    int numLonVertices = tile.tileHeight + 1;
 
     // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
     // exaggeration applied.
@@ -229,7 +231,7 @@
     double minLon = sector.minLongitude;
     double maxLon = sector.maxLongitude;
 
-    double deltaLat = (maxLat - minLat) / tile.numLatCells;
+    double deltaLat = (maxLat - minLat) / tile.tileHeight;
 
     // We're going to build the vertices one row of longitude at a time. The rowSector variable changes to reflect
     // that in the calls below.
@@ -340,26 +342,26 @@
 
     int count; // holds the returned number of elements returned from the methods below
 
-    _sharedGeometry.texCoords = [self buildTexCoords:tile.numLonCells
-                                          tileHeight:tile.numLatCells
+    _sharedGeometry.texCoords = [self buildTexCoords:tile.tileWidth
+                                          tileHeight:tile.tileHeight
                                         numCoordsOut:&count];
     _sharedGeometry.numTexCoords = count;
 
     // Build the surface-tile indices.
-    _sharedGeometry.indices = [self buildIndices:tile.numLonCells
-                                      tileHeight:tile.numLatCells
+    _sharedGeometry.indices = [self buildIndices:tile.tileWidth
+                                      tileHeight:tile.tileHeight
                                    numIndicesOut:&count];
     _sharedGeometry.numIndices = count;
 
     // Build the wireframe indices.
-    _sharedGeometry.wireframeIndices = [self buildWireframeIndices:tile.numLonCells
-                                                        tileHeight:tile.numLatCells
+    _sharedGeometry.wireframeIndices = [self buildWireframeIndices:tile.tileWidth
+                                                        tileHeight:tile.tileHeight
                                                      numIndicesOut:&count];
     _sharedGeometry.numWireframeIndices = count;
 
     // Build the outline indices.
-    _sharedGeometry.outlineIndices = [self buildOutlineIndices:tile.numLonCells
-                                                    tileHeight:tile.numLatCells
+    _sharedGeometry.outlineIndices = [self buildOutlineIndices:tile.tileWidth
+                                                    tileHeight:tile.tileHeight
                                                  numIndicesOut:&count];
     _sharedGeometry.numOutlineIndices = count;
 }

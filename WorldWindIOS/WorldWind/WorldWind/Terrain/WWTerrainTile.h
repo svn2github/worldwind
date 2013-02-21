@@ -30,14 +30,6 @@
 /// The terrain geometry for this tile.
 @property(nonatomic) WWTerrainGeometry* terrainGeometry;
 
-/// The number of cells in which to subdivide terrain tiles in the longitudinal direction. This property governs the
-// density of triangles in the tile.
-@property(readonly, nonatomic) int numLonCells;
-
-/// The number of cells in which to subdivide terrain tiles in the latitudinal direction. This property governs the
-// density of triangles in the tile.
-@property(readonly, nonatomic) int numLatCells;
-
 /// @name Initializing Terrain Tiles
 
 /**
