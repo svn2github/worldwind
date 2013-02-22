@@ -114,13 +114,13 @@
 
     float* vertices = [_terrainGeometry points];
     float points[12]; // temporary working buffer
-    int k = 3 * (si + 1 + ti * rowStride); // lower-left and lower-right vertices
+    int k = 3 * (si  + ti * rowStride); // lower-left and lower-right vertices
     for (int i = 0; i < 6; i++)
     {
         points[i] = vertices[k + i];
     }
 
-    k = 3 * (si + 1 + (ti + 1) * rowStride); // upper-left and upper-right vertices
+    k = 3 * (si  + (ti + 1) * rowStride); // upper-left and upper-right vertices
     for (int i = 6; i < 12; i++)
     {
         points[i] = vertices[k + (i - 6)];

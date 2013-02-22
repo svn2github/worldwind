@@ -66,6 +66,10 @@
 /// Must be a positive number greater or equal to 0.
 @property (nonatomic) int numSubsegments;
 
+/// Specifies whether to extrude a curtain from the path to the terrain. The curtain uses this path's interior
+/// attributes.
+@property (nonatomic) BOOL extrude;
+
 /// @name Initializing Paths
 
 /**

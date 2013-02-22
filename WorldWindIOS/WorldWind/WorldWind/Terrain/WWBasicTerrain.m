@@ -51,16 +51,7 @@
 
     WWTerrainTileList* surfaceGeometry = [_dc surfaceGeometry];
 
-    if (surfaceGeometry != nil && [surfaceGeometry surfacePoint:latitude longitude:longitude offset:offset result:result])
-    {
-        // The surface geometry already has vertical exaggeration applied. This has the effect of interpreting
-        // offset as height above the terrain after applying vertical exaggeration.
-        WWVec4* normal = [[WWVec4 alloc] initWithZeroVector];
-        [[_dc globe] computeNormal:latitude longitude:longitude outputPoint:normal];
-        [normal multiplyByScalar3:offset];
-        [result add3:normal];
-    }
-    else
+    if (surfaceGeometry == nil || ![surfaceGeometry surfacePoint:latitude longitude:longitude offset:offset result:result])
     {
         double height = offset + [[_dc globe] elevationForLatitude:latitude longitude:longitude]
                 * [_dc verticalExaggeration];

@@ -102,12 +102,12 @@
     [layers addLayer:renderableLayer];
 
     NSMutableArray* positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:100]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:10 longitude:10 altitude:100]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:100]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10000]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10000]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10000]];
     WWPath* path01 = [[WWPath alloc] initWithPositions:positions];
-    [path01 setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [path01 setPathType:WW_GREAT_CIRCLE];
+    [path01 setAltitudeMode:WW_ALTITUDE_MODE_RELATIVE_TO_GROUND];
+    [path01 setPathType:WW_LINEAR];
 //    [path01 setFollowTerrain:YES];
     WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
     [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
@@ -115,17 +115,32 @@
     [renderableLayer addRenderable:path01];
 
     positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10100]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10100]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10100]];
     WWPath* path02 = [[WWPath alloc] initWithPositions:positions];
     [path02 setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
     [path02 setPathType:WW_LINEAR];
+    [path02 setExtrude:YES];
 //    [path02 setFollowTerrain:YES];
     attrs = [[WWShapeAttributes alloc] init];
     [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:1 b:0 a:1]];
     [path02 setAttributes:attrs];
     [renderableLayer addRenderable:path02];
+
+    positions = [[NSMutableArray alloc] init];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10000]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:10 longitude:10 altitude:10000]];
+    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10000]];
+    WWPath* path03 = [[WWPath alloc] initWithPositions:positions];
+    [path03 setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
+    [path03 setPathType:WW_GREAT_CIRCLE];
+    [path03 setNumSubsegments:20];
+//    [path03 setFollowTerrain:YES];
+    attrs = [[WWShapeAttributes alloc] init];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:0 g:1 b:1 a:1]];
+    [path03 setAttributes:attrs];
+    [renderableLayer addRenderable:path03];
 }
 
 /*!

@@ -18,6 +18,10 @@
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Shapes/WWShapeAttributes.h"
+
+// TODO: Draw pole positions as vertical lines.
+// TODO: Don't redraw each frame.
 
 @implementation WWPath
 
@@ -122,12 +126,13 @@
 
 - (BOOL) mustDrawInterior
 {
-    return NO; // TODO: implement Path interior
+    return _extrude && [self->activeAttributes interiorEnabled]
+            && !([[self altitudeMode] isEqualToString:WW_ALTITUDE_MODE_CLAMP_TO_GROUND]);
 }
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc
 {
-    return self->points == nil || self->verticalExaggeration != [dc verticalExaggeration];
+    return YES;//self->points == nil || self->verticalExaggeration != [dc verticalExaggeration];
 }
 
 - (BOOL) isSurfacePath
@@ -222,8 +227,18 @@
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
     int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    BOOL extrudeIt = [self mustDrawInterior];
+    int stride = extrudeIt ? 24 : 12;
+    int nPts = extrudeIt ? self->numPoints / 2 : self->numPoints;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, stride, self->points);
+    glDrawArrays(GL_LINE_STRIP, 0, nPts);
+}
+
+- (void) doDrawInterior:(WWDrawContext*)dc
+{
+    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, self->points);
-    glDrawArrays(GL_LINE_STRIP, 0, self->numPoints);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, self->numPoints);
 }
 
 - (NSArray*) makeTessellatedPositions:(WWDrawContext*)dc
@@ -376,22 +391,27 @@
 
 - (NSArray*) computeRenderedPath:(WWDrawContext*)dc positions:(NSArray*)tessellatedPositions
 {
+    BOOL extrudeIt = [self mustDrawInterior];
+
     id <WWTerrain> terrain = [dc terrain];
     NSString* altMode = [self altitudeMode];
     double eyeDistSquared = DBL_MAX;
     WWVec4* eyePoint = [[dc navigatorState] eyePoint];
 
-    NSMutableArray* tessellationPoints = [[NSMutableArray alloc] initWithCapacity:[tessellatedPositions count]];
+    self->numPoints = (extrudeIt ? 2 : 1) * [tessellatedPositions count];
+    NSMutableArray* tessellationPoints = [[NSMutableArray alloc] initWithCapacity:(NSUInteger) self->numPoints];
 
-    self->points = malloc((size_t) [tessellatedPositions count] * 3 * sizeof(float));
+    self->points = malloc((size_t) self->numPoints * 3 * sizeof(float));
 
+    int stride = extrudeIt ? 6 : 3;
     for (NSUInteger i = 0; i < [tessellatedPositions count]; i++)
     {
         WWPosition* pos = [tessellatedPositions objectAtIndex:i];
+        double lat = [pos latitude];
+        double lon = [pos longitude];
 
         WWVec4* pt = [[WWVec4 alloc] initWithZeroVector];
-        [terrain surfacePointAtLatitude:[pos latitude] longitude:[pos longitude] offset:[pos altitude]
-                           altitudeMode:altMode result:pt];
+        [terrain surfacePointAtLatitude:lat longitude:lon offset:[pos altitude] altitudeMode:altMode result:pt];
 
         double dSquared = [pt distanceSquared3:eyePoint];
         if (dSquared < eyeDistSquared)
@@ -400,18 +420,33 @@
         }
 
         [pt subtract3:self->referencePoint];
-
         [tessellationPoints addObject:pt];
 
-        int k = 3 * i;
+        int k = stride * i;
         self->points[k] = (float) [pt x];
         self->points[k + 1] = (float) [pt y];
         self->points[k + 2] = (float) [pt z];
+
+        if (extrudeIt)
+        {
+            [terrain surfacePointAtLatitude:lat longitude:lon offset:0 result:pt];
+
+            dSquared = [pt distanceSquared3:eyePoint];
+            if (dSquared < eyeDistSquared)
+            {
+                eyeDistSquared = dSquared;
+            }
+
+            [pt subtract3:self->referencePoint];
+            [tessellationPoints addObject:pt];
+
+            self->points[k + 3] = (float) [pt x];
+            self->points[k + 4] = (float) [pt y];
+            self->points[k + 5] = (float) [pt z];
+        }
     }
 
     [self setEyeDistance:sqrt(eyeDistSquared)];
-
-    self->numPoints = [tessellationPoints count];
 
     return tessellationPoints;
 }
