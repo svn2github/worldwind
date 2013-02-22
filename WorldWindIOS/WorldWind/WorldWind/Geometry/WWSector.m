@@ -51,10 +51,10 @@
 
     self = [super init];
 
-    _minLatitude = [sector minLatitude];
-    _maxLatitude = [sector maxLatitude];
-    _minLongitude = [sector minLongitude];
-    _maxLongitude = [sector maxLongitude];
+    _minLatitude = sector->_minLatitude;
+    _maxLatitude = sector->_maxLatitude;
+    _minLongitude = sector->_minLongitude;
+    _maxLongitude = sector->_maxLongitude;
 
     return self;
 }
@@ -105,19 +105,24 @@
     return RADIANS(_maxLongitude);
 }
 
-- (BOOL) intersects:(WWSector*)other
+- (BOOL) isEmpty
 {
-    if (other == nil)
+    return _minLatitude == _maxLatitude && _minLongitude == _maxLongitude;
+}
+
+- (BOOL) intersects:(WWSector*)sector
+{
+    if (sector == nil)
         return NO;
 
     // Assumes normalized angles: [-180, 180], [-90, 90].
-    if ([other maxLongitude] < _minLongitude)
+    if (sector->_maxLongitude < _minLongitude)
         return NO;
-    if ([other minLongitude] > _maxLongitude)
+    if (sector->_minLongitude > _maxLongitude)
         return NO;
-    if ([other maxLatitude] < _minLatitude)
+    if (sector->_maxLatitude < _minLatitude)
         return NO;
-    if ([other minLatitude] > _maxLatitude)
+    if (sector->_minLatitude > _maxLatitude)
         return NO;
 
     return YES;
@@ -127,6 +132,48 @@
 {
     return latitude >= _minLatitude && latitude <= _maxLatitude && longitude >= _minLongitude
             && longitude <= _maxLongitude;
+}
+
+- (void) intersection:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (_minLatitude < sector->_minLatitude)
+        _minLatitude = sector->_minLatitude;
+    if (_maxLatitude > sector->_maxLatitude)
+        _maxLatitude = sector->_maxLatitude;
+    if (_minLongitude < sector->_minLongitude)
+        _minLongitude = sector->_minLongitude;
+    if (_maxLongitude > sector->_maxLongitude)
+        _maxLongitude = sector->_maxLongitude;
+
+    // If the sectors do not overlap in either latitude or longitude, then the result of the above logic results in
+    // the max begin greater than the min. In this case, set the max to the to indicate that the sector is empty in
+    // that dimension.
+    if (_maxLatitude < _minLatitude)
+        _maxLatitude = _minLatitude;
+    if (_maxLongitude < _minLongitude)
+        _maxLongitude = _minLongitude;
+}
+
+- (void) union:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (_minLatitude > sector->_minLatitude)
+        _minLatitude = sector->_minLatitude;
+    if (_maxLatitude < sector->_maxLatitude)
+        _maxLatitude = sector->_maxLatitude;
+    if (_minLongitude > sector->_minLongitude)
+        _minLongitude = sector->_minLongitude;
+    if (_maxLongitude < sector->_maxLongitude)
+        _maxLongitude = sector->_maxLongitude;
 }
 
 - (void) computeReferencePoints:(WWGlobe*)globe
@@ -305,23 +352,6 @@
     [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
 
     return [[WWBoundingBox alloc] initWithPoints:extremePoints];
-}
-
-- (void) union:(WWSector*)sector
-{
-    if (sector == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
-    }
-
-    if ([sector minLatitude] < _minLatitude)
-        _minLatitude = [sector minLatitude];
-    if ([sector maxLatitude] > _maxLatitude)
-        _maxLatitude = [sector maxLatitude];
-    if ([sector minLongitude] < _minLongitude)
-        _minLongitude = [sector minLongitude];
-    if ([sector maxLongitude] > _maxLongitude)
-        _maxLongitude = [sector maxLongitude];
 }
 
 @end

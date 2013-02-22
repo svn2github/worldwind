@@ -123,6 +123,16 @@
 /// @name Intersection and Inclusion Operations
 
 /**
+* Indicates whether this sector is empty.
+*
+* A sector is considered empty when its latitudinal span and longitudinal span are zero, regardless of the location of
+* its coordinates.
+*
+* @return YES if this sector is empty, otherwise NO.
+*/
+- (BOOL) isEmpty;
+
+/**
 * Indicates whether this sector intersects a specified sector.
 *
 * @param sector The sector to test intersection with. May by nil, in which case this method returns NO.
@@ -131,9 +141,28 @@
 */
 - (BOOL) intersects:(WWSector*)sector;
 
+/**
+* Indicates whether this sector contains a specified geographic location.
+*
+* @param latitude The latitude to test.
+* @param longitude The longitude to test.
+*
+* @return YES if the sector contains the location, otherwise NO.
+*/
 - (BOOL) contains:(double)latitude longitude:(double)longitude;
 
 /// @name Operations on Sectors
+
+/**
+* Sets this sector to the intersection of this sector and a specified sector.
+*
+* If the two sectors are disjoint this sector is considered empty and isEmpty returns YES.
+*
+* @param sector The sector to intersect with this one.
+*
+* @exception NSInvalidArgumentException If the specified sector is nil.
+*/
+- (void) intersection:(WWSector*)sector;
 
 /**
 * Sets this sector to the union of this sector and a specified sector.
