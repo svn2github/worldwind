@@ -29,8 +29,7 @@
     _timestamp = [NSDate date];
     _eyePosition = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
-
-    self->orderedRenderables = [[NSMutableArray alloc] init];
+    _orderedRenderables = [[NSMutableArray alloc] init];
 
     return self;
 }
@@ -40,7 +39,7 @@
     _timestamp = [NSDate date];
     _verticalExaggeration = 1;
 
-    [self->orderedRenderables removeAllObjects];
+    [_orderedRenderables removeAllObjects];
 }
 
 - (void) update
@@ -64,40 +63,20 @@
 
 - (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable
 {
-    // TODO: Add according to eye-distance priority.
-
     if (orderedRenderable != nil)
     {
-        [self->orderedRenderables addObject:orderedRenderable];
+        [orderedRenderable setInsertionTime:[NSDate timeIntervalSinceReferenceDate]];
+        [_orderedRenderables addObject:orderedRenderable];
     }
 }
 
 - (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable
 {
-    // TODO: Add item and assign it lowest visual priority.
-
     if (orderedRenderable != nil)
     {
-        [self->orderedRenderables addObject:orderedRenderable];
+        [orderedRenderable setEyeDistance:DBL_MAX];
+        [_orderedRenderables addObject:orderedRenderable];
     }
-}
-
-- (id <WWOrderedRenderable>) peekOrderedRenderables
-{
-    return [self->orderedRenderables count] == 0 ? nil : [self->orderedRenderables objectAtIndex:0];
-}
-
-- (id <WWOrderedRenderable>) pollOrderedRenderables
-{
-    if ([self->orderedRenderables count] == 0)
-    {
-        return nil;
-    }
-
-    id <WWOrderedRenderable> or = [self->orderedRenderables objectAtIndex:0];
-    [self->orderedRenderables removeObjectAtIndex:0];
-
-    return or;
 }
 
 - (void) drawOutlinedShape:(id <WWOutlinedShape>)shape

@@ -44,6 +44,7 @@
 @property(nonatomic) WWPosition* referencePosition;
 @property(nonatomic) double eyeDistance;
 @property(nonatomic) id <WWExtent> extent;
+@property(nonatomic) NSTimeInterval insertionTime;
 
 - (WWAbstractShape*) init;
 

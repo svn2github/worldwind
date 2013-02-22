@@ -17,14 +17,14 @@
 
 @implementation WWSceneController
 
-- (WWSceneController*)init
+- (WWSceneController*) init
 {
     self = [super init];
 
     _globe = [[WWGlobe alloc] init];
     _layers = [[WWLayerList alloc] init];
-    
-    _gpuResourceCache = [[WWGpuResourceCache alloc] initWithLowWater:(long)150e6 highWater:(long)250e6];
+
+    _gpuResourceCache = [[WWGpuResourceCache alloc] initWithLowWater:(long) 150e6 highWater:(long) 250e6];
 
     self->drawContext = [[WWDrawContext alloc] init];
     [self->drawContext setGpuResourceCache:_gpuResourceCache];
@@ -44,7 +44,7 @@
         [self resetDrawContext];
         [self drawFrame:viewport];
     }
-    @catch (NSException *exception)
+    @catch (NSException* exception)
     {
         WWLogE(@"Rendering Scene", exception);
     }
@@ -78,7 +78,7 @@
 - (void) beginFrame:(CGRect)viewport
 {
     glViewport((int) viewport.origin.x, (int) viewport.origin.y, (int) viewport.size.width, (int) viewport.size.height);
-    
+
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -111,7 +111,7 @@
     {
         WWLog(@"No surface geometry");
     }
-    
+
     [self->drawContext setSurfaceGeometry:surfaceGeometry];
     [self->drawContext setVisibleSector:surfaceGeometry.sector];
 }
@@ -137,11 +137,48 @@
 
 - (void) drawOrderedRenderables
 {
+    // Sort the ordered renderables by eye distance and then insertion time.
+    [[self->drawContext orderedRenderables] sortUsingComparator:
+            ^(id <WWOrderedRenderable> orA, id <WWOrderedRenderable> orB)
+            {
+                double eA = [orA eyeDistance];
+                double eB = [orB eyeDistance];
+
+                if (eA < eB)
+                {
+                    return NSOrderedAscending;
+                }
+                else if (eA > eB)
+                {
+                    return NSOrderedDescending;
+                }
+                else
+                {
+                    NSTimeInterval tA = [orA insertionTime];
+                    NSTimeInterval tB = [orB insertionTime];
+
+                    if (tA < tB)
+                    {
+                        return NSOrderedAscending;
+                    }
+                    else if (tA > tB)
+                    {
+                        return NSOrderedDescending;
+                    }
+                    else
+                    {
+                        return NSOrderedSame;
+                    }
+                }
+            }];
+
+    // Prepare to draw the sorted ordered renderables.
     [self->drawContext setOrderedRenderingMode:YES];
 
-    while ([self->drawContext peekOrderedRenderables] != nil)
+    NSArray* ors = [self->drawContext orderedRenderables];
+    for (NSUInteger i = 0; i < [ors count]; i++)
     {
-        id <WWOrderedRenderable> or = [self->drawContext pollOrderedRenderables];
+        id <WWOrderedRenderable> or = [ors objectAtIndex:i];
 
         @try
         {
@@ -151,6 +188,7 @@
         {
             NSString* msg = [NSString stringWithFormat:@"rendering shape"];
             WWLogE(msg, exception);
+            // Keep going. Render the rest of the ordered renderables.
         }
     }
 

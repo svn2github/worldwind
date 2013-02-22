@@ -27,10 +27,6 @@
 * make those methods aware of current state.
 */
 @interface WWDrawContext : NSObject
-{
-@protected
-    NSMutableArray* orderedRenderables;
-}
 
 /// @name Draw Context Attributes
 
@@ -75,6 +71,8 @@
 
 /// The current tessellated terrain.
 @property(nonatomic, readonly) id <WWTerrain> terrain;
+
+@property NSMutableArray* orderedRenderables;
 
 /// @name Initializing a Draw Context
 
@@ -147,20 +145,6 @@
 * renderable list is not modified.
 */
 - (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable;
-
-/**
-* Returns the ordered renderable at the front of the ordered renderable queue without removing it from the queue.
-*
-* @return The ordered renderable at the front of the ordered renderable queue.
-*/
-- (id <WWOrderedRenderable>) peekOrderedRenderables;
-
-/**
-* Returns the ordered renderable at the front of the ordered renderable queue and removes it from the queue.
-*
-* @return The ordered renderable at the front of the ordered renderable queue.
-*/
-- (id <WWOrderedRenderable>) pollOrderedRenderables;
 
 
 @end
