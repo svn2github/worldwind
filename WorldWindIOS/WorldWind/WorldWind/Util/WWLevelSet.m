@@ -101,7 +101,7 @@
 
 - (WWLevel*) level:(int)levelNumber
 {
-    if (levelNumber >= [self->levels count])
+    if (levelNumber < 0 || levelNumber >= [self->levels count])
     {
         return nil;
     }

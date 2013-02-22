@@ -58,6 +58,25 @@
     return self;
 }
 
+
+- (BOOL) isEqual:(id)anObject
+{
+    if (anObject == nil)
+        return NO;
+
+    if (![anObject isKindOfClass:[self class]])
+        return NO;
+
+    WWTile* other = (WWTile*) anObject;
+
+    return [_level levelNumber] == [other->_level levelNumber] && _row == other->_row && _column == other->_column;
+}
+
+- (NSUInteger) hash
+{
+    return [self->tileKey hash];
+}
+
 - (long) sizeInBytes
 {
     long size = 4 // child pointer
@@ -136,6 +155,35 @@
     }
 
     return col;
+}
+
++ (WWSector*) computeSector:(WWLevel*)level row:(int)row column:(int)column
+{
+    if (level == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Level is nil")
+    }
+
+    if (row < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Row is less than 0")
+    }
+
+    if (column < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Column is less than 0")
+    }
+
+    double deltaLat = [[level tileDelta] latitude];
+    double deltaLon = [[level tileDelta] longitude];
+
+    double minLat = -90 + row * deltaLat;
+    double minLon = -180 + column * deltaLon;
+    double maxLat = minLat + deltaLat;
+    double maxLon = minLon + deltaLon;
+
+    return [[WWSector alloc] initWithDegreesMinLatitude:minLat maxLatitude:maxLat
+                                           minLongitude:minLon maxLongitude:maxLon];
 }
 
 + (void) createTilesForLevel:(WWLevel*)level

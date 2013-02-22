@@ -57,9 +57,40 @@
     return [_parent sector];
 }
 
+- (BOOL) isFirstLevel
+{
+    return [_parent firstLevel] == self;
+}
+
 - (BOOL) isLastLevel
 {
     return [_parent lastLevel] == self;
+}
+
+- (WWLevel*) previousLevel
+{
+    return [_parent level:_levelNumber - 1];
+}
+
+- (WWLevel*) nextLevel
+{
+    return [_parent level:_levelNumber + 1];
+}
+
+- (NSComparisonResult) compare:(WWLevel*)level
+{
+    if (level == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Level is nil")
+    }
+
+    if (_levelNumber < level->_levelNumber)
+        return NSOrderedAscending;
+
+    if (_levelNumber > level->_levelNumber)
+        return NSOrderedDescending;
+
+    return NSOrderedSame;
 }
 
 @end

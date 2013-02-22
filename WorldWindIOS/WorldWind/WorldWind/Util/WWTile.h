@@ -94,6 +94,19 @@
 */
 + (int) computeColumn:(double)delta longitude:(double)longitude;
 
+/**
+* Computes a sector spanned by a tile with the specified level, row, and column.
+*
+* @param level The tile's level.
+* @param row The row number of the tile within the specified level.
+* @param column The column number of the tile within the specified level.
+*
+* @return The sector the tile spans.
+*
+* @exception NSInvalidArgumentException If level is nil or the row or column number are less than 0.
+*/
++ (WWSector*) computeSector:(WWLevel*)level row:(int)row column:(int)column;
+
 /// @name Initializing Tiles
 
 /**
@@ -102,13 +115,36 @@
 * @param sector The sector the tile spans.
 * @param level The tile's level.
 * @param row The row number of the tile within the specified level.
-* @param column The column number of the tile withing the specified level.
+* @param column The column number of the tile within the specified level.
 *
 * @return The initialized tile.
 *
 * @exception NSInvalidArgumentException If the sector or level are nil or the row or column number are less than 0.
 */
 - (WWTile*) initWithSector:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column;
+
+/// @name Identifying and Comparing Tiles
+
+/**
+* Returns a boolean value indicating whether this tile is equivalent to the specified object.
+*
+* The object is considered equivalent to this tile if it is an instance of WWTile and has the same level number, row,
+* and column as this tile. This returns NO if the object is nil.
+*
+* @param anObject The object to compare to this tile. May be nil, in which case this method returns NO.
+*
+* @return YES if this tile is equivalent to the specified object, otherwise NO.
+*/
+- (BOOL) isEqual:(id)anObject;
+
+/**
+* Returns an unsigned integer that can be used as a hash table address.
+*
+* If two tiles are considered equal by isEqual: then they both return the same hash value.
+*
+* @return An unsigned integer that can be used as a hash table address.
+*/
+- (NSUInteger) hash;
 
 /// @name Creating Tiles
 
