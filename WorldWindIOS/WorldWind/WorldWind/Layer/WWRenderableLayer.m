@@ -34,7 +34,7 @@
     }
 }
 
-- (void) render:(WWDrawContext*)dc
+- (void) doRender:(WWDrawContext*)dc
 {
     for (NSUInteger i = 0; i < [_renderables count]; i++)
     {
