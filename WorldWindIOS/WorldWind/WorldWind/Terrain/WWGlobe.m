@@ -7,8 +7,7 @@
 
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTessellator.h"
-#import "WorldWind/Terrain/WWElevationModel.h"
-#import "WorldWind/Terrain/WWZeroElevationModel.h"
+#import "WorldWind/Terrain/WWEarthElevationModel.h"
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
@@ -26,7 +25,7 @@
     _es = 0.00669437999013;
     _minElevation = 0;
     _tessellator = [[WWTessellator alloc] initWithGlobe:self];
-    _elevationModel = [[WWZeroElevationModel alloc] init];
+    _elevationModel = [[WWEarthElevationModel alloc] init];
 
     return self;
 }

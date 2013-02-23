@@ -74,8 +74,8 @@
         self->currentTiles = [[NSMutableSet alloc] init];
         self->tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 
-        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
-        self->imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000];
+        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000]; // Holds 492 tiles.
+        self->imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 38 16-bit 256x256 images.
 
         self->currentRetrievals = [[NSMutableSet alloc] init];
         self->currentLoads = [[NSMutableSet alloc] init];
