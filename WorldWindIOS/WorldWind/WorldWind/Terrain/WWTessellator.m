@@ -27,14 +27,23 @@
 #define LEVEL_ZERO_DELTA 45
 #define NUM_LEVELS 10
 #define TILE_SIZE 5
+#define DETAIL_HINT_ORIGIN 0.8
 
 @implementation WWTessellator
+{
+    WWLevelSet* levels;
+    NSMutableArray* topLevelTiles;
+    WWTerrainTileList* currentTiles;
+    WWMemoryCache* tileCache;
+    WWSector* currentCoverage;
+    double detailHintOrigin;
+}
 
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe
 {
     if (globe == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"globe is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
     self = [super init];
@@ -42,9 +51,6 @@
     if (self != nil)
     {
         _globe = globe;
-
-        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1e6 lowWater:800e3];
-        self->detailHintOrigin = 0.8;
 
         WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:LEVEL_ZERO_DELTA
                                                                        longitude:LEVEL_ZERO_DELTA];
@@ -54,20 +60,13 @@
                                                 tileWidth:TILE_SIZE
                                                tileHeight:TILE_SIZE];
 
-        self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
         self->topLevelTiles = [[NSMutableArray alloc] init];
+        self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
+        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1000000 lowWater:800000];
+        self->detailHintOrigin = DETAIL_HINT_ORIGIN;
     }
 
     return self;
-}
-
-- (void) createTopLevelTiles
-{
-    [self->topLevelTiles removeAllObjects];
-
-    [WWTile createTilesForLevel:[self->levels firstLevel]
-                    tileFactory:self
-                       tilesOut:self->topLevelTiles];
 }
 
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
@@ -101,6 +100,12 @@
     return self->currentTiles;
 }
 
+- (void) createTopLevelTiles
+{
+    [self->topLevelTiles removeAllObjects];
+    [WWTile createTilesForLevel:[self->levels firstLevel] tileFactory:self tilesOut:self->topLevelTiles];
+}
+
 - (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     if ([self tileMeetsRenderCriteria:dc tile:tile])
@@ -109,7 +114,7 @@
         return;
     }
 
-    WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
+    WWLevel* nextLevel = [[tile level] nextLevel];
     NSArray* subTiles = [tile subdivide:nextLevel cache:self->tileCache tileFactory:self];
 
     for (WWTerrainTile* child in subTiles)
@@ -209,6 +214,7 @@
     // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
     // exaggeration applied.
     double elevations[numLatVertices * numLonVertices];
+    memset(elevations, 0, (size_t) (numLatVertices * numLonVertices * sizeof(double)));
     [dc.globe elevationsForSector:tile.sector
                            numLat:numLatVertices
                            numLon:numLonVertices
