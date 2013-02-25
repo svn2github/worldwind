@@ -32,6 +32,7 @@
 @implementation ViewController
 {
     UIBarButtonItem* layerButton;
+    UIBarButtonItem* trackButton;
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
     LocationController* locationController;
@@ -203,9 +204,9 @@
                 [[UIPopoverController alloc] initWithContentViewController:layerListController];
     }
 
-    UIBarButtonItem* trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
-                                                                    style:UIBarButtonItemStylePlain
-                                                                   target:self action:@selector(handleLocationButtonTap)];
+    self->trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
+                                                         style:UIBarButtonItemStylePlain
+                                                        target:self action:@selector(handleLocationButtonTap)];
 
     self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     [self->searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
@@ -218,9 +219,9 @@
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     [_toolbar setItems:[NSArray arrayWithObjects:
-            layerButton,
+            self->layerButton,
             flexibleSpace1,
-            trackButton,
+            self->trackButton,
             flexibleSpace2,
             searchBarButtonItem,
             nil]];
@@ -246,10 +247,12 @@
     if (state == LocationControllerStateDisabled || state == LocationControllerStateShowInitial)
     {
         [self->locationController setState:LocationControllerStateForecast];
+        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrowWithLine"]];
     }
     else if (state == LocationControllerStateForecast)
     {
         [self->locationController setState:LocationControllerStateDisabled];
+        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
     }
     else
     {
