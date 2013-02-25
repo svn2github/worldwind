@@ -36,7 +36,7 @@
 *
 * The renderable is added to the end of this layer's renderable list.
 *
-* @param The renderable to add.
+* @param renderable The renderable to add.
 *
 * @exception NSInvalidArgumentException If the specified renderable is nil.
 */

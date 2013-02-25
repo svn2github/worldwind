@@ -29,9 +29,8 @@
     [self setDefaultAttributes];
 
     _highlighted = NO;
-    _visible = YES;
+    _enabled = YES;
     _altitudeMode = WW_ALTITUDE_MODE_ABSOLUTE;
-    _batchRendering = YES;
 
     self->transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     self->programKey = [WWUtil generateUUID];
@@ -93,7 +92,7 @@
 
 - (void) render:(WWDrawContext*)dc
 {
-    if (!_visible || ![self intersectsFrustum:dc] || [dc isSmall:_extent numPixels:1])
+    if (!_enabled || ![self intersectsFrustum:dc] || [dc isSmall:_extent numPixels:1])
     {
         return;
     }
