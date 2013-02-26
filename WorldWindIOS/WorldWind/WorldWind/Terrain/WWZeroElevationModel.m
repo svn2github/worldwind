@@ -11,6 +11,18 @@
 
 @implementation WWZeroElevationModel
 
+- (id) init
+{
+    self = [super init];
+
+    if (self != nil)
+    {
+        _timestamp = [NSDate date]; // Zero elevation model never changes. Set the timestamp once in the initializer.
+    }
+
+    return self;
+}
+
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude;
 {
     return 0;

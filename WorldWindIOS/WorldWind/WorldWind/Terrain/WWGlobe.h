@@ -51,7 +51,7 @@
 * The elevation model is used by the methods elevationForLatitude:longitude:,
 * elevationsForSector:numLat:numLon:targetResolution:verticalExaggeration:result:, and
 * minAndMaxElevationsForSector:result:. Additionally, the elevation model is used indirectly used by the tessellator
-* to supply the terrain geometry with elevations at each tessellated location. Initialized to WWZeroElevationModel.
+* to supply the terrain geometry with elevations at each tessellated location. Initialized to WWEarthElevationModel.
 */
 @property(nonatomic) id<WWElevationModel> elevationModel;
 
@@ -78,7 +78,7 @@
 * @param latitude The position's latitude.
 * @param longitude The position's longitude.
 * @param altitude The position's altitude.
-* @param result The Position instance in which to store the result.
+* @param result The WWVec4 instance in which to store the result.
 *
 * @exception NSInvalidArgumentException If the specified result instance is nil.
 */
@@ -184,6 +184,15 @@
 - (void) surfaceNormalAtPoint:(WWVec4*)point result:(WWVec4*)result;
 
 /// @name Retrieving Globe Elevations
+
+/**
+* Indicates the date and time at which any elevations associated with the globe last changed.
+*
+* This can be used to invalidate cached computations based on the globe's elevations.
+*
+* @return The globe's elevation timestamp as an NSDate.
+*/
+- (NSDate*) elevationTimestamp;
 
 /**
 * Return the elevation at a specified location.

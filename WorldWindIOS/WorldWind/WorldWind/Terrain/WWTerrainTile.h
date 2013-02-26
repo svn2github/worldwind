@@ -25,10 +25,14 @@
 /// The tessellator this tile is used by.
 /// The tessellator property is weak because the tessellator can point to the tile,
 /// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
-@property(readonly, nonatomic, weak) WWTessellator* tessellator;
+@property(nonatomic, readonly, weak) WWTessellator* tessellator;
 
 /// The terrain geometry for this tile.
 @property(nonatomic) WWTerrainGeometry* terrainGeometry;
+
+/// Indicates the date and time at which this tile's terrain geometry was computed. This is used to invalidate the
+/// terrain geometry when the globe's elevations change.
+@property(nonatomic) NSDate* timestamp;
 
 /// @name Initializing Terrain Tiles
 

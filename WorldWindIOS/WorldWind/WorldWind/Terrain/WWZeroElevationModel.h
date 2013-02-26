@@ -16,6 +16,16 @@
 */
 @interface WWZeroElevationModel : NSObject <WWElevationModel>
 
+/// @name Attributes
+
+/**
+* Indicates the date and time at which the elevation model last changed.
+*
+* Since a zero elevation model never changes, this always returns the date and time at which the elevation model was
+* initialized.
+*/
+@property(readonly) NSDate* timestamp;
+
 /// @name Retrieving Elevations
 
 /**

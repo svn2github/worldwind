@@ -100,7 +100,20 @@
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 /**
-* Create geometry for a specified tile.
+* Indicates whether the terrain geometry for a specified tile must be re-created.
+*
+* A tile's terrain geometry must be re-created if it has no geometry, or of the elevations on which the geometry is
+* based have changed since the geometry was created.
+*
+* @param dc The current draw context.
+* @param tile The tile to test.
+*
+* @return YES if the tile's geometry must be re-created, otherwise NO.
+*/
+- (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Create the terrain geometry for a specified tile.
 *
 * @param dc The current draw context.
 * @param tile The tile to create geometry for.
@@ -112,10 +125,9 @@
 *
 * @param dc The current draw context.
 * @param tile The tile whose reference center to compute.
-*
-* @return The computed reference center.
+* @param result The WWVec4 instance in which to store the result.
 */
-- (WWVec4*) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+- (void) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile outputPoint:(WWVec4*)result;
 
 /**
 * Creates the Cartesian vertices for a specified tile.

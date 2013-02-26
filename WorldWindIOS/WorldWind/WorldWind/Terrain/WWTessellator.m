@@ -24,11 +24,6 @@
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
 
-#define LEVEL_ZERO_DELTA 45
-#define NUM_LEVELS 10
-#define TILE_SIZE 5
-#define DETAIL_HINT_ORIGIN 0.8
-
 @implementation WWTessellator
 {
     WWLevelSet* levels;
@@ -37,6 +32,7 @@
     WWMemoryCache* tileCache;
     WWSector* currentCoverage;
     double detailHintOrigin;
+    double* tileElevations;
 }
 
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe
@@ -52,21 +48,27 @@
     {
         _globe = globe;
 
-        WWLocation* levelZeroDelta = [[WWLocation alloc] initWithDegreesLatitude:LEVEL_ZERO_DELTA
-                                                                       longitude:LEVEL_ZERO_DELTA];
         self->levels = [[WWLevelSet alloc] initWithSector:[[WWSector alloc] initWithFullSphere]
-                                           levelZeroDelta:levelZeroDelta
-                                                numLevels:NUM_LEVELS
-                                                tileWidth:TILE_SIZE
-                                               tileHeight:TILE_SIZE];
+                                           levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
+                                                numLevels:15 // Approximately 9.6 meter resolution with 45x45 degree and 32x32 density tiles.
+                                                tileWidth:32
+                                               tileHeight:32];
 
         self->topLevelTiles = [[NSMutableArray alloc] init];
         self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
-        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:1000000 lowWater:800000];
-        self->detailHintOrigin = DETAIL_HINT_ORIGIN;
+        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 316 32x32 tiles.
+        self->detailHintOrigin = 1.2;
     }
 
     return self;
+}
+
+- (void) dealloc
+{
+    if (self->tileElevations)
+    {
+        free(self->tileElevations);
+    }
 }
 
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
@@ -131,7 +133,7 @@
 
 - (void) addTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    if (tile.terrainGeometry == nil)
+    if ([self mustRegenerateTileGeometry:dc tile:tile])
     {
         [self regenerateTileGeometry:dc tile:tile];
     }
@@ -164,32 +166,45 @@
     return [[WWTerrainTile alloc] initWithSector:sector level:level row:row column:column tessellator:self];
 }
 
+- (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+{
+    if ([tile terrainGeometry] == nil)
+    {
+        return YES;
+    }
+    else
+    {
+        NSDate* timestamp = [tile timestamp];
+        return timestamp == nil || [timestamp compare:[dc elevationTimestamp]] == NSOrderedAscending;
+    }
+}
+
 - (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    if (tile == nil)
+    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
+    if (terrainGeometry == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
+        terrainGeometry = [[WWTerrainGeometry alloc] init];
+        [tile setTerrainGeometry:terrainGeometry];
     }
-
-    WWTerrainGeometry* terrainGeometry = [[WWTerrainGeometry alloc] init];
-    tile.terrainGeometry = terrainGeometry;
 
     // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
     // center here and establish a translation transform that is used later to move the tile coordinates into place
     // relative to the globe.
-    WWVec4* refCenter = [self referenceCenterForTile:dc tile:tile];
-    terrainGeometry.referenceCenter = refCenter;
-    double rcx = refCenter.x;
-    double rcy = refCenter.y;
-    double rcz = refCenter.z;
-    terrainGeometry.transformationMatrix = [[WWMatrix alloc] initWithTranslation:rcx y:rcy z:rcz];
+    WWVec4* refCenter = terrainGeometry.referenceCenter;
+    [self referenceCenterForTile:dc tile:tile outputPoint:refCenter];
+    [terrainGeometry.transformationMatrix setTranslation:refCenter.x y:refCenter.y z:refCenter.z];
 
     [self buildTileVertices:dc tile:tile];
-    if (_sharedGeometry == nil)
-        [self buildSharedGeometry:tile];
+    [self buildSharedGeometry:tile];
+
+    // Set the terrain tile's timestamp to the draw context's elevation timestamp on which the tile geometry is
+    // based. This ensures that tile's timestamp can be reliably compared to the elevation timestamp in subsequent
+    // frames.
+    [tile setTimestamp:[dc elevationTimestamp]];
 }
 
-- (WWVec4*) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile outputPoint:(WWVec4*)result
 {
     WWSector* sector = tile.sector;
 
@@ -199,10 +214,7 @@
     double elevation = [dc.globe elevationForLatitude:lat longitude:lon];
     elevation *= dc.verticalExaggeration;
 
-    WWVec4* refCenter = [[WWVec4 alloc] initWithZeroVector];
-    [dc.globe computePointFromPosition:lat longitude:lon altitude:elevation outputPoint:refCenter];
-
-    return refCenter;
+    [dc.globe computePointFromPosition:lat longitude:lon altitude:elevation outputPoint:result];
 }
 
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -211,24 +223,32 @@
     int numLatVertices = tile.tileWidth + 1;
     int numLonVertices = tile.tileHeight + 1;
 
+    if (!self->tileElevations)
+    {
+        self->tileElevations = malloc((size_t)numLatVertices * numLonVertices * sizeof(double));
+    }
+
     // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
     // exaggeration applied.
-    double elevations[numLatVertices * numLonVertices];
-    memset(elevations, 0, (size_t) (numLatVertices * numLonVertices * sizeof(double)));
+    memset(self->tileElevations, 0, (size_t) (numLatVertices * numLonVertices * sizeof(double)));
     [dc.globe elevationsForSector:tile.sector
                            numLat:numLatVertices
                            numLon:numLonVertices
                  targetResolution:tile.texelSize
              verticalExaggeration:dc.verticalExaggeration
-                           result:elevations];
+                           result:self->tileElevations];
 
     // The min elevation is used to determine the necessary depth of the tile skirts.
     double minElevation = dc.globe.minElevation * dc.verticalExaggeration;
 
     // Allocate space for the Cartesian vertices.
-    tile.terrainGeometry.numPoints = (numLatVertices + 2) * (numLonVertices + 2);
-    int numCoords = tile.terrainGeometry.numPoints * 3;
-    tile.terrainGeometry.points = malloc((size_t) (numCoords * sizeof(float)));
+    if (!tile.terrainGeometry.points)
+    {
+        int numPoints = (numLatVertices + 2) * (numLonVertices + 2);
+        tile.terrainGeometry.numPoints = numPoints;
+        tile.terrainGeometry.points = malloc((size_t) (numPoints * 3 * sizeof(float)));
+    }
+
     float* points = tile.terrainGeometry.points; // running pointer to the portion of the array that will hold the computed vertices
 
     WWSector* sector = tile.sector;
@@ -278,7 +298,7 @@
         [self buildTileRowVertices:dc.globe
                          rowSector:rowSector
                     numRowVertices:numLonVertices
-                        elevations:&elevations[elevOffset]
+                        elevations:&self->tileElevations[elevOffset]
                  constantElevation:nil // we're using elevations per vertex here, unlike at the skirt rows
                       minElevation:minElevation
                          refCenter:tile.terrainGeometry.referenceCenter
@@ -304,13 +324,12 @@
 - (void) buildTileRowVertices:(WWGlobe*)globe
                     rowSector:(WWSector*)rowSector
                numRowVertices:(int)numRowVertices
-                   elevations:(double [])elevations
+                   elevations:(double[])elevations
             constantElevation:(double*)constantElevation
                  minElevation:(double)minElevation
                     refCenter:(WWVec4*)refCenter
-                       points:(float [])points
+                       points:(float[])points
 {
-
     // Add a redundant point at the row's minimum longitude. This point is used to define the tile's western skirt. It
     // has the same location as the row's first location but is assigned the minimum elevation instead of the
     // location's actual elevation.

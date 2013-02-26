@@ -31,7 +31,10 @@
 
     self = [super initWithSector:sector level:level row:row column:column];
 
-    _tessellator = tessellator;
+    if (self != nil)
+    {
+        _tessellator = tessellator;
+    }
 
     return self;
 }

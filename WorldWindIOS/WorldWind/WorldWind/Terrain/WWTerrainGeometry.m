@@ -7,6 +7,7 @@
 
 #import "WWTerrainGeometry.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WWMatrix.h"
 
 @implementation WWTerrainGeometry
 
@@ -14,8 +15,12 @@
 {
     self = [super init];
 
-    _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
-    _points = 0;
+    if (self != nil)
+    {
+        _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
+        _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
+        _points = 0;
+    }
 
     return self;
 }

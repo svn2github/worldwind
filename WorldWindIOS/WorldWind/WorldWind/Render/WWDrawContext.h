@@ -34,6 +34,10 @@
 /// frame started.
 @property(readonly, nonatomic) NSDate* timestamp;
 
+/// Indicates the date and time at which any elevations associated with this draw context's globe last changed. This
+/// can be used to invalidate cached computations based on the globe's elevations.
+@property(nonatomic) NSDate* elevationTimestamp;
+
 /// The globe being rendered.
 @property(nonatomic) WWGlobe* globe;
 

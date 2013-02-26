@@ -19,7 +19,7 @@
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
-                       numLevels:12 // Approximately 10 meter resolution with 45x45 degree and 256x256 px tiles.
+                       numLevels:12 // Approximately 9.6 meter resolution with 45x45 degree and 256x256 px tiles.
             retrievalImageFormat:@"application/bil16"
                        cachePath:cachePath];
 

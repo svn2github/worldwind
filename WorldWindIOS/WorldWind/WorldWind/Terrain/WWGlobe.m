@@ -362,6 +362,11 @@
     [result normalize3];
 }
 
+- (NSDate*) elevationTimestamp
+{
+    return [_elevationModel timestamp];
+}
+
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
     return [_elevationModel elevationForLatitude:latitude longitude:longitude];

@@ -17,5 +17,4 @@
 @property (nonatomic) int numPoints;
 @property (nonatomic) float* points;
 
-
 @end

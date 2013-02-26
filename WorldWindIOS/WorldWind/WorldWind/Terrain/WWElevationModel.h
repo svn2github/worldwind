@@ -12,7 +12,7 @@
 /**
 * Provides the elevations to a WWGlobe or other object holding elevations.
 *
-* An elevation models may store its backing data in memory or may retrieve it on demand from an external source. The
+* An elevation model may store its backing data in memory or may retrieve it on demand from an external source. The
 * methods elevationForLatitude:longitude: and minAndMaxElevationsForSector:result: operate on the elevation data
 * currently in memory, and therefore are not guaranteed to provide meaningful results until after
 * elevationsForSector:numLat:numLon:targetResolution:verticalExaggeration:result: has been called.
@@ -24,6 +24,17 @@
 * with the data currently available. That resolution may not be the same as the target resolution.
 */
 @protocol WWElevationModel <NSObject>
+
+/// @name Attributes
+
+/**
+* Indicates the date and time at which the elevation model last changed.
+*
+* This can be used to invalidate cached computations based on the elevation model's values.
+*
+* @return The elevation model's timestamp as an NSDate.
+*/
+- (NSDate*) timestamp;
 
 /// @name Retrieving Elevations
 

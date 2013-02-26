@@ -65,6 +65,7 @@
 
     if (self != nil)
     {
+        _timestamp = [NSDate date];
         _retrievalImageFormat = retrievalImageFormat;
         _cachePath = cachePath;
 
@@ -369,21 +370,35 @@
 - (void) handleImageRetrievalNotification:(NSNotification*)notification
 {
     NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
     [self->currentRetrievals removeObject:imagePath];
 
-    // TODO: notify elevation model changed if status is success
+    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+    {
+        _timestamp = [NSDate date];
+
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
 }
 
 - (void) handleImageReadNotification:(NSNotification*)notification
 {
     NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
     [self->currentLoads removeObject:imagePath];
 
-    // TODO: notify elevation model changed if status is success
+    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+    {
+        _timestamp = [NSDate date];
+
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
 }
 
 @end

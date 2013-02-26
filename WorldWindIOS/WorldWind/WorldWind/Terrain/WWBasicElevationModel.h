@@ -17,11 +17,18 @@
 
 /// @name Attributes
 
-/// The file system path to the local directory holding this instance's cached elevation images.
-@property(nonatomic, readonly) NSString* cachePath;
+/**
+* Indicates the date and time at which the elevation model last changed.
+*
+* This can be used to invalidate cached computations based on the elevation model's values.
+*/
+@property(readonly) NSDate* timestamp; // This property is accessed from multiple threads, and is therefore declared atomic.
 
 /// The elevation image format to request from the remote server. The default is _application/bil16_.
 @property(nonatomic, readonly) NSString* retrievalImageFormat;
+
+/// The file system path to the local directory holding this instance's cached elevation images.
+@property(nonatomic, readonly) NSString* cachePath;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific elevation tile. For WMS
 // elevation models the specified instance generates an HTTP URL for the WMS protocol. This property must be specified
