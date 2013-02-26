@@ -265,6 +265,7 @@
     if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
     {
         [self->locationController setState:LocationControllerStateDisabled];
+        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
     }
 }
 
@@ -300,6 +301,7 @@
     if (placemarks != nil && [placemarks count] > 0)
     {
         [self->locationController setState:LocationControllerStateDisabled];
+        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
 
         CLPlacemark* lastPlacemark = [placemarks objectAtIndex:0];
         CLRegion* region = [lastPlacemark region];
