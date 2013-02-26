@@ -29,9 +29,11 @@
     WWLevelSet* levels;
     NSMutableArray* topLevelTiles;
     WWTerrainTileList* currentTiles;
-    WWMemoryCache* tileCache;
     WWSector* currentCoverage;
     double detailHintOrigin;
+
+    WWMemoryCache* tileCache;
+    NSDate* elevationTimestamp;
     double* tileElevations;
 }
 
@@ -80,6 +82,7 @@
 
     [self->currentTiles removeAllTiles];
     self->currentCoverage = nil;
+    self->elevationTimestamp = [[dc globe] elevationTimestamp]; // Store the elevation timestamp to prevent it from changing during tessellation.
 
     if ([self->topLevelTiles count] == 0)
     {
@@ -175,7 +178,7 @@
     else
     {
         NSDate* timestamp = [tile timestamp];
-        return timestamp == nil || [timestamp compare:[dc elevationTimestamp]] == NSOrderedAscending;
+        return timestamp == nil || [timestamp compare:self->elevationTimestamp] == NSOrderedAscending;
     }
 }
 
@@ -201,7 +204,7 @@
     // Set the terrain tile's timestamp to the draw context's elevation timestamp on which the tile geometry is
     // based. This ensures that tile's timestamp can be reliably compared to the elevation timestamp in subsequent
     // frames.
-    [tile setTimestamp:[dc elevationTimestamp]];
+    [tile setTimestamp:self->elevationTimestamp];
 }
 
 - (void) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile outputPoint:(WWVec4*)result

@@ -53,7 +53,6 @@
 - (void) resetDrawContext
 {
     [self->drawContext reset];
-    [self->drawContext setElevationTimestamp:[[self globe] elevationTimestamp]];
     [self->drawContext setLayers:_layers];
     [self->drawContext setGlobe:[self globe]];
     [self->drawContext setNavigatorState:_navigatorState];
