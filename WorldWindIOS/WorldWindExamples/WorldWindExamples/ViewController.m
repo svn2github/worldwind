@@ -89,7 +89,7 @@
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
 
-    [self createPathsLayer];
+    [self makeFlightPathsLayer];
 
     [self->locationController setView:_wwv];
 }
@@ -142,6 +142,62 @@
     [attrs setOutlineColor:[[WWColor alloc] initWithR:0 g:1 b:1 a:1]];
     [path03 setAttributes:attrs];
     [renderableLayer addRenderable:path03];
+}
+
+- (void) makeFlightPathsLayer
+{
+    NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/PassageWays.json"];
+    NSData* data = [[NSData alloc] initWithContentsOfURL:url];
+
+    NSError* error;
+    NSDictionary* jData = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (error != nil)
+    {
+        NSDictionary* userInfo = [error userInfo];
+        NSString* errMsg = [[userInfo objectForKey:NSUnderlyingErrorKey] localizedDescription];
+        WWLog(@"Error %@ reading flight paths file %@", errMsg, [url absoluteString]);
+        return;
+    }
+
+    WWLayerList* layers = [[_wwv sceneController] layers];
+    WWRenderableLayer* pathsLayer = [[WWRenderableLayer alloc] init];
+    [pathsLayer setDisplayName:@"Alaska Flight Paths"];
+    [layers addLayer:pathsLayer];
+
+    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
+    [attributes setOutlineEnabled:true];
+    [attributes setInteriorEnabled:false];
+    [attributes setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+
+    NSArray* features = [jData valueForKey:@"features"];
+    for (NSUInteger i = 0; i < [features count]; i++)
+    {
+        // Make a Path
+        NSDictionary* entry = (NSDictionary*) [features objectAtIndex:i];
+        NSDictionary* geometry = [entry valueForKey:@"geometry"];
+
+        // Make the path's positions
+        NSArray* coords = [geometry valueForKey:@"coordinates"];
+        NSMutableArray* pathCoords = [[NSMutableArray alloc] initWithCapacity:[coords count]];
+        for (NSUInteger j = 0; j < [coords count]; j++)
+        {
+            NSArray* values = [coords objectAtIndex:j];
+            NSNumber* lon = [values objectAtIndex:0];
+            NSNumber* lat = [values objectAtIndex:1];
+            NSDecimalNumber* alt = [values objectAtIndex:2];
+
+            WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[lat doubleValue]
+                                                                longitude:[lon doubleValue]
+                                                                 altitude:([alt doubleValue] > 0 ? [alt doubleValue]
+                                                                         : 4572)]; // 15,000 feet
+            [pathCoords addObject:pos];
+        }
+
+        WWPath* path = [[WWPath alloc] initWithPositions:pathCoords];
+        [path setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
+        [path setAttributes:attributes];
+        [pathsLayer addRenderable:path];
+    }
 }
 
 /*!
