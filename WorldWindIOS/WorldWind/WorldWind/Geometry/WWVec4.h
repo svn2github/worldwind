@@ -73,7 +73,7 @@
 *
 * @param vector The vector whose values to assign this instance's.
 *
-* @result This vector initialize to the values in the specified vector.
+* @result This vector initialized to the values in the specified vector.
 *
 * @exception NSInvalidArgumentException If the specified vector is nil.
 */
@@ -86,7 +86,7 @@
 *
 * @result This vector initialized to the average of the specified vectors.
 *
-* @exception NSInvalidArgumentException if the specified list is nil or empty.
+* @exception NSInvalidArgumentException If the specified list is nil or empty.
 */
 - (WWVec4*) initWithAverageOfVectors:(NSArray*) vectors;
 
@@ -132,6 +132,15 @@
 */
 - (WWVec4*) set:(double)x y:(double)y z:(double)z w:(double)w;
 
+/**
+* Sets this vector's coordinates to the coordinates of the specified vector.
+*
+* @param vector The vector whose values are assigned to this instance's
+*
+* @return This vector with its coordinates set to those of the specified vector.
+*
+* @exception NSInvalidArgumentException If the specified vector is nil.
+*/
 - (WWVec4*) set:(WWVec4*)vector;
 
 /// @name Operating on Vectors
@@ -151,7 +160,7 @@
 *
 * @return This vector with the specified vector added to it.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil.
+* @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (WWVec4*) add3:(WWVec4*)vector;
 
@@ -162,18 +171,9 @@
 *
 * @return This vector with the specified vector subtracted from it.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil.
+* @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (WWVec4*) subtract3:(WWVec4*)vector;
-
-/**
-* Multiplies all four components of this vector by a specified scalar.
-*
-* @param scalar The scalar to multiply.
-*
-* @return This matrix multiplied by the specified scalar.
-*/
-- (WWVec4*) multiplyByScalar:(double)scalar;
 
 /**
 * Multiplies the X, Y and Z components of this vector by a specified scalar.
@@ -185,13 +185,37 @@
 - (WWVec4*) multiplyByScalar3:(double)scalar;
 
 /**
+* Multiplies all four components of this vector by a specified scalar.
+*
+* @param scalar The scalar to multiply.
+*
+* @return This matrix multiplied by the specified scalar.
+*/
+- (WWVec4*) multiplyByScalar:(double)scalar;
+
+/**
+* Multiplies all four components of this vector by a specified matrix.
+*
+* @param matrix The matrix to multiply.
+*
+* @return This matrix multiplied by the specified matrix.
+*
+* @exception NSInvalidArgumentException If the specified matrix is nil.
+*/
+- (WWVec4*) multiplyByMatrix:(WWMatrix*)matrix;
+
+- (WWVec4*) divideByScalar3:(double)scalar;
+
+- (WWVec4*) divideByScalar:(double)scalar;
+
+/**
 * Computes the Cartesian distance between points represented by this vector and a specified vector.
 *
 * @param vector The vector identifying the distant point.
 *
 * @return The Cartesian distance between the two points.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil
+* @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (double) distanceTo3:(WWVec4*)vector;
 
@@ -204,7 +228,7 @@
 *
 * @return The square of the Cartesian distance between the two points.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil
+* @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (double) distanceSquared3:(WWVec4*)vector;
 
@@ -215,7 +239,7 @@
 *
 * @return The dot product.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil.
+* @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (double) dot3:(WWVec4*)vector;
 

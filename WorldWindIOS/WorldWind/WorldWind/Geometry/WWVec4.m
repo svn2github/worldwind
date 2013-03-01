@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWVec4
@@ -238,6 +239,57 @@
     _y *= scalar;
     _z *= scalar;
     _w *= scalar;
+
+    return self;
+}
+
+- (WWVec4*) multiplyByMatrix:(WWMatrix*)matrix
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    double* ms = matrix->m;
+
+    double x = ms[0] * _x + ms[1] * _y + ms[2] * _z + ms[3] * _w;
+    double y = ms[4] * _x + ms[5] * _y + ms[6] * _z + ms[7] * _w;
+    double z = ms[8] * _x + ms[9] * _y + ms[10] * _z + ms[11] * _w;
+    double w = ms[12] * _x + ms[13] * _y + ms[14] * _z + ms[15] * _w;
+
+    _x = x;
+    _y = y;
+    _z = z;
+    _w = w;
+
+    return self;
+}
+
+- (WWVec4*) divideByScalar3:(double)scalar
+{
+    if (scalar == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Scalar is zero")
+    }
+
+    _x /= scalar;
+    _y /= scalar;
+    _z /= scalar;
+
+    return self;
+}
+
+- (WWVec4*) divideByScalar:(double)scalar
+{
+    if (scalar == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Scalar is zero")
+    }
+
+    _x /= scalar;
+    _y /= scalar;
+    _z /= scalar;
+    _w /= scalar;
 
     return self;
 }

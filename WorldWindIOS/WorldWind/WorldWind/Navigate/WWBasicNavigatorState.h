@@ -6,7 +6,6 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <CoreGraphics/CoreGraphics.h>
 #import "WorldWind/Navigate/WWNavigatorState.h"
 
 @class WWMatrix;
@@ -29,6 +28,9 @@
 /// The concatenation of the modelview and projection matrices.
 @property (nonatomic, readonly) WWMatrix* modelviewProjection;
 
+/// The viewport rectangle, in screen coordinates.
+@property (nonatomic, readonly) CGRect viewport;
+
 /// The eye point, in model coordinates.
 @property (nonatomic, readonly) WWVec4* eyePoint;
 
@@ -45,13 +47,15 @@
 *
 * @param modelviewMatrix The modelview matrix.
 * @param projectionMatrix The projection matrix.
+* @param viewport The viewport rectangle, in screen coordinates.
 *
 * @return The initialized instance.
 *
-* @exception NSInvalidArgumentException if either the modelview or projection matrices are nil.
+* @exception NSInvalidArgumentException If either the modelview or projection matrices are nil.
 */
-- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix projection:(WWMatrix*)projectionMatrix;
-//
+- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix projection:(WWMatrix*)projectionMatrix viewport:(CGRect)viewport;
+
+// TODO: Determine if this alternate method can be removed.
 //- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
 //                                  projection:(WWMatrix*)projectionMatrix
 //                                        viewport:(CGRect)viewport

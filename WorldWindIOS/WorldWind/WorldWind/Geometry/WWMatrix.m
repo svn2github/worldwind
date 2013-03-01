@@ -6,14 +6,17 @@
  */
 
 #import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWAngle.h"
+#import "WorldWind/Geometry/WWFrustum.h"
+#import "WorldWind/Geometry/WWPlane.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWFrustum.h"
-#import "WorldWind/Geometry/WWPlane.h"
-#import "WorldWind/Geometry/WWFrustum.h"
+
+#define INDEX(i, j) (i) * 4 + (j)
+#define NEAR_ZERO_THRESHOLD 1.0e-8
+#define TINY_VALUE 1.0e-20
 
 @implementation WWMatrix
 
@@ -72,12 +75,13 @@
 
 - (WWMatrix*) initWithMatrix:(WWMatrix*)matrix
 {
-    self = [super init];
-
     if (matrix == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
     }
+
+
+    self = [super init];
 
     memcpy(self->m, matrix->m, (size_t) (16 * sizeof(double)));
 
@@ -85,6 +89,18 @@
 }
 
 - (WWMatrix*) initWithInverse:(WWMatrix*)matrix
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    self = [super init];
+
+    return [self invert:matrix];
+}
+
+- (WWMatrix*) initWithTransformInverse:(WWMatrix*)matrix
 {
     if (matrix == nil)
     {
@@ -326,150 +342,6 @@
     return self;
 }
 
-- (WWMatrix*) setPerspective:(double)left
-                       right:(double)right
-                      bottom:(double)bottom
-                         top:(double)top
-                nearDistance:(double)near
-                 farDistance:(double)far
-{
-    if (left >= right)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Left and right are invalid");
-    }
-
-    if (bottom >= top)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Bottom and top are invalid");
-    }
-
-    if (near >= far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are invalid");
-    }
-
-    if (near <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
-    }
-
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", chapter 4, page 130.
-
-    // Row 1
-    self->m[0] = 2 * near / (right - left);
-    self->m[1] = 0;
-    self->m[2] = (right + left) / (right - left);
-    self->m[3] = 0;
-    // Row 2
-    self->m[4] = 0;
-    self->m[5] = 2 * near / (top - bottom);
-    self->m[6] = (top + bottom) / (top - bottom);
-    self->m[7] = 0;
-    // Row 3
-    self->m[8] = 0;
-    self->m[9] = 0;
-    self->m[10] = -(far + near) / (far - near);
-    self->m[11] = -2 * near * far / (far - near);
-    // Row 4
-    self->m[12] = 0;
-    self->m[13] = 0;
-    self->m[14] = -1;
-    self->m[15] = 0;
-
-    return self;
-}
-
-- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
-                          viewportWidth:(double)width
-                         viewportHeight:(double)height
-                           nearDistance:(double)near
-                            farDistance:(double)far
-{
-    if (horizontalFOV <= 0 || horizontalFOV > 180)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Field of view is invalid");
-    }
-
-    if (width <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is invalid");
-    }
-
-    if (height <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is invalid");
-    }
-
-    if (near >= far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are invalid");
-    }
-
-    if (near <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
-    }
-
-    CGRect nearRect = [WWMath perspectiveFieldOfViewFrustumRect:horizontalFOV
-                                                  viewportWidth:width
-                                                 viewportHeight:height
-                                                      zDistance:near];
-    double left = CGRectGetMinX(nearRect);
-    double right = CGRectGetMaxX(nearRect);
-    double bottom = CGRectGetMinY(nearRect);
-    double top = CGRectGetMaxY(nearRect);
-
-    [self setPerspective:left
-                   right:right
-                  bottom:bottom
-                     top:top
-            nearDistance:near
-             farDistance:far];
-
-    return self;
-}
-
-- (WWMatrix*) setPerspectiveSizePreserving:(double)width
-                            viewportHeight:(double)height
-                              nearDistance:(double)near
-                               farDistance:(double)far
-{
-    if (width <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is invalid");
-    }
-
-    if (height <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is invalid");
-    }
-
-    if (near >= far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are invalid");
-    }
-
-    if (near <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is invalid");
-    }
-
-    CGRect nearRect = [WWMath perspectiveSizePreservingFrustumRect:width viewportHeight:height zDistance:near];
-    double left = CGRectGetMinX(nearRect);
-    double right = CGRectGetMaxX(nearRect);
-    double bottom = CGRectGetMinY(nearRect);
-    double top = CGRectGetMaxY(nearRect);
-
-    [self setPerspective:left
-                   right:right
-                  bottom:bottom
-                     top:top
-            nearDistance:near
-             farDistance:far];
-
-    return self;
-}
-
 - (WWMatrix*) setLookAt:(WWGlobe*)globe
          centerLatitude:(double)latitude
         centerLongitude:(double)longitude
@@ -557,6 +429,240 @@
                m10:ux m11:uy m12:uz m13:-ux * cx - uy * cy - uz * cz
                m20:nx m21:ny m22:nz m23:-nx * cx - ny * cy - nz * cz
                m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
+- (WWMatrix*) setOrthoFromLeft:(double)left
+                         right:(double)right
+                        bottom:(double)bottom
+                           top:(double)top
+                  nearDistance:(double)near
+                   farDistance:(double)far
+{
+    if (left == right)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Left and right are equal");
+    }
+
+    if (bottom == top)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Bottom and top are equal");
+    }
+
+    if (near == far)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
+    }
+
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.57).
+
+    // Row 1
+    self->m[0] = 2 / (right - left);
+    self->m[1] = 0;
+    self->m[2] = 0;
+    self->m[3] = - (right + left) / (right - left);
+    // Row 2
+    self->m[4] = 0;
+    self->m[5] = 2 / (top - bottom);
+    self->m[6] = 0;
+    self->m[7] = - (top + bottom) / (top  - bottom);
+    // Row 3
+    self->m[8] = 0;
+    self->m[9] = 0;
+    self->m[10] = -2 / (far - near);
+    self->m[11] = - (far + near) / (far - near);
+    // Row 4
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = 0;
+    self->m[15] = 1;
+
+    return self;
+}
+
+- (WWMatrix*) setOrthoFromWidth:(double)width
+                         height:(double)height
+{
+    if (width <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
+    }
+
+    if (height <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
+    }
+
+    // Create an orthographic projection that maps X and Y coordinates in the range [0, viewportWidth] and
+    // [0, viewportHeight] to [-1, 1], and maps Z coordinates in the range [0, 1] to [-1, 1]. This enables primitives
+    // to be drawn in screen coordinates, while preserving Z values associated with a different projection.
+
+    [self setOrthoFromLeft:0
+                     right:width
+                    bottom:0
+                       top:height
+              nearDistance:0
+               farDistance:-1];
+
+    return self;
+}
+
+- (WWMatrix*) setPerspective:(double)left
+                       right:(double)right
+                      bottom:(double)bottom
+                         top:(double)top
+                nearDistance:(double)near
+                 farDistance:(double)far
+{
+    if (left == right)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Left and right are equal");
+    }
+
+    if (bottom == top)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Bottom and top are equal");
+    }
+
+    if (near == far)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
+    }
+
+    if (near <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
+    }
+
+    if (far <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
+    }
+
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.52)..
+
+    // Row 1
+    self->m[0] = 2 * near / (right - left);
+    self->m[1] = 0;
+    self->m[2] = (right + left) / (right - left);
+    self->m[3] = 0;
+    // Row 2
+    self->m[4] = 0;
+    self->m[5] = 2 * near / (top - bottom);
+    self->m[6] = (top + bottom) / (top - bottom);
+    self->m[7] = 0;
+    // Row 3
+    self->m[8] = 0;
+    self->m[9] = 0;
+    self->m[10] = -(far + near) / (far - near);
+    self->m[11] = -2 * near * far / (far - near);
+    // Row 4
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = -1;
+    self->m[15] = 0;
+
+    return self;
+}
+
+- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
+                          viewportWidth:(double)width
+                         viewportHeight:(double)height
+                           nearDistance:(double)near
+                            farDistance:(double)far
+{
+    if (horizontalFOV <= 0 || horizontalFOV > 180)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Field of view is invalid");
+    }
+
+    if (width <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
+    }
+
+    if (height <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
+    }
+
+    if (near == far)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
+    }
+
+    if (near <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
+    }
+
+    if (far <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
+    }
+
+    CGRect nearRect = [WWMath perspectiveFieldOfViewFrustumRect:horizontalFOV
+                                                  viewportWidth:width
+                                                 viewportHeight:height
+                                                      zDistance:near];
+    double left = CGRectGetMinX(nearRect);
+    double right = CGRectGetMaxX(nearRect);
+    double bottom = CGRectGetMinY(nearRect);
+    double top = CGRectGetMaxY(nearRect);
+
+    [self setPerspective:left
+                   right:right
+                  bottom:bottom
+                     top:top
+            nearDistance:near
+             farDistance:far];
+
+    return self;
+}
+
+- (WWMatrix*) setPerspectiveSizePreserving:(double)width
+                            viewportHeight:(double)height
+                              nearDistance:(double)near
+                               farDistance:(double)far
+{
+    if (width <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
+    }
+
+    if (height <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
+    }
+
+    if (near == far)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
+    }
+
+    if (near <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
+    }
+
+    if (far <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
+    }
+
+    CGRect nearRect = [WWMath perspectiveSizePreservingFrustumRect:width viewportHeight:height zDistance:near];
+    double left = CGRectGetMinX(nearRect);
+    double right = CGRectGetMaxX(nearRect);
+    double bottom = CGRectGetMinY(nearRect);
+    double top = CGRectGetMaxY(nearRect);
+
+    [self setPerspective:left
+                   right:right
+                  bottom:bottom
+                     top:top
+            nearDistance:near
+             farDistance:far];
 
     return self;
 }
@@ -664,25 +770,44 @@
     return self;
 }
 
-- (void) multiplyVector:(WWVec4*)vector
+- (WWMatrix*) invert:(WWMatrix*)matrix
 {
-    if (vector == nil)
+    if (matrix == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
     }
 
-    double* ms = self->m;
-    double vx = [vector x];
-    double vy = [vector y];
-    double vz = [vector z];
-    double vw = [vector w];
+    double* ma = self->m;
+    double mb[16];
+    memcpy(mb, matrix->m, (size_t) (16 * sizeof(double)));
 
-    double x = ms[0] * vx + ms[1] * vy + ms[2] * vz + ms[3] * vw;
-    double y = ms[4] * vx + ms[5] * vy + ms[6] * vz + ms[7] * vw;
-    double z = ms[8] * vx + ms[9] * vy + ms[10] * vz + ms[11] * vw;
-    double w = ms[12] * vx + ms[13] * vy + ms[14] * vz + ms[15] * vw;
+    int indx[4];
+    double col[4];
 
-    [vector set:x y:y z:z w:w];
+    // Compute the matrix's determinant. The matrix is singular if its determinant is zero or very close to zero.
+    double d = [self ludcmp:mb indx:indx] * mb[0] * mb[5] * mb[10] * mb[15];
+    if (fabs(d) < NEAR_ZERO_THRESHOLD)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is singular");
+    }
+
+    for (int j = 0; j < 4; j++)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            col[i] = 0;
+        }
+
+        col[j] = 1;
+        [self lubksb:mb indx:indx b:col];
+
+        for (int i = 0; i < 4; i++)
+        {
+            ma[INDEX(i, j)] = col[i];
+        }
+    }
+
+    return self;
 }
 
 - (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix
@@ -745,7 +870,7 @@
     // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
     // listing 14.6 (pages 441-444).
 
-    double epsilon = 1.0e-10;
+    const double epsilon = 1.0e-10;
 
     // Since the matrix is symmetric m12=m21, m13=m31 and m23=m32, therefore we can ignore the values m21,
     // m32 and m32.
@@ -916,6 +1041,128 @@
 - (void) offsetPerspectiveDepth:(double)depthOffset
 {
     self->m[10] *= 1 + depthOffset;
+}
+
+// Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
+- (void) lubksb:(const double*)A indx:(const int*)indx b:(double*)b
+{
+    int ii = -1;
+    for (int i = 0; i < 4; i++)
+    {
+        int ip = indx[i];
+        double sum = b[ip];
+        b[ip] = b[i];
+
+        if (ii != -1)
+        {
+            for (int j = ii; j <= i - 1; j++)
+            {
+                sum -= A[INDEX(i, j)] * b[j];
+            }
+        }
+        else if (sum != 0.0)
+        {
+            ii = i;
+        }
+
+        b[i] = sum;
+    }
+
+    for (int i = 3; i >= 0; i--)
+    {
+        double sum = b[i];
+        for (int j = i + 1; j < 4; j++)
+        {
+            sum -= A[INDEX(i, j)] * b[j];
+        }
+
+        b[i] = sum / A[INDEX(i, i)];
+    }
+}
+
+// Method "ludcmp" derived from "Numerical Recipes in C", Press et al., 1988
+- (double) ludcmp:(double*)A indx:(int*)indx
+{
+    double vv[4];
+    double d = 1.0;
+    double temp;
+    for (int i = 0; i < 4; i++)
+    {
+        double big = 0.0;
+        for (int j = 0; j < 4; j++)
+        {
+            if ((temp = fabs(A[INDEX(i, j)])) > big)
+                big = temp;
+        }
+
+        if (big == 0.0)
+            return 0.0; // Matrix is singular if the entire row contains zero.
+        else
+            vv[i] = 1.0 / big;
+    }
+
+    double sum;
+    for (int j = 0; j < 4; j++)
+    {
+        for (int i = 0; i < j; i++)
+        {
+            sum = A[INDEX(i, j)];
+            for (int k = 0; k < i; k++)
+            {
+                sum -= A[INDEX(i, k)] * A[INDEX(k, j)];
+            }
+
+            A[INDEX(i, j)] = sum;
+        }
+
+        double big = 0.0;
+        double dum;
+        int imax = -1;
+        for (int i = j; i < 4; i++)
+        {
+            sum = A[INDEX(i, j)];
+            for (int k = 0; k < j; k++)
+            {
+                sum -= A[INDEX(i, k)] * A[INDEX(k, j)];
+            }
+
+            A[INDEX(i, j)] = sum;
+
+            if ((dum = vv[i] * fabs(sum)) >= big)
+            {
+                big = dum;
+                imax = i;
+            }
+        }
+
+        if (j != imax)
+        {
+            for (int k = 0; k < 4; k++)
+            {
+                dum = A[INDEX(imax, k)];
+                A[INDEX(imax, k)] = A[INDEX(j, k)];
+                A[INDEX(j, k)] = dum;
+            }
+
+            d = -d;
+            vv[imax] = vv[j];
+        }
+
+        indx[j] = imax;
+        if (A[INDEX(j, j)] == 0.0)
+            A[INDEX(j, j)] = TINY_VALUE;
+
+        if (j != 3)
+        {
+            dum = 1.0 / A[INDEX(j, j)];
+            for (int i = j + 1; i < 4; i++)
+            {
+                A[INDEX(i, j)] *= dum;
+            }
+        }
+    }
+
+    return d;
 }
 
 @end

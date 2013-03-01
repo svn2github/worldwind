@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 @class WWMatrix;
 @class WWVec4;
@@ -40,10 +41,17 @@
 - (WWMatrix*) modelviewProjection;
 
 /**
+* Returns the viewport rectangle in screen coordinates.
+*
+* @return The viewport rectangle in screen coordinates.
+*/
+- (CGRect) viewport;
+
+/**
 * Returns the eye point, in model coordinates.
 *
 * @return The eye point.
- */
+*/
 - (WWVec4*) eyePoint;
 
 /**
@@ -60,12 +68,17 @@
 */
 - (WWFrustum*) frustumInModelCoordinates;
 
+/// @name Operations on Navigator State
+
 /**
-* Indicates the approximate size of a pixel, in meters, at a specified distance from the current eye point.
+* Indicates the approximate size of a pixel, in model coordinates, at a specified distance from the current eye point.
+*
+* This returns 0 if the specified distance is zero. The return value of this method is undefined if the distance is less
+* than zero.
 *
 * @param distance The distance from the eye point at which to determine pixel size.
 *
-* @return The approximate pixel size, in meters, at the specified distance from the eye point.
+* @return The approximate pixel size, in model coordinates, at the specified distance from the eye point.
 */
 - (double) pixelSizeAtDistance:(double)distance;
 

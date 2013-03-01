@@ -64,7 +64,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
     }
 
-    [matrix multiplyVector:_vector];
+    [_vector multiplyByMatrix:matrix];
 }
 
 - (void) translate:(WWVec4*)translation
@@ -83,7 +83,7 @@
 
     if (d != 0)
     {
-        [_vector multiplyByScalar:1 / d];
+        [_vector divideByScalar:d];
     }
 }
 

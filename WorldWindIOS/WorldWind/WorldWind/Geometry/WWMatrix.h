@@ -68,6 +68,19 @@
 /**
 * Initializes a matrix to the inverse of a specified matrix.
 *
+* This throws an exception if the specified matrix is singular.
+*
+* @param matrix The matrix whose inverse is to initialize this matrix.
+*
+* @return The initialized matrix.
+*
+* @exception NSInvalidArgumentException if the specified matrix is nil or cannot be inverted.
+*/
+- (WWMatrix*) initWithInverse:(WWMatrix*)matrix;
+
+/**
+* Initializes a matrix to the inverse of a specified matrix.
+*
 * @param matrix The matrix whose inverse is to initialize this matrix. The specified matrix is assumed to be
 * orthonormal. (See invertTransformMatrix.)
 *
@@ -75,7 +88,7 @@
 *
 * @exception NSInvalidArgumentException if the specified matrix is nil.
 */
-- (WWMatrix*) initWithInverse:(WWMatrix*)matrix;
+- (WWMatrix*) initWithTransformInverse:(WWMatrix*)matrix;
 
 /**
 * Initializes this matrix to the transpose of a specified matrix.
@@ -160,6 +173,24 @@
 
 /// @name Making Viewing and Perspective Matrices
 
+- (WWMatrix*) setLookAt:(WWGlobe*)globe
+         centerLatitude:(double)latitude
+        centerLongitude:(double)longitude
+         centerAltitude:(double)altitude
+          rangeInMeters:(double)range
+                heading:(double)heading
+                   tilt:(double)tilt;
+
+- (WWMatrix*) setOrthoFromLeft:(double)left
+                         right:(double)right
+                        bottom:(double)bottom
+                           top:(double)top
+                  nearDistance:(double)near
+                   farDistance:(double)far;
+
+- (WWMatrix*) setOrthoFromWidth:(double)width
+                         height:(double)height;
+
 - (WWMatrix*) setPerspective:(double)left
                        right:(double)right
                       bottom:(double)bottom
@@ -177,14 +208,6 @@
                             viewportHeight:(double)height
                               nearDistance:(double)near
                                farDistance:(double)far;
-
-- (WWMatrix*) setLookAt:(WWGlobe*)globe
-         centerLatitude:(double)latitude
-        centerLongitude:(double)longitude
-         centerAltitude:(double)altitude
-          rangeInMeters:(double)range
-                heading:(double)heading
-                   tilt:(double)tilt;
 
 /// @name Matrix Operations
 
@@ -227,13 +250,19 @@
                    m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
 /**
-* Multiplies a specified vector by this matrix.
+* Inverts the specified matrix and stores the result in this matrix.
 *
-* @param vector The vector to multiply.
+* This throws an exception if the specified matrix is singular.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil.
+* The result of this method is undefined if this matrix is passed in as the matrix to invert.
+*
+* @param matrix The matrix whose inverse is computed.
+*
+* @return This matrix with its values set to the inverse of the specified matrix.
+*
+* @exception NSInvalidArgumentException If the specified matrix is nil or cannot be inverted.
 */
-- (void) multiplyVector:(WWVec4*)vector;
+- (WWMatrix*) invert:(WWMatrix*)matrix;
 
 /**
 * Inverts the specified matrix and stores the result in this matrix.
@@ -281,5 +310,11 @@
 * @param depthOffset The amount of offset to apply.
 */
 - (void) offsetPerspectiveDepth:(double)depthOffset;
+
+/// @name Methods for Internal Use
+
+- (void) lubksb:(const double*)A indx:(const int*)indx b:(double*)b;
+
+- (double) ludcmp:(double*)A indx:(int*)indx;
 
 @end

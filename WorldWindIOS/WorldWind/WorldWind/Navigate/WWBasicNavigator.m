@@ -153,7 +153,10 @@
                     tilt:_tilt];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
-    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
+    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position. Compute
+    // the eye point in geographic. The eye point is computed by multiplying (0, 0, 0, 1) by the inverse of the
+    // modelview matrix, then converting the result to a geographic position. We have pre-computed the result and stored
+    // it inline here to avoid an unnecessary matrix multiplication.
     WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
     WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
@@ -177,7 +180,7 @@
                                 nearDistance:_nearDistance
                                  farDistance:_farDistance];
 
-    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection];
+    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
 }
 
 - (void) gotoLocation:(WWLocation*)location animate:(BOOL)animate
