@@ -17,6 +17,7 @@
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
+#import "WorldWind/Layer/WWOpenStreetMapLayer.h"
 #import "LayerListController.h"
 #import "LocationController.h"
 #import "AnyGestureRecognizer.h"
@@ -82,14 +83,15 @@
     [layers addLayer:[[WWBMNGLayer alloc] init]];
     [layers addLayer:[[WWI3LandsatLayer alloc] init]];
     [layers addLayer:[[WWBingLayer alloc] init]];
+    [layers addLayer:[[WWOpenStreetMapLayer alloc] init]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
-    [[layers layerAtIndex:3] setEnabled:NO];
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
+    [[layers layerAtIndex:6] setEnabled:NO];
 
-    [self makeFlightPathsLayer];
+//    [self makeFlightPathsLayer];
 
     [self->locationController setView:_wwv];
 }
