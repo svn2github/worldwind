@@ -34,40 +34,43 @@
 
 - (void) main
 {
-    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-    [dict setObject:_filePath forKey:WW_FILE_PATH];
-    [dict setObject:_url forKey:WW_URL];
-    NSNotification* notification = [NSNotification notificationWithName:WW_RETRIEVAL_STATUS
-                                                                 object:_object
-                                                               userInfo:dict];
-    @try
+    @autoreleasepool
     {
-        if (![self isCancelled])
+        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+        [dict setObject:_filePath forKey:WW_FILE_PATH];
+        [dict setObject:_url forKey:WW_URL];
+        NSNotification* notification = [NSNotification notificationWithName:WW_RETRIEVAL_STATUS
+                                                                     object:_object
+                                                                   userInfo:dict];
+        @try
         {
-            if ([WWUtil retrieveUrl:_url toFile:_filePath])
+            if (![self isCancelled])
             {
-                [dict setObject:WW_SUCCEEDED forKey:WW_RETRIEVAL_STATUS];
+                if ([WWUtil retrieveUrl:_url toFile:_filePath])
+                {
+                    [dict setObject:WW_SUCCEEDED forKey:WW_RETRIEVAL_STATUS];
+                }
+                else
+                {
+                    [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
+                }
             }
             else
             {
-                [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
+                [dict setObject:WW_CANCELED forKey:WW_RETRIEVAL_STATUS];
             }
         }
-        else
+        @catch (NSException* exception)
         {
-            [dict setObject:WW_CANCELED forKey:WW_RETRIEVAL_STATUS];
-        }
-    }
-    @catch (NSException* exception)
-    {
-        [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
+            [dict setObject:WW_FAILED forKey:WW_RETRIEVAL_STATUS];
 
-        NSString* msg = [NSString stringWithFormat:@"Retrieving %@ to %@", _url, _filePath];
-        WWLogE(msg, exception);
-    }
-    @finally
-    {
-        [[NSNotificationCenter defaultCenter] postNotification:notification];
+            NSString* msg = [NSString stringWithFormat:@"Retrieving %@ to %@", _url, _filePath];
+            WWLogE(msg, exception);
+        }
+        @finally
+        {
+            [[NSNotificationCenter defaultCenter] postNotification:notification];
+        }
     }
 }
 

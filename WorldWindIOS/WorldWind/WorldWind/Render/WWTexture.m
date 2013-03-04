@@ -54,42 +54,45 @@
 {
     // Read the texture's image from disk and add it to the texture cache. This is done in a background thread.
 
-    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-    [dict setObject:_filePath forKey:WW_FILE_PATH];
-    NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
-
-    @try
+    @autoreleasepool
     {
-        if (![self isCancelled])
-        {
-            [self loadTexture];
+        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+        [dict setObject:_filePath forKey:WW_FILE_PATH];
+        NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
 
-            if (!_textureCreationFailed)
+        @try
+        {
+            if (![self isCancelled])
             {
-                [_textureCache putTexture:self forKey:_filePath];
-                _textureCache = nil; // don't need the cache anymore
-                [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
+                [self loadTexture];
+
+                if (!_textureCreationFailed)
+                {
+                    [_textureCache putTexture:self forKey:_filePath];
+                    _textureCache = nil; // don't need the cache anymore
+                    [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
+                }
+                else
+                {
+                    [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
+                }
             }
             else
             {
-                [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
+                [dict setObject:WW_CANCELED forKey:WW_REQUEST_STATUS];
             }
         }
-        else
+        @catch (NSException* exception)
         {
-            [dict setObject:WW_CANCELED forKey:WW_REQUEST_STATUS];
-        }
-    }
-    @catch (NSException* exception)
-    {
-        [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
+            [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
 
-        NSString* msg = [NSString stringWithFormat:@"Opening image file %@", [self filePath]];
-        WWLogE(msg, exception);
-    }
-    @finally
-    {
-        [[NSNotificationCenter defaultCenter] postNotification:notification];
+            NSString* msg = [NSString stringWithFormat:@"Opening image file %@", [self filePath]];
+            WWLogE(msg, exception);
+        }
+        @finally
+        {
+            [[NSNotificationCenter defaultCenter] postNotification:notification];
+        }
     }
 }
 

@@ -183,36 +183,39 @@
 {
     // Read the elevation data's image from disk and add it to the memory cache. This is done in a background thread.
 
-    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-    [dict setObject:_filePath forKey:WW_FILE_PATH];
-
-    @try
+    @autoreleasepool
     {
-        if (![self isCancelled])
+        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+        [dict setObject:_filePath forKey:WW_FILE_PATH];
+
+        @try
         {
-            [self loadImage];
+            if (![self isCancelled])
+            {
+                [self loadImage];
 
-            [_memoryCache putValue:self forKey:_filePath];
-            _memoryCache = nil; // don't need the cache anymore
-            [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
+                [_memoryCache putValue:self forKey:_filePath];
+                _memoryCache = nil; // don't need the cache anymore
+                [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
+            }
+            else
+            {
+                [dict setObject:WW_CANCELED forKey:WW_REQUEST_STATUS];
+            }
         }
-        else
+        @catch (NSException* exception)
         {
-            [dict setObject:WW_CANCELED forKey:WW_REQUEST_STATUS];
-        }
-    }
-    @catch (NSException* exception)
-    {
-        [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
+            [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
 
-        NSString* msg = [NSString stringWithFormat:@"Opening data grid file %@", _filePath];
-        WWLogE(msg, exception);
-    }
-    @finally
-    {
-        NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
-        [[NSNotificationCenter defaultCenter] postNotification:notification];
-        _object = nil; // don't need the object anymore
+            NSString* msg = [NSString stringWithFormat:@"Opening data grid file %@", _filePath];
+            WWLogE(msg, exception);
+        }
+        @finally
+        {
+            NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
+            [[NSNotificationCenter defaultCenter] postNotification:notification];
+            _object = nil; // don't need the object anymore
+        }
     }
 }
 
