@@ -61,6 +61,11 @@
     {
         [[entry resource] dispose];
     }
+    else if ([[entry resourceType] isEqualToString:WW_GPU_VBO])
+    {
+        GLuint bufferId = (GLuint) [((NSNumber*) [entry resource]) intValue];
+        glDeleteBuffers(1, &bufferId);
+    }
 }
 
 - (void) removalException:(NSException*)exception key:(id <NSCopying>)key value:(id)value // memory cache listener

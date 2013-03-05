@@ -12,7 +12,8 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Terrain/WWTerrainGeometry.h"
-#import "WWDrawContext.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Util/WWLevel.h"
 
 @implementation WWTerrainTile
 
@@ -34,6 +35,7 @@
     if (self != nil)
     {
         _tessellator = tessellator;
+        _cacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
     }
 
     return self;
@@ -48,7 +50,8 @@
 
     long size = terrainGeometrySize
             + 4 // tessellator pointer
-            + (8) // numlat + numlon fields
+            + (8) // numlat + numlon
+            + 10 // cache key (approx)
             + (4); // terrain geometry pointer
 
     return size + [super sizeInBytes];

@@ -13,6 +13,7 @@ extern NSString* const WW_FAILED;
 extern NSString* const WW_FILE_PATH;
 extern NSString* const WW_GPU_PROGRAM;
 extern NSString* const WW_GPU_TEXTURE;
+extern NSString* const WW_GPU_VBO;
 extern NSString* const WW_GREAT_CIRCLE;
 extern NSString* const WW_LINEAR;
 extern NSString* const WW_NAVIGATOR_GESTURE_RECOGNIZED;

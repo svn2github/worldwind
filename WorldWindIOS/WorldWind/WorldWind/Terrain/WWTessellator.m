@@ -23,6 +23,8 @@
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWTessellator
 {
@@ -228,7 +230,7 @@
 
     if (!self->tileElevations)
     {
-        self->tileElevations = malloc((size_t)numLatVertices * numLonVertices * sizeof(double));
+        self->tileElevations = malloc((size_t) numLatVertices * numLonVertices * sizeof(double));
     }
 
     // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
@@ -327,11 +329,11 @@
 - (void) buildTileRowVertices:(WWGlobe*)globe
                     rowSector:(WWSector*)rowSector
                numRowVertices:(int)numRowVertices
-                   elevations:(double[])elevations
+                   elevations:(double [])elevations
             constantElevation:(double*)constantElevation
                  minElevation:(double)minElevation
                     refCenter:(WWVec4*)refCenter
-                       points:(float[])points
+                       points:(float [])points
 {
     // Add a redundant point at the row's minimum longitude. This point is used to define the tile's western skirt. It
     // has the same location as the row's first location but is assigned the minimum elevation instead of the
@@ -598,19 +600,27 @@
         return;
     }
 
+    [self cacheSharedGeometryVBOs:dc];
+
     // Enable the program's vertex attribute, if one exists.
     int location = [program getAttributeLocation:@"vertexPoint"];
-    if (location >= 0)
-    {
-        glEnableVertexAttribArray((GLuint) location);
-    }
+    glEnableVertexAttribArray((GLuint) location);
+
+    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
     // Enable the program's texture coordinate attribute.
     location = [program getAttributeLocation:@"vertexTexCoord"];
-    if (location >= 0)
-    {
-        glEnableVertexAttribArray((GLuint) location);
-    }
+    NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+    glEnableVertexAttribArray((GLuint) location);
+    glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
+    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, false, 0, 0);
+
+    // It's necessary to bind the array buffer to 0 because renderOutline and renderWireframe do not use VBOs. (For
+    // normal rendering the array buffer is set during the render method so setting it to 0 here is not necessary.)
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) [indicesVboId intValue]);
 }
 
 - (void) endRendering:(WWDrawContext*)dc
@@ -691,17 +701,32 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
 
-    location = [dc.currentProgram getAttributeLocation:@"vertexTexCoord"];
-    if (location >= 0) // attribute might not be used in shader, so check to be sure it has a location
+    GLuint vboId;
+    NSNumber* vbo = (NSNumber*) [gpuResourceCache getResourceForKey:[tile cacheKey]];
+    if (vbo == nil)
     {
-        glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, _sharedGeometry.texCoords);
+        glGenBuffers(1, &vboId);
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        glBufferData(GL_ARRAY_BUFFER, [terrainGeometry numPoints] * 3 * sizeof(float), [terrainGeometry points],
+                GL_STATIC_DRAW);
+        [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:vboId]
+                         resourceType:WW_GPU_VBO
+                                 size:[terrainGeometry numPoints] * 3 * sizeof(float)
+                               forKey:[tile cacheKey]];
+    }
+    else
+    {
+        vboId = (GLuint) [vbo intValue];
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
     }
 
-    glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, _sharedGeometry.indices);
+    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, 0);
 }
 
 - (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -723,9 +748,13 @@
         glDisableVertexAttribArray((GLuint) location);
     }
 
+    // Must turn off indices buffer, which was turned on in beginRendering.
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
+
     glDrawElements(GL_LINES, _sharedGeometry.numWireframeIndices, GL_UNSIGNED_SHORT, _sharedGeometry.wireframeIndices);
 }
 
@@ -748,10 +777,48 @@
         glDisableVertexAttribArray((GLuint) location);
     }
 
+    // Must turn off indices buffer, which was turned on in beginRendering.
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, terrainGeometry.points);
     glDrawElements(GL_LINE_LOOP, _sharedGeometry.numOutlineIndices, GL_UNSIGNED_SHORT, _sharedGeometry.outlineIndices);
+}
+
+- (void) cacheSharedGeometryVBOs:(WWDrawContext*)dc
+{
+    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
+
+    NSNumber* texCoordVbo = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+    if (texCoordVbo == nil)
+    {
+        GLuint texCoordVboId;
+        glGenBuffers(1, &texCoordVboId);
+        glBindBuffer(GL_ARRAY_BUFFER, texCoordVboId);
+        glBufferData(GL_ARRAY_BUFFER, [_sharedGeometry numTexCoords] * 2 * sizeof(float), [_sharedGeometry texCoords],
+                GL_STATIC_DRAW);
+        [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:texCoordVboId]
+                         resourceType:WW_GPU_VBO
+                                 size:[_sharedGeometry numTexCoords] * 2 * sizeof(float)
+                               forKey:[_sharedGeometry texCoordVboCacheKey]];
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    NSNumber* indicesVbo = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    if (indicesVbo == nil)
+    {
+        GLuint indicesVboId;
+        glGenBuffers(1, &indicesVboId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVboId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, [_sharedGeometry numIndices] * sizeof(short), [_sharedGeometry indices],
+                GL_STATIC_DRAW);
+        [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:indicesVboId]
+                         resourceType:WW_GPU_VBO
+                                 size:[_sharedGeometry numIndices] * sizeof(short)
+                               forKey:[_sharedGeometry indicesVboCacheKey]];
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
 }
 
 @end

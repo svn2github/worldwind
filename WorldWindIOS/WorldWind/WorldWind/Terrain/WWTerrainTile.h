@@ -34,6 +34,9 @@
 /// terrain geometry when the globe's elevations change.
 @property(nonatomic) NSDate* timestamp;
 
+/// The GPU resource cache ID for this tile's Cartesian coordinates VBO.
+@property (nonatomic) NSString* cacheKey;
+
 /// @name Initializing Terrain Tiles
 
 /**

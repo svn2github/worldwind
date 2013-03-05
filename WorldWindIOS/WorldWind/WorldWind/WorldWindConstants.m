@@ -15,6 +15,7 @@ NSString* const WW_FAILED = @"gov.nasa.worldwind.RetrievalFailed";
 NSString* const WW_FILE_PATH = @"gov.nasa.worldwind.FilePath";
 NSString* const WW_GPU_PROGRAM = @"gov.nasa.worldwind.GpuProgram";
 NSString* const WW_GPU_TEXTURE = @"gov.nasa.worldwind.GpuTexture";
+NSString* const WW_GPU_VBO = @"gov.nasa.worldwind.GpuVbo";
 NSString* const WW_GREAT_CIRCLE = @"gov.nasa.worldwind.GreatCircle";
 NSString* const WW_LINEAR = @"gov.nasa.worldwind.Linear";
 NSString* const WW_NAVIGATOR_GESTURE_RECOGNIZED = @"gov.nasa.worldwind.NavigatorGestureRecognized";

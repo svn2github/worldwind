@@ -17,7 +17,8 @@
 @property (nonatomic) int numWireframeIndices;
 @property (nonatomic) short* outlineIndices;
 @property (nonatomic) int numOutlineIndices;
-@property (nonatomic) NSObject* vboCacheKey;
+@property (nonatomic) NSString* texCoordVboCacheKey;
+@property (nonatomic) NSString* indicesVboCacheKey;
 
 - (WWTerrainSharedGeometry*) init;
 
