@@ -46,11 +46,13 @@
     double* mvi = modelviewInv->m;
     _eyePoint = [[WWVec4 alloc] initWithCoordinates:mvi[3] y:mvi[7] z:mvi[11]];
 
-    // Extract the frustum in eye coordinates from the projection matrix. Transform the frustum to model coordinates
-    // by multiplying its planes by the transpose of the modelview matrix.
-    WWFrustum* frustum = [projectionMatrix extractFrustum]; // returns normalized frustum plane vectors
+    // Compute the frustum in model coordinates. Start by computing the frustum in eye coordinates from the projection
+    // matrix, then transform this frustum to model coordinates by multiplying its planes by the transpose of the
+    // modelview matrix. We use the transpose of the modelview matrix because planes are transformed by the inverse
+    // transpose of a matrix, and we want to transform from eye coordinates to model coordinates.
     WWMatrix* modelviewTranspose = [[WWMatrix alloc] initWithTranspose:_modelview];
-    _frustumInModelCoordinates = [[WWFrustum alloc] initWithTransformedFrustum:frustum matrix:modelviewTranspose];
+    _frustumInModelCoordinates = [projectionMatrix extractFrustum]; // returns normalized frustum plane vectors
+    [_frustumInModelCoordinates transformByMatrix:modelviewTranspose];
     [_frustumInModelCoordinates normalize]; // re-normalize after transforming the frustum plane vectors.
 
     // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
