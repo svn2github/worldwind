@@ -15,8 +15,9 @@
 @class WWGpuProgram;
 @class WWSurfaceTileRenderer;
 @class WWGpuResourceCache;
-@protocol WWNavigatorState;
 @class WWPosition;
+@class WWMatrix;
+@protocol WWNavigatorState;
 @protocol WWExtent;
 @protocol WWOrderedRenderable;
 @protocol WWOutlinedShape;
@@ -73,6 +74,11 @@
 @property(nonatomic, readonly) id <WWTerrain> terrain;
 
 @property NSMutableArray* orderedRenderables;
+
+/// The modelview-projection matrix appropriate for displaying objects in screen coordinates. This matrix has the effect
+/// of preserving coordinates that have already been projected using [WWNavigatorState project:result:]. The XY screen
+/// coordinates are interpreted as literal screen coordinates and the Z coordinate is interpeted as a depth value.
+@property(nonatomic, readonly) WWMatrix* screenProjection;
 
 /// @name Initializing a Draw Context
 
@@ -145,6 +151,5 @@
 * renderable list is not modified.
 */
 - (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable;
-
 
 @end

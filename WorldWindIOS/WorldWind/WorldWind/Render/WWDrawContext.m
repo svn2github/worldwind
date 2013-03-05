@@ -8,6 +8,7 @@
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWSurfaceTileRenderer.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -30,6 +31,7 @@
     _eyePosition = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
     _orderedRenderables = [[NSMutableArray alloc] init];
+    _screenProjection = [[WWMatrix alloc] initWithIdentity];
 
     return self;
 }
@@ -45,8 +47,10 @@
 - (void) update
 {
     WWVec4* ep = [_navigatorState eyePoint];
-
     [_globe computePositionFromPoint:[ep x] y:[ep y] z:[ep z] outputPosition:_eyePosition];
+
+    CGRect viewport = [_navigatorState viewport];
+    [_screenProjection setOrthoFromWidth:CGRectGetWidth(viewport) height:CGRectGetHeight(viewport)];
 }
 
 - (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels // TODO: enable when pixelSizeAtDistance implemented
