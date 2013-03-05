@@ -53,7 +53,9 @@
 *
 * @exception NSInvalidArgumentException If either the modelview or projection matrices are nil.
 */
-- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix projection:(WWMatrix*)projectionMatrix viewport:(CGRect)viewport;
+- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
+                                  projection:(WWMatrix*)projectionMatrix
+                                    viewport:(CGRect)viewport;
 
 // TODO: Determine if this alternate method can be removed.
 //- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix

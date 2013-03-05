@@ -21,7 +21,9 @@
     double pixelSizeOffset;
 }
 
-- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix projection:(WWMatrix*)projectionMatrix viewport:(CGRect)viewport;
+- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
+                                  projection:(WWMatrix*)projectionMatrix
+                                    viewport:(CGRect)viewport;
 {
     if (modelviewMatrix == nil)
     {
@@ -131,6 +133,104 @@
 //
 //    return self;
 //}
+
+- (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint
+{
+    if (modelPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Model point is nil");
+    }
+
+    if (screenPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Screen point is nil");
+    }
+
+    // TODO: Return NO if the modelPoint is behind the eye.
+
+    // Multiply the model point by the combined modelview-projection matrix. This has the effect of transforming the
+    // point from model coordinates to eye coordinates, then to clip coordinates. Additionally, this inverts the Z axis
+    // and stores the negative of the eye coordinate Z value in the W coordinate.
+    [screenPoint set:modelPoint];
+    [screenPoint setW:1]; // Fourth column of modelview projection must be multiplied by 1.
+    [screenPoint multiplyByMatrix:_modelviewProjection];
+
+    double x = [screenPoint x];
+    double y = [screenPoint y];
+    double z = [screenPoint z];
+    double w = [screenPoint w];
+
+    if (w == 0)
+    {
+        return NO;
+    }
+
+    // Complete the conversion from model coordinates to clip coordinates by dividing by the W coordinate.
+    x /= w;
+    y /= w;
+    z /= w;
+    w /= w;
+
+    // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be converted to
+    // window coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
+    x = x * 0.5 + 0.5;
+    y = y * 0.5 + 0.5;
+    z = z * 0.5 + 0.5;
+
+    // Convert the XY coordinates from coordinates in the range [0, 1] to window coordinates.
+    x = x * CGRectGetWidth(_viewport) + CGRectGetMinX(_viewport);
+    y = y * CGRectGetHeight(_viewport) + CGRectGetMinY(_viewport);
+
+    [screenPoint set:x y:y z:z w:w];
+
+    return YES;
+}
+
+- (BOOL) unProject:(WWVec4*)screenPoint result:(WWVec4*)modelPoint
+{
+    if (screenPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Screen point is nil");
+    }
+
+    if (modelPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Model point is nil");
+    }
+
+    // TODO: Return NO if the screenPoint is behind the eye.
+
+    double x = [screenPoint x];
+    double y = [screenPoint y];
+    double z = [screenPoint z];
+
+    // Convert the XY coordinates window coordinates to coordinates in the range [0, 1]. This enables the XY coordinates
+    // to be converted to clip coordinates in the range [-1, 1].
+    x = (x - CGRectGetMinX(_viewport)) / CGRectGetWidth(_viewport);
+    y = (y - CGRectGetMinY(_viewport)) / CGRectGetHeight(_viewport);
+
+    // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
+    x = x * 2 - 1;
+    y = y * 2 - 1;
+    z = z * 2 - 1;
+
+    // Multiply the point in clip coordinates by the inverse of the combined modelview-projection matrix. This has the
+    // effect of transforming the point from clip coordinates to eye coordinates, then to model coordinates.
+    // Additionally, this inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+    [modelPoint set:x y:y z:z w:1]; // Fourth column of modelview projection must be multiplied by 1.
+    [modelPoint multiplyByMatrix:self->modelviewProjectionInv];
+
+    double w = [modelPoint w];
+    if (w == 0)
+    {
+        return NO;
+    }
+
+    // Complete the conversion from clip coordinate to model coordinates by dividing by the W coordinate.
+    [modelPoint divideByScalar:w];
+
+    return YES;
+}
 
 - (double) pixelSizeAtDistance:(double)distance
 {
