@@ -19,22 +19,16 @@
     _key = key;
     _value = value;
     _size = size;
-    _lastUsed = [NSDate date];
+    _lastUsed = [NSDate timeIntervalSinceReferenceDate];
 
     return self;
 }
 
 - (int) compareTo:(id)other
 {
-    NSComparisonResult result = [_lastUsed compare:[other lastUsed]];
+    double now = [NSDate timeIntervalSinceReferenceDate];
 
-    if (result == NSOrderedAscending)
-        return -1;
-
-    if (result == NSOrderedSame)
-        return 0;
-
-    return 1;
+    return _lastUsed < now ? -1 : _lastUsed > now ? 1 : 0;
 }
 @end
 
@@ -68,7 +62,7 @@
 
         if (entry != nil)
         {
-            [entry setLastUsed:[NSDate date]];
+            [entry setLastUsed:[NSDate timeIntervalSinceReferenceDate]];
         }
     }
 

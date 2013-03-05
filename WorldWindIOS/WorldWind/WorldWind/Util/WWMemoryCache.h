@@ -15,7 +15,7 @@
 @property(readonly) id <NSCopying> key;
 @property(readonly) id value;
 @property(readonly) long size;
-@property (strong) NSDate* lastUsed;
+@property double lastUsed;
 
 - (WWMemoryCacheEntry*) initWithKey:(id <NSCopying>)key value:(id)value size:(long)size;
 
