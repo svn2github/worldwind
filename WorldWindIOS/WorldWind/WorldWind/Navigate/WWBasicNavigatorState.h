@@ -16,8 +16,18 @@
 * Provides an implementation of the WWNavigatorState protocol.
 */
 @interface WWBasicNavigatorState : NSObject<WWNavigatorState>
+{
+@protected
+    // The inverses of the modelview, projection, and concatenated modelview-projection matrices.
+    WWMatrix* modelviewInv;
+    WWMatrix* projectionInv;
+    WWMatrix* modelviewProjectionInv;
+    // Constants computed during initialization and used in pixelSizeAtDistance.
+    double pixelSizeScale;
+    double pixelSizeOffset;
+}
 
-/// @name Attributes
+/// @name Navigator State Attributes
 
 /// The modelview matrix.
 @property (nonatomic, readonly) WWMatrix* modelview;
@@ -34,10 +44,7 @@
 /// The eye point, in model coordinates.
 @property (nonatomic, readonly) WWVec4* eyePoint;
 
-/// The view frustum.
-@property (nonatomic, readonly) WWFrustum* frustum;
-
-// The view frustum in model coordinates.
+// The view frustum, in model coordinates.
 @property (nonatomic, readonly) WWFrustum* frustumInModelCoordinates;
 
 /// @name Initializing Navigator State
@@ -56,12 +63,5 @@
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
                                     viewport:(CGRect)viewport;
-
-// TODO: Determine if this alternate method can be removed.
-//- (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
-//                                  projection:(WWMatrix*)projectionMatrix
-//                                        viewport:(CGRect)viewport
-//                                nearDistance:(double)nearDistance
-//                                 farDistance:(double)farDistance;
 
 @end

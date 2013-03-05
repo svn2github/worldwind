@@ -17,7 +17,7 @@
 */
 @protocol WWNavigatorState
 
-/// @name Attributes
+/// @name Navigator State Attributes
 
 /**
 * Returns the modelview matrix.
@@ -53,13 +53,6 @@
 * @return The eye point.
 */
 - (WWVec4*) eyePoint;
-
-/**
-* Returns the frustum.
-*
-* @return The frustum.
-*/
-- (WWFrustum*) frustum;
 
 /**
 * Returns the frustum in model coordinates.
