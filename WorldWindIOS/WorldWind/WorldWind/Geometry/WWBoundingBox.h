@@ -10,6 +10,7 @@
 
 @class WWVec4;
 @class WWPlane;
+@class WWFrustum;
 
 /**
 * Provides box geometry for use as a bounding volume.
@@ -64,18 +65,10 @@
 /// The six planes that bound the box.
 @property(nonatomic, readonly) NSArray* planes;
 
-/// @name Initializing Bounding Boxes
+/// This bounding box's radius.
+@property (nonatomic, readonly) double radius;
 
-/**
-* Initializes this bounding box to one meter on each axis and centered on a specified point.
-*
-* @param point The point to contain.
-*
-* @return This bounding box initialized to contain the specified point.
-*
-* @exception NSInvalidArgumentException If the specified point is nil.
-*/
-- (WWBoundingBox*) initWithPoint:(WWVec4*)point;
+/// @name Initializing Bounding Boxes
 
 /**
 * Initializes this bounding box such that it contains a specified list of points.
@@ -84,7 +77,7 @@
 *
 * @return The bounding box initialized to contain the specified points.
 *
-* @exception NSInvalidArgumentException if the specified list of points is nil.
+* @exception NSInvalidArgumentException If the specified list of points is nil or zero length.
 */
 - (WWBoundingBox*) initWithPoints:(NSArray*)points;
 
@@ -98,6 +91,43 @@
 * @exception NSInvalidArgumentException If the specified translation vector is nil.
 */
 - (void) translate:(WWVec4*)translation;
+
+/// @name Operations on Bounding Boxes
+
+/**
+* Computes the approximate distance between this bounding box and a specified point.
+*
+* This calculation treats the bounding box as a sphere of radius.
+*
+* @param point The point to compute the distance to.
+*
+* @return the distance from the edge of this bounding box to the specified point.
+*
+* @exception NSInvalidArgumentException If the specified point is nil.
+*/
+- (double) distanceTo:(WWVec4*)point;
+
+/**
+* Computes the effective radius of this bounding box relative to a specified plane.
+*
+* @param plane The plane of interest.
+*
+* @return The effective radius of this bounding box to the specified plane.
+*
+* @exception NSInvalidArgumentException If the specified plane is nil.
+*/
+- (double) effectiveRadius:(WWPlane*)plane;
+
+/**
+* Indicates whether this bounding box intersects a specified frustum.
+*
+* @param frustum The frustum of interest.
+*
+* @return YES if this bounding box intersects the specified frustum, otherwise NO.
+*
+* @exception NSInvalidArgumentException if the specified frustum is nil.
+*/
+- (BOOL) intersects:(WWFrustum*)frustum;
 
 /// @name Methods of Interest Only to Subclasses
 

@@ -14,62 +14,18 @@
 
 @implementation WWBoundingBox
 
-- (WWBoundingBox*) initWithPoint:(WWVec4*)point
-{
-    if (point == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
-    }
-
-    self = [super init];
-
-    self->tmp1 = [[WWVec4 alloc] initWithZeroVector];
-    self->tmp2 = [[WWVec4 alloc] initWithZeroVector];
-    self->tmp3 = [[WWVec4 alloc] initWithZeroVector];
-
-    _ru = [[WWVec4 alloc] initWithCoordinates:1 y:0 z:0];
-    _su = [[WWVec4 alloc] initWithCoordinates:0 y:1 z:0];
-    _tu = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:1];
-
-    _r = _ru;
-    _s = _su;
-    _t = _tu;
-
-    _rLength = 1;
-    _sLength = 1;
-    _tLength = 1;
-
-    // Plane normals point outwards from the box.
-    NSMutableArray* thePlanes = [[NSMutableArray alloc] initWithCapacity:6];
-    _planes = thePlanes;
-    double d = 0.5 * [point length3];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-1 y:+0 z:+0 distance:-(d + 0.5)]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+1 y:+0 z:+0 distance:-(d + 0.5)]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-0 y:-1 z:+0 distance:-(d + 0.5)]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+0 y:+1 z:+0 distance:-(d + 0.5)]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-0 y:+0 z:-1 distance:-(d + 0.5)]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+0 y:+0 z:+1 distance:-(d + 0.5)]];
-
-    _center = [[WWVec4 alloc] initWithCoordinates:0.5 y:0.5 z:0.5];
-
-    _topCenter = [[WWVec4 alloc] initWithCoordinates:1 y:0.5 z:0.5];
-    _bottomCenter = [[WWVec4 alloc] initWithCoordinates:0 y:0.5 z:0.5];
-
-    return self;
-}
-
 - (WWBoundingBox*) initWithPoints:(NSArray*)points
 {
-    if (points == nil)
+    if (points == nil || [points count] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or zero length")
     }
 
     self = [super init];
 
-    self->tmp1 = [[WWVec4 alloc] initWithZeroVector];
-    self->tmp2 = [[WWVec4 alloc] initWithZeroVector];
-    self->tmp3 = [[WWVec4 alloc] initWithZeroVector];
+    tmp1 = [[WWVec4 alloc] initWithZeroVector];
+    tmp2 = [[WWVec4 alloc] initWithZeroVector];
+    tmp3 = [[WWVec4 alloc] initWithZeroVector];
 
     NSArray* unitAxes = [WWMath principalAxesFromPoints:points];
     if (unitAxes == nil)
@@ -135,6 +91,8 @@
     _sLength = [_s length3];
     _tLength = [_t length3];
 
+    _radius = 0.5 * sqrt(_rLength * _rLength + _sLength * _sLength + _tLength * _tLength);
+
     WWVec4* ruh = [[[WWVec4 alloc] initWithVector:_ru] multiplyByScalar3:0.5 * (maxDotR + minDotR)];
     WWVec4* suh = [[[WWVec4 alloc] initWithVector:_su] multiplyByScalar3:0.5 * (maxDotS + minDotS)];
     WWVec4* tuh = [[[WWVec4 alloc] initWithVector:_tu] multiplyByScalar3:0.5 * (maxDotT + minDotT)];
@@ -161,11 +119,6 @@
     return self;
 }
 
-- (double) radius
-{
-    return 0.5 * sqrt(_rLength * _rLength + _sLength * _sLength + _tLength * _tLength);
-}
-
 - (double) distanceTo:(WWVec4*)point
 {
     if (point == nil)
@@ -173,21 +126,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
     }
 
-    double d = [point distanceTo3:_center] - [self radius];
+    double d = [point distanceTo3:_center] - _radius;
 
     return d >= 0 ? d : 0;
-}
-
-- (double) effectiveRadiusST:(WWPlane*)plane
-{
-    // This method is used when the R axis need not be considered.
-    // TODO: Cite passage by Lengyel that explains the use of this method.
-    if (plane == nil)
-        return 0;
-
-    WWVec4* n = [plane vector];
-
-    return 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
 }
 
 - (double) effectiveRadius:(WWPlane*)plane
@@ -207,54 +148,69 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Frustum is nil")
     }
 
-    [self->tmp1 set:_bottomCenter];
-    [self->tmp2 set:_topCenter];
+    // See Lengyel, Mathematics for 3D Game Programming & Computer Graphics, 2e, equation 7.49 for derivation
+    // of bounding box effective radius calculations below.
 
-    double effectiveRadius = [self effectiveRadiusST:[frustum near]];
-    double intersectionPoint = [self intersectsAt:[frustum near]
+    [tmp1 set:_bottomCenter];
+    [tmp2 set:_topCenter];
+
+    WWPlane* near = [frustum near];
+    WWVec4* n = [near vector];
+    double effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    double intersectionPoint = [self intersectsAt:near
                                         effRadius:effectiveRadius
-                                        endPoint1:self->tmp1
-                                        endPoint2:self->tmp2];
+                                        endPoint1:tmp1
+                                        endPoint2:tmp2];
     if (intersectionPoint < 0)
         return NO;
 
-    effectiveRadius = [self effectiveRadiusST:[frustum far]];
-    intersectionPoint = [self intersectsAt:[frustum far]
+    WWPlane* far = [frustum far];
+    n = [far vector];
+    effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    intersectionPoint = [self intersectsAt:far
                                  effRadius:effectiveRadius
-                                 endPoint1:self->tmp1
-                                 endPoint2:self->tmp2];
+                                 endPoint1:tmp1
+                                 endPoint2:tmp2];
     if (intersectionPoint < 0)
         return NO;
 
-    effectiveRadius = [self effectiveRadiusST:[frustum left]];
-    intersectionPoint = [self intersectsAt:[frustum left]
+    WWPlane* left = [frustum left];
+    n = [left vector];
+    effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    intersectionPoint = [self intersectsAt:left
                                  effRadius:effectiveRadius
-                                 endPoint1:self->tmp1
-                                 endPoint2:self->tmp2];
+                                 endPoint1:tmp1
+                                 endPoint2:tmp2];
     if (intersectionPoint < 0)
         return NO;
 
-    effectiveRadius = [self effectiveRadiusST:[frustum right]];
-    intersectionPoint = [self intersectsAt:[frustum right]
+    WWPlane* right = [frustum right];
+    n = [right vector];
+    effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    intersectionPoint = [self intersectsAt:right
                                  effRadius:effectiveRadius
-                                 endPoint1:self->tmp1
-                                 endPoint2:self->tmp2];
+                                 endPoint1:tmp1
+                                 endPoint2:tmp2];
     if (intersectionPoint < 0)
         return NO;
 
-    effectiveRadius = [self effectiveRadiusST:[frustum top]];
-    intersectionPoint = [self intersectsAt:[frustum top]
+    WWPlane* top = [frustum top];
+    n = [top vector];
+    effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    intersectionPoint = [self intersectsAt:top
                                  effRadius:effectiveRadius
-                                 endPoint1:self->tmp1
-                                 endPoint2:self->tmp2];
+                                 endPoint1:tmp1
+                                 endPoint2:tmp2];
     if (intersectionPoint < 0)
         return NO;
 
-    effectiveRadius = [self effectiveRadiusST:[frustum bottom]];
-    intersectionPoint = [self intersectsAt:[frustum bottom]
+    WWPlane* bottom = [frustum bottom];
+    n = [bottom vector];
+    effectiveRadius = 0.5 * (fabs([_s dot3:n]) + fabs([_t dot3:n]));
+    intersectionPoint = [self intersectsAt:bottom
                                  effRadius:effectiveRadius
-                                 endPoint1:self->tmp1
-                                 endPoint2:self->tmp2];
+                                 endPoint1:tmp1
+                                 endPoint2:tmp2];
     return intersectionPoint >= 0;
 }
 
@@ -278,20 +234,20 @@
         return 0;
 
     // Compute and return the endpoints of the box on the positive side of the plane
-    [self->tmp3 set:endPoint1];
-    [self->tmp3 subtract3:endPoint2];
-    double t = (effRadius + dq1) / [[plane vector] dot3:self->tmp3];
+    [tmp3 set:endPoint1];
+    [tmp3 subtract3:endPoint2];
+    double t = (effRadius + dq1) / [[plane vector] dot3:tmp3];
 
-    [self->tmp3 set:endPoint2];
-    [self->tmp3 subtract3:endPoint1];
-    [self->tmp3 multiplyByScalar3:t];
-    [self->tmp3 add3:endPoint1];
+    [tmp3 set:endPoint2];
+    [tmp3 subtract3:endPoint1];
+    [tmp3 multiplyByScalar3:t];
+    [tmp3 add3:endPoint1];
 
     // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
     if (bq1)
-        [endPoint1 set:self->tmp3];
+        [endPoint1 set:tmp3];
     else
-        [endPoint2 set:self->tmp3];
+        [endPoint2 set:tmp3];
 
     return t;
 }
