@@ -76,7 +76,7 @@
 *
 * @return the row number of the specified tile.
 *
-* @exception NSInvalidArgumentException if the specified delta is less than or equal to 0 or the specified latitude
+* @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified latitude
 * is not within the range -90, 90.
 */
 + (int) computeRow:(double)delta latitude:(double)latitude;
@@ -89,7 +89,7 @@
 *
 * @return the column number of the specified tile.
 *
-* @exception NSInvalidArgumentException if the specified delta is less than or equal to 0 or the specified longitude
+* @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified longitude
 * is not within the range --180, 180.
 */
 + (int) computeColumn:(double)delta longitude:(double)longitude;
@@ -155,7 +155,7 @@
 * @param tileFactory The tile factory to use for creating tiles. This is typically implemented by the calling class.
 * @param tilesOut An array in which to return the created tiles.
 *
-* @exception NSInvalidArgumentException if the specified level, tile factory or output array are nil.
+* @exception NSInvalidArgumentException If the specified level, tile factory or output array are nil.
 */
 + (void) createTilesForLevel:(WWLevel*)level
                  tileFactory:(id <WWTileFactory>)tileFactory

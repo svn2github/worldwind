@@ -58,7 +58,6 @@
     return self;
 }
 
-
 - (BOOL) isEqual:(id)anObject
 {
     if (anObject == nil)
