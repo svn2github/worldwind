@@ -142,7 +142,7 @@
     double viewportWidth = CGRectGetWidth(viewport);
     double viewportHeight = CGRectGetHeight(viewport);
 
-    // Compute the current modelview matrix based on this Navigator's look-at location and range.
+    // Compute the current modelview matrix based on this Navigator's look-at location, range, heading, and tilt.
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
     [modelview setLookAt:globe
           centerLatitude:[_lookAt latitude]
@@ -161,9 +161,11 @@
     WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
 
+    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]]; // Must use globe elevation; terrain is not yet computed.
+    double heightAboveTerrain = [eyePos altitude] - globeElevation;
     _nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
                                                       viewportHeight:viewportHeight
-                                                    distanceToObject:[eyePos altitude]];
+                                                    distanceToObject:heightAboveTerrain];
     if (_nearDistance < MIN_NEAR_DISTANCE)
         _nearDistance = MIN_NEAR_DISTANCE;
 
@@ -172,8 +174,9 @@
         _farDistance = MIN_FAR_DISTANCE;
 
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
-    // viewport. We use the WorldWindView's OpenGL viewport instead of its bounds because the viewport contains the
-    // actual render buffer dimension, whereas the bounds contain the view's dimension in screen points.
+    // viewport. We use the WorldWindView's OpenGL viewport instead of the view's bounds because the viewport contains
+    // the actual render buffer dimensions in OpenGL screen coordinates, whereas the bounds contain the view's
+    // dimensions in UIKit screen coordinates.
     WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
     [projection setPerspectiveSizePreserving:viewportWidth
                               viewportHeight:viewportHeight
