@@ -68,9 +68,7 @@
 
 /// @name Operations on Elevation Images
 
-- (void) elevationForLatitude:(double)latitude
-                    longitude:(double)longitude
-                       result:(double*)result;
+- (double) elevationForLatitude:(double)latitude longitude:(double)longitude;
 
 - (void) elevationsForSector:(WWSector*)sector
                       numLat:(int)numLat

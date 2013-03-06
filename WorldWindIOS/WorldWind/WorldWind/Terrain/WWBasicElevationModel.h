@@ -78,13 +78,15 @@
 
 - (void) assembleTilesForSector:(WWSector*)sector resolution:(double)resolution;
 
-- (void) addTileOrAncestor:(WWLevel*)level row:(int)row column:(int)column;
+- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
 
-- (void) addAncestorFor:(WWLevel*)level row:(int)row column:(int)column;
+- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
 
 - (WWLevel*) levelForResolution:(double)targetResolution;
 
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column;
+
+- (WWElevationTile*) localTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
 
 - (BOOL) isTileImageLocal:(WWElevationTile*)tile;
 

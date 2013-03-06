@@ -11,8 +11,8 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
-#define LERP(a, b, t) (1 - t) * (a) + (t) * (b)
-#define CLAMP(min, max, value) (value) < (min) ? (min) : ((value) > (max) ? (max) : (value));
+#define CLAMP(min, max, value) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define LERP(a, b, t) ((1 - t) * (a) + (t) * (b))
 
 @implementation WWElevationImage
 
@@ -55,15 +55,8 @@
     return self;
 }
 
-- (void) elevationForLatitude:(double)latitude
-                    longitude:(double)longitude
-                       result:(double*)result
+- (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
     double maxLat = [_sector maxLatitude];
     double minLon = [_sector minLongitude];
     double deltaLat = [_sector deltaLat];
@@ -87,7 +80,7 @@
     double xf = x - x0;
     double yf = y - y0;
 
-    *result = LERP(LERP(x0y0, x1y0, xf), LERP(x0y1, x1y1, xf), yf);
+    return LERP(LERP(x0y0, x1y0, xf), LERP(x0y1, x1y1, xf), yf);
 }
 
 - (void) elevationsForSector:(WWSector*)sector

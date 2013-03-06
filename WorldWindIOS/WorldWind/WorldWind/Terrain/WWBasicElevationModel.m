@@ -12,6 +12,7 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
@@ -62,7 +63,7 @@
     currentTiles = [[NSMutableSet alloc] init];
     tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 
-    tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000]; // Holds 492 tiles.
+    tileCache = [[WWMemoryCache alloc] initWithCapacity:1000000 lowWater:800000]; // Holds 975 tiles.
     imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 38 16-bit 256x256 images.
 
     currentRetrievals = [[NSMutableSet alloc] init];
@@ -84,7 +85,28 @@
 
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
-    return 0; // TODO
+    WWLevel* level = [levels lastLevel];
+
+    if ([[level sector] contains:latitude longitude:longitude])
+    {
+        double deltaLat = [[level tileDelta] latitude];
+        double deltaLon = [[level tileDelta] longitude];
+
+        int row = [WWTile computeRow:deltaLat latitude:latitude];
+        int col = [WWTile computeColumn:deltaLon longitude:longitude];
+
+        WWElevationTile* tile = [self localTileOrAncestorForLevel:level row:row column:col];
+        if (tile != nil)
+        {
+            WWElevationImage* image = [tile image];
+            if (image != nil)
+            {
+                return [image elevationForLatitude:latitude longitude:longitude];
+            }
+        }
+    }
+
+    return 0;
 }
 
 - (double) elevationsForSector:(WWSector*)sector
@@ -202,12 +224,12 @@
     {
         for (int col = firstCol; col <= lastCol; col++)
         {
-            [self addTileOrAncestor:level row:row column:col];
+            [self addTileOrAncestorForLevel:level row:row column:col];
         }
     }
 }
 
-- (void) addTileOrAncestor:(WWLevel*)level row:(int)row column:(int)column
+- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column
 {
     WWElevationTile* tile = [self tileForLevel:level row:row column:column];
 
@@ -225,12 +247,12 @@
         }
         else
         {
-            [self addAncestorFor:level row:row column:column];
+            [self addAncestorForLevel:level row:row column:column];
         }
     }
 }
 
-- (void) addAncestorFor:(WWLevel*)level row:(int)row column:(int)column
+- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column
 {
     WWElevationTile* tile = nil;
 
@@ -280,7 +302,7 @@
 
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSString* key = [NSString stringWithFormat:@"%d/%d/%d", [level levelNumber], row, column];
+    id key = [[WWTileKey alloc] initWithLevelNumber:[level levelNumber] row:row column:column];
     WWTile* tile = [tileCache getValueForKey:key];
 
     if (tile != nil)
@@ -292,8 +314,29 @@
         WWSector* sector = [WWTile computeSector:level row:row column:column];
         tile = [self createTile:sector level:level row:row column:column];
         [tileCache putValue:tile forKey:key];
+
         return (WWElevationTile*) tile;
     }
+}
+
+- (WWElevationTile*) localTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column
+{
+    while (level != nil) // Nil level indicates we have passed the first level.
+    {
+        id key = [[WWTileKey alloc] initWithLevelNumber:[level levelNumber] row:row column:column];
+        WWElevationTile* tile = [tileCache getValueForKey:key];
+
+        if (tile != nil && [self isTileImageLocal:tile]) // Both the tile and its image must be local.
+        {
+            return tile;
+        }
+
+        level = [level previousLevel];
+        row /= 2;
+        column /= 2;
+    }
+
+    return nil;
 }
 
 - (BOOL) isTileImageLocal:(WWElevationTile*)tile
