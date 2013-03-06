@@ -26,7 +26,7 @@
 /// The image's size in bytes.
 @property (nonatomic, readonly) int imageSize;
 
-/// @name Initializing PRRTC Textures
+/// @name Initializing PVRTC Textures
 
 /**
 * Initializes this instance to the PVRTC image in a specified file.
@@ -65,6 +65,6 @@
 *
 * @exception NSInvalidArgumentException If the specified file path is nil or empty or the file does not exist.
 */
-+ (BOOL) compressFile:(NSString*)filePath;
++ (void) compressFile:(NSString*)filePath;
 
 @end

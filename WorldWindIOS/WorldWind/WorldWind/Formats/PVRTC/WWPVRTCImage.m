@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/WWLog.h"
-#import "WWUtil.h"
+#import "WorldWind/Util/WWUtil.h"
 
 @implementation WWPVRTCImage
 
@@ -44,7 +44,7 @@
     return -1; // return the texture ID for this texture.
 }
 
-+ (BOOL) compressFile:(NSString*)filePath
++ (void) compressFile:(NSString*)filePath
 {
     if (filePath == nil || [filePath length] == 0)
     {
@@ -65,7 +65,7 @@
     if (uiImage == nil)
     {
         WWLog(@"Unable to load image file %@", filePath);
-        return NO;
+        return;
     }
 
     CGImageRef cgImage = [uiImage CGImage];
@@ -75,7 +75,7 @@
     if (imageWidth == 0 || imageHeight == 0)
     {
         WWLog(@"Image size is zero for file %@", filePath);
-        return NO;
+        return;
     }
     int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
     void* imageData = malloc((size_t) textureSize); // allocate space for the image
@@ -83,6 +83,7 @@
     CGContextRef context;
     @try
     {
+        // Create a raw RGBA image from the incoming image. The raw bits will be compressed below.
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
         context = CGBitmapContextCreate(imageData, (size_t) imageWidth, (size_t) imageHeight,
                 8, (size_t) (4 * imageWidth), colorSpace, kCGImageAlphaPremultipliedLast);
@@ -90,16 +91,14 @@
         CGContextClearRect(context, rect);
         CGContextDrawImage(context, rect, cgImage);
 
+        // Compress the raw bits into PVRTC.
         NSString* outputPath = [WWUtil replaceSuffixInPath:filePath newSuffix:@"pvr"];
-        [self doCompress:imageWidth height:imageHeight bits:imageData ouputPath:outputPath];
-        return YES;
+        [WWPVRTCImage doCompress:imageWidth height:imageHeight bits:imageData ouputPath:outputPath];
     }
     @catch (NSException* exception)
     {
-
         NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", filePath];
         WWLogE(msg, exception);
-        return NO;
     }
     @finally
     {
@@ -1083,6 +1082,9 @@ int EncodePvrMipmap(RawImage* src, long*** pvrMipmap, int** blockCounts)
 
     return levelMax;
 }
+
+// TODO: What would be required to write the compressed texture to memory rather than disk? If not too difficult,
+// go ahead and implement that.
 
 // Write a PVRTC file.
 void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, int dy, const char* name)
