@@ -15,11 +15,11 @@
 @property(readonly) id <NSCopying> key;
 @property(readonly) id value;
 @property(readonly) long size;
-@property double lastUsed;
+@property NSTimeInterval lastUsed;
 
 - (WWMemoryCacheEntry*) initWithKey:(id <NSCopying>)key value:(id)value size:(long)size;
 
-- (int) compareTo:(WWMemoryCacheEntry*)other;
+- (NSComparisonResult) compareTo:(WWMemoryCacheEntry*)other;
 
 @end
 

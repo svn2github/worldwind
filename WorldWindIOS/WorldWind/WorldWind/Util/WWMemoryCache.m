@@ -24,11 +24,11 @@
     return self;
 }
 
-- (int) compareTo:(id)other
+- (NSComparisonResult) compareTo:(id)other
 {
-    double now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval otherLastUsed = ((WWMemoryCacheEntry*) other)->_lastUsed;
 
-    return _lastUsed < now ? -1 : _lastUsed > now ? 1 : 0;
+    return _lastUsed < otherLastUsed ? NSOrderedAscending : (_lastUsed > otherLastUsed ? NSOrderedDescending : NSOrderedSame);
 }
 @end
 
