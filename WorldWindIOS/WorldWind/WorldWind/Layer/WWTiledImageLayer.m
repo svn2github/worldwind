@@ -103,23 +103,28 @@
 
     [self->currentRetrievals removeObject:imagePath];
 
-    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+    @try
     {
-        [self->currentRetrievals removeObject:imagePath];
-
-        if (_useCompressedTextures)
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
-            [WWPVRTCImage compressFile:imagePath];
-            [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-        }
-        else if (_useRawTextures)
-        {
-            [WWTexture convertTextureToRaw:imagePath];
-            [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-        }
+            if (_useCompressedTextures)
+            {
+                [WWPVRTCImage compressFile:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
+            else if (_useRawTextures)
+            {
+                [WWTexture convertTextureToRaw:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
 
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"handling retrieval notification", exception);
     }
 }
 
