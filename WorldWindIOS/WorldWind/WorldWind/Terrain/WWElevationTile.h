@@ -17,12 +17,12 @@
 */
 @interface WWElevationTile : WWTile
 
-/// @name Attributes
+/// @name Elevation Tile Attributes
 
-/** The full path to the image in the local file system. */
+/// The full path to the image in the local file system.
 @property(readonly, nonatomic) NSString* imagePath;
 
-/** The memory cache the image is retrieved from. */
+/// The memory cache the image is retrieved from.
 @property(nonatomic, readonly) WWMemoryCache* memoryCache;
 
 /**

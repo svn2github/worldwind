@@ -15,9 +15,6 @@
 #define CLAMP(min, max, value) (value) < (min) ? (min) : ((value) > (max) ? (max) : (value));
 
 @implementation WWElevationImage
-{
-    NSData* imageData; // holds elevation image bits.
-}
 
 - (WWElevationImage*) initWithImagePath:(NSString*)filePath
                                  sector:(WWSector*)sector
@@ -48,15 +45,12 @@
 
     self = [super init];
 
-    if (self != nil)
-    {
-        _filePath = filePath;
-        _sector = sector;
-        _imageWidth = imageWidth;
-        _imageHeight = imageHeight;
-        _memoryCache = cache;
-        _object = object;
-    }
+    _filePath = filePath;
+    _sector = sector;
+    _imageWidth = imageWidth;
+    _imageHeight = imageHeight;
+    _memoryCache = cache;
+    _object = object;
 
     return self;
 }
@@ -65,6 +59,11 @@
                     longitude:(double)longitude
                        result:(double*)result
 {
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
     double maxLat = [_sector maxLatitude];
     double minLon = [_sector minLongitude];
     double deltaLat = [_sector deltaLat];
@@ -79,7 +78,7 @@
     int y0 = CLAMP(0, _imageHeight - 1, (int) y);
     int y1 = CLAMP(0, _imageHeight - 1, y0 + 1);
 
-    const short* pixels = [self->imageData bytes];
+    const short* pixels = [imageData bytes];
     short x0y0 = pixels[x0 + y0 * _imageWidth];
     short x1y0 = pixels[x1 + y0 * _imageWidth];
     short x0y1 = pixels[x0 + y1 * _imageWidth];
@@ -97,6 +96,16 @@
         verticalExaggeration:(double)verticalExaggeration
                       result:(double[])result
 {
+    if (numLat <= 0 || numLon <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Num lat or num lon is not positive")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
     double minLatSelf = [_sector minLatitude];
     double maxLatSelf = [_sector maxLatitude];
     double minLonSelf = [_sector minLongitude];
@@ -115,7 +124,7 @@
     double lon = minLonOther;
 
     int index = 0;
-    const short* pixels = [self->imageData bytes];
+    const short* pixels = [imageData bytes];
 
     for (int j = 0; j < numLat; j++)
     {
@@ -176,7 +185,7 @@
 
 - (long) sizeInBytes
 {
-    return self->imageData != nil ? [self->imageData length] : 0;
+    return imageData != nil ? [imageData length] : 0;
 }
 
 - (void) main
@@ -207,7 +216,7 @@
         {
             [dict setObject:WW_FAILED forKey:WW_REQUEST_STATUS];
 
-            NSString* msg = [NSString stringWithFormat:@"Opening data grid file %@", _filePath];
+            NSString* msg = [NSString stringWithFormat:@"Opening elevation image %@", _filePath];
             WWLogE(msg, exception);
         }
         @finally
@@ -221,7 +230,7 @@
 
 - (void) loadImage
 {
-    self->imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
+    imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
 }
 
 @end

@@ -25,7 +25,7 @@
 */
 @protocol WWElevationModel <NSObject>
 
-/// @name Attributes
+/// @name Elevation Model Attributes
 
 /**
 * Indicates the date and time at which the elevation model last changed.
@@ -71,8 +71,7 @@
 * @return The horizontal resolution achieved, in radians, or FLT_MAX if individual elevations cannot be determined
 * for all of the locations. Returns 0 the sector is outside the elevation model's coverage area.
 *
-* @exception NSInvalidArgumentException If the sector is nil, the result is nil or numLat or numLon are less than or
-* equal to 0.
+* @exception NSInvalidArgumentException If the sector is nil, the result is nil, or numLat or numLon are not positive.
 */
 - (double) elevationsForSector:(WWSector*)sector
                         numLat:(int)numLat

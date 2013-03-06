@@ -34,11 +34,8 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Cache is nil")
     }
 
-    if (self != nil)
-    {
-        _imagePath = imagePath;
-        _memoryCache = cache;
-    }
+    _imagePath = imagePath;
+    _memoryCache = cache;
 
     return self;
 }

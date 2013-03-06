@@ -18,17 +18,6 @@
 #import "WorldWind/WorldWind.h"
 
 @implementation WWBasicElevationModel
-{
-    WWLevelSet* levels;
-    NSMutableSet* currentTiles;
-    NSArray* tileSortDescriptors;
-
-    WWMemoryCache* tileCache;
-    WWMemoryCache* imageCache;
-
-    NSMutableSet* currentRetrievals;
-    NSMutableSet* currentLoads;
-}
 
 - (WWBasicElevationModel*) initWithSector:(WWSector*)sector
                            levelZeroDelta:(WWLocation*)levelZeroDelta
@@ -63,35 +52,32 @@
 
     self = [super init];
 
-    if (self != nil)
-    {
-        _timestamp = [NSDate date];
-        _retrievalImageFormat = retrievalImageFormat;
-        _cachePath = cachePath;
+    _timestamp = [NSDate date];
+    _retrievalImageFormat = retrievalImageFormat;
+    _cachePath = cachePath;
 
-        self->levels = [[WWLevelSet alloc] initWithSector:sector
-                                           levelZeroDelta:levelZeroDelta
-                                                numLevels:numLevels];
-        self->currentTiles = [[NSMutableSet alloc] init];
-        self->tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
+    levels = [[WWLevelSet alloc] initWithSector:sector
+                                 levelZeroDelta:levelZeroDelta
+                                      numLevels:numLevels];
+    currentTiles = [[NSMutableSet alloc] init];
+    tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 
-        self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000]; // Holds 492 tiles.
-        self->imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 38 16-bit 256x256 images.
+    tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000]; // Holds 492 tiles.
+    imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 38 16-bit 256x256 images.
 
-        self->currentRetrievals = [[NSMutableSet alloc] init];
-        self->currentLoads = [[NSMutableSet alloc] init];
+    currentRetrievals = [[NSMutableSet alloc] init];
+    currentLoads = [[NSMutableSet alloc] init];
 
-        // Set up to handle retrieval and image read monitoring.
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleImageRetrievalNotification:)
-                                                     name:WW_RETRIEVAL_STATUS // retrieval from net
-                                                   object:self];
+    // Set up to handle retrieval and image read monitoring.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleImageRetrievalNotification:)
+                                                 name:WW_RETRIEVAL_STATUS // retrieval from net
+                                               object:self];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleImageReadNotification:)
-                                                     name:WW_REQUEST_STATUS // opening image file on disk
-                                                   object:self];
-    }
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleImageReadNotification:)
+                                                 name:WW_REQUEST_STATUS // opening image file on disk
+                                               object:self];
 
     return self;
 }
@@ -120,17 +106,17 @@
 
     if (numLat <= 0 || numLon <= 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"A dimension is <= 0")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Num lat or num lon is not positive")
     }
 
     [self assembleTilesForSector:sector resolution:targetResolution];
 
-    if ([self->currentTiles count] == 0)
+    if ([currentTiles count] == 0)
     {
         return 0; // Sector is outside the elevation model's coverage area.
     }
 
-    NSArray* sortedTiles = [self->currentTiles sortedArrayUsingDescriptors:self->tileSortDescriptors];
+    NSArray* sortedTiles = [currentTiles sortedArrayUsingDescriptors:tileSortDescriptors];
 
     double maxResolution = 0;
     double resolution;
@@ -149,7 +135,9 @@
             resolution = [tile texelSize];
 
             if (maxResolution < resolution)
+            {
                 maxResolution = resolution;
+            }
         }
         else
         {
@@ -183,12 +171,12 @@
                                                      _cachePath, [level levelNumber], row, row, column, @"raw"];
 
     return [[WWElevationTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath
-                                             cache:self->imageCache];
+                                             cache:imageCache];
 }
 
 - (void) assembleTilesForSector:(WWSector*)sector resolution:(double)targetResolution
 {
-    [self->currentTiles removeAllObjects];
+    [currentTiles removeAllObjects];
 
     WWLevel* level = [self levelForResolution:targetResolution];
 
@@ -225,7 +213,7 @@
 
     if ([self isTileImageLocal:tile])
     {
-        [self->currentTiles addObject:tile];
+        [currentTiles addObject:tile];
     }
     else
     {
@@ -233,7 +221,7 @@
 
         if ([level isFirstLevel])
         {
-            [self->currentTiles addObject:tile]; // No ancestor tile to add.
+            [currentTiles addObject:tile]; // No ancestor tile to add.
         }
         else
         {
@@ -256,7 +244,7 @@
 
         if ([self isTileImageLocal:tile])
         {
-            [self->currentTiles addObject:tile]; // Have an ancestor tile with an in-memory image.
+            [currentTiles addObject:tile]; // Have an ancestor tile with an in-memory image.
             return;
         }
     }
@@ -264,22 +252,22 @@
     // No ancestor tiles have an in-memory image. Retrieve the ancestor tile corresponding for the first level, and
     // add it. We add the necessary tiles to provide coverage over the requested sector in order to accurately return
     // whether or not this elevation model has data for the entire sector.
-    [self->currentTiles addObject:tile];
+    [currentTiles addObject:tile];
     [self retrieveTileImage:tile];
 }
 
 - (WWLevel*) levelForResolution:(double)targetResolution
 {
-    WWLevel* lastLevel = [self->levels lastLevel];
+    WWLevel* lastLevel = [levels lastLevel];
 
     if ([lastLevel texelSize] >= targetResolution)
     {
         return lastLevel; // Can't do any better than the last level.
     }
 
-    for (int i = 0; i < [self->levels numLevels]; i++)
+    for (int i = 0; i < [levels numLevels]; i++)
     {
-        WWLevel* level = [self->levels level:i];
+        WWLevel* level = [levels level:i];
 
         if ([level texelSize] <= targetResolution)
         {
@@ -293,7 +281,8 @@
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column
 {
     NSString* key = [NSString stringWithFormat:@"%d/%d/%d", [level levelNumber], row, column];
-    WWTile* tile = [self->tileCache getValueForKey:key];
+    WWTile* tile = [tileCache getValueForKey:key];
+
     if (tile != nil)
     {
         return (WWElevationTile*) tile;
@@ -302,14 +291,14 @@
     {
         WWSector* sector = [WWTile computeSector:level row:row column:column];
         tile = [self createTile:sector level:level row:row column:column];
-        [self->tileCache putValue:tile forKey:key];
+        [tileCache putValue:tile forKey:key];
         return (WWElevationTile*) tile;
     }
 }
 
 - (BOOL) isTileImageLocal:(WWElevationTile*)tile
 {
-    return [self->imageCache containsKey:[tile imagePath]];
+    return [imageCache containsKey:[tile imagePath]];
 }
 
 - (void) retrieveTileImage:(WWElevationTile*)tile
@@ -317,16 +306,18 @@
     // See if it's already on disk.
     if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
     {
-        if ([self->currentLoads containsObject:[tile imagePath]])
+        if ([currentLoads containsObject:[tile imagePath]])
+        {
             return;
+        }
 
-        [self->currentLoads addObject:[tile imagePath]];
+        [currentLoads addObject:[tile imagePath]];
 
         WWElevationImage* image = [[WWElevationImage alloc] initWithImagePath:[tile imagePath]
                                                                        sector:[tile sector]
                                                                    imageWidth:[tile tileWidth]
                                                                   imageHeight:[tile tileHeight]
-                                                                        cache:self->imageCache
+                                                                        cache:imageCache
                                                                        object:self];
         [[WorldWind retrievalQueue] addOperation:image];
         return;
@@ -335,12 +326,16 @@
     // If the app is connected to the network, retrieve the image from there.
 
     if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
+    {
         return;
+    }
 
-    if ([self->currentRetrievals containsObject:[tile imagePath]])
+    if ([currentRetrievals containsObject:[tile imagePath]])
+    {
         return;
+    }
 
-    [self->currentRetrievals addObject:[tile imagePath]];
+    [currentRetrievals addObject:[tile imagePath]];
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
@@ -373,7 +368,7 @@
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    [self->currentRetrievals removeObject:imagePath];
+    [currentRetrievals removeObject:imagePath];
 
     if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
@@ -390,7 +385,7 @@
     NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    [self->currentLoads removeObject:imagePath];
+    [currentLoads removeObject:imagePath];
 
     if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {

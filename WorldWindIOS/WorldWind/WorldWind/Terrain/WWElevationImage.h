@@ -12,28 +12,30 @@
 @class WWSector;
 
 @interface WWElevationImage : NSOperation <WWCacheable>
+{
+@protected
+    NSData* imageData; // Holds elevation image bits.
+}
 
 /// @name Elevation Image Attributes
 
-/** The full file system path to the image containing elevation values. */
+/// The full file system path to the image containing elevation values.
 @property(nonatomic) NSString* filePath;
 
-/**
- * The sector defining the image's geographic coverage area. This sector need not have the same aspect ratio as the
- * image itself.
- */
+/// The sector defining the image's geographic coverage area. This sector need not have the same aspect ratio as the
+/// image itself.
 @property(nonatomic, readonly) WWSector* sector;
 
-/** The image's width, in number of samples. */
+/// The image's width, in number of samples.
 @property(nonatomic, readonly) int imageWidth;
 
-/** The image's height, in number of samples. */
+/// The image's height, in number of samples.
 @property(nonatomic, readonly) int imageHeight;
 
-/** The object to send notification to when the image file is read. */
+/// The object to send notification to when the image file is read.
 @property(nonatomic, readonly) id object;
 
-/** The memory cache to add this elevation data to when its image file is read. */
+/// The memory cache to add this elevation data to when its image file is read.
 @property(nonatomic, readonly) WWMemoryCache* memoryCache;
 
 /// @name Initializing an Elevation Image

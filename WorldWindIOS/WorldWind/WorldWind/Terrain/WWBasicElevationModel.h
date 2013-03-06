@@ -10,12 +10,27 @@
 #import "WorldWind/Util/WWTileFactory.h"
 
 @class WWElevationTile;
+@class WWLevelSet;
 @class WWLocation;
+@class WWMemoryCache;
 @protocol WWUrlBuilder;
 
 @interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory>
+{
+@protected
+    // Elevation model tiles and tile level set.
+    WWLevelSet* levels;
+    NSMutableSet* currentTiles;
+    NSArray* tileSortDescriptors;
+    // Elevation model tile and image caches.
+    WWMemoryCache* tileCache;
+    WWMemoryCache* imageCache;
+    // Sets used to eliminate duplicate elevation image retrievals and loads.
+    NSMutableSet* currentRetrievals;
+    NSMutableSet* currentLoads;
+}
 
-/// @name Attributes
+/// @name Elevation Model Attributes
 
 /**
 * Indicates the date and time at which the elevation model last changed.
@@ -35,7 +50,7 @@
 // prior to using the model. Although it is initialized to nil, it may not be nil when the model becomes active.
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
 
-/// @name Initializing Tiled Elevation Models
+/// @name Initializing Elevation Models
 
 /**
 * Initializes a basic elevation model.
