@@ -32,6 +32,12 @@
 /// The image's height, in number of samples.
 @property(nonatomic, readonly) int imageHeight;
 
+/// The image's minimum elevation value.
+@property(nonatomic, readonly) double minElevation;
+
+/// The image's maximum elevation value.
+@property(nonatomic, readonly) double maxElevation;
+
 /// The object to send notification to when the image file is read.
 @property(nonatomic, readonly) id object;
 
@@ -79,5 +85,9 @@
 /// @name Supporting Methods of Interest only to Subclasses
 
 - (void) loadImage;
+
+- (void) readImageFromFile;
+
+- (void) findMinAndMaxElevation;
 
 @end

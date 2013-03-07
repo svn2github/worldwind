@@ -64,7 +64,7 @@
     tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 
     tileCache = [[WWMemoryCache alloc] initWithCapacity:1000000 lowWater:800000]; // Holds 975 tiles.
-    imageCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 38 16-bit 256x256 images.
+    imageCache = [[WWMemoryCache alloc] initWithCapacity:10000000 lowWater:80000000]; // Holds 76 16-bit 256x256 images.
 
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];
@@ -131,12 +131,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Num lat or num lon is not positive")
     }
 
-    [self assembleTilesForSector:sector resolution:targetResolution];
+    WWLevel* level = [self levelForResolution:targetResolution];
+    [self assembleTilesForLevel:level sector:sector retrieveTiles:YES];
 
     if ([currentTiles count] == 0)
     {
         return 0; // Sector is outside the elevation model's coverage area.
     }
+
+    // TODO: Populate location with minElevation if a value cannot be determined.
 
     NSArray* sortedTiles = [currentTiles sortedArrayUsingDescriptors:tileSortDescriptors];
 
@@ -182,9 +185,50 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    result[0] = 0;
-    result[1] = 0;
-    // TODO
+    WWLevel* level = [self levelForTileDelta:[sector deltaLat]];
+    [self assembleTilesForLevel:level sector:sector retrieveTiles:NO];
+
+    if ([currentTiles count] == 0)
+    {
+        return; // Sector is outside the elevation model's coverage area. Do not modify the result array.
+    }
+
+    BOOL haveElevations = NO;
+    double elevation;
+    double minElevation = +DBL_MAX;
+    double maxElevation = -DBL_MAX;
+
+    for (WWElevationTile* tile in currentTiles) // No need to sort.
+    {
+        WWElevationImage* image = [tile image];
+        if (image != nil)
+        {
+            haveElevations = YES;
+
+            elevation = [image minElevation];
+            if (minElevation > elevation)
+            {
+                minElevation = elevation;
+            }
+
+            elevation = [image maxElevation];
+            if (maxElevation < elevation)
+            {
+                maxElevation = elevation;
+            }
+        }
+    }
+
+    if (haveElevations)
+    {
+        result[0] = minElevation;
+        result[1] = maxElevation;
+    }
+    else
+    {
+        result[0] = _minElevation;
+        result[1] = _maxElevation;
+    }
 }
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
@@ -196,11 +240,53 @@
                                              cache:imageCache];
 }
 
-- (void) assembleTilesForSector:(WWSector*)sector resolution:(double)targetResolution
+- (WWLevel*) levelForResolution:(double)targetResolution
+{
+    WWLevel* lastLevel = [levels lastLevel];
+
+    if ([lastLevel texelSize] >= targetResolution)
+    {
+        return lastLevel; // Can't do any better than the last level.
+    }
+
+    for (int i = 0; i < [levels numLevels]; i++)
+    {
+        WWLevel* level = [levels level:i];
+
+        if ([level texelSize] <= targetResolution)
+        {
+            return level;
+        }
+    }
+
+    return lastLevel;
+}
+
+- (WWLevel*) levelForTileDelta:(double)deltaLat
+{
+    WWLevel* lastLevel = [levels lastLevel];
+
+    if ([[lastLevel tileDelta] latitude] >= deltaLat)
+    {
+        return lastLevel; // Can't do any better than the last level.
+    }
+
+    for (int i = 0; i < [levels numLevels]; i++)
+    {
+        WWLevel* level = [levels level:i];
+
+        if ([[level tileDelta] latitude] <= deltaLat)
+        {
+            return level;
+        }
+    }
+
+    return lastLevel;
+}
+
+- (void) assembleTilesForLevel:(WWLevel*)level sector:(WWSector*)sector retrieveTiles:(BOOL)retrieveTiles
 {
     [currentTiles removeAllObjects];
-
-    WWLevel* level = [self levelForResolution:targetResolution];
 
     // Intersect the requested sector with the elevation model's coverage area. This avoids attempting to assemble tiles
     // that are outside the coverage area.
@@ -224,12 +310,12 @@
     {
         for (int col = firstCol; col <= lastCol; col++)
         {
-            [self addTileOrAncestorForLevel:level row:row column:col];
+            [self addTileOrAncestorForLevel:level row:row column:col retrieveTiles:retrieveTiles];
         }
     }
 }
 
-- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column
+- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles
 {
     WWElevationTile* tile = [self tileForLevel:level row:row column:column];
 
@@ -239,7 +325,10 @@
     }
     else
     {
-        [self retrieveTileImage:tile];
+        if (retrieveTiles)
+        {
+            [self retrieveTileImage:tile];
+        }
 
         if ([level isFirstLevel])
         {
@@ -247,12 +336,12 @@
         }
         else
         {
-            [self addAncestorForLevel:level row:row column:column];
+            [self addAncestorForLevel:level row:row column:column retrieveTiles:retrieveTiles];
         }
     }
 }
 
-- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column
+- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles
 {
     WWElevationTile* tile = nil;
 
@@ -275,29 +364,11 @@
     // add it. We add the necessary tiles to provide coverage over the requested sector in order to accurately return
     // whether or not this elevation model has data for the entire sector.
     [currentTiles addObject:tile];
-    [self retrieveTileImage:tile];
-}
 
-- (WWLevel*) levelForResolution:(double)targetResolution
-{
-    WWLevel* lastLevel = [levels lastLevel];
-
-    if ([lastLevel texelSize] >= targetResolution)
+    if (retrieveTiles)
     {
-        return lastLevel; // Can't do any better than the last level.
+        [self retrieveTileImage:tile];
     }
-
-    for (int i = 0; i < [levels numLevels]; i++)
-    {
-        WWLevel* level = [levels level:i];
-
-        if ([level texelSize] <= targetResolution)
-        {
-            return level;
-        }
-    }
-
-    return lastLevel;
 }
 
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column

@@ -32,22 +32,29 @@
 
 /// @name Elevation Model Attributes
 
-/**
-* Indicates the date and time at which the elevation model last changed.
-*
-* This can be used to invalidate cached computations based on the elevation model's values.
-*/
-@property(readonly) NSDate* timestamp; // This property is accessed from multiple threads, and is therefore declared atomic.
-
 /// The elevation image format to request from the remote server. The default is _application/bil16_.
 @property(nonatomic, readonly) NSString* retrievalImageFormat;
 
 /// The file system path to the local directory holding this instance's cached elevation images.
 @property(nonatomic, readonly) NSString* cachePath;
 
+/// Indicates the date and time at which the elevation model last changed.
+/// This can be used to invalidate cached computations based on the elevation model's values.
+@property(readonly) NSDate* timestamp; // This property is accessed from multiple threads, and is therefore declared atomic.
+
+/// Indicates the elevation model's minimum elevation for all values in the model.
+/// The minimum and maximum elevation values for a specific geographic area can be determined by calling
+/// minAndMaxElevationsForSector:result:.
+@property(nonatomic) double minElevation;
+
+/// Indicates the elevation model's maximum elevation for all values in the model.
+/// The minimum and maximum elevation values for a specific geographic area can be determined by calling
+/// minAndMaxElevationsForSector:result:.
+@property(nonatomic) double maxElevation;
+
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific elevation tile. For WMS
-// elevation models the specified instance generates an HTTP URL for the WMS protocol. This property must be specified
-// prior to using the model. Although it is initialized to nil, it may not be nil when the model becomes active.
+/// elevation models the specified instance generates an HTTP URL for the WMS protocol. This property must be specified
+/// prior to using the model. Although it is initialized to nil, it may not be nil when the model becomes active.
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
 
 /// @name Initializing Elevation Models
@@ -76,13 +83,15 @@
 
 /// @name Methods of Interest Only to Subclasses
 
-- (void) assembleTilesForSector:(WWSector*)sector resolution:(double)resolution;
-
-- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
-
-- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
-
 - (WWLevel*) levelForResolution:(double)targetResolution;
+
+- (WWLevel*) levelForTileDelta:(double)deltaLat;
+
+- (void) assembleTilesForLevel:(WWLevel*)level sector:(WWSector*)sector retrieveTiles:(BOOL)retrieveTiles;
+
+- (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles;
+
+- (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles;
 
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column;
 

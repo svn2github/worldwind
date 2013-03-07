@@ -18,13 +18,16 @@
 
 /// @name Attributes
 
-/**
-* Indicates the date and time at which the elevation model last changed.
-*
-* Since a zero elevation model never changes, this always returns the date and time at which the elevation model was
-* initialized.
-*/
+/// Indicates the date and time at which the elevation model last changed.
+/// Since a zero elevation model never changes, this always returns the date and time at which the elevation model was
+/// initialized.
 @property(readonly) NSDate* timestamp;
+
+/// Indicates the elevation model's minimum elevation for all values in the model. This property is always zero.
+@property(nonatomic, readonly) double minElevation;
+
+/// Indicates the elevation model's maximum elevation for all values in the model. This property is always zero.
+@property(nonatomic, readonly) double maxElevation;
 
 /// @name Retrieving Elevations
 

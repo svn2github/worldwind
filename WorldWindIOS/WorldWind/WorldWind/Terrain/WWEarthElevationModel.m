@@ -30,6 +30,9 @@
                                                                         wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
+    [self setMinElevation:-11000]; // Depth of Marianas Trench, in meters.
+    [self setMaxElevation:+8850]; // Height of Mt. Everest, in meters.
+
     return self;
 }
 

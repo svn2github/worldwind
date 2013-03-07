@@ -228,7 +228,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    double extremes[2];
+    double extremes[2] = {0, 0};
     [globe minAndMaxElevationsForSector:self result:extremes];
 
     double minHeight = extremes[0] * verticalExaggeration;

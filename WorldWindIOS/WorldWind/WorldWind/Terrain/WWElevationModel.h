@@ -36,6 +36,26 @@
 */
 - (NSDate*) timestamp;
 
+/**
+* Indicates the elevation model's minimum elevation for all values in the model.
+*
+* The minimum and maximum elevation values for a specific geographic area can be determined by calling
+* minAndMaxElevationsForSector:result:.
+*
+* @return The minimum elevation value.
+*/
+- (double) minElevation;
+
+/**
+* Indicates the elevation model's maximum elevation for all values in the model.
+*
+* The minimum and maximum elevation values for a specific geographic area can be determined by calling
+* minAndMaxElevationsForSector:result:.
+*
+* @return The maximum elevation value.
+*/
+- (double) maxElevation;
+
 /// @name Retrieving Elevations
 
 /**

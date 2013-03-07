@@ -223,7 +223,45 @@
 
 - (void) loadImage
 {
+    [self readImageFromFile];
+    [self findMinAndMaxElevation];
+}
+
+- (void) readImageFromFile
+{
     imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
+}
+
+- (void) findMinAndMaxElevation
+{
+    if (imageData != nil && [imageData length] > 0)
+    {
+        _minElevation = +DBL_MAX;
+        _maxElevation = -DBL_MAX;
+
+        const short* pixels = [imageData bytes];
+        int numPixels = [imageData length] / sizeof(short);
+
+        for (int i = 0; i < numPixels; i++)
+        {
+            short p = pixels[i];
+
+            if (_minElevation > p)
+            {
+                _minElevation = p;
+            }
+
+            if (_maxElevation < p)
+            {
+                _maxElevation = p;
+            }
+        }
+    }
+    else
+    {
+        _minElevation = 0;
+        _maxElevation = 0;
+    }
 }
 
 @end
