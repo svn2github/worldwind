@@ -213,7 +213,7 @@
         CGContextClearRect(context, rect);
         CGContextDrawImage(context, rect, cgImage);
 
-        self->imageData = [NSData dataWithBytesNoCopy:data length:(NSUInteger) _textureSize];
+        self->imageData = [[NSData alloc] initWithBytesNoCopy:data length:(NSUInteger) _textureSize];
     }
     @catch (NSException* exception)
     {

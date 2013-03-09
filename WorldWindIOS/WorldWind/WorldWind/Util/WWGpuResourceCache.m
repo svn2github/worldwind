@@ -59,13 +59,23 @@
 
     if ([[entry resource] respondsToSelector:@selector(dispose)])
     {
-        [[entry resource] dispose];
+        [self performSelectorOnMainThread:@selector(disposeTexture:) withObject:entry waitUntilDone:NO];
     }
     else if ([[entry resourceType] isEqualToString:WW_GPU_VBO])
     {
-        GLuint bufferId = (GLuint) [((NSNumber*) [entry resource]) intValue];
-        glDeleteBuffers(1, &bufferId);
+        [self performSelectorOnMainThread:@selector(disposeVBO:) withObject:entry waitUntilDone:NO];
     }
+}
+
+- (void) disposeTexture:(id) entry
+{
+    [[entry resource] dispose];
+}
+
+- (void) disposeVBO:(id) entry
+{
+    GLuint bufferId = (GLuint) [((NSNumber*) [entry resource]) intValue];
+    glDeleteBuffers(1, &bufferId);
 }
 
 - (void) removalException:(NSException*)exception key:(id <NSCopying>)key value:(id)value // memory cache listener
