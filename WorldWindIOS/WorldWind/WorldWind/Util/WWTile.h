@@ -24,6 +24,8 @@
 @interface WWTile : NSObject <WWCacheable>
 {
 @protected
+    int tileWidth;
+    int tileHeight;
     NSString* tileKey;
 }
 

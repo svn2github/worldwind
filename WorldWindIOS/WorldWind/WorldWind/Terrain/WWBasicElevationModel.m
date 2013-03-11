@@ -12,7 +12,6 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWLevel.h"
-#import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
@@ -373,7 +372,7 @@
 
 - (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column
 {
-    id key = [[WWTileKey alloc] initWithLevelNumber:[level levelNumber] row:row column:column];
+    id key = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
     WWTile* tile = [tileCache getValueForKey:key];
 
     if (tile != nil)
@@ -394,7 +393,7 @@
 {
     while (level != nil) // Nil level indicates we have passed the first level.
     {
-        id key = [[WWTileKey alloc] initWithLevelNumber:[level levelNumber] row:row column:column];
+        id key = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
         WWElevationTile* tile = [tileCache getValueForKey:key];
 
         if (tile != nil && [self isTileImageLocal:tile]) // Both the tile and its image must be local.

@@ -46,7 +46,7 @@
     long terrainGeometrySize = (4 + 32) // reference center
             + (4 + 128) // transformation matrix
             + (4) // numPoints
-            + (4 + ([self tileHeight] + 3) * ([self tileWidth] + 3) * 3 * 4); // points
+            + (4 + (tileHeight + 3) * (tileWidth + 3) * 3 * 4); // points
 
     long size = terrainGeometrySize
             + 4 // tessellator pointer
@@ -90,8 +90,6 @@
     }
 
     WWSector* tileSector = [self sector];
-    int tileWidth = [self tileWidth];
-    int tileHeight = [self tileHeight];
 
     double minLat = [tileSector minLatitude];
     double maxLat = [tileSector maxLatitude];

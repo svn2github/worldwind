@@ -170,8 +170,6 @@
 		1BF9AFC464EDDE37A20EF181 /* WWGpuResourceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0A56A8085BA2CF74098 /* WWGpuResourceCache.m */; };
 		1BF9AFC59712651B9E24D989 /* WWDisposable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A05D58A0C09F3E88E3F2 /* WWDisposable.h */; };
 		CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */; };
-		CC8CF1D779C0D6AD22CF976B /* WWTileKey.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF27D57923128B402DD5D /* WWTileKey.h */; };
-		CC8CF2BCFBE172765C4AC14F /* WWTileKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF67C5879E0A36ABC5BE5 /* WWTileKey.m */; };
 		CC8CF2EE8E5A08B1123176B1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */; };
 		CC8CF2F412B8DB39F5A60120 /* WWZeroElevationModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF3D8B4D8C32BEED780E6 /* WWZeroElevationModel.h */; };
 		CC8CF45C6898988F6C2D425B /* WWBasicNavigator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */; };
@@ -274,7 +272,6 @@
 				CC8CFD6EE3FDF009B16F77C9 /* WWElevationImage.h in CopyFiles */,
 				CC8CFAEF17E98DA154E5AC4E /* WWElevationTile.h in CopyFiles */,
 				1BF9A84BDFBF1E81D037C07A /* WWOpenStreetMapLayer.h in CopyFiles */,
-				CC8CF1D779C0D6AD22CF976B /* WWTileKey.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,13 +413,11 @@
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
 		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigator.h; sourceTree = "<group>"; };
 		CC8CF0FEA2510D74288768A7 /* WWBasicNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigator.m; sourceTree = "<group>"; };
-		CC8CF27D57923128B402DD5D /* WWTileKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTileKey.h; sourceTree = "<group>"; };
 		CC8CF3328494E380B2C72EFD /* WWZeroElevationModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWZeroElevationModel.m; sourceTree = "<group>"; };
 		CC8CF346A0A996DF86D4EFB8 /* WWDAFIFLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWDAFIFLayer.m; sourceTree = "<group>"; };
 		CC8CF3D8B4D8C32BEED780E6 /* WWZeroElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWZeroElevationModel.h; sourceTree = "<group>"; };
 		CC8CF4C323D976D2EACCAC45 /* WWArcGisUrlBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWArcGisUrlBuilder.m; sourceTree = "<group>"; };
 		CC8CF55FC4E8FE8144E58FBD /* WWElevationTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWElevationTile.h; sourceTree = "<group>"; };
-		CC8CF67C5879E0A36ABC5BE5 /* WWTileKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWTileKey.m; sourceTree = "<group>"; };
 		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
 		CC8CF876C2D9BF7128E50B36 /* WWMath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWMath.m; sourceTree = "<group>"; };
 		CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigatorState.h; sourceTree = "<group>"; };
@@ -532,8 +527,6 @@
 				1BF9ACFCC23B7D750345C4A6 /* WWTileList.h */,
 				1BF9A13DA18A92DA6A0A48F6 /* WWColor.m */,
 				1BF9A3A1BF9BC023E4B78CE2 /* WWColor.h */,
-				CC8CF67C5879E0A36ABC5BE5 /* WWTileKey.m */,
-				CC8CF27D57923128B402DD5D /* WWTileKey.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -925,7 +918,6 @@
 				CC8CFDF82CBFE9B498CA014D /* WWElevationImage.m in Sources */,
 				CC8CFE032879D0B770C592ED /* WWElevationTile.m in Sources */,
 				1BF9A6C6E476A9CAE1F2F941 /* WWOpenStreetMapLayer.m in Sources */,
-				CC8CF2BCFBE172765C4AC14F /* WWTileKey.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -53,7 +53,9 @@
     _row = row;
     _column = column;
 
-    self->tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
+    tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
+    tileWidth = [level tileWidth];
+    tileHeight = [level tileHeight];
 
     return self;
 }
@@ -66,9 +68,7 @@
     if (![anObject isKindOfClass:[self class]])
         return NO;
 
-    WWTile* other = (WWTile*) anObject;
-
-    return [_level levelNumber] == [other->_level levelNumber] && _row == other->_row && _column == other->_column;
+    return [tileKey isEqual:((WWTile*) anObject)->tileKey];
 }
 
 - (NSUInteger) hash
@@ -91,12 +91,12 @@
 
 - (int) tileWidth
 {
-    return [[_level parent] tileWidth];
+    return tileWidth;
 }
 
 - (int) tileHeight
 {
-    return [[_level parent] tileHeight];
+    return tileHeight;
 }
 
 - (double) texelSize
