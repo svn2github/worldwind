@@ -28,6 +28,10 @@
 * make those methods aware of current state.
 */
 @interface WWDrawContext : NSObject
+{
+@protected
+    NSString* programKey; // cache key for the default program
+}
 
 /// @name Draw Context Attributes
 
@@ -79,6 +83,13 @@
 /// of preserving coordinates that have already been projected using [WWNavigatorState project:result:]. The XY screen
 /// coordinates are interpreted as literal screen coordinates and the Z coordinate is interpeted as a depth value.
 @property(nonatomic, readonly) WWMatrix* screenProjection;
+
+/**
+* Binds and returns the default program, creating it if it doesn't already exist.
+*
+* @return The default program.
+*/
+- (WWGpuProgram*) defaultProgram;
 
 /// @name Initializing a Draw Context
 

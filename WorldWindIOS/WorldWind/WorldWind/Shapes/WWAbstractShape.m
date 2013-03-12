@@ -9,15 +9,12 @@
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Geometry/WWExtent.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWGpuProgram.h"
-#import "WorldWind/Util/WWGpuResourceCache.h"
-#import "WorldWind/WWLog.h"
 
 @implementation WWAbstractShape
 
@@ -33,7 +30,6 @@
     _altitudeMode = WW_ALTITUDE_MODE_ABSOLUTE;
 
     self->transformationMatrix = [[WWMatrix alloc] initWithIdentity];
-    self->programKey = [WWUtil generateUUID];
     self->referencePoint = [[WWVec4 alloc] initWithZeroVector];
 
     return self;
@@ -212,14 +208,7 @@
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [self gpuProgram:dc];
-    if (program == nil)
-    {
-        return;
-    }
-
-    [dc setCurrentProgram:program];
-    [program bind];
+    WWGpuProgram* program = [dc defaultProgram];
 
     int attributeLocation = [program getAttributeLocation:@"vertexPoint"];
     if (attributeLocation >= 0)
@@ -244,9 +233,6 @@
     {
         glDisableVertexAttribArray((GLuint) attributeLocation);
     }
-
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
 
     // Restore OpenGL state.
     glEnable(GL_CULL_FACE);
@@ -307,32 +293,6 @@
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
     // Must be implemented by subclasses.
-}
-
-// STRINGIFY is used in the shader files.
-#define STRINGIFY(A) #A
-
-#import "WorldWind/Shaders/AbstractShape.vert"
-#import "WorldWind/Shaders/AbstractShape.frag"
-
-- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc
-{
-    WWGpuProgram* program = [[dc gpuResourceCache] getProgramForKey:self->programKey];
-    if (program != nil)
-        return program;
-
-    @try
-    {
-        program = [[WWGpuProgram alloc] initWithShaderSource:AbstractShapeVertexShader
-                                              fragmentShader:AbstractShapeFragmentShader];
-        [[dc gpuResourceCache] putProgram:program forKey:self->programKey];
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"making GPU program", exception);
-    }
-
-    return program;
 }
 
 @end

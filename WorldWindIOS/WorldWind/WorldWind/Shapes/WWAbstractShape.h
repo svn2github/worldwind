@@ -33,9 +33,6 @@
     WWVec4* referencePoint; // the shape's local-coordinate origin.
     double verticalExaggeration; // the vertical exaggeration last used to create the shape's Cartesian representation
     NSString* _altitudeMode;
-
-    // Volatile values used only during frame generation.
-    NSString* programKey;
 }
 
 /// @name Shape Attributes
@@ -226,13 +223,5 @@
 * @param dc The current draw context.
 */
 - (void) doDrawOutline:(WWDrawContext*)dc;
-
-/**
-* Retrieves the OpenGL ES program used by this shape from the GPU resource cache,
-* or creates it if it does not already exist.
-*
-* @param dc The current draw context.
-*/
-- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc;
 
 @end

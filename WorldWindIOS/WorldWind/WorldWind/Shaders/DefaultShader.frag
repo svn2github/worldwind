@@ -1,12 +1,11 @@
-const char* AbstractShapeFragmentShader = STRINGIFY(
+const char* DefaultFragmentShader = STRINGIFY(
 /* Copyright (C) 2001, 2012 United States Government as represented by
 the Administrator of the National Aeronautics and Space Administration.
 All Rights Reserved.
 */
 
 /*
- * OpenGL ES Shading Language v1.00 fragment shader for AbstractShape. Displays each fragment in the color specified by
- * the uniform variable named 'color'.
+ * OpenGL ES Shading Language v1.00 fragment shader for default rendering.
  *
  * version $Id$
  */

@@ -18,6 +18,9 @@
 #import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Terrain/WWBasicTerrain.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Render/WWGpuProgram.h"
 
 @implementation WWDrawContext
 
@@ -32,6 +35,8 @@
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
     _orderedRenderables = [[NSMutableArray alloc] init];
     _screenProjection = [[WWMatrix alloc] initWithIdentity];
+
+    programKey = [WWUtil generateUUID];
 
     return self;
 }
@@ -168,6 +173,37 @@
         glDepthMask(GL_TRUE);
         glPolygonOffset(0, 0);
     }
+}
+
+// STRINGIFY is used in the shader files.
+#define STRINGIFY(A) #A
+#import "WorldWind/Shaders/DefaultShader.vert"
+#import "WorldWind/Shaders/DefaultShader.frag"
+
+- (WWGpuProgram*) defaultProgram
+{
+    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:programKey];
+    if (program != nil)
+    {
+        [program bind];
+        [self setCurrentProgram:program];
+        return program;
+    }
+
+    @try
+    {
+        program = [[WWGpuProgram alloc] initWithShaderSource:DefaultVertexShader
+                                              fragmentShader:DefaultFragmentShader];
+        [[self gpuResourceCache] putProgram:program forKey:self->programKey];
+        [program bind];
+        [self setCurrentProgram:program];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"making GPU program", exception);
+    }
+
+    return program;
 }
 
 @end

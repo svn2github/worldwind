@@ -1,12 +1,12 @@
-const char* AbstractShapeVertexShader = STRINGIFY(
+const char* DefaultVertexShader = STRINGIFY(
 /* Copyright (C) 2013 United States Government as represented by
 the Administrator of the National Aeronautics and Space Administration.
 All Rights Reserved.
 */
 
 /*
- * OpenGL ES Shading Language v1.00 vertex shader for AbstractShape. Transforms shape points from model coordinates to
- * eye coordinates.
+ * OpenGL ES Shading Language v1.00 vertex shader for default rendering. Transforms shape points from model coordinates
+ * to eye coordinates.
  *
  * version $Id$
  */
