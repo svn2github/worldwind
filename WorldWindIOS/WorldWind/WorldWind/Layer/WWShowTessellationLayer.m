@@ -11,11 +11,6 @@
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Render/WWGpuProgram.h"
-
-// STRINGIFY is used in the shader files.
-#define STRINGIFY(A) #A
-#import "WorldWind/Shaders/Simple.vert"
-#import "WorldWind/Shaders/Simple.frag"
 #import "WorldWind/Util/WWColor.h"
 
 @implementation WWShowTessellationLayer
@@ -38,9 +33,7 @@
     if (surfaceTiles == nil || [surfaceTiles count] == 0)
         return;
 
-    [self makeGpuProgram];
-    if (_gpuProgram == nil)
-        return;
+    WWGpuProgram* program = [dc defaultProgram];
 
     WWColor* wireframeColor = [[WWColor alloc] initWithR:1 g:1 b:1 a:1];
     WWColor* outlineColor = [[WWColor alloc] initWithR:1 g:0 b:0 a:1];
@@ -57,9 +50,9 @@
             WWTerrainTile* tile = [surfaceTiles objectAtIndex:i];
 
             [tile beginRendering:dc];
-            [_gpuProgram loadUniformColor:@"color" color:wireframeColor];
+            [program loadUniformColor:@"color" color:wireframeColor];
             [tile renderWireframe:dc];
-            [_gpuProgram loadUniformColor:@"color" color:outlineColor];
+            [program loadUniformColor:@"color" color:outlineColor];
             [tile renderOutline:dc];
             [tile endRendering:dc];
         }
@@ -74,32 +67,12 @@
 
 - (void) beginRendering:(WWDrawContext*)dc
 {
-    [_gpuProgram bind];
-    [dc setCurrentProgram:_gpuProgram];
     glDepthMask(false); // Disable depth buffer writes. The diagnostics should not occlude any other objects.
 }
 
 - (void) endRendering:(WWDrawContext*)dc
 {
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
     glDepthMask(true); // Re-enable depth buffer writes.
-}
-
-- (void) makeGpuProgram
-{
-    if (_gpuProgram != nil)
-        return;
-
-    @try
-    {
-        _gpuProgram = [[WWGpuProgram alloc] initWithShaderSource:SimpleVertexShader
-                                                  fragmentShader:SimpleFragmentShader];
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"making GPU program", exception);
-    }
 }
 
 @end

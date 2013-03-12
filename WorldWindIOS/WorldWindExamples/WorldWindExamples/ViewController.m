@@ -90,6 +90,7 @@
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
     [[layers layerAtIndex:6] setEnabled:NO];
+    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
 
     [self makeFlightPathsLayer];
 

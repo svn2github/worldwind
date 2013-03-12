@@ -18,9 +18,6 @@
 
 /// @name WWShowTessellationLayer Attributes
 
-/// This layer's GPU program used to render the wireframe globe.
-@property (readonly, nonatomic) WWGpuProgram* gpuProgram;
-
 /// @name Initializing
 
 /**
@@ -49,12 +46,5 @@
 * @param dc The current draw context.
 */
 - (void) endRendering:(WWDrawContext*)dc;
-
-/**
-* Called to create the GPU program used to render the wireframe representation.
-*
-* This method is not intended to be called by applications. It is called internally as necessary.
-*/
-- (void) makeGpuProgram;
 
 @end
