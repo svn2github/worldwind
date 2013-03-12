@@ -32,6 +32,7 @@
     WWMatrix* transformationMatrix; // positions the shape's local coordinates into world coordinates
     WWVec4* referencePoint; // the shape's local-coordinate origin.
     double verticalExaggeration; // the vertical exaggeration last used to create the shape's Cartesian representation
+    NSString* _altitudeMode;
 
     // Volatile values used only during frame generation.
     NSString* programKey;

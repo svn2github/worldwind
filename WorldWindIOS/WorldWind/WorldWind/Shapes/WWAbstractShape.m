@@ -92,7 +92,7 @@
 
 - (void) render:(WWDrawContext*)dc
 {
-    if (!_enabled || ![self intersectsFrustum:dc] || [dc isSmall:_extent numPixels:1])
+    if (!_enabled)
     {
         return;
     }
@@ -128,7 +128,12 @@
         self->verticalExaggeration = [dc verticalExaggeration];
     }
 
-    if ([self isOrderedRenderableValid:dc] && [self intersectsFrustum:dc] && ![dc isSmall:_extent numPixels:1])
+    if (![self intersectsFrustum:dc] || [dc isSmall:_extent numPixels:1])
+    {
+        return;
+    }
+
+    if ([self isOrderedRenderableValid:dc])
     {
         [self addOrderedRenderable:dc];
     }

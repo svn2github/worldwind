@@ -91,7 +91,7 @@
     [[layers layerAtIndex:5] setEnabled:NO];
     [[layers layerAtIndex:6] setEnabled:NO];
 
-//    [self makeFlightPathsLayer];
+    [self makeFlightPathsLayer];
 
     [self->locationController setView:_wwv];
 }

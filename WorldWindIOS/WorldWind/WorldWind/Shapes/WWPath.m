@@ -124,6 +124,13 @@
     [self reset];
 }
 
+- (void) setExtrude:(BOOL)extrude
+{
+    _extrude = extrude;
+
+    [self reset];
+}
+
 - (BOOL) mustDrawInterior
 {
     return _extrude && [self->activeAttributes interiorEnabled]
@@ -132,7 +139,17 @@
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc
 {
-    return YES;//self->points == nil || self->verticalExaggeration != [dc verticalExaggeration];
+    if (points == nil || verticalExaggeration != [dc verticalExaggeration])
+    {
+        return YES;
+    }
+
+    if (![_altitudeMode isEqual:WW_ALTITUDE_MODE_ABSOLUTE])
+    {
+        return YES;
+    }
+
+    return NO;
 }
 
 - (BOOL) isSurfacePath
@@ -175,17 +192,11 @@
     // Convert the tessellated geographic coordinates to the Cartesian coordinates that will be rendered.
     NSArray* tessellationPoints = [self computeRenderedPath:dc positions:tessellatedPositions];
 
-    // No longer need the tessellated positions.
-    tessellatedPositions = nil;
-
     // Create the extent from the Cartesian points. Those points are relative to this path's reference point, so
     // translate the computed extent to the reference point.
     WWBoundingBox* box = [[WWBoundingBox alloc] initWithPoints:tessellationPoints];
     [box translate:self->referencePoint];
     [self setExtent:box];
-
-    // No longer need the tessellated points.
-    tessellationPoints = nil;
 }
 
 - (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
