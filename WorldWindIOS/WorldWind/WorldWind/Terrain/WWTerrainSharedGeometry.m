@@ -12,8 +12,8 @@ All Rights Reserved.
 {
     self = [super init];
 
-    _texCoordVboCacheKey = @"TexCoordVboCacheKey";
-    _indicesVboCacheKey = @"IndicesVboCacheKey";
+    _texCoordVboCacheKey = @"TexCoordVboCacheKey.WWTerrainSharedGeometry";
+    _indicesVboCacheKey = @"IndicesVboCacheKey.WWTerrainSharedGeometry";
 
     return self;
 }
