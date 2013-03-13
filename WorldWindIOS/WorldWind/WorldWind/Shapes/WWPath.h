@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "WWAbstractShape.h"
+#import "WorldWind/Shapes/WWAbstractShape.h"
 
 @class WWPosition;
 
@@ -17,7 +17,7 @@
 * WW_LINEAR. It can also conform to the underlying terrain.
 *
 * Altitudes within the path's positions are interpreted according to the path's altitude mode. If the altitude mode is
-* WW_ALTITUDE_MODE_ABSOLUTE the default, the altitudes are considered as height above the ellipsoid. If the altitude
+* WW_ALTITUDE_MODE_ABSOLUTE, the default, the altitudes are considered as height above the ellipsoid. If the altitude
 * mode is WW_ALTITUDE_MODE_RELATIVE_TO_GROUND the altitudes are added to the elevation of the terrain at the position.
 * If the altitude mode is WW_ALTITUDE_MODE_CLAMP_TO_GROUND the altitudes are ignored and the path is drawn on the
 * terrain at that point.

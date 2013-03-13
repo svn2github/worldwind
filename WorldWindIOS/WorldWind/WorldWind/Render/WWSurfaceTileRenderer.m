@@ -217,7 +217,7 @@
     [self computeTileCoordMatrix:terrainTile surfaceTile:surfaceTile result:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"tileCoordMatrix" matrix:self->tileCoordMatrix];
 
-    [self->texCoordMatrix setUnitYFlip];
+    [self->texCoordMatrix setToUnitYFlip];
     [surfaceTile applyInternalTransform:dc matrix:self->texCoordMatrix];
     [self->texCoordMatrix multiplyMatrix:self->tileCoordMatrix];
     [prog loadUniformMatrix:@"texCoordMatrix" matrix:self->texCoordMatrix];

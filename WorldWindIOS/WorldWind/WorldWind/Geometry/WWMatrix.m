@@ -272,7 +272,7 @@
     return self;
 }
 
-- (WWMatrix*) setIdentity
+- (WWMatrix*) setToIdentity
 {
     self->m[0] = 1;
     self->m[1] = 0;
@@ -294,7 +294,7 @@
     return self;
 }
 
-- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z
+- (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z
 {
     // Row 1
     self->m[0] = 1;
@@ -320,7 +320,27 @@
     return self;
 }
 
-- (WWMatrix*) setUnitYFlip
+- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z
+{
+    // Row 1
+    self->m[3] = x;
+    self->m[7] = y;
+    self->m[11] = z;
+
+    return self;
+}
+
+- (WWMatrix*) setScale:(double)x y:(double)y z:(double)z
+{
+    // Row 1
+    self->m[0] = x;
+    self->m[5] = y;
+    self->m[10] = z;
+
+    return self;
+}
+
+- (WWMatrix*) setToUnitYFlip
 {
     self->m[0] = 1;
     self->m[1] = 0;
@@ -362,7 +382,7 @@
 
     // Range transform. Moves the eye point along the positive z axis while keeping the center point in the center
     // of the viewport.
-    [self setTranslation:0 y:0 z:-range];
+    [self setToTranslation:0 y:0 z:-range];
 
     // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
     // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix

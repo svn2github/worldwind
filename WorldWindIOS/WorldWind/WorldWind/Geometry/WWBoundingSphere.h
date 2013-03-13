@@ -27,7 +27,7 @@
 /// @name Initializing Bounding Spheres
 
 /**
-* Initializes a bounding sphere to encompass a specified list of points.
+* Initializes this bounding sphere to encompass a specified list of points.
 *
 * @param points The points to bound.
 *
@@ -36,5 +36,17 @@
 * @exception NSInvalidArgumentException If the points list is nil.
 */
 - (WWBoundingSphere*) initWithPoints:(NSArray*)points;
+
+/**
+* Initializes this bounding sphere to a specified center point and radius.
+*
+* @param point The sphere's center point.
+* @param radius The sphere's radius, in meters.
+*
+* @return The bounding sphere set to the specified center point and radius.
+*
+* @exception NSInvalidArgumentException If the specified point is nil or the radius is less than or equal to 0.
+*/
+- (WWBoundingSphere*) initWithPoint:(WWVec4*)point radius:(double)radius;
 
 @end

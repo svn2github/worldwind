@@ -146,7 +146,7 @@
 *
 * @return This matrix set to the identity matrix.
 */
-- (WWMatrix*) setIdentity;
+- (WWMatrix*) setToIdentity;
 
 /**
 * Sets this matrix to the translation matrix for specified translation values. All existing values are overridden.
@@ -157,7 +157,29 @@
 *
 * @return This matrix as a translation matrix for a translation of the specified values.
 */
+- (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z;
+
+/**
+* Sets the translation components of this matrix to specified values, leaving the other components unmodified.
+*
+* @param x The X component of translation.
+* @param y The Y component of translation.
+* @param z The Z component of translation.
+*
+* @return This matrix with its translation components set to the specified values.
+*/
 - (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z;
+
+/**
+* Sets the scale components of this matrix to specified values, leaving the other components unmodified.
+*
+* @param x The X component of scale.
+* @param y The Y component of scale.
+* @param z The Z component of scale.
+*
+* @return This matrix with its scale components set to the specified values.
+*/
+- (WWMatrix*) setScale:(double)x y:(double)y z:(double)z;
 
 /**
 * Sets this matrix to one that flips and shifts the Y axis.
@@ -169,7 +191,7 @@
 *
 * @return A matrix that maps Y=0 to Y = 1 and Y=1 to Y=0.
 */
-- (WWMatrix*) setUnitYFlip;
+- (WWMatrix*) setToUnitYFlip;
 
 /// @name Making Viewing and Perspective Matrices
 

@@ -63,6 +63,26 @@
     return self;
 }
 
+- (WWBoundingSphere*) initWithPoint:(WWVec4*)point radius:(double)radius
+{
+    if (point == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil");
+    }
+
+    if (radius <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is less than or equal to 0");
+    }
+
+    self = [super init];
+
+    _center = point;
+    _radius = radius;
+
+    return self;
+}
+
 - (double) distanceTo:(WWVec4*)point
 {
     if (point == nil)

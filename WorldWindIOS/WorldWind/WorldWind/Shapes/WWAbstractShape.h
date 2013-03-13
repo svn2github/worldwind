@@ -130,6 +130,9 @@
 /**
 * Called by this base class to cause the subclass to generate the shape's Cartesian geometry.
 *
+* In addition to creating the shape's geometry, this method should also compute and set the shape's reference point
+* and extent.
+*
 * @param dc The current draw context.
 */
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc;

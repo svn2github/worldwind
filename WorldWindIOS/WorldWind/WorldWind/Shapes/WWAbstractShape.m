@@ -22,31 +22,32 @@
 {
     self = [super init];
 
-    self->defaultAttributes = [[WWShapeAttributes alloc] init];
-    [self setDefaultAttributes];
+    defaultAttributes = [[WWShapeAttributes alloc] init];
+    [self setDefaultAttributes]; // give subclasses a chance to set defaults
 
     _highlighted = NO;
     _enabled = YES;
     _altitudeMode = WW_ALTITUDE_MODE_ABSOLUTE;
 
-    self->transformationMatrix = [[WWMatrix alloc] initWithIdentity];
-    self->referencePoint = [[WWVec4 alloc] initWithZeroVector];
+    transformationMatrix = [[WWMatrix alloc] initWithIdentity];
+    referencePoint = [[WWVec4 alloc] initWithZeroVector];
 
     return self;
 }
 
 - (void) reset
 {
+    // Subclasses should override and invalidate themselves when this method is called.
 }
 
 - (void) setDefaultAttributes
 {
-    [self->defaultAttributes setInteriorEnabled:NO];
-    [self->defaultAttributes setInteriorColor:[[WWColor alloc] initWithR:0.75 g:0.75 b:0.75 a:1]];
+    [defaultAttributes setInteriorEnabled:YES];
+    [defaultAttributes setInteriorColor:[[WWColor alloc] initWithR:0.75 g:0.75 b:0.75 a:1]];
 
-    [self->defaultAttributes setOutlineEnabled:YES];
-    [self->defaultAttributes setOutlineColor:[[WWColor alloc] initWithR:0.25 g:0.25 b:0.25 a:1]];
-    [self->defaultAttributes setOutlineWidth:1];
+    [defaultAttributes setOutlineEnabled:NO];
+    [defaultAttributes setOutlineColor:[[WWColor alloc] initWithR:0.25 g:0.25 b:0.25 a:1]];
+    [defaultAttributes setOutlineWidth:1];
 }
 
 - (BOOL) isDrawOutline:(WWDrawContext*)dc
@@ -61,13 +62,13 @@
 
 - (void) drawOutline:(WWDrawContext*)dc
 {
-    [self prepareToDrawOutline:dc attributes:self->activeAttributes];
+    [self prepareToDrawOutline:dc attributes:activeAttributes];
     [self doDrawOutline:dc];
 }
 
 - (void) drawInterior:(WWDrawContext*)dc
 {
-    [self prepareToDrawInterior:dc attributes:self->activeAttributes];
+    [self prepareToDrawInterior:dc attributes:activeAttributes];
     [self doDrawInterior:dc];
 }
 
@@ -111,7 +112,7 @@
 - (void) makeOrderedRenderable:(WWDrawContext*)dc
 {
     [self determineActiveAttributes];
-    if (self->activeAttributes == nil)
+    if (activeAttributes == nil)
     {
         return;
     }
@@ -120,8 +121,8 @@
     {
         [self doMakeOrderedRenderable:dc];
 
-        // Remember the vertical exaggeration used to make this path.
-        self->verticalExaggeration = [dc verticalExaggeration];
+        // Remember the vertical exaggeration used to make this shape.
+        verticalExaggeration = [dc verticalExaggeration];
     }
 
     if (![self intersectsFrustum:dc] || [dc isSmall:_extent numPixels:1])
@@ -142,9 +143,9 @@
 
 - (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
 {
-    // Must be implemented by subclass
+    // May be implemented by subclass
 
-    return NO;
+    return YES;
 }
 
 - (void) addOrderedRenderable:(WWDrawContext*)dc
@@ -184,26 +185,26 @@
 {
     if (_highlighted && _highlightAttributes != nil)
     {
-        self->activeAttributes = _highlightAttributes;
+        activeAttributes = _highlightAttributes;
     }
     else if (_attributes != nil)
     {
-        self->activeAttributes = _attributes;
+        activeAttributes = _attributes;
     }
     else
     {
-        self->activeAttributes = self->defaultAttributes;
+        activeAttributes = defaultAttributes;
     }
 }
 
 - (BOOL) mustDrawInterior
 {
-    return self->activeAttributes != nil && [self->activeAttributes interiorEnabled];
+    return activeAttributes != nil && [activeAttributes interiorEnabled];
 }
 
 - (BOOL) mustDrawOutline
 {
-    return self->activeAttributes != nil && [self->activeAttributes outlineEnabled];
+    return activeAttributes != nil && [activeAttributes outlineEnabled];
 }
 
 - (void) beginDrawing:(WWDrawContext*)dc
@@ -214,7 +215,6 @@
     if (attributeLocation >= 0)
     {
         glEnableVertexAttribArray((GLuint) attributeLocation);
-        glDisable(GL_CULL_FACE);
     }
 }
 
@@ -235,7 +235,6 @@
     }
 
     // Restore OpenGL state.
-    glEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
     glLineWidth(1);
 }
@@ -243,7 +242,7 @@
 - (void) applyModelviewProjectionMatrix:(WWDrawContext*)dc
 {
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
-                                               matrixB:self->transformationMatrix];
+                                               matrixB:transformationMatrix];
     [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
 }
 
@@ -281,6 +280,12 @@
     }
 
     WWColor* color = [[WWColor alloc] initWithColor:[attributes outlineColor]];
+
+    // Disable writing the shape's outline fragments to the depth buffer when the outline is semi-transparent.
+    if ([color a] < 1)
+    {
+        glDepthMask(GL_FALSE);
+    }
 
     // Load the current outline color into the current program's uniform variable. Pass a pre-multiplied color because
     // the scene controller configures the OpenGL blending mode for pre-multiplied colors.

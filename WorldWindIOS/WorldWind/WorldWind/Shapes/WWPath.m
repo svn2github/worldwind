@@ -47,21 +47,29 @@
 
 - (void) dealloc
 {
-    if (self->points != nil)
+    if (points != nil)
     {
-        free(self->points);
+        free(points);
     }
 }
 
 - (void) reset
 {
-    if (self->points != nil)
+    if (points != nil)
     {
-        free(self->points);
-        self->points = nil;
+        free(points);
+        points = nil;
     }
 
-    self->numPoints = 0;
+    numPoints = 0;
+}
+
+- (void) setDefaultAttributes
+{
+    [super setDefaultAttributes];
+
+    [defaultAttributes setInteriorEnabled:NO];
+    [defaultAttributes setOutlineEnabled:YES];
 }
 
 - (void) setPositions:(NSArray*)positions
@@ -133,8 +141,12 @@
 
 - (BOOL) mustDrawInterior
 {
-    return _extrude && [self->activeAttributes interiorEnabled]
-            && !([[self altitudeMode] isEqualToString:WW_ALTITUDE_MODE_CLAMP_TO_GROUND]);
+    if (!_extrude || [[self altitudeMode] isEqualToString:WW_ALTITUDE_MODE_CLAMP_TO_GROUND])
+    {
+        return NO;
+    }
+
+    return [super mustDrawInterior];
 }
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc
@@ -144,12 +156,12 @@
         return YES;
     }
 
-    if (![_altitudeMode isEqual:WW_ALTITUDE_MODE_ABSOLUTE])
+    if ([_altitudeMode isEqual:WW_ALTITUDE_MODE_ABSOLUTE])
     {
-        return YES;
+        return NO;
     }
 
-    return NO;
+    return YES;
 }
 
 - (BOOL) isSurfacePath
@@ -160,10 +172,10 @@
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
 {
     // Free the previously generated tessellation points.
-    if (self->points != nil)
+    if (points != nil)
     {
-        free(self->points);
-        self->numPoints = 0;
+        free(points);
+        numPoints = 0;
     }
 
     // A nil reference position is a signal that there are no positions to render.
@@ -178,9 +190,9 @@
                                longitude:[refPos longitude]
                                   offset:[refPos altitude]
                             altitudeMode:[self altitudeMode]
-                                  result:self->referencePoint];
-    WWVec4* rpt = self->referencePoint;
-    [self->transformationMatrix setTranslation:[rpt x] y:[rpt y] z:[rpt z]];
+                                  result:referencePoint];
+    WWVec4* rpt = referencePoint;
+    [transformationMatrix setToTranslation:[rpt x] y:[rpt y] z:[rpt z]];
 
     // Tessellate the path in geographic coordinates.
     NSArray* tessellatedPositions = [self makeTessellatedPositions:dc];
@@ -195,13 +207,13 @@
     // Create the extent from the Cartesian points. Those points are relative to this path's reference point, so
     // translate the computed extent to the reference point.
     WWBoundingBox* box = [[WWBoundingBox alloc] initWithPoints:tessellationPoints];
-    [box translate:self->referencePoint];
+    [box translate:referencePoint];
     [self setExtent:box];
 }
 
 - (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
 {
-    return self->points != nil && self->numPoints > 1;
+    return points != nil && numPoints > 1;
 }
 
 - (void) addOrderedRenderable:(WWDrawContext*)dc
@@ -226,7 +238,7 @@
         [mvp offsetPerspectiveDepth:-0.01];
 
         [mvp multiplyMatrix:[[dc navigatorState] modelview]];
-        [mvp multiplyMatrix:self->transformationMatrix];
+        [mvp multiplyMatrix:transformationMatrix];
         [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
     }
     else
@@ -240,16 +252,16 @@
     int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     BOOL extrudeIt = [self mustDrawInterior];
     int stride = extrudeIt ? 24 : 12;
-    int nPts = extrudeIt ? self->numPoints / 2 : self->numPoints;
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, stride, self->points);
+    int nPts = extrudeIt ? numPoints / 2 : numPoints;
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, stride, points);
     glDrawArrays(GL_LINE_STRIP, 0, nPts);
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc
 {
     int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, self->points);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, self->numPoints);
+    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, points);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, numPoints);
 }
 
 - (NSArray*) makeTessellatedPositions:(WWDrawContext*)dc
@@ -409,10 +421,10 @@
     double eyeDistSquared = DBL_MAX;
     WWVec4* eyePoint = [[dc navigatorState] eyePoint];
 
-    self->numPoints = (extrudeIt ? 2 : 1) * [tessellatedPositions count];
-    NSMutableArray* tessellationPoints = [[NSMutableArray alloc] initWithCapacity:(NSUInteger) self->numPoints];
+    numPoints = (extrudeIt ? 2 : 1) * [tessellatedPositions count];
+    NSMutableArray* tessellationPoints = [[NSMutableArray alloc] initWithCapacity:(NSUInteger) numPoints];
 
-    self->points = malloc((size_t) self->numPoints * 3 * sizeof(float));
+    points = malloc((size_t) numPoints * 3 * sizeof(float));
 
     int stride = extrudeIt ? 6 : 3;
     for (NSUInteger i = 0; i < [tessellatedPositions count]; i++)
@@ -430,13 +442,13 @@
             eyeDistSquared = dSquared;
         }
 
-        [pt subtract3:self->referencePoint];
+        [pt subtract3:referencePoint];
         [tessellationPoints addObject:pt];
 
         int k = stride * i;
-        self->points[k] = (float) [pt x];
-        self->points[k + 1] = (float) [pt y];
-        self->points[k + 2] = (float) [pt z];
+        points[k] = (float) [pt x];
+        points[k + 1] = (float) [pt y];
+        points[k + 2] = (float) [pt z];
 
         if (extrudeIt)
         {
@@ -448,12 +460,12 @@
                 eyeDistSquared = dSquared;
             }
 
-            [pt subtract3:self->referencePoint];
+            [pt subtract3:referencePoint];
             [tessellationPoints addObject:pt];
 
-            self->points[k + 3] = (float) [pt x];
-            self->points[k + 4] = (float) [pt y];
-            self->points[k + 5] = (float) [pt z];
+            points[k + 3] = (float) [pt x];
+            points[k + 4] = (float) [pt y];
+            points[k + 5] = (float) [pt z];
         }
     }
 

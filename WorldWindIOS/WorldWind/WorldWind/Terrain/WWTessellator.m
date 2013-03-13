@@ -198,7 +198,7 @@
     // relative to the globe.
     WWVec4* refCenter = terrainGeometry.referenceCenter;
     [self referenceCenterForTile:dc tile:tile outputPoint:refCenter];
-    [terrainGeometry.transformationMatrix setTranslation:refCenter.x y:refCenter.y z:refCenter.z];
+    [terrainGeometry.transformationMatrix setToTranslation:refCenter.x y:refCenter.y z:refCenter.z];
 
     [self buildTileVertices:dc tile:tile];
     [self buildSharedGeometry:tile];
@@ -723,7 +723,7 @@
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
     }
 
-    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
+    int location = [[dc currentProgram] getAttributeLocation:@"vertexPoint"];
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, 0);
