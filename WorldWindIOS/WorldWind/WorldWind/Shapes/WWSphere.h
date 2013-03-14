@@ -9,6 +9,7 @@
 #import "WorldWind/Shapes/WWAbstractShape.h"
 
 @class WWPosition;
+@class WWDrawContext;
 
 /**
 * Displays a sphere of a specified radius at a specified position. The radius may be specified in either meters or
@@ -21,7 +22,7 @@
 * the sphere is drawn with its center on the terrain.
 *
 * Spheres have separate attributes for normal display and highlighted display. If no attributes are specified, default
-* attributes are used.
+* attributes are used. Spheres do not have an outline, only an interior, so outline attributes are ignored.
 */
 @interface WWSphere : WWAbstractShape
 {
@@ -36,10 +37,10 @@
 /// @name Sphere Attributes
 
 /// This sphere's center position.
-@property (nonatomic) WWPosition* position;
+@property(nonatomic) WWPosition* position;
 
 /// This sphere's radius. Use isRadiusInPixels to determine whether the value is in pixels rather than meters.
-@property (nonatomic) double radius;
+@property(nonatomic) double radius;
 
 /// Indicates whether the radius was specified in pixels rather than meters.
 - (BOOL) isRadiusInPixels;
@@ -69,5 +70,16 @@
 *  @exception NSInvalidArgumentException If the specified position is nil or the radius is less than or equal to 0.
 */
 - (WWSphere*) initWithPosition:(WWPosition*)position radiusInPixels:(double)radius;
+
+/// @name Methods of Interest Only to Subclasses
+
+/**
+* Creates the vertices and tri-strip indices for a unit sphere.
+*
+* The vertices and indices are stored in their respective VBOs.
+*
+* @param dc The current draw context.
+*/
+- (void) tessellateSphere:(WWDrawContext*)dc;
 
 @end

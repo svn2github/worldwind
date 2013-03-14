@@ -26,6 +26,7 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Shapes/WWSphere.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -93,58 +94,9 @@
 //    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
 
     [self makeFlightPathsLayer];
+    [self makeLocationMarkerLayer];
 
     [self->locationController setView:_wwv];
-}
-
-- (void) createPathsLayer
-{
-    WWLayerList* layers = [[_wwv sceneController] layers];
-
-    WWRenderableLayer* renderableLayer = [[WWRenderableLayer alloc] init];
-    [renderableLayer setDisplayName:@"Paths"];
-    [layers addLayer:renderableLayer];
-
-    NSMutableArray* positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10000]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10000]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10000]];
-    WWPath* path01 = [[WWPath alloc] initWithPositions:positions];
-    [path01 setAltitudeMode:WW_ALTITUDE_MODE_RELATIVE_TO_GROUND];
-    [path01 setPathType:WW_LINEAR];
-//    [path01 setFollowTerrain:YES];
-    WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
-    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
-    [path01 setAttributes:attrs];
-    [renderableLayer addRenderable:path01];
-
-    positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10100]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:-1 longitude:1 altitude:10100]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10100]];
-    WWPath* path02 = [[WWPath alloc] initWithPositions:positions];
-    [path02 setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
-    [path02 setPathType:WW_LINEAR];
-    [path02 setExtrude:YES];
-//    [path02 setFollowTerrain:YES];
-    attrs = [[WWShapeAttributes alloc] init];
-    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:1 b:0 a:1]];
-    [path02 setAttributes:attrs];
-    [renderableLayer addRenderable:path02];
-
-    positions = [[NSMutableArray alloc] init];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:10000]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:10 longitude:10 altitude:10000]];
-    [positions addObject:[[WWPosition alloc] initWithDegreesLatitude:0 longitude:2 altitude:10000]];
-    WWPath* path03 = [[WWPath alloc] initWithPositions:positions];
-    [path03 setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [path03 setPathType:WW_GREAT_CIRCLE];
-    [path03 setNumSubsegments:20];
-//    [path03 setFollowTerrain:YES];
-    attrs = [[WWShapeAttributes alloc] init];
-    [attrs setOutlineColor:[[WWColor alloc] initWithR:0 g:1 b:1 a:1]];
-    [path03 setAttributes:attrs];
-    [renderableLayer addRenderable:path03];
 }
 
 - (void) makeFlightPathsLayer
@@ -201,11 +153,28 @@
         [path setAttributes:attributes];
         [pathsLayer addRenderable:path];
     }
+
+}
+
+- (void) makeLocationMarkerLayer
+{
+    WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:100000];
+    WWSphere* sphere = [[WWSphere alloc] initWithPosition:pos radiusInPixels:5];
+
+    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
+    [attributes setInteriorEnabled:YES];
+    [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
+    [sphere setAttributes:attributes];
+
+    WWRenderableLayer* layer = [[WWRenderableLayer alloc] init];
+    [layer setDisplayName:@"Location Marker"];
+    [layer addRenderable:sphere];
+    [[[_wwv sceneController] layers] addLayer:layer];
 }
 
 /*!
     Returns a Boolean value indicating whether the view controller supports the specified orientation. Returns YES for
-    the iPad idom, and returns YES for the iPhone idom except when the specified toInterfaceOrientation is
+    the iPad idiom, and returns YES for the iPhone idom except when the specified toInterfaceOrientation is
     UIInterfaceOrientationPortraitUpsideDown. This behavior matches the default supported interface orientations in iOS
     6.0.
 

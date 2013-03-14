@@ -81,7 +81,7 @@
 
 - (BOOL) mustDrawOutline
 {
-    return NO;
+    return NO; // spheres do not have an outline
 }
 
 - (BOOL) mustRegenerateGeometry:(WWDrawContext*)dc
@@ -156,76 +156,90 @@
 
 - (void) tessellateSphere:(WWDrawContext*)dc
 {
-    float x = 0.525731112119133606f;
-    float z = 0.850650808352039932f;
+    int nLatIntervals = 30;
+    int nLonIntervals = 60;
 
-    float vertices[] =
+    // Compute the unit sphere's vertices.
+    numVertices = (nLatIntervals + 1) * (nLonIntervals + 1);
+    float* vertices = (float*) malloc((size_t) numVertices * 3 * sizeof(float));
+
+    @try
+    {
+        double dLat = M_PI / nLatIntervals;
+        double dLon = 2 * M_PI / nLonIntervals;
+
+        float* vertex = vertices;
+        for (int it = 0; it <= nLatIntervals; it++)
+        {
+            double t = it * dLat;
+
+            for (int ip = 0; ip <= nLonIntervals; ip++)
             {
-                    -x, 0, z,
-                    x, 0, z,
-                    -x, 0, -z,
-                    x, 0, -z,
-                    0, z, x,
-                    0, z, -x,
-                    0, -z, x,
-                    0, -z, -x,
-                    z, x, 0,
-                    -z, x, 0,
-                    z, -x, 0,
-                    -z, -x, 0
-            };
+                double p = ip * dLon;
 
-    size_t verticesSize  = sizeof(vertices);
-    numVertices = verticesSize / sizeof(float);
+                *vertex++ = (float) (sin(t) * sin(p));
+                *vertex++ = (float) cos(t);
+                *vertex++ = (float) (sin(t) * cos(p));
+            }
+        }
 
-    short indices[] =
+        // Fill the vertex VBO.
+        GLuint verticesVboId;
+        glGenBuffers(1, &verticesVboId);
+        glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
+        glBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+        [[dc gpuResourceCache] putResource:[[NSNumber alloc] initWithInt:verticesVboId]
+                              resourceType:WW_GPU_VBO
+                                      size:numVertices * 3 * sizeof(float)
+                                    forKey:verticesVboCacheKey];
+    }
+    @finally
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        free(vertices);
+    }
+
+    // Compute the indices such that they define one triangle strip defining the whole sphere at once. This requires
+    // duplicating the last index of each row and the first index of the subsequent row in order to define degenerate
+    // triangles that effectively link the strips together.
+    numIndices = nLatIntervals * (2 * nLonIntervals + 2) + 2 * (nLatIntervals - 1);
+    short* indices = (short*) malloc((size_t) numIndices * sizeof(short));
+
+    @try
+    {
+        short* index = indices;
+        for (int j = 0; j < nLatIntervals; j++)
+        {
+            if (j != 0) // add redundant vertices
             {
-                    1, 4, 0,
-                    4, 9, 0,
-                    4, 5, 9,
-                    8, 5, 4,
-                    1, 8, 4,
-                    1, 10, 8,
-                    10, 3, 8,
-                    8, 3, 5,
-                    3, 2, 5,
-                    3, 7, 2,
-                    3, 10, 7,
-                    10, 6, 7,
-                    6, 11, 7,
-                    6, 0, 11,
-                    6, 1, 0,
-                    10, 1, 6,
-                    11, 0, 9,
-                    2, 11, 9,
-                    5, 2, 9,
-                    11, 2, 7
-            };
+                *index++ = index[-1];
+                *index++ = (short) (j * (nLonIntervals + 1));
+            }
 
-    size_t indicesSize = sizeof(indices);
-    numIndices = indicesSize / sizeof(indices[0]);
+            for (int i = 0; i <= nLonIntervals; i++)
+            {
+                short k1 = (short) (i + j * (nLonIntervals + 1));
+                short k2 = k1 + (short) (nLonIntervals + 1);
+                *index++ = k1;
+                *index++ = k2;
+            }
+        }
 
-    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
-
-    GLuint verticesVboId;
-    glGenBuffers(1, &verticesVboId);
-    glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
-    glBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
-    [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:verticesVboId]
-                     resourceType:WW_GPU_VBO
-                             size:numVertices * 3 * sizeof(float)
-                           forKey:verticesVboCacheKey];
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    GLuint indicesVboId;
-    glGenBuffers(1, &indicesVboId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVboId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(short), indices, GL_STATIC_DRAW);
-    [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:indicesVboId]
-                     resourceType:WW_GPU_VBO
-                             size:numIndices * sizeof(short)
-                           forKey:indicesVboCacheKey];
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // Fill the index VBO.
+        GLuint indicesVboId;
+        glGenBuffers(1, &indicesVboId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVboId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(short), indices, GL_STATIC_DRAW);
+        [[dc gpuResourceCache] putResource:[[NSNumber alloc] initWithInt:indicesVboId]
+                              resourceType:WW_GPU_VBO
+                                      size:numIndices * sizeof(short)
+                                    forKey:indicesVboCacheKey];
+    }
+    @finally
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        free(indices);
+    }
 }
 
 @end
