@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 
+/**
+* Displays Open Street Map imagery.
+*/
 @interface WWOpenStreetMapLayer : WWTiledImageLayer
 
 /// @name Initializing the Layer
