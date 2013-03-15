@@ -8,11 +8,11 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Terrain/WWEarthElevationModel.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWMath.h"
 
 @implementation WWGlobe : NSObject
 

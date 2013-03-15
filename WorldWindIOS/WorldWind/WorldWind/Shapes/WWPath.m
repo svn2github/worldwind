@@ -17,8 +17,8 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Render/WWGpuProgram.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
+#import "WorldWind/Util/WWMath.h"
 
 // TODO: Draw pole positions as vertical lines.
 // TODO: Don't redraw each frame.

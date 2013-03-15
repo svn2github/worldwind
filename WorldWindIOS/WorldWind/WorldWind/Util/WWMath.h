@@ -9,6 +9,16 @@
 #import <CoreGraphics/CGGeometry.h>
 
 /**
+* Convert degrees to radians.
+*/
+#define RADIANS(a) (a * M_PI / 180.0)
+
+/**
+* Convert radians to degrees.
+*/
+#define DEGREES(a) (a * 180.0 / M_PI)
+
+/**
 * A collection of class methods for computing various values.
 */
 @interface WWMath : NSObject

@@ -8,10 +8,10 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Util/WWMath.h"
 
 @implementation WWSector
 

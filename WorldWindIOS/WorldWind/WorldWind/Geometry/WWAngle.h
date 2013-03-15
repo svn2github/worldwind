@@ -8,16 +8,6 @@
 #import <Foundation/Foundation.h>
 
 /**
-* Convert degrees to radians.
-*/
-#define RADIANS(a) (a * M_PI / 180.0)
-
-/**
-* Convert radians to degrees.
-*/
-#define DEGREES(a) (a * 180.0 / M_PI)
-
-/**
 * Compute a decimal angle from specified degrees, minutes and seconds.
 */
 extern double WWAngleFromDMS(int degrees, int minutes, double seconds);

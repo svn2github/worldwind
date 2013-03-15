@@ -10,6 +10,7 @@
 #import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWMath.h"
 
 #define LONGITUDE_FOR_TIMEZONE(tz) (180.0 * [(tz) secondsFromGMT] / 43200.0)
 

@@ -13,10 +13,10 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Render/WWSurfaceTile.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWMath.h"
 
 // STRINGIFY is used in the shader files.
 #define STRINGIFY(A) #A

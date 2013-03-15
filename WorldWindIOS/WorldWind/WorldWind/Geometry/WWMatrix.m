@@ -6,7 +6,6 @@
  */
 
 #import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Geometry/WWPlane.h"
 #import "WorldWind/Geometry/WWVec4.h"

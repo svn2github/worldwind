@@ -6,11 +6,11 @@
  */
 
 #import "WorldWind/Util/WWLevel.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Util/WWMath.h"
 
 @implementation WWLevel
 
