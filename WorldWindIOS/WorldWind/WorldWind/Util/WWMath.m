@@ -6,7 +6,6 @@
  */
 
 #import "WorldWind/Util/WWMath.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -16,6 +15,24 @@
 + (double) clampValue:(double)value min:(double)min max:(double)max
 {
     return value < min ? min : (value > max ? max : value);
+}
+
+double NormalizedDegreesLatitude(double degrees)
+{
+    double lat = fmod(degrees, 180);
+    return lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
+}
+
+double NormalizedDegreesLongitude(double degrees)
+{
+    double lon = fmod(degrees, 360);
+    return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
+}
+
+double NormalizedDegreesHeading(double degrees)
+{
+    double angle = fmod(degrees, 360);
+    return angle > 180 ? angle - 360 : angle < -180 ? 360 + angle : angle;
 }
 
 + (double) stepValue:(double)value min:(double)min max:(double)max

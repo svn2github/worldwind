@@ -44,8 +44,6 @@
 		0B9813F8165FF84F00193E50 /* WorldWindView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9813F6165FF84F00193E50 /* WorldWindView.m */; };
 		0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98142F165FFDF200193E50 /* WorldWindConstants.m */; };
 		0B981431165FFDF200193E50 /* WorldWindConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98142F165FFDF200193E50 /* WorldWindConstants.m */; };
-		0B9814431660391E00193E50 /* WWAngle.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9814421660391E00193E50 /* WWAngle.m */; };
-		0B9814441660391E00193E50 /* WWAngle.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9814421660391E00193E50 /* WWAngle.m */; };
 		0B98144916607E2300193E50 /* WWLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98144816607E2300193E50 /* WWLocation.m */; };
 		0B98144A16607E2300193E50 /* WWLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B98144816607E2300193E50 /* WWLocation.m */; };
 		0BFCC7C016710C3200B74C8A /* WWPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BFCC7BF16710C3200B74C8A /* WWPosition.m */; };
@@ -320,8 +318,6 @@
 		0B9813F6165FF84F00193E50 /* WorldWindView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WorldWindView.m; sourceTree = "<group>"; };
 		0B98142E165FFDF200193E50 /* WorldWindConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WorldWindConstants.h; sourceTree = "<group>"; };
 		0B98142F165FFDF200193E50 /* WorldWindConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WorldWindConstants.m; sourceTree = "<group>"; };
-		0B9814411660391E00193E50 /* WWAngle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWAngle.h; path = Geometry/WWAngle.h; sourceTree = "<group>"; };
-		0B9814421660391E00193E50 /* WWAngle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWAngle.m; path = Geometry/WWAngle.m; sourceTree = "<group>"; };
 		0B98144716607E2300193E50 /* WWLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWLocation.h; path = Geometry/WWLocation.h; sourceTree = "<group>"; };
 		0B98144816607E2300193E50 /* WWLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWLocation.m; path = Geometry/WWLocation.m; sourceTree = "<group>"; };
 		0B98144B16608BE900193E50 /* WWLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLog.h; sourceTree = "<group>"; };
@@ -682,8 +678,6 @@
 		0B9814461660392D00193E50 /* Geometry */ = {
 			isa = PBXGroup;
 			children = (
-				0B9814411660391E00193E50 /* WWAngle.h */,
-				0B9814421660391E00193E50 /* WWAngle.m */,
 				0B98144716607E2300193E50 /* WWLocation.h */,
 				0B98144816607E2300193E50 /* WWLocation.m */,
 				0B62F5ED16643C5B002FD6EA /* WWSector.h */,
@@ -862,7 +856,6 @@
 				0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */,
 				0B9813F7165FF84F00193E50 /* WorldWindView.m in Sources */,
 				0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */,
-				0B9814431660391E00193E50 /* WWAngle.m in Sources */,
 				0B98144916607E2300193E50 /* WWLocation.m in Sources */,
 				0B62F5EF16643C5B002FD6EA /* WWSector.m in Sources */,
 				0B62F5F416644058002FD6EA /* WWVec4.m in Sources */,
@@ -932,7 +925,6 @@
 				0B9813F4165FF77700193E50 /* WWSceneController.m in Sources */,
 				0B9813F8165FF84F00193E50 /* WorldWindView.m in Sources */,
 				0B981431165FFDF200193E50 /* WorldWindConstants.m in Sources */,
-				0B9814441660391E00193E50 /* WWAngle.m in Sources */,
 				0B98144A16607E2300193E50 /* WWLocation.m in Sources */,
 				0B62F5F016643C5B002FD6EA /* WWSector.m in Sources */,
 				0B62F5F516644058002FD6EA /* WWVec4.m in Sources */,

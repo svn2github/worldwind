@@ -37,6 +37,33 @@
 + (double) clampValue:(double)value min:(double)min max:(double)max;
 
 /**
+* Clamps a specified angle to the range [-90, 90].
+*
+* @param degrees The angle to clamp, in degrees.
+*
+* @return The clamped angle, in the range [-90, 90].
+*/
+extern double NormalizedDegreesLatitude(double degrees);
+
+/**
+* Clamps a specified angle to the range [-180, 180].
+*
+* @param degrees The angle to clamp, in degrees.
+*
+* @return The clamped angle, in the range [-180, 180].
+*/
+extern double NormalizedDegreesLongitude(double degrees);
+
+/**
+* Clamps a specified heading angle to the range [-180, 180].
+*
+* @param degrees The angle to clamp, in degrees.
+*
+* @return The clamped angle, in the range [-180, 180].
+*/
+extern double NormalizedDegreesHeading(double degrees);
+
+/**
 * TODO
 *
 * @param value TODO

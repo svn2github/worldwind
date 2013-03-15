@@ -7,7 +7,6 @@
 
 #import <CoreLocation/CoreLocation.h>
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWMath.h"

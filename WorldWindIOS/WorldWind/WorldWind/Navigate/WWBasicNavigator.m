@@ -10,7 +10,6 @@
 #import "WorldWind/Navigate/WWBasicNavigatorState.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Geometry/WWAngle.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWMatrix.h"
