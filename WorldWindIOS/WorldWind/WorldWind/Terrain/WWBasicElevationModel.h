@@ -13,11 +13,15 @@
 @class WWLevelSet;
 @class WWLocation;
 @class WWMemoryCache;
+@class WWTileKey;
 @protocol WWUrlBuilder;
 
 @interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory>
 {
 @protected
+    // Coverage sector and current requested sector.
+    WWSector* coverageSector;
+    WWSector* currentSector;
     // Elevation model tiles and tile level set.
     WWLevelSet* levels;
     NSMutableSet* currentTiles;
@@ -25,6 +29,7 @@
     // Elevation model tile and image caches.
     WWMemoryCache* tileCache;
     WWMemoryCache* imageCache;
+    WWTileKey* tileKey;
     // Sets used to eliminate duplicate elevation image retrievals and loads.
     NSMutableSet* currentRetrievals;
     NSMutableSet* currentLoads;
@@ -93,9 +98,7 @@
 
 - (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles;
 
-- (WWElevationTile*) tileForLevel:(WWLevel*)level row:(int)row column:(int)column;
-
-- (WWElevationTile*) localTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column;
+- (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column;
 
 - (BOOL) isTileImageLocal:(WWElevationTile*)tile;
 
