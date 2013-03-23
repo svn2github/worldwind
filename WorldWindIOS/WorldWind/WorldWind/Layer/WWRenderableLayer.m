@@ -28,10 +28,17 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Renderable is nil")
     }
 
-    if (renderable != nil)
+    [_renderables addObject:renderable];
+}
+
+- (void) removeRenderable:(id <WWRenderable>)renderable
+{
+    if (renderable == nil)
     {
-        [_renderables addObject:renderable];
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Renderable is nil")
     }
+
+    [_renderables removeObject:renderable];
 }
 
 - (void) doRender:(WWDrawContext*)dc

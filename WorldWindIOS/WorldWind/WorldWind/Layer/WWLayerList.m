@@ -7,6 +7,7 @@
 
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWLayer.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWLayerList
 
@@ -31,12 +32,32 @@
 
 - (void) addLayer:(WWLayer*) layer
 {
+    if (layer == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
+    }
+
     [self->layers addObject:layer];
 }
 
 - (void) insertLayer:(WWLayer*)layer atIndex:(NSUInteger)atIndex
 {
+    if (layer == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
+    }
+
     [self->layers insertObject:layer atIndex:atIndex];
+}
+
+- (void) removeLayer:(WWLayer*)layer
+{
+    if (layer == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
+    }
+
+    [layers removeObject:layer];
 }
 
 @end

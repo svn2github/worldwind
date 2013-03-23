@@ -50,6 +50,8 @@
 * Appends a specified layer to the end of this layer list.
 *
 * @param layer The layer to add.
+*
+* @exception NSInvalidArgumentException If the specified layer is nil.
 */
 - (void) addLayer:(WWLayer*)layer;
 
@@ -65,5 +67,14 @@
 * @exception NSRangeException If the specified position is greater than or equal to the number of layers in the list.
 */
 - (void) insertLayer:(WWLayer*)layer atIndex:(NSUInteger)atIndex;
+
+/**
+* Remove a specified layer from this layer list.
+*
+* @param layer The layer to remove.
+*
+* @exception NSInvalidArgumentException if the specified layer is nil.
+*/
+- (void) removeLayer:(WWLayer*)layer;
 
 @end

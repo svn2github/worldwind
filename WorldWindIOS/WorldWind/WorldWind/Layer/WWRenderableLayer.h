@@ -42,4 +42,13 @@
 */
 - (void) addRenderable:(id <WWRenderable>)renderable;
 
+/**
+* Remove a specified renderable from this layer.
+*
+* @param renderable The renderable to remove.
+*
+* @exception NSInvalidArgumentException if the specified renderable is nil.
+*/
+- (void) removeRenderable:(id <WWRenderable>)renderable;
+
 @end

@@ -27,6 +27,7 @@
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Shapes/WWSphere.h"
+#import "PathFollower.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -152,6 +153,14 @@
         [path setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
         [path setAttributes:attributes];
         [pathsLayer addRenderable:path];
+
+        if (i == 0)
+        {
+            PathFollower* pathFollower = [[PathFollower alloc] initWithPath:path
+                                                                     speed:67 // ~150 MPH
+                                                                      view:_wwv];
+            [pathFollower start];
+        }
     }
 
 }
