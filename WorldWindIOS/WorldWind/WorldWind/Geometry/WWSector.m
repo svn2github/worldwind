@@ -105,6 +105,21 @@
     return RADIANS(_maxLongitude);
 }
 
+- (WWSector*) set:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    _minLatitude = sector->_minLatitude;
+    _maxLatitude = sector->_maxLatitude;
+    _minLongitude = sector->_minLongitude;
+    _maxLongitude = sector->_maxLongitude;
+
+    return self;
+}
+
 - (BOOL) isEmpty
 {
     return _minLatitude == _maxLatitude && _minLongitude == _maxLongitude;
@@ -176,9 +191,7 @@
         _maxLongitude = sector->_maxLongitude;
 }
 
-- (void) computeReferencePoints:(WWGlobe*)globe
-           verticalExaggeration:(double)verticalExaggeration
-                         result:(NSMutableArray*)result
+- (void) computeReferencePoints:(WWGlobe*)globe elevation:(double)elevation result:(NSMutableArray*)result
 {
     if (globe == nil)
     {
@@ -190,32 +203,25 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
+    double centerLat = 0.5 * (_minLatitude + _maxLatitude);
+    double centerLon = 0.5 * (_minLongitude + _maxLongitude);
+
     WWVec4* swPoint = [result objectAtIndex:0];
     WWVec4* sePoint = [result objectAtIndex:1];
     WWVec4* nePoint = [result objectAtIndex:2];
     WWVec4* nwPoint = [result objectAtIndex:3];
     WWVec4* centerPoint = [result objectAtIndex:4];
 
-    double elevation = [globe elevationForLatitude:_minLatitude longitude:_minLongitude] * verticalExaggeration;
     [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:elevation outputPoint:swPoint];
-
-    elevation = [globe elevationForLatitude:_minLatitude longitude:_maxLongitude] * verticalExaggeration;
     [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:elevation outputPoint:sePoint];
-
-    elevation = [globe elevationForLatitude:_maxLatitude longitude:_maxLongitude] * verticalExaggeration;
     [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:elevation outputPoint:nePoint];
-
-    elevation = [globe elevationForLatitude:_maxLatitude longitude:_minLongitude] * verticalExaggeration;
     [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:elevation outputPoint:nwPoint];
-
-    double centerLat = 0.5 * (_minLatitude + _maxLatitude);
-    double centerLon = 0.5 * (_minLongitude + _maxLongitude);
-    elevation = [globe elevationForLatitude:centerLat longitude:centerLon] * verticalExaggeration;
     [globe computePointFromPosition:centerLat longitude:centerLon altitude:elevation outputPoint:centerPoint];
 }
 
 - (void) computeExtremePoints:(WWGlobe*)globe
-         verticalExaggeration:(double)verticalExaggeration
+                 minElevation:(double)minElevation
+                 maxElevation:(double)maxElevation
                        result:(NSMutableArray*)result
 {
     if (globe == nil)
@@ -228,54 +234,46 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    double extremes[2] = {0, 0};
-    [globe minAndMaxElevationsForSector:self result:extremes];
-
-    double minHeight = extremes[0] * verticalExaggeration;
-    double maxHeight = extremes[1] * verticalExaggeration;
-    if (minHeight == maxHeight)
-        maxHeight = minHeight + 10;
-
     [result removeAllObjects];
 
     WWVec4* pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:minHeight outputPoint:pt];
+    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:minElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:maxHeight outputPoint:pt];
+    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:maxElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:minHeight outputPoint:pt];
+    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:minElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:maxHeight outputPoint:pt];
+    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:maxElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:minHeight outputPoint:pt];
+    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:minElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:maxHeight outputPoint:pt];
+    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:maxElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:minHeight outputPoint:pt];
+    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:minElevation outputPoint:pt];
 
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:maxHeight outputPoint:pt];
+    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:maxElevation outputPoint:pt];
 
     // A point at the centroid captures the maximum vertical dimension.
     double cLat = 0.5 * (_minLatitude + _maxLatitude);
     double cLon = 0.5 * (_minLongitude + _maxLongitude);
     pt = [[WWVec4 alloc] initWithZeroVector];
     [result addObject:pt];
-    [globe computePointFromPosition:cLat longitude:cLon altitude:maxHeight outputPoint:pt];
+    [globe computePointFromPosition:cLat longitude:cLon altitude:maxElevation outputPoint:pt];
 
     // If the sector spans the equator then the curvature of all four edges needs to be considered. The extreme points
     // along the top and bottom edges are located at their mid-points and the extreme points along the left and right
@@ -286,19 +284,19 @@
     {
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:_minLatitude longitude:cLon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:_minLatitude longitude:cLon altitude:maxElevation outputPoint:pt];
 
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:_maxLatitude longitude:cLon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:_maxLatitude longitude:cLon altitude:maxElevation outputPoint:pt];
 
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:0 longitude:_minLongitude altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:0 longitude:_minLongitude altitude:maxElevation outputPoint:pt];
 
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:0 longitude:_maxLongitude altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:0 longitude:_maxLongitude altitude:maxElevation outputPoint:pt];
     }
             // If the sector is located entirely in the southern hemisphere, then the curvature of its top edge needs to be
             // considered. The extreme point along the top edge is located at its mid-point. Add a point with the longitude
@@ -307,7 +305,7 @@
     {
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:_maxLatitude longitude:cLon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:_maxLatitude longitude:cLon altitude:maxElevation outputPoint:pt];
     }
             // If the sector is located entirely within the northern hemisphere then the curvature of its bottom edge needs to
             // be considered. The extreme point along the bottom edge is located at its mid-point. Add a point with the
@@ -316,7 +314,7 @@
     {
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:_minLatitude longitude:cLon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:_minLatitude longitude:cLon altitude:maxElevation outputPoint:pt];
     }
 
     if (_maxLongitude - _minLongitude > 180)
@@ -327,29 +325,31 @@
         double lon = 0.5 * (_minLongitude + cLon);
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:cLat longitude:lon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:cLat longitude:lon altitude:maxElevation outputPoint:pt];
 
         // Centroid latitude, longitude midway between centroid longitude and max longitude.
         lon = 0.5 * (_maxLongitude + cLon);
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:cLat longitude:lon altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:cLat longitude:lon altitude:maxElevation outputPoint:pt];
 
         // centroid latitude, longitude at min longitude and max longitude.
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:cLat longitude:_minLongitude altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:cLat longitude:_minLongitude altitude:maxElevation outputPoint:pt];
 
         pt = [[WWVec4 alloc] initWithZeroVector];
         [result addObject:pt];
-        [globe computePointFromPosition:cLat longitude:_maxLongitude altitude:maxHeight outputPoint:pt];
+        [globe computePointFromPosition:cLat longitude:_maxLongitude altitude:maxElevation outputPoint:pt];
     }
 }
 
-- (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
+- (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe
+                         minElevation:(double)minElevation
+                         maxElevation:(double)maxElevation
 {
     NSMutableArray* extremePoints = [[NSMutableArray alloc] init];
-    [self computeExtremePoints:globe verticalExaggeration:verticalExaggeration result:extremePoints];
+    [self computeExtremePoints:globe minElevation:minElevation maxElevation:maxElevation result:extremePoints];
 
     return [[WWBoundingBox alloc] initWithPoints:extremePoints];
 }

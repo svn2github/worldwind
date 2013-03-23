@@ -120,6 +120,19 @@
 */
 - (WWSector*) initWithSector:(WWSector*)sector;
 
+/// @name Changing Sector Values
+
+/**
+* Sets this sector to the values of a specified sector.
+*
+* @param sector The sector whose values should be used.
+*
+* @return This sector with its values set to the latitudes and longitudes of the specified sector.
+*
+* @exception NSInvalidArgumentException If the specified sector is nil.
+*/
+- (WWSector*) set:(WWSector*)sector;
+
 /// @name Intersection and Inclusion Operations
 
 /**
@@ -176,44 +189,65 @@
 /// @name Other Information About Sectors
 
 /**
-* Compute the Cartesian coordinates of this sector's four corners and its center.
+* Compute the model coordinate points of this sector's four corners and its center at the specified elevation.
 *
-* @param globe The globe for the sector.
-* @param verticalExaggeration The vertical exaggeration to apply. Use 1 if no vertical exaggeration.
+* The elevation must have already been multiplied by the desired vertical exaggeration, if any.
+*
+* @param globe The globe used to compute the model coordinates of the reference points.
+* @param elevation The elevation associated with the reference points.
 * @param result A mutable array of points. The array and its points may not be nil. The points in the
 * array are computed in the following order: southwest, southeast, northeast, northwest, center.
 *
 * @exception NSInvalidArgumentException if the globe or output array are nil.
 */
-- (void) computeReferencePoints:(WWGlobe*)globe
-           verticalExaggeration:(double)verticalExaggeration
-                         result:(NSMutableArray*)result;
+- (void) computeReferencePoints:(WWGlobe*)globe elevation:(double)elevation result:(NSMutableArray*)result;
 
 /**
-* Computes the extreme points of this sector.
+* Computes the extreme points of this sector, given a minimum and maximum elevation associated with this sector.
 *
 * These points are typically used to form a bounding volume for the sector.
 *
-* @param globe The globe to use to compute the Cartesian coordinates of the extreme points.
-* @param verticalExaggeration The vertical exaggeration to apply to the points.
+* * To compute points of extreme latitude and longitude at mean sea level, specify zero for the minimum and maximum
+* elevations.
+* * To compute points of extreme latitude and longitude that contain the terrain surface, specify the actual minimum and
+* maximum elevation values associated with this sector, multiplied by the scene's vertical exaggeration. These values
+* can be determined by calling [WWGlobe minAndMaxElevationsForSector:result:] and [WWDrawContext verticalExaggeration].
+* The extreme points must be recomputed whenever the globe's elevations or the vertical exaggeration changes. The method
+* [WWGlobe elevationTimestamp] can be used to determine when the elevations change.
+*
+* @param globe The globe used to compute the model coordinates of the extreme points.
+* @param minElevation The minimum elevation associated with this sector.
+* @param maxElevation The maximum elevation associated with this sector.
 * @param result An array in which to return the extreme points.
 *
 * @exception NSInvalidArgumentException if either the specified globe or result array is nil.
 */
 - (void) computeExtremePoints:(WWGlobe*)globe
-         verticalExaggeration:(double)verticalExaggeration
+                 minElevation:(double)minElevation
+                 maxElevation:(double)maxElevation
                        result:(NSMutableArray*)result;
 
 /**
-* Computes a bounding box for this sector.
+* Computes a bounding box for this sector, given a minimum and maximum elevation associated with this sector.
 *
-* @param globe The globe to use to compute the Cartesian coordinates of the bounding box.
-* @param verticalExaggeration The vertical exaggeration to apply to the box's coordinates.
+* * To compute a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
+* elevations.
+* * To compute a bounding box that contains the terrain surface in this sector, specify the actual minimum and maximum
+* elevation values associated with this sector, multiplied by the scene's vertical exaggeration. These values can be
+* determined by calling [WWGlobe minAndMaxElevationsForSector:result:] and [WWDrawContext verticalExaggeration]. The
+* returned bounding box must be recomputed whenever the globe's elevations or the vertical exaggeration changes. The
+* method [WWGlobe elevationTimestamp] can be used to determine when the elevations change.
+*
+* @param globe The globe used to compute the model coordinates of the bounding box.
+* @param minElevation The minimum elevation associated with this sector.
+* @param maxElevation The maximum elevation associated with this sector.
 *
 * @return A bounding box for this sector.
 *
 * @exception NSInvalidArgumentException if the specified globe is nil.
 */
-- (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
+- (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe
+                         minElevation:(double)minElevation
+                         maxElevation:(double)maxElevation;
 
 @end

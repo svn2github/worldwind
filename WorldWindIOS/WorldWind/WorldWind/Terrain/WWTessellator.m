@@ -203,9 +203,9 @@
     [self buildTileVertices:dc tile:tile];
     [self buildSharedGeometry:tile];
 
-    // Set the terrain tile's timestamp to the draw context's elevation timestamp on which the tile geometry is
-    // based. This ensures that tile's timestamp can be reliably compared to the elevation timestamp in subsequent
-    // frames.
+    // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
+    // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
+    // creating redundant NSDate objects.
     [tile setTimestamp:self->elevationTimestamp];
 }
 

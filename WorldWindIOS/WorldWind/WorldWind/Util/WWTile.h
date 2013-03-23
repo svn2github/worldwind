@@ -8,14 +8,14 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWCacheable.h"
 
-@class WWSector;
-@class WWLevel;
-@class WWDrawContext;
-@protocol WWTileFactory;
-@class WWGlobe;
-@protocol WWExtent;
 @class WWBoundingBox;
+@class WWDrawContext;
+@class WWGlobe;
+@class WWLevel;
 @class WWMemoryCache;
+@class WWSector;
+@protocol WWExtent;
+@protocol WWTileFactory;
 
 /**
 * Provides a base class for texture tiles used by tiled image layers and elevation tiles used by elevation models.
@@ -24,9 +24,15 @@
 @interface WWTile : NSObject <WWCacheable>
 {
 @protected
+    // Immutable properties inherited from the parent level and stored in the tile for fast access.
     int tileWidth;
     int tileHeight;
+    double texelSize;
+    // Cache key used to retrieve the tile's children from a memory cache.
     NSString* tileKey;
+    // Values used to invalidate the tile's extent when the elevations or the vertical exaggeration changes.
+    NSDate* extentTimestamp;
+    double extentVerticalExaggeration;
 }
 
 /// @name Attributes
@@ -204,12 +210,12 @@
 /// @name Operations on Tiles
 
 /**
-* Updates the tile's reference points to reflect current state.
+* Updates this tile's reference points to reflect current state. TODO: Remove this method; it currently does nothing.
 *
-* The tile's reference points are the Cartesian points corresponding to the tile's corner and center points. These
-* must be up-to-date for certain operations such as computing the tile's extent or whether it should be subdivided.
+* This tile's reference points are the Cartesian points corresponding to this tile's corner and center points. These
+* must be up-to-date for certain operations such as computing this tile's extent or whether it should be subdivided.
 *
-* @param globe The globe the tile's associated with.
+* @param globe The globe used to compute this tile's reference points.
 * @param verticalExaggeration The current vertical exaggeration.
 *
 * @exception NSInvalidArgumentException If the globe is nil.
@@ -217,9 +223,15 @@
 - (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
 
 /**
-* Updates this tile's extent (bounding volume).
+* Updates this tile's extent (bounding volume) to contain this tile's sector on the current globe, including
+* any associated elevations.
 *
-* @param globe The globe to use to compute this tile's extent.
+* This tile's extent is invalid and must be recomputed whenever the globe's elevations or the vertical exaggeration
+* changes. Therefore updateExtent must be called once per frame before the extent is used. updateExtent intelligently
+* determines when it is necessary to recompute the extent, and does nothing if the elevations or the vertical
+* exaggeration have not changed since the last call.
+*
+* @param globe The globe used to compute this tile's extent.
 * @param verticalExaggeration The vertical exaggeration to use when computing the extent.
 */
 - (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;

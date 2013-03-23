@@ -11,7 +11,6 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWTileFactory.h"
-#import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
@@ -53,9 +52,10 @@
     _row = row;
     _column = column;
 
-    tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
     tileWidth = [level tileWidth];
     tileHeight = [level tileHeight];
+    texelSize = [level texelSize];
+    tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
 
     return self;
 }
@@ -101,7 +101,7 @@
 
 - (double) texelSize
 {
-    return [_level texelSize];
+    return texelSize;
 }
 
 + (int) computeRow:(double)delta latitude:(double)latitude
@@ -330,8 +330,6 @@
     // Find the minimum distance. Compute the cell height at the corresponding point. Cell height is radius * radian
     // texel size.
 
-    double texelSize = [_level texelSize];
-
     double minDistance = d1;
     double cellSize = [[_referencePoints objectAtIndex:0] length3] * texelSize;
 
@@ -369,21 +367,7 @@
 
 - (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
 {
-    if (globe == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
-    }
-
-    if (_referencePoints == nil)
-    {
-        _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
-        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        [_sector computeReferencePoints:globe verticalExaggeration:verticalExaggeration result:_referencePoints];
-    }
+    // TODO: Remove this method; it currently does nothing.
 }
 
 - (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
@@ -393,8 +377,49 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
-    if (_extent == nil)
-        _extent = [_sector computeBoundingBox:globe verticalExaggeration:verticalExaggeration];
+    NSDate* elevationTimestamp = [globe elevationTimestamp];
+    if (extentTimestamp == nil || [extentTimestamp compare:elevationTimestamp] == NSOrderedAscending
+            || extentVerticalExaggeration != verticalExaggeration)
+    {
+        // Compute the minimum and maximum elevations for this tile's sector, or use zero if the globe has no elevations
+        // in this tile's coverage area. In the latter case the globe does not modify the result parameter.
+        double extremes[2] = {0, 0};
+        [globe minAndMaxElevationsForSector:_sector result:extremes];
+
+        // Multiply the minimum and maximum elevations by the scene's vertical exaggeration. This ensures that the
+        // elevations to build the terrain are contained by this tile's extent.
+        double minHeight = extremes[0] * verticalExaggeration;
+        double maxHeight = extremes[1] * verticalExaggeration;
+        if (minHeight == maxHeight)
+            minHeight = maxHeight + 10; // TODO: Determine if this is necessary.
+
+        // Compute a bounding box for this tile that contains the terrain surface in the tile's coverage area.
+        _extent = [_sector computeBoundingBox:globe minElevation:minHeight maxElevation:maxHeight];
+
+        // Compute reference points used to determine when the tile must be subdivided into its four children. These
+        // reference points provide a way to estimate distance between the tile and the eye point. We compute reference
+        // points the at the tile's four corners and its center, all at the minimum elevation in the tile's coverage
+        // area. We use the minimum elevation because it provides a reasonable estimate for distance, and the eye point
+        // always gets closer to the reference points as it moves closer to the terrain surface.
+        // TODO: Try replacing reference points with a single point under the eye or the nearest boundary point.
+        if (_referencePoints == nil)
+        {
+            _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
+            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
+        }
+
+        [_sector computeReferencePoints:globe elevation:minHeight result:_referencePoints];
+
+        // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
+        // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
+        // creating redundant NSDate objects.
+        extentTimestamp = elevationTimestamp;
+        extentVerticalExaggeration = verticalExaggeration;
+    }
 }
 
 @end
