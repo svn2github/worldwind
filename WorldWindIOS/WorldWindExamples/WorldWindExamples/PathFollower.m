@@ -57,6 +57,7 @@
     [marker setAttributes:attributes];
 
     layer = [[WWRenderableLayer alloc] init];
+    [layer setDisplayName:@"Path Marker"];
     [layer addRenderable:marker];
 
     [[[_wwv sceneController] layers] addLayer:layer];
