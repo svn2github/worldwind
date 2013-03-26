@@ -28,6 +28,8 @@
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Shapes/WWSphere.h"
 #import "PathFollower.h"
+#import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
+#import "WorldWind/Layer/WWFAAChartAnchorage_84_North.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -89,13 +91,17 @@
     [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
     [layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
+    [layers addLayer:[[WWFAAChartAnchorage_84_North alloc] init]];
+    [layers addLayer:[[WWOpenWeatherMapLayer alloc] init]];
     [[layers layerAtIndex:4] setEnabled:NO];
     [[layers layerAtIndex:5] setEnabled:NO];
     [[layers layerAtIndex:6] setEnabled:NO];
+    [[layers layerAtIndex:7] setEnabled:NO];
+    [[layers layerAtIndex:8] setEnabled:NO];
 //    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
 
     [self makeFlightPathsLayer];
-    [self makeLocationMarkerLayer];
+//    [self makeLocationMarkerLayer];
 
     [self->locationController setView:_wwv];
 }
@@ -237,8 +243,10 @@
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
     {
+        UINavigationController* navController = [[UINavigationController alloc]
+                initWithRootViewController:layerListController];
         self->layerListPopoverController =
-                [[UIPopoverController alloc] initWithContentViewController:layerListController];
+                [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 
     self->trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]

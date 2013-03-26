@@ -60,4 +60,36 @@
     [layers removeObject:layer];
 }
 
+- (void) removeLayerAtRow:(int)rowIndex
+{
+    if (rowIndex < 0 || rowIndex >= [layers count])
+    {
+        NSString* msg = [[NSString alloc] initWithFormat:@"Row index %d is out of range", rowIndex];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    WWLayer* layer = [layers objectAtIndex:(NSUInteger)rowIndex];
+    [self removeLayer:layer];
+}
+
+- (void) moveLayerAtRow:(int)fromIndex toRow:(int)toIndex
+{
+    if (fromIndex < 0 || fromIndex >= [layers count])
+    {
+        NSString* msg = [[NSString alloc] initWithFormat:@"From index %d is out of range", fromIndex];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    if (toIndex < 0 || toIndex >= [layers count])
+    {
+        NSString* msg = [[NSString alloc] initWithFormat:@"To index %d is out of range", toIndex];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    WWLayer* layer = [layers objectAtIndex:(NSUInteger)fromIndex];
+
+    [layers removeObjectAtIndex:(NSUInteger)fromIndex];
+    [layers insertObject:layer atIndex:(NSUInteger)toIndex];
+}
+
 @end

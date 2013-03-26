@@ -19,6 +19,9 @@
 
     _wwv = wwv;
 
+    [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
+    [[self navigationItem] setTitle:@"Layers"];
+
     return self;
 }
 
@@ -55,17 +58,34 @@
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
     [[cell imageView] setImage:[UIImage imageNamed:[layer imageFile]]];
+    [cell setShowsReorderControl:YES];
     [cell setAccessoryType:[layer enabled] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone];
 
     return cell;
 }
 
-- (void) viewWillAppear:(BOOL)animated
+- (BOOL) tableView:(UITableView*)tableView canMoveRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    UIViewController* parent = [self parentViewController];
-    if ([parent isKindOfClass:[UINavigationController class]])
+    return YES;
+}
+
+- (void) tableView:(UITableView*)tableView
+moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
+       toIndexPath:(NSIndexPath*)destinationIndexPath
+{
+    [[[_wwv sceneController] layers] moveLayerAtRow:[sourceIndexPath row] toRow:[destinationIndexPath row]];
+}
+
+- (void) tableView:(UITableView*)tableView
+commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+ forRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete)
     {
-        [((UINavigationController*) parent) setNavigationBarHidden:NO animated:YES];
+        [[[_wwv sceneController] layers] removeLayerAtRow:[indexPath row]];
+
+        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                         withRowAnimation:UITableViewRowAnimationFade];
     }
 }
 

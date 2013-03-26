@@ -77,4 +77,24 @@
 */
 - (void) removeLayer:(WWLayer*)layer;
 
+/**
+* Remove a layer at a specified location in the layer list.
+*
+* @param rowIndex The index, 0 origin, of the layer to remove.
+*
+* @exception NSInvalidArgumentException If the specified index is invalid.
+*/
+- (void) removeLayerAtRow:(int)rowIndex;
+
+/**
+* Moves a layer from one position to another in the layer list.
+*
+* @param fromIndex The index, 0 origin, of the layer to move.
+* @param toIndex The index, 0 origin, of the layer's new location. Other layers are moved further down the list as
+* necessary to accommodate the layer at its new position.
+*
+* @exception NSInvalidArgumentException if either index is invalid.
+*/
+- (void) moveLayerAtRow:(int)fromIndex toRow:(int)toIndex;
+
 @end
