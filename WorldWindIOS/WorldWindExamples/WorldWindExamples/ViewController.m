@@ -163,8 +163,8 @@
         if (i == 0)
         {
             PathFollower* pathFollower = [[PathFollower alloc] initWithPath:path
-                                                                     speed:67 // ~150 MPH
-                                                                      view:_wwv];
+                                                                      speed:67 // ~150 MPH
+                                                                       view:_wwv];
             [pathFollower start];
         }
     }
@@ -241,13 +241,10 @@
                                                          style:UIBarButtonItemStylePlain
                                                         target:self action:@selector(handleLayerButtonTap)];
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    {
-        UINavigationController* navController = [[UINavigationController alloc]
-                initWithRootViewController:layerListController];
-        self->layerListPopoverController =
-                [[UIPopoverController alloc] initWithContentViewController:navController];
-    }
+    UINavigationController* navController = [[UINavigationController alloc]
+            initWithRootViewController:layerListController];
+    self->layerListPopoverController =
+            [[UIPopoverController alloc] initWithContentViewController:navController];
 
     self->trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
                                                          style:UIBarButtonItemStylePlain
@@ -274,15 +271,8 @@
 
 - (void) handleLayerButtonTap
 {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-    {
-        [((UINavigationController*) [self parentViewController]) pushViewController:layerListController animated:YES];
-    }
-    else
-    {
-        [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
-                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    }
+    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
+                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleLocationButtonTap

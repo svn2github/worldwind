@@ -53,13 +53,14 @@
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+        [cell setAccessoryType:UITableViewCellAccessoryDetailDisclosureButton];
+        [cell setShowsReorderControl:YES];
     }
 
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
-    [[cell imageView] setImage:[UIImage imageNamed:[layer imageFile]]];
-    [cell setShowsReorderControl:YES];
-    [cell setAccessoryType:[layer enabled] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone];
+    [[cell imageView] setHidden:![layer enabled]];
 
     return cell;
 }
