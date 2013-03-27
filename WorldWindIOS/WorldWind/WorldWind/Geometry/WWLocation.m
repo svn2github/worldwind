@@ -42,12 +42,12 @@
 
 - (WWLocation*) initWithLocation:(WWLocation*)location
 {
-    self = [super init];
-
     if (location == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
+
+    self = [super init];
 
     _latitude = location->_latitude;
     _longitude = location->_longitude;
@@ -57,12 +57,12 @@
 
 - (WWLocation*) initWithCLLocation:(CLLocation*)location
 {
-    self = [super init];
-
     if (location == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
+
+    self = [super init];
 
     CLLocationCoordinate2D coord = [location coordinate];
     _latitude = coord.latitude;
