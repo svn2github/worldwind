@@ -26,7 +26,7 @@
 
 /// Indicates the layer's opacity. 1 indicates full opacity. 0 indicates full transparency. Not all layers support
 // opacity.
-@property(nonatomic) double opacity;
+@property(nonatomic) float opacity;
 
 /// The minimum eye altitude at which the layer is displayed. The layer is not displayed when the eye altitude is
 // less than the specified value.

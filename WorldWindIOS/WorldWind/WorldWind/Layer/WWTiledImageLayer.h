@@ -74,6 +74,7 @@
 /// Indicates whether this layer uses compressed textures.
 @property(nonatomic) BOOL useCompressedTextures;
 
+/// Indicates whether this layer uses raw RGBA textures.
 @property(nonatomic) BOOL useRawTextures;
 
 /// @name Initializing Tiled Image Layers

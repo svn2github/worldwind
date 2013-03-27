@@ -260,8 +260,23 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Color is nil")
     }
 
-
     glUniform4f(location, [color r], [color g], [color b], [color a]);
+}
+
+- (void) loadUniformFloat:(NSString*)uniformName value:(float)value
+{
+    if (uniformName == nil || uniformName.length == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is empty")
+    }
+
+    int location = [self getUniformLocation:uniformName];
+    if (location < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is invalid")
+    }
+
+    glUniform1f(location, value);
 }
 
 @end

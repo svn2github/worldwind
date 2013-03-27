@@ -120,7 +120,8 @@
 * @param samplerName The name of the uniform sampler.
 * @param value The value to set the sampler to.
 *
-* @exception NSInvalidArgumentException If the specified sampler name is nil or empty or the sampler does not exist.
+* @exception NSInvalidArgumentException If the specified sampler name is nil or empty or the sampler does not exist
+* in the program.
 */
 - (void) loadUniformSampler:(NSString*)samplerName value:(int)value;
 
@@ -133,9 +134,22 @@
 * @param color The value to set the color to.
 *
 * @exception NSInvalidArgumentException If the specified color name is nil or empty,
-* the color does not exist or the specified color is nil.
+* the color does not exist in the program or the specified color is nil.
 */
 - (void) loadUniformColor:(NSString*)colorName color:(WWColor*)color;
+
+/**
+* Sets the value of a named uniform float to a specified value.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param uniformName The name of the uniform variable.
+* @param value The value to set the uniform variable to.
+*
+* @exception NSInvalidArgumentException If the specified uniform name is nil or empty or the uniform variable does
+* not exist in the program.
+*/
+- (void) loadUniformFloat:(NSString*)uniformName value:(float)value;
 
 /// @name Supporting Methods
 

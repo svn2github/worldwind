@@ -17,6 +17,11 @@ const char* SurfaceTileRendererFragmentShader = STRINGIFY(
 precision mediump float;
 
 /*
+ * Opacity variable, in the range [0,1], although the range is not checked.
+ */
+uniform float opacity;
+
+/*
  * Input uniform sampler defining the tile's 2D texture sampler, specified in SurfaceTileRenderer.java. This
  * variable's value represents the texture unit (0, 1, 2, etc.) that the tile's texture is bound to.
  */
@@ -61,7 +66,7 @@ void main(void)
     /* Assign the fragment color to the tile color. We avoid branching and calling discard when the alpha value is zero */
     /* because calling discard in a branch has been shown to increase the frame time by 3x on the Samsung Galaxy Tab */
     /* 10.1. */
-    gl_FragColor = tileColor(tileTexture, tileCoord, texCoord);
+    gl_FragColor = tileColor(tileTexture, tileCoord, texCoord) * opacity;
 
 }
 );

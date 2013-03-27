@@ -40,7 +40,7 @@
     return self;
 }
 
-- (void) renderTile:(WWDrawContext*)dc surfaceTile:(id <WWSurfaceTile>)surfaceTile
+- (void) renderTile:(WWDrawContext*)dc surfaceTile:(id <WWSurfaceTile>)surfaceTile opacity:(float)opacity
 {
     if (dc == nil)
     {
@@ -60,7 +60,7 @@
     }
 
     WWGpuProgram* program = [self gpuProgram:dc];
-    [self beginRendering:dc program:program];
+    [self beginRendering:dc program:program opacity:opacity];
     [terrainTiles beginRendering:dc];
     @try
     {
@@ -95,7 +95,7 @@
 
 }
 
-- (void) renderTiles:(WWDrawContext*)dc surfaceTiles:(NSArray*)surfaceTiles
+- (void) renderTiles:(WWDrawContext*)dc surfaceTiles:(NSArray*)surfaceTiles opacity:(float)opacity
 {
     if (dc == nil)
     {
@@ -115,7 +115,7 @@
     }
 
     WWGpuProgram* program = [self gpuProgram:dc];
-    [self beginRendering:dc program:program];
+    [self beginRendering:dc program:program opacity:opacity];
     [terrainTiles beginRendering:dc];
 
     @try
@@ -159,7 +159,7 @@
 
 }
 
-- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program
+- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program opacity:(float)opacity
 {
     [program bind];
     [dc setCurrentProgram:program];
@@ -167,6 +167,7 @@
     glActiveTexture(GL_TEXTURE0);
 
     [program loadUniformSampler:@"tileTexture" value:0];
+    [program loadUniformFloat:@"opacity" value:opacity];
 }
 
 - (void) endRendering:(WWDrawContext*)dc

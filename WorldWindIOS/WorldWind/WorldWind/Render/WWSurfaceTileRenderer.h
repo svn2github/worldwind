@@ -61,10 +61,11 @@
 *
 * @param dc The current draw context.
 * @param surfaceTile The surface tile to draw.
+* @param opacity The opacity with which to render the tile.
 *
 * @exception NSInvalidArgumentException If either the draw context or surface tile are nil.
 */
-- (void) renderTile:(WWDrawContext*)dc surfaceTile:(id <WWSurfaceTile>)surfaceTile;
+- (void) renderTile:(WWDrawContext*)dc surfaceTile:(id <WWSurfaceTile>)surfaceTile opacity:(float)opacity;
 
 /**
 * Draws a collection of surface tiles at their designated locations on the globe.
@@ -73,10 +74,11 @@
 *
 * @param dc The current draw context.
 * @param surfaceTiles The list of surface tiles to draw.
+* @param opacity The opacity with which to render the tiles.
 *
 * @exception If either the draw context or surface tile list is nil.
 */
-- (void) renderTiles:(WWDrawContext*)dc surfaceTiles:(NSArray*)surfaceTiles;
+- (void) renderTiles:(WWDrawContext*)dc surfaceTiles:(NSArray*)surfaceTiles opacity:(float)opacity;
 
 /// @name Supporting Methods of Interest Only to Subclasses
 
@@ -111,7 +113,7 @@
                     surfaceTile:(id <WWSurfaceTile>)surfaceTile
                          result:(WWMatrix*)result;
 
-- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program;
+- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program opacity:(float)opacity;
 
 - (void) endRendering:(WWDrawContext*)dc;
 

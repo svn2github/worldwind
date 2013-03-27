@@ -83,25 +83,44 @@
     WWLog(@"View Did Load");
 
     WWLayerList* layers = [[_wwv sceneController] layers];
-    //[layers addLayer:[[WWBMNGOneImageLayer alloc] init]];
-    [layers addLayer:[[WWBMNGLayer alloc] init]];
-    [layers addLayer:[[WWI3LandsatLayer alloc] init]];
-    [layers addLayer:[[WWBingLayer alloc] init]];
-    [layers addLayer:[[WWOpenStreetMapLayer alloc] init]];
-    [layers addLayer:[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers]];
-    [layers addLayer:[[WWDAFIFLayer alloc] initWithNavigationLayers]];
-    [layers addLayer:[[WWDAFIFLayer alloc] initWithAirportLayers]];
-    [layers addLayer:[[WWFAAChartAnchorage_84_North alloc] init]];
-    [layers addLayer:[[WWOpenWeatherMapLayer alloc] init]];
-    [[layers layerAtIndex:4] setEnabled:NO];
-    [[layers layerAtIndex:5] setEnabled:NO];
-    [[layers layerAtIndex:6] setEnabled:NO];
-    [[layers layerAtIndex:7] setEnabled:NO];
-    [[layers layerAtIndex:8] setEnabled:NO];
+
+    WWLayer* layer = [[WWBMNGLayer alloc] init];
+    [layers addLayer:layer];
+
+    layer = [[WWI3LandsatLayer alloc] init];
+    [layers addLayer:layer];
+
+    layer = [[WWBingLayer alloc] init];
+    [layers addLayer:layer];
+
+    layer = [[WWOpenStreetMapLayer alloc] init];
+    [layer setOpacity:0.75];
+    [layers addLayer:layer];
+
+    layer =[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWDAFIFLayer alloc] initWithNavigationLayers];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWDAFIFLayer alloc] initWithAirportLayers];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWFAAChartAnchorage_84_North alloc] init];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWOpenWeatherMapLayer alloc] init];
+    [layer setOpacity:0.4];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
 //    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
 
     [self makeFlightPathsLayer];
-//    [self makeLocationMarkerLayer];
 
     [self->locationController setView:_wwv];
 }
@@ -169,22 +188,6 @@
         }
     }
 
-}
-
-- (void) makeLocationMarkerLayer
-{
-    WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:100000];
-    WWSphere* sphere = [[WWSphere alloc] initWithPosition:pos radiusInPixels:5];
-
-    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
-    [attributes setInteriorEnabled:YES];
-    [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
-    [sphere setAttributes:attributes];
-
-    WWRenderableLayer* layer = [[WWRenderableLayer alloc] init];
-    [layer setDisplayName:@"Location Marker"];
-    [layer addRenderable:sphere];
-    [[[_wwv sceneController] layers] addLayer:layer];
 }
 
 /*!

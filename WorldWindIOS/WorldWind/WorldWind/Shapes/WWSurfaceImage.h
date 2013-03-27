@@ -25,6 +25,9 @@
 /// The full file-system path to the image.
 @property (readonly, nonatomic) NSString* imagePath;
 
+/// The opacity with which to draw the image.
+@property (nonatomic) float opacity;
+
 /// @name Initializing Surface Images
 
 /**

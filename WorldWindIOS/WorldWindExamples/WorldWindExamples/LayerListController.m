@@ -10,6 +10,7 @@
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWLayer.h"
+#import "LayerDetailController.h"
 
 @implementation LayerListController
 
@@ -88,6 +89,19 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
         [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                          withRowAnimation:UITableViewRowAnimationFade];
     }
+}
+
+- (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
+{
+    // Create and show a detail controller for the tapped layer.
+
+    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
+
+    LayerDetailController* detailController = [[LayerDetailController alloc] initWithLayer:layer];
+    [detailController setTitle:[layer displayName]];
+
+    [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+
 }
 
 @end

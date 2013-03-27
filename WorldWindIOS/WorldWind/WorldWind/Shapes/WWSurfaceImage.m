@@ -61,7 +61,7 @@
 
 - (void) render:(WWDrawContext*)dc
 {
-    [[dc surfaceTileRenderer] renderTile:dc surfaceTile:self];
+    [[dc surfaceTileRenderer] renderTile:dc surfaceTile:self opacity:_opacity];
 }
 
 @end
