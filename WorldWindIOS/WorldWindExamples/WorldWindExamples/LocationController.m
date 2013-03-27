@@ -44,15 +44,6 @@
         self->locationManager = [[CLLocationManager alloc] init];
         [self->locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
 
-        // Copy the NSLocationUsageDescription key from the application's Info.plist file to the CLLocationManager's
-        // purpose property. This provides compatibility with iOS 5.1 while making correct usage of the
-        // NSLocationUsageDescription property for iOS 6.0.
-        NSString* bundleValue = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationUsageDescription"];
-        if (bundleValue != nil)
-        {
-            [self->locationManager setPurpose:bundleValue];
-        }
-
         self->forecastLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
     }
 
@@ -191,16 +182,6 @@
     {
         [self setState:LocationControllerStateDisabled];
     }
-}
-
-- (void) locationManager:(CLLocationManager*)manager didUpdateToLocation:(CLLocation*)newLocation fromLocation:(CLLocation*)oldLocation
-{
-    // Forward the iOS 5.1 location manager delegate message locationManager:didUpdateToLocation:fromLocation to the
-    // iOS 6.0 message locationManager:didUpdateLocations. This provides compatibility with iOS 5.1 while making correct
-    // usage of the location manager delegate messages for iOS 6.0.
-
-    NSArray* locations = [NSArray arrayWithObject:newLocation];
-    [self locationManager:manager didUpdateLocations:locations];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
