@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
+@class WWPosition;
+@class WWGlobe;
+
 /**
 * Convert degrees to radians.
 */
@@ -107,24 +110,74 @@ extern double NormalizedDegreesHeading(double degrees);
 * corresponds to the longest axis. The third vector in the array corresponds to the shortest axis. The second vector
 * in the array correspond to the intermediate length axis. Returns nil if the principal axes could not be computed.
 *
-* @exception NSInvalidArgumentException if the specified list of points is nil.
+* @exception NSInvalidArgumentException If the specified list of points is nil.
 */
 + (NSArray*) principalAxesFromPoints:(NSArray*)points;
 
 /// @name Computing Viewing and Navigation Information
 
 /**
-Returns the distance between a globe's horizon and a viewer at the specified elevation.
+* Returns the minimum distance between the eye point and an object with the specified size needed to make the object
+* completely visible in the specified viewport.
+*
+* @param radius The radius of the object to fit in the viewport, in meters.
+* @param viewport The viewport rectangle, in screen coordinates.
+*
+* @return The minimum eye distance, in meters.
+*
+* @exception NSInvalidArgumentException If the radius is negative.
+*/
++ (double) eyeDistanceToFitObjectWithRadius:(double)radius inViewport:(CGRect)viewport;
 
-Only the globe's ellipsoid is considered; terrain elevations are not incorporated. This returns zero if the specified
-elevation is less than or equal to zero.
+/**
+* Returns the minimum distance between the eye point needed to keep the two positions completely visible with the
+* specified globe and viewport.
+*
+* This assumes that the viewport is placed at the center of the two positions.
+*
+* @param posA The first position to fit in the viewport.
+* @param posB The second position to fit in the viewport.
+* @param globe The globe the two positions are associated with.
+* @param viewport The viewport rectangle, in screen coordinate.
+*
+* @return The minimum eye distance, in meters.
+*/
++ (double) eyeDistanceToFitPositionA:(WWPosition*)posA
+                           positionB:(WWPosition*)posB
+                             onGlobe:(WWGlobe*)globe
+                          inViewport:(CGRect)viewport;
 
-@param globeRadius The globe's radius, in meters.
-@param elevation The viewer's elevation, in meters relative to mean sea level.
-
-@result The distance to the horizon, in meters.
- */
+/**
+* Returns the distance between a globe's horizon and a viewer at the specified elevation.
+*
+* Only the globe's ellipsoid is considered; elevations are not incorporated. This returns zero if the globeRadius is
+* zero, or if the elevation is less than or equal to zero.
+*
+* @param globeRadius The globe's radius, in meters.
+* @param elevation The viewer's elevation, in meters relative to mean sea level.
+*
+* @return The distance to the horizon, in meters.
+*
+* @exception NSInvalidArgumentException If the globeRadius is negative.
+*/
 + (double) horizonDistance:(double)globeRadius elevation:(double)elevation;
+
+/**
+* Returns a recommended duration for a navigator animation between the specified positions as an NSTimeInterval.
+*
+* This returns a duration between 1.0 and 5.0 seconds corresponding to the distance between the two positions. These
+* durations and the distances they are associated with are a recommendation based on observation with common World Wind
+* navigator use cases, such as animating from the current position to the result of a location search.
+*
+* @param posA The animation's begin position.
+* @param posB The animation's end position.
+* @param globe The globe the two positions are associated with.
+*
+* @return The animation duration, in seconds.
+*/
++ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
+                                           endPosition:(WWPosition*)posB
+                                               onGlobe:(WWGlobe*)globe;
 
 /**
 * TODO
@@ -209,18 +262,5 @@ elevation is less than or equal to zero.
 + (double) perspectiveSizePreservingMaxPixelSize:(double)viewportWidth
                                viewportHeight:(double)viewportHeight
                              distanceToObject:(double)distanceToObject;
-
-/**
-* TODO
-*
-* @param size TODO
-* @param viewportWidth TODO
-* @param viewportHeight TODO
-*
-* @return TODO
-*/
-+ (double) perspectiveSizePreservingFitObjectWithSize:(double)size
-                                        viewportWidth:(double)viewportWidth
-                                       viewportHeight:(double)viewportHeight;
 
 @end

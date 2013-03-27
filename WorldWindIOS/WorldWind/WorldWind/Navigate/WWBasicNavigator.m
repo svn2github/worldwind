@@ -13,16 +13,11 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
-#define ANIMATE_DURATION_MIN 1.0
-#define ANIMATE_DURATION_MAX 5.0
-#define ANIMATE_DISTANCE_MIN 1000
-#define ANIMATE_DISTANCE_MAX 1000000
 #define DEFAULT_NEAR_DISTANCE 1
 #define DEFAULT_FAR_DISTANCE 1000000000
 #define DEFAULT_LATITUDE 0
@@ -222,10 +217,11 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is invalid")
     }
 
-    double duration = animate ? [self durationForAnimationWithBeginLocation:_lookAt
-                                                                endLocation:location
-                                                                 beginRange:_range
-                                                                   endRange:distance] : 0;
+    WWPosition* pa = [[WWPosition alloc] initWithLocation:_lookAt altitude:_range];
+    WWPosition* pb = [[WWPosition alloc] initWithLocation:location altitude:distance];
+    WWGlobe* globe = [[view sceneController] globe];
+    NSTimeInterval duration = animate ?
+            [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe] : 0;
 
     [self gotoLocation:location fromDistance:distance overDuration:duration];
 }
@@ -261,10 +257,10 @@
         [_lookAt setLocation:location];
         _range = distance;
 
-        // Stop any currently active animation and cause the World Wind view to redraw itself. This has the effect of
-        // rendering the view with the specified navigator location and range. Calling stopAnimation has no effect if
-        // there is no currently active animation.
-        [self stopAnimation];
+        // Cancel any currently active animation and cause the World Wind view to redraw itself. This has the effect of
+        // rendering the view with the specified navigator location and range. This has no effect if there is no
+        // currently active animation.
+        [self cancelAnimation];
         [self->view drawView];
     }
     else
@@ -273,7 +269,7 @@
         // current values to the specified values. This overrides any currently active animation. We override rather
         // than explicitly start and stop in order to keep the display link running and seamlessly transition from one
         // animation to the next.
-        [self startAnimationWithBeginLocation:_lookAt
+        [self beginAnimationWithBeginLocation:_lookAt
                                   endLocation:location
                                    beginRange:_range
                                      endRange:distance
@@ -299,11 +295,8 @@
         return;
     }
 
-    CGRect viewport = [self->view viewport];
-    double regionSize = 2 * radius;
-    double distance = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
-                                                           viewportWidth:CGRectGetWidth(viewport)
-                                                          viewportHeight:CGRectGetHeight(viewport)];
+    CGRect viewport = [view viewport];
+    double distance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
 
     [self gotoLocation:center fromDistance:distance animate:animate];
 }
@@ -332,11 +325,8 @@
         return;
     }
 
-    CGRect viewport = [self->view viewport];
-    double regionSize = 2 * radius;
-    double distance = [WWMath perspectiveSizePreservingFitObjectWithSize:regionSize
-                                                          viewportWidth:CGRectGetWidth(viewport)
-                                                         viewportHeight:CGRectGetHeight(viewport)];
+    CGRect viewport = [view viewport];
+    double distance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
 
     [self gotoLocation:center fromDistance:distance overDuration:duration];
 }
@@ -627,10 +617,10 @@
     [self postGestureRecognized:recognizer];
     [self startDisplayLink];
 
-    // Navigator gestures override any currently active animation. We stop animations after starting the display link
+    // Navigator gestures override any currently active animation. We cancel animations after starting the display link
     // rather than vice versa in order to keep the display link running and seamlessly transition from an animation to a
     // gesture. This has no effect if there is no currently active animation.
-    [self stopAnimation];
+    [self cancelAnimation];
 }
 
 - (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
@@ -638,13 +628,7 @@
     [self stopDisplayLink];
 }
 
-- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer
-{
-    NSNotification* gestureNotification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:gestureNotification];
-}
-
-- (void) startAnimationWithBeginLocation:(WWLocation*)beginLocation
+- (void) beginAnimationWithBeginLocation:(WWLocation*)beginLocation
                              endLocation:(WWLocation*)endLocation
                               beginRange:(double)beginRange
                                 endRange:(double)endRange
@@ -664,9 +648,13 @@
     // Compute the mid range used as an intermediate range during animation. If the begin and end locations are not
     // visible from the begin or end range, the mid range is defined as a value greater than the begin and end ranges.
     // This maintains the user's geographic context for the animation's beginning and end.
-    double fitRange = [self rangeToFitBeginLocation:beginLocation endLocation:endLocation];
+    WWPosition* pa = [[WWPosition alloc] initWithLocation:beginLocation altitude:0];
+    WWPosition* pb = [[WWPosition alloc] initWithLocation:endLocation altitude:0];
+    WWGlobe* globe = [[view sceneController] globe];
+    CGRect viewport = [view viewport];
+    double fitDistance = [WWMath eyeDistanceToFitPositionA:pa positionB:pb onGlobe:globe inViewport:viewport];
     self->animBeginRange = beginRange;
-    self->animMidRange = (fitRange < beginRange || fitRange < endRange) ? -1 : fitRange;
+    self->animMidRange = (fitDistance > beginRange && fitDistance > endRange) ? fitDistance : DBL_MAX;
     self->animEndRange = endRange;
 
     // Compute the animation's begin and end date based on the implicit start time and the specified duration.
@@ -680,13 +668,26 @@
         [self startDisplayLink];
         self->animating = YES;
     }
+
+    [self postAnimationBegan];
 }
 
-- (void) stopAnimation
+- (void) endAnimation
 {
     if (self->animating)
     {
         [self stopDisplayLink];
+        [self postAnimationEnded];
+        self->animating = NO;
+    }
+}
+
+- (void) cancelAnimation
+{
+    if (self->animating)
+    {
+        [self stopDisplayLink];
+        [self postAnimationCancelled];
         self->animating = NO;
     }
 }
@@ -713,7 +714,7 @@
         // ensure that the end values are set exactly as the caller requested.
         [_lookAt setLocation:self->animEndLocation];
         _range = self->animEndRange;
-        [self stopAnimation];
+        [self endAnimation];
     }
     else
     {
@@ -729,7 +730,7 @@
                                distance:self->animDistance * locationPct
                          outputLocation:_lookAt];
 
-        if (self->animMidRange < 0)
+        if (self->animMidRange == DBL_MAX)
         {
             // The animation is not using a mid range value. Interpolate the navigator's range between the begin and end
             // range.
@@ -753,35 +754,28 @@
     }
 }
 
-- (double) durationForAnimationWithBeginLocation:(WWLocation*)beginLocation
-                                     endLocation:(WWLocation*)endLocation
-                                      beginRange:(double)beginRange
-                                        endRange:(double)endRange
+- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer
 {
-    WWVec4* beginPoint = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* endPoint  = [[WWVec4 alloc] initWithZeroVector];
-    WWGlobe* globe = [[self->view sceneController] globe];
-    [globe computePointFromPosition:[beginLocation latitude] longitude:[beginLocation longitude] altitude:beginRange outputPoint:beginPoint];
-    [globe computePointFromPosition:[endLocation latitude] longitude:[endLocation longitude] altitude:endRange outputPoint:endPoint];
-
-    double distance = [beginPoint distanceTo3:endPoint];
-    double stepDistance = [WWMath stepValue:distance min:ANIMATE_DISTANCE_MIN max:ANIMATE_DISTANCE_MAX];
-
-    return [WWMath interpolateValue1:ANIMATE_DURATION_MIN value2:ANIMATE_DURATION_MAX amount:stepDistance];
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
-- (double) rangeToFitBeginLocation:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation
+- (void) postAnimationBegan
 {
-    WWVec4* beginPoint = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* endPoint  = [[WWVec4 alloc] initWithZeroVector];
-    WWGlobe* globe = [[self->view sceneController] globe];
-    [globe computePointFromPosition:[beginLocation latitude] longitude:[beginLocation longitude] altitude:0 outputPoint:beginPoint];
-    [globe computePointFromPosition:[endLocation latitude] longitude:[endLocation longitude] altitude:0 outputPoint:endPoint];
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_BEGAN object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
 
-    double distance = [beginPoint distanceTo3:endPoint];
-    CGRect viewport = [self->view viewport];
+- (void) postAnimationEnded
+{
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_ENDED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
 
-    return [WWMath perspectiveSizePreservingFitObjectWithSize:distance viewportWidth:CGRectGetWidth(viewport) viewportHeight:CGRectGetHeight(viewport)];
+- (void) postAnimationCancelled
+{
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_CANCELLED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 @end

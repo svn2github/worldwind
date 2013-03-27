@@ -224,16 +224,13 @@
 /**
 * TODO
 *
-* @param recognizer TODO
-*/
-- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer;
-
-/**
-* TODO
-*
+* @param beginLocation TODO
+* @param endLocation TODO
+* @param beginRange TODO
+* @param endRange TODO
 * @param duration TODO
 */
-- (void) startAnimationWithBeginLocation:(WWLocation*)beginLocation
+- (void) beginAnimationWithBeginLocation:(WWLocation*)beginLocation
                              endLocation:(WWLocation*)endLocation
                               beginRange:(double)beginRange
                                 endRange:(double)endRange
@@ -242,7 +239,12 @@
 /**
 * TODO
 */
-- (void) stopAnimation;
+- (void) endAnimation;
+
+/**
+* TODO
+*/
+- (void) cancelAnimation;
 
 /**
 * TODO
@@ -254,23 +256,23 @@
 /**
 * TODO
 *
-* @param beginLocation TODO
-* @param endLocation TODO
-* @param beginRange TODO
-* @param endRange TODO
+* @param recognizer TODO
 */
-- (double) durationForAnimationWithBeginLocation:(WWLocation*)beginLocation
-                                     endLocation:(WWLocation*)endLocation
-                                      beginRange:(double)beginRange
-                                        endRange:(double)endRange;
+- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer;
+
 /**
 * TODO
-*
-* @param beginLocation TODO
-* @param endLocation TODO
-*
-* @return TODO
 */
-- (double) rangeToFitBeginLocation:(WWLocation*)beginLocation endLocation:(WWLocation*)endLocation;
+- (void) postAnimationBegan;
+
+/**
+* TODO
+*/
+- (void) postAnimationEnded;
+
+/**
+* TODO
+*/
+- (void) postAnimationCancelled;
 
 @end

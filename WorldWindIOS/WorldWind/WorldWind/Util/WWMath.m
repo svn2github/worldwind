@@ -7,10 +7,21 @@
 
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/WWLog.h"
+
+#define ANIMATION_DISTANCE_MIN 1000
+#define ANIMATION_DISTANCE_MAX 1000000
+#define ANIMATION_DURATION_MIN 1.0
+#define ANIMATION_DURATION_MAX 5.0
 
 @implementation WWMath
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Commonly Used Math Operations --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 + (double) clampValue:(double)value min:(double)min max:(double)max
 {
@@ -85,6 +96,10 @@ double NormalizedDegreesHeading(double degrees)
     return value1 + amount * (value2 - value1);
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Computing Information About Shapes --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 + (NSArray*) principalAxesFromPoints:(NSArray*)points
 {
     if (points == nil)
@@ -131,12 +146,67 @@ double NormalizedDegreesHeading(double degrees)
     return resultArray;
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Computing Viewing and Navigation Information --//
+//--------------------------------------------------------------------------------------------------------------------//
+
++ (double) eyeDistanceToFitObjectWithRadius:(double)radius inViewport:(CGRect)viewport
+{
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
+    }
+
+    // The distance needed to fill the smaller of either viewport dimensions with an object of a specified radius is
+    // just half the object's radius. This method exists to provide a layer of indirection for the details of the size
+    // preserving perspective. This enables coordination of changes such as adding a field of view without the need
+    // to find inline computations based on assumptions of how the size preserving perspective worked at one point in
+    // time.
+
+    return radius * 2;
+}
+
++ (double) eyeDistanceToFitPositionA:(WWPosition*)posA
+                           positionB:(WWPosition*)posB
+                             onGlobe:(WWGlobe*)globe
+                          inViewport:(CGRect)viewport
+{
+    WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
+    [globe computePointFromPosition:[posB latitude] longitude:[posB longitude] altitude:[posB altitude] outputPoint:pb];
+
+    double radius = [pa distanceTo3:pb] / 2;
+
+    return [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
+}
+
 + (double) horizonDistance:(double)globeRadius elevation:(double)elevation
 {
-    if (elevation <= 0)
+    if (globeRadius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
+    }
+
+    if (globeRadius == 0 || elevation <= 0)
         return 0;
 
     return sqrt(elevation * (2 * globeRadius + elevation));
+}
+
++ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
+                                             endPosition:(WWPosition*)posB
+                                                 onGlobe:(WWGlobe*)globe
+{
+    WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
+    [globe computePointFromPosition:[posB latitude] longitude:[posB longitude] altitude:[posB altitude] outputPoint:pb];
+
+    double distance = [pa distanceTo3:pb];
+    double stepDistance = [WWMath stepValue:distance min:ANIMATION_DISTANCE_MIN max:ANIMATION_DISTANCE_MAX];
+
+    return [WWMath interpolateValue1:ANIMATION_DURATION_MIN value2:ANIMATION_DURATION_MAX amount:stepDistance];
 }
 
 + (CGRect) perspectiveFieldOfViewFrustumRect:(double)horizontalFOV
@@ -233,19 +303,6 @@ double NormalizedDegreesHeading(double degrees)
     double yPixelSize = CGRectGetHeight(frustRect) / viewportHeight;
 
     return MAX(xPixelSize, yPixelSize);
-}
-
-+ (double) perspectiveSizePreservingFitObjectWithSize:(double)size
-                                        viewportWidth:(double)viewportWidth
-                                       viewportHeight:(double)viewportHeight
-{
-    // The Z distance needed to fill the smaller of either viewport dimensions with an object of a specified size is
-    // just the object's size. This method exists to provide a layer of indirection for the details of the size
-    // preserving perspective. This enables coordination of changes such as adding a field of view without the need
-    // to find inline computations based on assumptions of how the size preserving perspective worked at one point in
-    // time.
-
-    return size;
 }
 
 @end
