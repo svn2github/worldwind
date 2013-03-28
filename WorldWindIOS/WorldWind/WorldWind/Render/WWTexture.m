@@ -163,11 +163,11 @@
 {
     WWPVRTCImage* image = [[WWPVRTCImage alloc] initWithContentsOfFile:_filePath];
 
+    self->imageData = [image imageBits];
+
+    _textureSize = [self->imageData length];
     _imageWidth = [image imageWidth];
     _imageHeight = [image imageHeight];
-    _textureSize = [image imageSize];
-
-    // TODO: Assign compressed bits of image to self->imageData.
 }
 
 - (void) loadRawTexture

@@ -29,9 +29,10 @@
 
     // TODO: Throw an exception if the file is not a PVRTC image.
 
-    // TODO: Open file, extract the size and the bits. Prepare for call to loadGL to move the bits to the GPU.
+    _imageBits = [[NSData alloc] initWithContentsOfFile:_filePath];
 
-    // TODO: compute the overall image size property (number of bytes). This value is needed by the texture cache.
+    _imageWidth = 256; // TODO: draw this from the image header
+    _imageHeight = 256; // TODO: draw this from the image header
 
     return self;
 }
@@ -176,6 +177,7 @@ void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, in
     int* blockSizes;
     int levels = EncodePvrMipmap(&rawImage, &pvrMipmap, &blockSizes);
 
+    NSLog(@"%@", outputPath);
     WritePvrFile(pvrMipmap, blockSizes, levels, width, height, [outputPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 // Quick and dirty test for power of 2.

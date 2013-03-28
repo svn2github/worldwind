@@ -23,8 +23,7 @@
 /// The PVRTC image's height.
 @property (nonatomic, readonly) int imageHeight;
 
-/// The image's size in bytes.
-@property (nonatomic, readonly) int imageSize;
+@property (nonatomic, readonly) NSData* imageBits;
 
 /// @name Initializing PVRTC Textures
 
