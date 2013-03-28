@@ -34,9 +34,9 @@
 		1BF9AB9434B6C975724AC5AF /* LocationArrowWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */; };
 		1BF9ABA85CFA76FF0DFD4111 /* LayerList@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */; };
 		1BF9ABF69A7796F56CAB773A /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA3FE811C2CC7278B79E /* 431-yes.png */; };
-		CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF093F6C9A5804AC013C5 /* LocationController.m */; };
 		CC8CF9C44307A4EB5E329F68 /* AnyGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */; };
 		CC8CFC1F474B48BA559D4087 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFF7D04745580967268D4 /* CoreLocation.framework */; };
+		CC8CFE2B1096B307ABBB97B9 /* TrackingController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF750B72023436AB47C9B /* TrackingController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,8 +75,8 @@
 		1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LayerList@2x.png"; sourceTree = "<group>"; };
 		1BF9AE069D70D0DD13A35EC5 /* PathFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathFollower.h; sourceTree = "<group>"; };
 		1BF9AF7CA370D26918C6F6C2 /* LayerList.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LayerList.png; sourceTree = "<group>"; };
-		CC8CF068410F278887E31045 /* LocationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationController.h; sourceTree = "<group>"; };
-		CC8CF093F6C9A5804AC013C5 /* LocationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationController.m; sourceTree = "<group>"; };
+		CC8CF249E01F7C0375359BBD /* TrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingController.h; sourceTree = "<group>"; };
+		CC8CF750B72023436AB47C9B /* TrackingController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TrackingController.m; sourceTree = "<group>"; };
 		CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AnyGestureRecognizer.m; sourceTree = "<group>"; };
 		CC8CFECC533D137E906ABAC3 /* AnyGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnyGestureRecognizer.h; sourceTree = "<group>"; };
 		CC8CFF7D04745580967268D4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -141,8 +141,6 @@
 				0B98140F165FFA4900193E50 /* Supporting Files */,
 				0B981425165FFA9C00193E50 /* ViewController.h */,
 				0B981426165FFA9C00193E50 /* ViewController.m */,
-				CC8CF093F6C9A5804AC013C5 /* LocationController.m */,
-				CC8CF068410F278887E31045 /* LocationController.h */,
 				1BF9A33B6444E14E329DF631 /* LayerListController.m */,
 				1BF9A733BBE27F55CE4009C9 /* LayerListController.h */,
 				CC8CFDF420D148D18BAE737D /* AnyGestureRecognizer.m */,
@@ -151,6 +149,8 @@
 				1BF9AE069D70D0DD13A35EC5 /* PathFollower.h */,
 				1BF9AB27BB02F8DFD68B8D78 /* LayerDetailController.m */,
 				1BF9AB56E33CDF0BD6C81580 /* LayerDetailController.h */,
+				CC8CF249E01F7C0375359BBD /* TrackingController.h */,
+				CC8CF750B72023436AB47C9B /* TrackingController.m */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -257,11 +257,11 @@
 				0B981415165FFA4900193E50 /* main.m in Sources */,
 				0B981419165FFA4900193E50 /* AppDelegate.m in Sources */,
 				0B981427165FFA9C00193E50 /* ViewController.m in Sources */,
-				CC8CF6A0119D6A3BC2817302 /* LocationController.m in Sources */,
 				1BF9A7A5B73DAF4595B19E9D /* LayerListController.m in Sources */,
 				CC8CF9C44307A4EB5E329F68 /* AnyGestureRecognizer.m in Sources */,
 				1BF9A28899441A9DD158CB5E /* PathFollower.m in Sources */,
 				1BF9A6F6D888F964E01E4153 /* LayerDetailController.m in Sources */,
+				CC8CFE2B1096B307ABBB97B9 /* TrackingController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,6 +6,10 @@
  */
 
 #import "ViewController.h"
+#import "LayerListController.h"
+#import "TrackingController.h"
+#import "AnyGestureRecognizer.h"
+#import "PathFollower.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
@@ -18,16 +22,11 @@
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "WorldWind/Layer/WWOpenStreetMapLayer.h"
-#import "LayerListController.h"
-#import "LocationController.h"
-#import "AnyGestureRecognizer.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
-#import "WorldWind/Shapes/WWSphere.h"
-#import "PathFollower.h"
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
 #import "WorldWind/Layer/WWFAAChartAnchorage_84_North.h"
 
@@ -40,7 +39,7 @@
     UIBarButtonItem* trackButton;
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
-    LocationController* locationController;
+    TrackingController* trackingController;
     UISearchBar* searchBar;
     CLGeocoder* geocoder;
     AnyGestureRecognizer* anyGestureRecognizer;
@@ -52,16 +51,8 @@
 
     if (self != nil)
     {
-        self->locationController = [[LocationController alloc] init];
-        [self->locationController setState:LocationControllerStateShowInitial];
         self->geocoder = [[CLGeocoder alloc] init];
         self->anyGestureRecognizer = [[AnyGestureRecognizer alloc] initWithTarget:self action:@selector(handleAnyGestureFrom:)];
-
-        // Set up to observe notifications when the navigator recognizes a gesture.
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleNotification:)
-                                                     name:WW_NAVIGATOR_GESTURE_RECOGNIZED
-                                                   object:nil];
     }
 
     return self;
@@ -120,9 +111,18 @@
 
 //    [layers addLayer:[[WWShowTessellationLayer alloc] init]];
 
+    [self makeTrackingController];
     [self makeFlightPathsLayer];
+}
 
-    [self->locationController setView:_wwv];
+- (void) makeTrackingController
+{
+    self->trackingController = [[TrackingController alloc] initWithView:_wwv];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleTrackingNotification:)
+                                                 name:nil
+                                               object:trackingController];
 }
 
 - (void) makeFlightPathsLayer
@@ -251,7 +251,7 @@
 
     self->trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
                                                          style:UIBarButtonItemStylePlain
-                                                        target:self action:@selector(handleLocationButtonTap)];
+                                                        target:self action:@selector(handleTrackButtonTap)];
 
     self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     [self->searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
@@ -278,32 +278,23 @@
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
-- (void) handleLocationButtonTap
+- (void) handleTrackButtonTap
 {
-    LocationControllerState state = [self->locationController state];
-
-    if (state == LocationControllerStateDisabled || state == LocationControllerStateShowInitial)
-    {
-        [self->locationController setState:LocationControllerStateForecast];
-        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrowWithLine"]];
-    }
-    else if (state == LocationControllerStateForecast)
-    {
-        [self->locationController setState:LocationControllerStateDisabled];
-        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
-    }
-    else
-    {
-        WWLog(@"Unknown location controller state: %d", state);
-    }
+    [trackingController setLocationFollowingEnabled:![trackingController isLocationFollowingEnabled]];
 }
 
-- (void) handleNotification:(NSNotification*)notification
+- (void) handleTrackingNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    if ([[notification name] isEqualToString:TRACKING_CONTROLLER_STATE_CHANGED])
     {
-        [self->locationController setState:LocationControllerStateDisabled];
-        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
+        if ([trackingController isLocationFollowingEnabled])
+        {
+            [trackButton setImage:[UIImage imageNamed:@"LocationArrowWithLine"]];
+        }
+        else
+        {
+            [trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
+        }
     }
 }
 
@@ -338,9 +329,6 @@
 {
     if (placemarks != nil && [placemarks count] > 0)
     {
-        [self->locationController setState:LocationControllerStateDisabled];
-        [self->trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
-
         CLPlacemark* lastPlacemark = [placemarks objectAtIndex:0];
         CLRegion* region = [lastPlacemark region];
         WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
