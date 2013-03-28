@@ -337,6 +337,21 @@
 /**
 * TODO
 *
+* @param beginLocation TODO
+* @param endLocation TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) linearInterpolate:(WWLocation*)beginLocation
+               endLocation:(WWLocation*)endLocation
+                    amount:(double)amount
+            outputLocation:(WWLocation*)result;
+
+/**
+* TODO
+*
 * @param location TODO
 * @param date TODO
 * @param globe TODO
@@ -346,7 +361,7 @@
 */
 + (void) forecastLocation:(CLLocation*)location
                   forDate:(NSDate*)date
-                 withGobe:(WWGlobe*)globe
+                  onGlobe:(WWGlobe*)globe
            outputLocation:(WWLocation*)result;
 
 @end

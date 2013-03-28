@@ -390,7 +390,8 @@
 
 + (void) rhumbLocation:(WWLocation*)beginLocation
                azimuth:(double)azimuth
-              distance:(double)distance outputLocation:(WWLocation*)result;
+              distance:(double)distance
+        outputLocation:(WWLocation*)result;
 {
     if (beginLocation == nil)
     {
@@ -452,6 +453,11 @@
     if (beginLocation == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin location is nil")
+    }
+
+    if (endLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End location is nil")
     }
 
     if (result == nil)
@@ -590,9 +596,36 @@
     result->_longitude = longitude;
 }
 
++ (void) linearInterpolate:(WWLocation*)beginLocation
+               endLocation:(WWLocation*)endLocation
+                    amount:(double)amount
+            outputLocation:(WWLocation*)result
+{
+    if (beginLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin location is nil")
+    }
+
+    if (endLocation == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End location is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output location is nil")
+    }
+
+    double azimuth = [WWLocation linearAzimuth:beginLocation endLocation:endLocation];
+    double distance = [WWLocation linearDistance:beginLocation endLocation:endLocation];
+    double fractionalDistance = amount * distance;
+
+    [WWLocation linearLocation:beginLocation azimuth:azimuth distance:fractionalDistance outputLocation:result];
+}
+
 + (void) forecastLocation:(CLLocation*)location
                   forDate:(NSDate*)date
-                 withGobe:(WWGlobe*)globe
+                  onGlobe:(WWGlobe*)globe
            outputLocation:(WWLocation*)result
 {
     if (location == nil)

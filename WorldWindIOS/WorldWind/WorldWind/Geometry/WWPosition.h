@@ -62,6 +62,20 @@
 */
 - (WWPosition*) initWithPosition:(WWPosition*)position;
 
+/**
+* Initializes a position to the latitude, longitude and altitude of a specified CLLocation.
+*
+* The position's latitude and longitude are taken directly from the specified CLLocation's coordinate property. The
+* position's altitude is taken from the CLLocation's altitude property.
+*
+* @param location The position containing the latitude, longitude and altitude.
+*
+* @return The initialized position.
+*
+* @exception NSInvalidArgumentException If the specified location is nil.
+*/
+- (WWPosition*) initWithCLPosition:(CLLocation*)location;
+
 /// @name Setting the Contents of Positions
 
 /**
@@ -98,4 +112,79 @@
 */
 - (WWPosition*) setPosition:(WWPosition*)position;
 
+/**
+* Sets a position to the latitude, longitude and altitude of a specified CLLocation.
+*
+* The position's latitude and longitude are taken directly from the specified CLLocation's coordinate property. The
+* position's altitude is taken from the CLLocation's altitude property.
+*
+* @param location The location containing the new latitude, longitude and altitude.
+*
+* @return This position with the specified latitude, longitude and altitude.
+*
+* @exception NSInvalidArgumentException If the specified location is nil.
+*/
+- (WWPosition*) setCLPosition:(CLLocation*)location;
+
+/// @name Common Geographic Operations
+
+/**
+* TODO
+*
+* @param beginPosition TODO
+* @param endPosition TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) greatCircleInterpolate:(WWPosition*)beginPosition
+                    endPosition:(WWPosition*)endPosition
+                         amount:(double)amount
+                 outputPosition:(WWPosition*)result;
+
+/**
+* TODO
+*
+* @param beginPosition TODO
+* @param endPosition TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) rhumbInterpolate:(WWPosition*)beginPosition
+              endPosition:(WWPosition*)endPosition
+                   amount:(double)amount
+           outputPosition:(WWPosition*)result;
+
+/**
+* TODO
+*
+* @param beginPosition TODO
+* @param endPosition TODO
+* @param amount TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) linearInterpolate:(WWPosition*)beginPosition
+               endPosition:(WWPosition*)endPosition
+                    amount:(double)amount
+            outputPosition:(WWPosition*)result;
+
+/**
+* TODO
+*
+* @param location TODO
+* @param date TODO
+* @param globe TODO
+* @param result TODO
+*
+* @exception TODO
+*/
++ (void) forecastPosition:(CLLocation*)location
+                  forDate:(NSDate*)date
+                  onGlobe:(WWGlobe*)globe
+           outputPosition:(WWPosition*)result;
 @end
