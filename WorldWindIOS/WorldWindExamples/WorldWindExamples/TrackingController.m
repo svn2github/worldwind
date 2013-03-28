@@ -79,9 +79,9 @@ typedef enum
     return self;
 }
 
-- (void) setLocationFollowingEnabled:(BOOL)enabled
+- (void) setEnabled:(BOOL)enabled
 {
-    if (_locationFollowingEnabled == enabled)
+    if (_enabled == enabled)
     {
         return;
     }
@@ -101,7 +101,7 @@ typedef enum
         [self stopAll];
     }
 
-    _locationFollowingEnabled = enabled;
+    _enabled = enabled;
     [self postStateChanged];
 }
 
@@ -145,7 +145,7 @@ typedef enum
     // Set the current location to the initial location determined by Core Location.
     [currentPosition setCLPosition:location];
 
-    if (_locationFollowingEnabled)
+    if (_enabled)
     {
         // Animate the navigator to the first location, zooming in if necessary. During this animation the location
         // continues to update and the marker position changes. This makes no additional changes to the navigator until
@@ -243,7 +243,7 @@ typedef enum
     {
         // The Core Location service has been disabled while this application has been in the background. Disable the
         // controller in order to stop attempting to use Core Location services.
-        [self setLocationFollowingEnabled:NO];
+        [self setEnabled:NO];
         [self stopAll]; // Stop all services explicitly if we're getting an initial location.
     }
 }
@@ -255,7 +255,7 @@ typedef enum
         // This application has been denied access to location services. This can happen either when the application
         // first attempts to use Core Location services, or while the application was in the background. In either case
         // disable the controller in order to stop attempting to use Core Location services.
-        [self setLocationFollowingEnabled:NO];
+        [self setEnabled:NO];
         [self stopAll]; // Stop all services explicitly if we're getting an initial location.
     }
 }
@@ -274,7 +274,7 @@ typedef enum
     {
         // The Core Location service has been disabled while this application has been in the background. Disable the
         // controller in order to stop attempting to use Core Location services.
-        [self setLocationFollowingEnabled:NO];
+        [self setEnabled:NO];
         [self stopAll]; // Stop all services explicitly if we're getting an initial location.
     }
 }
@@ -317,7 +317,7 @@ typedef enum
             || [[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
             || [[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
     {
-        [self setLocationFollowingEnabled:NO];
+        [self setEnabled:NO];
         [self stopAll]; // Stop all services explicitly if we're getting an initial location.
     }
 }

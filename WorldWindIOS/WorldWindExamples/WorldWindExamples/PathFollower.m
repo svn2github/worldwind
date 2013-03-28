@@ -18,6 +18,13 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Navigate/WWNavigator.h"
+#import "WorldWind/WorldWindConstants.h"
+
+#define NAVIGATOR_MAX_DISTANCE 30000.0
+#define TIMER_INTERVAL 0.2
+
+NSString* const PATH_FOLLOWER_STATE_CHANGED = @"gov.nasa.worldwind.examples.PathFollowerStateChanged";
 
 @implementation PathFollower
 
@@ -29,16 +36,80 @@
     _speed = speed;
     _wwv = view;
 
-    [self createLayerAndMarker];
+    WWPosition* firstPosition = [[_path positions] objectAtIndex:0];
+    currentPosition = [[WWPosition alloc] initWithPosition:firstPosition];
+
+    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
+    [attributes setInteriorEnabled:YES];
+    [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
+    marker = [[WWSphere alloc] initWithPosition:currentPosition radiusInPixels:7];
+    [marker setAttributes:attributes];
+
+    layer = [[WWRenderableLayer alloc] init];
+    [layer setDisplayName:@"Path Marker"];
+    [layer addRenderable:marker];
+    [[[_wwv sceneController] layers] addLayer:layer];
 
     return self;
 }
 
 - (void) dispose
 {
+    [self stopTimer];
+    [self stopObservingNavigator];
+
     [layer removeRenderable:marker];
     [[[_wwv sceneController] layers] removeLayer:layer];
+}
 
+- (void) setEnabled:(BOOL)enabled
+{
+    if (_enabled == enabled)
+    {
+        return;
+    }
+
+    if (enabled)
+    {
+        [[_wwv navigator] gotoLocation:currentPosition fromDistance:NAVIGATOR_MAX_DISTANCE animate:YES];
+        [self startObservingNavigator]; // Observe after the animation begins to ignore its begin notification.
+    }
+    else
+    {
+        [self stopTimer];
+        [self stopObservingNavigator];
+    }
+
+    _enabled = enabled;
+    [self postStateChanged];
+}
+
+- (void) postStateChanged
+{
+    NSNotification* notification = [NSNotification notificationWithName:PATH_FOLLOWER_STATE_CHANGED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Timer Interface --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) startTimer
+{
+    if (timer == nil)
+    {
+        beginTime = [NSDate timeIntervalSinceReferenceDate];
+        offsetTime = currentTime; // Initially zero, then the last time associated with a timer firing thereafter.
+
+        timer = [NSTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL // update at 5 Hz
+                                                 target:self
+                                               selector:@selector(timerDidFire:)
+                                               userInfo:nil repeats:YES];
+    }
+}
+
+- (void) stopTimer
+{
     if (timer != nil)
     {
         [timer invalidate];
@@ -46,58 +117,25 @@
     }
 }
 
-- (void) createLayerAndMarker
-{
-    WWPosition* firstPosition = [[_path positions] objectAtIndex:0];
-    marker = [[WWSphere alloc] initWithPosition:firstPosition radiusInPixels:5];
-
-    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
-    [attributes setInteriorEnabled:YES];
-    [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
-    [marker setAttributes:attributes];
-
-    layer = [[WWRenderableLayer alloc] init];
-    [layer setDisplayName:@"Path Marker"];
-    [layer addRenderable:marker];
-
-    [[[_wwv sceneController] layers] addLayer:layer];
-}
-
-- (void) start
-{
-    startTime = [[NSDate alloc] init];
-
-    timer = [NSTimer scheduledTimerWithTimeInterval:0.2 // update at 5 Hz
-                                             target:self
-                                           selector:@selector(timerDidFire:)
-                                           userInfo:nil repeats:YES];
-}
-
-- (void) stop
-{
-    [timer invalidate];
-    timer = nil;
-}
-
 - (void) timerDidFire:(NSTimer*)notifyingTimer
 {
-    WWPosition* position = [self computePositionForNow];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    currentTime = offsetTime + now - beginTime;
 
-    if (position == nil)
+    if ([self positionForTimeInterval:currentTime outPosition:currentPosition])
     {
-        [self stop];
+        [marker setPosition:currentPosition];
+        [[_wwv navigator] gotoLocation:currentPosition animate:NO]; // Causes view to redraw.
     }
     else
     {
-        [marker setPosition:position];
-        [_wwv drawView];
+        [self setEnabled:NO];
     }
 }
 
-- (WWPosition*) computePositionForNow
+- (BOOL) positionForTimeInterval:(NSTimeInterval)timeInterval outPosition:(WWPosition*)result;
 {
-    double elapsedTime = fabs([startTime timeIntervalSinceNow]);
-    double distanceTraveled = _speed * elapsedTime;
+    double distanceTraveled = _speed * timeInterval;
 
     double remainingDistance = distanceTraveled;
     WWPosition* previousPathPosition = [[_path positions] objectAtIndex:0];
@@ -118,22 +156,53 @@
 
         if (remainingDistance - segmentDistance == 0)
         {
-            return nextPathPosition;
+            [result setPosition:nextPathPosition];
+            return YES;
         }
 
         // remainingDistance - segmentDistance < 0 ==> current position is within this segment
         double s = remainingDistance / segmentDistance;
-        WWPosition* outputPosition = [[WWPosition alloc] init];
         [WWPosition rhumbInterpolate:previousPathPosition
-                         endLocation:nextPathPosition
+                         endPosition:nextPathPosition
                               amount:s
-                      outputLocation:outputPosition];
-        double altitude = 0.5 * ([previousPathPosition altitude] + [nextPathPosition altitude]);
-        [outputPosition setAltitude:altitude];
-        return outputPosition;
+                      outputPosition:result];
+        return YES;
     }
 
-    return nil;
+    WWPosition* lastPosition = [[_path positions] lastObject];
+    [result setPosition:lastPosition];
+    return NO;
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Navigator Notification Interface --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) startObservingNavigator
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleNavigatorNotification:)
+                                                 name:nil
+                                               object:[_wwv navigator]];
+}
+
+- (void) stopObservingNavigator
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void) handleNavigatorNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
+    {
+        [self startTimer];
+    }
+    else if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
+            || [[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
+            || [[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    {
+        [self setEnabled:NO];
+    }
 }
 
 @end

@@ -13,16 +13,21 @@
 @class WWRenderableLayer;
 @class WWPosition;
 
+extern NSString* const PATH_FOLLOWER_STATE_CHANGED;
+
 /**
 * Uses a marker to indicated a moving position at a specified speed along a specified path.
 */
 @interface PathFollower : NSObject
 {
 @protected
-    NSDate* startTime;
+    NSTimer* timer;
+    NSTimeInterval offsetTime;
+    NSTimeInterval beginTime;
+    NSTimeInterval currentTime;
+    WWPosition* currentPosition;
     WWSphere* marker;
     WWRenderableLayer* layer;
-    NSTimer* timer;
 }
 
 /// @name Attributes
@@ -35,6 +40,11 @@
 
 /// The World Wind view in which to display the marker.
 @property(nonatomic, readonly) WorldWindView* wwv;
+
+/// Indicates whether or not the path follower is enabled. YES indicates that the marker should move along the path
+/// until it reaches the end; NO indicates that the path follower should display the marker at its current location but
+/// otherwise do nothing.
+@property(nonatomic, getter=isEnabled) BOOL enabled;
 
 /// @name Initializing
 
@@ -60,23 +70,56 @@
 */
 - (void) dispose;
 
-/**
-* Starts the path following.
-*/
-- (void) start;
-
-/**
-* Stops the path following.
-*/
-- (void) stop;
-
 /// @name Methods of Interest Only to Subclasses
 
 /**
-* Computes the position corresponding to the elapsed time.
+* Starts the timer that moves the path marker along the path.
+*/
+- (void) startTimer;
+
+/**
+* Stops the timer that moves the path marker along the path.
+*/
+- (void) stopTimer;
+
+/**
+* Indicates that the path following timer has fired.
+*
+* @param notifyingTimer The timer that sent his message.
+*/
+- (void) timerDidFire:(NSTimer*)notifyingTimer;
+
+/**
+* Computes the position corresponding to the specified time.
+*
+* @param time The elapsed time since, in seconds.
+* @param outPosition The position that receives the computed position.
+*
+* @return YES if the time interval identifies a time between the beginning and end of the path, NO if the time interval
+* represents a time at or beyond the end of the path.
 *
 * @return The computed position.
 */
-- (WWPosition*) computePositionForNow;
+- (BOOL) positionForTimeInterval:(NSTimeInterval)timeInterval outPosition:(WWPosition*)result;
+
+/**
+* Starts observing messages sent to the notification center by the World Wind Navigator.
+*/
+- (void) startObservingNavigator;
+
+/**
+* Stops observing messages sent to the notification center by the World Wind Navigator.
+*/
+- (void) stopObservingNavigator;
+
+/**
+* Interprets messages sent to the notification center by the World Wind Navigator.
+*
+* This disables path following if a navigator animation has ended or been cancelled, or if a navigator gesture has been
+* recognized. This starts the path following timer when the initial navigator animation ends.
+*
+* @param notification The notification to interpret.
+*/
+- (void) handleNavigatorNotification:(NSNotification*)notification;
 
 @end

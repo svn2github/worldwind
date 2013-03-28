@@ -15,7 +15,7 @@ extern NSString* const TRACKING_CONTROLLER_STATE_CHANGED;
 
 @property (nonatomic, readonly) WorldWindView* view;
 
-@property (nonatomic, getter=isLocationFollowingEnabled) BOOL locationFollowingEnabled;
+@property (nonatomic, getter=isEnabled) BOOL enabled;
 
 - (TrackingController*) initWithView:(WorldWindView*)view;
 
