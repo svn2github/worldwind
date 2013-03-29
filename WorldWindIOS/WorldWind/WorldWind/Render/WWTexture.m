@@ -139,8 +139,33 @@
     self->imageData = nil; // image bytes are no longer needed
 }
 
-- (void) loadGLCompressed // TODO
+- (void) loadGLCompressed
 {
+    glGenTextures(1, &_textureID);
+    glBindTexture(GL_TEXTURE_2D, _textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    int levelWidth = _imageWidth;
+    int levelHeight = _imageHeight;
+    void* levelBits = ((void*)([self->imageData bytes])) + 13 * sizeof(int); // TODO: verify PVRTC header size
+
+    for (int levelNum = 0; levelNum < _numLevels; levelNum++)
+    {
+        int levelSize = levelWidth * levelHeight / 2; // 4 bits per pixel
+
+        glCompressedTexImage2D(GL_TEXTURE_2D, levelNum, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+                levelWidth, levelHeight, 0, levelSize, levelBits);
+
+        levelWidth = levelWidth >> 1;
+        levelHeight = levelHeight >> 1;
+        levelBits += levelSize;
+    }
+
+    self->imageData = nil; // image bytes are no longer needed
 }
 
 - (void) loadTexture
@@ -168,6 +193,7 @@
     _textureSize = [self->imageData length];
     _imageWidth = [image imageWidth];
     _imageHeight = [image imageHeight];
+    _numLevels = [image numLevels];
 }
 
 - (void) loadRawTexture

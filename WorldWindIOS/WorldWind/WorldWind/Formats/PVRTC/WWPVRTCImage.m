@@ -29,20 +29,17 @@
 
     // TODO: Throw an exception if the file is not a PVRTC image.
 
+    _filePath = filePath;
     _imageBits = [[NSData alloc] initWithContentsOfFile:_filePath];
 
-    _imageWidth = 256; // TODO: draw this from the image header
-    _imageHeight = 256; // TODO: draw this from the image header
+    if ([_imageBits length] == 0)
+    {
+        NSString* msg = [NSString stringWithFormat:@"Image file %@ is empty", _filePath];
+        @throw WWEXCEPTION(NSInvalidArgumentException, msg);}
+
+    [self readHeader];
 
     return self;
-}
-
-- (int) loadGL
-{
-    // TODO: Make the necessary calls to glGenTextures, glTexParameter and glCompressedTexImage2D to pass the mipmap
-    // levels to the GPU. See GpuTexture.doCreateFromCompressedData() in the WWAndroid code for an example.
-
-    return -1; // return the texture ID for this texture.
 }
 
 + (void) compressFile:(NSString*)filePath
@@ -177,13 +174,20 @@ void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, in
     int* blockSizes;
     int levels = EncodePvrMipmap(&rawImage, &pvrMipmap, &blockSizes);
 
-    NSLog(@"%@", outputPath);
     WritePvrFile(pvrMipmap, blockSizes, levels, width, height, [outputPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
-// Quick and dirty test for power of 2.
-bool
 
-IsPow2(int n)
+- (void) readHeader
+{
+    PVR_Header* header = (PVR_Header*) [_imageBits bytes];
+
+    _imageWidth = header->width;
+    _imageHeight = header->height;
+    _numLevels = header->num_mipmaps;
+}
+
+// Quick and dirty test for power of 2.
+bool IsPow2(int n)
 {
     if (n <= 0) return false;
 

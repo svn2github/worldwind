@@ -40,6 +40,9 @@
 /// The texture's height.
 @property(readonly, nonatomic) int imageHeight;
 
+/// The number of mipmap levels for compressed textures. (Will be 0 for uncompressed textures.)
+@property (nonatomic, readonly) int numLevels;
+
 /// The OpenGL textureID for the texture. Available only after the bind method is called at least once.
 @property(readonly, nonatomic) GLuint textureID;
 
