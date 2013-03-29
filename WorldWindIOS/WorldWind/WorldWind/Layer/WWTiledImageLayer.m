@@ -138,8 +138,6 @@
 
     if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
-        [self->currentLoads removeObject:imagePath];
-
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
     }
