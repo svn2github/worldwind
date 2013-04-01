@@ -13,8 +13,6 @@
 @class WWRenderableLayer;
 @class WWPosition;
 
-extern NSString* const PATH_FOLLOWER_STATE_CHANGED;
-
 /**
 * Uses a marker to indicated a moving position at a specified speed along a specified path.
 */

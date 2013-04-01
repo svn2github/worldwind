@@ -27,8 +27,6 @@
 #define MARKER_VERTICAL_OFFSET 10.0
 #define NAVIGATOR_MAX_DISTANCE 10000.0
 
-NSString* const TRACKING_CONTROLLER_STATE_CHANGED = @"gov.nasa.worldwind.examples.TrackingControllerStateChanged";
-
 typedef enum
 {
     TrackingControllerStateFirstLocation,
@@ -102,13 +100,6 @@ typedef enum
     }
 
     _enabled = enabled;
-    [self postStateChanged];
-}
-
-- (void) postStateChanged
-{
-    NSNotification* notification = [NSNotification notificationWithName:TRACKING_CONTROLLER_STATE_CHANGED object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void) startAll

@@ -9,8 +9,6 @@
 #import <CoreLocation/CoreLocation.h>
 #import "WorldWind/WorldWindView.h"
 
-extern NSString* const TRACKING_CONTROLLER_STATE_CHANGED;
-
 @interface TrackingController : NSObject <CLLocationManagerDelegate>
 
 @property (nonatomic, readonly) WorldWindView* view;

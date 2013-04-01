@@ -24,8 +24,6 @@
 #define NAVIGATOR_MAX_DISTANCE 30000.0
 #define TIMER_INTERVAL 0.2
 
-NSString* const PATH_FOLLOWER_STATE_CHANGED = @"gov.nasa.worldwind.examples.PathFollowerStateChanged";
-
 @implementation PathFollower
 
 - (PathFollower*) initWithPath:(WWPath*)path speed:(double)speed view:(WorldWindView*)view
@@ -40,7 +38,6 @@ NSString* const PATH_FOLLOWER_STATE_CHANGED = @"gov.nasa.worldwind.examples.Path
     currentPosition = [[WWPosition alloc] initWithPosition:firstPosition];
 
     WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
-    [attributes setInteriorEnabled:YES];
     [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
     marker = [[WWSphere alloc] initWithPosition:currentPosition radiusInPixels:7];
     [marker setAttributes:attributes];
@@ -81,13 +78,6 @@ NSString* const PATH_FOLLOWER_STATE_CHANGED = @"gov.nasa.worldwind.examples.Path
     }
 
     _enabled = enabled;
-    [self postStateChanged];
-}
-
-- (void) postStateChanged
-{
-    NSNotification* notification = [NSNotification notificationWithName:PATH_FOLLOWER_STATE_CHANGED object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

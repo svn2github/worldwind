@@ -117,12 +117,9 @@
 
 - (void) makeTrackingController
 {
-    self->trackingController = [[TrackingController alloc] initWithView:_wwv];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleNotification:)
-                                                 name:nil
-                                               object:trackingController];
+    trackingController = [[TrackingController alloc] initWithView:_wwv];
+    [trackingController addObserver:self forKeyPath:@"enabled"
+                            options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial context:NULL];
 }
 
 - (void) makeFlightPathsLayer
@@ -140,10 +137,9 @@
         return;
     }
 
-    WWLayerList* layers = [[_wwv sceneController] layers];
     WWRenderableLayer* pathsLayer = [[WWRenderableLayer alloc] init];
     [pathsLayer setDisplayName:@"Alaska Flight Paths"];
-    [layers addLayer:pathsLayer];
+    [[[_wwv sceneController] layers] addLayer:pathsLayer];
 
     WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
     [attributes setOutlineEnabled:true];
@@ -182,11 +178,8 @@
         if (i == [features count] - 1)
         {
             pathFollower = [[PathFollower alloc] initWithPath:path speed:135 view:_wwv]; // ~300 MPH
-
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(handleNotification:)
-                                                         name:nil
-                                                       object:pathFollower];
+            [pathFollower addObserver:self forKeyPath:@"enabled"
+                              options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:NULL];
         }
     }
 
@@ -251,13 +244,11 @@
     self->layerListPopoverController =
             [[UIPopoverController alloc] initWithContentViewController:navController];
 
-    self->trackButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LocationArrow"]
-                                                         style:UIBarButtonItemStylePlain
-                                                        target:self action:@selector(handleTrackButtonTap)];
+    trackButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
+                                                  target:self action:@selector(handleTrackButtonTap)];
 
-    self->flightButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"38-airplane"]
-                                                          style:UIBarButtonItemStylePlain
-                                                         target:self action:@selector(handleFlightButtonTap)];
+    flightButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
+                                                   target:self action:@selector(handleFlightButtonTap)];
 
     self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
     [self->searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
@@ -292,38 +283,37 @@
 - (void) handleTrackButtonTap
 {
     [trackingController setEnabled:![trackingController isEnabled]];
+
+    if ([trackingController isEnabled])
+    {
+        [pathFollower setEnabled:NO];
+    }
 }
 
 - (void) handleFlightButtonTap
 {
     [pathFollower setEnabled:![pathFollower isEnabled]];
+
+    if ([pathFollower isEnabled])
+    {
+        [trackingController setEnabled:NO];
+    }
 }
 
-- (void) handleNotification:(NSNotification*)notification
+- (void) observeValueForKeyPath:(NSString*)keyPath
+                       ofObject:(id)object
+                         change:(NSDictionary*)change
+                        context:(void*)context
 {
-    if ([[notification name] isEqualToString:TRACKING_CONTROLLER_STATE_CHANGED])
+    if (object == trackingController && [keyPath isEqualToString:@"enabled"])
     {
-        if ([trackingController isEnabled])
-        {
-            [trackButton setImage:[UIImage imageNamed:@"LocationArrowWithLine"]];
-            [pathFollower setEnabled:NO];
-        }
-        else
-        {
-            [trackButton setImage:[UIImage imageNamed:@"LocationArrow"]];
-        }
+        NSNumber* value = [change objectForKey:NSKeyValueChangeNewKey];
+        [trackButton setImage:[UIImage imageNamed:[value boolValue] ? @"LocationArrowWithLine" : @"LocationArrow"]];
     }
-    else if ([[notification name] isEqualToString:PATH_FOLLOWER_STATE_CHANGED])
+    else if (object == pathFollower && [keyPath isEqualToString:@"enabled"])
     {
-        if ([pathFollower isEnabled])
-        {
-            [flightButton setImage:[UIImage imageNamed:@"38-airplane-location"]];
-            [trackingController setEnabled:NO];
-        }
-        else
-        {
-            [flightButton setImage:[UIImage imageNamed:@"38-airplane"]];
-        }
+        NSNumber* value = [change objectForKey:NSKeyValueChangeNewKey];
+        [flightButton setImage:[UIImage imageNamed:[value boolValue] ? @"38-airplane-location" : @"38-airplane"]];
     }
 }
 
