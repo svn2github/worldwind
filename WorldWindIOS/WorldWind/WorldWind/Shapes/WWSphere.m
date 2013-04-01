@@ -20,6 +20,9 @@
 
 @implementation WWSphere
 
+static int numVertices; // the number of vertices in the sphere
+static int numIndices; // the number of indices defining the sphere
+
 - (WWSphere*) initWithPosition:(WWPosition*)position radius:(double)radius
 {
     if (position == nil)
@@ -125,7 +128,7 @@
 {
     [self bindVbos:dc];
 
-    int location = [[dc defaultProgram] getAttributeLocation:@"vertexPoint"];
+    int location = [[dc currentProgram] getAttributeLocation:@"vertexPoint"];
     glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawElements(GL_TRIANGLE_STRIP, numIndices, GL_UNSIGNED_SHORT, 0);

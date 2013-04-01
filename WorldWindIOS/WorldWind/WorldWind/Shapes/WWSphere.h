@@ -28,8 +28,6 @@
 {
 @protected
     BOOL radiusIsPixels; // indicates whether the radius was specified in pixels
-    int numVertices; // the number of vertices in the sphere
-    int numIndices; // the number of indices defining the sphere
     NSString* verticesVboCacheKey; // the cache key for the VBO of vertices
     NSString* indicesVboCacheKey; // the cache key for the VBO of indices
 }
