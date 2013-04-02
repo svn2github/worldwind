@@ -59,6 +59,10 @@
 /// The texture cache to add this texture to when its image file is read.
 @property(nonatomic, readonly) WWGpuResourceCache* textureCache;
 
+/// The date and time of the texture's image file in the file cache when the image was last loaded into a texture.
+// Indicates when the image was last downloaded.
+@property (nonatomic, readonly) NSDate* fileModificationDate;
+
 /// @name Initializing Textures
 
 /**

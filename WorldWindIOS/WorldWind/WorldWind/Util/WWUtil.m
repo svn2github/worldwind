@@ -87,6 +87,11 @@
 
 + (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix
 {
+    if (newSuffix == nil)
+    {
+        return [path stringByDeletingPathExtension];
+    }
+
     return [[path stringByDeletingPathExtension] stringByAppendingPathExtension:newSuffix];
 }
 

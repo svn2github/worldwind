@@ -182,6 +182,9 @@
     {
         [self loadEncodedTexture];
     }
+
+    NSDictionary* fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:_filePath error:nil];
+    _fileModificationDate = [fileAttributes objectForKey:NSFileModificationDate];
 }
 
 - (void) loadCompressedTexture

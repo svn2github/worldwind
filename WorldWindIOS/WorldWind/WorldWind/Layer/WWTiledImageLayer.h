@@ -77,6 +77,9 @@
 /// Indicates whether this layer uses raw RGBA textures.
 @property(nonatomic) BOOL useRawTextures;
 
+/// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
+@property (nonatomic) NSDate* expiration;
+
 /// @name Initializing Tiled Image Layers
 
 /**
@@ -231,7 +234,7 @@
  * @param dc The current draw context.
  * @param tile The tile whose image to retrieve.
 */
-- (void) retrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+- (void) loadOrRetrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
 
 /**
 * Indicates whether a specified tile meets the resolution criteria determining whether it is drawn in the current
@@ -252,7 +255,7 @@
 *
 * @return YES if the tile's texture is in the texture cache, otherwise NO.
 */
-- (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
 
 /**
 * Responds to WW_RETRIEVAL_STATUS notifications.

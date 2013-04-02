@@ -101,8 +101,6 @@
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    [self->currentRetrievals removeObject:imagePath];
-
     @try
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
@@ -117,6 +115,9 @@
                 [WWTexture convertTextureToRaw:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
+
+            NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
+            [self->currentRetrievals removeObject:pathKey];
 
             NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
             [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
@@ -231,7 +232,7 @@
 
     @try
     {
-        if ([self isTileTextureLocal:dc tile:tile] || [[tile level] levelNumber] == 0)
+        if ([self isTileTextureInMemory:dc tile:tile] || [[tile level] levelNumber] == 0)
         {
             ancestorTile = self->currentAncestorTile;
             self->currentAncestorTile = tile;
@@ -267,29 +268,48 @@
 {
     [tile setFallbackTile:nil];
 
-    if ([self isTileTextureLocal:dc tile:tile])
+    WWTexture* texture = (WWTexture*) [[dc gpuResourceCache] getResourceForKey:[tile imagePath]];
+    if (texture != nil)
     {
         [self->currentTiles addObject:tile];
+
+        // If the tile's texture has expired, cause it to be re-retrieved. Note that the current,
+        // expired texture is still used until the updated one arrives.
+        if (_expiration != nil && [self isTextureExpired:texture])
+        {
+            [self loadOrRetrieveTileImage:dc tile:tile];
+        }
+
         return;
     }
 
-    [self retrieveTileImage:dc tile:tile];
+    [self loadOrRetrieveTileImage:dc tile:tile];
 
     if (self->currentAncestorTile != nil)
     {
-        if ([self isTileTextureLocal:dc tile:self->currentAncestorTile])
+        if ([self isTileTextureInMemory:dc tile:self->currentAncestorTile])
         {
             [tile setFallbackTile:self->currentAncestorTile];
             [self->currentTiles addObject:tile];
         }
         else if ([[self->currentAncestorTile level] levelNumber] == 0)
         {
-            [self retrieveTileImage:dc tile:self->currentAncestorTile];
+            [self loadOrRetrieveTileImage:dc tile:self->currentAncestorTile];
         }
     }
 }
 
-- (BOOL) isTileTextureLocal:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+- (BOOL) isTextureExpired:(WWTexture*)texture
+{
+    if (_expiration == nil || [_expiration timeIntervalSinceNow] > 0)
+    {
+        return NO; // no expiration time or it's in the future
+    }
+
+    return [[texture fileModificationDate] timeIntervalSinceDate:_expiration] < 0;
+}
+
+- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
     return [dc.gpuResourceCache containsKey:[tile imagePath]];
 }
@@ -311,31 +331,66 @@
     return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }
 
-- (void) retrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+- (void) loadOrRetrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
     // See if it's already on disk.
     if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
     {
-        if ([self->currentLoads containsObject:[tile imagePath]])
-            return;
-        [self->currentLoads addObject:[tile imagePath]];
+        if (_expiration != nil)
+        {
+            // Determine whether the disk image has expired.
+            NSDictionary* fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[tile imagePath]
+                                                                                            error:nil];
+            NSDate* fileDate = [fileAttributes objectForKey:NSFileModificationDate];
+            if ([fileDate timeIntervalSinceDate:_expiration] < 0)
+            {
+                // Existing image file is out of date, so initiate retrieval of an up-to-date one.
+                [self retrieveTileImage:tile];
 
-        WWTexture* texture = [[WWTexture alloc] initWithImagePath:[tile imagePath]
-                                                            cache:[dc gpuResourceCache]
-                                                           object:self];
-        [texture setThreadPriority:0.1];
-        [[WorldWind retrievalQueue] addOperation:texture];
-        return;
+                if ([self isTileTextureInMemory:dc tile:tile])
+                {
+                    return; // Out-of-date tile is in memory so don't load the old image file again.
+                }
+            }
+        }
+
+        // Load the existing image file whether it's out of date or not. This has the effect of showing expired
+        // images until new ones arrive.
+        [self loadTileImage:dc tile:tile];
+    }
+    else
+    {
+        [self retrieveTileImage:tile];
     }
 
+}
+
+- (void) loadTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+{
+    if ([self->currentLoads containsObject:[tile imagePath]])
+        return;
+    [self->currentLoads addObject:[tile imagePath]];
+
+    WWTexture* texture = [[WWTexture alloc] initWithImagePath:[tile imagePath]
+                                                        cache:[dc gpuResourceCache]
+                                                       object:self];
+    [texture setThreadPriority:0.1];
+    [[WorldWind retrievalQueue] addOperation:texture];
+}
+
+- (void) retrieveTileImage:(WWTextureTile*)tile
+{
     // If the app is connected to the network, retrieve the image from there.
 
     if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
         return;
 
-    if ([self->currentRetrievals containsObject:[tile imagePath]])
+    NSString* pathKey = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:nil];
+    if ([self->currentRetrievals containsObject:pathKey])
+    {
         return;
-    [self->currentRetrievals addObject:[tile imagePath]];
+    }
+    [self->currentRetrievals addObject:pathKey];
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
