@@ -151,11 +151,11 @@
 
     int levelWidth = _imageWidth;
     int levelHeight = _imageHeight;
-    void* levelBits = ((void*)([self->imageData bytes])) + 13 * sizeof(int); // TODO: verify PVRTC header size
+    void* levelBits = ((void*)([self->imageData bytes])) + 13 * sizeof(int);
 
     for (int levelNum = 0; levelNum < _numLevels; levelNum++)
     {
-        int levelSize = levelWidth * levelHeight / 2; // 4 bits per pixel
+        int levelSize = (int) fmax(levelWidth * levelHeight / 2, 32); // 4 bits per pixel
 
         glCompressedTexImage2D(GL_TEXTURE_2D, levelNum, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
                 levelWidth, levelHeight, 0, levelSize, levelBits);
