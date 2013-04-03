@@ -42,6 +42,10 @@
     return self;
 }
 
+#ifdef DEBUG_PVR_ENCODE
+void DebugPvrEncode();
+#endif // DEBUG_PVR_ENCODE
+
 + (void) compressFile:(NSString*)filePath
 {
     if (filePath == nil || [filePath length] == 0)
@@ -55,10 +59,14 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg);
     }
 
+#ifdef DEBUG_PVR_ENCODE
+    DebugPvrEncode();
+#endif // DEBUG_PVR_ENCODE
+    
     // Read the image as a UIImage, get its bits and pass them to the pvrtc compressor,
     // which writes the pvrtc image to a file of the same name and in the same location as the input file,
     // but with a .pvr extension.
-
+    
     UIImage* uiImage = [UIImage imageWithContentsOfFile:filePath];
     if (uiImage == nil)
     {
@@ -102,7 +110,6 @@
     {
         free(imageData); // release the memory allocated for the image
         CGContextRelease(context);
-        CGImageRelease(cgImage);
     }
 }
 
@@ -114,6 +121,7 @@ typedef struct
     float r;
     float g;
     float b;
+    float a;
 } RawPixel;
 
 typedef struct
@@ -129,20 +137,26 @@ typedef struct
 // http://www.imgtec.com/powervr/insider/docs/PVR%20File%20Format.Specification.1.0.11.External.pdf
 typedef struct
 {
-    int version;
-    int flags;
-    int pixel_format_lsb;
-    int pixel_format_msb;
-    int color_space;
-    int channel_type;
-    int height;
-    int width;
-    int depth;
-    int num_surfaces;
-    int num_faces;
-    int num_mipmaps;
-    int size_metadata;
+    uint32_t version;
+    uint32_t flags;
+    uint32_t pixel_format_lsb;
+    uint32_t pixel_format_msb;
+    uint32_t color_space;
+    uint32_t channel_type;
+    uint32_t height;
+    uint32_t width;
+    uint32_t depth;
+    uint32_t num_surfaces;
+    uint32_t num_faces;
+    uint32_t num_mipmaps;
+    uint32_t size_metadata;
 } PVR_Header;
+
+typedef struct {
+    uint32_t    wts;
+    uint16_t    rgbLo;
+    uint16_t    rgbHi;
+} PVR_Block;
 
 #define PVR_VERSION 0x03525650
 #define PVR_FORMAT_PVRTC_4_RGBA 3
@@ -154,11 +168,11 @@ RawImage* NewImage(int width, int height);
 
 void FreeImage(RawImage* image);
 
-int EncodePvrImage(RawImage* src, long** pvrImage);
+int EncodePvrImage(RawImage* src, PVR_Block** pvrImage);
 
-int EncodePvrMipmap(RawImage* src, long*** pvrMipmap, int** blockCounts);
+int EncodePvrMipmap(RawImage* src, PVR_Block*** pvrMipmap, int** blockCounts);
 
-void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, int dy, const char* name);
+void WritePvrFile(PVR_Block** PVR_Blocks, int* blockCounts, int levelCount, int dx, int dy, const char* name);
 
 + (void) doCompress:(int)width height:(int)height bits:(void*)bits ouputPath:(NSString*)outputPath
 {
@@ -170,7 +184,7 @@ void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, in
     rawImage.heightBase = height;
     rawImage.bits = bits;
 
-    long** pvrMipmap;
+    PVR_Block** pvrMipmap;
     int* blockSizes;
     int levels = EncodePvrMipmap(&rawImage, &pvrMipmap, &blockSizes);
 
@@ -204,21 +218,23 @@ bool IsPow2(int n)
 // Get a pixel from an image.
 void GetPixel(RawImage* image, int x, int y, RawPixel* pixel)
 {
-    uint8_t* pix = ((uint8_t*) image->bits) + (image->width * y + x) * 3;
+    uint8_t* pix = ((uint8_t*) image->bits) + (image->width * y + x) * 4;
 
     pixel->r = (float) pix[0];
     pixel->g = (float) pix[1];
     pixel->b = (float) pix[2];
+    // ignore alpha
 }
 
 // Set a pixel in an image.
 void SetPixel(RawImage* image, int x, int y, RawPixel* pixel)
 {
-    uint8_t* pix = ((uint8_t*) image->bits) + (image->width * y + x) * 3;
+    uint8_t* pix = ((uint8_t*) image->bits) + (image->width * y + x) * 4;
 
-    pix[0] = (char) (pixel->r + 0.5);
-    pix[1] = (char) (pixel->g + 0.5);
-    pix[2] = (char) (pixel->b + 0.5);
+    pix[0] = (uint8_t) (pixel->r + 0.5);
+    pix[1] = (uint8_t) (pixel->g + 0.5);
+    pix[2] = (uint8_t) (pixel->b + 0.5);
+    // ignore alpha
 }
 
 // initialize a pixel color.
@@ -227,6 +243,7 @@ void InitPixel(RawPixel* pixel, float r, float g, float b)
     pixel->r = r;
     pixel->g = g;
     pixel->b = b;
+    // ignore alpha
 }
 
 // Add two pixel colors.
@@ -235,6 +252,7 @@ void AddPixel(RawPixel* pixelDst, RawPixel* pixelSrc0, RawPixel* pixelSrc1)
     pixelDst->r = pixelSrc0->r + pixelSrc1->r;
     pixelDst->g = pixelSrc0->g + pixelSrc1->g;
     pixelDst->b = pixelSrc0->b + pixelSrc1->b;
+    // ignore alpha
 }
 
 // Subtract two pixel colors.
@@ -243,6 +261,7 @@ void SubPixel(RawPixel* pixelDst, RawPixel* pixelSrc0, RawPixel* pixelSrc1)
     pixelDst->r = pixelSrc0->r - pixelSrc1->r;
     pixelDst->g = pixelSrc0->g - pixelSrc1->g;
     pixelDst->b = pixelSrc0->b - pixelSrc1->b;
+    // ignore alpha
 }
 
 // Compute the difference between two pixels and rescale to fit into a byte pixel.
@@ -251,6 +270,7 @@ void DeltaPixel(RawPixel* pixelDst, RawPixel* pixelSrc0, RawPixel* pixelSrc1)
     pixelDst->r = 0.5 * (pixelSrc0->r - pixelSrc1->r) + 128.0;
     pixelDst->g = 0.5 * (pixelSrc0->g - pixelSrc1->g) + 128.0;
     pixelDst->b = 0.5 * (pixelSrc0->b - pixelSrc1->b) + 128.0;
+    // ignore alpha
 }
 
 // Scale a pixel color.
@@ -259,6 +279,7 @@ void ScalePixel(RawPixel* pixelDst, RawPixel* pixelSrc, float scale)
     pixelDst->r = pixelSrc->r * scale;
     pixelDst->g = pixelSrc->g * scale;
     pixelDst->b = pixelSrc->b * scale;
+    // ignore alpha
 }
 
 // Interpolate a pixel color.
@@ -276,6 +297,7 @@ void LerpPixel(RawPixel* pixelDst, RawPixel* pixelSrc0, RawPixel* pixelSrc1, flo
 // Compute the dot product of pixel components.
 float DotPixel(RawPixel* pixel0, RawPixel* pixel1)
 {
+    // Ignore alpha.
     return pixel0->r * pixel1->r + pixel0->g * pixel1->g + pixel0->b * pixel1->b;
 }
 
@@ -297,13 +319,14 @@ void ClampPixel(RawPixel* pixelDst, RawPixel* pixelSrc)
     pixelDst->r = Clamp(pixelSrc->r, 0, 255);
     pixelDst->g = Clamp(pixelSrc->g, 0, 255);
     pixelDst->b = Clamp(pixelSrc->b, 0, 255);
+    // Ignore alpha.
 }
 
 // Principal compoment analysis based on:
 // http://en.wikipedia.org/wiki/Principal_component_analysis
 void PCAPixel(RawPixel* pixelDst, RawPixel* pixelsSrc, int cpixels)
 {
-    float root3 = 0.577350269189623;
+    float root3 = (float) 0.577350269189623;
     InitPixel(pixelDst, root3, root3, root3);
 
     for (int iter = 0; iter < 8; ++iter)
@@ -328,6 +351,7 @@ void PCAPixel(RawPixel* pixelDst, RawPixel* pixelsSrc, int cpixels)
             pixelDst->r = pixelAccum.r / mag;
             pixelDst->g = pixelAccum.g / mag;
             pixelDst->b = pixelAccum.b / mag;
+            // Ignore alpha.
         }
         else
             return;
@@ -461,10 +485,10 @@ void PCAImage(RawImage* imageDstHi, RawImage* imageDstLo, RawImage* imageDelta, 
 }
 
 // Compute the size of an image in bytes.
-long SizeImage(int dx, int dy)
+size_t SizeImage(int dx, int dy)
 {
-    // Each pixel fits into 3 bytes.
-    return dx * dy * 3;
+    // Each pixel fits into 4 bytes.
+    return (size_t) (dx * dy * 4);
 }
 
 // Allocate a new image.
@@ -851,7 +875,7 @@ void InitPvrHeader(PVR_Header* header, int dx, int dy, int levels)
     header->depth = 1;
     header->num_surfaces = 1;
     header->num_faces = 1;
-    header->num_mipmaps = levels;
+    header->num_mipmaps = (uint32_t) levels;
 }
 
 // Compute (x,y) from Morton index. See description at:
@@ -880,13 +904,13 @@ void IndexToXY(unsigned int idx, int* x, int* y)
 }
 
 // Encode an RGB888 pixel as RBG555.
-unsigned short RGB555FromPixel(RawPixel* pixel)
+uint16_t RGB555FromPixel(RawPixel* pixel)
 {
     int r = (int) (pixel->r * 31.0 / 255.0 + 0.5);
     int g = (int) (pixel->g * 31.0 / 255.0 + 0.5);
     int b = (int) (pixel->b * 31.0 / 255.0 + 0.5);
 
-    unsigned short rgb = 0;
+    uint16_t rgb = 0;
 
     rgb |= 1;
     rgb <<= 5;
@@ -900,7 +924,7 @@ unsigned short RGB555FromPixel(RawPixel* pixel)
 }
 
 // Encode a 4x4 pixel block by 2 RGB555 pixel extrema and 2-bit weights for each pixel.
-unsigned long PackPvrBlock(RawImage* imageLo, RawImage* imageHi, RawImage* imageWt, int x, int y)
+PVR_Block PackPVR_Block(RawImage* imageLo, RawImage* imageHi, RawImage* imageWt, int x, int y)
 {
     RawPixel pixelLo;
     RawPixel pixelHi;
@@ -908,14 +932,15 @@ unsigned long PackPvrBlock(RawImage* imageLo, RawImage* imageHi, RawImage* image
     GetPixel(imageLo, x, y, &pixelLo);
     GetPixel(imageHi, x, y, &pixelHi);
 
-    unsigned short rgbLo = RGB555FromPixel(&pixelLo);
-    unsigned short rgbHi = RGB555FromPixel(&pixelHi);
+    uint16_t rgbLo = RGB555FromPixel(&pixelLo);
+    uint16_t rgbHi = RGB555FromPixel(&pixelHi);
 
     // Clear "modulation mode" bit
+    rgbHi &= ~1;
     rgbLo &= ~1;
 
     // Accumulator for 2-bit pixel weights.
-    unsigned int wts = 0;
+    uint32_t wts = 0;
 
     for (int iy = 3; iy >= 0; --iy)
     {
@@ -928,19 +953,21 @@ unsigned long PackPvrBlock(RawImage* imageLo, RawImage* imageHi, RawImage* image
 
             // Map intensity to interpolation bits
             // 0..1/4, 1/4..1/2, 1/2..3/4, 3/4..1 => 00, 01, 10, 11
-            unsigned int wt = pixelWt.r;
+            uint32_t wt = (uint32_t) pixelWt.r;
             wts |= (wt >> 6);
         }
     }
 
-    unsigned long long block = ((unsigned long) wts) | (((unsigned long long) rgbHi) << 48) | (((unsigned long long)
-    rgbLo) <<
-        32);
+    PVR_Block block;
+    block.rgbHi = rgbHi;
+    block.rgbLo = rgbLo;
+    block.wts = wts;
+
     return block;
 }
 
 // Encode an image as a PVRTC image.
-int EncodePvrImage(RawImage* src, long** pvrImage)
+int EncodePvrImage(RawImage* src, PVR_Block** pvrImage)
 {
     int dx = src->width;
     int dy = src->height;
@@ -956,19 +983,19 @@ int EncodePvrImage(RawImage* src, long** pvrImage)
     Downsample4Image(down4, src);
 
     // DEBUG: Dump low pass image.
-    //WriteImage(down4, "/Users/danm/Pictures/testLopass.raw");
+    //WriteImage(down4, "testLopass.raw");
 
     RawImage* up4 = NewImage(dx, dy);
     Upsample4Image(up4, down4);
 
     // DEBUG: Dump upsampled low pass image.
-    //WriteImage(up4, "/Users/danm/Pictures/testLopass4.raw");
+    //WriteImage(up4, "testLopass4.raw");
 
     RawImage* delta = NewImage(dx, dy);
     DeltaImage(delta, src, up4);
 
     // DEBUG: Dump delta image.
-    //WriteImage(delta, "/Users/danm/Pictures/testDelta.raw");
+    //WriteImage(delta, "testDelta.raw");
 
     RawImage* lo = NewImage(dx >> 2, dy >> 2);
     RawImage* hi = NewImage(dx >> 2, dy >> 2);
@@ -1003,8 +1030,8 @@ int EncodePvrImage(RawImage* src, long** pvrImage)
     //WriteImage(error, "testError.raw");
 
     int blockCount = (dx >> 2) * (dy >> 2);
-    *pvrImage = (long*) malloc(blockCount * sizeof(long));
-    long* blockDst = *pvrImage;
+    *pvrImage = (PVR_Block *) malloc((size_t) blockCount * sizeof(PVR_Block));
+    PVR_Block* blockDst = *pvrImage;
     int blockCur = 0;
 
     for (unsigned int idx = 0; ; ++idx)
@@ -1016,7 +1043,7 @@ int EncodePvrImage(RawImage* src, long** pvrImage)
 
         if (x < (dx >> 2) && y < (dy >> 2))
         {
-            long block = PackPvrBlock(lo, hi, wt, x, y);
+            PVR_Block block = PackPVR_Block(lo, hi, wt, x, y);
             *blockDst++ = block;
             ++blockCur;
         }
@@ -1040,7 +1067,7 @@ int EncodePvrImage(RawImage* src, long** pvrImage)
 }
 
 // Encode an image mipmap as a PVRTC image.
-int EncodePvrMipmap(RawImage* src, long*** pvrMipmap, int** blockCounts)
+int EncodePvrMipmap(RawImage* src, PVR_Block*** pvrMipmap, int** blockCounts)
 {
     int levelMax = 0;
     int xyMax = (src->widthBase > src->heightBase) ? src->widthBase : src->heightBase;
@@ -1051,11 +1078,11 @@ int EncodePvrMipmap(RawImage* src, long*** pvrMipmap, int** blockCounts)
         xyMax >>= 1;
     }
 
-    *blockCounts = (int*) malloc(levelMax * sizeof(int));
-    *pvrMipmap = (long**) malloc(levelMax * sizeof(long*));
+    *blockCounts = (int*) malloc((size_t)levelMax * sizeof(int));
+    *pvrMipmap = (PVR_Block**) malloc((size_t)levelMax * sizeof(PVR_Block*));
 
     int* blockCount = *blockCounts;
-    long** pvrImage = *pvrMipmap;
+    PVR_Block** pvrImage = *pvrMipmap;
 
     RawImage* imageCur = src;
 
@@ -1093,7 +1120,7 @@ int EncodePvrMipmap(RawImage* src, long*** pvrMipmap, int** blockCounts)
 // go ahead and implement that.
 
 // Write a PVRTC file.
-void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, int dy, const char* name)
+void WritePvrFile(PVR_Block** PVR_Blocks, int* blockCounts, int levelCount, int dx, int dy, const char* name)
 {
     // TODO: This function should be using framework (NS) methods for file I/O and catching and logging I/O
     // exceptions.
@@ -1108,11 +1135,36 @@ void WritePvrFile(long** pvrBlocks, int* blockCounts, int levelCount, int dx, in
 
     for (int level = 0; level < levelCount; ++level)
     {
-        long* blocks = pvrBlocks[level];
+        PVR_Block* blocks = PVR_Blocks[level];
         int count = blockCounts[level];
-        fwrite(blocks, sizeof(long), count, file);
+        fwrite(blocks, 1, (size_t)count * sizeof(PVR_Block), file);
     }
 
     fclose(file);
 }
+
+#ifdef DEBUG_PVR_ENCODE
+void DebugPvrEncode()
+{
+    NSString* pathTest = @"/Users/danm/Library/Application Support/iPhone Simulator/6.1/Applications/5A21CAD1-FD0E-4ACD-B6BD-A6A0731F774E/Library/Caches/BMNG/Earth_256x256.jpg";
+    UIImage* uiImageTest = [UIImage imageWithContentsOfFile:pathTest];
+    CGImageRef cgImageTest = [uiImageTest CGImage];
+    
+    int imageWidthTest = CGImageGetWidth(cgImageTest);
+    int imageHeightTest = CGImageGetHeight(cgImageTest);
+    int textureSizeTest = imageWidthTest * imageHeightTest * 4; // assume 4 bytes per pixel
+    void* imageDataTest = malloc((size_t) textureSizeTest); // allocate space for the image
+    
+    CGColorSpaceRef colorSpaceTest = CGColorSpaceCreateDeviceRGB();
+    CGContextRef contextTest = CGBitmapContextCreate(imageDataTest, (size_t) imageWidthTest, (size_t) imageHeightTest,
+                                                     8, (size_t) (4 * imageWidthTest), colorSpaceTest, kCGImageAlphaPremultipliedLast);
+    CGRect rectTest = CGRectMake(0, 0, imageWidthTest, imageHeightTest);
+    CGContextClearRect(contextTest, rectTest);
+    CGContextDrawImage(contextTest, rectTest, cgImageTest);
+    
+    NSString* outputPathTest = [WWUtil replaceSuffixInPath:pathTest newSuffix:@"pvr"];
+    [WWPVRTCImage doCompress:imageWidthTest height:imageHeightTest bits:imageDataTest ouputPath:outputPathTest];
+}
+#endif // DEBUG_PVR_ENCODE
+
 @end
