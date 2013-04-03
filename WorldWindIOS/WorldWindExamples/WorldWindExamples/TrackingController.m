@@ -25,7 +25,7 @@
 #define LOCATION_REQUIRED_ACCURACY 100.0
 #define LOCATION_REQUIRED_AGE 2.0
 #define MARKER_VERTICAL_OFFSET 10.0
-#define NAVIGATOR_MAX_DISTANCE 10000.0
+#define NAVIGATOR_MAX_RANGE 10000.0
 
 typedef enum
 {
@@ -129,6 +129,7 @@ typedef enum
     // position's and set its altitude to a constant offset above the surface.
     [[marker position] setLocation:currentPosition altitude:MARKER_VERTICAL_OFFSET];
     [marker setAltitudeMode:WW_ALTITUDE_MODE_RELATIVE_TO_GROUND];
+    [_view drawView];
 }
 
 - (void) showFirstLocation:(CLLocation*)location
@@ -143,10 +144,10 @@ typedef enum
         // after the animation completes, and the state changes to TrackingControllerStateFollowing. Suppress navigator
         // notifications while initiating the animation to distinguish between this animation and animations started by
         // another component.
-        WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator];
-        double distance = MIN(NAVIGATOR_MAX_DISTANCE, [navigator range]);
+        WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator]; // TODO: Replace with WWNavigator protocol methods.
+        double range = MIN(NAVIGATOR_MAX_RANGE, [navigator range]);          // TODO: Replace with WWNavigator protocol methods.
         [self stopObservingNavigator];
-        [[_view navigator] gotoLocation:currentPosition fromDistance:distance animate:YES];
+        [[_view navigator] gotoLookAt:currentPosition range:range overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator];
 
         // Designate that the tracking controller is waiting to start following.
@@ -178,7 +179,8 @@ typedef enum
 
     // Update the navigator to show the current position. This change is applied without animation, and does not
     // affect the navigator's distance to the current position.
-    [[_view navigator] gotoLocation:currentPosition animate:NO];
+    WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator]; // TODO: Replace with WWNavigator protocol methods.
+    [[navigator lookAt] setLocation:currentPosition];                    // TODO: Replace with WWNavigator protocol methods.
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

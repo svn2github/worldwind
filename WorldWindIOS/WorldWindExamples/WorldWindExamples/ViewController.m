@@ -353,7 +353,7 @@
         WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
         double radius = [region radius];
 
-        [[_wwv navigator] gotoRegionWithCenter:center radius:radius animate:YES];
+        [[_wwv navigator] gotoRegionWithCenter:center radius:radius overDuration:WWNavigatorDurationDefault];
     }
     else
     {

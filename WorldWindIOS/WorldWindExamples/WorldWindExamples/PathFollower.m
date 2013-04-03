@@ -18,10 +18,10 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
-#import "WorldWind/Navigate/WWNavigator.h"
+#import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/WorldWindConstants.h"
 
-#define NAVIGATOR_MAX_DISTANCE 30000.0
+#define NAVIGATOR_RANGE 30000.0
 #define TIMER_INTERVAL 0.2
 
 @implementation PathFollower
@@ -68,7 +68,7 @@
 
     if (enabled)
     {
-        [[_wwv navigator] gotoLocation:currentPosition fromDistance:NAVIGATOR_MAX_DISTANCE animate:YES];
+        [[_wwv navigator] gotoLookAt:currentPosition range:NAVIGATOR_RANGE overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator]; // Observe after the animation begins to ignore its begin notification.
     }
     else
@@ -115,7 +115,8 @@
     if ([self positionForTimeInterval:currentTime outPosition:currentPosition])
     {
         [marker setPosition:currentPosition];
-        [[_wwv navigator] gotoLocation:currentPosition animate:NO]; // Causes view to redraw.
+        [[(WWBasicNavigator*) [_wwv navigator] lookAt] setLocation:currentPosition]; // TODO: Replace with WWNavigator protocol methods.
+        [_wwv drawView];
     }
     else
     {

@@ -45,13 +45,11 @@
     CADisplayLink* displayLink;
     int displayLinkObservers;
 
-    WWLocation* animBeginLocation;
-    WWLocation* animEndLocation;
-    double animAzimuth;
-    double animDistance;
+    WWPosition* animBeginLookAt;
+    WWPosition* animEndLookAt;
     double animBeginRange;
-    double animMidRange;
     double animEndRange;
+    double animMidRange;
     NSDate* animBeginDate;
     NSDate* animEndDate;
     BOOL animating;
@@ -85,8 +83,8 @@
         [self->view addGestureRecognizer:self->rotationGestureRecognizer];
         [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
 
-        self->animBeginLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
-        self->animEndLocation = [[WWLocation alloc] initWithDegreesLatitude:0 longitude:0];
+        self->animBeginLookAt = [[WWPosition alloc] init];
+        self->animEndLookAt = [[WWPosition alloc] init];
 
         _nearDistance = DEFAULT_NEAR_DISTANCE;
         _farDistance = DEFAULT_FAR_DISTANCE;
@@ -180,16 +178,6 @@
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
 }
 
-- (void) gotoLocation:(WWLocation*)location animate:(BOOL)animate
-{
-    if (location == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
-    }
-
-    [self gotoLocation:location fromDistance:_range animate:animate];
-}
-
 - (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
 {
     if (location == nil)
@@ -202,40 +190,19 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    [self gotoLocation:location fromDistance:_range overDuration:duration];
+    [self beginAnimationWithLookAt:location range:_range overDuration:duration];
 }
 
-- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance animate:(BOOL)animate
+- (void) gotoLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration
 {
-    if (location == nil)
+    if (lookAt == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"LookAt is nil")
     }
 
-    if (distance < 0)
+    if (range < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is invalid")
-    }
-
-    WWPosition* pa = [[WWPosition alloc] initWithLocation:_lookAt altitude:_range];
-    WWPosition* pb = [[WWPosition alloc] initWithLocation:location altitude:distance];
-    WWGlobe* globe = [[view sceneController] globe];
-    NSTimeInterval duration = animate ?
-            [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe] : 0;
-
-    [self gotoLocation:location fromDistance:distance overDuration:duration];
-}
-
-- (void) gotoLocation:(WWLocation*)location fromDistance:(double)distance overDuration:(NSTimeInterval)duration
-{
-    if (location == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
-    }
-
-    if (distance < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is invalid")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid")
     }
 
     if (duration < 0)
@@ -243,62 +210,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    // The view is a weak reference, so it may have been de-allocated.
-    if (self->view == nil)
-    {
-        WWLog(@"Unable to navigate: View is nil (deallocated)");
-        return;
-    }
-
-    if (duration == 0)
-    {
-        // When the specified duration is zero we apply the specified values immediately. This overrides any currently
-        // active animation.
-        [_lookAt setLocation:location];
-        _range = distance;
-
-        // Cancel any currently active animation and cause the World Wind view to redraw itself. This has the effect of
-        // rendering the view with the specified navigator location and range. This has no effect if there is no
-        // currently active animation.
-        [self cancelAnimation];
-        [self->view drawView];
-    }
-    else
-    {
-        // When the specified duration is greater than zero we start an animation to smoothly transition from the
-        // current values to the specified values. This overrides any currently active animation. We override rather
-        // than explicitly start and stop in order to keep the display link running and seamlessly transition from one
-        // animation to the next.
-        [self beginAnimationWithBeginLocation:_lookAt
-                                  endLocation:location
-                                   beginRange:_range
-                                     endRange:distance
-                                     duration:duration];
-    }
-}
-
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius animate:(BOOL)animate
-{
-    if (center == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
-    }
-
-    if (radius < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
-    }
-
-    if (self->view == nil)
-    {
-        WWLog(@"Unable to navigate: View is nil (deallocated)");
-        return;
-    }
-
-    CGRect viewport = [view viewport];
-    double distance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
-
-    [self gotoLocation:center fromDistance:distance animate:animate];
+    [self beginAnimationWithLookAt:lookAt range:range overDuration:duration];
 }
 
 - (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
@@ -318,17 +230,8 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    // The view is a weak reference, so it may have been de-allocated.
-    if (self->view == nil)
-    {
-        WWLog(@"Unable to navigate: View is nil (deallocated)");
-        return;
-    }
-
-    CGRect viewport = [view viewport];
-    double distance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
-
-    [self gotoLocation:center fromDistance:distance overDuration:duration];
+    double fitDistance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:[view viewport]];
+    [self beginAnimationWithLookAt:center range:fitDistance overDuration:duration];
 }
 
 - (void) setInitialLocation
@@ -384,11 +287,7 @@
         [self updateAnimationForDate:now];
     }
 
-    // The view is a weak reference, so it may have been de-allocated.
-    if (self->view != nil)
-    {
-        [self->view drawView];
-    }
+    [view drawView]; // The view is a weak reference; this has no effect if the view has been deallocated.
 }
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
@@ -612,15 +511,18 @@
 
 - (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer
 {
-    // Post a notification that the navigator has recognized a gesture, then start the display link in order to provide
-    // a smooth continuous redraw while the gesture is active.
-    [self postGestureRecognized:recognizer];
+    // Start the display link if it's not already running. We keep the current display link running rather than
+    // restarting it in order to transition from an animation to a gesture without delay.
     [self startDisplayLink];
 
-    // Navigator gestures override any currently active animation. We cancel animations after starting the display link
-    // rather than vice versa in order to keep the display link running and seamlessly transition from an animation to a
-    // gesture. This has no effect if there is no currently active animation.
+    // Navigator gestures stop any currently active animation. Cancel animations after starting the display link in
+    // order to keep the display link running rather than restarting it.
     [self cancelAnimation];
+
+    // Post a notification that the navigator has recognized a gesture. Do this last so that the navigator posts the
+    // gesture recognized notification after any animation cancelled notifications.
+    [self postGestureRecognized:recognizer];
+
 }
 
 - (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
@@ -628,74 +530,97 @@
     [self stopDisplayLink];
 }
 
-- (void) beginAnimationWithBeginLocation:(WWLocation*)beginLocation
-                             endLocation:(WWLocation*)endLocation
-                              beginRange:(double)beginRange
-                                endRange:(double)endRange
-                                duration:(NSTimeInterval)duration
+- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer
 {
-    // Compute the animation's time range and reusable values. This overrides any currently active animation. We
-    // override rather than explicitly stop and start in order to keep the display link running and seamlessly
-    // transition from one animation to the next.
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
 
-    // Compute the great circle azimuth and distance between the navigator's begin and end locations. These values are
-    // computed once here and used repeatedly in updateAnimationForDate.
-    [self->animBeginLocation setLocation:beginLocation];
-    [self->animEndLocation setLocation:endLocation];
-    self->animAzimuth = [WWLocation greatCircleAzimuth:beginLocation endLocation:endLocation];
-    self->animDistance = [WWLocation greatCircleDistance:beginLocation endLocation:endLocation];
+- (void) beginAnimationWithLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration
+{
+    // Move to animation's end values immediately when requested to do so.
+    if (duration == WWNavigatorDurationImmediate)
+    {
+        // Cancel any currently active animation. This has no effect if there is no currently active animation.
+        [self cancelAnimation];
+
+        // Apply the animation's end values to the navigator's internal properties, posting an animation began and
+        // animation ended notification before and after the change, respectively.
+        [self postAnimationBegan];
+        [_lookAt setLocation:lookAt];
+        _range = range;
+        [self postAnimationEnded];
+
+        // Cause the World Wind view to redraw itself.  The view is a weak reference, but this has no effect if the view
+        // has been deallocated.
+        [view drawView];
+        return;
+    }
+
+    [animBeginLookAt setLocation:_lookAt];
+    [animEndLookAt setLocation:lookAt];
+
+    animBeginRange = _range;
+    animEndRange = range;
 
     // Compute the mid range used as an intermediate range during animation. If the begin and end locations are not
     // visible from the begin or end range, the mid range is defined as a value greater than the begin and end ranges.
     // This maintains the user's geographic context for the animation's beginning and end.
-    WWPosition* pa = [[WWPosition alloc] initWithLocation:beginLocation altitude:0];
-    WWPosition* pb = [[WWPosition alloc] initWithLocation:endLocation altitude:0];
+    WWPosition* pa = animBeginLookAt;
+    WWPosition* pb = animEndLookAt;
     WWGlobe* globe = [[view sceneController] globe];
     CGRect viewport = [view viewport];
     double fitDistance = [WWMath eyeDistanceToFitPositionA:pa positionB:pb onGlobe:globe inViewport:viewport];
-    self->animBeginRange = beginRange;
-    self->animMidRange = (fitDistance > beginRange && fitDistance > endRange) ? fitDistance : DBL_MAX;
-    self->animEndRange = endRange;
+    animMidRange = (fitDistance > animBeginRange && fitDistance > animEndRange) ? fitDistance : DBL_MAX;
 
     // Compute the animation's begin and end date based on the implicit start time and the specified duration.
-    self->animBeginDate = [NSDate date];
-    self->animEndDate = [NSDate dateWithTimeInterval:duration sinceDate:self->animBeginDate];
+    NSTimeInterval defaultDuration = [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe];
+    NSTimeInterval animTimeInterval = (duration == WWNavigatorDurationDefault ? defaultDuration : duration);
+    animBeginDate = [NSDate date];
+    animEndDate = [NSDate dateWithTimeInterval:animTimeInterval sinceDate:animBeginDate];
 
-    if (!self->animating)
+    if (animating)
     {
-        // If the navigator is not already animating, start the display link in order to provide a smooth continuous
-        // redraw while the animation is active.
-        [self startDisplayLink];
-        self->animating = YES;
+        // Post an animation cancelled notification follow by an animation began notification if the navigator is
+        // already animating.
+        [self postAnimationCancelled];
+        [self postAnimationBegan];
     }
-
-    [self postAnimationBegan];
+    else
+    {
+        // Start the display link if the navigator is not already animating, and post an animation began notification.
+        // We keep the current display link running rather than restarting it in order to transition from one animation
+        // to the next without delay.
+        [self startDisplayLink];
+        [self postAnimationBegan];
+        animating = YES;
+    }
 }
 
 - (void) endAnimation
 {
-    if (self->animating)
+    if (animating)
     {
         [self stopDisplayLink];
         [self postAnimationEnded];
-        self->animating = NO;
+        animating = NO;
     }
 }
 
 - (void) cancelAnimation
 {
-    if (self->animating)
+    if (animating)
     {
         [self stopDisplayLink];
         [self postAnimationCancelled];
-        self->animating = NO;
+        animating = NO;
     }
 }
 
 - (void) updateAnimationForDate:(NSDate*)date
 {
-    NSTimeInterval beginTime = [self->animBeginDate timeIntervalSinceReferenceDate];
-    NSTimeInterval endTime = [self->animEndDate timeIntervalSinceReferenceDate];
+    NSTimeInterval beginTime = [animBeginDate timeIntervalSinceReferenceDate];
+    NSTimeInterval endTime = [animEndDate timeIntervalSinceReferenceDate];
     NSTimeInterval midTime = (beginTime + endTime) / 2;
     NSTimeInterval now = [date timeIntervalSinceReferenceDate];
 
@@ -704,16 +629,16 @@
         // The animation has yet to start or has just started. Explicitly set the current values to the specified begin
         // values rather than computing a interpolated values to ensure that the begin values are set exactly as the
         // caller requested.
-        [_lookAt setLocation:self->animBeginLocation];
-        _range = self->animBeginRange;
+        [_lookAt setLocation:animBeginLookAt];
+        _range = animBeginRange;
     }
     else if (now >= endTime)
     {
         // The animation has reached its scheduled end based on the implicit start time and specified duration.
         // Explicitly set the current values to the specified end values rather than computing a interpolated values to
         // ensure that the end values are set exactly as the caller requested.
-        [_lookAt setLocation:self->animEndLocation];
-        _range = self->animEndRange;
+        [_lookAt setLocation:animEndLookAt];
+        _range = animEndRange;
         [self endAnimation];
     }
     else
@@ -723,41 +648,26 @@
         // end values. This uses hermite interpolation via WWMath's smoothStepValue method to ease in and ease out of
         // the begin and end values, respectively.
 
-        // Interpolate the navigator's look at location using a great circle arc between the begin and end location.
         double locationPct = [WWMath smoothStepValue:now min:beginTime max:endTime];
-        [WWLocation greatCircleLocation:self->animBeginLocation
-                                azimuth:self->animAzimuth
-                               distance:self->animDistance * locationPct
-                         outputLocation:_lookAt];
+        [WWLocation greatCircleInterpolate:animBeginLookAt endLocation:animEndLookAt
+                                    amount:locationPct outputLocation:_lookAt];
 
-        if (self->animMidRange == DBL_MAX)
+        if (animMidRange == DBL_MAX) // The animation is not using a mid range value.
         {
-            // The animation is not using a mid range value. Interpolate the navigator's range between the begin and end
-            // range.
             double rangePct = [WWMath smoothStepValue:now min:beginTime max:endTime];
-            _range = [WWMath interpolateValue1:self->animBeginRange value2:self->animEndRange amount:rangePct];
+            _range = [WWMath interpolateValue1:animBeginRange value2:animEndRange amount:rangePct];
         }
-        else if (now <= midTime)
+        else if (now <= midTime) // The animation is using a mid range value, and is in the first half of its duration.
         {
-            // The animation is using a mid range value, and is in the first half of its duration. Interpolate the
-            // navigator's range between the begin and mid range.
             double rangePct = [WWMath smoothStepValue:now min:beginTime max:midTime];
-            _range = [WWMath interpolateValue1:self->animBeginRange value2:self->animMidRange amount:rangePct];
+            _range = [WWMath interpolateValue1:animBeginRange value2:animMidRange amount:rangePct];
         }
-        else
+        else // The animation is using a mid range value, and is in the second half of its duration.
         {
-            // The animation is using a mid range value, and is in the second half of its duration. Interpolate the
-            // navigator's range between the mid and end range.
             double rangePct = [WWMath smoothStepValue:now min:midTime max:endTime];
-            _range = [WWMath interpolateValue1:self->animMidRange value2:self->animEndRange amount:rangePct];
+            _range = [WWMath interpolateValue1:animMidRange value2:animEndRange amount:rangePct];
         }
     }
-}
-
-- (void) postGestureRecognized:(UIGestureRecognizer*)recognizer
-{
-    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void) postAnimationBegan
