@@ -31,6 +31,7 @@
 
 @implementation WWBasicNavigator
 {
+@protected
     WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
 
     UIPanGestureRecognizer* panGestureRecognizer;
@@ -57,43 +58,40 @@
 
 - (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate
 {
-    self = [super init];
-
     if (viewToNavigate == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
     }
 
-    if (self != nil)
-    {
-        self->view = viewToNavigate;
-        self->panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
-        self->pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
-        self->rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
-        self->verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
+    self = [super init];
 
-        [self->panGestureRecognizer setDelegate:self];
-        [self->pinchGestureRecognizer setDelegate:self];
-        [self->rotationGestureRecognizer setDelegate:self];
-        [self->verticalPanGestureRecognizer setDelegate:self];
-        [self->verticalPanGestureRecognizer setMinimumNumberOfTouches:2];
+    view = viewToNavigate;
+    panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
+    pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
+    rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
+    verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
 
-        [self->view addGestureRecognizer:self->panGestureRecognizer];
-        [self->view addGestureRecognizer:self->pinchGestureRecognizer];
-        [self->view addGestureRecognizer:self->rotationGestureRecognizer];
-        [self->view addGestureRecognizer:self->verticalPanGestureRecognizer];
+    [panGestureRecognizer setDelegate:self];
+    [pinchGestureRecognizer setDelegate:self];
+    [rotationGestureRecognizer setDelegate:self];
+    [verticalPanGestureRecognizer setDelegate:self];
+    [verticalPanGestureRecognizer setMinimumNumberOfTouches:2];
 
-        self->animBeginLookAt = [[WWPosition alloc] init];
-        self->animEndLookAt = [[WWPosition alloc] init];
+    [view addGestureRecognizer:panGestureRecognizer];
+    [view addGestureRecognizer:pinchGestureRecognizer];
+    [view addGestureRecognizer:rotationGestureRecognizer];
+    [view addGestureRecognizer:verticalPanGestureRecognizer];
 
-        _nearDistance = DEFAULT_NEAR_DISTANCE;
-        _farDistance = DEFAULT_FAR_DISTANCE;
-        _lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
-        _range = DEFAULT_ALTITUDE;
-        _heading = DEFAULT_HEADING;
-        _tilt = DEFAULT_TILT;
-        [self setInitialLocation];
-    }
+    animBeginLookAt = [[WWPosition alloc] init];
+    animEndLookAt = [[WWPosition alloc] init];
+
+    _lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
+    _range = DEFAULT_ALTITUDE;
+    _heading = DEFAULT_HEADING;
+    _tilt = DEFAULT_TILT;
+    _nearDistance = DEFAULT_NEAR_DISTANCE;
+    _farDistance = DEFAULT_FAR_DISTANCE;
+    [self setInitialLocation];
 
     return self;
 }
@@ -102,18 +100,18 @@
 {
     // Remove gesture recognizers from the parent view when the navigator is de-allocated. The view is a weak reference,
     // so it may have been de-allocated. In this case it is unnecessary to remove these references.
-    if (self->view != nil)
+    if (view != nil)
     {
-        [self->view removeGestureRecognizer:self->panGestureRecognizer];
-        [self->view removeGestureRecognizer:self->pinchGestureRecognizer];
-        [self->view removeGestureRecognizer:self->rotationGestureRecognizer];
-        [self->view removeGestureRecognizer:self->verticalPanGestureRecognizer];
+        [view removeGestureRecognizer:panGestureRecognizer];
+        [view removeGestureRecognizer:pinchGestureRecognizer];
+        [view removeGestureRecognizer:rotationGestureRecognizer];
+        [view removeGestureRecognizer:verticalPanGestureRecognizer];
     }
 
     // Invalidate the display link if the navigator is de-allocated before the display link can be cleaned up normally.
-    if (self->displayLink != nil)
+    if (displayLink != nil)
     {
-        [self->displayLink invalidate];
+        [displayLink invalidate];
     }
 }
 
@@ -121,16 +119,16 @@
 {
     // The view is a weak reference, so it may have been de-allocated. In this case currentState returns nil since it
     // has no context with which to compute the current modelview and projection matrices.
-    if (self->view == nil)
+    if (view == nil)
     {
         WWLog(@"Unable to compute current navigator state: View is nil (deallocated)");
         return nil;
     }
 
-    WWGlobe* globe = [[self->view sceneController] globe];
+    WWGlobe* globe = [[view sceneController] globe];
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
 
-    CGRect viewport = [self->view viewport];
+    CGRect viewport = [view viewport];
     double viewportWidth = CGRectGetWidth(viewport);
     double viewportHeight = CGRectGetHeight(viewport);
 
@@ -258,30 +256,30 @@
 
 - (void) startDisplayLink
 {
-    if (self->displayLinkObservers == 0)
+    if (displayLinkObservers == 0)
     {
-        self->displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
-        [self->displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
-        [self->displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
+        [displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
+        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
 
-    self->displayLinkObservers++;
+    displayLinkObservers++;
 }
 
 - (void) stopDisplayLink
 {
-    self->displayLinkObservers--;
+    displayLinkObservers--;
 
-    if (self->displayLinkObservers == 0)
+    if (displayLinkObservers == 0)
     {
-        [self->displayLink invalidate];
-        self->displayLink = nil;
+        [displayLink invalidate];
+        displayLink = nil;
     }
 }
 
 - (void) displayLinkDidFire:(CADisplayLink*)aDisplayLink
 {
-    if (self->animating)
+    if (animating)
     {
         NSDate* now = [NSDate date];
         [self updateAnimationForDate:now];
@@ -306,7 +304,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->lastPanTranslation = CGPointMake(0, 0);
+        lastPanTranslation = CGPointMake(0, 0);
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -316,16 +314,16 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         // Compute the translation in the view's local coordinate system.
-        CGPoint panTranslation = [recognizer translationInView:self->view];
-        double dx = panTranslation.x - self->lastPanTranslation.x;
-        double dy = panTranslation.y - self->lastPanTranslation.y;
-        self->lastPanTranslation = panTranslation;
+        CGPoint panTranslation = [recognizer translationInView:view];
+        double dx = panTranslation.x - lastPanTranslation.x;
+        double dy = panTranslation.y - lastPanTranslation.y;
+        lastPanTranslation = panTranslation;
 
         // Convert the translation from the view's local coordinate system to meters, assuming the translation is
         // intended for an object that is 'range' meters away form the eye position. Convert from change in screen
         // relative coordinates to change in model relative coordinates by inverting the change in X. There is no need
         // to invert the change in Y because the Y axis coordinates are already inverted.
-        CGRect viewport = [self->view viewport];
+        CGRect viewport = [view viewport];
         double distance = MAX(1, _range);
         double metersPerPixel = [WWMath perspectiveSizePreservingMaxPixelSize:CGRectGetWidth(viewport)
                                                                viewportHeight:CGRectGetHeight(viewport)
@@ -335,7 +333,7 @@
 
         // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context to
         // perform this conversion.
-        WWGlobe* globe = [[self->view sceneController] globe];
+        WWGlobe* globe = [[view sceneController] globe];
         double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
         double forwardDegrees = DEGREES(forwardMeters / globeRadius);
         double sideDegrees = DEGREES(sideMeters / globeRadius);
@@ -375,7 +373,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginRange = _range;
+        gestureBeginRange = _range;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -389,7 +387,7 @@
         CGFloat scale = [recognizer scale];
         if (scale != 0)
         {
-            _range = self->gestureBeginRange / scale;
+            _range = gestureBeginRange / scale;
         }
     }
     else
@@ -404,7 +402,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginHeading = _heading;
+        gestureBeginHeading = _heading;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -414,7 +412,7 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         double rotationInDegrees = DEGREES([recognizer rotation]);
-        _heading = NormalizedDegreesHeading(self->gestureBeginHeading - rotationInDegrees);
+        _heading = NormalizedDegreesHeading(gestureBeginHeading - rotationInDegrees);
     }
     else
     {
@@ -432,7 +430,7 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        self->gestureBeginTilt = _tilt;
+        gestureBeginTilt = _tilt;
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -441,10 +439,10 @@
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
-        CGPoint translation = [recognizer translationInView:self->view];
-        CGRect bounds = [self->view bounds];
+        CGPoint translation = [recognizer translationInView:view];
+        CGRect bounds = [view bounds];
         double degrees = 90 * translation.y / CGRectGetHeight(bounds);
-        _tilt = [WWMath clampValue:self->gestureBeginTilt + degrees min:0 max:90];
+        _tilt = [WWMath clampValue:gestureBeginTilt + degrees min:0 max:90];
     }
     else
     {
@@ -454,17 +452,17 @@
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer
 {
-    if (recognizer == self->panGestureRecognizer)
+    if (recognizer == panGestureRecognizer)
     {
-        return otherRecognizer == self->pinchGestureRecognizer || otherRecognizer == self->rotationGestureRecognizer;
+        return otherRecognizer == pinchGestureRecognizer || otherRecognizer == rotationGestureRecognizer;
     }
-    else if (recognizer == self->pinchGestureRecognizer)
+    else if (recognizer == pinchGestureRecognizer)
     {
-        return otherRecognizer == self->panGestureRecognizer || otherRecognizer == self->rotationGestureRecognizer;
+        return otherRecognizer == panGestureRecognizer || otherRecognizer == rotationGestureRecognizer;
     }
-    else if (recognizer == self->rotationGestureRecognizer)
+    else if (recognizer == rotationGestureRecognizer)
     {
-        return otherRecognizer == self->panGestureRecognizer || otherRecognizer == self->pinchGestureRecognizer;
+        return otherRecognizer == panGestureRecognizer || otherRecognizer == pinchGestureRecognizer;
     }
     else
     {
@@ -481,11 +479,11 @@
     // Determine whether the vertical pan gesture recognizer should recognizer its gesture. This gesture recognizer is
     // a UIPanGestureRecognizer configured with two or more touches. In order to limit its recognition to a vertical pan
     // gesture, we place additional limitations on its recognition in this delegate.
-    if (recognizer == self->verticalPanGestureRecognizer)
+    if (recognizer == verticalPanGestureRecognizer)
     {
         UIPanGestureRecognizer* pgr = (UIPanGestureRecognizer*) recognizer;
 
-        CGPoint translation = [pgr translationInView:self->view];
+        CGPoint translation = [pgr translationInView:view];
         if (fabs(translation.x) > fabs(translation.y))
         {
             return NO; // Do not recognize the gesture; the pan is horizontal.
@@ -497,8 +495,8 @@
             return NO; // Do not recognize the gesture; not enough touches.
         }
 
-        CGPoint touch1 = [pgr locationOfTouch:0 inView:self->view];
-        CGPoint touch2 = [pgr locationOfTouch:1 inView:self->view];
+        CGPoint touch1 = [pgr locationOfTouch:0 inView:view];
+        CGPoint touch2 = [pgr locationOfTouch:1 inView:view];
         double slope = (touch2.y - touch1.y) / (touch2.x - touch1.x);
         if (fabs(slope) > 1)
         {

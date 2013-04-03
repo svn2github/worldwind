@@ -21,16 +21,6 @@
 /**
 * TODO
 */
-@property (readonly, nonatomic) double nearDistance;
-
-/**
-* TODO
-*/
-@property (readonly, nonatomic) double farDistance;
-
-/**
-* TODO
-*/
 @property (nonatomic) WWLocation* lookAt;
 
 /**
@@ -47,6 +37,16 @@
 * TODO
 */
 @property (nonatomic) double tilt;
+
+/**
+* TODO
+*/
+@property (readonly, nonatomic) double nearDistance;
+
+/**
+* TODO
+*/
+@property (readonly, nonatomic) double farDistance;
 
 /// @name Initializing the Navigator
 
