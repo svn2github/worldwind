@@ -408,8 +408,13 @@
         retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
     }
 
-    [retriever setThreadPriority:0.0];
-    [[WorldWind retrievalQueue] addOperation:retriever];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),
+            ^{
+                [retriever performRetrieval];
+            });
+
+//    [retriever setThreadPriority:0.0];
+//    [[WorldWind retrievalQueue] addOperation:retriever];
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat

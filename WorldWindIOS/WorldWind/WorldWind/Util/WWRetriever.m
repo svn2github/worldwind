@@ -34,6 +34,11 @@
 
 - (void) main
 {
+    [self performRetrieval];
+}
+
+- (void) performRetrieval
+{
     @autoreleasepool
     {
         NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];

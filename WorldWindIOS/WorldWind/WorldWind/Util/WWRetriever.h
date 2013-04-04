@@ -44,4 +44,11 @@
 */
 - (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object;
 
+/// @name Operations
+
+/**
+* Perform the retrieval on the current thread.
+*/
+- (void) performRetrieval;
+
 @end
