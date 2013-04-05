@@ -37,12 +37,17 @@
 
 - (WWVec4*) initWithVector:(WWVec4*)vector
 {
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
     self = [super init];
 
-    _x = [vector x];
-    _y = [vector y];
-    _z = [vector z];
-    _w = [vector w];
+    _x = vector->_x;
+    _y = vector->_y;
+    _z = vector->_z;
+    _w = vector->_w;
 
     return self;
 }
@@ -74,19 +79,19 @@
     _z = 0;
     _w = 0;
 
-    for (NSUInteger i = 0; i < [vectors count]; i++)
+    for (WWVec4* vec in vectors)
     {
-        WWVec4* vec = [vectors objectAtIndex:i];
-
         if (vec == nil)
+        {
             continue;
+        }
 
         ++count;
 
-        _x += [vec x];
-        _y += [vec y];
-        _z += [vec z];
-        _w += [vec w];
+        _x += vec->_x;
+        _y += vec->_y;
+        _z += vec->_z;
+        _w += vec->_w;
     }
 
     if (count == 0)
@@ -116,11 +121,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    double x = [origin x] + [direction x] * t;
-    double y = [origin y] + [direction y] * t;
-    double z = [origin z] + [direction z] * t;
-
-    [result set:x y:y z:z];
+    result->_x = origin->_x + direction->_x * t;
+    result->_y = origin->_y + direction->_y * t;
+    result->_z = origin->_z + direction->_z * t;
 }
 
 - (id) copyWithZone:(NSZone*)zone
@@ -165,10 +168,10 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    _x = [vector x];
-    _y = [vector y];
-    _z = [vector z];
-    _w = [vector w];
+    _x = vector->_x;
+    _y = vector->_y;
+    _z = vector->_z;
+    _w = vector->_w;
 
     return self;
 }
@@ -187,7 +190,9 @@
 {
     double length = [self length3];
     if (length == 0)
+    {
         return self; // Vector has zero length.
+    }
 
     _x /= length;
     _y /= length;
@@ -203,9 +208,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    _x += vector.x;
-    _y += vector.y;
-    _z += vector.z;
+    _x += vector->_x;
+    _y += vector->_y;
+    _z += vector->_z;
 
     return self;
 }
@@ -217,9 +222,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    _x -= vector.x;
-    _y -= vector.y;
-    _z -= vector.z;
+    _x -= vector->_x;
+    _y -= vector->_y;
+    _z -= vector->_z;
 
     return self;
 }
@@ -250,12 +255,12 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
     }
 
-    double* ms = matrix->m;
+    double* m = matrix->m;
 
-    double x = ms[0] * _x + ms[1] * _y + ms[2] * _z + ms[3] * _w;
-    double y = ms[4] * _x + ms[5] * _y + ms[6] * _z + ms[7] * _w;
-    double z = ms[8] * _x + ms[9] * _y + ms[10] * _z + ms[11] * _w;
-    double w = ms[12] * _x + ms[13] * _y + ms[14] * _z + ms[15] * _w;
+    double x = m[0] * _x + m[1] * _y + m[2] * _z + m[3] * _w;
+    double y = m[4] * _x + m[5] * _y + m[6] * _z + m[7] * _w;
+    double z = m[8] * _x + m[9] * _y + m[10] * _z + m[11] * _w;
+    double w = m[12] * _x + m[13] * _y + m[14] * _z + m[15] * _w;
 
     _x = x;
     _y = y;
@@ -301,9 +306,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    double dx = [vector x] - _x;
-    double dy = [vector y] - _y;
-    double dz = [vector z] - _z;
+    double dx = vector->_x - _x;
+    double dy = vector->_y - _y;
+    double dz = vector->_z - _z;
 
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
@@ -315,16 +320,16 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    double dx = [vector x] - _x;
-    double dy = [vector y] - _y;
-    double dz = [vector z] - _z;
+    double dx = vector->_x - _x;
+    double dy = vector->_y - _y;
+    double dz = vector->_z - _z;
 
     return dx * dx + dy * dy + dz * dz;
 }
 
 - (double) dot3:(WWVec4*)vector
 {
-    return _x * [vector x] + _y * [vector y] + _z * [vector z];
+    return _x * vector->_x + _y * vector->_y + _z * vector->_z;
 }
 
 @end
