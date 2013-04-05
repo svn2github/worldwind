@@ -81,6 +81,16 @@
     return self;
 }
 
+- (WWLocation*) initWithZeroLocation
+{
+    self = [super init];
+
+    _latitude = 0;
+    _longitude = 0;
+
+    return self;
+}
+
 - (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithDegreesLatitude:_latitude longitude:_longitude];

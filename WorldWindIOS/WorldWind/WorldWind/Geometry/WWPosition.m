@@ -48,7 +48,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
     }
 
-    self = [super initWithLocation:position]; // Let the superclass set the latitude and longitude.
+    self = [super initWithLocation:position]; // Let the superclass initialize latitude and longitude.
 
     _altitude = position->_altitude;
 
@@ -62,9 +62,18 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
     }
 
-    self = [super initWithCLLocation:location]; // Let the superclass set the latitude and longitude.
+    self = [super initWithCLLocation:location]; // Let the superclass initialize latitude and longitude.
 
     _altitude = [location altitude];
+
+    return self;
+}
+
+- (WWPosition*) initWithZeroPosition
+{
+    self = [super initWithZeroLocation]; // Let the superclass initialize latitude and longitude.
+
+    _altitude = 0;
 
     return self;
 }

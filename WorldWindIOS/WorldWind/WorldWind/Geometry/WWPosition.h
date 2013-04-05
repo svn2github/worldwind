@@ -76,6 +76,13 @@
 */
 - (WWPosition*) initWithCLPosition:(CLLocation*)location;
 
+/**
+* Initializes a position with its latitude, longitude and altitude set to 0.
+*
+* @return The initialized position.
+*/
+- (WWPosition*) initWithZeroPosition;
+
 /// @name Setting the Contents of Positions
 
 /**

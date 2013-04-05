@@ -95,6 +95,13 @@
 */
 - (WWLocation*) initWithCLCoordinate:(CLLocationCoordinate2D)locationCoordinate;
 
+/**
+* Initializes a location with its latitude and longitude set to 0.
+*
+* @return The initialized location.
+*/
+- (WWLocation*) initWithZeroLocation;
+
 /// @name Setting the Contents of Locations
 
 /**
