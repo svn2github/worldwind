@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWTessellator;
-@class WWTerrainTile;
-@class WWTerrainTileList;
 @class WWDrawContext;
+@class WWLine;
+@class WWTerrainTileList;
+@class WWTessellator;
 @class WWPosition;
 @class WWSector;
 @class WWVec4;
@@ -165,23 +165,69 @@
                                 z:(double)z
                    outputPosition:(WWPosition*)result;
 
-- (void) computeNormal:(double)latitude
-             longitude:(double)longitude
-           outputPoint:(WWVec4*)result;
-
-- (void) computeNorthTangent:(double)latitude
-                   longitude:(double)longitude
-                  outputPoint:(WWVec4*)result;
+/**
+* Computes a unit length vector that is normal to the globe's surface at a specified geographic position.
+*
+* @param latitude The latitude at which to compute the surface normal.
+* @param longitude The longitude at which to compute the surface normal.
+* @param result A WWVec4 instance in which to return the surface normal.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) surfaceNormalAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result;
 
 /**
-* Computes the surface normal at a specified Cartesian point.
+* Computes a unit length vector that is normal to this globe's surface at a specified point in model coordinates.
 *
-* @param point The point at which to compute the surface normal.
-* @param result An WWVec4 instance in which to return the surface normal.
+* @param x The x coordinate of the point.
+* @param y The y coordinate of the point.
+* @param z The z coordinate of the point.
+* @param result A WWVec4 instance in which to return the surface normal.
 *
 * @exception NSInvalidArgumentException If either argument is nil.
 */
-- (void) surfaceNormalAtPoint:(WWVec4*)point result:(WWVec4*)result;
+- (void) surfaceNormalAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result;
+
+/**
+* Computes a unit length vector that points north and is tangent to this globe's surface at a specified geographic
+* position.
+*
+* @param latitude The latitude at which to compute the north tangent.
+* @param longitude The longitude at which to compute the north tangent.
+* @param result A WWVec4 instance in which to return the north tangent.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) northTangentAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result;
+
+/**
+* Computes a unit length vector that points north and is tangent to this globe's surface at a specified point in model
+* coordinates.
+*
+* @param x The x coordinate of the point.
+* @param y The y coordinate of the point.
+* @param z The z coordinate of the point.
+* @param result A WWVec4 instance in which to return the north tangent.
+*
+* @exception NSInvalidArgumentException If either argument is nil.
+*/
+- (void) northTangentAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result;
+
+/// @name Computing Globe-Ray Intersections
+
+/**
+* Computes the first intersection of this globe with the specified ray, returning whether the ray intersects this globe.
+*
+* This interprets the specified line as a ray; intersection points behind the line's origin are ignored.
+*
+* @param ray The ray to intersect with this globe.
+* @param result A WWVec4 instance in which to return the intersection point.
+*
+* @return YES if the ray intersects this globe, otherwise NO.
+*
+* @exception NSInvalidArgumentException If either argument is nil.
+*/
+- (BOOL) intersectWithRay:(WWLine*)ray result:(WWVec4*)result;
 
 /// @name Retrieving Globe Elevations
 

@@ -8,6 +8,7 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Geometry/WWPlane.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
@@ -23,6 +24,10 @@
 {
     return [[[self class] alloc] initWithMatrix:self];
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Matrices --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (WWMatrix*) initWithIdentity
 {
@@ -246,6 +251,10 @@
     return self;
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Setting the Contents of Matrices --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (WWMatrix*) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
               m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
               m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
@@ -292,6 +301,10 @@
 
     return self;
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Making Transform Matrices --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z
 {
@@ -361,33 +374,114 @@
     return self;
 }
 
-- (WWMatrix*) setLookAt:(WWGlobe*)globe
-         centerLatitude:(double)latitude
-        centerLongitude:(double)longitude
-         centerAltitude:(double)altitude
-          rangeInMeters:(double)range
-                heading:(double)heading
-                   tilt:(double)tilt
+- (WWMatrix*) setToLocalOriginTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe
 {
+    if (origin == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Origin is nil");
+    }
+
     if (globe == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
     }
 
-    if (range < 0)
+    double x = [origin x];
+    double y = [origin y];
+    double z = [origin z];
+
+    // Compute the surface normal in model coordinates. This normal is mapped to the local origin's z axis.
+    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+    [globe surfaceNormalAtPoint:x y:y z:z result:point];
+    double nx = [point x];
+    double ny = [point y];
+    double nz = [point z];
+
+    // Compute the north pointing tangent vector in model coordinates. This vector is mapped to the local origin's y
+    // axis.
+    [globe northTangentAtPoint:x y:y z:z result:point];
+    double ux = [point x];
+    double uy = [point y];
+    double uz = [point z];
+
+    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
+    // orthogonal to the surface normal and north pointing tangent, and is mapped to the local origin's x axis.
+    double sx = (uy * nz) - (uz * ny);
+    double sy = (uz * nx) - (ux * nz);
+    double sz = (ux * ny) - (uy * nx);
+
+    double len = [[point set:sx y:sy z:sz] length3];
+    if (len != 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid");
+        sx /= len;
+        sy /= len;
+        sz /= len;
     }
 
-    // Range transform. Moves the eye point along the positive z axis while keeping the center point in the center
-    // of the viewport.
-    [self setToTranslation:0 y:0 z:-range];
+    // Maps the specified point to the origin, the positive z axis to the surface normal, and the positive y axis to the
+    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
+    // unnecessary matrix allocations.
+    [self set:sx m01:ux m02:nx m03:x
+          m10:sy m11:uy m12:ny m13:y
+          m20:sz m21:uz m22:nz m23:z
+          m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
+- (void) transformRotationAngles:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    // Taken from Extracting Euler Angles from a Rotation Matrix by Mike Day, Insomniac Games.
+    // http://www.insomniacgames.com/mike-day-extracting-euler-angles-from-a-rotation-matrix/
+
+    double x = atan2(m[6], m[10]);
+    double y = atan2(-m[2], sqrt(m[0] * m[0] + m[1] * m[1]));
+    double cx = cos(x);
+    double sx = sin(x);
+    double z = atan2(sx * m[8] - cx * m[4], cx * m[5] - sx * m[9]);
+
+    [result set:DEGREES(x) y:DEGREES(y) z:DEGREES(z)];
+}
+
+- (void) transformTranslation:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    [result set:m[3] y:m[7] z:m[11]];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Making Viewing and Perspective Matrices --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (WWMatrix*) setToFirstPersonModelview:(WWPosition*)eyePosition
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                                onGlobe:(WWGlobe*)globe
+{
+    if (eyePosition == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Eye position is nil");
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
+    }
 
     // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
     // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix
     // and stored the result inline here to avoid unnecessary matrix allocations.
-    double c = cos(RADIANS(tilt)); // No need to invert cos(roll) to change the direction of rotation. cos(-a) = cos(a)
-    double s = -sin(RADIANS(tilt)); // Invert sin(roll) in order to change the direction of rotation. sin(-a) = -sin(a)
+    double c = cos(RADIANS(tilt)); // No need to invert cos(tilt) to change the direction of rotation. cos(-a) = cos(a)
+    double s = -sin(RADIANS(tilt)); // Invert sin(tilt) in order to change the direction of rotation. sin(-a) = -sin(a)
     [self multiply:1 m01:0 m02:0 m03:0
                m10:0 m11:c m12:-s m13:0
                m20:0 m21:s m22:c m23:0
@@ -404,30 +498,33 @@
                m20:0 m21:0 m22:1 m23:0
                m30:0 m31:0 m32:0 m33:1];
 
-    // Compute the center point in model coordinates. This point is mapped to the eye point in the center position
-    // transform below. By using the terrain and an altitude mode, we provide the ability for this transform to map the
-    // eye point to either a point relative to the geoid or a point relative to the surface.
-    WWVec4* point = [[WWVec4 alloc] init];
-    [globe computePointFromPosition:latitude longitude:longitude altitude:altitude outputPoint:point];
-    double cx = point.x;
-    double cy = point.y;
-    double cz = point.z;
+    // Store the eye position's latitude, longitude and altitude to reduce Objective-C method call overhead.
+    double lat = [eyePosition latitude];
+    double lon = [eyePosition longitude];
+    double alt = [eyePosition altitude];
+
+    // Compute the eye point in model coordinates. This point is mapped to the origin in the look at transform below.
+    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:lat longitude:lon altitude:alt outputPoint:point];
+    double ex = [point x];
+    double ey = [point y];
+    double ez = [point z];
 
     // Compute the surface normal in model coordinates. This normal is used as the inverse of the forward vector in the
-    // center position transform below.
-    [globe computeNormal:latitude longitude:longitude outputPoint:point];
-    double nx = point.x;
-    double ny = point.y;
-    double nz = point.z;
+    // look at transform below.
+    [globe surfaceNormalAtLatitude:lat longitude:lon result:point];
+    double nx = [point x];
+    double ny = [point y];
+    double nz = [point z];
 
     // Compute the north pointing tangent vector in model coordinates. This vector is used as the up vector in the
-    // center position transform below.
-    [globe computeNorthTangent:latitude longitude:longitude outputPoint:point];
-    double ux = point.x;
-    double uy = point.y;
-    double uz = point.z;
+    // look at transform below.
+    [globe northTangentAtLatitude:lat longitude:lon result:point];
+    double ux = [point x];
+    double uy = [point y];
+    double uz = [point z];
 
-    // Compute the side vector from the specified surface normal, and north pointing tangent. The side vector is
+    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
     // orthogonal to the surface normal and north pointing tangent.
     double sx = (uy * nz) - (uz * ny);
     double sy = (uz * nx) - (ux * nz);
@@ -441,9 +538,106 @@
         sz /= len;
     }
 
-    // Center position transform. Maps the eye point to the center position, the positive z axis to the surface
-    // normal, and the positive y axis is mapped to the north pointing tangent. We have pre-computed the resultant
-    // matrix and stored the result inline here to avoid unnecessary matrix allocations.
+    // Look at transform. Maps the origin to the eye point, the z axis to the surface normal, and the y axis to the
+    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
+    // unnecessary matrix allocations.
+    [self multiply:sx m01:sy m02:sz m03:-sx * ex - sy * ey - sz * ez
+               m10:ux m11:uy m12:uz m13:-ux * ex - uy * ey - uz * ez
+               m20:nx m21:ny m22:nz m23:-nx * ex - ny * ey - nz * ez
+               m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
+- (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
+                     rangeInMeters:(double)range
+                    headingDegrees:(double)heading
+                       tiltDegrees:(double)tilt
+                           onGlobe:(WWGlobe*)globe
+{
+    if (lookAtPosition == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Look at position is nil");
+    }
+
+    if (range < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Range is invalid");
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
+    }
+
+    // Range transform. Moves the eye point along the positive z axis while keeping the look at point in the center
+    // of the viewport.
+    [self setToTranslation:0 y:0 z:-range];
+
+    // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
+    // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix
+    // and stored the result inline here to avoid unnecessary matrix allocations.
+    double c = cos(RADIANS(tilt)); // No need to invert cos(tilt) to change the direction of rotation. cos(-a) = cos(a)
+    double s = -sin(RADIANS(tilt)); // Invert sin(tilt) in order to change the direction of rotation. sin(-a) = -sin(a)
+    [self multiply:1 m01:0 m02:0 m03:0
+               m10:0 m11:c m12:-s m13:0
+               m20:0 m21:s m22:c m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    // Heading transform. Rotates the eye point in a clockwise direction around the positive z axis. This has a
+    // different effect than roll when tilt is non-zero because the view is no longer looking down the positive z axis.
+    // We have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
+    // allocations.
+    c = cos(RADIANS(heading));
+    s = sin(RADIANS(heading));
+    [self multiply:c m01:-s m02:0 m03:0
+               m10:s m11:c m12:0 m13:0
+               m20:0 m21:0 m22:1 m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    // Store the look at position's latitude, longitude and altitude to reduce Objective-C method call overhead.
+    double lat = [lookAtPosition latitude];
+    double lon = [lookAtPosition longitude];
+    double alt = [lookAtPosition altitude];
+
+    // Compute the look at in model coordinates. This point is mapped to the origin in the look at transform below.
+    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:lat longitude:lon altitude:alt outputPoint:point];
+    double cx = [point x];
+    double cy = [point y];
+    double cz = [point z];
+
+    // Compute the surface normal in model coordinates. This normal is used as the inverse of the forward vector in the
+    // look at transform below.
+    [globe surfaceNormalAtLatitude:lat longitude:lon result:point];
+    double nx = [point x];
+    double ny = [point y];
+    double nz = [point z];
+
+    // Compute the north pointing tangent vector in model coordinates. This vector is used as the up vector in the
+    // look at transform below.
+    [globe northTangentAtLatitude:lat longitude:lon result:point];
+    double ux = [point x];
+    double uy = [point y];
+    double uz = [point z];
+
+    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
+    // orthogonal to the surface normal and north pointing tangent.
+    double sx = (uy * nz) - (uz * ny);
+    double sy = (uz * nx) - (ux * nz);
+    double sz = (ux * ny) - (uy * nx);
+
+    double len = [[point set:sx y:sy z:sz] length3];
+    if (len != 0)
+    {
+        sx /= len;
+        sy /= len;
+        sz /= len;
+    }
+
+    // Look at transform. Maps the origin to the eye point, the z axis to the surface normal, and the y axis to the
+    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
+    // unnecessary matrix allocations.
     [self multiply:sx m01:sy m02:sz m03:-sx * cx - sy * cy - sz * cz
                m10:ux m11:uy m12:uz m13:-ux * cx - uy * cy - uz * cz
                m20:nx m21:ny m22:nz m23:-nx * cx - ny * cy - nz * cz
@@ -685,6 +879,39 @@
 
     return self;
 }
+
+- (void) modelviewEyePoint:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
+    // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
+    // the transpose of its upper 3x3 components.
+    double x = -(m[0] * m[3]) - (m[4] * m[7]) - (m[8] * m[11]);
+    double y = -(m[1] * m[3]) - (m[5] * m[7]) - (m[9] * m[11]);
+    double z = -(m[2] * m[3]) - (m[6] * m[7]) - (m[10] * m[11]);
+
+    [result set:x y:y z:z];
+}
+
+- (void) modelviewForward:(WWVec4*)result
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
+    // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
+    [result set:-m[8] y:-m[9] z:-m[10]];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Matrix Operations --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (WWMatrix*) multiplyMatrix:(WWMatrix*)matrix
 {
@@ -1061,6 +1288,10 @@
 {
     self->m[10] *= 1 + depthOffset;
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Methods for Internal Use --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
 - (void) lubksb:(const double*)A indx:(const int*)indx b:(double*)b

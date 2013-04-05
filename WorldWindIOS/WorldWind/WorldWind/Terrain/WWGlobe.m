@@ -6,13 +6,14 @@
  */
 
 #import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Terrain/WWEarthElevationModel.h"
+#import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Geometry/WWLine.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWGlobe : NSObject
 
@@ -287,9 +288,7 @@
     [result setDegreesLatitude:DEGREES(phi) longitude:DEGREES(lambda) altitude:h];
 }
 
-- (void) computeNormal:(double)latitude
-             longitude:(double)longitude
-           outputPoint:(WWVec4*)result
+- (void) surfaceNormalAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result;
 {
     if (result == nil)
     {
@@ -304,19 +303,16 @@
     double eqSquared = _equatorialRadius * _equatorialRadius;
     double polSquared = _polarRadius * _polarRadius;
 
-    result.x = cosLat * sinLon / eqSquared;
-    result.y = (1 - _es) * sinLat / polSquared;
-    result.z = cosLat * cosLon / eqSquared;
+    double x = cosLat * sinLon / eqSquared;
+    double y = (1 - _es) * sinLat / polSquared;
+    double z = cosLat * cosLon / eqSquared;
+
+    [result set:x y:y z:z];
     [result normalize3];
 }
 
-- (void) surfaceNormalAtPoint:(WWVec4*)point result:(WWVec4*)result
+- (void) surfaceNormalAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result
 {
-    if (point == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
-    }
-
     if (result == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
@@ -325,13 +321,15 @@
     double eSquared = _equatorialRadius * _equatorialRadius;
     double polSquared = _polarRadius * _polarRadius;
 
-    [result set:[point x] / eSquared y:[point y] / polSquared z:[point z] / eSquared];
+    double nx = x / eSquared;
+    double ny = y / polSquared;
+    double nz = z / eSquared;
+
+    [result set:nx y:ny z:nz];
     [result normalize3];
 }
 
-- (void) computeNorthTangent:(double)latitude
-                   longitude:(double)longitude
-                 outputPoint:(WWVec4*)result
+- (void) northTangentAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result
 {
     if (result == nil)
     {
@@ -356,10 +354,69 @@
     double sinLat = sin(RADIANS(latitude));
     double sinLon = sin(RADIANS(longitude));
 
-    result.x = -sinLat * sinLon;
-    result.y = cosLat;
-    result.z = -sinLat * cosLon;
+    double x = -sinLat * sinLon;
+    double y = cosLat;
+    double z = -sinLat * cosLon;
+
+    [result set:x y:y z:z];
     [result normalize3];
+}
+
+- (void) northTangentAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result;
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    WWPosition* pos = [[WWPosition alloc] initWithZeroPosition];
+    [self computePositionFromPoint:x y:y z:z outputPosition:pos];
+    [self northTangentAtLatitude:[pos latitude] longitude:[pos longitude] result:result];
+}
+
+- (BOOL) intersectWithRay:(WWLine*)ray result:(WWVec4*)result
+{
+    if (ray == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Ray is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
+    }
+
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.4.
+    //
+    // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
+    // parameter is always 1, so its square and its product with any other value simplifies to the identity.
+
+    double m = _equatorialRadius / _polarRadius; // ratio of the x semi-axis length to the y semi-axis length
+    double m2 = m * m;
+    double r2 = _equatorialRadius * _equatorialRadius; // nominal radius squared
+
+    double vx = [[ray direction] x];
+    double vy = [[ray direction] y];
+    double vz = [[ray direction] z];
+    double sx = [[ray origin] x];
+    double sy = [[ray origin] y];
+    double sz = [[ray origin] z];
+
+    double a = vx * vx + m2 * vy * vy + vz * vz;
+    double b = 2 * (sx * vx + m2 * sy * vy + sz * vz);
+    double c = sx * sx + m2 * sy * sy + sz * sz - r2;
+    double d = b * b - 4 * a * c; // discriminant
+
+    if (d < 0)
+    {
+        return NO;
+    }
+    else
+    {
+        double t = (-b - sqrt(d)) / (2 * a);
+        [ray pointAt:t result:result];
+        return YES;
+    }
 }
 
 - (NSDate*) elevationTimestamp

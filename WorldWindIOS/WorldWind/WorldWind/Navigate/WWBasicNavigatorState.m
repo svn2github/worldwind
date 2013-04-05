@@ -29,22 +29,15 @@
 
     self = [super init];
 
+    // Store the modelview, projection, and modelview-projection matrices and
     _modelview = [[WWMatrix alloc] initWithMatrix:modelviewMatrix];
     _projection = [[WWMatrix alloc] initWithMatrix:projectionMatrix];
     _modelviewProjection = [[WWMatrix alloc] initWithMultiply:projectionMatrix matrixB:modelviewMatrix];
     _viewport = viewport;
 
-    // Compute the inverse of the modelview, projection, and modelview-projection matrices. These inverses are used
-    // to support operations on navigator state, such as project, unProject, and pixelSizeAtDistance.
-    modelviewInv = [[WWMatrix alloc] initWithTransformInverse:_modelview];
-    projectionInv = [[WWMatrix alloc] initWithInverse:_projection];
-    modelviewProjectionInv = [[WWMatrix alloc] initWithInverse:_modelviewProjection];
-
-    // Compute the eye point in model coordinates. The eye point is computed by multiplying (0, 0, 0, 1) by the
-    // inverse of the modelview matrix. We have pre-computed the result and stored it inline here to avoid an
-    // unnecessary matrix multiplication.
-    double* mvi = modelviewInv->m;
-    _eyePoint = [[WWVec4 alloc] initWithCoordinates:mvi[3] y:mvi[7] z:mvi[11]];
+    // Compute the eye point in model coordinates.
+    _eyePoint = [[WWVec4 alloc] init];
+    [_modelview modelviewEyePoint:_eyePoint];
 
     // Compute the frustum in model coordinates. Start by computing the frustum in eye coordinates from the projection
     // matrix, then transform this frustum to model coordinates by multiplying its planes by the transpose of the
@@ -54,6 +47,12 @@
     _frustumInModelCoordinates = [projectionMatrix extractFrustum]; // returns normalized frustum plane vectors
     [_frustumInModelCoordinates transformByMatrix:modelviewTranspose];
     [_frustumInModelCoordinates normalize]; // re-normalize after transforming the frustum plane vectors.
+
+    // Compute the inverse of the modelview, projection, and modelview-projection matrices. The inverse matrices are
+    // used to support operations on navigator state, such as project, unProject, and pixelSizeAtDistance.
+    modelviewInv = [[WWMatrix alloc] initWithTransformInverse:_modelview];
+    projectionInv = [[WWMatrix alloc] initWithInverse:_projection];
+    modelviewProjectionInv = [[WWMatrix alloc] initWithInverse:_modelviewProjection];
 
     // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
     // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by

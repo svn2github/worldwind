@@ -8,11 +8,13 @@
 #import <CoreLocation/CoreLocation.h>
 #import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/Navigate/WWBasicNavigatorState.h"
+#import "WorldWind/Geometry/WWLine.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
@@ -20,11 +22,7 @@
 
 #define DEFAULT_NEAR_DISTANCE 1
 #define DEFAULT_FAR_DISTANCE 1000000000
-#define DEFAULT_LATITUDE 0
-#define DEFAULT_LONGITUDE 0
-#define DEFAULT_ALTITUDE 10000000
-#define DEFAULT_HEADING 0
-#define DEFAULT_TILT 0
+#define DEFAULT_RANGE 10000000
 #define DISPLAY_LINK_FRAME_INTERVAL 3
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
@@ -85,10 +83,10 @@
     animBeginLookAt = [[WWPosition alloc] init];
     animEndLookAt = [[WWPosition alloc] init];
 
-    _lookAt = [[WWLocation alloc] initWithDegreesLatitude:DEFAULT_LATITUDE longitude:DEFAULT_LONGITUDE];
-    _range = DEFAULT_ALTITUDE;
-    _heading = DEFAULT_HEADING;
-    _tilt = DEFAULT_TILT;
+    _lookAt = [[WWPosition alloc] initWithZeroPosition];
+    _range = DEFAULT_RANGE;
+    _heading = 0;
+    _tilt = 0;
     _nearDistance = DEFAULT_NEAR_DISTANCE;
     _farDistance = DEFAULT_FAR_DISTANCE;
     [self setInitialLocation];
@@ -134,28 +132,26 @@
 
     // Compute the current modelview matrix based on this Navigator's look-at location, range, heading, and tilt.
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview setLookAt:globe
-          centerLatitude:[_lookAt latitude]
-         centerLongitude:[_lookAt longitude]
-          centerAltitude:0
-           rangeInMeters:_range
-                 heading:_heading
-                    tilt:_tilt];
+    [modelview setToLookAtModelview:_lookAt
+                      rangeInMeters:_range
+                     headingDegrees:_heading
+                        tiltDegrees:_tilt
+                            onGlobe:globe];
+
+    // Compute the eye point in model coordinates and the corresponding eye position in geographic coordinates.
+    WWVec4* eyePoint = [[WWVec4 alloc] init];
+    WWPosition* eyePos = [[WWPosition alloc] init];
+    [modelview modelviewEyePoint:eyePoint];
+    [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
-    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position. Compute
-    // the eye point in geographic. The eye point is computed by multiplying (0, 0, 0, 1) by the inverse of the
-    // modelview matrix, then converting the result to a geographic position. We have pre-computed the result and stored
-    // it inline here to avoid an unnecessary matrix multiplication.
-    WWMatrix* mvi = [[[WWMatrix alloc] initWithIdentity] invertTransformMatrix:modelview];
-    WWPosition* eyePos = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
-    [globe computePositionFromPoint:mvi->m[3] y:mvi->m[7] z:mvi->m[11] outputPosition:eyePos];
-
-    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]]; // Must use globe elevation; terrain is not yet computed.
-    double heightAboveTerrain = [eyePos altitude] - globeElevation;
+    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
+    // Additionally, this must get an elevation from the globe since the terrain depends on the eye point.
+    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
+    double heightAboveSurface = [eyePos altitude] - globeElevation;
     _nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
                                                       viewportHeight:viewportHeight
-                                                    distanceToObject:heightAboveTerrain];
+                                                    distanceToObject:heightAboveSurface];
     if (_nearDistance < MIN_NEAR_DISTANCE)
         _nearDistance = MIN_NEAR_DISTANCE;
 
@@ -234,7 +230,7 @@
 
 - (void) setInitialLocation
 {
-    [_lookAt setDegreesLatitude:DEFAULT_LATITUDE timeZoneForLongitude:[NSTimeZone localTimeZone]];
+    [_lookAt setDegreesLatitude:0 timeZoneForLongitude:[NSTimeZone localTimeZone]];
 
     if (![CLLocationManager locationServicesEnabled])
     {
@@ -252,6 +248,47 @@
 
     WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
     [_lookAt setCLLocation:location];
+}
+
+- (void) setWithModelview:(WWMatrix*)modelview
+{
+    WWGlobe* globe = [[view sceneController] globe];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+
+    WWVec4* eyePoint = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* forward = [[WWVec4 alloc] initWithZeroVector];
+    [modelview modelviewEyePoint:eyePoint];
+    [modelview modelviewForward:forward];
+    WWLine* forwardRay = [[WWLine alloc] initWithOrigin:eyePoint direction:forward];
+
+    WWVec4* lookAtPoint = [[WWVec4 alloc] initWithZeroVector];
+    if (![globe intersectWithRay:forwardRay result:lookAtPoint])
+    {
+        WWPosition* eyePos = [[WWPosition alloc] initWithZeroPosition];
+        [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
+        double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
+        double heightAboveSurface = [eyePos altitude] - globeElevation;
+        double horizonDistance = [WWMath horizonDistance:globeRadius elevation:heightAboveSurface];
+        [forwardRay pointAt:horizonDistance result:lookAtPoint];
+    }
+
+    [globe computePositionFromPoint:[lookAtPoint x] y:[lookAtPoint y] z:[lookAtPoint z] outputPosition:_lookAt];
+
+    // Compute the range from the matrix translation components relative the the look at point. We transform the
+    // modelview matrix to the local coordinate system at the look at point. This eliminates the geographic transform
+    // contained in the modelview matrix while maintaining rotation and translation relative to the look at point. Then
+    // we retrieve the translation components of the resultant matrix in local coordinates.
+    WWMatrix* modelviewOriginInv = [[WWMatrix alloc] initWithIdentity];
+    [modelviewOriginInv setToLocalOriginTransform:lookAtPoint onGlobe:globe];
+    WWMatrix* modelviewLocal = [[WWMatrix alloc] initWithMultiply:modelview matrixB:modelviewOriginInv];
+    WWVec4* vec = [[WWVec4 alloc] initWithZeroVector];
+    [modelviewLocal transformTranslation:vec];
+    _range = -[vec z];
+
+    // Compute the heading and tilt from the matrix rotation components relative the the look at point.
+    [modelviewLocal transformRotationAngles:vec];
+    _heading = -[vec z];
+    _tilt = [vec x];
 }
 
 - (void) startDisplayLink

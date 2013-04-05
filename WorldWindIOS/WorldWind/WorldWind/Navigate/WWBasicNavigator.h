@@ -10,6 +10,7 @@
 #import "WorldWind/Navigate/WWNavigator.h"
 
 @class WorldWindView;
+@class WWPosition;
 
 /**
 * TODO
@@ -21,7 +22,7 @@
 /**
 * TODO
 */
-@property (nonatomic) WWLocation* lookAt;
+@property (nonatomic) WWPosition* lookAt;
 
 /**
 * TODO

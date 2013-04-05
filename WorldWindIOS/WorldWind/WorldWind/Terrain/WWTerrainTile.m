@@ -157,7 +157,7 @@
 
     // Apply the offset.
     WWVec4* normal = [[WWVec4 alloc] initWithZeroVector];
-    [[_tessellator globe] surfaceNormalAtPoint:result result:normal];
+    [[_tessellator globe] surfaceNormalAtPoint:[result x] y:[result y] z:[result z] result:normal];
     [WWVec4 pointOnLine:result direction:normal t:offset result:result];
 }
 @end

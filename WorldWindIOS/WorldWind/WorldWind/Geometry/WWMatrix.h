@@ -7,9 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class WWFrustum;
+@class WWPosition;
 @class WWGlobe;
 @class WWVec4;
-@class WWFrustum;
 
 /**
 * Represents a 4x4 double precision matrix and provides operations on and between matrices.
@@ -22,7 +23,7 @@
     double m[16];
 }
 
-/// @name Initializing Locations
+/// @name Initializing Matrices
 
 /**
 * Designated initializer
@@ -148,6 +149,8 @@
 */
 - (WWMatrix*) setToIdentity;
 
+/// @name Making Transform Matrices
+
 /**
 * Sets this matrix to the translation matrix for specified translation values. All existing values are overridden.
 *
@@ -193,15 +196,118 @@
 */
 - (WWMatrix*) setToUnitYFlip;
 
+/**
+* Sets this matrix to a local origin transform for the specified globe.
+*
+* A local origin transform maps a local coordinate space to a local tangent plane on the globe at the specified origin.
+* The local origin (0, 0, 0) is mapped to the specified origin, the z axis is mapped to the globe's normal vector at
+* the origin, the y axis is mapped to the north pointing tangent vector at the origin, and the x axis is mapped to
+* the east pointing tangent vector at the origin.
+*
+* @param origin The origin of the local coordinate system, relative to the globe.
+* @param globe The globe the transform is relative to.
+*
+* @return This matrix set to a local origin transform matrix.
+*
+* @exception If either argument is nil.
+*/
+- (WWMatrix*) setToLocalOriginTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
+
+/**
+* Computes a transform matrix's rotation angles in degrees.
+*
+* This assumes that this matrix represents a transform matrix, and that successive rotations have been applied in the
+* order x, y, z. If this matrix does not represent an orthonormal transform matrix the results are undefined.
+*
+* The rotation angles corresponding to this transform matrix's x, y and z rotations are returned in the result vector's
+* x, y and z components, respectively.
+*
+* @param result A WWVec4 instance in which to return the rotation angles.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) transformRotationAngles:(WWVec4*)result;
+
+/**
+* Computes a transform matrix's translation in model coordinates.
+*
+* This assumes that this matrix represents a transform matrix. If this matrix does not represent an orthonormal
+* transform matrix the results are undefined.
+*
+* The translation vector corresponding to this transform matrix's x, y and z translation is returned in the result
+* vector's x, y and z components, respectively.
+*
+* @param result A WWVec4 instance in which to return the translation.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) transformTranslation:(WWVec4*)result;
+
 /// @name Making Viewing and Perspective Matrices
 
-- (WWMatrix*) setLookAt:(WWGlobe*)globe
-         centerLatitude:(double)latitude
-        centerLongitude:(double)longitude
-         centerAltitude:(double)altitude
-          rangeInMeters:(double)range
-                heading:(double)heading
-                   tilt:(double)tilt;
+/**
+* Sets this matrix to a first person viewing matrix for the specified globe.
+*
+* A first person viewing matrix places the viewer's eye at the specified eyePosition. By default the viewer is looking
+* straight down at the globe's surface from the eye position, with the globe's normal vector coming out of the screen
+* and north pointing toward the top of the screen.
+*
+* Heading specifies the viewer's azimuth, or its angle relative to North. Heading values range from -180 degrees to 180
+* degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
+* West.
+*
+* Tilt specifies the viewer's angle relative ot the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+* of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
+* straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+*
+* @param eyePosition The viewer's geographic eye position relative to the specified globe.
+* @param heading The viewer's angle relative to north, in degrees.
+* @param tilt The viewer's angle relative to the surface, in degrees.
+* @param globe The globe the viewer is looking at.
+*
+* @return This matrix set to a first person viewing matrix.
+*
+* @exception If any argument is nil.
+*/
+- (WWMatrix*) setToFirstPersonModelview:(WWPosition*)eyePosition
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                                onGlobe:(WWGlobe*)globe;
+
+/**
+* Sets this matrix to a look at viewing matrix for the specified globe.
+*
+* A look at viewing matrix places the center of the screen at the specified lookAtPosition. By default the viewer is
+* looking straight down at the look at position from the specified range, with the globe's normal vector coming out of
+* the screen and north pointing toward the top of the screen.
+*
+* Range specifies the distance between the look at position and the viewer's eye point. Range values may be any positive
+* real number. A range of 0 meters places the eye point at the look at point, while a positive range moves the eye point
+* away from but still looking at the look at point.
+*
+* Heading specifies the viewer's azimuth, or its angle relative to North. Heading values range from -180 degrees to 180
+* degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
+* West.
+*
+* Tilt specifies the viewer's angle relative ot the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+* of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
+* straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+*
+* @param lookAtPosition The viewer's geographic look at position relative to the specified globe.
+* @param range The distance between the eye point and the look at point, in meters.
+* @param heading The viewer's angle relative to north, in degrees.
+* @param tilt The viewer's angle relative to the surface, in degrees.
+* @param globe The globe the viewer is looking at.
+*
+* @return This matrix set to a look at person viewing matrix.
+*
+* @exception If any argument is nil.
+*/
+- (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
+                     rangeInMeters:(double)range
+                    headingDegrees:(double)heading
+                       tiltDegrees:(double)tilt
+                           onGlobe:(WWGlobe*)globe;
 
 - (WWMatrix*) setOrthoFromLeft:(double)left
                          right:(double)right
@@ -230,6 +336,35 @@
                             viewportHeight:(double)height
                               nearDistance:(double)near
                                farDistance:(double)far;
+
+/**
+* Computes a modelview matrix's eye point in model coordinates.
+*
+* In model coordinates, a modelview matrix's eye point is the point the viewer is looking from. In eye coordinates the
+* eye point maps to the center of the screen. If this does not represent a modelview matrix the results are undefined.
+*
+* The computed point is stored in the result parameter after this method returns.
+*
+* @param result A WWVec4 instance in which to return the eye point.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) modelviewEyePoint:(WWVec4*)result;
+
+/**
+* Computes a modelview matrix's forward vector in model coordinates.
+*
+* In model coordinates, a modelview matrix's forward vector is the direction the viewer is looking. In eye coordinates
+* the forward vector maps to a vector going into the screen. If this matrix does not represent a modelview matrix the
+* results of this method are undefined.
+*
+* The computed point is stored in the result parameter after this method returns.
+*
+* @param result A WWVec4 instance in which to return the forward vector.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) modelviewForward:(WWVec4*)result;
 
 /// @name Matrix Operations
 
