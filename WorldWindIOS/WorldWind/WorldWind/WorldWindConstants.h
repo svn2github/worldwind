@@ -25,6 +25,9 @@ extern NSString* const WW_RHUMB;
 extern NSString* const WW_SUCCEEDED;
 extern NSString* const WW_RETRIEVAL_STATUS;
 extern NSString* const WW_REQUEST_STATUS;
+extern NSString* const WW_TEXTURE_PVRTC_4BPP;
+extern NSString* const WW_TEXTURE_RGBA_5551;
+extern NSString* const WW_TEXTURE_RGBA_8888;
 extern NSString* const WW_URL;
 
 @interface WorldWindConstants : NSObject

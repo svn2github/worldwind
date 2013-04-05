@@ -130,8 +130,14 @@
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _imageWidth, _imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                [self->imageData bytes]);
+        GLuint format = GL_UNSIGNED_BYTE;
+
+        if ([[_filePath pathExtension] isEqualToString:@"5551"])
+        {
+            format = GL_UNSIGNED_SHORT_5_5_5_1;
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _imageWidth, _imageHeight, 0, GL_RGBA, format, [self->imageData bytes]);
 
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -151,7 +157,7 @@
 
     int levelWidth = _imageWidth;
     int levelHeight = _imageHeight;
-    void* levelBits = ((void*)([self->imageData bytes])) + 13 * sizeof(int);
+    void* levelBits = ((void*) ([self->imageData bytes])) + 13 * sizeof(int);
 
     for (int levelNum = 0; levelNum < _numLevels; levelNum++)
     {
@@ -174,7 +180,7 @@
     {
         [self loadCompressedTexture];
     }
-    else if ([[_filePath pathExtension] isEqualToString:@"raw"])
+    else if ([[_filePath pathExtension] isEqualToString:@"5551"] | [[_filePath pathExtension] isEqualToString:@"8888"])
     {
         [self loadRawTexture];
     }
@@ -203,8 +209,10 @@
 {
     self->imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
 
+    int bytesPerPixel = [_filePath hasSuffix:@"5551"] ? 2 : 4;
+
     _textureSize = [self->imageData length];
-    _imageWidth = (int) sqrt([self->imageData length] / 4);
+    _imageWidth = (int) sqrt([self->imageData length] / bytesPerPixel);
     _imageHeight = _imageWidth;
 }
 
@@ -259,9 +267,14 @@
     }
 }
 
-+ (void) convertTextureToRaw:(NSString*)imagePath
++ (void) convertTextureTo8888:(NSString*)imagePath
 {
-    NSString* outputPath = [WWUtil replaceSuffixInPath:imagePath newSuffix:@"raw"];
+    if (imagePath == nil || [imagePath length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Image path is nil or zero length")
+    }
+
+    NSString* outputPath = [WWUtil replaceSuffixInPath:imagePath newSuffix:@"8888"];
 
     UIImage* uiImage = [UIImage imageWithContentsOfFile:imagePath];
     if (uiImage == nil)
@@ -306,6 +319,88 @@
         // The image has been drawn into the allocated memory, so release the no-longer-needed context.
         CGContextRelease(context);
     }
+}
+
++ (void) convertTextureTo5551:(NSString*)imagePath
+{
+    if (imagePath == nil || [imagePath length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Image path is nil or zero length")
+    }
+
+    NSString* outputPath = [WWUtil replaceSuffixInPath:imagePath newSuffix:@"5551"];
+
+    UIImage* uiImage = [UIImage imageWithContentsOfFile:imagePath];
+    if (uiImage == nil)
+    {
+        WWLog(@"Unable to load image file %@", imagePath);
+        return;
+    }
+
+    CGImageRef cgImage = [uiImage CGImage];
+
+    int imageWidth = CGImageGetWidth(cgImage);
+    int imageHeight = CGImageGetHeight(cgImage);
+    if (imageWidth == 0 || imageHeight == 0)
+    {
+        WWLog(@"Image size is zero for file %@", imagePath);
+        return;
+    }
+
+    int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
+    void* imageData = malloc((size_t) textureSize); // allocate space for the image
+
+    CGContextRef context;
+    @try
+    {
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        context = CGBitmapContextCreate(imageData, (size_t) imageWidth, (size_t) imageHeight,
+                8, (size_t) (4 * imageWidth), colorSpace, kCGImageAlphaPremultipliedLast);
+        CGRect rect = CGRectMake(0, 0, imageWidth, imageHeight);
+        CGContextClearRect(context, rect);
+        CGContextDrawImage(context, rect, cgImage);
+
+        NSData* outData = [self convertPixelsTo5551:imageData numPixels:(imageWidth * imageHeight)];
+        [outData writeToFile:outputPath atomically:YES];
+    }
+    @catch (NSException* exception)
+    {
+        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
+        WWLogE(msg, exception);
+    }
+    @finally
+    {
+        // The image has been drawn into the allocated memory, so release the no-longer-needed context.
+        CGContextRelease(context);
+    }
+}
+
++ (NSData*) convertPixelsTo5551:(void*)image numPixels:(int)numPixels
+{
+    uint16_t* outImage = malloc((size_t) numPixels * sizeof(uint16_t));
+    uint32_t* pixels = (uint32_t*) image;
+
+    for (int i = 0; i < numPixels; i++)
+    {
+        uint8_t* inPixel = (uint8_t*) &pixels[i];
+        int r = (int) (inPixel[0] * 31.0 / 255.0 + 0.5);
+        int g = (int) (inPixel[1] * 31.0 / 255.0 + 0.5);
+        int b = (int) (inPixel[2] * 31.0 / 255.0 + 0.5);
+
+        uint16_t outPixel = 0;
+        outPixel |= r;
+        outPixel <<= 5;
+        outPixel |= g;
+        outPixel <<= 5;
+        outPixel |= b;
+        outPixel <<= 1;
+        if (inPixel[3] == 255) // set output alpha to 1 only if input alpha is max alpha
+            outPixel |= 1;
+
+        outImage[i] = outPixel;
+    }
+
+    return [[NSData alloc] initWithBytesNoCopy:outImage length:(NSUInteger) (numPixels * sizeof(uint16_t))];
 }
 
 @end

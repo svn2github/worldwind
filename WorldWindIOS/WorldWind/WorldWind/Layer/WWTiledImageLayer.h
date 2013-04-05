@@ -71,11 +71,9 @@
 /// The current detail hint.
 @property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
 
-/// Indicates whether this layer uses compressed textures.
-@property(nonatomic) BOOL useCompressedTextures;
-
-/// Indicates whether this layer uses raw RGBA textures.
-@property(nonatomic) BOOL useRawTextures;
+/// The texture format to use for the OpenGL texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551
+// or WW_TEXTURE_PVRTC_4BPP. If nil, the texture is passed as RGBA 8888.
+@property (nonatomic) NSString* textureFormat;
 
 /// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
 @property (nonatomic) NSDate* expiration;

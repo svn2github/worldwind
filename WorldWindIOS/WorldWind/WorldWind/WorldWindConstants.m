@@ -27,6 +27,9 @@ NSString* const WW_RHUMB = @"gov.nasa.worldwind.Rhumb";
 NSString* const WW_SUCCEEDED = @"gov.nasa.worldwind.RetrievalSucceeded";
 NSString* const WW_RETRIEVAL_STATUS = @"gov.nasa.worldwind.RetrievalStatus";
 NSString* const WW_REQUEST_STATUS = @"gov.nasa.worldwind.RequestStatus";
+NSString* const WW_TEXTURE_PVRTC_4BPP = @"gov.nasa.worldwind.TexturePVRTC4BPP";
+NSString* const WW_TEXTURE_RGBA_5551 = @"gov.nasa.worldwind.Texture5551";
+NSString* const WW_TEXTURE_RGBA_8888 = @"gov.nasa.worldwind.Texture8888";
 NSString* const WW_URL = @"gov.nasa.worldwind.URL";
 
 @implementation WorldWindConstants

@@ -68,7 +68,7 @@
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
 
-    _useRawTextures = YES;
+    _textureFormat = WW_TEXTURE_RGBA_8888;
 
     self->detailHintOrigin = 2.5;
 
@@ -105,19 +105,21 @@
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
-            if (_useCompressedTextures)
+            if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
             {
                 [WWPVRTCImage compressFile:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
-            else if (_useRawTextures)
+            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
             {
-                [WWTexture convertTextureToRaw:imagePath];
+                [WWTexture convertTextureTo8888:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
-
-            NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
-            [self->currentRetrievals removeObject:pathKey];
+            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
+            {
+                [WWTexture convertTextureTo5551:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
 
             NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
             [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
@@ -126,6 +128,11 @@
     @catch (NSException* exception)
     {
         WWLogE(@"handling retrieval notification", exception);
+    }
+    @finally
+    {
+        NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
+        [self->currentRetrievals removeObject:pathKey];
     }
 }
 
@@ -322,8 +329,20 @@
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSString* formatSuffix = _useCompressedTextures ? @"pvr" : _useRawTextures ? @"raw"
-            : [WWUtil suffixForMimeType:_retrievalImageFormat];
+    NSString* formatSuffix = _retrievalImageFormat;
+
+    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
+    {
+        formatSuffix = @"pvr";
+    }
+    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
+    {
+        formatSuffix = @"5551";
+    }
+    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
+    {
+        formatSuffix = @"8888";
+    }
 
     NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
                                                      _cachePath, [level levelNumber], row, row, column, formatSuffix];
@@ -395,7 +414,9 @@
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
     WWRetriever* retriever;
-    if (_useCompressedTextures || _useRawTextures)
+    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP]
+            || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551]
+            || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
     {
         // Download to a file with the download format suffix. The image will be decoded and possibly compressed when
         // the notification of download success is received in handleNotification above.
@@ -409,7 +430,8 @@
     }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),
-            ^{
+            ^
+            {
                 [retriever performRetrieval];
             });
 

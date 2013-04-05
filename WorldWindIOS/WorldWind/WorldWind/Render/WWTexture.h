@@ -141,6 +141,30 @@
 */
 - (void) loadGLCompressed;
 
-+ (void) convertTextureToRaw:(NSString*)imagePath;
+/// @name Converting Textures
+
+/**
+* Convert this texture to RGBA 8 bits per pixel.
+*
+* This method writes the converted image to the same location and name as the incoming image but with the filename
+* suffix replaced by "8888".
+*
+* @param imagePath The full path and filename of the image to convert.
+*
+* @exception NSInvalidArgumentException If the specified path is nil or zero length.
+*/
++ (void) convertTextureTo8888:(NSString*)imagePath;
+
+/**
+* Convert this texture to RGBA 5 bits per pixel for RGB and 1 bit for alpha.
+*
+* This method writes the converted image to the same location and name as the incoming image but with the filename
+* suffix replaced by "5551".
+*
+* @param imagePath The full path and filename of the image to convert.
+*
+* @exception NSInvalidArgumentException If the specified path is nil or zero length.
+*/
++ (void) convertTextureTo5551:(NSString*)imagePath;
 
 @end

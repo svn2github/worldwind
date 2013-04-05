@@ -12,7 +12,7 @@
 
 @implementation WWPVRTCImage
 
-- (WWPVRTCImage*) initWithContentsOfFile:(NSString*)filePath // TODO
+- (WWPVRTCImage*) initWithContentsOfFile:(NSString*)filePath
 {
     self = [super init];
 
