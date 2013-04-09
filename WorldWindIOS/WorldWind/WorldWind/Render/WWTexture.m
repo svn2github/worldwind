@@ -306,7 +306,7 @@
         CGContextClearRect(context, rect);
         CGContextDrawImage(context, rect, cgImage);
 
-        NSData* outData = [NSData dataWithBytesNoCopy:imageData length:(NSUInteger) textureSize];
+        NSData* outData = [[NSData alloc] initWithBytesNoCopy:imageData length:(NSUInteger) textureSize];
         [outData writeToFile:outputPath atomically:YES];
     }
     @catch (NSException* exception)
@@ -372,6 +372,8 @@
     {
         // The image has been drawn into the allocated memory, so release the no-longer-needed context.
         CGContextRelease(context);
+
+        free(imageData);
     }
 }
 
