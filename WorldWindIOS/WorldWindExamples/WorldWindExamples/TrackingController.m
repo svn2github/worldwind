@@ -10,7 +10,7 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
-#import "WorldWind/Navigate/WWBasicNavigator.h"
+#import "WorldWind/Navigate/WWLookAtNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -144,8 +144,8 @@ typedef enum
         // after the animation completes, and the state changes to TrackingControllerStateFollowing. Suppress navigator
         // notifications while initiating the animation to distinguish between this animation and animations started by
         // another component.
-        WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator]; // TODO: Replace with WWNavigator protocol methods.
-        double range = MIN(NAVIGATOR_MAX_RANGE, [navigator range]);          // TODO: Replace with WWNavigator protocol methods.
+        WWLookAtNavigator* navigator = (WWLookAtNavigator*) [_view navigator];
+        double range = MIN(NAVIGATOR_MAX_RANGE, [navigator range]);
         [self stopObservingNavigator];
         [[_view navigator] gotoLookAt:currentPosition range:range overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator];
@@ -179,8 +179,8 @@ typedef enum
 
     // Update the navigator to show the current position. This change is applied without animation, and does not
     // affect the navigator's distance to the current position.
-    WWBasicNavigator* navigator = (WWBasicNavigator*) [_view navigator]; // TODO: Replace with WWNavigator protocol methods.
-    [[navigator lookAt] setLocation:currentPosition];                    // TODO: Replace with WWNavigator protocol methods.
+    WWLookAtNavigator* navigator = (WWLookAtNavigator*) [_view navigator];
+    [[navigator lookAt] setLocation:currentPosition];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

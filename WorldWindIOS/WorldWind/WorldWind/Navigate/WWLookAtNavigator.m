@@ -6,7 +6,7 @@
  */
 
 #import <CoreLocation/CoreLocation.h>
-#import "WorldWind/Navigate/WWBasicNavigator.h"
+#import "WorldWind/Navigate/WWLookAtNavigator.h"
 #import "WorldWind/Navigate/WWBasicNavigatorState.h"
 #import "WorldWind/Geometry/WWLine.h"
 #import "WorldWind/Geometry/WWLocation.h"
@@ -27,7 +27,7 @@
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 100
 
-@implementation WWBasicNavigator
+@implementation WWLookAtNavigator
 {
 @protected
     WorldWindView* __weak view; // Keep a weak reference to the parent view prevent a circular reference.
@@ -54,7 +54,7 @@
     BOOL animating;
 }
 
-- (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate
+- (WWLookAtNavigator*) initWithView:(WorldWindView*)viewToNavigate
 {
     if (viewToNavigate == nil)
     {

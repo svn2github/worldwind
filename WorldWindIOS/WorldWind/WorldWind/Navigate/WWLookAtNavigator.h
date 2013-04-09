@@ -15,7 +15,7 @@
 /**
 * TODO
 */
-@interface WWBasicNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
+@interface WWLookAtNavigator : NSObject <WWNavigator, UIGestureRecognizerDelegate>
 
 /// @name Attributes
 
@@ -60,7 +60,7 @@
 *
 * @exception TODO
 */
-- (WWBasicNavigator*) initWithView:(WorldWindView*)viewToNavigate;
+- (WWLookAtNavigator*) initWithView:(WorldWindView*)viewToNavigate;
 
 /// @name Methods of Interest Only to Subclasses
 

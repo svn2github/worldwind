@@ -6,8 +6,8 @@
  */
 
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/Navigate/WWLookAtNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Navigate/WWBasicNavigator.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
 
@@ -59,7 +59,7 @@
         }
 
         self->_sceneController = [[WWSceneController alloc] init];
-        self->_navigator = [[WWBasicNavigator alloc] initWithView:self];
+        self->_navigator = [[WWLookAtNavigator alloc] initWithView:self];
 
         // Indicate that iOS should maintain the WorldWindView's proportions when its size changes. This prevents the
         // scene from distorting when WorldWindView is rotated in response to a device orientation change. Without

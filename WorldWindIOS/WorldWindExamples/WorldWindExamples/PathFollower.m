@@ -6,20 +6,20 @@
  */
 
 #import "PathFollower.h"
-#import "WorldWind/Shapes/WWPath.h"
-#import "WorldWind/WorldWindView.h"
-#import "WorldWind/Shapes/WWSphere.h"
-#import "WorldWind/Layer/WWLayer.h"
-#import "WorldWind/Layer/WWRenderableLayer.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Util/WWMath.h"
-#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Layer/WWLayer.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/Navigate/WWLookAtNavigator.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
+#import "WorldWind/Shapes/WWSphere.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWColor.h"
-#import "WorldWind/Navigate/WWBasicNavigator.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 
 #define NAVIGATOR_RANGE 30000.0
 #define TIMER_INTERVAL 0.2
@@ -115,7 +115,7 @@
     if ([self positionForTimeInterval:currentTime outPosition:currentPosition])
     {
         [marker setPosition:currentPosition];
-        [[(WWBasicNavigator*) [_wwv navigator] lookAt] setLocation:currentPosition]; // TODO: Replace with WWNavigator protocol methods.
+        [[(WWLookAtNavigator*) [_wwv navigator] lookAt] setLocation:currentPosition];
         [_wwv drawView];
     }
     else
