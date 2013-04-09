@@ -102,14 +102,16 @@
 - (BOOL) unProject:(WWVec4*)screenPoint result:(WWVec4*)modelPoint;
 
 /**
-* Indicates the approximate size of a pixel, in model coordinates, at a specified distance from the current eye point.
+* Computes the approximate size of a pixel at a specified distance from the navigator state's eye point.
 *
-* This returns 0 if the specified distance is zero. The return value of this method is undefined if the distance is less
-* than zero.
+* This method assumes the model of a screen composed of rectangular pixels, where pixel coordinates demote infinitely
+* thin space between pixels. The units of the returned size are in model coordinates per pixel (usually meters per
+* pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than
+* zero.
 *
-* @param distance The distance from the eye point at which to determine pixel size.
+* @param distance The distance from the eye point at which to determine pixel size, in model coordinates.
 *
-* @return The approximate pixel size, in model coordinates, at the specified distance from the eye point.
+* @return The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
 */
 - (double) pixelSizeAtDistance:(double)distance;
 

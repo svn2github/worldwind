@@ -36,8 +36,7 @@
     _viewport = viewport;
 
     // Compute the eye point in model coordinates.
-    _eyePoint = [[WWVec4 alloc] init];
-    [_modelview modelviewEyePoint:_eyePoint];
+    _eyePoint = [_modelview extractEyePoint];
 
     // Compute the frustum in model coordinates. Start by computing the frustum in eye coordinates from the projection
     // matrix, then transform this frustum to model coordinates by multiplying its planes by the transpose of the

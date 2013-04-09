@@ -104,7 +104,7 @@ double NormalizedDegreesHeading(double degrees)
 {
     if (points == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil")
     }
 
     // Compute the covariance matrix.
@@ -150,54 +150,25 @@ double NormalizedDegreesHeading(double degrees)
 //-- Computing Viewing and Navigation Information --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-+ (double) eyeDistanceToFitObjectWithRadius:(double)radius inViewport:(CGRect)viewport
-{
-    if (radius < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
-    }
-
-    // The distance needed to fill the smaller of either viewport dimensions with an object of a specified radius is
-    // just half the object's radius. This method exists to provide a layer of indirection for the details of the size
-    // preserving perspective. This enables coordination of changes such as adding a field of view without the need
-    // to find inline computations based on assumptions of how the size preserving perspective worked at one point in
-    // time.
-
-    return radius * 2;
-}
-
-+ (double) eyeDistanceToFitPositionA:(WWPosition*)posA
-                           positionB:(WWPosition*)posB
-                             onGlobe:(WWGlobe*)globe
-                          inViewport:(CGRect)viewport
-{
-    WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
-    [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
-    [globe computePointFromPosition:[posB latitude] longitude:[posB longitude] altitude:[posB altitude] outputPoint:pb];
-
-    double radius = [pa distanceTo3:pb] / 2;
-
-    return [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:viewport];
-}
-
-+ (double) horizonDistance:(double)globeRadius elevation:(double)elevation
-{
-    if (globeRadius < 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
-    }
-
-    if (globeRadius == 0 || elevation <= 0)
-        return 0;
-
-    return sqrt(elevation * (2 * globeRadius + elevation));
-}
-
 + (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
                                              endPosition:(WWPosition*)posB
                                                  onGlobe:(WWGlobe*)globe
 {
+    if (posA == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin position is nil")
+    }
+
+    if (posB == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End position is nil")
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
     WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
     WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
     [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
@@ -209,100 +180,183 @@ double NormalizedDegreesHeading(double degrees)
     return [WWMath interpolateValue1:ANIMATION_DURATION_MIN value2:ANIMATION_DURATION_MAX amount:stepDistance];
 }
 
-+ (CGRect) perspectiveFieldOfViewFrustumRect:(double)horizontalFOV
-                               viewportWidth:(double)viewportWidth
-                              viewportHeight:(double)viewportHeight
-                                   zDistance:(double)zDistance
++ (double) horizonDistanceForGlobeRadius:(double)radius eyeAltitude:(double)altitude
 {
-    // Based on http://www.opengl.org/resources/faq/technical/transformations.htm#tran0085.
-    // This method uses horizontal field-of-view here to describe the perspective viewing angle. This results in a
-    // different set of clip plane distances than documented in sources using vertical field-of-view.
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
+    }
 
-    double tanHalfFOV = tan(RADIANS(horizontalFOV / 2));
-    double width = 2 * zDistance * tanHalfFOV;
-    double height = width * viewportHeight / viewportWidth;
-    double x = -width / 2;
-    double y = -height / 2;
-
-    return CGRectMake((CGFloat) x, (CGFloat) y, (CGFloat) width, (CGFloat) height);
+    return (radius > 0 && altitude > 0) ? sqrt(altitude * (2 * radius + altitude)) : 0;
 }
 
-+ (double) perspectiveFieldOfViewMaxNearDistance:(double)horizontalFOV
-                                   viewportWidth:(double)viewportWidth
-                                  viewportHeight:(double)viewportHeight
-                                distanceToObject:(double)distanceToObject
++ (CGRect) perspectiveFrustumRect:(CGRect)viewport atDistance:(double)near
 {
-    // Note: based on calculations on 12/21/2012, the equation below is incorrect, and should instead be as follows:
-    //
-    // distanceToObject / sqrt(1 + tanHalfFOV * tanHalfFOV * (1 + aspect * aspect))
-    //
-    // We are currently leaving this equation as-is. It has been used in World Wind Java since 2006, and therefore
-    // requires testing before it can be safely changed.
+    CGFloat viewportWidth = CGRectGetWidth(viewport);
+    CGFloat viewportHeight = CGRectGetHeight(viewport);
 
-    double tanHalfFOV = tan(RADIANS(horizontalFOV / 2));
+    if (viewportWidth == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
 
-    return distanceToObject / (2 * sqrt(2 * tanHalfFOV * tanHalfFOV + 1));
-}
+    if (viewportHeight == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
 
-+ (double) perspectiveFieldOfViewMaxPixelSize:(double)horizontalFOV
-                                viewportWidth:(double)viewportWidth
-                               viewportHeight:(double)viewportHeight
-                             distanceToObject:(double)distanceToObject
-{
-    CGRect frustRect = [WWMath perspectiveFieldOfViewFrustumRect:horizontalFOV
-                                                   viewportWidth :viewportWidth
-                                                  viewportHeight:viewportHeight
-                                                       zDistance:distanceToObject];
-    double xPixelSize = CGRectGetWidth(frustRect) / viewportWidth;
-    double yPixelSize = CGRectGetHeight(frustRect) / viewportHeight;
+    // Compute a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
+    // height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
 
-    return MAX(xPixelSize, yPixelSize);
-}
-
-+ (CGRect) perspectiveSizePreservingFrustumRect:(double)viewportWidth
-                                 viewportHeight:(double)viewportHeight
-                                      zDistance:(double)zDistance
-{
-    double x, y, width, height;
+    CGFloat x, y, width, height;
 
     if (viewportWidth < viewportHeight)
     {
-        width = zDistance;
-        height = zDistance * viewportHeight / viewportWidth;
+        width = (CGFloat) near;
+        height = (CGFloat) near * viewportHeight / viewportWidth;
         x = -width / 2;
         y = -height / 2;
     }
     else
     {
-        width = zDistance * viewportWidth / viewportHeight;
-        height = zDistance;
+        width = (CGFloat) near * viewportWidth / viewportHeight;
+        height = (CGFloat) near;
         x = -width / 2;
         y = -height / 2;
     }
 
-    return CGRectMake((CGFloat) x, (CGFloat) y, (CGFloat) width, (CGFloat) height);
+    return CGRectMake(x, y, width, height);
 }
 
-+ (double) perspectiveSizePreservingMaxNearDistance:(double)viewportWidth
-                                     viewportHeight:(double)viewportHeight
-                                   distanceToObject:(double)distanceToObject
++ (double) perspectivePixelSize:(CGRect)viewport atDistance:(double)distance
 {
-    double aspect = (viewportWidth < viewportHeight) ? (viewportHeight / viewportWidth) : (viewportWidth / viewportHeight);
+    if (CGRectGetWidth(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
 
-    return 2 * distanceToObject / sqrt(aspect * aspect + 5);
-}
+    if (CGRectGetHeight(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
 
-+ (double) perspectiveSizePreservingMaxPixelSize:(double)viewportWidth
-                                  viewportHeight:(double)viewportHeight
-                                distanceToObject:(double)distanceToObject
-{
-    CGRect frustRect = [WWMath perspectiveSizePreservingFrustumRect:viewportWidth
-                                                     viewportHeight:viewportHeight
-                                                          zDistance:distanceToObject];
-    double xPixelSize = CGRectGetWidth(frustRect) / viewportWidth;
-    double yPixelSize = CGRectGetHeight(frustRect) / viewportHeight;
+    // Compute the dimensions of a rectangle in model coordinates carved out of the frustum at the given distance along
+    // the negative z axis, also in model coordinates.
+    CGRect frustRect = [WWMath perspectiveFrustumRect:viewport atDistance:distance];
 
+    // Compute the pixel size in model coordinates as a ratio of the rectangle dimensions to the viewport dimensions.
+    // The resultant units are model coordinates per pixel (usually meters per pixel).
+    CGFloat xPixelSize = CGRectGetWidth(frustRect) / CGRectGetWidth(viewport);
+    CGFloat yPixelSize = CGRectGetHeight(frustRect) / CGRectGetHeight(viewport);
+
+    // Return the maximum of the x and y pixel sizes. These two sizes are usually equivalent but we select the maximum
+    // in order to correctly handle the case where the x and y pixel sizes differ.
     return MAX(xPixelSize, yPixelSize);
+}
+
++ (double) perspectiveFitDistance:(CGRect)viewport forObjectWithRadius:(double)radius
+{
+    if (CGRectGetWidth(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
+
+    if (CGRectGetHeight(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is negative")
+    }
+
+    // The distance needed to fill the smaller of either frustum dimensions with an object of a specified radius is
+    // always half the object's radius. Though this this method is trivial, it provides a layer of indirection for the
+    // details of the perspective projections used by World Wind. This indirection makes it simple to add a field of
+    // view to perspective projections without identifying inline computations based on assumptions of how perspective
+    // projections worked prior to adding field of view.
+
+    return radius * 2;
+}
+
++ (double) perspectiveFitDistance:(CGRect)viewport
+                     forPositionA:(WWPosition*)posA
+                        positionB:(WWPosition*)posB
+                          onGlobe:(WWGlobe*)globe
+{
+    if (CGRectGetWidth(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
+
+    if (CGRectGetHeight(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
+
+    if (posA == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position A is nil")
+    }
+
+    if (posB == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position B is nil")
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
+    [globe computePointFromPosition:[posB latitude] longitude:[posB longitude] altitude:[posB altitude] outputPoint:pb];
+
+    double radius = [pa distanceTo3:pb] / 2;
+
+    return [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+}
+
++ (double) perspectiveNearDistance:(CGRect)viewport forObjectAtDistance:(double)distance
+{
+    CGFloat viewportWidth = CGRectGetWidth(viewport);
+    CGFloat viewportHeight = CGRectGetHeight(viewport);
+
+    if (viewportWidth == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
+
+    if (viewportHeight == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
+
+    // Compute the maximum near clip distance that avoids clipping an object at the specified distance from the eye.
+    // Since the furthest points on the near clip rectangle are the four corners, we compute a near distance that puts
+    // any one of these corners exactly at the given distance. The distance to one of the four corners can be expressed
+    // in terms of the near clip distance, given distance to a corner 'd', near distance 'n', and aspect ratio 'a':
+    //
+    // d*d = x*x + y*y + z*z
+    // d*d = (n*n/4 * a*a) + (n*n/4) + (n*n)
+    //
+    // Extracting 'n*n/4' from the right hand side gives:
+    //
+    // d*d = (n*n/4) * (a*a + 1 + 4)
+    // d*d = (n*n/4) * (a*a + 5)
+    //
+    // Finally, solving for 'n' gives:
+    //
+    // n*n = 4 * d*d / (a*a + 5)
+    // n = 2 * d / sqrt(a*a + 5)
+
+    CGFloat aspect = (viewportWidth < viewportHeight)
+            ? (viewportHeight / viewportWidth) : (viewportWidth / viewportHeight);
+
+    return 2 * distance / sqrt(aspect * aspect + 5);
 }
 
 @end

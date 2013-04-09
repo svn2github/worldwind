@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CGGeometry.h>
 
 @class WWFrustum;
 @class WWPosition;
@@ -149,7 +150,7 @@
 */
 - (WWMatrix*) setToIdentity;
 
-/// @name Making Transform Matrices
+/// @name Working With Transform Matrices
 
 /**
 * Sets this matrix to the translation matrix for specified translation values. All existing values are overridden.
@@ -199,51 +200,48 @@
 /**
 * Sets this matrix to a local origin transform for the specified globe.
 *
-* A local origin transform maps a local coordinate space to a local tangent plane on the globe at the specified origin.
-* The local origin (0, 0, 0) is mapped to the specified origin, the z axis is mapped to the globe's normal vector at
-* the origin, the y axis is mapped to the north pointing tangent vector at the origin, and the x axis is mapped to
-* the east pointing tangent vector at the origin.
+* A local origin transform maps a local coordinate space to the local tangent plane on the globe at the specified
+* origin. The local origin (0, 0, 0) is mapped to the specified point on the globe, the z axis is mapped to the globe's
+* normal vector at the point, the y axis is mapped to the north pointing tangent vector at the point, and the x axis
+* is mapped to the east pointing tangent vector at the point.
 *
 * @param origin The origin of the local coordinate system, relative to the globe.
 * @param globe The globe the transform is relative to.
 *
 * @return This matrix set to a local origin transform matrix.
 *
-* @exception If either argument is nil.
+* @exception NSInvalidArgumentException If either argument is nil.
 */
 - (WWMatrix*) setToLocalOriginTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
 
 /**
-* Computes a transform matrix's rotation angles in degrees.
+* Extracts this transform matrix's rotation components.
 *
-* This assumes that this matrix represents a transform matrix, and that successive rotations have been applied in the
-* order x, y, z. If this matrix does not represent an orthonormal transform matrix the results are undefined.
+* This method assumes that this matrix represents an orthonormal transform matrix, and that successive rotations have
+* been applied in the order x, y, z. If this matrix does not represent an orthonormal transform matrix the results are
+* undefined.
 *
 * The rotation angles corresponding to this transform matrix's x, y and z rotations are returned in the result vector's
 * x, y and z components, respectively.
 *
-* @param result A WWVec4 instance in which to return the rotation angles.
-*
-* @exception NSInvalidArgumentException If the result is nil.
+* @return This transform matrix's rotation angles, in degrees.
 */
-- (void) transformRotationAngles:(WWVec4*)result;
+- (WWVec4*) extractRotation;
 
 /**
-* Computes a transform matrix's translation in model coordinates.
+* Extracts this transform matrix's translation components.
 *
-* This assumes that this matrix represents a transform matrix. If this matrix does not represent an orthonormal
-* transform matrix the results are undefined.
+* This method assumes that this matrix represents an orthonormal transform matrix. If this matrix does not represent an
+* orthonormal transform matrix the results are undefined.
 *
 * The translation vector corresponding to this transform matrix's x, y and z translation is returned in the result
 * vector's x, y and z components, respectively.
 *
-* @param result A WWVec4 instance in which to return the translation.
-*
-* @exception NSInvalidArgumentException If the result is nil.
+* @return This transform matrix's translation, in model coordinates.
 */
-- (void) transformTranslation:(WWVec4*)result;
+- (WWVec4*) extractTranslation;
 
-/// @name Making Viewing and Perspective Matrices
+/// @name Working With Viewing and Projection Matrices
 
 /**
 * Sets this matrix to a first person viewing matrix for the specified globe.
@@ -267,7 +265,7 @@
 *
 * @return This matrix set to a first person viewing matrix.
 *
-* @exception If any argument is nil.
+* @exception NSInvalidArgumentException If any argument is nil.
 */
 - (WWMatrix*) setToFirstPersonModelview:(WWPosition*)eyePosition
                          headingDegrees:(double)heading
@@ -282,8 +280,8 @@
 * the screen and north pointing toward the top of the screen.
 *
 * Range specifies the distance between the look at position and the viewer's eye point. Range values may be any positive
-* real number. A range of 0 meters places the eye point at the look at point, while a positive range moves the eye point
-* away from but still looking at the look at point.
+* real number. A range of 0 places the eye point at the look at point, while a positive range moves the eye point away
+* from but still looking at the look at point.
 *
 * Heading specifies the viewer's azimuth, or its angle relative to North. Heading values range from -180 degrees to 180
 * degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
@@ -294,77 +292,121 @@
 * straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
 *
 * @param lookAtPosition The viewer's geographic look at position relative to the specified globe.
-* @param range The distance between the eye point and the look at point, in meters.
+* @param range The distance between the eye point and the look at point, in model coordinates.
 * @param heading The viewer's angle relative to north, in degrees.
 * @param tilt The viewer's angle relative to the surface, in degrees.
 * @param globe The globe the viewer is looking at.
 *
 * @return This matrix set to a look at person viewing matrix.
 *
-* @exception If any argument is nil.
+* @exception NSInvalidArgumentException If any argument is nil.
 */
 - (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
-                     rangeInMeters:(double)range
+                             range:(double)range
                     headingDegrees:(double)heading
                        tiltDegrees:(double)tilt
                            onGlobe:(WWGlobe*)globe;
 
-- (WWMatrix*) setOrthoFromLeft:(double)left
-                         right:(double)right
-                        bottom:(double)bottom
-                           top:(double)top
-                  nearDistance:(double)near
-                   farDistance:(double)far;
-
-- (WWMatrix*) setOrthoFromWidth:(double)width
-                         height:(double)height;
-
-- (WWMatrix*) setPerspective:(double)left
-                       right:(double)right
-                      bottom:(double)bottom
-                         top:(double)top
-                nearDistance:(double)near
-                 farDistance:(double)far;
-
-- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
-                          viewportWidth:(double)width
-                         viewportHeight:(double)height
-                           nearDistance:(double)near
-                            farDistance:(double)far;
-
-- (WWMatrix*) setPerspectiveSizePreserving:(double)width
-                            viewportHeight:(double)height
-                              nearDistance:(double)near
-                               farDistance:(double)far;
+/**
+* Sets this matrix to a perspective projection matrix for the specified viewport and clip distances.
+*
+* A perspective projection matrix maps points in model coordinates into screen coordinates in a way that causes distant
+* objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates, a
+* perspective projection is defined by frustum originating at the eye position and extending outward in the viewer's
+* direction. The near distance and the far distance identify the minimum and maximum distance, respectively, at which an
+* object in the scene is visible. Near and far distances must be positive and may not be equal.
+*
+* The resultant projection matrix preserves the scene's size on screen when the viewport width and height are swapped.
+* This has the effect of maintaining the scene's size when the device is rotated.
+*
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param near The near clip plane distance, in model coordinates.
+* @param far The far clip plane distance, in model coordinates.
+*
+* @return This matrix set to a perspective projection matrix.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, if near and far
+* are equivalent, or if either near or far ar not positive.
+*/
+- (WWMatrix*) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far;
 
 /**
-* Computes a modelview matrix's eye point in model coordinates.
+* Sets this matrix to an screen projection matrix for the specified viewport.
 *
-* In model coordinates, a modelview matrix's eye point is the point the viewer is looking from. In eye coordinates the
-* eye point maps to the center of the screen. If this does not represent a modelview matrix the results are undefined.
+* A screen projection matrix is an orthographic projection that assumes that points in model coordinates represent
+* screen coordinates and screen depth values. Screen projection matrices therefore map model coordinates directly into
+* screen coordinates without modification. A point's xy coordinates are interpreted as literal screen coordinates and
+* must be in the viewport rectangle to be visible. A point's z coordinate is interpreted as a depth value that ranges
+* from 0 to 1.
 *
-* The computed point is stored in the result parameter after this method returns.
+* The resultant projection matrix has the effect of preserving coordinates that have already been projected using
+* [WWNavigatorState project:result:].
 *
-* @param result A WWVec4 instance in which to return the eye point.
+* @param viewport The viewport rectangle, in screen coordinates.
 *
-* @exception NSInvalidArgumentException If the result is nil.
+* @return This matrix set to a screen projection matrix.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
 */
-- (void) modelviewEyePoint:(WWVec4*)result;
+- (WWMatrix*) setToScreenProjection:(CGRect)viewport;
 
 /**
-* Computes a modelview matrix's forward vector in model coordinates.
+* Extracts this viewing matrix's eye point.
 *
-* In model coordinates, a modelview matrix's forward vector is the direction the viewer is looking. In eye coordinates
-* the forward vector maps to a vector going into the screen. If this matrix does not represent a modelview matrix the
-* results of this method are undefined.
+* This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+* results are undefined.
 *
-* The computed point is stored in the result parameter after this method returns.
+* In model coordinates, a viewing matrix's eye point is the point the viewer is looking from and maps to the center of
+* the screen.
 *
-* @param result A WWVec4 instance in which to return the forward vector.
-*
-* @exception NSInvalidArgumentException If the result is nil.
+* @return This viewing matrix's eye point, in model coordinates.
 */
-- (void) modelviewForward:(WWVec4*)result;
+- (WWVec4*) extractEyePoint;
+
+/**
+* Extracts this viewing matrix's forward vector.
+*
+* This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+* results are undefined.
+*
+* In model coordinates, a viewing matrix's forward vector is the direction the viewer is looking and maps to a vector
+* going into the screen.
+*
+* @return This viewing matrix's forward vector, in model coordinates.
+*/
+- (WWVec4*) extractForwardVector;
+
+/**
+* Extracts this projection matrix's view frustum.
+*
+* This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
+* the results are undefined.
+*
+* A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
+* using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
+* for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
+* outward along the negative z axis. The near distance and the far distance used to initialize a projection matrix
+* identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
+*
+* @return This projection matrix's view frustum, in eye coordinates.
+*/
+- (WWFrustum*) extractFrustum;
+
+/**
+* Applies a specified depth offset to this perspective projection matrix.
+*
+* This method assumes that this matrix represents a perspective projection matrix. If this does not represent a
+* perspective projection matrix the results are undefined. Perspective projection matrices can be created by calling
+* [WWMatrix setToPerspectiveProjection:nearDistance:farDistance:].
+*
+* The offset may be any real number and is typically used to draw subsequent shapes slightly closer to the user's eye in
+* order to give those shapes visual priority over terrain or surface shapes. An offset of zero has no effect on the
+* scene. An offset less than zero brings depth values closer to the eye, while an offset greater than zero pushes depth
+* values away from the eye.
+*
+* @param depthOffset The amount of offset to apply.
+*/
+- (void) offsetPerspectiveDepth:(double)depthOffset;
 
 /// @name Matrix Operations
 
@@ -450,23 +492,6 @@
 + (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix
                       resultEigenvalues:(NSMutableArray*)resultEigenvalues
                      resultEigenvectors:(NSMutableArray*)resultEigenvectors;
-
-/**
-* Extracts a frustum from this perspective matrix.
-*
-* @return The frustum represented by the specified perspective matrix.
-*/
-- (WWFrustum*) extractFrustum;
-
-/**
-* Applies a specified offset to this projection matrix.
-*
-* The offset is typically used to draw subsequent shapes slightly closer to the user's eye in order to give those
-* shapes visual priority over terrain or surface shapes.
-*
-* @param depthOffset The amount of offset to apply.
-*/
-- (void) offsetPerspectiveDepth:(double)depthOffset;
 
 /// @name Methods for Internal Use
 

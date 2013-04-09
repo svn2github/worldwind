@@ -124,38 +124,28 @@
     }
 
     WWGlobe* globe = [[view sceneController] globe];
-    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
-
     CGRect viewport = [view viewport];
-    double viewportWidth = CGRectGetWidth(viewport);
-    double viewportHeight = CGRectGetHeight(viewport);
 
     // Compute the current modelview matrix based on this Navigator's look-at location, range, heading, and tilt.
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview setToLookAtModelview:_lookAt
-                      rangeInMeters:_range
-                     headingDegrees:_heading
-                        tiltDegrees:_tilt
-                            onGlobe:globe];
+    [modelview setToLookAtModelview:_lookAt range:_range headingDegrees:_heading tiltDegrees:_tilt onGlobe:globe];
 
     // Compute the eye point in model coordinates and the corresponding eye position in geographic coordinates.
-    WWVec4* eyePoint = [[WWVec4 alloc] init];
+    WWVec4* eyePoint = [modelview extractEyePoint];
     WWPosition* eyePos = [[WWPosition alloc] init];
-    [modelview modelviewEyePoint:eyePoint];
     [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
 
     // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
     // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
     // Additionally, this must get an elevation from the globe since the terrain depends on the eye point.
     double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
-    double heightAboveSurface = [eyePos altitude] - globeElevation;
-    _nearDistance = [WWMath perspectiveSizePreservingMaxNearDistance:viewportWidth
-                                                      viewportHeight:viewportHeight
-                                                    distanceToObject:heightAboveSurface];
+    double distanceToSurface = [eyePos altitude] - globeElevation;
+    _nearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
     if (_nearDistance < MIN_NEAR_DISTANCE)
         _nearDistance = MIN_NEAR_DISTANCE;
 
-    _farDistance = [WWMath horizonDistance:globeRadius elevation:[eyePos altitude]];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    _farDistance = [WWMath horizonDistanceForGlobeRadius:globeRadius eyeAltitude:[eyePos altitude]];
     if (_farDistance < MIN_FAR_DISTANCE)
         _farDistance = MIN_FAR_DISTANCE;
 
@@ -163,11 +153,8 @@
     // viewport. We use the WorldWindView's OpenGL viewport instead of the view's bounds because the viewport contains
     // the actual render buffer dimensions in OpenGL screen coordinates, whereas the bounds contain the view's
     // dimensions in UIKit screen coordinates.
-    WWMatrix *projection = [[WWMatrix alloc] initWithIdentity];
-    [projection setPerspectiveSizePreserving:viewportWidth
-                              viewportHeight:viewportHeight
-                                nearDistance:_nearDistance
-                                 farDistance:_farDistance];
+    WWMatrix* projection = [[WWMatrix alloc] initWithIdentity];
+    [projection setToPerspectiveProjection:viewport nearDistance:_nearDistance farDistance:_farDistance];
 
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
 }
@@ -224,7 +211,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    double fitDistance = [WWMath eyeDistanceToFitObjectWithRadius:radius inViewport:[view viewport]];
+    double fitDistance = [WWMath perspectiveFitDistance:[view viewport] forObjectWithRadius:radius];
     [self beginAnimationWithLookAt:center range:fitDistance overDuration:duration];
 }
 
@@ -255,10 +242,8 @@
     WWGlobe* globe = [[view sceneController] globe];
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
 
-    WWVec4* eyePoint = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* forward = [[WWVec4 alloc] initWithZeroVector];
-    [modelview modelviewEyePoint:eyePoint];
-    [modelview modelviewForward:forward];
+    WWVec4* eyePoint = [modelview extractEyePoint];
+    WWVec4* forward = [modelview extractForwardVector];
     WWLine* forwardRay = [[WWLine alloc] initWithOrigin:eyePoint direction:forward];
 
     WWVec4* lookAtPoint = [[WWVec4 alloc] initWithZeroVector];
@@ -268,7 +253,7 @@
         [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
         double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
         double heightAboveSurface = [eyePos altitude] - globeElevation;
-        double horizonDistance = [WWMath horizonDistance:globeRadius elevation:heightAboveSurface];
+        double horizonDistance = [WWMath horizonDistanceForGlobeRadius:globeRadius eyeAltitude:heightAboveSurface];
         [forwardRay pointAt:horizonDistance result:lookAtPoint];
     }
 
@@ -281,12 +266,11 @@
     WWMatrix* modelviewOriginInv = [[WWMatrix alloc] initWithIdentity];
     [modelviewOriginInv setToLocalOriginTransform:lookAtPoint onGlobe:globe];
     WWMatrix* modelviewLocal = [[WWMatrix alloc] initWithMultiply:modelview matrixB:modelviewOriginInv];
-    WWVec4* vec = [[WWVec4 alloc] initWithZeroVector];
-    [modelviewLocal transformTranslation:vec];
+    WWVec4* vec = [modelviewLocal extractTranslation];
     _range = -[vec z];
 
     // Compute the heading and tilt from the matrix rotation components relative the the look at point.
-    [modelviewLocal transformRotationAngles:vec];
+    vec = [modelviewLocal extractRotation];
     _heading = -[vec z];
     _tilt = [vec x];
 }
@@ -362,9 +346,7 @@
         // to invert the change in Y because the Y axis coordinates are already inverted.
         CGRect viewport = [view viewport];
         double distance = MAX(1, _range);
-        double metersPerPixel = [WWMath perspectiveSizePreservingMaxPixelSize:CGRectGetWidth(viewport)
-                                                               viewportHeight:CGRectGetHeight(viewport)
-                                                             distanceToObject:distance];
+        double metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:distance];
         double forwardMeters = dy * metersPerPixel;
         double sideMeters = -dx * metersPerPixel;
 
@@ -605,7 +587,7 @@
     WWPosition* pb = animEndLookAt;
     WWGlobe* globe = [[view sceneController] globe];
     CGRect viewport = [view viewport];
-    double fitDistance = [WWMath eyeDistanceToFitPositionA:pa positionB:pb onGlobe:globe inViewport:viewport];
+    double fitDistance = [WWMath perspectiveFitDistance:viewport forPositionA:pa positionB:pb onGlobe:globe];
     animMidRange = (fitDistance > animBeginRange && fitDistance > animEndRange) ? fitDistance : DBL_MAX;
 
     // Compute the animation's begin and end date based on the implicit start time and the specified duration.

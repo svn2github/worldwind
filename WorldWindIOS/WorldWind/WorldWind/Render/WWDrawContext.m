@@ -55,7 +55,7 @@
     [_globe computePositionFromPoint:[ep x] y:[ep y] z:[ep z] outputPosition:_eyePosition];
 
     CGRect viewport = [_navigatorState viewport];
-    [_screenProjection setOrthoFromWidth:CGRectGetWidth(viewport) height:CGRectGetHeight(viewport)];
+    [_screenProjection setToScreenProjection:viewport];
 }
 
 - (BOOL) isSmall:(id <WWExtent>)extent numPixels:(int)numPixels // TODO: enable when pixelSizeAtDistance implemented

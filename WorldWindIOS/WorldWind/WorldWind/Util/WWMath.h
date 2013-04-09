@@ -114,56 +114,10 @@ extern double NormalizedDegreesHeading(double degrees);
 */
 + (NSArray*) principalAxesFromPoints:(NSArray*)points;
 
-/// @name Computing Viewing and Navigation Information
+/// @name Computing Information for Viewing and Projection
 
 /**
-* Returns the minimum distance between the eye point and an object with the specified size needed to make the object
-* completely visible in the specified viewport.
-*
-* @param radius The radius of the object to fit in the viewport, in meters.
-* @param viewport The viewport rectangle, in screen coordinates.
-*
-* @return The minimum eye distance, in meters.
-*
-* @exception NSInvalidArgumentException If the radius is negative.
-*/
-+ (double) eyeDistanceToFitObjectWithRadius:(double)radius inViewport:(CGRect)viewport;
-
-/**
-* Returns the minimum distance between the eye point needed to keep the two positions completely visible with the
-* specified globe and viewport.
-*
-* This assumes that the viewport is placed at the center of the two positions.
-*
-* @param posA The first position to fit in the viewport.
-* @param posB The second position to fit in the viewport.
-* @param globe The globe the two positions are associated with.
-* @param viewport The viewport rectangle, in screen coordinate.
-*
-* @return The minimum eye distance, in meters.
-*/
-+ (double) eyeDistanceToFitPositionA:(WWPosition*)posA
-                           positionB:(WWPosition*)posB
-                             onGlobe:(WWGlobe*)globe
-                          inViewport:(CGRect)viewport;
-
-/**
-* Returns the distance between a globe's horizon and a viewer at the specified elevation.
-*
-* Only the globe's ellipsoid is considered; elevations are not incorporated. This returns zero if the globeRadius is
-* zero, or if the elevation is less than or equal to zero.
-*
-* @param globeRadius The globe's radius, in meters.
-* @param elevation The viewer's elevation, in meters relative to mean sea level.
-*
-* @return The distance to the horizon, in meters.
-*
-* @exception NSInvalidArgumentException If the globeRadius is negative.
-*/
-+ (double) horizonDistance:(double)globeRadius elevation:(double)elevation;
-
-/**
-* Returns a recommended duration for a navigator animation between the specified positions as an NSTimeInterval.
+* Computes a recommended duration for a navigator animation between the specified positions as an NSTimeInterval.
 *
 * This returns a duration between 1.0 and 5.0 seconds corresponding to the distance between the two positions. These
 * durations and the distances they are associated with are a recommendation based on observation with common World Wind
@@ -174,93 +128,111 @@ extern double NormalizedDegreesHeading(double degrees);
 * @param globe The globe the two positions are associated with.
 *
 * @return The animation duration, in seconds.
+*
+* @exception NSInvalidArgumentException If any argument is nil.
 */
 + (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
-                                           endPosition:(WWPosition*)posB
-                                               onGlobe:(WWGlobe*)globe;
+                                             endPosition:(WWPosition*)posB
+                                                 onGlobe:(WWGlobe*)globe;
 
 /**
-* TODO
+* Computes the distance to a globe's horizon from a viewer at a given altitude.
 *
-* @param horizontalFOV The horizontal field of view.
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param zDistance TODO
+* Only the globe's ellipsoid is considered; terrain height is not incorporated. This returns zero if the radius is zero
+* or if the altitude is less than or equal to zero.
 *
-* @return TODO
+* @param radius The globe's radius, in model coordinates.
+* @param altitude The viewer's altitude above the globe, in model coordinates.
+*
+* @return The distance to the horizon, in model coordinates.
+*
+* @exception NSInvalidArgumentException If the radius is negative.
 */
-+ (CGRect) perspectiveFieldOfViewFrustumRect:(double)horizontalFOV
-                               viewportWidth:(double)viewportWidth
-                              viewportHeight:(double)viewportHeight
-                                   zDistance:(double)zDistance;
++ (double) horizonDistanceForGlobeRadius:(double)radius eyeAltitude:(double)altitude;
 
 /**
-* TODO
+* Computes the coordinates of a rectangle carved out of a perspective projection's frustum at a given distance in model
+* coordinates.
 *
-* @param horizontalFOV The horizontal field of view.
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
+* This computes a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
+* height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
 *
-* @return TODO
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param distance The distance along the negative z axis, in model coordinates.
+*
+* @return The frustum rectangle coordinates, in model coordinates.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
 */
-+ (double) perspectiveFieldOfViewMaxNearDistance:(double)horizontalFOV
-                                   viewportWidth:(double)viewportWidth
-                                  viewportHeight:(double)viewportHeight
-                                distanceToObject:(double)distanceToObject;
++ (CGRect) perspectiveFrustumRect:(CGRect)viewport atDistance:(double)distance;
 
 /**
-* TODO
+* Computes the approximate size of a pixel in model coordinates at a given distance from the eye point in a perspective
+* projection.
 *
-* @param horizontalFOV The horizontal field of view.
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
+* This method assumes the model of a screen composed of rectangular pixels, where pixel coordinates denote infinitely
+* thin space between pixels. The units of the returned size are in model coordinates per pixel (usually meters per
+* pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than zero.
 *
-* @return TODO
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param distance The distance from the perspective eye point at which to determine pixel size, in model coordinates.
+*
+* @return The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
 */
-+ (double) perspectiveFieldOfViewMaxPixelSize:(double)horizontalFOV
-                                viewportWidth:(double)viewportWidth
-                               viewportHeight:(double)viewportHeight
-                             distanceToObject:(double)distanceToObject;
++ (double) perspectivePixelSize:(CGRect)viewport atDistance:(double)distance;
 
 /**
-* TODO
+* Computes the minimum distance between the eye point and an object with the specified size needed to make the object
+* completely visible in a perspective projection.
 *
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param zDistance TODO
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param radius The radius of the object to fit in the viewport, in model coordinates.
 *
-* @return TODO
+* @return The minimum eye distance, in model coordinates.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the radius is negative.
 */
-+ (CGRect) perspectiveSizePreservingFrustumRect:(double)viewportWidth
-                                 viewportHeight:(double)viewportHeight
-                                      zDistance:(double)zDistance;
++ (double) perspectiveFitDistance:(CGRect)viewport forObjectWithRadius:(double)radius;
 
 /**
-* TODO
+* Computes the minimum distance between the eye point needed to keep the two positions completely visible in a
+* perspective projection on the given globe.
 *
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
+* This method assumes that the viewport is placed at the center of the two positions.
 *
-* @return TODO
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param posA The first position to fit in the viewport.
+* @param posB The second position to fit in the viewport.
+* @param globe The globe the two positions are associated with.
+*
+* @return The minimum eye distance, in model coordinates.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if any argument
+* is nil.
 */
-+ (double) perspectiveSizePreservingMaxNearDistance:(double)viewportWidth
-                                     viewportHeight:(double)viewportHeight
-                                   distanceToObject:(double)distanceToObject;
++ (double) perspectiveFitDistance:(CGRect)viewport
+                     forPositionA:(WWPosition*)posA
+                        positionB:(WWPosition*)posB
+                          onGlobe:(WWGlobe*)globe;
 
 /**
-* TODO
+* Computes the maximum near clip distance for a perspective projection that avoids clipping an object at a given
+* distance from the eye point.
 *
-* @param viewportWidth The viewport width.
-* @param viewportHeight The viewport height.
-* @param distanceToObject TODO
+* This computes a near clip distance appropriate for use in [WWMath perspectiveFrustumRect:atDistance:] and
+* [WWMatrix setToPerspectiveProjection:nearDistance:farDistance:]. The given distance should specify the
+* smallest distance between the eye and the object being viewed, but may be an approximation if an exact distance is not
+* required.
 *
-* @return TODO
+* @param viewport The viewport rectangle, in screen coordinates.
+* @param distance The distance from the perspective eye point to the nearest object, in model coordinates.
+*
+* @return The maximum near clip distance, in model coordinates.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
 */
-+ (double) perspectiveSizePreservingMaxPixelSize:(double)viewportWidth
-                               viewportHeight:(double)viewportHeight
-                             distanceToObject:(double)distanceToObject;
++ (double) perspectiveNearDistance:(CGRect)viewport forObjectAtDistance:(double)distance;
 
 @end

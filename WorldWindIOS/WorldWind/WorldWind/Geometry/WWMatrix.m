@@ -429,13 +429,8 @@
     return self;
 }
 
-- (void) transformRotationAngles:(WWVec4*)result
+- (WWVec4*) extractRotation
 {
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
     // Taken from Extracting Euler Angles from a Rotation Matrix by Mike Day, Insomniac Games.
     // http://www.insomniacgames.com/mike-day-extracting-euler-angles-from-a-rotation-matrix/
 
@@ -445,17 +440,12 @@
     double sx = sin(x);
     double z = atan2(sx * m[8] - cx * m[4], cx * m[5] - sx * m[9]);
 
-    [result set:DEGREES(x) y:DEGREES(y) z:DEGREES(z)];
+    return [[WWVec4 alloc] initWithCoordinates:DEGREES(x) y:DEGREES(y) z:DEGREES(z)];
 }
 
-- (void) transformTranslation:(WWVec4*)result
+- (WWVec4*) extractTranslation
 {
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
-    [result set:m[3] y:m[7] z:m[11]];
+    return [[WWVec4 alloc] initWithCoordinates:m[3] y:m[7] z:m[11]];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -550,7 +540,7 @@
 }
 
 - (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
-                     rangeInMeters:(double)range
+                             range:(double)range
                     headingDegrees:(double)heading
                        tiltDegrees:(double)tilt
                            onGlobe:(WWGlobe*)globe
@@ -646,114 +636,41 @@
     return self;
 }
 
-- (WWMatrix*) setOrthoFromLeft:(double)left
-                         right:(double)right
-                        bottom:(double)bottom
-                           top:(double)top
-                  nearDistance:(double)near
-                   farDistance:(double)far
+- (WWMatrix*) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far
 {
-    if (left == right)
+    if (CGRectGetWidth(viewport) == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Left and right are equal");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
     }
 
-    if (bottom == top)
+    if (CGRectGetHeight(viewport) == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Bottom and top are equal");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
     if (near == far)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
-    }
-
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.57).
-
-    // Row 1
-    self->m[0] = 2 / (right - left);
-    self->m[1] = 0;
-    self->m[2] = 0;
-    self->m[3] = - (right + left) / (right - left);
-    // Row 2
-    self->m[4] = 0;
-    self->m[5] = 2 / (top - bottom);
-    self->m[6] = 0;
-    self->m[7] = - (top + bottom) / (top  - bottom);
-    // Row 3
-    self->m[8] = 0;
-    self->m[9] = 0;
-    self->m[10] = -2 / (far - near);
-    self->m[11] = - (far + near) / (far - near);
-    // Row 4
-    self->m[12] = 0;
-    self->m[13] = 0;
-    self->m[14] = 0;
-    self->m[15] = 1;
-
-    return self;
-}
-
-- (WWMatrix*) setOrthoFromWidth:(double)width
-                         height:(double)height
-{
-    if (width <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
-    }
-
-    if (height <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
-    }
-
-    // Create an orthographic projection that maps X and Y coordinates in the range [0, viewportWidth] and
-    // [0, viewportHeight] to [-1, 1], and maps Z coordinates in the range [0, 1] to [-1, 1]. This enables primitives
-    // to be drawn in screen coordinates, while preserving Z values associated with a different projection.
-
-    [self setOrthoFromLeft:0
-                     right:width
-                    bottom:0
-                       top:height
-              nearDistance:0
-               farDistance:-1];
-
-    return self;
-}
-
-- (WWMatrix*) setPerspective:(double)left
-                       right:(double)right
-                      bottom:(double)bottom
-                         top:(double)top
-                nearDistance:(double)near
-                 farDistance:(double)far
-{
-    if (left == right)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Left and right are equal");
-    }
-
-    if (bottom == top)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Bottom and top are equal");
-    }
-
-    if (near == far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal")
     }
 
     if (near <= 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive")
     }
 
     if (far <= 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive")
     }
 
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.52)..
+    // Compute the dimensions of the near clip rectangle corresponding to the specified viewport rectangle.
+    CGRect nearRect = [WWMath perspectiveFrustumRect:viewport atDistance:near];
+    double left = CGRectGetMinX(nearRect);
+    double right = CGRectGetMaxX(nearRect);
+    double bottom = CGRectGetMinY(nearRect);
+    double top = CGRectGetMaxY(nearRect);
+
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.52).
 
     // Row 1
     self->m[0] = 2 * near / (right - left);
@@ -779,114 +696,64 @@
     return self;
 }
 
-- (WWMatrix*) setPerspectiveFieldOfView:(double)horizontalFOV
-                          viewportWidth:(double)width
-                         viewportHeight:(double)height
-                           nearDistance:(double)near
-                            farDistance:(double)far
+- (WWMatrix*) setToScreenProjection:(CGRect)viewport
 {
-    if (horizontalFOV <= 0 || horizontalFOV > 180)
+    double left = CGRectGetMinX(viewport);
+    double right = CGRectGetMaxX(viewport);
+    double bottom = CGRectGetMinY(viewport);
+    double top = CGRectGetMaxY(viewport);
+
+    if (left == right)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Field of view is invalid");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
     }
 
-    if (width <= 0)
+    if (bottom == top)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
-    if (height <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
-    }
+    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.57).
+    //
+    // The third row of this projection matrix is configured so that points with z coordinates representing depth values
+    // ranging from 0 to 1 are not modified after transformation into window coordinates. This projection matrix maps z
+    // values in the range [0, 1] to the range [-1, 1] by applying the following function to incoming z coordinates:
+    //
+    // zp = z0 * 2 - 1
+    //
+    // Where 'z0' is the point's z coordinate and 'zp' is the projected z coordinate. The GPU then maps the projected z
+    // coordinate into window coordinates in the range [0, 1] by applying the following function:
+    //
+    // zw = zp * 0.5 + 0.5
+    //
+    // The result is that a point's z coordinate is effectively passed to the GPU without modification.
 
-    if (near == far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
-    }
-
-    if (near <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
-    }
-
-    if (far <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
-    }
-
-    CGRect nearRect = [WWMath perspectiveFieldOfViewFrustumRect:horizontalFOV
-                                                  viewportWidth:width
-                                                 viewportHeight:height
-                                                      zDistance:near];
-    double left = CGRectGetMinX(nearRect);
-    double right = CGRectGetMaxX(nearRect);
-    double bottom = CGRectGetMinY(nearRect);
-    double top = CGRectGetMaxY(nearRect);
-
-    [self setPerspective:left
-                   right:right
-                  bottom:bottom
-                     top:top
-            nearDistance:near
-             farDistance:far];
+    // Row 1
+    self->m[0] = 2 / (right - left);
+    self->m[1] = 0;
+    self->m[2] = 0;
+    self->m[3] = - (right + left) / (right - left);
+    // Row 2
+    self->m[4] = 0;
+    self->m[5] = 2 / (top - bottom);
+    self->m[6] = 0;
+    self->m[7] = - (top + bottom) / (top  - bottom);
+    // Row 3
+    self->m[8] = 0;
+    self->m[9] = 0;
+    self->m[10] = 2;
+    self->m[11] = - 1;
+    // Row 4
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = 0;
+    self->m[15] = 1;
 
     return self;
 }
 
-- (WWMatrix*) setPerspectiveSizePreserving:(double)width
-                            viewportHeight:(double)height
-                              nearDistance:(double)near
-                               farDistance:(double)far
+- (WWVec4*) extractEyePoint
 {
-    if (width <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Width is not positive");
-    }
-
-    if (height <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Height is not positive");
-    }
-
-    if (near == far)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near and far are equal");
-    }
-
-    if (near <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Near is not positive");
-    }
-
-    if (far <= 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Far is not positive");
-    }
-
-    CGRect nearRect = [WWMath perspectiveSizePreservingFrustumRect:width viewportHeight:height zDistance:near];
-    double left = CGRectGetMinX(nearRect);
-    double right = CGRectGetMaxX(nearRect);
-    double bottom = CGRectGetMinY(nearRect);
-    double top = CGRectGetMaxY(nearRect);
-
-    [self setPerspective:left
-                   right:right
-                  bottom:bottom
-                     top:top
-            nearDistance:near
-             farDistance:far];
-
-    return self;
-}
-
-- (void) modelviewEyePoint:(WWVec4*)result
-{
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
     // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
     // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
     // the transpose of its upper 3x3 components.
@@ -894,19 +761,72 @@
     double y = -(m[1] * m[3]) - (m[5] * m[7]) - (m[9] * m[11]);
     double z = -(m[2] * m[3]) - (m[6] * m[7]) - (m[10] * m[11]);
 
-    [result set:x y:y z:z];
+    return [[WWVec4 alloc] initWithCoordinates:x y:y z:z];
 }
 
-- (void) modelviewForward:(WWVec4*)result
+- (WWVec4*) extractForwardVector
 {
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
     // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
     // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
-    [result set:-m[8] y:-m[9] z:-m[10]];
+    return [[WWVec4 alloc] initWithCoordinates:-m[8] y:-m[9] z:-m[10]];
+}
+
+- (WWFrustum*) extractFrustum
+{
+    double* m1 = self->m;
+    double* m2 = &self->m[4];
+    double* m3 = &self->m[8];
+    double* m4 = &self->m[12];
+
+    // Left Plane = row 4 + row 1:
+    double x = m4[0] + m1[0];
+    double y = m4[1] + m1[1];
+    double z = m4[2] + m1[2];
+    double w = m4[3] + m1[3];
+    double d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* left = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Right Plane = row 4 - row 1:
+    x = m4[0] - m1[0];
+    y = m4[1] - m1[1];
+    z = m4[2] - m1[2];
+    w = m4[3] - m1[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* right = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Bottom Plane = row 4 + row 2:
+    x = m4[0] + m2[0];
+    y = m4[1] + m2[1];
+    z = m4[2] + m2[2];
+    w = m4[3] + m2[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* bottom = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Top Plane = row 4 - row 2:
+    x = m4[0] - m2[0];
+    y = m4[1] - m2[1];
+    z = m4[2] - m2[2];
+    w = m4[3] - m2[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* top = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Near Plane = row 4 + row 3:
+    x = m4[0] + m3[0];
+    y = m4[1] + m3[1];
+    z = m4[2] + m3[2];
+    w = m4[3] + m3[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* near = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    // Far Plane = row 4 - row 3:
+    x = m4[0] - m3[0];
+    y = m4[1] - m3[1];
+    z = m4[2] - m3[2];
+    w = m4[3] - m3[3];
+    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+    WWPlane* far = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
+
+    return [[WWFrustum alloc] initWithPlanes:left right:right bottom:bottom top:top near:near far:far];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -1224,64 +1144,6 @@
     [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][0] y:r[1][0] z:r[2][0]]];
     [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][1] y:r[1][1] z:r[2][1]]];
     [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][2] y:r[1][2] z:r[2][2]]];
-}
-
-- (WWFrustum*) extractFrustum
-{
-    double* m1 = self->m;
-    double* m2 = &self->m[4];
-    double* m3 = &self->m[8];
-    double* m4 = &self->m[12];
-
-    // Left Plane = row 4 + row 1:
-    double x = m4[0] + m1[0];
-    double y = m4[1] + m1[1];
-    double z = m4[2] + m1[2];
-    double w = m4[3] + m1[3];
-    double d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* left = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    // Right Plane = row 4 - row 1:
-    x = m4[0] - m1[0];
-    y = m4[1] - m1[1];
-    z = m4[2] - m1[2];
-    w = m4[3] - m1[3];
-    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* right = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    // Bottom Plane = row 4 + row 2:
-    x = m4[0] + m2[0];
-    y = m4[1] + m2[1];
-    z = m4[2] + m2[2];
-    w = m4[3] + m2[3];
-    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* bottom = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    // Top Plane = row 4 - row 2:
-    x = m4[0] - m2[0];
-    y = m4[1] - m2[1];
-    z = m4[2] - m2[2];
-    w = m4[3] - m2[3];
-    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* top = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    // Near Plane = row 4 + row 3:
-    x = m4[0] + m3[0];
-    y = m4[1] + m3[1];
-    z = m4[2] + m3[2];
-    w = m4[3] + m3[3];
-    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* near = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    // Far Plane = row 4 - row 3:
-    x = m4[0] - m3[0];
-    y = m4[1] - m3[1];
-    z = m4[2] - m3[2];
-    w = m4[3] - m3[3];
-    d = sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-    WWPlane* far = [[WWPlane alloc] initWithCoordinates:x / d y:y / d z:z / d distance:w / d];
-
-    return [[WWFrustum alloc] initWithPlanes:left right:right bottom:bottom top:top near:near far:far];
 }
 
 - (void) offsetPerspectiveDepth:(double)depthOffset
