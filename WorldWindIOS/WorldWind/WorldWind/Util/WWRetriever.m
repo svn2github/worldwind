@@ -34,7 +34,10 @@
 
 - (void) main
 {
-    [self performRetrieval];
+    if ([WorldWind isNetworkAvailable])
+    {
+        [self performRetrieval];
+    }
 }
 
 - (void) performRetrieval

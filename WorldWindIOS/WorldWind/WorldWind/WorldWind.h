@@ -21,6 +21,15 @@
 + (NSOperationQueue*) retrievalQueue;
 
 /**
+* Returns the singleton World Wind file loading queue.
+*
+* This queue is used to load files from disk on separate threads.
+*
+* @return The World Wind file loading queue.
+*/
++ (NSOperationQueue*) loadQueue;
+
+/**
 * Show or hide the device's network busy signal.
 *
 * Calls to this method are reference counted so the signal may still display even after calling this method. If so,

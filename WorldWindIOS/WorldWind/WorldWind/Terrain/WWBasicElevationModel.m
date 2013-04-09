@@ -428,13 +428,13 @@
                                                                   imageHeight:[tile tileHeight]
                                                                         cache:imageCache
                                                                        object:self];
-        [[WorldWind retrievalQueue] addOperation:image];
+        [[WorldWind loadQueue] addOperation:image];
         return;
     }
 
     // If the app is connected to the network, retrieve the image from there.
 
-    if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
+    if ([WorldWind isOfflineMode])
     {
         return;
     }

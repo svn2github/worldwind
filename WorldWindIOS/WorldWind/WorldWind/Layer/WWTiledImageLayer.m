@@ -68,7 +68,7 @@
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
 
-    _textureFormat = WW_TEXTURE_RGBA_8888;
+    _textureFormat = WW_TEXTURE_RGBA_5551;
 
     self->detailHintOrigin = 2.5;
 
@@ -393,15 +393,20 @@
     WWTexture* texture = [[WWTexture alloc] initWithImagePath:[tile imagePath]
                                                         cache:[dc gpuResourceCache]
                                                        object:self];
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),
+//            ^
+//            {
+//                [texture start];
+//            });
     [texture setThreadPriority:0.1];
-    [[WorldWind retrievalQueue] addOperation:texture];
+    [[WorldWind loadQueue] addOperation:texture];
 }
 
 - (void) retrieveTileImage:(WWTextureTile*)tile
 {
     // If the app is connected to the network, retrieve the image from there.
 
-    if ([WorldWind isOfflineMode] || ![WorldWind isNetworkAvailable])
+    if ([WorldWind isOfflineMode])
         return;
 
     NSString* pathKey = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:nil];
@@ -429,14 +434,14 @@
         retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
     }
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),
-            ^
-            {
-                [retriever performRetrieval];
-            });
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),
+//            ^
+//            {
+//                [retriever performRetrieval];
+//            });
 
-//    [retriever setThreadPriority:0.0];
-//    [[WorldWind retrievalQueue] addOperation:retriever];
+    [retriever setThreadPriority:0.0];
+    [[WorldWind retrievalQueue] addOperation:retriever];
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat
