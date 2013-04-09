@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "WorldWind/Render/WWRenderable.h"
+#import "WorldWind/Util/WWDisposable.h"
 
 @class WWDrawContext;
 
@@ -14,7 +15,7 @@
 * Provides the base instance for a layer. This class is meant to be subclassed and provides no independent
 * functionality of its own.
 */
-@interface WWLayer : NSObject <WWRenderable>
+@interface WWLayer : NSObject <WWRenderable, WWDisposable>
 
 /// @name Attributes
 

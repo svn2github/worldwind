@@ -26,6 +26,11 @@
     return self;
 }
 
+- (void) dispose
+{
+    // Override in subclasses to clean up when called.
+}
+
 - (void) render:(WWDrawContext *)dc
 {
     if (!_enabled)

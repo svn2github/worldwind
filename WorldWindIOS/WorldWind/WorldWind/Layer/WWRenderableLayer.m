@@ -21,6 +21,11 @@
     return self;
 }
 
+- (void) dispose
+{
+    [_renderables removeAllObjects];
+}
+
 - (void) addRenderable:(id <WWRenderable>)renderable
 {
     if (renderable == nil)

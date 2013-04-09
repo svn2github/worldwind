@@ -95,6 +95,11 @@
     return self;
 }
 
+- (void) dispose
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void) handleTextureRetrievalNotification:(NSNotification*)notification
 {
     NSDictionary* avList = [notification userInfo];
