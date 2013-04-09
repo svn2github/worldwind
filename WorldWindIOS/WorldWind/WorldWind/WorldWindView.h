@@ -8,11 +8,12 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES2/gl.h>
+#import "WorldWind/Util/WWDisposable.h"
 
 @class WWSceneController;
 @protocol WWNavigator;
 
-@interface WorldWindView : UIView
+@interface WorldWindView : UIView <WWDisposable>
 
 @property (readonly, nonatomic) GLuint frameBuffer;
 @property (readonly, nonatomic) GLuint colorBuffer;

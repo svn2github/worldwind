@@ -76,6 +76,11 @@
     return self;
 }
 
+- (void) dispose
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void) resizeWithLayer:(CAEAGLLayer*)layer
 {
     GLint width, height;
