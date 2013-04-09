@@ -1,0 +1,296 @@
+/*
+ Copyright (C) 2013 United States Government as represented by the Administrator of the
+ National Aeronautics and Space Administration. All Rights Reserved.
+
+ @version $Id$
+ */
+
+#import <CoreLocation/CoreLocation.h>
+#import "WorldWind/Navigate/WWAbstractNavigator.h"
+#import "WorldWind/Navigate/WWBasicNavigatorState.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
+
+#define DEFAULT_NEAR_DISTANCE 1
+#define DEFAULT_FAR_DISTANCE 1000000000
+#define DISPLAY_LINK_FRAME_INTERVAL 3
+#define MIN_NEAR_DISTANCE 1
+#define MIN_FAR_DISTANCE 100
+
+@implementation WWAbstractNavigator
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Navigators --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (WWAbstractNavigator*) initWithView:(WorldWindView*)viewToNavigate
+{
+    if (viewToNavigate == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
+    }
+
+    self = [super init];
+
+    _view = viewToNavigate;
+    _nearDistance = DEFAULT_NEAR_DISTANCE;
+    _farDistance = DEFAULT_FAR_DISTANCE;
+
+    return self;
+}
+
+- (void) dealloc
+{
+    // Invalidate the display link if the navigator is de-allocated before the display link can be cleaned up normally.
+    if (displayLink != nil)
+    {
+        [displayLink invalidate];
+    }
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Navigator Protocol for Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (id<WWNavigatorState>) currentState
+{
+    return nil; // Must be implemented by subclass
+}
+
+- (id<WWNavigatorState>) currentStateForModelview:(WWMatrix*)modelview
+{
+    if (modelview == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Modelview matrix is nil")
+    }
+
+    // The view is a weak reference, so it may have been de-allocated. In this case currentState returns nil since it
+    // has no context with which to compute the current modelview and projection matrices.
+    if (_view == nil)
+    {
+        WWLog(@"Unable to compute current navigator state: View is nil (deallocated)");
+        return nil;
+    }
+
+    WWGlobe* globe = [[_view sceneController] globe];
+    CGRect viewport = [_view viewport];
+
+    // Compute the eye point in model coordinates and the corresponding eye position in geographic coordinates.
+    WWVec4* eyePoint = [modelview extractEyePoint];
+    WWPosition* eyePos = [[WWPosition alloc] init];
+    [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
+
+    // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
+    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
+    // Additionally, this must get an elevation from the globe since the terrain depends on the eye point.
+    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
+    double distanceToSurface = [eyePos altitude] - globeElevation;
+    _nearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
+    if (_nearDistance < MIN_NEAR_DISTANCE)
+        _nearDistance = MIN_NEAR_DISTANCE;
+
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    _farDistance = [WWMath horizonDistanceForGlobeRadius:globeRadius eyeAltitude:[eyePos altitude]];
+    if (_farDistance < MIN_FAR_DISTANCE)
+        _farDistance = MIN_FAR_DISTANCE;
+
+    // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
+    // viewport. We use the WorldWindView's OpenGL viewport instead of the view's bounds because the viewport contains
+    // the actual render buffer dimensions in OpenGL screen coordinates, whereas the bounds contain the view's
+    // dimensions in UIKit screen coordinates.
+    WWMatrix* projection = [[WWMatrix alloc] initWithIdentity];
+    [projection setToPerspectiveProjection:viewport nearDistance:_nearDistance farDistance:_farDistance];
+
+    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
+}
+
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
+{
+    // Must be implemented by subclass
+}
+
+- (void) gotoLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration
+{
+    // Must be implemented by subclass
+}
+
+- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
+{
+    // Must be implemented by subclass
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Core Location Interface for Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (WWPosition*) initialPosition
+{
+    WWPosition* position = [[WWPosition alloc] initWithZeroPosition];
+    [position setDegreesLatitude:0 timeZoneForLongitude:[NSTimeZone localTimeZone]];
+
+    if (![CLLocationManager locationServicesEnabled])
+    {
+        WWLog(@"Location services is disabled; Using default navigator location.");
+        return position;
+    }
+
+    CLLocationManager* locationManager = [[CLLocationManager alloc] init];
+    CLLocation* location = [locationManager location];
+    if (location == nil)
+    {
+        WWLog(@"Location services has no previous location; Using default navigator location.");
+        return position;
+    }
+
+    WWLog(@"Initializing navigator with previous known location (%f, %f)", [location coordinate].latitude, [location coordinate].longitude);
+    [position setCLPosition:location];
+    return position;
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Display Link Interface for Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) startDisplayLink
+{
+    if (displayLinkObservers == 0)
+    {
+        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
+        [displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
+        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    }
+
+    displayLinkObservers++;
+}
+
+- (void) stopDisplayLink
+{
+    displayLinkObservers--;
+
+    if (displayLinkObservers == 0)
+    {
+        [displayLink invalidate];
+        displayLink = nil;
+    }
+}
+
+- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink
+{
+    if (animating)
+    {
+        NSDate* now = [NSDate date];
+        [self updateAnimationForDate:now];
+    }
+
+    [_view drawView]; // The view is a weak reference; this has no effect if the view has been deallocated.
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Gesture Recognizer Interface for Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer
+{
+    // Cancel any currently active animations and start the display link. Navigator gestures override any currently
+    // active animation.
+    [self cancelAnimation];
+    [self startDisplayLink];
+
+    // Post a notification that the navigator has recognized a gesture. Do this last so that the navigator posts the
+    // gesture recognized notification after any animation cancelled notifications.
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_GESTURE_RECOGNIZED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
+{
+    [self stopDisplayLink];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Animation Interface for Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) beginAnimationWithDuration:(NSTimeInterval)duration
+{
+    if (!animating)
+    {
+        // Compute the animation's begin and end date based on the current time and the specified duration.
+        animBeginDate = [NSDate date];
+        animEndDate = [NSDate dateWithTimeInterval:duration sinceDate:animBeginDate];
+
+        [self animationDidBegin];
+        animating = YES;
+    }
+}
+
+- (void) endAnimation
+{
+    if (animating)
+    {
+        [self animationDidEnd];
+        animating = NO;
+    }
+}
+
+- (void) cancelAnimation
+{
+    if (animating)
+    {
+        [self animationWasCancelled];
+        animating = NO;
+    }
+}
+
+- (void) updateAnimationForDate:(NSDate*)date
+{
+    NSTimeInterval now = [date timeIntervalSinceReferenceDate];
+    NSTimeInterval endTime = [animEndDate timeIntervalSinceReferenceDate];
+
+    if (now >= endTime) // The animation has reached its scheduled end.
+    {
+        [self endAnimation];
+    }
+    else
+    {
+        [self animationDidUpdate:date begin:animBeginDate end:animEndDate];
+    }
+}
+
+- (void) animationDidBegin
+{
+    [self startDisplayLink];
+
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_BEGAN object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void) animationDidEnd
+{
+    [self stopDisplayLink];
+
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_ENDED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void) animationWasCancelled
+{
+    [self stopDisplayLink];
+
+    NSNotification* notification = [NSNotification notificationWithName:WW_NAVIGATOR_ANIMATION_CANCELLED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void) animationDidUpdate:(NSDate*)date begin:(NSDate*)begin end:(NSDate*)end
+{
+    // Must be implemented by subclass
+}
+
+@end

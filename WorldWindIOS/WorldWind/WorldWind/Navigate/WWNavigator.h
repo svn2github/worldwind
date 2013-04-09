@@ -10,21 +10,12 @@
 @protocol WWNavigatorState;
 @class WWLocation;
 
-static const NSTimeInterval WWNavigatorDurationImmediate = 0;
 static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
-/**
-* TODO
-*/
 @protocol WWNavigator
 
 /// @name Getting a Navigator State Snapshot
 
-/**
-* TODO
-*
-* @return TODO
-*/
 - (id<WWNavigatorState>) currentState;
 
 /// @name Animating to a Location of Interest
