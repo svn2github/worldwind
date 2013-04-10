@@ -67,7 +67,7 @@
     tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 
     tileCache = [[WWMemoryCache alloc] initWithCapacity:1000000 lowWater:800000]; // Holds 975 tiles.
-    imageCache = [[WWMemoryCache alloc] initWithCapacity:10000000 lowWater:80000000]; // Holds 76 16-bit 256x256 images.
+    imageCache = [[WWMemoryCache alloc] initWithCapacity:10000000 lowWater:8000000]; // Holds 76 16-bit 256x256 images.
     tileKey = [[WWTileKey alloc] initWithLevelNumber:0 row:0 column:0];
 
     currentRetrievals = [[NSMutableSet alloc] init];
