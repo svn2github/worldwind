@@ -21,12 +21,16 @@
 /// @name Attributes
 
 /// The URL from which to retrieve the resource.
-@property (nonatomic, readonly) NSURL* url;
+@property(nonatomic, readonly) NSURL* url;
 
 /// The full path and name of the file in which to store the resource.
-@property (nonatomic, readonly) NSString* filePath;
+@property(nonatomic, readonly) NSString* filePath;
 
-@property (nonatomic, readonly) id object;
+/// The optional argument specified as the source in the WW_RETRIEVAL_STATUS notification.
+@property(nonatomic, readonly) id object;
+
+/// The number of seconds to wait before the request times out.
+@property (nonatomic, readonly) NSTimeInterval timeout;
 
 /// @name Initializing Retrievers
 
@@ -42,7 +46,7 @@
 *
 * @exception NSInvalidArgumentException If the url or file path are nil.
 */
-- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object;
+- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object timeout:(NSTimeInterval)timeout;
 
 /// @name Operations
 

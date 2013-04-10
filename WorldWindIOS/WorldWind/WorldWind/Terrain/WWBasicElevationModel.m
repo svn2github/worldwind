@@ -56,6 +56,7 @@
     _timestamp = [NSDate date];
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
+    _timeout = 20; // seconds
 
     coverageSector = sector;
     currentSector = [[WWSector alloc] initWithDegreesMinLatitude:0 maxLatitude:0 minLongitude:0 maxLongitude:0];
@@ -447,7 +448,7 @@
     [currentRetrievals addObject:[tile imagePath]];
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
     [[WorldWind retrievalQueue] addOperation:retriever];
 }
 

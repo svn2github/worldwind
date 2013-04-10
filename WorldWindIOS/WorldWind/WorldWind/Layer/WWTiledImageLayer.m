@@ -67,6 +67,7 @@
 
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
+    _timeout = 20; // seconds
 
     _textureFormat = WW_TEXTURE_RGBA_5551;
 
@@ -432,11 +433,11 @@
         // the notification of download success is received in handleNotification above.
         NSString* suffix = [WWUtil suffixForMimeType:_retrievalImageFormat];
         NSString* filePath = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:suffix];
-        retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self];
+        retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self timeout:_timeout];
     }
     else
     {
-        retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self];
+        retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
     }
 
 //    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),

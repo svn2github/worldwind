@@ -78,6 +78,9 @@
 /// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
 @property (nonatomic) NSDate* expiration;
 
+/// The number of seconds to wait before retrieval requests time out.
+@property (nonatomic) NSTimeInterval timeout;
+
 /// @name Initializing Tiled Image Layers
 
 /**

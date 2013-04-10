@@ -62,6 +62,9 @@
 /// prior to using the model. Although it is initialized to nil, it may not be nil when the model becomes active.
 @property(nonatomic) id <WWUrlBuilder> urlBuilder;
 
+/// The number of seconds to wait before retrieval requests time out.
+@property (nonatomic) NSTimeInterval timeout;
+
 /// @name Initializing Elevation Models
 
 /**

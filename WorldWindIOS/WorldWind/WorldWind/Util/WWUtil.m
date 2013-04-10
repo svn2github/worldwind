@@ -22,7 +22,7 @@
     return uuidStr;
 }
 
-+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath
++ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout
 {
     if (url == nil)
     {
@@ -34,44 +34,64 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"File path is nil or empty")
     }
 
+    // Get the data from the URL.
+    NSData* data = [self retrieveUrl:url timeout:timeout];
+    if (data == nil)
+    {
+        return NO;
+    }
+
+    // Ensure that the directory for the file exists.
+    NSError* error = nil;
+    NSString* pathDir = [filePath stringByDeletingLastPathComponent];
+    [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
+                              withIntermediateDirectories:YES attributes:nil error:&error];
+    if (error != nil)
+    {
+        WWLog("@Error \"%@\" creating path %@", [error description], filePath);
+        return NO;
+    }
+
+    // Write the data to the file.
+    [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
+    if (error != nil)
+    {
+        WWLog("@Error \"%@\" writing file %@", [error description], filePath);
+        return NO;
+    }
+
+    return YES;
+}
+
++ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout
+{
+    if (url == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
+    }
+
     @try
     {
         [WorldWind setNetworkBusySignalVisible:YES];
 
-        NSError* error = nil;
-
         // Get the data from the URL.
-        NSData* data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+        NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url
+                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                  timeoutInterval:timeout];
+        NSURLResponse* response;
+        NSError* error = nil;
+        NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
         if (error != nil)
         {
             WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
-            return NO;
         }
 
-        // Ensure that the directory for the file exists.
-        NSString* pathDir = [filePath stringByDeletingLastPathComponent];
-        [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
-                                  withIntermediateDirectories:YES attributes:nil error:&error];
-        if (error != nil)
-        {
-            WWLog("@Error \"%@\" creating path %@", [error description], filePath);
-            return NO;
-        }
-
-        // Write the data to the file.
-        [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
-        if (error != nil)
-        {
-            WWLog("@Error \"%@\" writing file %@", [error description], filePath);
-            return NO;
-        }
+        return data;
     }
     @finally
     {
         [WorldWind setNetworkBusySignalVisible:NO];
     }
-
-    return YES;
 }
 
 + (NSString*) suffixForMimeType:(NSString*)mimeType

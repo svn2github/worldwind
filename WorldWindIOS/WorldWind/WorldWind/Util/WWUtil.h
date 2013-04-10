@@ -26,7 +26,19 @@
 *
 * @exception NSInvalidArgumentException if the url or file path are nil or the file path is empty.
 */
-+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath;
++ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout;
+
+/**
+* Retrieves the data designated by a URL and returns it.
+*
+* @param url The URL from which to retrieve the data.
+*
+* @return The retrieved data if the operation was successful, otherwise nil. A log message is written if the
+* operation is unsuccessful.
+*
+* @exception NSInvalidArgumentException if the url is nil.
+*/
++ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout;
 
 /// @name Other Utilities
 

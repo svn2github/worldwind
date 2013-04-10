@@ -29,6 +29,7 @@
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
 #import "WorldWind/Layer/WWFAAChartAnchorage_84_North.h"
+#import "WorldWind/Util/WWUtil.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -125,7 +126,12 @@
 - (void) makeFlightPathsLayer
 {
     NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/PassageWays.json"];
-    NSData* data = [[NSData alloc] initWithContentsOfURL:url];
+    NSData* data = [WWUtil retrieveUrl:url timeout:5];
+    if (data == nil)
+    {
+        WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
+        return;
+    }
 
     NSError* error;
     NSDictionary* jData = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];

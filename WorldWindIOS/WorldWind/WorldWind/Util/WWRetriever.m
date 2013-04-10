@@ -11,7 +11,7 @@
 
 @implementation WWRetriever
 
-- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object
+- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object timeout:(NSTimeInterval)timeout
 {
     if (url == nil)
     {
@@ -28,6 +28,7 @@
     _url = url;
     _filePath = filePath;
     _object = object;
+    _timeout = timeout;
 
     return self;
 }
@@ -54,7 +55,7 @@
         {
             if (![self isCancelled])
             {
-                if ([WWUtil retrieveUrl:_url toFile:_filePath])
+                if ([WWUtil retrieveUrl:_url toFile:_filePath timeout:_timeout])
                 {
                     [dict setObject:WW_SUCCEEDED forKey:WW_RETRIEVAL_STATUS];
                 }
