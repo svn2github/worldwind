@@ -35,10 +35,7 @@
 
 - (void) main
 {
-    if ([WorldWind isNetworkAvailable])
-    {
-        [self performRetrieval];
-    }
+    [self performRetrieval];
 }
 
 - (void) performRetrieval
@@ -53,7 +50,11 @@
                                                                    userInfo:dict];
         @try
         {
-            if (![self isCancelled])
+            if (![WorldWind isNetworkAvailable])
+            {
+                [dict setObject:WW_CANCELED forKey:WW_RETRIEVAL_STATUS];
+            }
+            else if (![self isCancelled])
             {
                 if ([WWUtil retrieveUrl:_url toFile:_filePath timeout:_timeout])
                 {
