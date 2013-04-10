@@ -15,6 +15,7 @@
 @class WWMemoryCache;
 @class WWTileKey;
 @protocol WWUrlBuilder;
+@class WWAbsentResourceList;
 
 @interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory>
 {
@@ -33,6 +34,7 @@
     // Sets used to eliminate duplicate elevation image retrievals and loads.
     NSMutableSet* currentRetrievals;
     NSMutableSet* currentLoads;
+    WWAbsentResourceList* absentResources;
 }
 
 /// @name Elevation Model Attributes

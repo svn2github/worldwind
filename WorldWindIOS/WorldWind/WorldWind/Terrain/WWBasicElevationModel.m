@@ -17,6 +17,7 @@
 #import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/Util/WWAbsentResourceList.h"
 
 @implementation WWBasicElevationModel
 
@@ -73,6 +74,7 @@
 
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];
+    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
 
     // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -416,7 +418,7 @@
     // See if it's already on disk.
     if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
     {
-        if ([currentLoads containsObject:[tile imagePath]])
+        if ([currentLoads containsObject:[tile imagePath]] || [absentResources isResourceAbsent:[tile imagePath]])
         {
             return;
         }
@@ -483,9 +485,14 @@
     if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
         _timestamp = [NSDate date];
+        [absentResources unmarkResourceAbsent:imagePath];
 
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
+    else
+    {
+        [absentResources markResourceAbsent:imagePath];
     }
 }
 

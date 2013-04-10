@@ -56,6 +56,7 @@
 		1BF9A1A660028CB4D734241D /* WWUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC163DFB1836313D6753 /* WWUtil.m */; };
 		1BF9A1B6612136D19479795D /* WWAbstractShape.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AF00ECA82988DE914B3F /* WWAbstractShape.h */; };
 		1BF9A21517208794800230BD /* WWTerrainSharedGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A3ABEDB1867B12374E37 /* WWTerrainSharedGeometry.m */; };
+		1BF9A215FA47DF77919829FF /* WWAbsentResourceList.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A69B0F2C70C2E6A59A49 /* WWAbsentResourceList.m */; };
 		1BF9A216489F5A66DD83F6A8 /* WWTiledImageLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA1BFC3BC45A1875BECF /* WWTiledImageLayer.m */; };
 		1BF9A265F72912ED3EDB9D0B /* WWPath.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A459ABA3AF473E2767CF /* WWPath.h */; };
 		1BF9A297DD0276545C6AEE99 /* WWBMNGOneImageLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7E4BB3F81A351856181 /* WWBMNGOneImageLayer.m */; };
@@ -80,6 +81,7 @@
 		1BF9A5A540604FAB751357AD /* WWTextureTile.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7DE31D27ECB79AF8DA2 /* WWTextureTile.m */; };
 		1BF9A5A64AC3A64144E0BA2C /* WWLevelSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4198C46AC6A44ACA331 /* WWLevelSet.m */; };
 		1BF9A5AE2EAB0F7E3586B2DF /* WWPVRTCImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A710BE79AAABFA24C689 /* WWPVRTCImage.m */; };
+		1BF9A60256284C7F9F20005B /* WWAbsentResourceList.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A69B0F2C70C2E6A59A49 /* WWAbsentResourceList.m */; };
 		1BF9A61573E8CDF51C54C0B8 /* WWShapeAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADF8BE96D5BBFB1E3260 /* WWShapeAttributes.m */; };
 		1BF9A61A24CEC8714AE1123C /* WWGpuProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5C985BCED6294E81BB7 /* WWGpuProgram.m */; };
 		1BF9A61E33819001CB7D26BB /* SurfaceTileRenderer.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA973D779A9B2589F51E /* SurfaceTileRenderer.frag */; };
@@ -161,6 +163,7 @@
 		1BF9AE2D6796B515F9C2F1E3 /* WWSphere.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AEE976CEF41C26D283E1 /* WWSphere.m */; };
 		1BF9AE348154DFED1A29A0D6 /* WWSurfaceTile.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AEC62033A510E2AB3B10 /* WWSurfaceTile.h */; };
 		1BF9AE43331BCACB3F35740D /* WWSphere.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AC354386168AA433EF1E /* WWSphere.h */; };
+		1BF9AE5D2B4AFCAEF789AA0E /* WWAbsentResourceList.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A629A0107D6541B68563 /* WWAbsentResourceList.h */; };
 		1BF9AE61B1BBD5E1D7C9560B /* WWGpuResourceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0A56A8085BA2CF74098 /* WWGpuResourceCache.m */; };
 		1BF9AE68532F570E559E7347 /* WWAbstractShape.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A2C84AAEB94DD6E87609 /* WWAbstractShape.m */; };
 		1BF9AE7F21E1AA26D5F744D2 /* WWMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A673E5A9F5C56E14C90C /* WWMatrix.m */; };
@@ -289,6 +292,7 @@
 				CC8CF01F288C946B1D0D0FDE /* WWTileKey.h in CopyFiles */,
 				CC8CFA647678547E23AD515B /* WWLine.h in CopyFiles */,
 				CC8CFE7003EB7871303C5489 /* WWAbstractNavigator.h in CopyFiles */,
+				1BF9AE5D2B4AFCAEF789AA0E /* WWAbsentResourceList.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,10 +378,12 @@
 		1BF9A5A4B9B3A33122681928 /* WWWmsUrlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWWmsUrlBuilder.h; sourceTree = "<group>"; };
 		1BF9A5C985BCED6294E81BB7 /* WWGpuProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuProgram.m; sourceTree = "<group>"; };
 		1BF9A5CA324B55F360E1EC7D /* WWGpuShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWGpuShader.h; sourceTree = "<group>"; };
+		1BF9A629A0107D6541B68563 /* WWAbsentResourceList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWAbsentResourceList.h; sourceTree = "<group>"; };
 		1BF9A64568E4792EA86EAD4D /* WWBMNGLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBMNGLayer.h; sourceTree = "<group>"; };
 		1BF9A65D8A77C89A19820C20 /* WWSurfaceTileRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWSurfaceTileRenderer.m; sourceTree = "<group>"; };
 		1BF9A673E5A9F5C56E14C90C /* WWMatrix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWMatrix.m; path = Geometry/WWMatrix.m; sourceTree = "<group>"; };
 		1BF9A67433C66FC405B75724 /* WWPlane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWPlane.m; path = Geometry/WWPlane.m; sourceTree = "<group>"; };
+		1BF9A69B0F2C70C2E6A59A49 /* WWAbsentResourceList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWAbsentResourceList.m; sourceTree = "<group>"; };
 		1BF9A710BE79AAABFA24C689 /* WWPVRTCImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPVRTCImage.m; sourceTree = "<group>"; };
 		1BF9A722FB10AA879B085BE1 /* WWMemoryCacheListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWMemoryCacheListener.h; sourceTree = "<group>"; };
 		1BF9A77CFF425CC49BB87401 /* WWMemoryCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWMemoryCache.h; sourceTree = "<group>"; };
@@ -554,6 +560,8 @@
 				1BF9A3A1BF9BC023E4B78CE2 /* WWColor.h */,
 				CC8CF7BE0991298AA915B3F9 /* WWTileKey.h */,
 				CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */,
+				1BF9A69B0F2C70C2E6A59A49 /* WWAbsentResourceList.m */,
+				1BF9A629A0107D6541B68563 /* WWAbsentResourceList.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -956,6 +964,7 @@
 				CC8CF1DC410C2407ACF32D39 /* WWTileKey.m in Sources */,
 				CC8CF26EA05AFC8A913C72CC /* WWLine.m in Sources */,
 				CC8CFB8442EEF0E8D105C5CA /* WWAbstractNavigator.m in Sources */,
+				1BF9A60256284C7F9F20005B /* WWAbsentResourceList.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1016,6 +1025,7 @@
 				1BF9A0552ED8A83EA4544C8C /* WWSphere.m in Sources */,
 				1BF9ACAD299CE145232B29AA /* WWOpenWeatherMapLayer.m in Sources */,
 				1BF9A2A28D3CCF387264F587 /* WWFAAChartAnchorage_84_North.m in Sources */,
+				1BF9A215FA47DF77919829FF /* WWAbsentResourceList.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

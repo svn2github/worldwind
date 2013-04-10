@@ -27,6 +27,7 @@
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/Render/WWTexture.h"
+#import "WorldWind/Util/WWAbsentResourceList.h"
 
 @implementation WWTiledImageLayer
 
@@ -81,6 +82,7 @@
     self->topLevelTiles = [[NSMutableArray alloc] init];
     self->currentRetrievals = [[NSMutableSet alloc] init];
     self->currentLoads = [[NSMutableSet alloc] init];
+    self->absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
 
     // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -106,6 +108,7 @@
     NSDictionary* avList = [notification userInfo];
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+    NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
 
     @try
     {
@@ -127,8 +130,14 @@
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
 
+            [absentResources unmarkResourceAbsent:pathKey];
+
             NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
             [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+        else
+        {
+            [absentResources markResourceAbsent:pathKey];
         }
     }
     @catch (NSException* exception)
@@ -137,7 +146,6 @@
     }
     @finally
     {
-        NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
         [self->currentRetrievals removeObject:pathKey];
     }
 }
@@ -416,7 +424,7 @@
         return;
 
     NSString* pathKey = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:nil];
-    if ([self->currentRetrievals containsObject:pathKey])
+    if ([self->currentRetrievals containsObject:pathKey] || [absentResources isResourceAbsent:pathKey])
     {
         return;
     }

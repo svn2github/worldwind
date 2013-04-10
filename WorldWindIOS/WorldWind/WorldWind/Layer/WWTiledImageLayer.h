@@ -18,6 +18,7 @@
 @protocol WWUrlBuilder;
 @class WWLevel;
 @class WWMemoryCache;
+@class WWAbsentResourceList;
 
 /**
 * Provides a layer that displays multi-resolution imagery arranged as adjacent tiles. This is the primary World
@@ -49,9 +50,11 @@
     NSMutableArray* currentTiles;
     WWTextureTile* currentAncestorTile;
 
-    // The following field is used to prevent duplicate retrievals.
+    // The following fields are used to prevent duplicate retrievals.
     NSMutableSet* currentRetrievals;
     NSMutableSet* currentLoads;
+
+    WWAbsentResourceList* absentResources;
 }
 
 /// @name Attributes
