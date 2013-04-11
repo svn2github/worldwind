@@ -180,7 +180,7 @@
 *
 * @param scalar The scalar to multiply.
 *
-* @return This matrix multiplied by the specified scalar.
+* @return This vector multiplied by the specified scalar.
 */
 - (WWVec4*) multiplyByScalar3:(double)scalar;
 
@@ -189,7 +189,7 @@
 *
 * @param scalar The scalar to multiply.
 *
-* @return This matrix multiplied by the specified scalar.
+* @return This vector multiplied by the specified scalar.
 */
 - (WWVec4*) multiplyByScalar:(double)scalar;
 
@@ -198,7 +198,7 @@
 *
 * @param matrix The matrix to multiply.
 *
-* @return This matrix multiplied by the specified matrix.
+* @return This vector multiplied by the specified matrix.
 *
 * @exception NSInvalidArgumentException If the specified matrix is nil.
 */
@@ -233,7 +233,7 @@
 - (double) distanceSquared3:(WWVec4*)vector;
 
 /**
-* Computes the X, Y, Z dot product of this matrix with a specified vector.
+* Computes the X, Y, Z dot product of this vector with a specified vector.
 *
 * @param vector The vector to dot with this vector.
 *
@@ -242,6 +242,20 @@
 * @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (double) dot3:(WWVec4*)vector;
+
+/**
+* Computes the cross product of this vector and a specified vector, then stores the result in this vector.
+*
+* The cross product computed by this method is equivalent to va = va x vb, where 'va' is this vector and 'vb' is the
+* specified vector.
+*
+* @param vector The vector to cross with this vector.
+*
+* @return This vector, now the cross product of itself and the specified vector.
+*
+* @exception NSInvalidArgumentException If the vector is nil.
+*/
+- (WWVec4*) cross3:(WWVec4*)vector;
 
 /**
 * Computes a point on a specified line.

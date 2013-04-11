@@ -329,7 +329,30 @@
 
 - (double) dot3:(WWVec4*)vector
 {
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
     return _x * vector->_x + _y * vector->_y + _z * vector->_z;
+}
+
+- (WWVec4*) cross3:(WWVec4*)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    double x = _x;
+    double y = _y;
+    double z = _z;
+
+    _x = (y * vector->_z) - (z * vector->_y);
+    _y = (z * vector->_x) - (x * vector->_z);
+    _z = (x * vector->_y) - (y * vector->_x);
+
+    return self;
 }
 
 @end
