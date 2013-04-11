@@ -10,6 +10,7 @@
 
 @class WWPosition;
 @class WWGlobe;
+@class WWVec4;
 
 /**
 * Convert degrees to radians.
@@ -113,6 +114,22 @@ extern double NormalizedDegreesHeading(double degrees);
 * @exception NSInvalidArgumentException If the specified list of points is nil.
 */
 + (NSArray*) principalAxesFromPoints:(NSArray*)points;
+
+/**
+* Computes the axes of a local coordinate system on the specified globe.
+*
+* The local coordinate system is defined such that the z axis maps to the globe's surface normal at the point, the y
+* axis maps to the north pointing tangent, and the x axis maps to the east pointing tangent.
+*
+* @param point The local coordinate system origin, in model coordinates.
+* @param globe The globe the coordinate system is relative to.
+*
+* @return An array containing three WWVec4 instances identifying the coordinate system axes. The WWVec4 axes appear in
+* the array in the order: x-axis, y-axis, z-axis.
+*
+* @exception NSInvalidArgumentException If either argument is nil.
+*/
++ (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe;
 
 /// @name Computing Information for Viewing and Projection
 

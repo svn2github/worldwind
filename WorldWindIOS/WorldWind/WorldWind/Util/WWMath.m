@@ -146,6 +146,48 @@ double NormalizedDegreesHeading(double degrees)
     return resultArray;
 }
 
++ (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe
+{
+    if (point == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    double x = [point x];
+    double y = [point y];
+    double z = [point z];
+
+    // Compute the z axis from the surface normal in model coordinates. This axis is used to determine the other two
+    // axes, and is the only constant in the computations below.
+    WWVec4* zaxis = [[WWVec4 alloc] initWithZeroVector];
+    [globe surfaceNormalAtPoint:x y:y z:z result:zaxis];
+
+    // Compute the y axis from the north pointing tangent in model coordinates. This axis is known to be orthogonal to
+    // the z axis, and is therefore used to compute the x axis.
+    WWVec4* yaxis = [[WWVec4 alloc] initWithZeroVector];
+    [globe northTangentAtPoint:x y:y z:z result:yaxis];
+
+    // Compute the x axis as the cross product of the y and z axes. This ensures that the x and z axes are orthogonal.
+    WWVec4* xaxis = [[WWVec4 alloc] initWithZeroVector];
+    [xaxis set:yaxis];
+    [xaxis cross3:zaxis];
+    [xaxis normalize3];
+
+    // Re-compute the y axis as the cross product of the z and x axes. This ensures that all three axes are orthogonal.
+    // Though the initial y axis computed above is likely to be very nearly orthogonal, we re-compute it using cross
+    // products to reduce the effect of floating point rounding errors caused by working with Earth sized coordinates.
+    [yaxis set:zaxis];
+    [yaxis cross3:xaxis];
+    [yaxis normalize3];
+
+    return [[NSArray alloc] initWithObjects:xaxis, yaxis, zaxis, nil];
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Computing Viewing and Navigation Information --//
 //--------------------------------------------------------------------------------------------------------------------//
