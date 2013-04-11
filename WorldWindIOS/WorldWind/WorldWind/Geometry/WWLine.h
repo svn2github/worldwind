@@ -10,7 +10,7 @@
 @class WWVec4;
 
 /**
-* Represents a line in model coordinates defined by an origin point and a unit-length direction vector.
+* Represents a line in model coordinates defined by an origin point and a direction vector.
 *
 * WWLine defines an infinite line that passes through a point in a given direction, and extends to infinity in both
 * directions. WWLine may be interpreted as a ray with a single endpoint extending to infinity along its direction, or as
@@ -23,26 +23,26 @@
 
 /// @name Line Attributes
 
-/// The point this passes through, in model coordinates.
+/// The point this line passes through, in model coordinates.
 @property(nonatomic) WWVec4* origin;
 
-/// This line's unit-length direction vector, in model coordinates.
+/// This line's direction vector, in model coordinates. The direction vector is not required to be a unit vector.
 @property(nonatomic) WWVec4* direction;
 
 /// @name Initializing Lines
 
 /**
-* Initializes a line with a specified origin point and unit-length direction vector.
+* Initializes a line with a specified origin point and direction vector.
 *
 * This method retains the specified origin and direction, and assigns them to its internal origin and direction
 * properties.
 *
 * @param origin The point the passes through, in model coordinates.
-* @param direction The line's direction vector, in model coordinates. This vector must have a length of one.
+* @param direction The line's direction vector, in model coordinates. This vector may have any non-zero length.
 *
 * @return The initialized line.
 *
-* @exception NSInvalidArgumentException If either parameter is nil, or if the direction has a length other than one.
+* @exception NSInvalidArgumentException If either parameter is nil, or if the direction vector's length is zero.
 */
 - (WWLine*) initWithOrigin:(WWVec4*)origin direction:(WWVec4*)direction;
 

@@ -23,9 +23,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Direction is nil")
     }
 
-    if ([direction length3] != 1)
+    if ([direction length3] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Direction has non-unit length")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Direction length is zero")
     }
 
     self = [super init];
