@@ -22,6 +22,9 @@
 /// This surface image's display name.
 @property (nonatomic) NSString* displayName;
 
+/// Indicates whether this surface image should be displayed.
+@property(nonatomic) BOOL enabled;
+
 /// The sector over which the image is displayed. The image is stretched to fill this region.
 @property (readonly, nonatomic) WWSector* sector;
 

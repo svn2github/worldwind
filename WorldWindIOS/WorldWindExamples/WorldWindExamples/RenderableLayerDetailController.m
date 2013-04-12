@@ -6,10 +6,9 @@
  */
 
 #import <WorldWind/WWRenderableLayer.h>
+#import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "RenderableLayerDetailController.h"
-#import "WWLog.h"
-#import "WorldWindConstants.h"
-
 
 @implementation RenderableLayerDetailController
 
@@ -90,20 +89,38 @@
         if (cell == nil)
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:layerContentsCellIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
         }
 
         id <WWRenderable> r = [[_layer renderables] objectAtIndex:(NSUInteger) [indexPath row]];
         NSString* displayName = [r displayName];
         [[cell textLabel] setText:displayName != nil ? displayName : @"Renderable"];
+        [[cell imageView] setHidden:![r enabled]];
     }
 
     return cell;
 }
 
+- (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    if ([indexPath section] == 1) // the list of renderables
+    {
+        // Set the selected renderables's visibility.
+        id <WWRenderable> renderable = [[_layer renderables] objectAtIndex:(NSUInteger) [indexPath row]];
+        [renderable setEnabled:[renderable enabled] ? NO : YES];
+        [[self tableView] reloadData];
+        [self requestRedraw];
+    }
+}
+
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
+    [self requestRedraw];
+}
 
+- (void) requestRedraw
+{
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }

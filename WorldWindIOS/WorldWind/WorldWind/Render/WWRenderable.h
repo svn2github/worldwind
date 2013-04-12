@@ -12,7 +12,13 @@
 */
 @protocol WWRenderable
 
-@property (nonatomic) NSString* displayName;
+///  @name Renderable Attributes
+
+/// This renderable's display name.
+@property(nonatomic) NSString* displayName;
+
+/// Indicates whether this renderable should be displayed.
+@property(nonatomic) BOOL enabled;
 
 /// @name Drawing Renderables
 
