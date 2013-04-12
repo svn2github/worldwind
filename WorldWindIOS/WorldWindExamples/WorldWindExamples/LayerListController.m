@@ -11,6 +11,7 @@
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "ImageLayerDetailController.h"
 #import "RenderableLayerDetailController.h"
 
@@ -45,7 +46,7 @@
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [layer setEnabled:[layer enabled] ? NO : YES];
     [[self tableView] reloadData];
-    [_wwv drawView];
+    [self requestRedraw];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -115,6 +116,12 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
+}
+
+- (void) requestRedraw
+{
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
 
 @end
