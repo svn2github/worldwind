@@ -28,6 +28,7 @@
     _highlighted = NO;
     _enabled = YES;
     _altitudeMode = WW_ALTITUDE_MODE_ABSOLUTE;
+    _displayName = @"Shape";
 
     transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     referencePoint = [[WWVec4 alloc] initWithZeroVector];

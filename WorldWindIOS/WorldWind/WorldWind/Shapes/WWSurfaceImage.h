@@ -19,6 +19,9 @@
 
 /// @name Surface Image Attributes
 
+/// This surface image's display name.
+@property (nonatomic) NSString* displayName;
+
 /// The sector over which the image is displayed. The image is stretched to fill this region.
 @property (readonly, nonatomic) WWSector* sector;
 

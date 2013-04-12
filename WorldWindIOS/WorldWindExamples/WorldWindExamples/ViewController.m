@@ -177,6 +177,7 @@
         }
 
         WWPath* path = [[WWPath alloc] initWithPositions:pathCoords];
+        [path setDisplayName:[NSString stringWithFormat:@"Flight Path %d", i + 1]];
         [path setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
         [path setAttributes:attributes];
         [pathsLayer addRenderable:path];

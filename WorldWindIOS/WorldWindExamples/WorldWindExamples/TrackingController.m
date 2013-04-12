@@ -63,6 +63,7 @@ typedef enum
     WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
     [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
     marker = [[WWSphere alloc] initWithPosition:[[WWPosition alloc] init] radiusInPixels:5];
+    [marker setDisplayName:@"Tracking Sphere"];
     [marker setAttributes:attributes];
 
     layer = [[WWRenderableLayer alloc] init];

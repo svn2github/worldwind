@@ -12,6 +12,8 @@
 */
 @protocol WWRenderable
 
+@property (nonatomic) NSString* displayName;
+
 /// @name Drawing Renderables
 
 /**

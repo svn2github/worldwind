@@ -31,6 +31,7 @@
 
     _imagePath = imagePath;
     _sector = sector;
+    _displayName = @"Surface Image";
 
     return self;
 }

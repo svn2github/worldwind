@@ -7,17 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLayer;
+@class WWTiledImageLayer;
 
 /**
 * Displays layer controls and information.
 */
-@interface LayerDetailController : UITableViewController
+@interface ImageLayerDetailController : UITableViewController
 
 /// @name Attributes
 
 /// The associated layer.
-@property (readonly, nonatomic, weak) WWLayer* layer;
+@property (readonly, nonatomic, weak) WWTiledImageLayer* layer;
 
 /**
 * Initialize this instance for a specified layer.
@@ -26,7 +26,7 @@
 *
 * @exception NSInvalidArgumentException If the specified layer is nil.
 */
-- (LayerDetailController*) initWithLayer:(WWLayer*)layer;
+- (ImageLayerDetailController*) initWithLayer:(WWTiledImageLayer*)layer;
 
 /**
 * Called by the opacity slider when the user changes the opacity.

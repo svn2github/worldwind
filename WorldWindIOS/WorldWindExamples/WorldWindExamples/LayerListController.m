@@ -5,12 +5,14 @@
  @version $Id$
  */
 
+#import <WorldWind/WWTiledImageLayer.h>
+#import <WorldWind/WWRenderableLayer.h>
 #import "LayerListController.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWind/Layer/WWLayer.h"
-#import "LayerDetailController.h"
+#import "ImageLayerDetailController.h"
+#import "RenderableLayerDetailController.h"
 
 @implementation LayerListController
 
@@ -97,11 +99,22 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger)[indexPath row]];
 
-    LayerDetailController* detailController = [[LayerDetailController alloc] initWithLayer:layer];
-    [detailController setTitle:[layer displayName]];
+    if ([layer isKindOfClass:[WWTiledImageLayer class]])
+    {
+        ImageLayerDetailController* detailController =
+                [[ImageLayerDetailController alloc] initWithLayer:(WWTiledImageLayer*)layer];
+        [detailController setTitle:[layer displayName]];
 
-    [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+    else if ([layer isKindOfClass:[WWRenderableLayer class]])
+    {
+        RenderableLayerDetailController* detailController =
+                [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*)layer];
+        [detailController setTitle:[layer displayName]];
 
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
 }
 
 @end

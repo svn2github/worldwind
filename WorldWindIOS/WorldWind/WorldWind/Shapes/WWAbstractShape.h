@@ -37,6 +37,9 @@
 
 /// @name Shape Attributes
 
+/// This shape's display name.
+@property (nonatomic) NSString* displayName;
+
 /// The appearance attributes applied to the shape when it is not highlighted.
 @property(nonatomic) WWShapeAttributes* attributes;
 
