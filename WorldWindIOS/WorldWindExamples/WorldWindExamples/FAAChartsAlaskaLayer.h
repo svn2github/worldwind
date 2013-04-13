@@ -6,10 +6,10 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "WorldWind/Layer/WWTiledImageLayer.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
 
-@interface WWFAAChartAnchorage_84_North : WWTiledImageLayer
+@interface FAAChartsAlaskaLayer : WWRenderableLayer
 
-- (WWFAAChartAnchorage_84_North*) init;
+- (FAAChartsAlaskaLayer*) init;
 
 @end

@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <WorldWind/WWTiledImageLayer.h>
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WWLog.h"
 
@@ -44,6 +45,22 @@
     }
 
     [_renderables removeObject:renderable];
+}
+
+- (void) setOpacity:(float)opacity
+{
+    [super setOpacity:opacity];
+
+    // TODO: Rather than set the opacity field of renderables, set a field for "layer opacity" in the draw context
+    // and implement the renderables to composite it with their own opacity.
+    for (NSUInteger i = 0; i < [[self renderables] count]; i++)
+    {
+        id renderable = [[self renderables] objectAtIndex:i];
+        if ([renderable isMemberOfClass:[WWTiledImageLayer class]])
+        {
+            [((WWTiledImageLayer*) renderable) setOpacity:opacity];
+        }
+    }
 }
 
 - (void) doRender:(WWDrawContext*)dc
