@@ -8,8 +8,18 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWRenderableLayer.h"
 
+/**
+* Displays FAA charts for Alaska.
+*/
 @interface FAAChartsAlaskaLayer : WWRenderableLayer
 
+/// @name Initializing.
+
+/**
+* Initialize this instance.
+*
+* @return This instance initialized.
+*/
 - (FAAChartsAlaskaLayer*) init;
 
 @end
