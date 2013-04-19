@@ -8,12 +8,12 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 
-@interface WWOpenWeatherMapLayer : WWTiledImageLayer
+@interface WWOpenWeatherMapLayer : WWRenderableLayer
 
-/// @name Initializing the Open Weather Map Precipitation Layer
+/// @name Initializing the Open Weather Map Layer
 
 /**
-* Initializes a Open Weather Map Precipitation layer.
+* Initializes the Open Weather Map layer.
 *
 * @return The initialized layer.
 */

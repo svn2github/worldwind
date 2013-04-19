@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
 #import "WorldWind/Geometry/WWLocation.h"
@@ -14,24 +15,71 @@
 
 - (WWOpenWeatherMapLayer*) init
 {
-    NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"OpenWeatherMapPrecipitation"];
+    self = [super init];
 
-    self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
-                  levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
-                       numLevels:4
-            retrievalImageFormat:@"image/png"
-                       cachePath:cachePath];
-    [self setDisplayName:@"Open Weather Map Precipitation"];
-//    [self setImageFile:@"BlueMarble"];
+    [self setDisplayName:@"Open Weather Map"];
+
+    WWTiledImageLayer* layer = [self makeLayerForName:@"precipitation" displayName:@"Precipitation"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"clouds" displayName:@"Clouds"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"pressure" displayName:@"Pressure"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"pressure_cntr" displayName:@"Pressure Contours"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"temp" displayName:@"Temperature"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"wind" displayName:@"Wind"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"snow" displayName:@"Snow"];
+    [layer setEnabled:NO];
+    [self addRenderable:layer];
+//
+//    layer = [self makeLayerForName:@"RADAR.12KM" displayName:@"Radar 12 Km"];
+//    [layer setEnabled:NO];
+//    [self addRenderable:layer];
+//
+//    layer = [self makeLayerForName:@"RADAR.2KM" displayName:@"Radar 2 Km"];
+//    [layer setEnabled:NO];
+//    [self addRenderable:layer];
+
+    return self;
+}
+
+- (WWTiledImageLayer*) makeLayerForName:(NSString*)layerName displayName:(NSString*)displayName
+{
+    NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* cachePath = [cacheDir stringByAppendingPathComponent:layerName];
+
+    WWSector* sector = [[WWSector alloc] initWithDegreesMinLatitude:-85.0511287798 maxLatitude:85.0511287798
+                                                       minLongitude:-180 maxLongitude:180];
+
+    WWTiledImageLayer* layer = [[WWTiledImageLayer alloc] initWithSector:sector
+                                                          levelZeroDelta:[[WWLocation alloc]
+                                                                  initWithDegreesLatitude:45 longitude:45]
+                                                               numLevels:5
+                                                    retrievalImageFormat:@"image/png" cachePath:cachePath];
+    [layer setDisplayName:displayName];
 
     NSString* serviceLocation = @"http://wms.openweathermap.org/service";
     WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:@"precipitation"
+                                                                        layerNames:layerName
                                                                         styleNames:@""
                                                                         wmsVersion:@"1.1.1"];
-    [self setUrlBuilder:urlBuilder];
+    [layer setUrlBuilder:urlBuilder];
 
-    return self;
+    return layer;
 }
 @end

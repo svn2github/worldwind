@@ -279,8 +279,8 @@
     UIImage* uiImage = [UIImage imageWithContentsOfFile:imagePath];
     if (uiImage == nil)
     {
-        WWLog(@"Unable to load image file %@", imagePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Unable to load image file %@", imagePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     CGImageRef cgImage = [uiImage CGImage];
@@ -289,8 +289,8 @@
     int imageHeight = CGImageGetHeight(cgImage);
     if (imageWidth == 0 || imageHeight == 0)
     {
-        WWLog(@"Image size is zero for file %@", imagePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Image size is zero for file %@", imagePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
@@ -308,11 +308,6 @@
 
         NSData* outData = [[NSData alloc] initWithBytesNoCopy:imageData length:(NSUInteger) textureSize];
         [outData writeToFile:outputPath atomically:YES];
-    }
-    @catch (NSException* exception)
-    {
-        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
-        WWLogE(msg, exception);
     }
     @finally
     {
@@ -333,8 +328,8 @@
     UIImage* uiImage = [UIImage imageWithContentsOfFile:imagePath];
     if (uiImage == nil)
     {
-        WWLog(@"Unable to load image file %@", imagePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Unable to load image file %@", imagePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     CGImageRef cgImage = [uiImage CGImage];
@@ -343,8 +338,8 @@
     int imageHeight = CGImageGetHeight(cgImage);
     if (imageWidth == 0 || imageHeight == 0)
     {
-        WWLog(@"Image size is zero for file %@", imagePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Image size is zero for file %@", imagePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
@@ -362,11 +357,6 @@
 
         NSData* outData = [self convertPixelsTo5551:imageData numPixels:(imageWidth * imageHeight)];
         [outData writeToFile:outputPath atomically:YES];
-    }
-    @catch (NSException* exception)
-    {
-        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
-        WWLogE(msg, exception);
     }
     @finally
     {

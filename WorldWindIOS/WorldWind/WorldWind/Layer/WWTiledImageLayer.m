@@ -142,7 +142,11 @@
     }
     @catch (NSException* exception)
     {
-        WWLogE(@"handling retrieval notification", exception);
+        [absentResources markResourceAbsent:pathKey];
+        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+
+        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
+        WWLogE(msg, exception);
     }
     @finally
     {

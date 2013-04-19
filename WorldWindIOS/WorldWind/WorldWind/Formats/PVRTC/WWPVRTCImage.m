@@ -70,8 +70,8 @@ void DebugPvrEncode();
     UIImage* uiImage = [UIImage imageWithContentsOfFile:filePath];
     if (uiImage == nil)
     {
-        WWLog(@"Unable to load image file %@", filePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Unable to load image file %@", filePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     CGImageRef cgImage = [uiImage CGImage];
@@ -80,8 +80,8 @@ void DebugPvrEncode();
     int imageHeight = CGImageGetHeight(cgImage);
     if (imageWidth == 0 || imageHeight == 0)
     {
-        WWLog(@"Image size is zero for file %@", filePath);
-        return;
+        NSString* msg = [[NSString alloc] initWithFormat:@"Image size is zero for file %@", filePath];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
     int textureSize = imageWidth * imageHeight * 4; // assume 4 bytes per pixel
     void* imageData = malloc((size_t) textureSize); // allocate space for the image
@@ -100,11 +100,6 @@ void DebugPvrEncode();
         // Compress the raw bits into PVRTC.
         NSString* outputPath = [WWUtil replaceSuffixInPath:filePath newSuffix:@"pvr"];
         [WWPVRTCImage doCompress:imageWidth height:imageHeight bits:imageData ouputPath:outputPath];
-    }
-    @catch (NSException* exception)
-    {
-        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", filePath];
-        WWLogE(msg, exception);
     }
     @finally
     {
