@@ -10,6 +10,7 @@
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWOpenWeatherMapLayer
 
@@ -19,34 +20,44 @@
 
     [self setDisplayName:@"Open Weather Map"];
 
+    NSDate* now = [[NSDate alloc] init]; // Cause all layers to be updated at start-up.
+
     WWTiledImageLayer* layer = [self makeLayerForName:@"precipitation" displayName:@"Precipitation"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"clouds" displayName:@"Clouds"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"pressure" displayName:@"Pressure"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"pressure_cntr" displayName:@"Pressure Contours"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"temp" displayName:@"Temperature"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"wind" displayName:@"Wind"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"snow" displayName:@"Snow"];
     [layer setEnabled:NO];
+    [layer setExpiration:now];
     [self addRenderable:layer];
-//
+
+// These layers are in the capabilities document but as of 4/19/13 do not work.
 //    layer = [self makeLayerForName:@"RADAR.12KM" displayName:@"Radar 12 Km"];
 //    [layer setEnabled:NO];
 //    [self addRenderable:layer];
@@ -55,7 +66,30 @@
 //    [layer setEnabled:NO];
 //    [self addRenderable:layer];
 
+    // Refresh the data every hour. This adds the timer to the main thread's run loop.
+    timer = [NSTimer scheduledTimerWithTimeInterval:3600 target:self selector:@selector(updateExpirationTime)
+                                           userInfo:nil repeats:YES];
+
     return self;
+}
+
+- (void) dealloc
+{
+    [timer invalidate]; // turn off the timer
+}
+
+- (void) updateExpirationTime
+{
+    NSDate* now = [[NSDate alloc] init];
+
+    for (NSUInteger i = 0; i < [[self renderables] count]; i++)
+    {
+        WWTiledImageLayer* layer = (WWTiledImageLayer*) [[self renderables] objectAtIndex:i];
+        [layer setExpiration:now];
+    }
+
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
 
 - (WWTiledImageLayer*) makeLayerForName:(NSString*)layerName displayName:(NSString*)displayName

@@ -9,6 +9,9 @@
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 
 @interface WWOpenWeatherMapLayer : WWRenderableLayer
+{
+    NSTimer* timer;
+}
 
 /// @name Initializing the Open Weather Map Layer
 
