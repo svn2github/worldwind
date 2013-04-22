@@ -5,97 +5,60 @@
  @version $Id$
  */
 
+#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWArcGisUrlBuilder.h"
-#import "WorldWind/WWLog.h"
 
 @implementation WWDAFIFLayer
 
-- (WWDAFIFLayer*) initWithLayers:(NSString*)layers cacheName:(NSString*)cacheName
+- (WWDAFIFLayer*) init
 {
-    if (layers == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer names is nil");
-    }
+    self = [super init];
 
-    if (cacheName == nil || [cacheName length] == 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Cache name is nil or empty");
-    }
+    [self setDisplayName:@"DAFIF"];
 
+    WWTiledImageLayer* layer = [self makeLayerForName:@"show:0,1,21" displayName:@"Airports"];
+    [layer setEnabled:NO];
+    [self setMaxActiveAltitude:3000000];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"show:2,4" displayName:@"Navigation"];
+    [layer setEnabled:NO];
+    [self setMaxActiveAltitude:750000];
+    [self addRenderable:layer];
+
+    layer = [self makeLayerForName:@"show:13,17,24" displayName:@"Special Activity"];
+    [layer setEnabled:NO];
+    [self setMaxActiveAltitude:3000000];
+    [self addRenderable:layer];
+
+    return self;
+}
+
+- (WWTiledImageLayer*) makeLayerForName:(NSString*)layerName displayName:(NSString*)displayName
+{
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:cacheName];
+    NSString* cachePath = [cacheDir stringByAppendingPathComponent:[[NSString alloc] initWithFormat:@"DAFIF%@", layerName]];
 
-    self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
-                  levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:90 longitude:90]
-                       numLevels:14
-            retrievalImageFormat:@"image/png"
-                       cachePath:cachePath];
+    WWSector* sector = [[WWSector alloc] initWithFullSphere];
+
+    WWTiledImageLayer* layer = [[WWTiledImageLayer alloc] initWithSector:sector
+                                                          levelZeroDelta:[[WWLocation alloc]
+                                                                  initWithDegreesLatitude:45 longitude:45]
+                                                               numLevels:5
+                                                    retrievalImageFormat:@"image/png" cachePath:cachePath];
+    [layer setDisplayName:displayName];
 
     NSString* serviceLocation = @"http://faaservices-1551414968.us-east-1.elb.amazonaws.com/ArcGIS/rest/services/201101_AirportsGIS_BH/Dafif/MapServer";
     WWArcGisUrlBuilder* urlBuilder = [[WWArcGisUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                                  layers:layers
+                                                                                  layers:layerName
                                                                            arcGisVersion:@"10.0"];
-    [self setUrlBuilder:urlBuilder];
 
-    return self;
-}
+    [layer setUrlBuilder:urlBuilder];
 
-- (WWDAFIFLayer*) initWithAllLayers
-{
-    self = [self initWithLayers:@"" cacheName:@"DafifAll"];
-
-    if (self != nil)
-    {
-        [self setMaxActiveAltitude:3000000];
-        [self setDisplayName:@"DAFIF"];
-    }
-
-    return self;
-}
-
-- (WWDAFIFLayer*) initWithAirportLayers
-{
-    self = [self initWithLayers:@"show:0,1,21" cacheName:@"DAFIFAirport"];
-
-    if (self != nil)
-    {
-        [self setMaxActiveAltitude:3000000];
-        [self setDisplayName:@"DAFIF Airports"];
-        [self setImageFile:@"DAFIFAirports"];
-    }
-
-    return self;
-}
-
-- (WWDAFIFLayer*) initWithNavigationLayers
-{
-    self = [self initWithLayers:@"show:2,4" cacheName:@"DAFIFNavigation"];
-
-    if (self != nil)
-    {
-        [self setMaxActiveAltitude:750000];
-        [self setDisplayName:@"DAFIF Navigation"];
-        [self setImageFile:@"DAFIFNavigation"];
-    }
-
-    return self;
-}
-
-- (WWDAFIFLayer*) initWithSpecialActivityAirspaceLayers
-{
-    self = [self initWithLayers:@"show:13,17,24" cacheName:@"DAFIFSpecialActivityAirspace"];
-
-    if (self != nil)
-    {
-        [self setMaxActiveAltitude:3000000];
-        [self setDisplayName:@"DAFIF Special Activity"];
-        [self setImageFile:@"DAFIFActivity"];
-    }
-
-    return self;
+    return layer;
 }
 
 @end

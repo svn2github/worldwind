@@ -18,11 +18,11 @@
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWShowTessellationLayer.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "WorldWind/Layer/WWOpenStreetMapLayer.h"
-#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -91,15 +91,7 @@
     [layer setOpacity:0.75];
     [layers addLayer:layer];
 
-    layer =[[WWDAFIFLayer alloc] initWithSpecialActivityAirspaceLayers];
-    [layer setEnabled:NO];
-    [layers addLayer:layer];
-
-    layer = [[WWDAFIFLayer alloc] initWithNavigationLayers];
-    [layer setEnabled:NO];
-    [layers addLayer:layer];
-
-    layer = [[WWDAFIFLayer alloc] initWithAirportLayers];
+    layer =[[WWDAFIFLayer alloc] init];
     [layer setEnabled:NO];
     [layers addLayer:layer];
 
