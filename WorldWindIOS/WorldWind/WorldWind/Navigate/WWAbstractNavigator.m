@@ -130,7 +130,7 @@
 //-- Core Location Interface for Subclasses --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWPosition*) initialPosition
+- (WWPosition*) lastKnownPosition
 {
     WWPosition* position = [[WWPosition alloc] initWithZeroPosition];
     [position setDegreesLatitude:0 timeZoneForLongitude:[NSTimeZone localTimeZone]];

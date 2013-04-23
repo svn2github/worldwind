@@ -19,6 +19,7 @@
 #define DEFAULT_RANGE 10000000
 #define DEFAULT_HEADING 0
 #define DEFAULT_TILT 0
+#define DEFAULT_ROLL 0
 
 @implementation WWLookAtNavigator
 
@@ -50,10 +51,12 @@
     animBeginLookAt = [[WWPosition alloc] init];
     animEndLookAt = [[WWPosition alloc] init];
 
-    _lookAt = [self initialPosition];
-    _range = DEFAULT_RANGE;
+    WWPosition* lastKnownPosition = [self lastKnownPosition];
+    _lookAt = [[WWPosition alloc] initWithLocation:lastKnownPosition altitude:0];
+    _range = DEFAULT_RANGE; // TODO: Compute initial range to fit globe in viewport.
     _heading = DEFAULT_HEADING;
     _tilt = DEFAULT_TILT;
+    _roll = DEFAULT_ROLL;
 
     return self;
 }
@@ -72,42 +75,29 @@
     }
 }
 
-- (void) setWithModelview:(WWMatrix*)modelview
+- (NSDictionary*) extractLookAtParams:(WWMatrix*)modelview forRollDegrees:(double)roll
 {
-    WWGlobe* globe = [[[self view] sceneController] globe];
-    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
-
     WWVec4* eyePoint = [modelview extractEyePoint];
     WWVec4* forward = [modelview extractForwardVector];
     WWLine* forwardRay = [[WWLine alloc] initWithOrigin:eyePoint direction:forward];
 
+    WWGlobe* globe = [[[self view] sceneController] globe];
     WWVec4* lookAtPoint = [[WWVec4 alloc] initWithZeroVector];
+
     if (![globe intersectWithRay:forwardRay result:lookAtPoint])
     {
         WWPosition* eyePos = [[WWPosition alloc] initWithZeroPosition];
         [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
+
+        double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
         double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
         double heightAboveSurface = [eyePos altitude] - globeElevation;
         double horizonDistance = [WWMath horizonDistanceForGlobeRadius:globeRadius eyeAltitude:heightAboveSurface];
+
         [forwardRay pointAt:horizonDistance result:lookAtPoint];
     }
 
-    [globe computePositionFromPoint:[lookAtPoint x] y:[lookAtPoint y] z:[lookAtPoint z] outputPosition:_lookAt];
-
-    // Compute the range from the matrix translation components relative the the look at point. We transform the
-    // modelview matrix to the local coordinate system at the look at point. This eliminates the geographic transform
-    // contained in the modelview matrix while maintaining rotation and translation relative to the look at point. Then
-    // we retrieve the translation components of the resultant matrix in local coordinates.
-    WWMatrix* modelviewOriginInv = [[WWMatrix alloc] initWithIdentity];
-    [modelviewOriginInv setToLocalOriginTransform:lookAtPoint onGlobe:globe];
-    WWMatrix* modelviewLocal = [[WWMatrix alloc] initWithMultiply:modelview matrixB:modelviewOriginInv];
-    WWVec4* vec = [modelviewLocal extractTranslation];
-    _range = -[vec z];
-
-    // Compute the heading and tilt from the matrix rotation components relative the the look at point.
-    vec = [modelviewLocal extractRotation];
-    _heading = -[vec z];
-    _tilt = [vec x];
+    return [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -119,7 +109,12 @@
     // Compute the current modelview matrix based on this navigator's look-at position, range, heading, and tilt.
     WWGlobe* globe = [[[self view] sceneController] globe];
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview setToLookAtModelview:_lookAt range:_range headingDegrees:_heading tiltDegrees:_tilt onGlobe:globe];
+    [modelview multiplyByLookAtModelview:_lookAt
+                                   range:_range
+                          headingDegrees:_heading
+                             tiltDegrees:_tilt
+                             rollDegrees:_roll
+                                 onGlobe:globe];
 
     return [self currentStateForModelview:modelview];
 }
@@ -190,9 +185,9 @@
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
 {
-    // Apply the translation of the pan gesture to this Navigator's look-at location. We convert the pan translation
+    // Apply the translation of the pan gesture to this navigator's look-at position. We convert the pan translation
     // from screen pixels to arc degrees in order to provide a translation that is appropriate for the current eye
-    // position. In order to convert from pixels to arc degrees we assume that this Navigator's range represents the
+    // position. In order to convert from pixels to arc degrees we assume that this navigator's range represents the
     // distance that the gesture is intended for. The translation is applied incrementally so that simultaneously
     // applied heading changes are correctly integrated into the navigator's current location.
 
@@ -258,7 +253,7 @@
 
 - (void) handlePinchFrom:(UIPinchGestureRecognizer*)recognizer
 {
-    // Apply the inverse of the pinch gesture's scale to this Navigator's range. Pinch-in gestures move the eye position
+    // Apply the inverse of the pinch gesture's scale to this navigator's range. Pinch-in gestures move the eye position
     // closer to the look-at position, while pinch-out gestures move the eye away from the look-at position. There is no
     // need to apply any additional scaling to the change in range based on eye position because the nature of a pinch
     // gesture already accomplishes this. Each pinch gesture applies a linear scale to the current range. This scale
@@ -309,8 +304,9 @@
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
-        double rotationInDegrees = DEGREES([recognizer rotation]);
-        _heading = NormalizedDegreesHeading(gestureBeginHeading - rotationInDegrees);
+        double headingDegrees = DEGREES(-[recognizer rotation]);
+
+        _heading = NormalizedDegreesHeading(gestureBeginHeading + headingDegrees);
     }
     else
     {
@@ -340,8 +336,10 @@
         UIView* view = [recognizer view];
         CGPoint translation = [recognizer translationInView:view];
         CGRect bounds = [view bounds];
-        double degrees = 90 * translation.y / CGRectGetHeight(bounds);
-        _tilt = [WWMath clampValue:gestureBeginTilt + degrees min:0 max:90];
+
+        double tiltDegrees = 90 * translation.y / CGRectGetHeight(bounds);
+
+        _tilt = [WWMath clampValue:gestureBeginTilt + tiltDegrees min:0 max:90];
     }
     else
     {

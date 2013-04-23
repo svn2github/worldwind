@@ -12,6 +12,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
 #define INDEX(i, j) (i) * 4 + (j)
@@ -83,7 +84,6 @@
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
     }
-
 
     self = [super init];
 
@@ -255,6 +255,28 @@
 //-- Setting the Contents of Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
+- (WWMatrix*) setToIdentity
+{
+    self->m[0] = 1;
+    self->m[1] = 0;
+    self->m[2] = 0;
+    self->m[3] = 0;
+    self->m[4] = 0;
+    self->m[5] = 1;
+    self->m[6] = 0;
+    self->m[7] = 0;
+    self->m[8] = 0;
+    self->m[9] = 0;
+    self->m[10] = 1;
+    self->m[11] = 0;
+    self->m[12] = 0;
+    self->m[13] = 0;
+    self->m[14] = 0;
+    self->m[15] = 1;
+
+    return self;
+}
+
 - (WWMatrix*) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
               m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
               m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
@@ -280,30 +302,20 @@
     return self;
 }
 
-- (WWMatrix*) setToIdentity
+- (WWMatrix*) setToMatrix:(WWMatrix*)matrix
 {
-    self->m[0] = 1;
-    self->m[1] = 0;
-    self->m[2] = 0;
-    self->m[3] = 0;
-    self->m[4] = 0;
-    self->m[5] = 1;
-    self->m[6] = 0;
-    self->m[7] = 0;
-    self->m[8] = 0;
-    self->m[9] = 0;
-    self->m[10] = 1;
-    self->m[11] = 0;
-    self->m[12] = 0;
-    self->m[13] = 0;
-    self->m[14] = 0;
-    self->m[15] = 1;
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
+    }
+
+    memcpy(self->m, matrix->m, (size_t) (16 * sizeof(double)));
 
     return self;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Making Transform Matrices --//
+//-- Working With Transform Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z
@@ -342,6 +354,31 @@
     return self;
 }
 
+- (WWMatrix*) multiplyByTranslation:(double)x y:(double)y z:(double)z
+{
+    [self multiply:1 m01:0 m02:0 m03:x
+               m10:0 m11:1 m12:0 m13:y
+               m20:0 m21:0 m22:1 m23:z
+               m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
+- (WWMatrix*) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle
+{
+    // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 3.22.
+
+    double c = cos(RADIANS(angle));
+    double s = sin(RADIANS(angle));
+
+    [self multiply:c + (1 - c) * x * x     m01:(1 - c) * x * y - s * z m02:(1 - c) * x * z + s * y m03:0
+               m10:(1 - c) * x * y + s * z m11:c + (1 - c) * y * y     m12:(1 - c) * y * z - s * x m13:0
+               m20:(1 - c) * x * z - s * y m21:(1 - c) * y * z + s * x m22:c + (1 - c) * z * z     m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
 - (WWMatrix*) setScale:(double)x y:(double)y z:(double)z
 {
     // Row 1
@@ -374,7 +411,7 @@
     return self;
 }
 
-- (WWMatrix*) setToLocalOriginTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe
+- (WWMatrix*) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe
 {
     if (origin == nil)
     {
@@ -386,47 +423,22 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
     }
 
-    double x = [origin x];
-    double y = [origin y];
-    double z = [origin z];
+    NSArray* axes = [WWMath localCoordinateAxesAtPoint:origin onGlobe:globe];
+    WWVec4* xaxis = [axes objectAtIndex:0];
+    WWVec4* yaxis = [axes objectAtIndex:1];
+    WWVec4* zaxis = [axes objectAtIndex:2];
 
-    // Compute the surface normal in model coordinates. This normal is mapped to the local origin's z axis.
-    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
-    [globe surfaceNormalAtPoint:x y:y z:z result:point];
-    double nx = [point x];
-    double ny = [point y];
-    double nz = [point z];
-
-    // Compute the north pointing tangent vector in model coordinates. This vector is mapped to the local origin's y
-    // axis.
-    [globe northTangentAtPoint:x y:y z:z result:point];
-    double ux = [point x];
-    double uy = [point y];
-    double uz = [point z];
-
-    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
-    // orthogonal to the surface normal and north pointing tangent, and is mapped to the local origin's x axis.
-    double sx = (uy * nz) - (uz * ny);
-    double sy = (uz * nx) - (ux * nz);
-    double sz = (ux * ny) - (uy * nx);
-
-    double len = [[point set:sx y:sy z:sz] length3];
-    if (len != 0)
-    {
-        sx /= len;
-        sy /= len;
-        sz /= len;
-    }
-
-    // Maps the specified point to the origin, the positive z axis to the surface normal, and the positive y axis to the
-    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
-    // unnecessary matrix allocations.
-    [self set:sx m01:ux m02:nx m03:x
-          m10:sy m11:uy m12:ny m13:y
-          m20:sz m21:uz m22:nz m23:z
-          m30:0 m31:0 m32:0 m33:1];
+    [self multiply:[xaxis x] m01:[yaxis x] m02:[zaxis x] m03:[origin x]
+               m10:[xaxis y] m11:[yaxis y] m12:[zaxis y] m13:[origin y]
+               m20:[xaxis z] m21:[yaxis z] m22:[zaxis z] m23:[origin z]
+               m30:0 m31:0 m32:0 m33:1];
 
     return self;
+}
+
+- (WWVec4*) extractTranslation
+{
+    return [[WWVec4 alloc] initWithCoordinates:m[3] y:m[7] z:m[11]];
 }
 
 - (WWVec4*) extractRotation
@@ -443,19 +455,15 @@
     return [[WWVec4 alloc] initWithCoordinates:DEGREES(x) y:DEGREES(y) z:DEGREES(z)];
 }
 
-- (WWVec4*) extractTranslation
-{
-    return [[WWVec4 alloc] initWithCoordinates:m[3] y:m[7] z:m[11]];
-}
-
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Making Viewing and Perspective Matrices --//
+//-- Working With Viewing and Perspective Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWMatrix*) setToFirstPersonModelview:(WWPosition*)eyePosition
-                         headingDegrees:(double)heading
-                            tiltDegrees:(double)tilt
-                                onGlobe:(WWGlobe*)globe
+- (WWMatrix*) multiplyByFirstPersonModelview:(WWPosition*)eyePosition
+                              headingDegrees:(double)heading
+                                 tiltDegrees:(double)tilt
+                                 rollDegrees:(double)roll
+                                     onGlobe:(WWGlobe*)globe
 {
     if (eyePosition == nil)
     {
@@ -467,20 +475,28 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
     }
 
-    // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
-    // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix
-    // and stored the result inline here to avoid unnecessary matrix allocations.
-    double c = cos(RADIANS(tilt)); // No need to invert cos(tilt) to change the direction of rotation. cos(-a) = cos(a)
-    double s = -sin(RADIANS(tilt)); // Invert sin(tilt) in order to change the direction of rotation. sin(-a) = -sin(a)
-    [self multiply:1 m01:0 m02:0 m03:0
-               m10:0 m11:c m12:-s m13:0
-               m20:0 m21:s m22:c m23:0
+    // Roll. Rotate the eye point in a counter-clockwise direction about the z axis. Note that we invert the sines used
+    // in the rotation matrix in order to produce the counter-clockwise rotation. We invert only the cosines since
+    // sin(-a) = -sin(a) and cos(-a) = cos(a).
+    double c = cos(RADIANS(roll));
+    double s = sin(RADIANS(roll));
+    [self multiply:c m01:s m02:0 m03:0
+               m10:-s m11:c m12:0 m13:0
+               m20:0 m21:0 m22:1 m23:0
                m30:0 m31:0 m32:0 m33:1];
 
-    // Heading transform. Rotates the eye point in a clockwise direction around the positive z axis. This has a
-    // different effect than roll when tilt is non-zero because the view is no longer looking down the positive z axis.
-    // We have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
-    // allocations.
+    // Tilt. Rotate the eye point in a counter-clockwise direction about the x axis. Note that we invert the sines used
+    // in the rotation matrix in order to produce the counter-clockwise rotation. We invert only the cosines since
+    // sin(-a) = -sin(a) and cos(-a) = cos(a).
+    c = cos(RADIANS(tilt));
+    s = sin(RADIANS(tilt));
+    [self multiply:1 m01:0 m02:0 m03:0
+               m10:0 m11:c m12:s m13:0
+               m20:0 m21:-s m22:c m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    // Heading. Rotate the eye point in a clockwise direction about the z axis again. This has a different effect than
+    // roll when tilt is non-zero because the viewer is no longer looking down the z axis.
     c = cos(RADIANS(heading));
     s = sin(RADIANS(heading));
     [self multiply:c m01:-s m02:0 m03:0
@@ -494,56 +510,41 @@
     double alt = [eyePosition altitude];
 
     // Compute the eye point in model coordinates. This point is mapped to the origin in the look at transform below.
-    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
-    [globe computePointFromPosition:lat longitude:lon altitude:alt outputPoint:point];
-    double ex = [point x];
-    double ey = [point y];
-    double ez = [point z];
+    WWVec4* eyePoint = [[WWVec4 alloc] initWithZeroVector];
+    [globe computePointFromPosition:lat longitude:lon altitude:alt outputPoint:eyePoint];
+    double ex = [eyePoint x];
+    double ey = [eyePoint y];
+    double ez = [eyePoint z];
 
-    // Compute the surface normal in model coordinates. This normal is used as the inverse of the forward vector in the
-    // look at transform below.
-    [globe surfaceNormalAtLatitude:lat longitude:lon result:point];
-    double nx = [point x];
-    double ny = [point y];
-    double nz = [point z];
+    // Transform the origin to the local coordinate system at the eye point.
+    NSArray* axes = [WWMath localCoordinateAxesAtPoint:eyePoint onGlobe:globe];
+    WWVec4* xaxis = [axes objectAtIndex:0];
+    WWVec4* yaxis = [axes objectAtIndex:1];
+    WWVec4* zaxis = [axes objectAtIndex:2];
+    double xx = [xaxis x];
+    double xy = [xaxis y];
+    double xz = [xaxis z];
+    double yx = [yaxis x];
+    double yy = [yaxis y];
+    double yz = [yaxis z];
+    double zx = [zaxis x];
+    double zy = [zaxis y];
+    double zz = [zaxis z];
 
-    // Compute the north pointing tangent vector in model coordinates. This vector is used as the up vector in the
-    // look at transform below.
-    [globe northTangentAtLatitude:lat longitude:lon result:point];
-    double ux = [point x];
-    double uy = [point y];
-    double uz = [point z];
-
-    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
-    // orthogonal to the surface normal and north pointing tangent.
-    double sx = (uy * nz) - (uz * ny);
-    double sy = (uz * nx) - (ux * nz);
-    double sz = (ux * ny) - (uy * nx);
-
-    double len = [[point set:sx y:sy z:sz] length3];
-    if (len != 0)
-    {
-        sx /= len;
-        sy /= len;
-        sz /= len;
-    }
-
-    // Look at transform. Maps the origin to the eye point, the z axis to the surface normal, and the y axis to the
-    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
-    // unnecessary matrix allocations.
-    [self multiply:sx m01:sy m02:sz m03:-sx * ex - sy * ey - sz * ez
-               m10:ux m11:uy m12:uz m13:-ux * ex - uy * ey - uz * ez
-               m20:nx m21:ny m22:nz m23:-nx * ex - ny * ey - nz * ez
+    [self multiply:xx m01:xy m02:xz m03:-xx * ex - xy * ey - xz * ez
+               m10:yx m11:yy m12:yz m13:-yx * ex - yy * ey - yz * ez
+               m20:zx m21:zy m22:zz m23:-zx * ex - zy * ey - zz * ez
                m30:0 m31:0 m32:0 m33:1];
 
     return self;
 }
 
-- (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
-                             range:(double)range
-                    headingDegrees:(double)heading
-                       tiltDegrees:(double)tilt
-                           onGlobe:(WWGlobe*)globe
+- (WWMatrix*) multiplyByLookAtModelview:(WWPosition*)lookAtPosition
+                                  range:(double)range
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                            rollDegrees:(double)roll
+                                onGlobe:(WWGlobe*)globe
 {
     if (lookAtPosition == nil)
     {
@@ -560,78 +561,16 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
     }
 
-    // Range transform. Moves the eye point along the positive z axis while keeping the look at point in the center
-    // of the viewport.
-    [self setToTranslation:0 y:0 z:-range];
+    // Translate the eye point along the positive z axis while keeping the look at point in the center of the viewport.
+    [self multiplyByTranslation:0 y:0 z:-range];
 
-    // Tilt transform. Rotates the eye point in a counter-clockwise direction around the positive x axis. Note that we
-    // invert the angle in order to produce the counter-clockwise rotation. We have pre-computed the resultant matrix
-    // and stored the result inline here to avoid unnecessary matrix allocations.
-    double c = cos(RADIANS(tilt)); // No need to invert cos(tilt) to change the direction of rotation. cos(-a) = cos(a)
-    double s = -sin(RADIANS(tilt)); // Invert sin(tilt) in order to change the direction of rotation. sin(-a) = -sin(a)
-    [self multiply:1 m01:0 m02:0 m03:0
-               m10:0 m11:c m12:-s m13:0
-               m20:0 m21:s m22:c m23:0
-               m30:0 m31:0 m32:0 m33:1];
-
-    // Heading transform. Rotates the eye point in a clockwise direction around the positive z axis. This has a
-    // different effect than roll when tilt is non-zero because the view is no longer looking down the positive z axis.
-    // We have pre-computed the resultant matrix and stored the result inline here to avoid unnecessary matrix
-    // allocations.
-    c = cos(RADIANS(heading));
-    s = sin(RADIANS(heading));
-    [self multiply:c m01:-s m02:0 m03:0
-               m10:s m11:c m12:0 m13:0
-               m20:0 m21:0 m22:1 m23:0
-               m30:0 m31:0 m32:0 m33:1];
-
-    // Store the look at position's latitude, longitude and altitude to reduce Objective-C method call overhead.
-    double lat = [lookAtPosition latitude];
-    double lon = [lookAtPosition longitude];
-    double alt = [lookAtPosition altitude];
-
-    // Compute the look at in model coordinates. This point is mapped to the origin in the look at transform below.
-    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
-    [globe computePointFromPosition:lat longitude:lon altitude:alt outputPoint:point];
-    double cx = [point x];
-    double cy = [point y];
-    double cz = [point z];
-
-    // Compute the surface normal in model coordinates. This normal is used as the inverse of the forward vector in the
-    // look at transform below.
-    [globe surfaceNormalAtLatitude:lat longitude:lon result:point];
-    double nx = [point x];
-    double ny = [point y];
-    double nz = [point z];
-
-    // Compute the north pointing tangent vector in model coordinates. This vector is used as the up vector in the
-    // look at transform below.
-    [globe northTangentAtLatitude:lat longitude:lon result:point];
-    double ux = [point x];
-    double uy = [point y];
-    double uz = [point z];
-
-    // Compute the side vector from the specified surface normal and north pointing tangent. The side vector is
-    // orthogonal to the surface normal and north pointing tangent.
-    double sx = (uy * nz) - (uz * ny);
-    double sy = (uz * nx) - (ux * nz);
-    double sz = (ux * ny) - (uy * nx);
-
-    double len = [[point set:sx y:sy z:sz] length3];
-    if (len != 0)
-    {
-        sx /= len;
-        sy /= len;
-        sz /= len;
-    }
-
-    // Look at transform. Maps the origin to the eye point, the z axis to the surface normal, and the y axis to the
-    // north pointing tangent. We have pre-computed the resultant matrix and stored the result inline here to avoid
-    // unnecessary matrix allocations.
-    [self multiply:sx m01:sy m02:sz m03:-sx * cx - sy * cy - sz * cz
-               m10:ux m11:uy m12:uz m13:-ux * cx - uy * cy - uz * cz
-               m20:nx m21:ny m22:nz m23:-nx * cx - ny * cy - nz * cz
-               m30:0 m31:0 m32:0 m33:1];
+    // Transform the origin to the local coordinate system at the look at position, and rotate the viewer by the
+    // specified heading, tilt and roll.
+    [self multiplyByFirstPersonModelview:lookAtPosition
+                          headingDegrees:heading
+                             tiltDegrees:tilt
+                             rollDegrees:roll
+                                 onGlobe:globe];
 
     return self;
 }
@@ -670,7 +609,7 @@
     double bottom = CGRectGetMinY(nearRect);
     double top = CGRectGetMaxY(nearRect);
 
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.52).
+    // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
 
     // Row 1
     self->m[0] = 2 * near / (right - left);
@@ -713,7 +652,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Equation (4.57).
+    // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.57.
     //
     // The third row of this projection matrix is configured so that points with z coordinates representing depth values
     // ranging from 0 to 1 are not modified after transformation into window coordinates. This projection matrix maps z
@@ -769,6 +708,48 @@
     // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
     // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
     return [[WWVec4 alloc] initWithCoordinates:-m[8] y:-m[9] z:-m[10]];
+}
+
+- (NSDictionary*) extractViewingParameters:(WWVec4*)origin forRollDegrees:(double)roll onGlobe:(WWGlobe*)globe
+{
+    if (origin == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Origin is nil");
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic
+    // transform contained in the modelview matrix while maintaining rotation and translation relative to the origin.
+    WWMatrix* modelviewLocal = [[WWMatrix alloc] initWithMatrix:self];
+    [modelviewLocal multiplyByLocalCoordinateTransform:origin onGlobe:globe];
+
+    // Extract the viewing parameters from the transform in local coordinates.
+    // TODO: Document how these parameters are extracted.
+
+    double* ml = modelviewLocal->m;
+    double range = -ml[11];
+
+    double ct = ml[10];
+    double st = sqrt(ml[2] * ml[2] + ml[6] * ml[6]);
+    double tilt = atan2(st, ct);
+
+    double cr = cos(RADIANS(roll));
+    double sr = sin(RADIANS(roll));
+    double ch = cr * ml[0] - sr * ml[4];
+    double sh = sr * ml[5] - cr * ml[1];
+    double heading = atan2(sh, ch);
+
+    return [[NSDictionary alloc] initWithObjectsAndKeys:
+            origin, WW_ORIGIN,
+            @(range), WW_RANGE,
+            @(DEGREES(heading)), WW_HEADING,
+            @(DEGREES(tilt)), WW_TILT,
+            @(roll), WW_ROLL,
+            nil];
 }
 
 - (WWFrustum*) extractFrustum
@@ -998,7 +979,7 @@
     ma[9] = mb[6];
     ma[10] = mb[10];
 
-    // Transform the translation vector of the specified matrix by the transpose of its upper 3x3 portion, and store the
+    // Multiply the translation vector of the specified matrix by the transpose of its upper 3x3 portion, and store the
     // negative of this vector in this matrix's translation component.
     ma[3] = -(mb[0] * mb[3]) - (mb[4] * mb[7]) - (mb[8] * mb[11]);
     ma[7] = -(mb[1] * mb[3]) - (mb[5] * mb[7]) - (mb[9] * mb[11]);
@@ -1033,8 +1014,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is not symmetric");
     }
 
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
-    // listing 14.6 (pages 441-444).
+    // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, listing 14.6.
 
     const double epsilon = 1.0e-10;
 

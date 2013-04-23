@@ -40,6 +40,8 @@
 
 @property (nonatomic) double tilt;
 
+@property (nonatomic) double roll;
+
 /// @name Initializing Navigators
 
 - (WWLookAtNavigator*) initWithView:(WorldWindView*)viewToNavigate;

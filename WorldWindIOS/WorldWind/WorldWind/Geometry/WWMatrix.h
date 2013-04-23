@@ -117,6 +117,13 @@
 /// @name Setting the Contents of Matrices
 
 /**
+* Sets this matrix to the identity matrix.
+*
+* @return This matrix set to the identity matrix.
+*/
+- (WWMatrix*) setToIdentity;
+
+/**
 * Sets all values of this matrix to specified values.
 *
 * @param m00 The value at row 0 column 0;
@@ -144,11 +151,15 @@
               m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
 /**
-* Sets this matrix to the identity matrix.
+* Sets this matrix to the values of a specified matrix.
 *
-* @return This matrix set to the identity matrix.
+* @param matrix The matrix whose values are assigned to this instance's.
+*
+* @return This matrix with its values set to those of the specified matrix.
+*
+* @exception NSInvalidArgumentException If the matrix is nil.
 */
-- (WWMatrix*) setToIdentity;
+- (WWMatrix*) setToMatrix:(WWMatrix*)matrix;
 
 /// @name Working With Transform Matrices
 
@@ -175,6 +186,32 @@
 - (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z;
 
 /**
+* Multiplies this matrix by a translation matrix with the specified translation values.
+*
+* @param x The X translation component.
+* @param y The Y translation component.
+* @param z The Z translation component.
+*
+* @return This matrix multiplied by a translation matrix.
+*/
+- (WWMatrix*) multiplyByTranslation:(double)x y:(double)y z:(double)z;
+
+/**
+* Multiplies this matrix by a rotation matrix about the specified axis and angle.
+*
+* The x-, y-, and z-coordinates indicate the axis' direction in model coordinates, and the angle indicates the rotation
+* about the axis in degrees. Rotation is performed counter-clockwise when the axis is pointed toward the viewer.
+*
+* @param x The rotation axis' X component.
+* @param y The rotation axis' Y component.
+* @param z The rotation axis' Z component.
+* @param angle The rotation angle, in degrees.
+*
+* @return This matrix multiplied by a rotation matrix.
+*/
+- (WWMatrix*) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle;
+
+/**
 * Sets the scale components of this matrix to specified values, leaving the other components unmodified.
 *
 * @param x The X component of scale.
@@ -186,7 +223,7 @@
 - (WWMatrix*) setScale:(double)x y:(double)y z:(double)z;
 
 /**
-* Sets this matrix to one that flips and shifts the Y axis.
+* Sets this matrix to one that flips and shifts the y-axis.
 *
 * All existing values are overwritten. This matrix is
 * usually used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin.
@@ -198,21 +235,33 @@
 - (WWMatrix*) setToUnitYFlip;
 
 /**
-* Sets this matrix to a local origin transform for the specified globe.
+* Multiplies this matrix by a local coordinate system transform for the specified globe.
 *
-* A local origin transform maps a local coordinate space to the local tangent plane on the globe at the specified
-* origin. The local origin (0, 0, 0) is mapped to the specified point on the globe, the z axis is mapped to the globe's
-* normal vector at the point, the y axis is mapped to the north pointing tangent vector at the point, and the x axis
-* is mapped to the east pointing tangent vector at the point.
+* The local coordinate system is defined such that the local origin (0, 0, 0) maps to the specified origin point, the z
+* axis maps to the globe's surface normal at the point, the y-axis maps to the north pointing tangent, and the x-axis
+* maps to the east pointing tangent.
 *
-* @param origin The origin of the local coordinate system, relative to the globe.
-* @param globe The globe the transform is relative to.
+* @param origin The local coordinate system origin, in model coordinates.
+* @param globe The globe the coordinate system is relative to.
 *
-* @return This matrix set to a local origin transform matrix.
+* @return This matrix multiplied by a local coordinate system transform matrix.
 *
 * @exception NSInvalidArgumentException If either argument is nil.
 */
-- (WWMatrix*) setToLocalOriginTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
+- (WWMatrix*) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
+
+/**
+* Extracts this transform matrix's translation components.
+*
+* This method assumes that this matrix represents an orthonormal transform matrix. If this matrix does not represent an
+* orthonormal transform matrix the results are undefined.
+*
+* The translation vector corresponding to this transform matrix's x, y and z translation is returned in the result
+* vector's x, y and z components, respectively.
+*
+* @return This transform matrix's translation, in model coordinates.
+*/
+- (WWVec4*) extractTranslation;
 
 /**
 * Extracts this transform matrix's rotation components.
@@ -228,23 +277,10 @@
 */
 - (WWVec4*) extractRotation;
 
-/**
-* Extracts this transform matrix's translation components.
-*
-* This method assumes that this matrix represents an orthonormal transform matrix. If this matrix does not represent an
-* orthonormal transform matrix the results are undefined.
-*
-* The translation vector corresponding to this transform matrix's x, y and z translation is returned in the result
-* vector's x, y and z components, respectively.
-*
-* @return This transform matrix's translation, in model coordinates.
-*/
-- (WWVec4*) extractTranslation;
-
 /// @name Working With Viewing and Projection Matrices
 
 /**
-* Sets this matrix to a first person viewing matrix for the specified globe.
+* Multiplies this matrix by a first person viewing matrix for the specified globe.
 *
 * A first person viewing matrix places the viewer's eye at the specified eyePosition. By default the viewer is looking
 * straight down at the globe's surface from the eye position, with the globe's normal vector coming out of the screen
@@ -254,26 +290,31 @@
 * degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
 * West.
 *
-* Tilt specifies the viewer's angle relative ot the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+* Tilt specifies the viewer's angle relative to the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
 * of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
 * straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+*
+* Roll specifies the viewer's angle relative to the horizon. Roll values range from -180 degrees to 180 degrees. A roll
+* of 0 degrees orients the viewer so that up is pointing to the top of the screen, at 90 degrees up is pointing to the
+* right, at +-180 degrees up is pointing to the bottom, and at -90 up is pointing to the left.
 *
 * @param eyePosition The viewer's geographic eye position relative to the specified globe.
 * @param heading The viewer's angle relative to north, in degrees.
 * @param tilt The viewer's angle relative to the surface, in degrees.
+* @param roll The viewer's angle relative to the horizon, in degrees.
 * @param globe The globe the viewer is looking at.
 *
-* @return This matrix set to a first person viewing matrix.
+* @return This matrix multiplied by a first person viewing matrix.
 *
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWMatrix*) setToFirstPersonModelview:(WWPosition*)eyePosition
-                         headingDegrees:(double)heading
-                            tiltDegrees:(double)tilt
-                                onGlobe:(WWGlobe*)globe;
-
+- (WWMatrix*) multiplyByFirstPersonModelview:(WWPosition*)eyePosition
+                              headingDegrees:(double)heading
+                                 tiltDegrees:(double)tilt
+                                 rollDegrees:(double)roll
+                                     onGlobe:(WWGlobe*)globe;
 /**
-* Sets this matrix to a look at viewing matrix for the specified globe.
+* Multiplies this matrix by a look at viewing matrix for the specified globe.
 *
 * A look at viewing matrix places the center of the screen at the specified lookAtPosition. By default the viewer is
 * looking straight down at the look at position from the specified range, with the globe's normal vector coming out of
@@ -287,30 +328,36 @@
 * degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
 * West.
 *
-* Tilt specifies the viewer's angle relative ot the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+* Tilt specifies the viewer's angle relative to the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
 * of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
 * straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+*
+* Roll specifies the viewer's angle relative to the horizon. Roll values range from -180 degrees to 180 degrees. A roll
+* of 0 degrees orients the viewer so that up is pointing to the top of the screen, at 90 degrees up is pointing to the
+* right, at +-180 degrees up is pointing to the bottom, and at -90 up is pointing to the left.
 *
 * @param lookAtPosition The viewer's geographic look at position relative to the specified globe.
 * @param range The distance between the eye point and the look at point, in model coordinates.
 * @param heading The viewer's angle relative to north, in degrees.
 * @param tilt The viewer's angle relative to the surface, in degrees.
+* @param roll The viewer's angle relative to the horizon, in degrees.
 * @param globe The globe the viewer is looking at.
 *
-* @return This matrix set to a look at person viewing matrix.
+* @return This matrix multiplied by a look at viewing matrix.
 *
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWMatrix*) setToLookAtModelview:(WWPosition*)lookAtPosition
-                             range:(double)range
-                    headingDegrees:(double)heading
-                       tiltDegrees:(double)tilt
-                           onGlobe:(WWGlobe*)globe;
+- (WWMatrix*) multiplyByLookAtModelview:(WWPosition*)lookAtPosition
+                                  range:(double)range
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                            rollDegrees:(double)roll
+                                onGlobe:(WWGlobe*)globe;
 
 /**
 * Sets this matrix to a perspective projection matrix for the specified viewport and clip distances.
 *
-* A perspective projection matrix maps points in model coordinates into screen coordinates in a way that causes distant
+* A perspective projection matrix maps points in eye coordinates into clip coordinates in a way that causes distant
 * objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates, a
 * perspective projection is defined by frustum originating at the eye position and extending outward in the viewer's
 * direction. The near distance and the far distance identify the minimum and maximum distance, respectively, at which an
@@ -377,6 +424,31 @@
 - (WWVec4*) extractForwardVector;
 
 /**
+* Extracts this viewing matrix's parameters.
+*
+* This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+* results are undefined. For details on viewing matrices, see
+* [WWMatrix multiplyFirstPersonModelview:headingDegrees:tiltDegrees:rollDegrees:onGlobe:]
+* [WWMatrix multiplyLookAtModelview:range:headingDegrees:tiltDegrees:rollDegrees:onGlobe:].
+*
+* TODO: Provide an overloaded version that does not require a known roll.
+*
+* TODO: Outline what is returned.
+*
+* TODO: Outline why the origin and roll parameters are required.
+* TODO: Outline that origin must be ether the eye point or a point on the line from the eye point along the forward vector.
+*
+* @param origin TODO
+* @param roll TODO
+* @param globe The globe the viewer is looking at.
+*
+* @return TODO
+*
+* @exception NSInvalidArgumentException If either argument is nil.
+*/
+- (NSDictionary*) extractViewingParameters:(WWVec4*)origin forRollDegrees:(double)roll onGlobe:(WWGlobe*)globe;
+
+/**
 * Extracts this projection matrix's view frustum.
 *
 * This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
@@ -385,7 +457,7 @@
 * A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
 * using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
 * for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
-* outward along the negative z axis. The near distance and the far distance used to initialize a projection matrix
+* outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
 * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
 *
 * @return This projection matrix's view frustum, in eye coordinates.

@@ -44,7 +44,7 @@
 
 /// @name Core Location Interface for Subclasses
 
-- (WWPosition*) initialPosition;
+- (WWPosition*) lastKnownPosition;
 
 /// @name Display Link Interface for Subclasses
 
