@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Navigate/WWBasicNavigatorState.h"
+#import "Worldwind/Geometry/WWLine.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWFrustum.h"
@@ -30,13 +31,15 @@
     self = [super init];
 
     // Store the modelview, projection, and modelview-projection matrices and
-    _modelview = [[WWMatrix alloc] initWithMatrix:modelviewMatrix];
-    _projection = [[WWMatrix alloc] initWithMatrix:projectionMatrix];
+    _modelview = modelviewMatrix;
+    _projection = projectionMatrix;
     _modelviewProjection = [[WWMatrix alloc] initWithMultiply:projectionMatrix matrixB:modelviewMatrix];
     _viewport = viewport;
 
-    // Compute the eye point in model coordinates.
+    // Compute the eye point and forward ray in model coordinates.
     _eyePoint = [_modelview extractEyePoint];
+    _forward = [_modelview extractForwardVector];
+    _forwardRay = [[WWLine alloc] initWithOrigin:_eyePoint direction:_forward];
 
     // Compute the frustum in model coordinates. Start by computing the frustum in eye coordinates from the projection
     // matrix, then transform this frustum to model coordinates by multiplying its planes by the transpose of the
@@ -177,6 +180,33 @@
     [modelPoint divideByScalar:w];
 
     return YES;
+}
+
+- (WWLine*) rayFromScreenPoint:(double)x y:(double)y
+{
+    WWVec4* screenPoint = [[WWVec4 alloc] initWithZeroVector];
+
+    [screenPoint set:x y:y z:0];
+    WWVec4* nearPoint = [[WWVec4 alloc] initWithZeroVector];
+    if (![self unProject:screenPoint result:nearPoint])
+    {
+        return nil;
+    }
+
+    [screenPoint set:x y:y z:1];
+    WWVec4* farPoint = [[WWVec4 alloc] initWithZeroVector];
+    if (![self unProject:screenPoint result:farPoint])
+    {
+        return nil;
+    }
+
+    WWVec4* origin = [[WWVec4 alloc] initWithVector:_eyePoint];
+    WWVec4* direction = [[WWVec4 alloc] initWithZeroVector];
+    [direction set:farPoint];
+    [direction subtract3:nearPoint];
+    [direction normalize3];
+
+    return [[WWLine alloc] initWithOrigin:origin direction:direction];
 }
 
 - (double) pixelSizeAtDistance:(double)distance

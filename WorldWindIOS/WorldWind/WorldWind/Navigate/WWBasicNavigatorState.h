@@ -29,36 +29,42 @@
 
 /// @name Navigator State Attributes
 
-/// The modelview matrix.
+/// The navigator's modelview matrix.
 @property (nonatomic, readonly) WWMatrix* modelview;
 
-/// The projection matrix.
+/// The navigator's projection matrix.
 @property (nonatomic, readonly) WWMatrix* projection;
 
-/// The concatenation of the modelview and projection matrices.
+/// The navigator's combined modelview - projection matrix.
 @property (nonatomic, readonly) WWMatrix* modelviewProjection;
 
-/// The viewport rectangle, in screen coordinates.
+/// The navigator's viewport rectangle in screen coordinates.
 @property (nonatomic, readonly) CGRect viewport;
 
-/// The eye point, in model coordinates.
+/// The navigator's eye point in model coordinates.
 @property (nonatomic, readonly) WWVec4* eyePoint;
 
-// The view frustum, in model coordinates.
+/// The navigator's forward vector in model coordinates.
+@property (nonatomic, readonly) WWVec4* forward;
+
+/// The navigator's forward-ray in model coordinates.
+@property (nonatomic, readonly) WWLine* forwardRay;
+
+/// The navigator's frustum in model coordinates.
 @property (nonatomic, readonly) WWFrustum* frustumInModelCoordinates;
 
 /// @name Initializing Navigator State
 
 /**
-* Initialize this navigator state.
+* Initializes this navigator state.
 *
-* @param modelviewMatrix The modelview matrix.
-* @param projectionMatrix The projection matrix.
-* @param viewport The viewport rectangle, in screen coordinates.
+* @param modelviewMatrix The navigator's modelview matrix.
+* @param projectionMatrix The navigator's projection matrix.
+* @param viewport The navigator's viewport rectangle in screen coordinates.
 *
 * @return The initialized instance.
 *
-* @exception NSInvalidArgumentException If either the modelview or projection matrices are nil.
+* @exception NSInvalidArgumentException If any argument is nil.
 */
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
