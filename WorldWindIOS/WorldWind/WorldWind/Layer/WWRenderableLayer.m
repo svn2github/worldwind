@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import <WorldWind/WWTiledImageLayer.h>
+#import <WorldWind/Layer/WWTiledImageLayer.h>
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WWLog.h"
 
