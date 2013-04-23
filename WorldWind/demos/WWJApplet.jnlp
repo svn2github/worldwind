@@ -19,6 +19,14 @@
     </information>
 
     <!--
+        Requests a trusted application environment. The World Wind SDK core library requires access to the network and
+        the local filesystem. All World Wind JAR files are signed with a digital signature associated with NASA.
+    -->
+    <security>
+        <all-permissions/>
+    </security>
+
+    <!--
         Specifies the resources required by the this World Wind demo application:
         * Java Runtime Environment version 1.6 or newer, with a maximum heap size of at least 512 MB. The World Wind SDK
           requires at least 512 MB of heap space. This heap size must be specified in the application's Web Start file.
