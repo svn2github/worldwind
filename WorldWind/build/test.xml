@@ -23,6 +23,7 @@
                destdir="${worldwind.test.classes.dir}"
                source="${worldwind.jdk.version}"
                target="${worldwind.jdk.version}"
+               encoding="UTF-8"
                fork="true"
                includeantruntime="false"
                memoryMaximumSize="512m">
@@ -34,6 +35,8 @@
                 <pathelement location="build/lib/junit-4.5.jar"/>
                 <pathelement location="${java.home}/lib/plugin.jar"/>
             </classpath>
+            <compilerarg value="-Xlint:unchecked"/>
+            <compilerarg value="-Xlint:-options"/>
         </javac>
     </target>
 

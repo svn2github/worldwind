@@ -59,6 +59,7 @@
                destdir="${worldwind.classes.dir}"
                source="${worldwind.jdk.version}"
                target="${worldwind.jdk.version}"
+               encoding="UTF-8"
                fork="true"
                includeantruntime="false"
                memoryMaximumSize="512m">
