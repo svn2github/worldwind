@@ -722,6 +722,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
+    WWPosition* originPos = [[WWPosition alloc] initWithZeroPosition];
+    [globe computePositionFromPoint:[origin x] y:[origin y] z:[origin z] outputPosition:originPos];
+
     // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic
     // transform contained in the modelview matrix while maintaining rotation and translation relative to the origin.
     WWMatrix* modelviewLocal = [[WWMatrix alloc] initWithMatrix:self];
@@ -744,7 +747,7 @@
     double heading = atan2(sh, ch);
 
     return [[NSDictionary alloc] initWithObjectsAndKeys:
-            origin, WW_ORIGIN,
+            originPos, WW_ORIGIN,
             @(range), WW_RANGE,
             @(DEGREES(heading)), WW_HEADING,
             @(DEGREES(tilt)), WW_TILT,

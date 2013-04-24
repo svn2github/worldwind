@@ -70,7 +70,11 @@
     }
 
     id<WWNavigatorState> currentState = [navigator currentState];
-    [self setWithModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+    NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+    _eyePosition = [params objectForKey:WW_ORIGIN];
+    _heading = [[params objectForKey:WW_HEADING] doubleValue];
+    _tilt = [[params objectForKey:WW_TILT] doubleValue];
+    _roll = [[params objectForKey:WW_ROLL] doubleValue];
 
     return self;
 }
@@ -91,6 +95,14 @@
     }
 }
 
+- (NSDictionary*) viewingParametersForModelview:(WWMatrix*)modelview rollDegrees:(double)roll
+{
+    WWGlobe* globe = [[[self view] sceneController] globe];
+    WWVec4* eyePoint = [modelview extractEyePoint];
+
+    return [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Getting a Navigator State Snapshot --//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -107,18 +119,6 @@
                                       onGlobe:globe];
 
     return [self currentStateForModelview:modelview];
-}
-
-- (void) setWithModelview:(WWMatrix*)modelview rollDegrees:(double)roll
-{
-    WWGlobe* globe = [[[self view] sceneController] globe];
-    WWVec4* eyePoint = [modelview extractEyePoint];
-    [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:_eyePosition];
-
-    NSDictionary* params = [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
-    _heading = [[params objectForKey:WW_HEADING] doubleValue];
-    _tilt = [[params objectForKey:WW_TILT] doubleValue];
-    _roll = [[params objectForKey:WW_ROLL] doubleValue];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -164,9 +164,14 @@
     }
 
     CGRect viewport = [[self view] viewport];
-    double fitDistance = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+    double eyeAltitude = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+    WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:center altitude:eyeAltitude];
 
-    // TODO
+    [self gotoEyePosition:eyePosition
+           headingDegrees:_heading
+              tiltDegrees:0
+              rollDegrees:_roll
+             overDuration:duration];
 }
 
 - (void) gotoEyePosition:(WWPosition*)eyePosition
@@ -560,7 +565,11 @@
     [touchPointModelview multiplyMatrix:touchPointPinch];
     [touchPointModelview multiplyMatrix:touchPointRotation];
 
-    [self setWithModelview:touchPointModelview rollDegrees:_roll];
+    NSDictionary* params = [self viewingParametersForModelview:touchPointModelview rollDegrees:_roll];
+    _eyePosition = [params objectForKey:WW_ORIGIN];
+    _heading = [[params objectForKey:WW_HEADING] doubleValue];
+    _tilt = [[params objectForKey:WW_TILT] doubleValue];
+    _roll = [[params objectForKey:WW_ROLL] doubleValue];
 }
 
 - (WWVec4*) touchPointFor:(UIGestureRecognizer*)recognizer

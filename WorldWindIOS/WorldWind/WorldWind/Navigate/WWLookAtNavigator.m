@@ -70,7 +70,12 @@
     }
 
     id<WWNavigatorState> currentState = [navigator currentState];
-    [self setWithModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+    NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+    _lookAtPosition = [params objectForKey:WW_ORIGIN];
+    _range = [[params objectForKey:WW_RANGE] doubleValue];
+    _heading = [[params objectForKey:WW_HEADING] doubleValue];
+    _tilt = [[params objectForKey:WW_TILT] doubleValue];
+    _roll = [[params objectForKey:WW_ROLL] doubleValue];
 
     return self;
 }
@@ -91,26 +96,7 @@
     }
 }
 
-//--------------------------------------------------------------------------------------------------------------------//
-//-- Getting a Navigator State Snapshot --//
-//--------------------------------------------------------------------------------------------------------------------//
-
-- (id<WWNavigatorState>) currentState
-{
-    // Compute the current modelview matrix based on this navigator's look-at position, range, heading, and tilt.
-    WWGlobe* globe = [[[self view] sceneController] globe];
-    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
-    [modelview multiplyByLookAtModelview:_lookAtPosition
-                                   range:_range
-                          headingDegrees:_heading
-                             tiltDegrees:_tilt
-                             rollDegrees:_roll
-                                 onGlobe:globe];
-
-    return [self currentStateForModelview:modelview];
-}
-
-- (void) setWithModelview:(WWMatrix*)modelview rollDegrees:(double)roll
+- (NSDictionary*) viewingParametersForModelview:(WWMatrix*)modelview rollDegrees:(double)roll
 {
     WWGlobe* globe = [[[self view] sceneController] globe];
     WWVec4* lookAtPoint = [[WWVec4 alloc] initWithZeroVector];
@@ -132,13 +118,27 @@
         [forwardRay pointAt:horizonDistance result:lookAtPoint];
     }
 
-    [globe computePositionFromPoint:[lookAtPoint x] y:[lookAtPoint y] z:[lookAtPoint z] outputPosition:_lookAtPosition];
+    return [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
 
-    NSDictionary* params = [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
-    _range = [[params objectForKey:WW_RANGE] doubleValue];
-    _heading = [[params objectForKey:WW_HEADING] doubleValue];
-    _tilt = [[params objectForKey:WW_TILT] doubleValue];
-    _roll = [[params objectForKey:WW_ROLL] doubleValue];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Getting a Navigator State Snapshot --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (id<WWNavigatorState>) currentState
+{
+    // Compute the current modelview matrix based on this navigator's look-at position, range, heading, and tilt.
+    WWGlobe* globe = [[[self view] sceneController] globe];
+    WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
+    [modelview multiplyByLookAtModelview:_lookAtPosition
+                                   range:_range
+                          headingDegrees:_heading
+                             tiltDegrees:_tilt
+                             rollDegrees:_roll
+                                 onGlobe:globe];
+
+    return [self currentStateForModelview:modelview];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -184,14 +184,14 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    WWPosition* lookAtPosition = [[WWPosition alloc] initWithLocation:center altitude:0];
     CGRect viewport = [[self view] viewport];
     double range = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+    WWPosition* lookAtPosition = [[WWPosition alloc] initWithLocation:center altitude:0];
 
     [self gotoLookAtPosition:lookAtPosition
                        range:range
               headingDegrees:_heading
-                 tiltDegrees:_tilt
+                 tiltDegrees:0
                  rollDegrees:_roll
                 overDuration:duration];
 }
@@ -559,11 +559,5 @@
 
     return YES;
 }
-
-//--------------------------------------------------------------------------------------------------------------------//
-//-- Animation Interface for Subclasses --//
-//--------------------------------------------------------------------------------------------------------------------//
-
-
 
 @end
