@@ -36,7 +36,7 @@
 
 /// @name Initializing Navigators
 
-- (WWAbstractNavigator*) initWithView:(WorldWindView*)viewToNavigate;
+- (WWAbstractNavigator*) initWithView:(WorldWindView*)view;
 
 /// @name Navigator Protocol for Subclasses
 

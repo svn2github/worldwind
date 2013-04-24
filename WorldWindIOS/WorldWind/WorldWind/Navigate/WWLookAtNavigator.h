@@ -28,11 +28,17 @@
     double animBeginRange;
     double animEndRange;
     double animMidRange;
+    double animBeginHeading;
+    double animEndHeading;
+    double animBeginTilt;
+    double animEndTilt;
+    double animBeginRoll;
+    double animEndRoll;
 }
 
 /// @name Navigator Attributes
 
-@property (nonatomic) WWPosition* lookAt;
+@property (nonatomic) WWPosition* lookAtPosition;
 
 @property (nonatomic) double range;
 
@@ -44,7 +50,22 @@
 
 /// @name Initializing Navigators
 
-- (WWLookAtNavigator*) initWithView:(WorldWindView*)viewToNavigate;
+- (WWLookAtNavigator*) initWithView:(WorldWindView*)view;
+
+- (WWLookAtNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
+
+/// @name Animating to a Location of Interest
+
+- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
+                      range:(double)range
+               overDuration:(NSTimeInterval)duration;
+
+- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
+                      range:(double)range
+             headingDegrees:(double)heading
+                tiltDegrees:(double)tilt
+                rollDegrees:(double)roll
+               overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 
@@ -59,9 +80,5 @@
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer;
 
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer;
-
-/// @name Animation Interface for Subclasses
-
-- (void) gotoLookAtPosition:(WWPosition*)lookAt range:(double)range overDuration:(NSTimeInterval)duration;
 
 @end

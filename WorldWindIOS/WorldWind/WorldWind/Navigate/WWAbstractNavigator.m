@@ -30,16 +30,16 @@
 //-- Initializing Navigators --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWAbstractNavigator*) initWithView:(WorldWindView*)viewToNavigate
+- (WWAbstractNavigator*) initWithView:(WorldWindView*)view
 {
-    if (viewToNavigate == nil)
+    if (view == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
     }
 
     self = [super init];
 
-    _view = viewToNavigate;
+    _view = view;
     _nearDistance = DEFAULT_NEAR_DISTANCE;
     _farDistance = DEFAULT_FAR_DISTANCE;
 
@@ -117,12 +117,11 @@
     return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
 }
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
-{
-    // Must be implemented by subclass
-}
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Animating to a Location of Interest --//
+//--------------------------------------------------------------------------------------------------------------------//
 
-- (void) gotoLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration
+- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
 {
     // Must be implemented by subclass
 }

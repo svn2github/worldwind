@@ -29,9 +29,9 @@
 //-- Initializing Navigators --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)viewToNavigate
+- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view
 {
-    self = [super initWithView:viewToNavigate]; // Superclass validates the viewToNavigate argument.
+    self = [super initWithView:view]; // Superclass validates the view argument.
 
     panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
     pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
@@ -46,7 +46,6 @@
     [twoFingerPanGestureRecognizer setDelegate:self];
     [twoFingerPanGestureRecognizer setMinimumNumberOfTouches:2];
 
-    UIView* view = [self view];
     [view addGestureRecognizer:panGestureRecognizer];
     [view addGestureRecognizer:pinchGestureRecognizer];
     [view addGestureRecognizer:rotationGestureRecognizer];
@@ -57,6 +56,21 @@
     _heading = DEFAULT_HEADING;
     _tilt = DEFAULT_TILT;
     _roll = DEFAULT_ROLL;
+
+    return self;
+}
+
+- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator
+{
+    self = [self initWithView:view];
+
+    if (navigator == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Navigator is nil")
+    }
+
+    id<WWNavigatorState> currentState = [navigator currentState];
+    [self setWithModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
 
     return self;
 }
@@ -78,7 +92,7 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Navigator Protocol --//
+//-- Getting a Navigator State Snapshot --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (id<WWNavigatorState>) currentState
@@ -95,37 +109,194 @@
     return [self currentStateForModelview:modelview];
 }
 
-- (NSDictionary*) extractFirstPersonParams:(WWMatrix*)modelview forRollDegrees:(double)roll
-{
-    WWVec4* eyePoint = [modelview extractEyePoint];
-    WWGlobe* globe = [[[self view] sceneController] globe];
-
-    return [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
-}
-
 - (void) setWithModelview:(WWMatrix*)modelview rollDegrees:(double)roll
 {
-    NSDictionary* params = [self extractFirstPersonParams:modelview forRollDegrees:roll];
-
-    WWVec4* eyePoint = [params objectForKey:WW_ORIGIN];
     WWGlobe* globe = [[[self view] sceneController] globe];
+    WWVec4* eyePoint = [modelview extractEyePoint];
     [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:_eyePosition];
 
+    NSDictionary* params = [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
     _heading = [[params objectForKey:WW_HEADING] doubleValue];
     _tilt = [[params objectForKey:WW_TILT] doubleValue];
     _roll = [[params objectForKey:WW_ROLL] doubleValue];
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Animating to a Location of Interest --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
 {
-}
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
 
-- (void) gotoLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration
-{
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:location altitude:[_eyePosition altitude]];
+
+    [self gotoEyePosition:eyePosition
+           headingDegrees:_heading
+              tiltDegrees:_tilt
+              rollDegrees:_roll
+             overDuration:duration];
 }
 
 - (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
 {
+    if (center == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
+    }
+
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    CGRect viewport = [[self view] viewport];
+    double fitDistance = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+
+    // TODO
+}
+
+- (void) gotoEyePosition:(WWPosition*)eyePosition
+            overDuration:(NSTimeInterval)duration
+{
+    if (eyePosition == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Eye position is nil")
+    }
+
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    [self gotoEyePosition:eyePosition
+           headingDegrees:_heading
+              tiltDegrees:_tilt
+              rollDegrees:_roll
+             overDuration:duration];
+}
+
+- (void) gotoEyePosition:(WWPosition*)eyePosition
+          headingDegrees:(double)heading
+             tiltDegrees:(double)tilt
+             rollDegrees:(double)roll
+            overDuration:(NSTimeInterval)duration
+{
+    if (eyePosition == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Eye position is nil")
+    }
+
+    if (duration < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
+    }
+
+    // Store the animation's begin and end values for this navigator's attributes. These values are interpolated in
+    // animationDidUpdate:begin:end.
+    animBeginLocation = [[WWLocation alloc] initWithLocation:_eyePosition];
+    animEndLocation = [[WWLocation alloc] initWithLocation:eyePosition];
+    animBeginAltitude = [_eyePosition altitude];
+    animEndAltitude = [eyePosition altitude];
+    animBeginHeading = _heading;
+    animEndHeading = heading;
+    animBeginTilt = _tilt;
+    animEndTilt = tilt;
+    animBeginRoll = _roll;
+    animEndRoll = roll;
+
+    // Compute the mid range used as an intermediate range during animation. If the begin and end locations on the
+    // globe's surface are not visible from the begin or end range, the mid range is defined as a value greater than the
+    // begin and end ranges. This maintains the user's geographic context for the animation's beginning and end.
+    WorldWindView* view = [self view];
+    WWPosition* pa = _eyePosition;
+    WWPosition* pb = eyePosition;
+    WWGlobe* globe = [[view sceneController] globe];
+    CGRect viewport = [view viewport];
+    double fitDistance = [WWMath perspectiveFitDistance:viewport forPositionA:pa positionB:pb onGlobe:globe];
+    animMidAltitude = (fitDistance > [pa altitude] && fitDistance > [pb altitude]) ? fitDistance : DBL_MAX;
+
+    // Compute the animation's duration when necessary. The caller may specify a duration of WWNavigatorDurationDefault
+    // to indicate that the navigator compute a default duration based on the begin and end values. This uses a hybrid
+    // of the begin and end locations and ranges in order to factor the change in both attributes into the duration.
+    NSTimeInterval defaultDuration = [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe];
+    NSTimeInterval animDuration = (duration == WWNavigatorDurationDefault ? defaultDuration : duration);
+
+    // Cancel any currently active animation and begin a new animation with the values and duration computed above.
+    [self cancelAnimation];
+    [super beginAnimationWithDuration:animDuration];
+}
+
+- (void) animationDidBegin
+{
+    [super animationDidBegin];
+
+    // The animation has just begun. Explicitly set the begin values rather than interpolating to ensure that the begin
+    // values are set exactly as the caller requested.
+    [_eyePosition setLocation:animBeginLocation altitude:animBeginAltitude];
+    _heading = animBeginHeading;
+    _tilt = animBeginTilt;
+    _roll = animBeginRoll;
+}
+
+- (void) animationDidEnd
+{
+    [super animationDidEnd];
+
+    // The animation has ended. Explicitly set the end values rather than interpolating to ensure that the end values
+    // are set exactly as the caller requested.
+    [_eyePosition setLocation:animEndLocation altitude:animEndAltitude];
+    _heading = animEndHeading;
+    _tilt = animEndTilt;
+    _roll = animEndRoll;
+}
+
+- (void) animationDidUpdate:(NSDate*)date begin:(NSDate*)begin end:(NSDate*)end
+{
+    NSTimeInterval now = [date timeIntervalSinceReferenceDate];
+    NSTimeInterval beginTime = [begin timeIntervalSinceReferenceDate];
+    NSTimeInterval endTime = [end timeIntervalSinceReferenceDate];
+    NSTimeInterval midTime = (beginTime + endTime) / 2;
+
+    // The animation is between the start time and the end time. Compute the fraction of time that has passed as a value
+    // between 0 and 1, then use the fraction to interpolate between the begin and end values. This uses hermite
+    // interpolation via [WWMath smoothStepValue] to ease in and ease out of the begin and end values, respectively.
+
+    double animationPct = [WWMath smoothStepValue:now min:beginTime max:endTime];
+    [WWLocation greatCircleInterpolate:animBeginLocation endLocation:animEndLocation
+                                amount:animationPct outputLocation:_eyePosition];
+
+    if (animMidAltitude == DBL_MAX) // The animation is not using a mid range value.
+    {
+        [_eyePosition setAltitude:[WWMath interpolateValue1:animBeginAltitude value2:animEndAltitude amount:animationPct]];
+    }
+    else if (now <= midTime) // The animation is using a mid range value, and is in the first half of its duration.
+    {
+        double firstHalfPct = [WWMath smoothStepValue:now min:beginTime max:midTime];
+        [_eyePosition setAltitude:[WWMath interpolateValue1:animBeginAltitude value2:animMidAltitude amount:firstHalfPct]];
+    }
+    else // The animation is using a mid range value, and is in the second half of its duration.
+    {
+        double secondHalfPct = [WWMath smoothStepValue:now min:midTime max:endTime];
+        [_eyePosition setAltitude:[WWMath interpolateValue1:animMidAltitude value2:animEndAltitude amount:secondHalfPct]];
+    }
+
+    _heading = [WWMath interpolateValue1:animBeginHeading value2:animEndHeading amount:animationPct];
+    _tilt = [WWMath interpolateValue1:animBeginTilt value2:animEndTilt amount:animationPct];
+    _roll = [WWMath interpolateValue1:animBeginRoll value2:animEndRoll amount:animationPct];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <QuartzCore/QuartzCore.h>
 
 @class WWPath;
 @class WorldWindView;
@@ -19,7 +20,7 @@
 @interface PathFollower : NSObject
 {
 @protected
-    NSTimer* timer;
+    CADisplayLink* displayLink;
     NSTimeInterval offsetTime;
     NSTimeInterval beginTime;
     NSTimeInterval currentTime;
@@ -71,21 +72,21 @@
 /// @name Methods of Interest Only to Subclasses
 
 /**
-* Starts the timer that moves the path marker along the path.
+* Starts the display link that moves the path marker along the path.
 */
-- (void) startTimer;
+- (void) startDisplayLink;
 
 /**
-* Stops the timer that moves the path marker along the path.
+* Stops the display link that moves the path marker along the path.
 */
-- (void) stopTimer;
+- (void) stopDisplayLink;
 
 /**
-* Indicates that the path following timer has fired.
+* Indicates that the path following display link has fired.
 *
-* @param notifyingTimer The timer that sent his message.
+* @param notifyingDisplayLink The display link that sent his message.
 */
-- (void) timerDidFire:(NSTimer*)notifyingTimer;
+- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink;
 
 /**
 * Computes the position corresponding to the specified time.
@@ -101,6 +102,20 @@
 - (BOOL) positionForTimeInterval:(NSTimeInterval)timeInterval outPosition:(WWPosition*)result;
 
 /**
+* Animates the World Wind view's navigator to the specified position over a default period of time.
+*
+* @position The position the navigator is animated to.
+*/
+- (void) flyNavigatorToPosition:(WWPosition*)position;
+
+/**
+* Sets the World Wind view's navigator to the specified position immediately.
+*
+* @position The position the navigator is set to.
+*/
+- (void) setNavigatorToPosition:(WWPosition*)position;
+
+/**
 * Starts observing messages sent to the notification center by the World Wind Navigator.
 */
 - (void) startObservingNavigator;
@@ -114,7 +129,7 @@
 * Interprets messages sent to the notification center by the World Wind Navigator.
 *
 * This disables path following if a navigator animation has ended or been cancelled, or if a navigator gesture has been
-* recognized. This starts the path following timer when the initial navigator animation ends.
+* recognized. This starts the path following display link when the initial navigator animation ends.
 *
 * @param notification The notification to interpret.
 */

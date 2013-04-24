@@ -145,10 +145,10 @@ typedef enum
         // after the animation completes, and the state changes to TrackingControllerStateFollowing. Suppress navigator
         // notifications while initiating the animation to distinguish between this animation and animations started by
         // another component.
-        WWLookAtNavigator* navigator = (WWLookAtNavigator*) [_view navigator];
-        double range = MIN(NAVIGATOR_MAX_RANGE, [navigator range]);
+        WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) [_view navigator];
+        double range = MIN(NAVIGATOR_MAX_RANGE, [lookAtNav range]);
         [self stopObservingNavigator];
-        [[_view navigator] gotoLookAt:currentPosition range:range overDuration:WWNavigatorDurationDefault];
+        [lookAtNav gotoLookAtPosition:currentPosition range:range overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator];
 
         // Designate that the tracking controller is waiting to start following.
@@ -180,8 +180,8 @@ typedef enum
 
     // Update the navigator to show the current position. This change is applied without animation, and does not
     // affect the navigator's distance to the current position.
-    WWLookAtNavigator* navigator = (WWLookAtNavigator*) [_view navigator];
-    [[navigator lookAt] setLocation:currentPosition];
+    WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) [_view navigator];
+    [[lookAtNav lookAtPosition] setLocation:currentPosition];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

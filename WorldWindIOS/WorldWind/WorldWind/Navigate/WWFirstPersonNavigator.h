@@ -9,6 +9,7 @@
 #import "WorldWind/Navigate/WWAbstractNavigator.h"
 
 @class WWVec4;
+@class WWPosition;
 
 @interface WWFirstPersonNavigator : WWAbstractNavigator <UIGestureRecognizerDelegate>
 {
@@ -29,6 +30,18 @@
     WWMatrix* touchPointRotation;
     id<WWNavigatorState> touchPointBeginState;
     int touchPointGestures;
+    // Animation properties.
+    WWLocation* animBeginLocation;
+    WWLocation* animEndLocation;
+    double animBeginAltitude;
+    double animEndAltitude;
+    double animMidAltitude;
+    double animBeginHeading;
+    double animEndHeading;
+    double animBeginTilt;
+    double animEndTilt;
+    double animBeginRoll;
+    double animEndRoll;
 }
 
 /// @name Navigator Attributes
@@ -43,7 +56,20 @@
 
 /// @name Initializing Navigators
 
-- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)viewToNavigate;
+- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view;
+
+- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
+
+/// @name Animating to a Location of Interest
+
+- (void) gotoEyePosition:(WWPosition*)eyePosition
+            overDuration:(NSTimeInterval)duration;
+
+- (void) gotoEyePosition:(WWPosition*)eyePosition
+          headingDegrees:(double)heading
+             tiltDegrees:(double)tilt
+             rollDegrees:(double)roll
+            overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 

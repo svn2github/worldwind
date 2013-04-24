@@ -11,6 +11,7 @@
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Navigate/WWLookAtNavigator.h"
+#import "WorldWind/Navigate/WWFirstPersonNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -20,9 +21,10 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 #define NAVIGATOR_RANGE 30000.0
-#define TIMER_INTERVAL 0.2
+#define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation PathFollower
 
@@ -40,7 +42,7 @@
     WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
     [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
     marker = [[WWSphere alloc] initWithPosition:currentPosition radiusInPixels:7];
-    [marker setDisplayName:@"Locaiton on Path"];
+    [marker setDisplayName:@"Location on Path"];
     [marker setAttributes:attributes];
 
     layer = [[WWRenderableLayer alloc] init];
@@ -53,7 +55,7 @@
 
 - (void) dispose
 {
-    [self stopTimer];
+    [self stopDisplayLink];
     [self stopObservingNavigator];
 
     [layer removeRenderable:marker];
@@ -69,12 +71,12 @@
 
     if (enabled)
     {
-        [[_wwv navigator] gotoLookAt:currentPosition range:NAVIGATOR_RANGE overDuration:WWNavigatorDurationDefault];
+        [self flyNavigatorToPosition:currentPosition];
         [self startObservingNavigator]; // Observe after the animation begins to ignore its begin notification.
     }
     else
     {
-        [self stopTimer];
+        [self stopDisplayLink];
         [self stopObservingNavigator];
     }
 
@@ -85,30 +87,29 @@
 //-- Timer Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) startTimer
+- (void) startDisplayLink
 {
-    if (timer == nil)
+    if (displayLink == nil)
     {
         beginTime = [NSDate timeIntervalSinceReferenceDate];
         offsetTime = currentTime; // Initially zero, then the last time associated with a timer firing thereafter.
 
-        timer = [NSTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL // update at 5 Hz
-                                                 target:self
-                                               selector:@selector(timerDidFire:)
-                                               userInfo:nil repeats:YES];
+        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
+        [displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
+        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
 }
 
-- (void) stopTimer
+- (void) stopDisplayLink
 {
-    if (timer != nil)
+    if (displayLink != nil)
     {
-        [timer invalidate];
-        timer = nil;
+        [displayLink invalidate];
+        displayLink = nil;
     }
 }
 
-- (void) timerDidFire:(NSTimer*)notifyingTimer
+- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink
 {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     currentTime = offsetTime + now - beginTime;
@@ -116,7 +117,7 @@
     if ([self positionForTimeInterval:currentTime outPosition:currentPosition])
     {
         [marker setPosition:currentPosition];
-        [[(WWLookAtNavigator*) [_wwv navigator] lookAt] setLocation:currentPosition];
+        [self setNavigatorToPosition:currentPosition];
         [_wwv drawView];
     }
     else
@@ -167,8 +168,60 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Navigator Notification Interface --//
+//-- Navigator Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
+
+
+- (void) flyNavigatorToPosition:(WWPosition*)position
+{
+    id<WWNavigator> navigator = [_wwv navigator];
+
+    if ([navigator isKindOfClass:[WWFirstPersonNavigator class]])
+    {
+        WWFirstPersonNavigator* firstPersonNav = (WWFirstPersonNavigator*) navigator;
+        [firstPersonNav gotoEyePosition:position
+                         headingDegrees:[firstPersonNav heading]
+                            tiltDegrees:[firstPersonNav tilt]
+                            rollDegrees:0
+                           overDuration:WWNavigatorDurationDefault];
+    }
+    else if ([navigator isKindOfClass:[WWLookAtNavigator class]])
+    {
+        WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
+        WWPosition* lookAtPos = [[WWPosition alloc] initWithLocation:position altitude:0];
+        [lookAtNav gotoLookAtPosition:lookAtPos
+                                range:NAVIGATOR_RANGE
+                       headingDegrees:[lookAtNav heading]
+                          tiltDegrees:[lookAtNav tilt]
+                          rollDegrees:0
+                         overDuration:WWNavigatorDurationDefault];
+    }
+    else
+    {
+        WWLog(@"Unknown navigator type: %@", navigator);
+    }
+}
+
+- (void) setNavigatorToPosition:(WWPosition*)position
+{
+    id<WWNavigator> navigator = [_wwv navigator];
+
+    if ([navigator isKindOfClass:[WWFirstPersonNavigator class]])
+    {
+        WWFirstPersonNavigator* firstPersonNav = (WWFirstPersonNavigator*) navigator;
+        [[firstPersonNav eyePosition] setPosition:position];
+
+    }
+    else if ([navigator isKindOfClass:[WWLookAtNavigator class]])
+    {
+        WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
+        [[lookAtNav lookAtPosition] setLocation:position];
+    }
+    else
+    {
+        WWLog(@"Unknown navigator type: %@", navigator);
+    }
+}
 
 - (void) startObservingNavigator
 {
@@ -187,7 +240,7 @@
 {
     if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
     {
-        [self startTimer];
+        [self startDisplayLink];
     }
     else if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
             || [[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]

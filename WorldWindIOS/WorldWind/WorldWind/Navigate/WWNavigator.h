@@ -24,8 +24,6 @@ static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
 - (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
 
-- (void) gotoLookAt:(WWLocation*)lookAt range:(double)range overDuration:(NSTimeInterval)duration;
-
 - (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
 
 @end
