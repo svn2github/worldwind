@@ -15,13 +15,13 @@
 
 @interface WorldWindView : UIView <WWDisposable>
 
-@property (readonly, nonatomic) GLuint frameBuffer;
-@property (readonly, nonatomic) GLuint colorBuffer;
-@property (readonly, nonatomic) GLuint depthBuffer;
-@property (readonly, nonatomic) CGRect viewport;
-@property (readonly, nonatomic) EAGLContext* context;
-@property (readonly, nonatomic) WWSceneController* sceneController;
-@property (readonly, nonatomic) id<WWNavigator> navigator;
+@property (nonatomic, readonly) GLuint frameBuffer;
+@property (nonatomic, readonly) GLuint colorBuffer;
+@property (nonatomic, readonly) GLuint depthBuffer;
+@property (nonatomic, readonly) CGRect viewport;
+@property (nonatomic, readonly) EAGLContext* context;
+@property (nonatomic, readonly) WWSceneController* sceneController;
+@property (nonatomic) id<WWNavigator> navigator;
 @property BOOL redrawRequested;
 
 - (void) drawView;

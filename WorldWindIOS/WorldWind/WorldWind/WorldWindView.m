@@ -58,8 +58,8 @@
             return nil;
         }
 
-        self->_sceneController = [[WWSceneController alloc] init];
-        self->_navigator = [[WWLookAtNavigator alloc] initWithView:self];
+        _sceneController = [[WWSceneController alloc] init];
+        _navigator = [[WWLookAtNavigator alloc] initWithView:self];
 
         // Indicate that iOS should maintain the WorldWindView's proportions when its size changes. This prevents the
         // scene from distorting when WorldWindView is rotated in response to a device orientation change. Without
@@ -76,36 +76,35 @@
     return self;
 }
 
+- (void) dealloc
+{
+    [EAGLContext setCurrentContext:self.context];
+
+    [self.sceneController dispose];
+
+    [self tearDownGL];
+
+    if ([EAGLContext currentContext] == self.context)
+        [EAGLContext setCurrentContext:nil];
+}
+
 - (void) dispose
 {
+    // TODO: Is there a reason the sceneController is not disposed here?
+    [_navigator dispose];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void) resizeWithLayer:(CAEAGLLayer*)layer
+- (void) tearDownGL
 {
-    GLint width, height;
+    glDeleteRenderbuffers(1, &self->_colorBuffer);
+    self->_colorBuffer = 0;
 
-    // Allocate storage for the color renderbuffer using the CAEAGLLayer, then retrieve its dimensions. The color
-    // renderbuffer's are calculated based on this view's bounds and scale factor, and therefore may not be equal to
-    // this view's bounds. The depth renderbuffer and viewport must have the same dimensions as the color renderbuffer.
-    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
-    [self->_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
-    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
-    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height);
+    glDeleteRenderbuffers(1, &self->_depthBuffer);
+    self->_depthBuffer = 0;
 
-    // Allocate storage for the depth renderbuffer using the color renderbuffer's dimensions retrieved from OpenGL. The
-    // color renderbuffer and the depth renderbuffer must have the same dimensions.
-    glBindRenderbuffer(GL_RENDERBUFFER, self->_depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei) width, (GLsizei) height);
-
-    // Restore the GL_RENDERBUFFER binding to the color renderbuffer. All other methods in WorldWindView assume that the
-    // color renderbuffer is bound.
-    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
-
-    // Assign the viewport to a rectangle with its origin at (0, 0) and with dimensions equal to the color renderbuffer.
-    // This viewport property is used by the scene controller to set the OpenGL viewport state, and is used by the
-    // navigator to compute the projection matrix. Both must use the dimensions of the color renderbuffer.
-    self->_viewport = CGRectMake(0, 0, width, height);
+    glDeleteFramebuffers(1, &self->_frameBuffer);
+    self->_frameBuffer = 0;
 }
 
 - (void) drawView
@@ -142,28 +141,31 @@
     [self drawView];
 }
 
-- (void) dealloc
+- (void) resizeWithLayer:(CAEAGLLayer*)layer
 {
-    [EAGLContext setCurrentContext:self.context];
+    GLint width, height;
 
-    [self.sceneController dispose];
+    // Allocate storage for the color renderbuffer using the CAEAGLLayer, then retrieve its dimensions. The color
+    // renderbuffer's are calculated based on this view's bounds and scale factor, and therefore may not be equal to
+    // this view's bounds. The depth renderbuffer and viewport must have the same dimensions as the color renderbuffer.
+    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
+    [self->_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height);
 
-    [self tearDownGL];
+    // Allocate storage for the depth renderbuffer using the color renderbuffer's dimensions retrieved from OpenGL. The
+    // color renderbuffer and the depth renderbuffer must have the same dimensions.
+    glBindRenderbuffer(GL_RENDERBUFFER, self->_depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei) width, (GLsizei) height);
 
-    if ([EAGLContext currentContext] == self.context)
-        [EAGLContext setCurrentContext:nil];
-}
+    // Restore the GL_RENDERBUFFER binding to the color renderbuffer. All other methods in WorldWindView assume that the
+    // color renderbuffer is bound.
+    glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
 
-- (void) tearDownGL
-{
-    glDeleteRenderbuffers(1, &self->_colorBuffer);
-    self->_colorBuffer = 0;
-
-    glDeleteRenderbuffers(1, &self->_depthBuffer);
-    self->_depthBuffer = 0;
-
-    glDeleteFramebuffers(1, &self->_frameBuffer);
-    self->_frameBuffer = 0;
+    // Assign the viewport to a rectangle with its origin at (0, 0) and with dimensions equal to the color renderbuffer.
+    // This viewport property is used by the scene controller to set the OpenGL viewport state, and is used by the
+    // navigator to compute the projection matrix. Both must use the dimensions of the color renderbuffer.
+    self->_viewport = CGRectMake(0, 0, width, height);
 }
 
 - (void) handleNotification:(NSNotification*)notification
