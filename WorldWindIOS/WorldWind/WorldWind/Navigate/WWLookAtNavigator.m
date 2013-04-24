@@ -36,6 +36,7 @@
     rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
     verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
 
+    // Gesture recognizers maintain a weak reference to their delegate.
     [panGestureRecognizer setDelegate:self];
     [pinchGestureRecognizer setDelegate:self];
     [rotationGestureRecognizer setDelegate:self];
@@ -48,9 +49,6 @@
     [view addGestureRecognizer:rotationGestureRecognizer];
     [view addGestureRecognizer:verticalPanGestureRecognizer];
 
-    animBeginLookAt = [[WWPosition alloc] init];
-    animEndLookAt = [[WWPosition alloc] init];
-
     WWPosition* lastKnownPosition = [self lastKnownPosition];
     _lookAt = [[WWPosition alloc] initWithLocation:lastKnownPosition altitude:0];
     _range = DEFAULT_RANGE; // TODO: Compute initial range to fit globe in viewport.
@@ -61,8 +59,10 @@
     return self;
 }
 
-- (void) dealloc
+- (void) dispose
 {
+    [super dispose];
+
     // Remove gesture recognizers from the parent view when the navigator is de-allocated. The view is a weak reference,
     // so it may have been de-allocated. In this case it is unnecessary to remove these references.
     UIView* view = [self view];
@@ -413,8 +413,8 @@
 {
     // Store the animation's begin and end values for this navigator's attributes. These values are interpolated in
     // animationDidUpdate:begin:end.
-    [animBeginLookAt setPosition:_lookAt];
-    [animEndLookAt setPosition:lookAt];
+    animBeginLookAt = [[WWPosition alloc] initWithPosition:_lookAt];
+    animEndLookAt = [[WWPosition alloc] initWithPosition:lookAt];
     animBeginRange = _range;
     animEndRange = range;
 

@@ -28,11 +28,11 @@
 
 /// @name Navigator Attributes
 
-@property(nonatomic, readonly, weak) WorldWindView* view; // Keep a weak reference to the parent view to prevent a circular reference.
+@property (nonatomic, readonly, weak) WorldWindView* view; // Keep a weak reference to the parent view to prevent a circular reference.
 
-@property(nonatomic, readonly) double nearDistance;
+@property (nonatomic, readonly) double nearDistance;
 
-@property(nonatomic, readonly) double farDistance;
+@property (nonatomic, readonly) double farDistance;
 
 /// @name Initializing Navigators
 

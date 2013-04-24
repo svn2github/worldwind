@@ -38,6 +38,7 @@
     rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
     twoFingerPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleTwoFingerPanFrom:)];
 
+    // Gesture recognizers maintain a weak reference to their delegate.
     [panGestureRecognizer setDelegate:self];
     [panGestureRecognizer setMaximumNumberOfTouches:1];
     [pinchGestureRecognizer setDelegate:self];
@@ -60,8 +61,10 @@
     return self;
 }
 
-- (void) dealloc
+- (void) dispose
 {
+    [super dispose];
+
     // Remove gesture recognizers from the parent view when the navigator is de-allocated. The view is a weak reference,
     // so it may have been de-allocated. In this case it is unnecessary to remove these references.
     UIView* view = [self view];

@@ -48,10 +48,16 @@
 
 - (void) dealloc
 {
+    [self dispose];
+}
+
+- (void) dispose
+{
     // Invalidate the display link if the navigator is de-allocated before the display link can be cleaned up normally.
     if (displayLink != nil)
     {
         [displayLink invalidate];
+        displayLink = nil;
     }
 }
 

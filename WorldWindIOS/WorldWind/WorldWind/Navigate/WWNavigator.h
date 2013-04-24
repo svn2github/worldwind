@@ -6,13 +6,15 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "WorldWind/Util/WWDisposable.h"
 
 @protocol WWNavigatorState;
+@class WorldWindView;
 @class WWLocation;
 
 static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
-@protocol WWNavigator
+@protocol WWNavigator <NSObject, WWDisposable>
 
 /// @name Getting a Navigator State Snapshot
 
