@@ -22,6 +22,7 @@
 #define DEFAULT_HEADING 0
 #define DEFAULT_TILT 0
 #define DEFAULT_ROLL 0
+#define TWO_FINGER_PAN_MAX_SLOPE 2
 
 @implementation WWFirstPersonNavigator
 
@@ -336,19 +337,30 @@
         double dy = panTranslation.y - lastPanTranslation.y;
         lastPanTranslation = panTranslation;
 
+        // Compute the distance between the eye point and the point at the center of the screen. This provides a
+        // range we can use as a context for this gesture. Fall back to using the eye position's altitude if we cannot
+        // determine the point at the center of the screen.
+        double range = [_eyePosition altitude];
+        id<WWNavigatorState> currentState = [self currentState];
+        WWGlobe* globe = [[[self view] sceneController] globe];
+        WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+        if ([globe intersectWithRay:[currentState forwardRay] result:point])
+        {
+            range = [point distanceTo3:[currentState eyePoint]];
+        }
+
         // Convert the translation from the view's local coordinate system to meters, assuming the translation is
-        // intended for an object that is 'eye altitude' meters away form the eye position. Convert from change in
-        // screen relative coordinates to change in model relative coordinates by inverting the change in X. There is no
-        // need to invert the change in Y because the Y axis coordinates are already inverted.
+        // intended for an object that is 'range' meters away form the eye position. Convert from change in screen
+        // relative coordinates to change in model relative coordinates by inverting the change in X. There is no need
+        // to invert the change in Y because the Y axis coordinates are already inverted.
         CGRect viewport = [[self view] viewport];
-        double distance = MAX(1, [_eyePosition altitude]);
+        double distance = MAX(1, range);
         double metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:distance];
         double forwardMeters = dy * metersPerPixel;
         double sideMeters = -dx * metersPerPixel;
 
         // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context to
         // perform this conversion.
-        WWGlobe* globe = [[[self view] sceneController] globe];
         double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
         double forwardDegrees = DEGREES(forwardMeters / globeRadius);
         double sideDegrees = DEGREES(sideMeters / globeRadius);
@@ -515,7 +527,7 @@
         CGPoint touch1 = [pgr locationOfTouch:0 inView:view];
         CGPoint touch2 = [pgr locationOfTouch:1 inView:view];
         double slope = (touch2.y - touch1.y) / (touch2.x - touch1.x);
-        if (fabs(slope) > 1)
+        if (fabs(slope) > TWO_FINGER_PAN_MAX_SLOPE)
         {
             return NO; // Do not recognize the gesture; touches do not represent two fingers placed horizontally.
         }

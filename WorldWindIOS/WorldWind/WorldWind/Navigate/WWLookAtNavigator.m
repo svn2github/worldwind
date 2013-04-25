@@ -458,7 +458,6 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         double headingDegrees = DEGREES(-[recognizer rotation]);
-
         _heading = NormalizedDegreesHeading(gestureBeginHeading + headingDegrees);
     }
     else
@@ -491,7 +490,6 @@
         CGRect bounds = [view bounds];
 
         double tiltDegrees = 90 * translation.y / CGRectGetHeight(bounds);
-
         _tilt = [WWMath clampValue:gestureBeginTilt + tiltDegrees min:0 max:90];
     }
     else
