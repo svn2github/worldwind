@@ -31,6 +31,11 @@
 
 - (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view
 {
+    return [self initWithView:view navigatorToMatch:nil];
+}
+
+- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator
+{
     self = [super initWithView:view]; // Superclass validates the view argument.
 
     panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
@@ -51,30 +56,23 @@
     [view addGestureRecognizer:rotationGestureRecognizer];
     [view addGestureRecognizer:twoFingerPanGestureRecognizer];
 
-    WWPosition* lastKnownPosition = [self lastKnownPosition];
-    _eyePosition = [[WWPosition alloc] initWithLocation:lastKnownPosition altitude:DEFAULT_ALTITUDE]; // TODO: Compute initial altitude to fit globe in viewport.
-    _heading = DEFAULT_HEADING;
-    _tilt = DEFAULT_TILT;
-    _roll = DEFAULT_ROLL;
-
-    return self;
-}
-
-- (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator
-{
-    self = [self initWithView:view];
-
-    if (navigator == nil)
+    if (navigator != nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Navigator is nil")
+        id<WWNavigatorState> currentState = [navigator currentState];
+        NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+        _eyePosition = [params objectForKey:WW_ORIGIN];
+        _heading = [[params objectForKey:WW_HEADING] doubleValue];
+        _tilt = [[params objectForKey:WW_TILT] doubleValue];
+        _roll = [[params objectForKey:WW_ROLL] doubleValue];
     }
-
-    id<WWNavigatorState> currentState = [navigator currentState];
-    NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
-    _eyePosition = [params objectForKey:WW_ORIGIN];
-    _heading = [[params objectForKey:WW_HEADING] doubleValue];
-    _tilt = [[params objectForKey:WW_TILT] doubleValue];
-    _roll = [[params objectForKey:WW_ROLL] doubleValue];
+    else
+    {
+        WWPosition* lastKnownPosition = [self lastKnownPosition];
+        _eyePosition = [[WWPosition alloc] initWithLocation:lastKnownPosition altitude:DEFAULT_ALTITUDE]; // TODO: Compute initial altitude to fit globe in viewport.
+        _heading = DEFAULT_HEADING;
+        _tilt = DEFAULT_TILT;
+        _roll = DEFAULT_ROLL;
+    }
 
     return self;
 }
