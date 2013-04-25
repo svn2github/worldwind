@@ -216,7 +216,10 @@
 
 - (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
 {
+    // Stop the display link and redraw the view. This handles the case when the last gesture update and the gesture end
+    // occur before the display link has a chance to fire and redraw the view.
     [self stopDisplayLink];
+    [_view drawView]; // The view is a weak reference; this has no effect if the view has been deallocated.
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
