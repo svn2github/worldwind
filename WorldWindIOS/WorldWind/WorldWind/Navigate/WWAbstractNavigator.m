@@ -18,6 +18,9 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
+#define DEFAULT_HEADING 0
+#define DEFAULT_TILT 0
+#define DEFAULT_ROLL 0
 #define DEFAULT_NEAR_DISTANCE 1
 #define DEFAULT_FAR_DISTANCE 1000000000
 #define DISPLAY_LINK_FRAME_INTERVAL 3
@@ -40,6 +43,9 @@
     self = [super init];
 
     _view = view;
+    _heading = DEFAULT_HEADING;
+    _tilt = DEFAULT_TILT;
+    _roll = DEFAULT_ROLL;
     _nearDistance = DEFAULT_NEAR_DISTANCE;
     _farDistance = DEFAULT_FAR_DISTANCE;
 

@@ -24,11 +24,23 @@
     BOOL animating;
     NSDate* animBeginDate;
     NSDate* animEndDate;
+    double animBeginHeading;
+    double animEndHeading;
+    double animBeginTilt;
+    double animEndTilt;
+    double animBeginRoll;
+    double animEndRoll;
 }
 
 /// @name Navigator Attributes
 
 @property (nonatomic, readonly, weak) WorldWindView* view; // Keep a weak reference to the parent view to prevent a circular reference.
+
+@property (nonatomic) double heading;
+
+@property (nonatomic) double tilt;
+
+@property (nonatomic) double roll;
 
 @property (nonatomic, readonly) double nearDistance;
 

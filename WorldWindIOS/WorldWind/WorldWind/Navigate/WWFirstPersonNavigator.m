@@ -19,9 +19,6 @@
 #import "WorldWind/WWLog.h"
 
 #define DEFAULT_ALTITUDE 10000000
-#define DEFAULT_HEADING 0
-#define DEFAULT_TILT 0
-#define DEFAULT_ROLL 0
 #define TWO_FINGER_PAN_MAX_SLOPE 2
 
 @implementation WWFirstPersonNavigator
@@ -59,20 +56,22 @@
 
     if (navigator != nil)
     {
+        // Convert the other navigator's modelview matrix and roll to parameters appropriate for this navigator. A
+        // navigator's roll is assumed to apply to the vector coming out of the screen and therefore is the only
+        // parameter that can be exchanged directly between navigators. Knowing the roll enables this conversion to
+        // disambiguate between heading and roll when the navigator is looking straight down.
         id<WWNavigatorState> currentState = [navigator currentState];
-        NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:0]; // TODO: Get roll from navigator.
+        double roll = [navigator roll];
+        NSDictionary* params = [self viewingParametersForModelview:[currentState modelview] rollDegrees:roll];
         _eyePosition = [params objectForKey:WW_ORIGIN];
-        _heading = [[params objectForKey:WW_HEADING] doubleValue];
-        _tilt = [[params objectForKey:WW_TILT] doubleValue];
-        _roll = [[params objectForKey:WW_ROLL] doubleValue];
+        [self setHeading:[[params objectForKey:WW_HEADING] doubleValue]];
+        [self setTilt:[[params objectForKey:WW_TILT] doubleValue]];
+        [self setRoll:[[params objectForKey:WW_ROLL] doubleValue]];
     }
     else
     {
         WWPosition* lastKnownPosition = [self lastKnownPosition];
         _eyePosition = [[WWPosition alloc] initWithLocation:lastKnownPosition altitude:DEFAULT_ALTITUDE]; // TODO: Compute initial altitude to fit globe in viewport.
-        _heading = DEFAULT_HEADING;
-        _tilt = DEFAULT_TILT;
-        _roll = DEFAULT_ROLL;
     }
 
     return self;
@@ -112,9 +111,9 @@
     WWGlobe* globe = [[[self view] sceneController] globe];
     WWMatrix* modelview = [[WWMatrix alloc] initWithIdentity];
     [modelview multiplyByFirstPersonModelview:_eyePosition
-                               headingDegrees:_heading
-                                  tiltDegrees:_tilt
-                                  rollDegrees:_roll
+                               headingDegrees:[self heading]
+                                  tiltDegrees:[self tilt]
+                                  rollDegrees:[self roll]
                                       onGlobe:globe];
 
     return [self currentStateForModelview:modelview];
@@ -139,9 +138,9 @@
     WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:location altitude:[_eyePosition altitude]];
 
     [self gotoEyePosition:eyePosition
-           headingDegrees:_heading
-              tiltDegrees:_tilt
-              rollDegrees:_roll
+           headingDegrees:[self heading]
+              tiltDegrees:[self tilt]
+              rollDegrees:[self roll]
              overDuration:duration];
 }
 
@@ -167,9 +166,9 @@
     WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:center altitude:eyeAltitude];
 
     [self gotoEyePosition:eyePosition
-           headingDegrees:_heading
-              tiltDegrees:0
-              rollDegrees:_roll
+           headingDegrees:[self heading]
+              tiltDegrees:[self tilt]
+              rollDegrees:[self roll]
              overDuration:duration];
 }
 
@@ -187,9 +186,9 @@
     }
 
     [self gotoEyePosition:eyePosition
-           headingDegrees:_heading
-              tiltDegrees:_tilt
-              rollDegrees:_roll
+           headingDegrees:[self heading]
+              tiltDegrees:[self tilt]
+              rollDegrees:[self roll]
              overDuration:duration];
 }
 
@@ -215,11 +214,11 @@
     animEndLocation = [[WWLocation alloc] initWithLocation:eyePosition];
     animBeginAltitude = [_eyePosition altitude];
     animEndAltitude = [eyePosition altitude];
-    animBeginHeading = _heading;
+    animBeginHeading = [self heading];
     animEndHeading = heading;
-    animBeginTilt = _tilt;
+    animBeginTilt = [self tilt];
     animEndTilt = tilt;
-    animBeginRoll = _roll;
+    animBeginRoll = [self roll];
     animEndRoll = roll;
 
     // Compute the mid range used as an intermediate range during animation. If the begin and end locations on the
@@ -251,9 +250,9 @@
     // The animation has just begun. Explicitly set the begin values rather than interpolating to ensure that the begin
     // values are set exactly as the caller requested.
     [_eyePosition setLocation:animBeginLocation altitude:animBeginAltitude];
-    _heading = animBeginHeading;
-    _tilt = animBeginTilt;
-    _roll = animBeginRoll;
+    [self setHeading:animBeginHeading];
+    [self setTilt:animBeginTilt];
+    [self setRoll:animBeginRoll];
 }
 
 - (void) animationDidEnd
@@ -263,9 +262,9 @@
     // The animation has ended. Explicitly set the end values rather than interpolating to ensure that the end values
     // are set exactly as the caller requested.
     [_eyePosition setLocation:animEndLocation altitude:animEndAltitude];
-    _heading = animEndHeading;
-    _tilt = animEndTilt;
-    _roll = animEndRoll;
+    [self setHeading:animEndHeading];
+    [self setTilt:animEndTilt];
+    [self setRoll:animEndRoll];
 }
 
 - (void) animationDidUpdate:(NSDate*)date begin:(NSDate*)begin end:(NSDate*)end
@@ -298,9 +297,9 @@
         [_eyePosition setAltitude:[WWMath interpolateValue1:animMidAltitude value2:animEndAltitude amount:secondHalfPct]];
     }
 
-    _heading = [WWMath interpolateValue1:animBeginHeading value2:animEndHeading amount:animationPct];
-    _tilt = [WWMath interpolateValue1:animBeginTilt value2:animEndTilt amount:animationPct];
-    _roll = [WWMath interpolateValue1:animBeginRoll value2:animEndRoll amount:animationPct];
+    [self setHeading:[WWMath interpolateValue1:animBeginHeading value2:animEndHeading amount:animationPct]];
+    [self setTilt:[WWMath interpolateValue1:animBeginTilt value2:animEndTilt amount:animationPct]];
+    [self setRoll:[WWMath interpolateValue1:animBeginRoll value2:animEndRoll amount:animationPct]];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -367,8 +366,8 @@
 
         // Convert the translation from arc degrees to change in latitude and longitude relative to the current heading.
         // The resultant translation in latitude and longitude is defined in the equirectangular coordinate system.
-        double sinHeading = sin(RADIANS(_heading));
-        double cosHeading = cos(RADIANS(_heading));
+        double sinHeading = sin(RADIANS([self heading]));
+        double cosHeading = cos(RADIANS([self heading]));
         double latDegrees = forwardDegrees * cosHeading - sideDegrees * sinHeading;
         double lonDegrees = forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
@@ -466,8 +465,8 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        gestureBeginHeading = _heading;
-        gestureBeginTilt = _tilt;
+        gestureBeginHeading = [self heading];
+        gestureBeginTilt = [self tilt];
         [self gestureRecognizerDidBegin:recognizer];
     }
     else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
@@ -482,8 +481,8 @@
 
         double headingDegrees = 90 * -translation.x / CGRectGetWidth(bounds);
         double tiltDegrees = 90 * translation.y / CGRectGetHeight(bounds);
-        _heading = NormalizedDegreesHeading(gestureBeginHeading + headingDegrees);
-        _tilt = [WWMath clampValue:gestureBeginTilt + tiltDegrees min:0 max:90];
+        [self setHeading:NormalizedDegreesHeading(gestureBeginHeading + headingDegrees)];
+        [self setTilt:[WWMath clampValue:gestureBeginTilt + tiltDegrees min:0 max:90]];
     }
     else
     {
@@ -575,11 +574,11 @@
     [touchPointModelview multiplyMatrix:touchPointPinch];
     [touchPointModelview multiplyMatrix:touchPointRotation];
 
-    NSDictionary* params = [self viewingParametersForModelview:touchPointModelview rollDegrees:_roll];
+    NSDictionary* params = [self viewingParametersForModelview:touchPointModelview rollDegrees:[self roll]];
     _eyePosition = [params objectForKey:WW_ORIGIN];
-    _heading = [[params objectForKey:WW_HEADING] doubleValue];
-    _tilt = [[params objectForKey:WW_TILT] doubleValue];
-    _roll = [[params objectForKey:WW_ROLL] doubleValue];
+    [self setHeading:[[params objectForKey:WW_HEADING] doubleValue]];
+    [self setTilt:[[params objectForKey:WW_TILT] doubleValue]];
+    [self setRoll:[[params objectForKey:WW_ROLL] doubleValue]];
 }
 
 - (WWVec4*) touchPointFor:(UIGestureRecognizer*)recognizer

@@ -16,6 +16,14 @@ static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
 @protocol WWNavigator <NSObject, WWDisposable>
 
+/// @name Navigator Attributes
+
+@property (nonatomic) double heading;
+
+@property (nonatomic) double tilt;
+
+@property (nonatomic) double roll;
+
 /// @name Getting a Navigator State Snapshot
 
 - (id<WWNavigatorState>) currentState;

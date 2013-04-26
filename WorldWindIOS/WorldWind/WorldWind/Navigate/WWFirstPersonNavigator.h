@@ -36,23 +36,11 @@
     double animBeginAltitude;
     double animEndAltitude;
     double animMidAltitude;
-    double animBeginHeading;
-    double animEndHeading;
-    double animBeginTilt;
-    double animEndTilt;
-    double animBeginRoll;
-    double animEndRoll;
 }
 
 /// @name Navigator Attributes
 
 @property (nonatomic) WWPosition* eyePosition;
-
-@property (nonatomic) double heading;
-
-@property (nonatomic) double tilt;
-
-@property (nonatomic) double roll;
 
 /// @name Initializing Navigators
 

@@ -28,12 +28,6 @@
     double animBeginRange;
     double animEndRange;
     double animMidRange;
-    double animBeginHeading;
-    double animEndHeading;
-    double animBeginTilt;
-    double animEndTilt;
-    double animBeginRoll;
-    double animEndRoll;
 }
 
 /// @name Navigator Attributes
@@ -41,12 +35,6 @@
 @property (nonatomic) WWPosition* lookAtPosition;
 
 @property (nonatomic) double range;
-
-@property (nonatomic) double heading;
-
-@property (nonatomic) double tilt;
-
-@property (nonatomic) double roll;
 
 /// @name Initializing Navigators
 
