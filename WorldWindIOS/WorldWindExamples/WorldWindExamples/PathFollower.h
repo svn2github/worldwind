@@ -106,7 +106,7 @@
 *
 * @position The position the navigator is animated to.
 */
-- (void) flyNavigatorToPosition:(WWPosition*)position;
+- (void) animateNavigatorToPosition:(WWPosition*)position;
 
 /**
 * Sets the World Wind view's navigator to the specified position immediately.

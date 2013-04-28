@@ -25,12 +25,12 @@
 #define LOCATION_REQUIRED_ACCURACY 100.0
 #define LOCATION_REQUIRED_AGE 2.0
 #define MARKER_VERTICAL_OFFSET 10.0
-#define NAVIGATOR_MIN_RADIUS 1000.0
+#define NAVIGATOR_REGION_RADIUS 1000.0
 
 typedef enum
 {
     TrackingControllerStateFirstLocation,
-    TrackingControllerStateWait,
+    TrackingControllerStateAnimating,
     TrackingControllerStateFollowLocation,
 } TrackingControllerState;
 
@@ -115,29 +115,52 @@ typedef enum
     [self stopObservingNavigator];
 }
 
-- (void) updateLocation:(CLLocation*)location forDate:(NSDate*)date
+- (void) forecastPosition:(CLLocation*)location forDate:(NSDate*)date
+{
+    if (currentPosition == nil)
+    {
+        // Set the current location to the initial location determined by Core Location, ignoring the CLLocation's
+        // altitude.
+        currentPosition = [[WWPosition alloc] initWithCLLocation:location altitude:0];
+    }
+    else
+    {
+        // Forecast the current location from the most recent location. Forecasting in a display link enables generation
+        // of intermediate locations at sub-second intervals between Core Location's 1-2 second updates.
+        WWGlobe* globe = [[_view sceneController] globe];
+        [WWPosition forecastPosition:location forDate:date onGlobe:globe outputPosition:forecastPosition];
+
+        // Smooth the forecast position by interpolating a fraction of the distance between the last position and the
+        // forecast position.
+        [WWPosition greatCircleInterpolate:currentPosition
+                               endLocation:forecastPosition
+                                    amount:FOLLOW_LOCATION_SMOOTHING
+                            outputLocation:currentPosition]; // Input position can be reused to store the output.
+    }
+}
+
+- (void) updateView:(WWPosition*)position
 {
     if (state == TrackingControllerStateFirstLocation)
     {
-        [self showFirstLocation:location];
+        [self animateNavigatorToPosition:position];
     }
     else if (state == TrackingControllerStateFollowLocation)
     {
-        [self followLocation:location forDate:date];
+        // Update the navigator to show the current position. This change is applied without animation, and does not
+        // affect the navigator's distance to the current position.
+        [self setNavigatorToPosition:position];
     }
 
     // Update the marker to reflect the current position. Set the marker's latitude and longitude to the current
     // position's and set its altitude to a constant offset above the surface.
-    [[marker position] setLocation:currentPosition altitude:MARKER_VERTICAL_OFFSET];
+    [[marker position] setLocation:position altitude:MARKER_VERTICAL_OFFSET];
     [marker setAltitudeMode:WW_ALTITUDE_MODE_RELATIVE_TO_GROUND];
     [_view drawView];
 }
 
-- (void) showFirstLocation:(CLLocation*)location
+- (void) animateNavigatorToPosition:(WWPosition*)position
 {
-    // Set the current location to the initial location determined by Core Location, ignoring the CLLocation's altitude.
-    [currentPosition setCLLocation:location altitude:0];
-
     if (_enabled)
     {
         // Animate the navigator to the first location, zooming in if necessary. During this animation the location
@@ -146,12 +169,13 @@ typedef enum
         // notifications while initiating the animation to distinguish between this animation and animations started by
         // another component.
         [self stopObservingNavigator];
-        double radius = MAX([location horizontalAccuracy], NAVIGATOR_MIN_RADIUS);
-        [[_view navigator] animateToRegionWithCenter:currentPosition radius:radius overDuration:WWNavigatorDurationDefault];
+        [[_view navigator] animateToRegionWithCenter:position
+                                              radius:NAVIGATOR_REGION_RADIUS
+                                        overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator];
 
         // Designate that the tracking controller is waiting to start following.
-        state = TrackingControllerStateWait;
+        state = TrackingControllerStateAnimating;
     }
     else
     {
@@ -159,27 +183,13 @@ typedef enum
         // provides an initial location for the marker and the navigator.
         [self stopUpdatingLocation];
         [self stopObservingNavigator];
-        [[_view navigator] animateToPosition:currentPosition overDuration:FIRST_LOCATION_DURATION];
+        [[_view navigator] animateToPosition:position overDuration:FIRST_LOCATION_DURATION];
     }
 }
 
-- (void) followLocation:(CLLocation*)location forDate:(NSDate*)date
+- (void) setNavigatorToPosition:(WWPosition*)position
 {
-    // Forecast the current location from the most recent location. Forecasting in a display link enables generation
-    // of intermediate locations at sub-second intervals between Core Location's 1-2 second updates.
-    WWGlobe* globe = [[_view sceneController] globe];
-    [WWPosition forecastPosition:location forDate:date onGlobe:globe outputPosition:forecastPosition];
-
-    // Smooth the forecast position by interpolating a fraction of the distance between the last position and the
-    // forecast position.
-    [WWPosition greatCircleInterpolate:currentPosition
-                           endLocation:forecastPosition
-                                amount:FOLLOW_LOCATION_SMOOTHING
-                        outputLocation:currentPosition]; // Input position can be reused to store the output.
-
-    // Update the navigator to show the current position. This change is applied without animation, and does not
-    // affect the navigator's distance to the current position.
-    [[_view navigator] setToPosition:currentPosition];
+    [[_view navigator] setToRegionWithCenter:position radius:NAVIGATOR_REGION_RADIUS];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -201,6 +211,7 @@ typedef enum
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 
         mostRecentLocation = nil;
+        currentPosition = nil;
         updatingLocation = YES;
     }
 }
@@ -259,7 +270,8 @@ typedef enum
         if (mostRecentLocation != nil)
         {
             NSDate* now = [NSDate date];
-            [self updateLocation:mostRecentLocation forDate:now];
+            [self forecastPosition:mostRecentLocation forDate:now];
+            [self updateView:currentPosition];
         }
     }
     else
@@ -282,7 +294,7 @@ typedef enum
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleNavigatorNotification:)
                                                      name:nil
-                                                   object:[_view navigator]];
+                                                   object:nil];
         observingNavigator = YES;
     }
 }
@@ -298,20 +310,44 @@ typedef enum
 
 - (void) handleNavigatorNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
+    NSString* name = [notification name];
+
+    if ([name isEqualToString:WW_NAVIGATOR_CHANGED])
     {
-        if (state == TrackingControllerStateWait)
-        {
-            state = TrackingControllerStateFollowLocation;
-        }
+        [self navigatorChanged];
+    }
+    else if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
+    {
+        [self navigatorAnimationEnded];
     }
     else if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
             || [[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
             || [[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
     {
-        [self setEnabled:NO];
-        [self stopAll]; // Stop all services explicitly if we're getting an initial location.
+        [self navigatorInterrupted];
     }
+}
+
+- (void) navigatorChanged
+{
+    if (state == TrackingControllerStateAnimating)
+    {
+        [self animateNavigatorToPosition:currentPosition];
+    }
+}
+
+- (void) navigatorAnimationEnded
+{
+    if (state == TrackingControllerStateAnimating)
+    {
+        state = TrackingControllerStateFollowLocation;
+    }
+}
+
+- (void) navigatorInterrupted
+{
+    [self setEnabled:NO];
+    [self stopAll]; // Stop all services explicitly if we're getting an initial location.
 }
 
 @end

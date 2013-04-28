@@ -23,7 +23,7 @@
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
-#define NAVIGATOR_RANGE 30000.0
+#define NAVIGATOR_LOOK_AT_RANGE 30000.0
 #define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation PathFollower
@@ -71,7 +71,7 @@
 
     if (enabled)
     {
-        [self flyNavigatorToPosition:currentPosition];
+        [self animateNavigatorToPosition:currentPosition];
         [self startObservingNavigator]; // Observe after the animation begins to ignore its begin notification.
     }
     else
@@ -171,8 +171,7 @@
 //-- Navigator Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-
-- (void) flyNavigatorToPosition:(WWPosition*)position
+- (void) animateNavigatorToPosition:(WWPosition*)position
 {
     id<WWNavigator> navigator = [_wwv navigator];
 
@@ -190,7 +189,7 @@
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
         WWPosition* lookAtPos = [[WWPosition alloc] initWithLocation:position altitude:0]; // Ignore the path position's altitude.
         [lookAtNav animateToLookAtPosition:lookAtPos
-                                     range:NAVIGATOR_RANGE
+                                     range:NAVIGATOR_LOOK_AT_RANGE
                             headingDegrees:[lookAtNav heading]
                                tiltDegrees:[lookAtNav tilt]
                                rollDegrees:0
@@ -216,6 +215,7 @@
     {
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
         [[lookAtNav lookAtPosition] setLocation:position]; // Ignore the path position's altitude.
+        [lookAtNav setRange:NAVIGATOR_LOOK_AT_RANGE];
     }
     else
     {
@@ -228,7 +228,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleNavigatorNotification:)
                                                  name:nil
-                                               object:[_wwv navigator]];
+                                               object:nil];
 }
 
 - (void) stopObservingNavigator
@@ -238,16 +238,42 @@
 
 - (void) handleNavigatorNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
+    NSString* name = [notification name];
+
+    if ([name isEqualToString:WW_NAVIGATOR_CHANGED])
     {
-        [self startDisplayLink];
+        [self navigatorChanged];
     }
-    else if ([[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
-            || [[notification name] isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
-            || [[notification name] isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    else if ([name isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
     {
-        [self setEnabled:NO];
+        [self navigatorAnimationEnded];
     }
+    else if ([name isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
+            || [name isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
+            || [name isEqualToString:WW_NAVIGATOR_GESTURE_RECOGNIZED])
+    {
+        [self navigatorInterrupted];
+    }
+}
+
+- (void) navigatorChanged
+{
+    if (displayLink == nil)
+    {
+        [self stopObservingNavigator];
+        [self animateNavigatorToPosition:currentPosition];
+        [self startObservingNavigator];
+    }
+}
+
+- (void) navigatorAnimationEnded
+{
+    [self startDisplayLink];
+}
+
+- (void) navigatorInterrupted
+{
+    [self setEnabled:NO];
 }
 
 @end

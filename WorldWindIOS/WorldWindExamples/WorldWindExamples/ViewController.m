@@ -7,6 +7,7 @@
 
 #import "ViewController.h"
 #import "LayerListController.h"
+#import "NavigatorSettingsController.h"
 #import "TrackingController.h"
 #import "AnyGestureRecognizer.h"
 #import "PathFollower.h"
@@ -37,10 +38,13 @@
 @implementation ViewController
 {
     UIBarButtonItem* layerButton;
+    UIBarButtonItem* navigatorButton;
     UIBarButtonItem* trackButton;
     UIBarButtonItem* flightButton;
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
+    NavigatorSettingsController* navigatorSettingsController;
+    UIPopoverController* navigatorSettingsPopoverController;
     TrackingController* trackingController;
     PathFollower* pathFollower;
     UISearchBar* searchBar;
@@ -234,14 +238,20 @@
 
     [self.view addSubview:_toolbar];
 
-    self->layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
-                                                         style:UIBarButtonItemStylePlain
-                                                        target:self action:@selector(handleLayerButtonTap)];
+    layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
+                                                   style:UIBarButtonItemStylePlain
+                                                  target:self action:@selector(handleLayerButtonTap)];
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
     UINavigationController* navController = [[UINavigationController alloc]
             initWithRootViewController:layerListController];
-    self->layerListPopoverController =
-            [[UIPopoverController alloc] initWithContentViewController:navController];
+    layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+
+    navigatorButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"12-eye"]
+                                                       style:UIBarButtonItemStylePlain
+                                                      target:self action:@selector(handleNavigatorButtonTap)];
+    navigatorSettingsController = [[NavigatorSettingsController alloc] initWithWorldWindView:_wwv];
+    navController = [[UINavigationController alloc] initWithRootViewController:navigatorSettingsController];
+    navigatorSettingsPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
     trackButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
                                                   target:self action:@selector(handleTrackButtonTap)];
@@ -263,11 +273,13 @@
     [fixedSpace1 setWidth:40];
 
     [_toolbar setItems:[NSArray arrayWithObjects:
-            self->layerButton,
+            layerButton,
             flexibleSpace1,
-            self->trackButton,
+            navigatorButton,
             fixedSpace1,
-            self->flightButton,
+            trackButton,
+            fixedSpace1,
+            flightButton,
             flexibleSpace2,
             searchBarButtonItem,
             nil]];
@@ -275,8 +287,14 @@
 
 - (void) handleLayerButtonTap
 {
-    [layerListPopoverController presentPopoverFromBarButtonItem:self->layerButton
+    [layerListPopoverController presentPopoverFromBarButtonItem:layerButton
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) handleNavigatorButtonTap
+{
+    [navigatorSettingsPopoverController presentPopoverFromBarButtonItem:navigatorButton
+                                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleTrackButtonTap
