@@ -428,8 +428,8 @@
 *
 * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
 * results are undefined. For details on viewing matrices, see
-* [WWMatrix multiplyFirstPersonModelview:headingDegrees:tiltDegrees:rollDegrees:onGlobe:]
-* [WWMatrix multiplyLookAtModelview:range:headingDegrees:tiltDegrees:rollDegrees:onGlobe:].
+* [WWMatrix multiplyByFirstPersonModelview:headingDegrees:tiltDegrees:rollDegrees:onGlobe:]
+* [WWMatrix multiplyByLookAtModelview:range:headingDegrees:tiltDegrees:rollDegrees:onGlobe:].
 *
 * TODO: Provide an overloaded version that does not require a known roll.
 *
