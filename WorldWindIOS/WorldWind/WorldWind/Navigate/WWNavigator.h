@@ -10,7 +10,7 @@
 
 @protocol WWNavigatorState;
 @class WorldWindView;
-@class WWLocation;
+@class WWPosition;
 
 static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
@@ -28,10 +28,14 @@ static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
 - (id<WWNavigatorState>) currentState;
 
-/// @name Animating to a Location of Interest
+/// @name Setting the Location of Interest
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration;
+- (void) setToPosition:(WWPosition*)position;
 
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
+- (void) setToRegionWithCenter:(WWPosition*)center radius:(double)radius;
+
+- (void) animateToPosition:(WWPosition*)position overDuration:(NSTimeInterval)duration;
+
+- (void) animateToRegionWithCenter:(WWPosition*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
 
 @end

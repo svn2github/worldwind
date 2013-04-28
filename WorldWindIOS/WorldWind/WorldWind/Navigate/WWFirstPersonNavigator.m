@@ -101,6 +101,52 @@
     return [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
 }
 
+- (NSDictionary*) viewingParametersForLookAt:(WWPosition*)lookAt range:(double*)range rollDegrees:(double)roll
+{
+    WWGlobe* globe = [[[self view] sceneController] globe];
+    WWVec4* lookAtPoint = [[WWVec4 alloc] initWithZeroVector];
+    id<WWNavigatorState> currentState = [self currentState];
+
+    if ([globe intersectWithRay:[currentState forwardRay] result:lookAtPoint])
+    {
+        WWMatrix* modelview = [[WWMatrix alloc] initWithMatrix:[currentState modelview]];
+        NSDictionary* params = [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
+
+        if (range != nil)
+        {
+            [params setValue:@(*range) forKey:WW_RANGE];
+        }
+
+        [modelview setToIdentity];
+        [modelview multiplyByLookAtModelview:lookAt
+                                       range:[[params objectForKey:WW_RANGE] doubleValue]
+                              headingDegrees:[[params objectForKey:WW_HEADING] doubleValue]
+                                 tiltDegrees:[[params objectForKey:WW_TILT] doubleValue]
+                                 rollDegrees:roll
+                                     onGlobe:globe];
+
+        WWVec4* eyePoint = [modelview extractEyePoint];
+        return [modelview extractViewingParameters:eyePoint forRollDegrees:roll onGlobe:globe];
+    }
+    else
+    {
+        WWPosition* eyePos = [[WWPosition alloc] initWithLocation:lookAt altitude:[_eyePosition altitude]];
+
+        if (range != nil)
+        {
+            double altitude = [lookAt altitude] + *range;
+            [_eyePosition setAltitude:altitude];
+        }
+
+        return [NSDictionary dictionaryWithObjectsAndKeys:
+                eyePos, WW_ORIGIN,
+                @([self heading]), WW_HEADING,
+                @(0), WW_TILT,
+                @(roll), WW_ROLL,
+                nil];
+    }
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Getting a Navigator State Snapshot --//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -120,14 +166,50 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Animating to a Location of Interest --//
+//-- Setting the Location of Interest --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
+- (void) setToPosition:(WWPosition*)position
 {
-    if (location == nil)
+    if (position == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
+    }
+
+    NSDictionary* params = [self viewingParametersForLookAt:position range:nil rollDegrees:[self roll]];
+    _eyePosition = [params objectForKey:WW_ORIGIN];
+    [self setHeading:[[params objectForKey:WW_HEADING] doubleValue]];
+    [self setTilt:[[params objectForKey:WW_TILT] doubleValue]];
+    [self setRoll:[[params objectForKey:WW_ROLL] doubleValue]];
+}
+
+- (void) setToRegionWithCenter:(WWPosition*)center radius:(double)radius
+{
+    if (center == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
+    }
+
+    CGRect viewport = [[self view] viewport];
+    double range = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+
+    NSDictionary* params = [self viewingParametersForLookAt:center range:&range rollDegrees:[self roll]];
+    _eyePosition = [params objectForKey:WW_ORIGIN];
+    [self setHeading:[[params objectForKey:WW_HEADING] doubleValue]];
+    [self setTilt:[[params objectForKey:WW_TILT] doubleValue]];
+    [self setRoll:[[params objectForKey:WW_ROLL] doubleValue]];
+}
+
+- (void) animateToPosition:(WWPosition*)position overDuration:(NSTimeInterval)duration
+{
+    if (position == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
     }
 
     if (duration < 0)
@@ -135,16 +217,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:location altitude:[_eyePosition altitude]];
-
-    [self gotoEyePosition:eyePosition
-           headingDegrees:[self heading]
-              tiltDegrees:[self tilt]
-              rollDegrees:[self roll]
-             overDuration:duration];
+    NSDictionary* params = [self viewingParametersForLookAt:position range:nil rollDegrees:[self roll]];
+    [self animateToEyePosition:[params objectForKey:WW_ORIGIN]
+                headingDegrees:[[params objectForKey:WW_HEADING] doubleValue]
+                   tiltDegrees:[[params objectForKey:WW_TILT] doubleValue]
+                   rollDegrees:[[params objectForKey:WW_ROLL] doubleValue]
+                  overDuration:duration];
 }
 
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
+- (void) animateToRegionWithCenter:(WWPosition*)center radius:(double)radius overDuration:(NSTimeInterval)duration
 {
     if (center == nil)
     {
@@ -162,18 +243,18 @@
     }
 
     CGRect viewport = [[self view] viewport];
-    double eyeAltitude = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
-    WWPosition* eyePosition = [[WWPosition alloc] initWithLocation:center altitude:eyeAltitude];
+    double range = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
 
-    [self gotoEyePosition:eyePosition
-           headingDegrees:[self heading]
-              tiltDegrees:[self tilt]
-              rollDegrees:[self roll]
-             overDuration:duration];
+    NSDictionary* params = [self viewingParametersForLookAt:center range:&range rollDegrees:[self roll]];
+    [self animateToEyePosition:[params objectForKey:WW_ORIGIN]
+                headingDegrees:[[params objectForKey:WW_HEADING] doubleValue]
+                   tiltDegrees:[[params objectForKey:WW_TILT] doubleValue]
+                   rollDegrees:[[params objectForKey:WW_ROLL] doubleValue]
+                  overDuration:duration];
 }
 
-- (void) gotoEyePosition:(WWPosition*)eyePosition
-            overDuration:(NSTimeInterval)duration
+- (void) animateToEyePosition:(WWPosition*)eyePosition
+                 overDuration:(NSTimeInterval)duration
 {
     if (eyePosition == nil)
     {
@@ -185,18 +266,18 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    [self gotoEyePosition:eyePosition
-           headingDegrees:[self heading]
-              tiltDegrees:[self tilt]
-              rollDegrees:[self roll]
-             overDuration:duration];
+    [self animateToEyePosition:eyePosition
+                headingDegrees:[self heading]
+                   tiltDegrees:[self tilt]
+                   rollDegrees:[self roll]
+                  overDuration:duration];
 }
 
-- (void) gotoEyePosition:(WWPosition*)eyePosition
-          headingDegrees:(double)heading
-             tiltDegrees:(double)tilt
-             rollDegrees:(double)roll
-            overDuration:(NSTimeInterval)duration
+- (void) animateToEyePosition:(WWPosition*)eyePosition
+               headingDegrees:(double)heading
+                  tiltDegrees:(double)tilt
+                  rollDegrees:(double)roll
+                 overDuration:(NSTimeInterval)duration
 {
     if (eyePosition == nil)
     {

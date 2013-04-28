@@ -179,22 +179,22 @@
     if ([navigator isKindOfClass:[WWFirstPersonNavigator class]])
     {
         WWFirstPersonNavigator* firstPersonNav = (WWFirstPersonNavigator*) navigator;
-        [firstPersonNav gotoEyePosition:position
-                         headingDegrees:[firstPersonNav heading]
-                            tiltDegrees:[firstPersonNav tilt]
-                            rollDegrees:0
-                           overDuration:WWNavigatorDurationDefault];
+        [firstPersonNav animateToEyePosition:position
+                              headingDegrees:[firstPersonNav heading]
+                                 tiltDegrees:[firstPersonNav tilt]
+                                 rollDegrees:0
+                                overDuration:WWNavigatorDurationDefault];
     }
     else if ([navigator isKindOfClass:[WWLookAtNavigator class]])
     {
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
-        WWPosition* lookAtPos = [[WWPosition alloc] initWithLocation:position altitude:0];
-        [lookAtNav gotoLookAtPosition:lookAtPos
-                                range:NAVIGATOR_RANGE
-                       headingDegrees:[lookAtNav heading]
-                          tiltDegrees:[lookAtNav tilt]
-                          rollDegrees:0
-                         overDuration:WWNavigatorDurationDefault];
+        WWPosition* lookAtPos = [[WWPosition alloc] initWithLocation:position altitude:0]; // Ignore the path position's altitude.
+        [lookAtNav animateToLookAtPosition:lookAtPos
+                                     range:NAVIGATOR_RANGE
+                            headingDegrees:[lookAtNav heading]
+                               tiltDegrees:[lookAtNav tilt]
+                               rollDegrees:0
+                              overDuration:WWNavigatorDurationDefault];
     }
     else
     {
@@ -215,7 +215,7 @@
     else if ([navigator isKindOfClass:[WWLookAtNavigator class]])
     {
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
-        [[lookAtNav lookAtPosition] setLocation:position];
+        [[lookAtNav lookAtPosition] setLocation:position]; // Ignore the path position's altitude.
     }
     else
     {

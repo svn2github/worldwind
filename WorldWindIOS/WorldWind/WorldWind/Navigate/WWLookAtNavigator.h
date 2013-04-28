@@ -42,18 +42,18 @@
 
 - (WWLookAtNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
 
-/// @name Animating to a Location of Interest
+/// @name Setting the Location of Interest
 
-- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
-                      range:(double)range
-               overDuration:(NSTimeInterval)duration;
+- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
+                           range:(double)range
+                    overDuration:(NSTimeInterval)duration;
 
-- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
-                      range:(double)range
-             headingDegrees:(double)heading
-                tiltDegrees:(double)tilt
-                rollDegrees:(double)roll
-               overDuration:(NSTimeInterval)duration;
+- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
+                           range:(double)range
+                  headingDegrees:(double)heading
+                     tiltDegrees:(double)tilt
+                     rollDegrees:(double)roll
+                    overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 

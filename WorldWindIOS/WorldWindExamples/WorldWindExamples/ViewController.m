@@ -347,12 +347,12 @@
 {
     if (placemarks != nil && [placemarks count] > 0)
     {
-        CLPlacemark* lastPlacemark = [placemarks objectAtIndex:0];
-        CLRegion* region = [lastPlacemark region];
-        WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
+        CLPlacemark* firstPlacemark = [placemarks objectAtIndex:0];
+        CLRegion* region = [firstPlacemark region];
+        WWPosition* center = [[WWPosition alloc] initWithCLCoordinate:[region center] altitude:0];
         double radius = [region radius];
 
-        [[_wwv navigator] gotoRegionWithCenter:center radius:radius overDuration:WWNavigatorDurationDefault];
+        [[_wwv navigator] animateToRegionWithCenter:center radius:radius overDuration:WWNavigatorDurationDefault];
     }
     else
     {

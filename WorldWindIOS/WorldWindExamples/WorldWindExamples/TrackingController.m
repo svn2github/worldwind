@@ -10,7 +10,7 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
-#import "WorldWind/Navigate/WWLookAtNavigator.h"
+#import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -25,7 +25,7 @@
 #define LOCATION_REQUIRED_ACCURACY 100.0
 #define LOCATION_REQUIRED_AGE 2.0
 #define MARKER_VERTICAL_OFFSET 10.0
-#define NAVIGATOR_MAX_RANGE 10000.0
+#define NAVIGATOR_MIN_RADIUS 1000.0
 
 typedef enum
 {
@@ -135,8 +135,8 @@ typedef enum
 
 - (void) showFirstLocation:(CLLocation*)location
 {
-    // Set the current location to the initial location determined by Core Location.
-    [currentPosition setCLPosition:location];
+    // Set the current location to the initial location determined by Core Location, ignoring the CLLocation's altitude.
+    [currentPosition setCLLocation:location altitude:0];
 
     if (_enabled)
     {
@@ -145,10 +145,9 @@ typedef enum
         // after the animation completes, and the state changes to TrackingControllerStateFollowing. Suppress navigator
         // notifications while initiating the animation to distinguish between this animation and animations started by
         // another component.
-        WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) [_view navigator];
-        double range = MIN(NAVIGATOR_MAX_RANGE, [lookAtNav range]);
         [self stopObservingNavigator];
-        [lookAtNav gotoLookAtPosition:currentPosition range:range overDuration:WWNavigatorDurationDefault];
+        double radius = MAX([location horizontalAccuracy], NAVIGATOR_MIN_RADIUS);
+        [[_view navigator] animateToRegionWithCenter:currentPosition radius:radius overDuration:WWNavigatorDurationDefault];
         [self startObservingNavigator];
 
         // Designate that the tracking controller is waiting to start following.
@@ -160,7 +159,7 @@ typedef enum
         // provides an initial location for the marker and the navigator.
         [self stopUpdatingLocation];
         [self stopObservingNavigator];
-        [[_view navigator] gotoLocation:currentPosition overDuration:FIRST_LOCATION_DURATION];
+        [[_view navigator] animateToPosition:currentPosition overDuration:FIRST_LOCATION_DURATION];
     }
 }
 
@@ -180,8 +179,7 @@ typedef enum
 
     // Update the navigator to show the current position. This change is applied without animation, and does not
     // affect the navigator's distance to the current position.
-    WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) [_view navigator];
-    [[lookAtNav lookAtPosition] setLocation:currentPosition];
+    [[_view navigator] setToPosition:currentPosition];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

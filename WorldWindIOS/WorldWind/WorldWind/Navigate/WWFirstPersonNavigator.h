@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Navigate/WWAbstractNavigator.h"
 
+@class WWLocation;
 @class WWVec4;
-@class WWPosition;
 
 @interface WWFirstPersonNavigator : WWAbstractNavigator <UIGestureRecognizerDelegate>
 {
@@ -48,16 +48,16 @@
 
 - (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
 
-/// @name Animating to a Location of Interest
+/// @name Setting the Location of Interest
 
-- (void) gotoEyePosition:(WWPosition*)eyePosition
-            overDuration:(NSTimeInterval)duration;
+- (void) animateToEyePosition:(WWPosition*)eyePosition
+                 overDuration:(NSTimeInterval)duration;
 
-- (void) gotoEyePosition:(WWPosition*)eyePosition
-          headingDegrees:(double)heading
-             tiltDegrees:(double)tilt
-             rollDegrees:(double)roll
-            overDuration:(NSTimeInterval)duration;
+- (void) animateToEyePosition:(WWPosition*)eyePosition
+               headingDegrees:(double)heading
+                  tiltDegrees:(double)tilt
+                  rollDegrees:(double)roll
+                 overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 

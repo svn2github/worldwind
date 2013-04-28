@@ -116,7 +116,6 @@
     }
 
     return [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
-
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -139,14 +138,41 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Animating to a Location of Interest --//
+//-- Setting the Location of Interest --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
+- (void) setToPosition:(WWPosition*)position
 {
-    if (location == nil)
+    if (position == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
+    }
+
+    [_lookAtPosition setPosition:position];
+}
+
+- (void) setToRegionWithCenter:(WWPosition*)center radius:(double)radius
+{
+    if (center == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Center is nil")
+    }
+
+    if (radius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Radius is invalid");
+    }
+
+    CGRect viewport = [[self view] viewport];
+    [_lookAtPosition setPosition:center];
+    _range = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+}
+
+- (void) animateToPosition:(WWPosition*)position overDuration:(NSTimeInterval)duration
+{
+    if (position == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
     }
 
     if (duration < 0)
@@ -154,17 +180,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    WWPosition* lookAtPosition = [[WWPosition alloc] initWithLocation:location altitude:0];
-
-    [self gotoLookAtPosition:lookAtPosition
-                       range:_range
-              headingDegrees:[self heading]
-                 tiltDegrees:[self tilt]
-                 rollDegrees:[self roll]
-                overDuration:duration];
+    [self animateToLookAtPosition:position
+                            range:_range
+                   headingDegrees:[self heading]
+                      tiltDegrees:[self tilt]
+                      rollDegrees:[self roll]
+                     overDuration:duration];
 }
 
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
+- (void) animateToRegionWithCenter:(WWPosition*)center radius:(double)radius overDuration:(NSTimeInterval)duration
 {
     if (center == nil)
     {
@@ -183,19 +207,18 @@
 
     CGRect viewport = [[self view] viewport];
     double range = [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
-    WWPosition* lookAtPosition = [[WWPosition alloc] initWithLocation:center altitude:0];
 
-    [self gotoLookAtPosition:lookAtPosition
-                       range:range
-              headingDegrees:[self heading]
-                 tiltDegrees:[self tilt]
-                 rollDegrees:[self roll]
-                overDuration:duration];
+    [self animateToLookAtPosition:center
+                            range:range
+                   headingDegrees:[self heading]
+                      tiltDegrees:[self tilt]
+                      rollDegrees:[self roll]
+                     overDuration:duration];
 }
 
-- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
-                      range:(double)range
-               overDuration:(NSTimeInterval)duration
+- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
+                           range:(double)range
+                    overDuration:(NSTimeInterval)duration
 {
     if (lookAtPosition == nil)
     {
@@ -207,20 +230,20 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Duration is invalid")
     }
 
-    [self gotoLookAtPosition:lookAtPosition
-                       range:range
-              headingDegrees:[self heading]
-                 tiltDegrees:[self tilt]
-                 rollDegrees:[self roll]
-                overDuration:duration];
+    [self animateToLookAtPosition:lookAtPosition
+                            range:range
+                   headingDegrees:[self heading]
+                      tiltDegrees:[self tilt]
+                      rollDegrees:[self roll]
+                     overDuration:duration];
 }
 
-- (void) gotoLookAtPosition:(WWPosition*)lookAtPosition
-                      range:(double)range
-             headingDegrees:(double)heading
-                tiltDegrees:(double)tilt
-                rollDegrees:(double)roll
-               overDuration:(NSTimeInterval)duration;
+- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
+                           range:(double)range
+                  headingDegrees:(double)heading
+                     tiltDegrees:(double)tilt
+                     rollDegrees:(double)roll
+                    overDuration:(NSTimeInterval)duration
 {
 
     if (lookAtPosition == nil)

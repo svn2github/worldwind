@@ -124,15 +124,25 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Animating to a Location of Interest --//
+//-- Setting the Location of Interest --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) gotoLocation:(WWLocation*)location overDuration:(NSTimeInterval)duration
+- (void) setToPosition:(WWPosition*)position
 {
     // Must be implemented by subclass
 }
 
-- (void) gotoRegionWithCenter:(WWLocation*)center radius:(double)radius overDuration:(NSTimeInterval)duration
+- (void) setToRegionWithCenter:(WWPosition*)center radius:(double)radius
+{
+    // Must be implemented by subclass
+}
+
+- (void) animateToPosition:(WWPosition*)position overDuration:(NSTimeInterval)duration
+{
+    // Must be implemented by subclass
+}
+
+- (void) animateToRegionWithCenter:(WWPosition*)center radius:(double)radius overDuration:(NSTimeInterval)duration
 {
     // Must be implemented by subclass
 }
