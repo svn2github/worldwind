@@ -55,6 +55,20 @@
     return self;
 }
 
+- (WWPosition*) initWithCLLocation:(CLLocation*)location altitude:(double)metersAltitude
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    self = [super initWithCLLocation:location]; // Let the superclass initialize latitude and longitude.
+
+    _altitude = metersAltitude;
+
+    return self;
+}
+
 - (WWPosition*) initWithCLPosition:(CLLocation*)location
 {
     if (location == nil)
@@ -65,6 +79,15 @@
     self = [super initWithCLLocation:location]; // Let the superclass initialize latitude and longitude.
 
     _altitude = [location altitude];
+
+    return self;
+}
+
+- (WWPosition*) initWithCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude
+{
+    self = [super initWithCLCoordinate:locationCoordinate]; // Let the superclass initialize latitude and longitude.
+
+    _altitude = metersAltitude;
 
     return self;
 }
@@ -115,6 +138,20 @@
     return self;
 }
 
+- (WWPosition*) setCLLocation:(CLLocation*)location altitude:(double)metersAltitude
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    [super setCLLocation:location]; // Let the superclass set the latitude and longitude.
+
+    _altitude = metersAltitude;
+
+    return self;
+}
+
 - (WWPosition*) setCLPosition:(CLLocation*)location
 {
     if (location == nil)
@@ -125,6 +162,15 @@
     [super setCLLocation:location]; // Let the superclass set the latitude and longitude.
 
     _altitude = [location altitude];
+
+    return self;
+}
+
+- (WWPosition*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude
+{
+    [super setCLCoordinate:locationCoordinate]; // Let the superclass set the latitude and longitude.
+
+    _altitude = metersAltitude;
 
     return self;
 }
