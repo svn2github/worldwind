@@ -111,18 +111,14 @@
     {
         WWMatrix* modelview = [[WWMatrix alloc] initWithMatrix:[currentState modelview]];
         NSDictionary* params = [modelview extractViewingParameters:lookAtPoint forRollDegrees:roll onGlobe:globe];
-
-        if (range != nil)
-        {
-            [params setValue:@(*range) forKey:WW_RANGE];
-        }
+        double lookAtRange = (range != NULL ? *range : [[params valueForKey:WW_RANGE] doubleValue]);
 
         [modelview setToIdentity];
         [modelview multiplyByLookAtModelview:lookAt
-                                       range:[[params objectForKey:WW_RANGE] doubleValue]
+                                       range:lookAtRange
                               headingDegrees:[[params objectForKey:WW_HEADING] doubleValue]
                                  tiltDegrees:[[params objectForKey:WW_TILT] doubleValue]
-                                 rollDegrees:roll
+                                 rollDegrees:[[params objectForKey:WW_ROLL] doubleValue]
                                      onGlobe:globe];
 
         WWVec4* eyePoint = [modelview extractEyePoint];
@@ -130,13 +126,9 @@
     }
     else
     {
-        WWPosition* eyePos = [[WWPosition alloc] initWithLocation:lookAt altitude:[_eyePosition altitude]];
-
-        if (range != nil)
-        {
-            double altitude = [lookAt altitude] + *range;
-            [_eyePosition setAltitude:altitude];
-        }
+        WWLocation* eyeLocation = lookAt;
+        double eyeAltitude = (range != NULL ? ([lookAt altitude] + *range) : [_eyePosition altitude]);
+        WWPosition* eyePos = [[WWPosition alloc] initWithLocation:eyeLocation altitude:eyeAltitude];
 
         return [NSDictionary dictionaryWithObjectsAndKeys:
                 eyePos, WW_ORIGIN,
