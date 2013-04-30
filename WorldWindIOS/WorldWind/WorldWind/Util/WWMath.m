@@ -28,24 +28,6 @@
     return value < min ? min : (value > max ? max : value);
 }
 
-double NormalizedDegreesLatitude(double degrees)
-{
-    double lat = fmod(degrees, 180);
-    return lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
-}
-
-double NormalizedDegreesLongitude(double degrees)
-{
-    double lon = fmod(degrees, 360);
-    return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
-}
-
-double NormalizedDegreesHeading(double degrees)
-{
-    double angle = fmod(degrees, 360);
-    return angle > 180 ? angle - 360 : angle < -180 ? 360 + angle : angle;
-}
-
 + (double) stepValue:(double)value min:(double)min max:(double)max
 {
     // When the min and max are equivalent this cannot distinguish between the two. In this case, this returns 0 if the
@@ -89,11 +71,48 @@ double NormalizedDegreesHeading(double degrees)
 
 + (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount
 {
-    // The form for interpolation below a + t*(b-a) requires one fewer operation than the standard form of
-    // (1-t)*a + t*b. Since both forms are straightforward to implement and understand, we have used the somewhat more
-    // efficient form below.
+    return (1 - amount) * value1 + amount * value2;
+}
 
-    return value1 + amount * (value2 - value1);
++ (double) interpolateDegrees1:(double)angle1 degrees2:(double)angle2 amount:(double)amount
+{
+    // Normalize the two angles to the range [-180, +180].
+    double a1 = [WWMath normalizeDegrees:angle1];
+    double a2 = [WWMath normalizeDegrees:angle2];
+
+    // If the shortest arc between the two angles crosses the -180/+180 degree boundary, add 360 degrees to the smaller
+    // of the two angles then interpolate.
+    if (a1 - a2 > 180)
+    {
+        a2 += 360;
+    }
+    else if (a1 - a2 < -180)
+    {
+        a1 += 360;
+    }
+
+    // Linearly interpolate between the two angles then normalize the interpolated result. Normalizing the result is
+    // necessary when we have added 360 degrees to either angle in order to interpolate along the shortest arc.
+    double a = (1 - amount) * a1 + amount * a2;
+    return [WWMath normalizeDegrees:a];
+}
+
++ (double) normalizeDegrees:(double)angle
+{
+    double a = fmod(angle, 360);
+    return a > 180 ? a - 360 : (a < -180 ? 360 + a : a);
+}
+
++ (double) normalizeDegreesLatitude:(double)latitude
+{
+    double lat = fmod(latitude, 180);
+    return lat > 90 ? 180 - lat : (lat < -90 ? -180 - lat : lat);
+}
+
++ (double) normalizeDegreesLongitude:(double)longitude
+{
+    double lon = fmod(longitude, 360);
+    return lon > 180 ? lon - 360 : (lon < -180 ? 360 + lon : lon);
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

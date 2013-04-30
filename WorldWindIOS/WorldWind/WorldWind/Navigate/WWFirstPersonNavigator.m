@@ -370,9 +370,9 @@
         [_eyePosition setAltitude:[WWMath interpolateValue1:animMidAltitude value2:animEndAltitude amount:secondHalfPct]];
     }
 
-    [self setHeading:[WWMath interpolateValue1:animBeginHeading value2:animEndHeading amount:animationPct]];
-    [self setTilt:[WWMath interpolateValue1:animBeginTilt value2:animEndTilt amount:animationPct]];
-    [self setRoll:[WWMath interpolateValue1:animBeginRoll value2:animEndRoll amount:animationPct]];
+    [self setHeading:[WWMath interpolateDegrees1:animBeginHeading degrees2:animEndHeading amount:animationPct]];
+    [self setTilt:[WWMath interpolateDegrees1:animBeginTilt degrees2:animEndTilt amount:animationPct]];
+    [self setRoll:[WWMath interpolateDegrees1:animBeginRoll degrees2:animEndRoll amount:animationPct]];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -448,7 +448,7 @@
         // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
         // corresponding change in heading, which has not been implemented here in favor of simplicity.
         double newLat = [WWMath clampValue:([_eyePosition latitude] + latDegrees) min:-90 max:90];
-        double newLon = NormalizedDegreesLongitude([_eyePosition longitude] + lonDegrees);
+        double newLon = [WWMath normalizeDegreesLongitude:[_eyePosition longitude] + lonDegrees];
         [_eyePosition setDegreesLatitude:newLat longitude:newLon];
     }
     else
@@ -554,7 +554,7 @@
 
         double headingDegrees = 90 * -translation.x / CGRectGetWidth(bounds);
         double tiltDegrees = 90 * translation.y / CGRectGetHeight(bounds);
-        [self setHeading:NormalizedDegreesHeading(gestureBeginHeading + headingDegrees)];
+        [self setHeading:[WWMath normalizeDegrees:gestureBeginHeading + headingDegrees]];
         [self setTilt:[WWMath clampValue:gestureBeginTilt + tiltDegrees min:0 max:90]];
     }
     else

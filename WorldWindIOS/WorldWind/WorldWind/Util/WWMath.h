@@ -30,7 +30,13 @@
 /// @name Commonly Used Math Operations
 
 /**
-* Adjusts a specified value to be within a specified minimum and maximum.
+* Adjusts a specified floating point value to be within a specified minimum and maximum.
+*
+* The returned value is undefined if min > max. Otherwise, this method's return value is equivalent to the following:
+*
+* - min - If value < min
+* - max - If value > max
+* - value - If min <= value <= max
 *
 * @param value The value to clamp.
 * @param min The minimum value to clamp to.
@@ -41,64 +47,122 @@
 + (double) clampValue:(double)value min:(double)min max:(double)max;
 
 /**
-* Clamps a specified angle to the range [-90, 90].
+* Returns a number between 0.0 and 1.0 indicating whether a specified floating point value is before, between or after
+* the specified min and max. Returns a linear interpolation of min and max when the value is between the two.
 *
-* @param degrees The angle to clamp, in degrees.
+* The returned number is undefined if min > max. Otherwise, the returned number is equivalent to the following:
 *
-* @return The clamped angle, in the range [-90, 90].
-*/
-extern double NormalizedDegreesLatitude(double degrees);
-
-/**
-* Clamps a specified angle to the range [-180, 180].
+* - 0.0 - If value < min
+* - 1.0 - If value > max
+* - Linear interpolation of min and max - If min <= value <= max
 *
-* @param degrees The angle to clamp, in degrees.
+* @param value The value to compare to the minimum and maximum.
+* @param min The minimum value.
+* @param max The maximum value.
 *
-* @return The clamped angle, in the range [-180, 180].
-*/
-extern double NormalizedDegreesLongitude(double degrees);
-
-/**
-* Clamps a specified heading angle to the range [-180, 180].
-*
-* @param degrees The angle to clamp, in degrees.
-*
-* @return The clamped angle, in the range [-180, 180].
-*/
-extern double NormalizedDegreesHeading(double degrees);
-
-/**
-* TODO
-*
-* @param value TODO
-* @param min TODO
-* @param max TODO
-*
-* @return TODO
+* @return A floating point number between 0.0 and 1.0, inclusive.
 */
 + (double) stepValue:(double)value min:(double)min max:(double)max;
 
 /**
-* TODO
+* Returns a number between 0.0 and 1.0 indicating whether a specified floating point value is before, between or after
+* the specified min and max. Returns a smooth interpolation of min and max when the value is between the two.
 *
-* @param value TODO
-* @param min TODO
-* @param max TODO
+* This method's smooth interpolation is similar to the interpolation performed by stepValue:min:max, except that the
+* first derivative of the returned number approaches zero as the value approaches the minimum or maximum. This causes
+* the returned number to ease-in and ease-out as the value travels between the minimum and maximum.
 *
-* @return TODO
+* The returned number is undefined if min > max. Otherwise, the returned number is equivalent to the following:
+*
+* - 0.0 - If value < min
+* - 1.0 - If value > max
+* - Smooth interpolation of min and max - If min <= value <= max
+*
+* @param value The value to compare to the minimum and maximum.
+* @param min The minimum value.
+* @param max The maximum value.
+*
+* @return A floating point number between 0.0 and 1.0, inclusive.
 */
 + (double) smoothStepValue:(double)value min:(double)min max:(double)max;
 
 /**
-* TODO
+* Returns the linear interpolation of two floating point numbers.
 *
-* @param value1 TODO
-* @param value2 TODO
-* @param amount TODO
+* The amount indicates the percentage of the two values, and should be a number between 0.0 and 1.0, inclusive. The
+* returned number is undefined if amount < 0.0 or if amount > 1.0. Otherwise, the returned number is a linear
+* interpolation of value1 and value2 appropriate for the specified amount. For example, if amount is 0.5 this returns a
+* number that is half way between value1 and value2.
 *
-* @return TODO
+* @param value1 The first value.
+* @param value2 The second value.
+* @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
+*
+* @return The linear interpolation of value1, and value2.
 */
 + (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount;
+
+/**
+* Returns the linear interpolation of two floating point angles.
+*
+* The amount indicates the percentage of the two angles, and should be a number between 0.0 and 1.0, inclusive. The
+* returned angles is undefined if amount < 0.0 or if amount > 1.0. Otherwise, the returned angles is a linear
+* interpolation of angle1 and angle2 appropriate for the specified amount. For example, if amount is 0.5 this returns a
+* number that is half way between angle1 and angle2.
+*
+* The two angles are assumed to represent angles and are interpolated along the shortest arc on the unit circle. For
+* example, interpolating 50% between -135 degrees and +135 degrees produces a result of +180 degrees. The returned angle
+* is normalized to the range from -180 to +180, inclusive.
+*
+* @param angle1 The first angle, in degrees.
+* @param angle2 The second angle, in degrees.
+* @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
+*
+* @return The linear interpolation of angle1, and angle2.
+*/
++ (double) interpolateDegrees1:(double)angle1 degrees2:(double)angle2 amount:(double)amount;
+
+/**
+* Normalizes a specified angle to the range from -180 to +180, inclusive
+*
+* This returns the specified angle if it's already in the normalized range. Otherwise, this returns an number
+* corresponding to the specified angle in the range from -180 to +180. For example, +181 degrees normalizes to -179, and
+* -181 degrees normalizes to +179. The normalized range represents a continuous range of angles, where -180 and +180
+* represent the same angle.
+*
+* @param angle The angle to normalize, in degrees.
+*
+* @return The normalized angle, in the range from -180 degrees to +180 degrees, inclusive.
+*/
++ (double) normalizeDegrees:(double)angle;
+
+/**
+* Normalizes a specified latitude to the latitude range from -90 to +90, inclusive.
+*
+* This returns the specified latitude if it's already in the normalized range. Otherwise, this returns a number
+* corresponding to the specified latitude in the range from -90 to +90. For example, +91 degrees normalizes to +89, and
+* -91 degrees normalizes to -89. The normalized range represents a mirrored range of latitudes, where latitudes greater
+* than +90 or less than -90 are treated as though they travel back towards 0.
+*
+* @param latitude The latitude to normalize, in degrees.
+*
+* @return The normalized latitude, in the range from -90 degrees to +90 degrees, inclusive.
+*/
++ (double) normalizeDegreesLatitude:(double)latitude;
+
+/**
+* Normalizes a specified angle to the range from -180 to +180, inclusive
+*
+* This returns the specified longitude if it's already in the normalized range. Otherwise, this returns an number
+* corresponding to the specified longitude in the range from -180 to +180. For example, +181 degrees normalizes to -179,
+* and -181 degrees normalizes to +179. The normalized range represents a continuous range of longitudes, where -180 and
+* +180 represent the same longitude.
+*
+* @param longitude The longitude to normalize, in degrees.
+*
+* @return The normalized longitude, in the range from -180 degrees to +180 degrees, inclusive.
+*/
++ (double) normalizeDegreesLongitude:(double)longitude;
 
 /// @name Computing Information About Shapes
 
@@ -189,7 +253,8 @@ extern double NormalizedDegreesHeading(double degrees);
 *
 * This method assumes the model of a screen composed of rectangular pixels, where pixel coordinates denote infinitely
 * thin space between pixels. The units of the returned size are in model coordinates per pixel (usually meters per
-* pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than zero.
+* pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than
+* zero.
 *
 * @param viewport The viewport rectangle, in screen coordinates.
 * @param distance The distance from the perspective eye point at which to determine pixel size, in model coordinates.
@@ -209,7 +274,8 @@ extern double NormalizedDegreesHeading(double degrees);
 *
 * @return The minimum eye distance, in model coordinates.
 *
-* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the radius is negative.
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the radius
+* is negative.
 */
 + (double) perspectiveFitDistance:(CGRect)viewport forObjectWithRadius:(double)radius;
 

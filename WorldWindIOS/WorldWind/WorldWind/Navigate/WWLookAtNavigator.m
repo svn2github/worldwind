@@ -349,9 +349,9 @@
         _range = [WWMath interpolateValue1:animMidRange value2:animEndRange amount:secondHalfPct];
     }
 
-    [self setHeading:[WWMath interpolateValue1:animBeginHeading value2:animEndHeading amount:animationPct]];
-    [self setTilt:[WWMath interpolateValue1:animBeginTilt value2:animEndTilt amount:animationPct]];
-    [self setRoll:[WWMath interpolateValue1:animBeginRoll value2:animEndRoll amount:animationPct]];
+    [self setHeading:[WWMath interpolateDegrees1:animBeginHeading degrees2:animEndHeading amount:animationPct]];
+    [self setTilt:[WWMath interpolateDegrees1:animBeginTilt degrees2:animEndTilt amount:animationPct]];
+    [self setRoll:[WWMath interpolateDegrees1:animBeginRoll degrees2:animEndRoll amount:animationPct]];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -417,7 +417,7 @@
         // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
         // corresponding change in heading, which has not been implemented here in favor of simplicity.
         double newLat = [WWMath clampValue:([_lookAtPosition latitude] + latDegrees) min:-90 max:90];
-        double newLon = NormalizedDegreesLongitude([_lookAtPosition longitude] + lonDegrees);
+        double newLon = [WWMath normalizeDegreesLongitude:[_lookAtPosition longitude] + lonDegrees];
         [_lookAtPosition setDegreesLatitude:newLat longitude:newLon];
     }
     else
@@ -480,7 +480,7 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         double headingDegrees = DEGREES(-[recognizer rotation]);
-        [self setHeading:NormalizedDegreesHeading(gestureBeginHeading + headingDegrees)];
+        [self setHeading:[WWMath normalizeDegrees:gestureBeginHeading + headingDegrees]];
     }
     else
     {

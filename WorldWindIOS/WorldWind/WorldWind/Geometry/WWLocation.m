@@ -279,8 +279,8 @@
 
         if (!isnan(lat2) && !isnan(lon2))
         {
-            latitude = NormalizedDegreesLatitude(DEGREES(lat2));
-            longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+            latitude = [WWMath normalizeDegreesLatitude:DEGREES(lat2)];
+            longitude = [WWMath normalizeDegreesLongitude:DEGREES(lon2)];
         }
     }
 
@@ -446,8 +446,8 @@
 
         if (!isnan(lat2) && !isnan(lon2))
         {
-            latitude = NormalizedDegreesLatitude(DEGREES(lat2));
-            longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+            latitude = [WWMath normalizeDegreesLatitude:DEGREES(lat2)];
+            longitude = [WWMath normalizeDegreesLongitude:DEGREES(lon2)];
         }
     }
 
@@ -597,8 +597,8 @@
 
         if (!isnan(lat2) && !isnan(lon2))
         {
-            latitude = NormalizedDegreesLatitude(DEGREES(lat2));
-            longitude = NormalizedDegreesLongitude(DEGREES(lon2));
+            latitude = [WWMath normalizeDegreesLatitude:DEGREES(lat2)];
+            longitude = [WWMath normalizeDegreesLongitude:DEGREES(lon2)];
         }
     }
 
