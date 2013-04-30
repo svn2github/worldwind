@@ -108,13 +108,19 @@ static int numIndices; // the number of indices defining the sphere
     [transformationMatrix setTranslation:[rpt x] y:[rpt y] z:[rpt z]];
 
     // Determine the actual radius in meters, which if screen dependent could change every frame.
-    double r = _radius;
+    radiusInMeters = _radius;
 
     if (radiusIsPixels)
     {
         double d = [[[dc navigatorState] eyePoint] distanceTo3:referencePoint];
         double ps = [[dc navigatorState] pixelSizeAtDistance:d];
-        r *= ps;
+        radiusInMeters *= ps;
+    }
+
+    double r = radiusInMeters;
+    if (r <= 0)
+    {
+        return;
     }
 
     // Scale the unit sphere to the actual radius.
@@ -122,6 +128,11 @@ static int numIndices; // the number of indices defining the sphere
 
     // Create the extent.
     [self setExtent:[[WWBoundingSphere alloc] initWithPoint:rpt radius:r]];
+}
+
+- (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc
+{
+    return radiusInMeters > 0;
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc

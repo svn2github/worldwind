@@ -28,6 +28,7 @@
 {
 @protected
     BOOL radiusIsPixels; // indicates whether the radius was specified in pixels
+    double radiusInMeters; // The radius used to draw the sphere, in meters
     NSString* verticesVboCacheKey; // the cache key for the VBO of vertices
     NSString* indicesVboCacheKey; // the cache key for the VBO of indices
 }
