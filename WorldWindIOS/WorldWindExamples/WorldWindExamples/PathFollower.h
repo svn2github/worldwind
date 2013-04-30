@@ -25,8 +25,14 @@
     NSTimeInterval beginTime;
     NSTimeInterval currentTime;
     WWPosition* currentPosition;
+    double currentHeading;
+    double currentIndex;
     WWSphere* marker;
     WWRenderableLayer* layer;
+    NSTimeInterval animBeginTime;
+    NSTimeInterval animEndTime;
+    NSTimeInterval animBeginHeading;
+    NSTimeInterval animEndHeading;
 }
 
 /// @name Attributes
@@ -89,29 +95,58 @@
 - (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink;
 
 /**
-* Computes the position corresponding to the specified time.
+* Updates the current path position and heading corresponding to the specified time.
 *
-* @param time The elapsed time since, in seconds.
-* @param outPosition The position that receives the computed position.
+* @param time The elapsed time since the beginning of the path, in seconds.
 *
 * @return YES if the time interval identifies a time between the beginning and end of the path, NO if the time interval
 * represents a time at or beyond the end of the path.
-*
-* @return The computed position.
 */
-- (BOOL) positionForTimeInterval:(NSTimeInterval)timeInterval outPosition:(WWPosition*)result;
+- (BOOL) updatePositionForElapsedTime:(NSTimeInterval)time;
 
 /**
-* Animates the World Wind view's navigator to the specified position over a default period of time.
+* Computes the current index in the path's list of positions corresponding to the specified time.
 *
-* @position The position the navigator is animated to.
+* The returned index ranges from 0 to count - 1, where count is the number of positions in the path. This returns
+* count - 1 if the time interval represents a time at or beyond the end of the path.
+*
+* The integral portion of the returned number indicates the position ordinal corresponding to the beginning of the
+* current path segment. The fractional portion of the returned number indicates the percentage travelled between the
+* begin and end positions of the current path segment.
+*
+* @param time The elapsed time since the beginning of the path, in seconds.
+*
+* @return The current index in the path's list of positions.
 */
-- (void) animateNavigatorToPosition:(WWPosition*)position;
+- (double) pathIndexForElapsedTime:(NSTimeInterval)time;
 
 /**
-* Sets the World Wind view's navigator to the specified position immediately.
+* Indicates that this path follower has moved from one path segment to another.
 *
-* @position The position the navigator is set to.
+* The specified positions indicate the begin and end positions associated with the new segment.
+*
+* @param beginPosition The new segment's beginning position.
+* @param endPosition The new segment's ending position.
+*/
+- (void) segmentDidChange:(WWPosition*)beginPosition endPosition:(WWPosition*)endPosition;
+
+/**
+* Updates the view elements corresponding to this path follower.
+*/
+- (void) updateView;
+
+/**
+* Animates the World Wind view's navigator to the specified position and heading over a period of time.
+*
+* @param position The navigator's new position.
+* @param heading The navigator's new heading, in degrees.
+*/
+- (void) animateNavigatorToPosition:(WWPosition*)position headingDegrees:(double)heading;
+
+/**
+* Sets the World Wind view's navigator to the specified position.
+*
+* @param position The navigator's new position.
 */
 - (void) setNavigatorToPosition:(WWPosition*)position;
 

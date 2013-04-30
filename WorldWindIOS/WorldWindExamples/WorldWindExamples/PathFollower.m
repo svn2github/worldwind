@@ -23,7 +23,10 @@
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
-#define NAVIGATOR_LOOK_AT_RANGE 30000.0
+#define NAVIGATOR_ANIMATION_DURATION 1.0
+#define NAVIGATOR_RANGE_OFFSET 15000.0
+#define NAVIGATOR_FIRST_PERSON_TILT 67.5
+#define NAVIGATOR_LOOK_AT_TILT 45.0
 #define DISPLAY_LINK_FRAME_INTERVAL 3
 
 @implementation PathFollower
@@ -37,7 +40,9 @@
     _wwv = view;
 
     WWPosition* firstPosition = [[_path positions] objectAtIndex:0];
+    WWPosition* secondPosition = [[_path positions] objectAtIndex:1];
     currentPosition = [[WWPosition alloc] initWithPosition:firstPosition];
+    currentHeading = [WWPosition rhumbAzimuth:firstPosition endLocation:secondPosition];
 
     WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
     [attributes setInteriorColor:[[WWColor alloc] initWithR:.24 g:.47 b:.99 a:1]];
@@ -71,7 +76,7 @@
 
     if (enabled)
     {
-        [self animateNavigatorToPosition:currentPosition];
+        [self animateNavigatorToPosition:currentPosition headingDegrees:currentHeading];
         [self startObservingNavigator]; // Observe after the animation begins to ignore its begin notification.
     }
     else
@@ -114,64 +119,102 @@
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     currentTime = offsetTime + now - beginTime;
 
-    if ([self positionForTimeInterval:currentTime outPosition:currentPosition])
-    {
-        [marker setPosition:currentPosition];
-        [self setNavigatorToPosition:currentPosition];
-        [_wwv drawView];
-    }
-    else
+    if (![self updatePositionForElapsedTime:currentTime])
     {
         [self setEnabled:NO];
     }
+
+    [self updateView];
+    [_wwv drawView];
 }
 
-- (BOOL) positionForTimeInterval:(NSTimeInterval)timeInterval outPosition:(WWPosition*)result;
+- (BOOL) updatePositionForElapsedTime:(NSTimeInterval)time
 {
-    double distanceTraveled = _speed * timeInterval;
+    double segmentIndex = [self pathIndexForElapsedTime:time];
 
-    double remainingDistance = distanceTraveled;
-    WWPosition* previousPathPosition = [[_path positions] objectAtIndex:0];
-
-    for (NSUInteger i = 1; i < [[_path positions] count]; i++)
+    if (segmentIndex < [[_path positions] count] - 1)
     {
-        WWPosition* nextPathPosition = [[_path positions] objectAtIndex:i];
+        double segmentPct = segmentIndex - (NSUInteger) segmentIndex;
+        WWPosition* segmentBegin = [[_path positions] objectAtIndex:(NSUInteger) segmentIndex];
+        WWPosition* segmentEnd = [[_path positions] objectAtIndex:(NSUInteger) segmentIndex + 1];
+        [WWPosition rhumbInterpolate:segmentBegin endPosition:segmentEnd amount:segmentPct outputPosition:currentPosition];
+        currentHeading = [WWPosition rhumbAzimuth:segmentBegin endLocation:segmentEnd];
 
-        double segmentDistance = [WWPosition rhumbDistance:previousPathPosition endLocation:nextPathPosition];
-        segmentDistance = RADIANS(segmentDistance);
-        segmentDistance *= [[[_wwv sceneController] globe] equatorialRadius];
-        if (remainingDistance - segmentDistance > 0) // current position is beyond this segment
+        if ((int) segmentIndex != (int) currentIndex)
         {
-            remainingDistance -= segmentDistance;
-            previousPathPosition = nextPathPosition;
-            continue;
+            [self segmentDidChange:segmentBegin endPosition:segmentEnd];
         }
 
-        if (remainingDistance - segmentDistance == 0)
-        {
-            [result setPosition:nextPathPosition];
-            return YES;
-        }
+        currentIndex = segmentIndex;
 
-        // remainingDistance - segmentDistance < 0 ==> current position is within this segment
-        double s = remainingDistance / segmentDistance;
-        [WWPosition rhumbInterpolate:previousPathPosition
-                         endPosition:nextPathPosition
-                              amount:s
-                      outputPosition:result];
         return YES;
     }
+    else
+    {
+        WWPosition* segmentBegin = [[_path positions] objectAtIndex:(NSUInteger) segmentIndex - 1];
+        WWPosition* segmentEnd = [[_path positions] objectAtIndex:(NSUInteger) segmentIndex];
+        [currentPosition setPosition:segmentEnd];
+        currentHeading = [WWPosition rhumbAzimuth:segmentBegin endLocation:segmentEnd];
+        currentIndex = segmentIndex;
 
-    WWPosition* lastPosition = [[_path positions] lastObject];
-    [result setPosition:lastPosition];
-    return NO;
+        return NO;
+    }
+}
+
+- (double) pathIndexForElapsedTime:(NSTimeInterval)time
+{
+    WWGlobe* globe = [[_wwv sceneController] globe];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+
+    double distanceTraveled = _speed * time;
+    double remainingDistance = distanceTraveled;
+
+    NSUInteger i;
+    for (i = 0; i < [[_path positions] count] - 1; i++)
+    {
+        WWPosition* segmentBegin = [[_path positions] objectAtIndex:i];
+        WWPosition* segmentEnd = [[_path positions] objectAtIndex:i + 1];
+        double segmentDistance = RADIANS([WWPosition rhumbDistance:segmentBegin endLocation:segmentEnd]) * globeRadius;
+
+        if (remainingDistance < segmentDistance) // current position is within this segment
+        {
+            double pct = remainingDistance / segmentDistance;
+            return (double) i + pct; // segment index plus the fractional distance between segmentBegin and segmentEnd
+        }
+
+        remainingDistance -= segmentDistance;
+    }
+
+    return i; // last position
+}
+
+- (void) segmentDidChange:(WWPosition*)beginPosition endPosition:(WWPosition*)endPosition
+{
+    animBeginTime = [NSDate timeIntervalSinceReferenceDate];
+    animEndTime = animBeginTime + NAVIGATOR_ANIMATION_DURATION;
+    animBeginHeading = [[_wwv navigator] heading];
+    animEndHeading = [WWPosition rhumbAzimuth:beginPosition endLocation:endPosition];
+}
+
+- (void) updateView
+{
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now >= animBeginTime && now <= animEndTime)
+    {
+        double animPct = [WWMath smoothStepValue:now min:animBeginTime max:animEndTime];
+        double heading = [WWMath interpolateDegrees1:animBeginHeading degrees2:animEndHeading amount:animPct];
+        [[_wwv navigator] setHeading:heading];
+    }
+
+    [marker setPosition:currentPosition];
+    [self setNavigatorToPosition:currentPosition];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Navigator Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) animateNavigatorToPosition:(WWPosition*)position
+- (void) animateNavigatorToPosition:(WWPosition*)position headingDegrees:(double)heading
 {
     id<WWNavigator> navigator = [_wwv navigator];
 
@@ -179,8 +222,8 @@
     {
         WWFirstPersonNavigator* firstPersonNav = (WWFirstPersonNavigator*) navigator;
         [firstPersonNav animateToEyePosition:position
-                              headingDegrees:[firstPersonNav heading]
-                                 tiltDegrees:[firstPersonNav tilt]
+                              headingDegrees:heading
+                                 tiltDegrees:NAVIGATOR_FIRST_PERSON_TILT
                                  rollDegrees:0
                                 overDuration:WWNavigatorDurationDefault];
     }
@@ -188,10 +231,11 @@
     {
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
         WWPosition* lookAtPos = [[WWPosition alloc] initWithLocation:position altitude:0]; // Ignore the path position's altitude.
+        double lookAtRange = [position altitude] + NAVIGATOR_RANGE_OFFSET;
         [lookAtNav animateToLookAtPosition:lookAtPos
-                                     range:NAVIGATOR_LOOK_AT_RANGE
-                            headingDegrees:[lookAtNav heading]
-                               tiltDegrees:[lookAtNav tilt]
+                                     range:lookAtRange
+                            headingDegrees:heading
+                               tiltDegrees:NAVIGATOR_LOOK_AT_TILT
                                rollDegrees:0
                               overDuration:WWNavigatorDurationDefault];
     }
@@ -209,13 +253,15 @@
     {
         WWFirstPersonNavigator* firstPersonNav = (WWFirstPersonNavigator*) navigator;
         [[firstPersonNav eyePosition] setPosition:position];
-
+        [firstPersonNav setTilt:NAVIGATOR_FIRST_PERSON_TILT];
     }
     else if ([navigator isKindOfClass:[WWLookAtNavigator class]])
     {
         WWLookAtNavigator* lookAtNav = (WWLookAtNavigator*) navigator;
+        double lookAtRange = [position altitude] + NAVIGATOR_RANGE_OFFSET;
         [[lookAtNav lookAtPosition] setLocation:position]; // Ignore the path position's altitude.
-        [lookAtNav setRange:NAVIGATOR_LOOK_AT_RANGE];
+        [lookAtNav setRange:lookAtRange];
+        [lookAtNav setTilt:NAVIGATOR_LOOK_AT_TILT];
     }
     else
     {
@@ -242,11 +288,11 @@
 
     if ([name isEqualToString:WW_NAVIGATOR_CHANGED])
     {
-        [self navigatorChanged];
+        [self navigatorDidChange];
     }
     else if ([name isEqualToString:WW_NAVIGATOR_ANIMATION_ENDED])
     {
-        [self navigatorAnimationEnded];
+        [self navigatorAnimationDidEnd];
     }
     else if ([name isEqualToString:WW_NAVIGATOR_ANIMATION_BEGAN]
             || [name isEqualToString:WW_NAVIGATOR_ANIMATION_CANCELLED]
@@ -256,17 +302,17 @@
     }
 }
 
-- (void) navigatorChanged
+- (void) navigatorDidChange
 {
-    if (displayLink == nil)
+    if (displayLink == nil) // The navigator changed during the initial animation; restart the animation.
     {
         [self stopObservingNavigator];
-        [self animateNavigatorToPosition:currentPosition];
+        [self animateNavigatorToPosition:currentPosition headingDegrees:currentHeading];
         [self startObservingNavigator];
     }
 }
 
-- (void) navigatorAnimationEnded
+- (void) navigatorAnimationDidEnd
 {
     [self startDisplayLink];
 }
