@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <OpenGLES/ES2/gl.h>
 
 /**
 * Represents and RGBA color.
@@ -57,5 +58,19 @@
 * Multiplies this color's red, green and blue values by this color's alpha value.
 */
 - (void) preMultiply;
+
+/// @name Convenience Functions
+
+/**
+* Converts an RGBA color to a packed 32-bit integer representation.
+*
+* @param r The red value.
+* @param g The green value.
+* @param b The blue value.
+* @param a The alpha value.
+*
+* @return A packed unsigned integer containing the r, g, b and a values, in that order.
+*/
++ (unsigned int) makeColorInt:(GLubyte)r g:(GLubyte)g b:(GLubyte)b a:(GLubyte)a;
 
 @end

@@ -10,6 +10,10 @@
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Geometry/WWPosition.h"
 
 @implementation WorldWindView
 {
@@ -40,10 +44,27 @@
         glGenRenderbuffers(1, &self->_colorBuffer);
         glGenRenderbuffers(1, &self->_depthBuffer);
 
+        // Generate a frame buffer and render buffers for picking.
+        glGenFramebuffers(1, &_pickingFrameBuffer);
+        glGenRenderbuffers(1, &_pickingColorBuffer);
+        glGenRenderbuffers(1, &_pickingDepthBuffer);
+
         // Allocate storage for the color and depth renderbuffers. This computes the correct and consistent dimensions
         // for the renderbuffers, and assigns the viewport property.
         [self resizeWithLayer:eaglLayer];
         [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+
+        // Configure the picking framebuffer's color and depth attachments, then validate the framebuffer's status.
+        glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, _pickingColorBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _pickingColorBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _pickingDepthBuffer);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            WWLog(@"Failed to complete picking framebuffer attachment %x",
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
+            return nil;
+        }
 
         // Configure the framebuffer's color and depth attachments, then validate the framebuffer's status.
         glBindFramebuffer(GL_FRAMEBUFFER, self->_frameBuffer);
@@ -105,6 +126,15 @@
 
     glDeleteFramebuffers(1, &self->_frameBuffer);
     self->_frameBuffer = 0;
+
+    glDeleteRenderbuffers(1, &self->_pickingColorBuffer);
+    self->_pickingColorBuffer = 0;
+
+    glDeleteRenderbuffers(1, &self->_pickingDepthBuffer);
+    self->_pickingDepthBuffer = 0;
+
+    glDeleteFramebuffers(1, &self->_pickingFrameBuffer);
+    self->_pickingFrameBuffer = 0;
 }
 
 - (void) drawView
@@ -115,6 +145,7 @@
     }
 
     [EAGLContext setCurrentContext:self.context];
+    glBindFramebuffer(GL_FRAMEBUFFER, self->_frameBuffer);
 
     // The scene controller catches and logs rendering exceptions, so don't do it here. Draw the scene using the current
     // OpenGL viewport. We use the viewport instead of the bounds because the viewport contains the actual render buffer
@@ -126,6 +157,29 @@
     // Requests that Core Animation display the renderbuffer currently bound to GL_RENDERBUFFER. This assumes that the
     // color renderbuffer is currently bound.
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
+//
+//    WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:10 y:10 z:0];
+//    WWPickedObjectList* pickedObjects = [self pick:pickPoint];
+//    if ([pickedObjects getTerrainObject] != nil)
+//    {
+//        WWPosition* position = [[pickedObjects getTerrainObject] position];
+//        NSLog(@"%f, %f", [position latitude], [position longitude]);
+//    }
+}
+
+- (WWPickedObjectList*)pick:(WWVec4*)pickPoint
+{
+    if (pickPoint == nil)
+    {
+        return nil;
+    }
+
+    [EAGLContext setCurrentContext:self.context];
+    glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);
+
+    [self.sceneController setNavigatorState:[[self navigator] currentState]];
+
+    return [self.sceneController pick:[self viewport] pickPoint:pickPoint];
 }
 
 - (void) layoutSubviews
@@ -158,8 +212,13 @@
     glBindRenderbuffer(GL_RENDERBUFFER, self->_depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei) width, (GLsizei) height);
 
-    // Restore the GL_RENDERBUFFER binding to the color renderbuffer. All other methods in WorldWindView assume that the
-    // color renderbuffer is bound.
+    // Allocate storage for the picking render buffers.
+    glBindRenderbuffer(GL_RENDERBUFFER, _pickingColorBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, (GLsizei) width, (GLsizei) height);
+    glBindRenderbuffer(GL_RENDERBUFFER, _pickingDepthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei) width, (GLsizei) height);
+
+    // Restore the GL_RENDERBUFFER binding to the color renderbuffer.
     glBindRenderbuffer(GL_RENDERBUFFER, self->_colorBuffer);
 
     // Assign the viewport to a rectangle with its origin at (0, 0) and with dimensions equal to the color renderbuffer.

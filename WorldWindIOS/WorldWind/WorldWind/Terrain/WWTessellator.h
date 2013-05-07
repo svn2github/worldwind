@@ -18,6 +18,7 @@
 @class WWVec4;
 @class WWLevelSet;
 @class WWMemoryCache;
+@class WWPickedObject;
 
 /**
 * Provides tessellation of a globe. Applications typically do not interact with a tessellator. Tessellators are
@@ -216,5 +217,12 @@
 * @param tile The tile to draw.
 */
 - (void) renderOutline:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Performs a pick on the currently visible terrain.
+*
+* @param dc The current draw context.
+*/
+- (void) pick:(WWDrawContext*)dc;
 
 @end

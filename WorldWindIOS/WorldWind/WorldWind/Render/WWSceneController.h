@@ -14,6 +14,8 @@
 @class WWDrawContext;
 @class WWGpuResourceCache;
 @protocol WWNavigatorState;
+@class WWVec4;
+@class WWPickedObjectList;
 
 /**
 * Directs the rendering of the globe and associated layers. The scene controller causes the globe's terrain to be
@@ -24,19 +26,19 @@
 @interface WWSceneController : NSObject
 {
 @protected
-    WWDrawContext *drawContext;
+    WWDrawContext* drawContext;
 }
 
 /// @name Scene Controller Attributes
 
 /// The globe to display.
-@property (readonly, nonatomic) WWGlobe* globe;
+@property(readonly, nonatomic) WWGlobe* globe;
 /// The layers to display. Layers are displayed in the order given in the layer list.
-@property (readonly, nonatomic) WWLayerList* layers;
+@property(readonly, nonatomic) WWLayerList* layers;
 /// The current navigator state defining the current viewing state.
-@property (nonatomic) id<WWNavigatorState> navigatorState;
+@property(nonatomic) id <WWNavigatorState> navigatorState;
 /// The GPU resource cache in which to hold and manage all OpenGL resources.
-@property (readonly, nonatomic) WWGpuResourceCache* gpuResourceCache;
+@property(readonly, nonatomic) WWGpuResourceCache* gpuResourceCache;
 
 /// @name Initializing a Scene Controller
 
@@ -48,7 +50,7 @@
 *
 * @return This instance initialized to default values.
 */
-- (WWSceneController*)init;
+- (WWSceneController*) init;
 
 /// @name Initiating Rendering
 
@@ -130,7 +132,7 @@
 * This method is not meant to be called by applications. It is called internally as needed. Subclasses may override
 * this method to implement alternate or additional behavior.
 */
-- (void) draw;
+- (void) doDraw;
 
 /**
 * Low-level method to traverse the layer list and call each layer's render method.
@@ -147,4 +149,19 @@
 * this method to implement alternate or additional behavior.
 */
 - (void) drawOrderedRenderables;
+
+/**
+* Performs a pick of the current model. Traverses the terrain to determine the geographic position at the specified
+* pick point, and traverses pickable shapes to determine which intersect the pick point.
+*
+* This method is not meant to be called by applications. It is called internally as needed. Subclasses may override
+* this method to implement alternate or additional behavior.
+*
+* @param viewport The viewport in which to perform the pick.
+* @param pickPoint The screen coordinate point to test for pickable items. Only the X and Y coordinates are used.
+*
+* @return The list of picked items, which is empty if no items are at the specified pick point or the pick point is
+* nil.
+*/
+- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint;
 @end

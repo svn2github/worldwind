@@ -22,6 +22,10 @@
 @protocol WWOrderedRenderable;
 @protocol WWOutlinedShape;
 @protocol WWTerrain;
+@class WWVec4;
+@class WWPickedObject;
+@class WWPickedObjectList;
+@class WWTerrainTile;
 
 /**
 * Provides current state during rendering. The current draw context is passed to most rendering methods in order to
@@ -31,6 +35,7 @@
 {
 @protected
     NSString* programKey; // cache key for the default program
+    unsigned int uniquePickNumber; // incrementing pick number for pick color
 }
 
 /// @name Draw Context Attributes
@@ -77,12 +82,25 @@
 /// The current tessellated terrain.
 @property(nonatomic, readonly) id <WWTerrain> terrain;
 
-@property NSMutableArray* orderedRenderables;
+/// The current list of ordered renderables.
+@property(nonatomic, readonly) NSMutableArray* orderedRenderables;
 
 /// The modelview-projection matrix appropriate for displaying objects in screen coordinates. This matrix has the effect
 /// of preserving coordinates that have already been projected using [WWNavigatorState project:result:]. The xy screen
 /// coordinates are interpreted as literal screen coordinates and the z coordinate is interpeted as a depth value.
 @property(nonatomic, readonly) WWMatrix* screenProjection;
+
+/// The packed 32-but unsigned RGBA integer identifying the view's clear color.
+@property(nonatomic) GLuint clearColor;
+
+/// Indicates whether this frame is generating a pick rather than displaying.
+@property(nonatomic) BOOL pickingMode;
+
+/// The current pick point as specified by the application.
+@property(nonatomic) WWVec4* pickPoint;
+
+/// The pickable objects intersecting the pick point, including the terrain.
+@property(nonatomic, readonly) WWPickedObjectList* objectsAtPickPoint;
 
 /**
 * Binds and returns the default program, creating it if it doesn't already exist.
@@ -162,5 +180,32 @@
 * renderable list is not modified.
 */
 - (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable;
+
+/// @name Picking Operations
+
+/**
+* Returns a unique color that can be used to identify picked terrain and shapes.
+*
+* @return A packed RGBA 32-bit unsigned integer containing the pick color.
+*/
+- (unsigned int) getUniquePickColor;
+
+/**
+* Reads and returns the current frame buffer color at the pick point.
+*
+* @param pickPoint The screen coordinate point to read. Only the X and Y values are used.
+*
+* @return A packed RGBA 32-bit unsigned integer identifying the frame buffer color at the pick point.
+*
+* @exception NSInvalidArgumentException if the specified pick point is nil.
+*/
+- (unsigned int) readPickColor:(WWVec4*)pickPoint;
+
+/**
+* Adds an object to this instance's picked object list.
+*
+* @param pickedObject The object to add.
+*/
+- (void) addPickedObject:(WWPickedObject*)pickedObject;
 
 @end

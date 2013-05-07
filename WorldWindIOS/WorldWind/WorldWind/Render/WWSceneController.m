@@ -14,6 +14,9 @@
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Render/WWOrderedRenderable.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
 
 @implementation WWSceneController
 
@@ -50,6 +53,23 @@
     }
 }
 
+- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint
+{
+    @try
+    {
+        [self resetDrawContext];
+        [drawContext setPickingMode:YES];
+        [drawContext setPickPoint:pickPoint];
+        [self drawFrame:viewport];
+
+        return [drawContext objectsAtPickPoint];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"Picking Scene", exception);
+    }
+}
+
 - (void) resetDrawContext
 {
     [self->drawContext reset];
@@ -67,7 +87,14 @@
         [self beginFrame:viewport];
         [self createTerrain];
         [self clearFrame];
-        [self draw];
+        if ([drawContext pickingMode])
+        {
+            [self doPick];
+        }
+        else
+        {
+            [self doDraw];
+        }
     }
     @finally
     {
@@ -79,15 +106,24 @@
 {
     glViewport((int) viewport.origin.x, (int) viewport.origin.y, (int) viewport.size.width, (int) viewport.size.height);
 
-    glEnable(GL_BLEND);
+    if ([drawContext pickingMode])
+    {
+        glDisable(GL_DITHER);
+    }
+    else
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
 }
 
 - (void) endFrame
 {
+    glEnable(GL_DITHER);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -98,7 +134,13 @@
 
 - (void) clearFrame
 {
-    glClearColor(0.3, 0.3, 0.3, 1);
+    GLuint colorInt = [self->drawContext clearColor];
+    float r = ((colorInt >> 24) & 0xff) / 255.0;
+    float g = ((colorInt >> 16) & 0xff) / 255.0;
+    float b = ((colorInt >> 8) & 0xff) / 255.0;
+    float a = (colorInt & 0xff) / 255.0;
+
+    glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -116,7 +158,7 @@
     [self->drawContext setVisibleSector:surfaceGeometry.sector];
 }
 
-- (void) draw
+- (void) doDraw
 {
     [self drawLayers];
     [self drawOrderedRenderables];
@@ -193,6 +235,11 @@
     }
 
     [self->drawContext setOrderedRenderingMode:NO];
+}
+
+- (void) doPick
+{
+    [[[drawContext surfaceGeometry] tessellator] pick:drawContext];
 }
 
 @end

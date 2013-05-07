@@ -18,6 +18,9 @@
 @property (nonatomic, readonly) GLuint frameBuffer;
 @property (nonatomic, readonly) GLuint colorBuffer;
 @property (nonatomic, readonly) GLuint depthBuffer;
+@property (nonatomic, readonly) GLuint pickingFrameBuffer;
+@property (nonatomic, readonly) GLuint pickingColorBuffer;
+@property (nonatomic, readonly) GLuint pickingDepthBuffer;
 @property (nonatomic, readonly) CGRect viewport;
 @property (nonatomic, readonly) EAGLContext* context;
 @property (nonatomic, readonly) WWSceneController* sceneController;

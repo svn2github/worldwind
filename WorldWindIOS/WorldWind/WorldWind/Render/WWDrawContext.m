@@ -21,6 +21,9 @@
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Util/WWColor.h"
 
 @implementation WWDrawContext
 
@@ -35,6 +38,8 @@
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
     _orderedRenderables = [[NSMutableArray alloc] init];
     _screenProjection = [[WWMatrix alloc] initWithIdentity];
+    _objectsAtPickPoint = [[WWPickedObjectList alloc] init];
+    _clearColor = [WWColor makeColorInt:77 g:77 b:77 a:255];
 
     programKey = [WWUtil generateUUID];
 
@@ -47,6 +52,9 @@
     _verticalExaggeration = 1;
 
     [_orderedRenderables removeAllObjects];
+    [_objectsAtPickPoint clear];
+    _pickingMode = NO;
+    _pickPoint = nil;
 }
 
 - (void) update
@@ -172,6 +180,47 @@
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glDepthMask(GL_TRUE);
         glPolygonOffset(0, 0);
+    }
+}
+
+- (unsigned int) getUniquePickColor
+{
+    ++uniquePickNumber; // causes the pick numbers to start at 1
+
+    if (uniquePickNumber >= 0xffffff) // we have run out of available pick colors
+    {
+        uniquePickNumber = 1;
+    }
+
+    unsigned int pickColor = uniquePickNumber << 8 | 0xff; // add alpha of 255
+    if (pickColor == _clearColor)
+    {
+        pickColor = ++uniquePickNumber << 8 | 0xff; // skip the clear color
+    }
+
+    return pickColor;
+}
+
+- (unsigned int) readPickColor:(WWVec4*)pickPoint
+{
+    if (pickPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Pick point is nil")
+    }
+
+    GLint yInGLCoords = (GLint) (CGRectGetHeight([_navigatorState viewport]) - [pickPoint y]);
+    GLubyte colorBytes[4];
+    glReadPixels((GLint)[pickPoint x], yInGLCoords, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, colorBytes);
+    unsigned int colorInt = [WWColor makeColorInt:colorBytes[0] g:colorBytes[1] b:colorBytes[2] a:colorBytes[3]];
+
+    return colorInt != _clearColor ? colorInt : 0;
+}
+
+- (void) addPickedObject:(WWPickedObject*)pickedObject
+{
+    if (pickedObject != nil)
+    {
+        [_objectsAtPickPoint add:pickedObject];
     }
 }
 

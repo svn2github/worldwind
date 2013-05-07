@@ -139,6 +139,16 @@
 - (void) loadUniformColor:(NSString*)colorName color:(WWColor*)color;
 
 /**
+* Sets the value of a named uniform color to a value specified as a packed RGBA 32-bit unsigned integer.
+*
+* @param colorName The name of the uniform color.
+* @param color The value to set the color to, in the form of a packed RGBA 32-bit unsigned integer.
+*
+* @exception NSInvalidArgumentException If the specified color name is nil or empty.
+*/
+- (void) loadUniformColorInt:(NSString*)colorName color:(unsigned int)color;
+
+/**
 * Sets the value of a named uniform float to a specified value.
 *
 * An OpenGL context must be current when this method is called.

@@ -11,7 +11,6 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWColor.h"
 
-
 @implementation WWGpuProgram
 
 - (WWGpuProgram*) initWithShaderSource:(const char*)vertexSource fragmentShader:(const char*)fragmentSource
@@ -261,6 +260,28 @@
     }
 
     glUniform4f(location, [color r], [color g], [color b], [color a]);
+}
+
+- (void) loadUniformColorInt:(NSString*)colorName color:(unsigned int)color
+{
+    if (colorName == nil || colorName.length == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is empty")
+    }
+
+    int location = [self getUniformLocation:colorName];
+    if (location < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is invalid")
+    }
+
+    // Convert the color from a packed int.
+    float r = ((color >> 24) & 0xff) / 255.0;
+    float g = ((color >> 16) & 0xff) / 255.0;
+    float b = ((color >> 8) & 0xff) / 255.0;
+    float a = (color & 0xff) / 255.0;
+
+    glUniform4f(location, r, g, b, a);
 }
 
 - (void) loadUniformFloat:(NSString*)uniformName value:(float)value

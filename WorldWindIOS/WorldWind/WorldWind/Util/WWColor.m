@@ -46,4 +46,9 @@
     _b *= _a;
 }
 
++ (GLuint) makeColorInt:(GLubyte)r g:(GLubyte)g b:(GLubyte)b a:(GLubyte)a;
+{
+    return r << 24 | g << 16 | b << 8 | a;
+}
+
 @end

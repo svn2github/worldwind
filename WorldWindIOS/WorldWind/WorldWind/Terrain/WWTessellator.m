@@ -22,9 +22,11 @@
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Geometry/WWLine.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Pick/WWPickedObject.h"
 
 @implementation WWTessellator
 {
@@ -608,12 +610,15 @@
 
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
-    // Enable the program's texture coordinate attribute.
-    location = [program getAttributeLocation:@"vertexTexCoord"];
-    NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
-    glEnableVertexAttribArray((GLuint) location);
-    glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
-    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, false, 0, 0);
+    if (![dc pickingMode])
+    {
+        // Enable the program's texture coordinate attribute.
+        location = [program getAttributeLocation:@"vertexTexCoord"];
+        NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+        glEnableVertexAttribArray((GLuint) location);
+        glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
+        glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, false, 0, 0);
+    }
 
     // It's necessary to bind the array buffer to 0 because renderOutline and renderWireframe do not use VBOs. (For
     // normal rendering the array buffer is set during the render method so setting it to 0 here is not necessary.)
@@ -645,10 +650,13 @@
         glDisableVertexAttribArray((GLuint) location);
     }
 
-    location = [program getAttributeLocation:@"vertexTexCoord"];
-    if (location >= 0)
+    if (![dc pickingMode])
     {
-        glDisableVertexAttribArray((GLuint) location);
+        location = [program getAttributeLocation:@"vertexTexCoord"];
+        if (location >= 0)
+        {
+            glDisableVertexAttribArray((GLuint) location);
+        }
     }
 }
 
@@ -819,6 +827,209 @@
                                forKey:[_sharedGeometry indicesVboCacheKey]];
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+}
+
+- (void) pick:(WWDrawContext*)dc
+{
+    [self resolvePick:dc tiles:[dc surfaceGeometry] pickPoint:[dc pickPoint]];
+}
+
+- (void) resolvePick:(WWDrawContext*)dc tiles:(WWTerrainTileList*)tiles pickPoint:(WWVec4*)pickPoint
+{
+    if (tiles == nil || [tiles count] < 1 || pickPoint == nil)
+    {
+        return;
+    }
+
+    WWGpuProgram* program = [dc defaultProgram];
+    if (program == nil)
+    {
+        return;
+    }
+
+    unsigned int colorInt = dc.getUniquePickColor;
+    unsigned int minColorCode = colorInt >> 8; // shift alpha out of the way
+
+    // Draw each terrain tile in a unique color. The fact that the colors are sequential is used below to determine
+    // which tile is under the pick point.
+
+    [tiles beginRendering:dc];
+    @try
+    {
+        for (NSUInteger i = 0; i < [tiles count]; i++)
+        {
+            // Get a unique pick color for each tile, even those outside the pick frustum because the colors are used
+            // to compute an index into the tile list.
+            if (i > 0)
+            {
+                colorInt = dc.getUniquePickColor;
+            }
+
+            // TODO: Cull tiles against the pick frustum.
+
+            WWTerrainTile* tile = [tiles objectAtIndex:i];
+            [tile beginRendering:dc];
+
+            @try
+            {
+                [program loadUniformColorInt:@"color" color:colorInt];
+                [tile render:dc]; // render the tile
+            }
+            @finally
+            {
+                [tile endRendering:dc];
+            }
+        }
+    }
+    @finally
+    {
+        [tiles endRendering:dc];
+    }
+
+    // Assign the max color code to the color used to draw the last tile.
+    unsigned int maxColorCode = colorInt >> 8;
+
+    // Retrieve the frame buffer color under the pick point.
+    unsigned int colorCode = [dc readPickColor:pickPoint] >> 8;
+
+    // Use the color code to determine which tile, if any, is under the pick point.
+    if (colorCode < minColorCode || colorCode > maxColorCode)
+    {
+        return;
+    }
+
+    WWTerrainTile* pickedTile = [tiles objectAtIndex:colorCode - minColorCode];
+
+    WWVec4* pickedPoint = [self computePickedPoint:dc tile:pickedTile pickPoint:pickPoint];
+    if (pickedPoint == nil)
+    {
+        return;
+    }
+
+    WWPosition* position = [[WWPosition alloc] initWithZeroPosition];
+    [[dc globe] computePositionFromPoint:[pickedPoint x] y:[pickedPoint y] z:[pickedPoint z]
+                          outputPosition:position];
+
+    double altitude = [[dc globe] elevationForLatitude:[position latitude] longitude:[position longitude]];
+    [position setAltitude:altitude * [dc verticalExaggeration]];
+
+    WWPickedObject* po = [[WWPickedObject alloc] initWithColorCode:colorCode
+                                                        userObject:position
+                                                         pickPoint:pickPoint
+                                                          position:position
+                                                         isTerrain:YES];
+    [dc addPickedObject:po];
+}
+
+- (WWVec4*) computePickedPoint:(WWDrawContext*)dc tile:(WWTerrainTile*)tile pickPoint:(WWVec4*)pickPoint
+{
+    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:[pickPoint y]];
+    if (ray == nil)
+    {
+        return nil;
+    }
+
+    WWVec4* refCenter = [[tile terrainGeometry] referenceCenter];
+    double cx = [refCenter x];
+    double cy = [refCenter y];
+    double cz = [refCenter z];
+
+    // Check all triangles for intersection with the pick ray.
+
+    BOOL found = NO;
+    WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
+    int nPoints = [[tile terrainGeometry] numPoints];
+    float* points = [[tile terrainGeometry] points];
+    for (NSUInteger i = 0; i < nPoints - 2; i++)
+    {
+        float* p0 = &points[i * 3];
+        float* p1 = &points[i * 3 + 3];
+        float* p2 = &points[i * 3 + 6];
+
+        if (i % 2 == 0)
+        {
+            found = [self computeTriangleIntersection:ray
+                                                  vax:p0[0] + cx
+                                                  vay:p0[1] + cy
+                                                  vaz:p0[2] + cz
+                                                  vbx:p1[0] + cx
+                                                  vby:p1[1] + cy
+                                                  vbz:p1[2] + cz
+                                                  vcx:p2[0] + cx
+                                                  vcy:p2[1] + cy
+                                                  vcz:p2[2] + cz
+                                               result:pickedPoint];
+        }
+        else
+        {
+            found = [self computeTriangleIntersection:ray
+                                                  vax:p0[0] + cx
+                                                  vay:p0[1] + cy
+                                                  vaz:p0[2] + cz
+                                                  vbx:p2[0] + cx
+                                                  vby:p2[1] + cy
+                                                  vbz:p2[2] + cz
+                                                  vcx:p1[0] + cx
+                                                  vcy:p1[1] + cy
+                                                  vcz:p1[2] + cz
+                                               result:pickedPoint];
+        }
+
+        if (found)
+        {
+            return pickedPoint;
+        }
+    }
+
+    return nil;
+}
+
+- (BOOL) computeTriangleIntersection:(WWLine*)line
+                                 vax:(double)vax
+                                 vay:(double)vay
+                                 vaz:(double)vaz
+                                 vbx:(double)vbx
+                                 vby:(double)vby
+                                 vbz:(double)vbz
+                                 vcx:(double)vcx
+                                 vcy:(double)vcy
+                                 vcz:(double)vcz
+                              result:(WWVec4*)result
+{
+    static double EPSILON = 0.00001;
+
+    WWVec4* origin = [line origin];
+    WWVec4* dir = [line direction];
+
+    // find vectors for two edges sharing point a: vb - va and vc - va
+    double edge1x = vbx - vax;
+    double edge1y = vby - vay;
+    double edge1z = vbz - vaz;
+
+    double edge2x = vcx - vax;
+    double edge2y = vcy - vay;
+    double edge2z = vcz - vaz;
+
+    // Compute cross product of edge1 and edge2
+    double nx = (edge1y * edge2z) - (edge1z * edge2y);
+    double ny = (edge1z * edge2x) - (edge1x * edge2z);
+    double nz = (edge1x * edge2y) - (edge1y * edge2x);
+
+    double tvecx = [origin x] - vax;
+    double tvecy = [origin y] - vay;
+    double tvecz = [origin z] - vaz;
+
+    // Compute the dot product of N and ray direction
+    double b = nx * [dir x] + ny * [dir y] + nz * [dir z];
+    if (b > -EPSILON && b < EPSILON) // ray is parallel to triangle plane
+    {
+        return NO;
+    }
+
+    double t = -(nx * tvecx + ny * tvecy + nz * tvecz) / b;
+    [line pointAt:t result:result];
+
+    return YES;
 }
 
 @end
