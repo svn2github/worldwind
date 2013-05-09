@@ -8,8 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
-@class WWPosition;
 @class WWGlobe;
+@class WWMatrix;
+@class WWPosition;
 @class WWVec4;
 
 /**
@@ -194,6 +195,25 @@
 * @exception NSInvalidArgumentException If either argument is nil.
 */
 + (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe;
+
+/**
+* Computes the rectangle bounding a unit quad transformed by the specified matrix.
+*
+* The untransformed unit quad has its lower left coordinate at (0, 0) and its upper left coordinate at (1, 1). When the
+* transform matrix is an identity matrix, the returned rectangle has coordinates (x, y, width, height) of (0, 0, 1, 1).
+* Otherwise, the returned rectangle is an axis-aligned rectangle that bounds the transformed quad. For example, if the
+* transform matrix has a scale of 2 and an x-translation of 10, the returned rectangle has coordinates (10, 0, 2, 2).
+*
+* Note that the transformed quad and the returned rectangle are not necessarily equivalent. For example, if the
+* transform matrix contains any rotation or shearing then the returned rectangle covers an area larger than the quad.
+*
+* @param transformMatrix A homogeneous transform matrix used to transform the unit quad.
+*
+* @return An axis-aligned rectangle bounding the transformed unit quad, in screen coordinates.
+*
+* @exception NSInvalidArgumentException If the transformMatrix is nil.
+*/
++ (CGRect) boundingRectForUnitQuad:(WWMatrix*)transformMatrix;
 
 /// @name Computing Information for Viewing and Projection
 

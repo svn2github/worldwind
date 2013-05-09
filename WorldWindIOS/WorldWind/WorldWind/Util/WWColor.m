@@ -31,10 +31,36 @@
 
     self = [super init];
 
-    _r = [color r];
-    _g = [color g];
-    _b = [color b];
-    _a = [color a];
+    _r = color->_r;
+    _g = color->_g;
+    _b = color->_b;
+    _a = color->_a;
+
+    return self;
+}
+
+
+- (WWColor*) setToR:(float)r g:(float)g b:(float)b a:(float)a
+{
+    _r = r;
+    _g = g;
+    _b = b;
+    _a = a;
+
+    return self;
+}
+
+- (WWColor*) setToColor:(WWColor*)color
+{
+    if (color == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color is nil")
+    }
+
+    _r = color->_r;
+    _g = color->_g;
+    _b = color->_b;
+    _a = color->_a;
 
     return self;
 }

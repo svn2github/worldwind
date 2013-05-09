@@ -176,6 +176,16 @@
     return self;
 }
 
+- (WWVec4*) setToZeroVector
+{
+    _x = 0;
+    _y = 0;
+    _z = 0;
+    _w = 1;
+
+    return self;
+}
+
 - (double) length3
 {
     return sqrt(_x * _x + _y * _y + _z * _z);

@@ -207,6 +207,35 @@
     return [[NSArray alloc] initWithObjects:xaxis, yaxis, zaxis, nil];
 }
 
++ (CGRect) boundingRectForUnitQuad:(WWMatrix*)transformMatrix
+{
+    if (transformMatrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
+    }
+
+    double* m = transformMatrix->m;
+    // transform of (0, 0)
+    double x1 = m[3];
+    double y1 = m[7];
+    // transform of (1, 0)
+    double x2 = m[0] + m[3];
+    double y2 = m[4] + m[7];
+    // transform of (0, 1)
+    double x3 = m[1] + m[3];
+    double y3 = m[5] + m[7];
+    // transform of (1, 1)
+    double x4 = m[0] + m[1] + m[3];
+    double y4 = m[4] + m[5] + m[7];
+
+    double minX = MIN(MIN(x1, x2), MIN(x3, x4));
+    double maxX = MAX(MAX(x1, x2), MAX(x3, x4));
+    double minY = MIN(MIN(y1, y2), MIN(y3, y4));
+    double maxY = MAX(MAX(y1, y2), MAX(y3, y4));
+
+    return CGRectMake((CGFloat) minX, (CGFloat) minY, (CGFloat) (maxX - minX), (CGFloat) (maxY - minY));
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Computing Viewing and Navigation Information --//
 //--------------------------------------------------------------------------------------------------------------------//

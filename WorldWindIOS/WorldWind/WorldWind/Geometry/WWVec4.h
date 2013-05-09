@@ -135,13 +135,20 @@
 /**
 * Sets this vector's coordinates to the coordinates of the specified vector.
 *
-* @param vector The vector whose values are assigned to this instance's
+* @param vector The vector whose values are assigned to this instance's.
 *
 * @return This vector with its coordinates set to those of the specified vector.
 *
 * @exception NSInvalidArgumentException If the specified vector is nil.
 */
 - (WWVec4*) set:(WWVec4*)vector;
+
+/**
+* Sets this vector to the zero vector, with X, Y and Z set to 0 and W set to 1.
+*
+* @return This vector set to the zero vector.
+*/
+- (WWVec4*) setToZeroVector;
 
 /// @name Operating on Vectors
 

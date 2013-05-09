@@ -30,7 +30,7 @@
 /// @name Initializing Colors
 
 /**
-* Initialize this color with specified red, green, blue and alpha values.
+* Initialize this color with specified red, green, blue and alpha components.
 *
 * @param r The color's red component in the range [0,1].
 * @param g The color's green component in the range [0,1].
@@ -51,6 +51,31 @@
 * @exception NSInvalidArgumentException If the specified color is nil.
 */
 - (WWColor*) initWithColor:(WWColor*)color;
+
+/// @name Setting the Contents of Colors
+
+/**
+* Sets this color's components to the specified red, green, blue and alpha components.
+*
+* @param r This color's new red component in the range [0,1].
+* @param g This color's new green component in the range [0,1].
+* @param b This color's new blue component in the range [0,1].
+* @param a This color's new alpha component in the range [0,1].
+*
+* @return This color set to the specified components.
+*/
+- (WWColor*) setToR:(float)r g:(float)g b:(float)b a:(float)a;
+
+/**
+* Sets this color to the components of the specified color.
+*
+* @param color The color whose components are assigned to this instance's.
+*
+* @return This color with its components set to those of the specified color.
+*
+* @exception NSInvalidArgumentException If the color is nil.
+*/
+- (WWColor*) setToColor:(WWColor*)color;
 
 /// @name Operations on Colors
 
