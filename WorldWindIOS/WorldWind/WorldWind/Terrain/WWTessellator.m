@@ -27,6 +27,7 @@
 #import "WorldWind/Geometry/WWLine.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Util/WWMath.h"
 
 @implementation WWTessellator
 {
@@ -831,32 +832,8 @@
 
 - (void) pick:(WWDrawContext*)dc
 {
-    [self resolvePick:dc tiles:[dc surfaceGeometry] pickPoint:[dc pickPoint]];
-}
-
-- (void) resolvePick:(WWDrawContext*)dc tiles:(WWTerrainTileList*)tiles pickPoint:(WWVec4*)pickPoint
-{
-    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:[pickPoint y]];
-    WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
-    [[dc globe] intersectWithRay:ray result:pickedPoint];
-
-    WWPosition* position = [[WWPosition alloc] initWithZeroPosition];
-    [[dc globe] computePositionFromPoint:[pickedPoint x] y:[pickedPoint y] z:[pickedPoint z]
-                          outputPosition:position];
-
-    double altitude = [[dc globe] elevationForLatitude:[position latitude] longitude:[position longitude]];
-    [position setAltitude:altitude * [dc verticalExaggeration]];
-
-    WWPickedObject* po = [[WWPickedObject alloc] initWithColorCode:1
-                                                        userObject:position
-                                                         pickPoint:pickPoint
-                                                          position:position
-                                                         isTerrain:YES];
-    [dc addPickedObject:po];
-}
-
-- (void) resolvePick2:(WWDrawContext*)dc tiles:(WWTerrainTileList*)tiles pickPoint:(WWVec4*)pickPoint
-{
+    WWTerrainTileList* tiles = [dc surfaceGeometry];
+    WWVec4* pickPoint = [dc pickPoint];
     if (tiles == nil || [tiles count] < 1 || pickPoint == nil)
     {
         return;
@@ -914,6 +891,7 @@
     unsigned int colorCode = [dc readPickColor:pickPoint] >> 8;
 
     // Use the color code to determine which tile, if any, is under the pick point.
+
     if (colorCode < minColorCode || colorCode > maxColorCode)
     {
         return;
@@ -922,19 +900,6 @@
     WWTerrainTile* pickedTile = [tiles objectAtIndex:colorCode - minColorCode];
 
     WWVec4* pickedPoint = [self computePickedPoint:dc tile:pickedTile pickPoint:pickPoint];
-
-    int foundIn = -1;
-//    for (NSUInteger i = 0; i < [tiles count]; i++)
-//    {
-//        pickedTile = [tiles objectAtIndex:i];
-//        pickedPoint = [self computePickedPoint:dc tile:pickedTile pickPoint:pickPoint];
-//        if (pickedPoint != nil)
-//        {
-//            foundIn = i;
-//            break;
-//        }
-//    }
-
     if (pickedPoint == nil)
     {
         return;
@@ -946,9 +911,6 @@
 
     double altitude = [[dc globe] elevationForLatitude:[position latitude] longitude:[position longitude]];
     [position setAltitude:altitude * [dc verticalExaggeration]];
-    NSLog(@"(%f, %f, %f) --- (%f, %f, %f --- %d/%d",
-            [pickedPoint x], [pickedPoint y], [pickedPoint z],
-            [position latitude], [position longitude], [position altitude], colorCode - minColorCode, foundIn);
 
     WWPickedObject* po = [[WWPickedObject alloc] initWithColorCode:colorCode
                                                         userObject:position
@@ -960,61 +922,47 @@
 
 - (WWVec4*) computePickedPoint:(WWDrawContext*)dc tile:(WWTerrainTile*)tile pickPoint:(WWVec4*)pickPoint
 {
-    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:[pickPoint y]];
-//    WWVec4* dir = [[WWVec4 alloc] initWithCoordinates:-1 y:0 z:0];
-//    WWVec4* origin = [[WWVec4 alloc] initWithCoordinates:2 * 6371e3 y:0 z:0];
-//    [ray setOrigin:origin];
-//    [ray setDirection:dir];
-    WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
-    [[dc globe] intersectWithRay:ray result:pickedPoint];
-
-    return pickedPoint;
-}
-
-- (WWVec4*) computePickedPoint2:(WWDrawContext*)dc tile:(WWTerrainTile*)tile pickPoint:(WWVec4*)pickPoint
-{
-    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:[pickPoint y]];
+    CGRect vp = [[dc navigatorState] viewport];
+    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:CGRectGetHeight(vp) - [pickPoint y]];
     if (ray == nil)
     {
         return nil;
     }
-    WWVec4* dir = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:-1];
-    WWVec4* origin = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:2 * 6371e3];
-    [ray setOrigin:origin];
-    [ray setDirection:dir];
 
+    // Transform the ray to model coordinates so that we don't have to add the reference center to all the triangle
+    // vertices. The pick is therefore done in model coordinates rather than world coordinates. The result, if any, is
+    // transformed to world coordinates below.
     WWVec4* refCenter = [[tile terrainGeometry] referenceCenter];
-    double cx = [refCenter x];
-    double cy = [refCenter y];
-    double cz = [refCenter z];
+    [[ray origin] subtract3:refCenter];
 
     // Check all triangles for intersection with the pick ray.
 
     BOOL found = NO;
     WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
-    int nIndices = [[tile terrainGeometry] numPoints];
+    int nIndices = [_sharedGeometry numIndices];
     short* indices = [_sharedGeometry indices];
     float* points = [[tile terrainGeometry] points];
     for (NSUInteger i = 0; i < nIndices - 2; i++)
     {
+        // Form the 3 triangle vertices. The vertex order doesn't matter to the intersection algorithm.
         float* p0 = &points[3 * indices[i]];
         float* p1 = &points[3 * indices[i + 1]];
         float* p2 = &points[3 * indices[i + 2]];
 
-        found = [self computeTriangleIntersection:ray
-                                              vax:p0[0] + cx
-                                              vay:p0[1] + cy
-                                              vaz:p0[2] + cz
-                                              vbx:p1[0] + cx
-                                              vby:p1[1] + cy
-                                              vbz:p1[2] + cz
-                                              vcx:p2[0] + cx
-                                              vcy:p2[1] + cy
-                                              vcz:p2[2] + cz
+        found = [WWMath computeTriangleIntersection:ray
+                                              vax:p0[0]
+                                              vay:p0[1]
+                                              vaz:p0[2]
+                                              vbx:p1[0]
+                                              vby:p1[1]
+                                              vbz:p1[2]
+                                              vcx:p2[0]
+                                              vcy:p2[1]
+                                              vcz:p2[2]
                                            result:pickedPoint];
-
         if (found)
         {
+            [pickedPoint add3:refCenter]; // transform the picked point from model coordinates to world coordinates
             return pickedPoint;
         }
     }
@@ -1022,129 +970,54 @@
     return nil;
 }
 
-- (BOOL) computeTriangleIntersection:(WWLine*)line
-                                 vax:(double)vax
-                                 vay:(double)vay
-                                 vaz:(double)vaz
-                                 vbx:(double)vbx
-                                 vby:(double)vby
-                                 vbz:(double)vbz
-                                 vcx:(double)vcx
-                                 vcy:(double)vcy
-                                 vcz:(double)vcz
-                              result:(WWVec4*)result
-{
-    static double EPSILON = 0.00001;
-
-    WWVec4* origin = [line origin];
-    WWVec4* dir = [line direction];
-
-    // find vectors for two edges sharing point a: vb - va and vc - va
-    double edge1x = vbx - vax;
-    double edge1y = vby - vay;
-    double edge1z = vbz - vaz;
-
-    double edge2x = vcx - vax;
-    double edge2y = vcy - vay;
-    double edge2z = vcz - vaz;
-
-    // Compute cross product of line direction and edge2
-    double pvecx = ([dir y] * edge2z) - ([dir z] * edge2y);
-    double pvecy = ([dir z] * edge2x) - ([dir x] * edge2z);
-    double pvecz = ([dir x] * edge2y) - ([dir y] * edge2x);
-
-    // Get determinant
-    double det = edge1x * pvecx + edge1y * pvecy + edge1z * pvecz; // edge1 dot pvec
-    if (det > -EPSILON && det < EPSILON) // if det is near zero then ray lies in plane of triangle
-    {
-        return NO;
-    }
-
-    double detInv = 1.0 / det;
-
-    // Compute distance for vertex A to ray origin: origin - va
-    double tvecx = [origin x] - vax;
-    double tvecy = [origin y] - vay;
-    double tvecz = [origin z] - vaz;
-
-    // Calculate u parameter and test bounds: 1/det * tvec dot pvec
-    double u = detInv * (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
-    if (u < 0 || u > 1)
-    {
-        return NO;
-    }
-
-    // Prepare to test v parameter: tvec cross edge1
-    double qvecx = (tvecy * edge1z) - (tvecz * edge1y);
-    double qvecy = (tvecz * edge1x) - (tvecx * edge1z);
-    double qvecz = (tvecx * edge1y) - (tvecy * edge1x);
-
-    // Calculate v parameter and test bounds: 1/det * dir dot qvec
-    double v = detInv * ([dir x] * qvecx + [dir y] * qvecy + [dir z] * qvecz);
-    NSLog(@"%f, %f", u, v);
-    if (v < 0 || u + v > 1)
-    {
-        return NO;
-    }
-
-    // Calculate the point of intersection on the line: t = 1/det * edge2 dot qvec
-    double t = detInv * (edge2x * qvecx + edge2y * qvecy + edge2z * qvecz);
-    if (t < 0)
-    {
-        return NO;
-    }
-
-    [line pointAt:t result:result];
-
-    return YES;
-}
-
-- (BOOL) computeTriangleIntersection2:(WWLine*)line
-                                  vax:(double)vax
-                                  vay:(double)vay
-                                  vaz:(double)vaz
-                                  vbx:(double)vbx
-                                  vby:(double)vby
-                                  vbz:(double)vbz
-                                  vcx:(double)vcx
-                                  vcy:(double)vcy
-                                  vcz:(double)vcz
-                               result:(WWVec4*)result
-{
-    static double EPSILON = 0.00001;
-
-    WWVec4* origin = [line origin];
-    WWVec4* dir = [line direction];
-
-    // find vectors for two edges sharing point a: vb - va and vc - va
-    double edge1x = vbx - vax;
-    double edge1y = vby - vay;
-    double edge1z = vbz - vaz;
-
-    double edge2x = vcx - vax;
-    double edge2y = vcy - vay;
-    double edge2z = vcz - vaz;
-
-    // Compute cross product of edge1 and edge2
-    double nx = (edge1y * edge2z) - (edge1z * edge2y);
-    double ny = (edge1z * edge2x) - (edge1x * edge2z);
-    double nz = (edge1x * edge2y) - (edge1y * edge2x);
-
-    double tvecx = [origin x] - vax;
-    double tvecy = [origin y] - vay;
-    double tvecz = [origin z] - vaz;
-
-    // Compute the dot product of N and ray direction
-    double b = nx * [dir x] + ny * [dir y] + nz * [dir z];
-    if (b > -EPSILON && b < EPSILON) // ray is parallel to triangle plane
-    {
-        return NO;
-    }
-
-    double t = -(nx * tvecx + ny * tvecy + nz * tvecz) / b;
-    [line pointAt:t result:result];
-
-    return YES;
-}
+// The below method is used to compute the intersection when the containing triangle is known, as is the case when the
+// triangle is determined from color coding. It's left here in anticipation of implementing the color coding algorithm.
+//- (BOOL) computeTriangleIntersection2:(WWLine*)line
+//                                  vax:(double)vax
+//                                  vay:(double)vay
+//                                  vaz:(double)vaz
+//                                  vbx:(double)vbx
+//                                  vby:(double)vby
+//                                  vbz:(double)vbz
+//                                  vcx:(double)vcx
+//                                  vcy:(double)vcy
+//                                  vcz:(double)vcz
+//                               result:(WWVec4*)result
+//{
+//    static double EPSILON = 0.00001;
+//
+//    WWVec4* origin = [line origin];
+//    WWVec4* dir = [line direction];
+//
+//    // find vectors for two edges sharing point a: vb - va and vc - va
+//    double edge1x = vbx - vax;
+//    double edge1y = vby - vay;
+//    double edge1z = vbz - vaz;
+//
+//    double edge2x = vcx - vax;
+//    double edge2y = vcy - vay;
+//    double edge2z = vcz - vaz;
+//
+//    // Compute cross product of edge1 and edge2
+//    double nx = (edge1y * edge2z) - (edge1z * edge2y);
+//    double ny = (edge1z * edge2x) - (edge1x * edge2z);
+//    double nz = (edge1x * edge2y) - (edge1y * edge2x);
+//
+//    double tvecx = [origin x] - vax;
+//    double tvecy = [origin y] - vay;
+//    double tvecz = [origin z] - vaz;
+//
+//    // Compute the dot product of N and ray direction
+//    double b = nx * [dir x] + ny * [dir y] + nz * [dir z];
+//    if (b > -EPSILON && b < EPSILON) // ray is parallel to triangle plane
+//    {
+//        return NO;
+//    }
+//
+//    double t = -(nx * tvecx + ny * tvecy + nz * tvecz) / b;
+//    [line pointAt:t result:result];
+//
+//    return YES;
+//}
 
 @end

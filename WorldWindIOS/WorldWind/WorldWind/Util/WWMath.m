@@ -11,6 +11,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWLine.h"
 
 #define ANIMATION_DISTANCE_MIN 1000
 #define ANIMATION_DISTANCE_MAX 1000000
@@ -447,6 +448,86 @@
             ? (viewportHeight / viewportWidth) : (viewportWidth / viewportHeight);
 
     return 2 * distance / sqrt(aspect * aspect + 5);
+}
+
++ (BOOL) computeTriangleIntersection:(WWLine*)line
+                                 vax:(double)vax
+                                 vay:(double)vay
+                                 vaz:(double)vaz
+                                 vbx:(double)vbx
+                                 vby:(double)vby
+                                 vbz:(double)vbz
+                                 vcx:(double)vcx
+                                 vcy:(double)vcy
+                                 vcz:(double)vcz
+                              result:(WWVec4*)result
+{
+    // Taken from Moller and Trumbore
+    // http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/
+    // Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
+
+    static double EPSILON = 0.00001;
+
+    WWVec4* origin = [line origin];
+    WWVec4* dir = [line direction];
+
+    // find vectors for two edges sharing point a: vb - va and vc - va
+    double edge1x = vbx - vax;
+    double edge1y = vby - vay;
+    double edge1z = vbz - vaz;
+
+    double edge2x = vcx - vax;
+    double edge2y = vcy - vay;
+    double edge2z = vcz - vaz;
+
+    // Compute cross product of line direction and edge2
+    double pvecx = ([dir y] * edge2z) - ([dir z] * edge2y);
+    double pvecy = ([dir z] * edge2x) - ([dir x] * edge2z);
+    double pvecz = ([dir x] * edge2y) - ([dir y] * edge2x);
+
+    // Get determinant
+    double det = edge1x * pvecx + edge1y * pvecy + edge1z * pvecz; // edge1 dot pvec
+    if (det > -EPSILON && det < EPSILON) // if det is near zero then ray lies in plane of triangle
+    {
+        return NO;
+    }
+
+    double detInv = 1.0 / det;
+
+    // Compute distance for vertex A to ray origin: origin - va
+    double tvecx = [origin x] - vax;
+    double tvecy = [origin y] - vay;
+    double tvecz = [origin z] - vaz;
+
+    // Calculate u parameter and test bounds: 1/det * tvec dot pvec
+    double u = detInv * (tvecx * pvecx + tvecy * pvecy + tvecz * pvecz);
+    if (u < 0 || u > 1)
+    {
+        return NO;
+    }
+
+    // Prepare to test v parameter: tvec cross edge1
+    double qvecx = (tvecy * edge1z) - (tvecz * edge1y);
+    double qvecy = (tvecz * edge1x) - (tvecx * edge1z);
+    double qvecz = (tvecx * edge1y) - (tvecy * edge1x);
+
+    // Calculate v parameter and test bounds: 1/det * dir dot qvec
+    double v = detInv * ([dir x] * qvecx + [dir y] * qvecy + [dir z] * qvecz);
+    if (v < 0 || u + v > 1)
+    {
+        return NO;
+    }
+
+    // Calculate the point of intersection on the line: t = 1/det * edge2 dot qvec
+    double t = detInv * (edge2x * qvecx + edge2y * qvecy + edge2z * qvecz);
+    if (t < 0)
+    {
+        return NO;
+    }
+
+    [line pointAt:t result:result];
+
+    return YES;
 }
 
 @end

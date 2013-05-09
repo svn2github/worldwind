@@ -8,10 +8,12 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
+@class WWPosition;
 @class WWGlobe;
 @class WWMatrix;
 @class WWPosition;
 @class WWVec4;
+@class WWLine;
 
 /**
 * Convert degrees to radians.
@@ -214,6 +216,38 @@
 * @exception NSInvalidArgumentException If the transformMatrix is nil.
 */
 + (CGRect) boundingRectForUnitQuad:(WWMatrix*)transformMatrix;
+
+/**
+* Determines whether a line intersects a triangle and returns the intersection point.
+*
+* The ordering of the triangle vertices does not matter for the intersection test and does not affect the result.
+*
+* @param line The line to intersect.
+* @param vax The X coordinate of the first triangle vertex.
+* @param vay The Y coordinate of the first triangle vertex.
+* @param vaz The Z coordinate of the first triangle vertex.
+* @param vbx The X coordinate of the second triangle vertex.
+* @param vby The Y coordinate of the second triangle vertex.
+* @param vbz The Z coordinate of the second triangle vertex.
+* @param vcx The X coordinate of the third triangle vertex.
+* @param vcy The Y coordinate of the third triangle vertex.
+* @param vcz The Z coordinate of the third triangle vertex.
+* @@param result A location to store the intersection point.
+*
+* @return YES if the line intersects the triangle, otherwise NO, which is also returned if the line is parallel to
+* the triangle's plane.
+*/
++ (BOOL) computeTriangleIntersection:(WWLine*)line
+                                 vax:(double)vax
+                                 vay:(double)vay
+                                 vaz:(double)vaz
+                                 vbx:(double)vbx
+                                 vby:(double)vby
+                                 vbz:(double)vbz
+                                 vcx:(double)vcx
+                                 vcy:(double)vcy
+                                 vcz:(double)vcz
+                              result:(WWVec4*)result;
 
 /// @name Computing Information for Viewing and Projection
 
