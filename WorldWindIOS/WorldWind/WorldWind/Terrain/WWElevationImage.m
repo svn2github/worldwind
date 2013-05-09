@@ -189,6 +189,7 @@
     {
         NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
         [dict setObject:_filePath forKey:WW_FILE_PATH];
+        NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
 
         @try
         {
@@ -197,7 +198,6 @@
                 [self loadImage];
 
                 [_memoryCache putValue:self forKey:_filePath];
-                _memoryCache = nil; // don't need the cache anymore
                 [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
             }
             else
@@ -214,8 +214,8 @@
         }
         @finally
         {
-            NSNotification* notification = [NSNotification notificationWithName:WW_REQUEST_STATUS object:_object userInfo:dict];
             [[NSNotificationCenter defaultCenter] postNotification:notification];
+            _memoryCache = nil; // don't need the cache anymore
             _object = nil; // don't need the object anymore
         }
     }

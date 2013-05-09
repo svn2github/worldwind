@@ -80,6 +80,7 @@
         @finally
         {
             [[NSNotificationCenter defaultCenter] postNotification:notification];
+            _object = nil; // don't need the object anymore
         }
     }
 }

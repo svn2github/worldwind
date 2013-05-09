@@ -69,7 +69,6 @@
                 if (!_textureCreationFailed)
                 {
                     [_textureCache putTexture:self forKey:_filePath];
-                    _textureCache = nil; // don't need the cache anymore
                     [dict setObject:WW_SUCCEEDED forKey:WW_REQUEST_STATUS];
                 }
                 else
@@ -92,6 +91,8 @@
         @finally
         {
             [[NSNotificationCenter defaultCenter] postNotification:notification];
+            _textureCache = nil; // don't need the cache anymore
+            _object = nil; // don't need the object anymore
         }
     }
 }
