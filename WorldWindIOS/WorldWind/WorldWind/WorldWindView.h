@@ -12,6 +12,8 @@
 
 @class WWSceneController;
 @protocol WWNavigator;
+@class WWPickedObjectList;
+@class WWVec4;
 
 @interface WorldWindView : UIView <WWDisposable>
 
@@ -30,5 +32,6 @@
 - (void) drawView;
 - (void) tearDownGL;
 - (void) handleNotification:(NSNotification*)notification;
+- (WWPickedObjectList*) pick:(WWVec4*)pickPoint;
 
 @end

@@ -22,8 +22,8 @@
 
 - (void) clear;
 
-- (WWPickedObject*) getTopPickedObject;
+- (WWPickedObject*) topPickedObject;
 
-- (WWPickedObject*) getTerrainObject;
+- (WWPickedObject*) terrainObject;
 
 @end

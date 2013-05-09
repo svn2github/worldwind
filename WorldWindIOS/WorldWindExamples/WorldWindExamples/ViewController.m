@@ -31,6 +31,9 @@
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "FAAChartsAlaskaLayer.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Pick/WWPickedObject.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -50,6 +53,7 @@
     UISearchBar* searchBar;
     CLGeocoder* geocoder;
     AnyGestureRecognizer* anyGestureRecognizer;
+    UITapGestureRecognizer* tapGestureRecognizer;
 }
 
 - (id) init
@@ -95,7 +99,7 @@
     [layer setOpacity:0.75];
     [layers addLayer:layer];
 
-    layer =[[WWDAFIFLayer alloc] init];
+    layer = [[WWDAFIFLayer alloc] init];
     [layer setEnabled:NO];
     [layers addLayer:layer];
 
@@ -110,6 +114,13 @@
 
     [self makeTrackingController];
     [self makeFlightPathsLayer];
+//
+//    layer = [[WWShowTessellationLayer alloc] init];
+//    [layers addLayer:layer];
+
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+    [tapGestureRecognizer setNumberOfTapsRequired:1];
+    [_wwv addGestureRecognizer:tapGestureRecognizer];
 }
 
 - (void) makeTrackingController
@@ -182,7 +193,7 @@
         {
             pathFollower = [[PathFollower alloc] initWithPath:path speed:135 view:_wwv]; // ~300 MPH
             [pathFollower addObserver:self forKeyPath:@"enabled"
-                              options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:NULL];
+                              options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial context:NULL];
         }
     }
 
@@ -391,6 +402,24 @@
 - (void) viewWillAppear:(BOOL)animated
 {
     [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
+}
+
+- (void) handleTap:(UITapGestureRecognizer*)recognizer
+{
+    if ([recognizer state] == UIGestureRecognizerStateEnded)
+    {
+        CGPoint tapPoint = [recognizer locationInView:_wwv];
+//        NSLog(@"%f, %f", tapPoint.x, tapPoint.y);
+
+        WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:tapPoint.x y:tapPoint.y z:0];
+        WWPickedObjectList* pickedObjects = [_wwv pick:pickPoint];
+
+        if ([pickedObjects terrainObject] != nil)
+        {
+            WWPosition* position = [[pickedObjects terrainObject] position];
+            NSLog(@"%f, %f, %f", [position latitude], [position longitude], [position altitude]);
+        }
+    }
 }
 
 @end

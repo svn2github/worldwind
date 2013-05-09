@@ -21,7 +21,7 @@
 
 - (BOOL) hasNonTerrainObjects
 {
-    return [pickedObjects count] > 1 || ([pickedObjects count] == 1 && [self getTerrainObject] == nil);
+    return [pickedObjects count] > 1 || ([pickedObjects count] == 1 && [self terrainObject] == nil);
 }
 
 - (void) add:(WWPickedObject*)pickedObject
@@ -37,7 +37,7 @@
     [pickedObjects removeAllObjects];
 }
 
-- (WWPickedObject*) getTopPickedObject
+- (WWPickedObject*) topPickedObject
 {
     int size = [pickedObjects count];
 
@@ -60,7 +60,7 @@
     return nil;
 }
 
-- (WWPickedObject*) getTerrainObject
+- (WWPickedObject*) terrainObject
 {
     for (NSUInteger i = 0; i < [pickedObjects count]; i++)
     {

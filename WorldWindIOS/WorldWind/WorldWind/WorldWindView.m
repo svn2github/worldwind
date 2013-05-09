@@ -12,8 +12,6 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Pick/WWPickedObject.h"
-#import "WorldWind/Geometry/WWPosition.h"
 
 @implementation WorldWindView
 {
@@ -157,14 +155,6 @@
     // Requests that Core Animation display the renderbuffer currently bound to GL_RENDERBUFFER. This assumes that the
     // color renderbuffer is currently bound.
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
-//
-//    WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:10 y:10 z:0];
-//    WWPickedObjectList* pickedObjects = [self pick:pickPoint];
-//    if ([pickedObjects getTerrainObject] != nil)
-//    {
-//        WWPosition* position = [[pickedObjects getTerrainObject] position];
-//        NSLog(@"%f, %f", [position latitude], [position longitude]);
-//    }
 }
 
 - (WWPickedObjectList*)pick:(WWVec4*)pickPoint
