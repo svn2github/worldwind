@@ -29,7 +29,7 @@
 {
     if (attributes == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Attributes is nil")
     }
 
     self = [super init];
