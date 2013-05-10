@@ -162,6 +162,8 @@
 *
 * @return The list of picked items, which is empty if no items are at the specified pick point or the pick point is
 * nil.
+*
+* @exception NSInvalidArgumentException if the specified pick point is nil.
 */
 - (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint;
 @end

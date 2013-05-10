@@ -18,6 +18,7 @@
 
     _displayName = @"Layer";
     _enabled = YES;
+    _pickEnabled = YES;
     _opacity = 1;
     _minActiveAltitude = -DBL_MAX;
     _maxActiveAltitude = DBL_MAX;
@@ -34,6 +35,9 @@
 - (void) render:(WWDrawContext *)dc
 {
     if (!_enabled)
+        return;
+
+    if ([dc pickingMode] && !_pickEnabled)
         return;
 
     if (![self isLayerActive:dc])

@@ -845,7 +845,7 @@
         return;
     }
 
-    unsigned int colorInt = dc.getUniquePickColor;
+    unsigned int colorInt = dc.uniquePickColor;
     unsigned int minColorCode = colorInt >> 8; // shift alpha out of the way
 
     // Draw each terrain tile in a unique color. The fact that the colors are sequential is used below to determine
@@ -860,7 +860,7 @@
             // to compute an index into the tile list.
             if (i > 0)
             {
-                colorInt = dc.getUniquePickColor;
+                colorInt = dc.uniquePickColor;
             }
 
             // TODO: Cull tiles against the pick frustum.

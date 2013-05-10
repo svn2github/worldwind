@@ -14,47 +14,47 @@
 {
     self = [super init];
 
-    pickedObjects = [[NSMutableArray alloc] init];
+    _objects = [[NSMutableArray alloc] init];
 
     return self;
 }
 
 - (BOOL) hasNonTerrainObjects
 {
-    return [pickedObjects count] > 1 || ([pickedObjects count] == 1 && [self terrainObject] == nil);
+    return [_objects count] > 1 || ([_objects count] == 1 && [self terrainObject] == nil);
 }
 
 - (void) add:(WWPickedObject*)pickedObject
 {
     if (pickedObject != nil)
     {
-        [pickedObjects addObject:pickedObject];
+        [_objects addObject:pickedObject];
     }
 }
 
 - (void) clear
 {
-    [pickedObjects removeAllObjects];
+    [_objects removeAllObjects];
 }
 
 - (WWPickedObject*) topPickedObject
 {
-    int size = [pickedObjects count];
+    int size = [_objects count];
 
     if (size > 1)
     {
         for (NSUInteger i = 0; i < size; i++)
         {
-            if ([[pickedObjects objectAtIndex:i] isOnTop])
+            if ([[_objects objectAtIndex:i] isOnTop])
             {
-                return [pickedObjects objectAtIndex:i];
+                return [_objects objectAtIndex:i];
             }
         }
     }
 
     if (size > 0)
     {
-        return [pickedObjects objectAtIndex:0];
+        return [_objects objectAtIndex:0];
     }
 
     return nil;
@@ -62,11 +62,11 @@
 
 - (WWPickedObject*) terrainObject
 {
-    for (NSUInteger i = 0; i < [pickedObjects count]; i++)
+    for (NSUInteger i = 0; i < [_objects count]; i++)
     {
-        if ([[pickedObjects objectAtIndex:i] isTerrain])
+        if ([[_objects objectAtIndex:i] isTerrain])
         {
-            return [pickedObjects objectAtIndex:i];
+            return [_objects objectAtIndex:i];
         }
     }
 

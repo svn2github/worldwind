@@ -15,6 +15,8 @@
 #import "WorldWind/Geometry/WWExtent.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Pick/WWPickSupport.h"
+#import "WorldWind/Pick/WWPickedObject.h"
 
 @implementation WWAbstractShape
 
@@ -32,6 +34,7 @@
 
     transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     referencePoint = [[WWVec4 alloc] initWithZeroVector];
+    pickSupport = [[WWPickSupport alloc] init];
 
     return self;
 }
@@ -98,6 +101,11 @@
     if ([dc orderedRenderingMode])
     {
         [self drawOrderedRenderable:dc];
+
+        if ([dc pickingMode])
+        {
+            [pickSupport resolvePick:dc layer:pickLayer];
+        }
     }
     else
     {
@@ -133,6 +141,11 @@
 
     if ([self isOrderedRenderableValid:dc])
     {
+        if ([dc pickingMode])
+        {
+            pickLayer = [dc currentLayer];
+        }
+
         [self addOrderedRenderable:dc];
     }
 }
@@ -171,6 +184,13 @@
 
 - (void) doDrawOrderedRenderable:(WWDrawContext*)dc
 {
+    if ([dc pickingMode])
+    {
+        unsigned int color = [dc uniquePickColor];
+        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:color]];
+        [[dc currentProgram] loadUniformColorInt:@"color" color:color];
+    }
+
     [self applyModelviewProjectionMatrix:dc];
     [dc drawOutlinedShape:self];
 }
@@ -254,18 +274,21 @@
         return;
     }
 
-    WWColor* color = [[WWColor alloc] initWithColor:[attributes interiorColor]];
-
-    // Disable writing the shape's interior fragments to the depth buffer when the interior is semi-transparent.
-    if ([color a] < 1)
+    if (![dc pickingMode])
     {
-        glDepthMask(GL_FALSE);
-    }
+        WWColor* color = [[WWColor alloc] initWithColor:[attributes interiorColor]];
 
-    // Load the current interior color into the current program's uniform variable. Pass a pre-multiplied color because
-    // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
-    [color preMultiply];
-    [[dc currentProgram] loadUniformColor:@"color" color:color];
+        // Disable writing the shape's interior fragments to the depth buffer when the interior is semi-transparent.
+        if ([color a] < 1)
+        {
+            glDepthMask(GL_FALSE);
+        }
+
+        // Load the current interior color into the current program's uniform variable. Pass a pre-multiplied color because
+        // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
+        [color preMultiply];
+        [[dc currentProgram] loadUniformColor:@"color" color:color];
+    }
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc
@@ -280,18 +303,21 @@
         return;
     }
 
-    WWColor* color = [[WWColor alloc] initWithColor:[attributes outlineColor]];
-
-    // Disable writing the shape's outline fragments to the depth buffer when the outline is semi-transparent.
-    if ([color a] < 1)
+    if (![dc pickingMode])
     {
-        glDepthMask(GL_FALSE);
-    }
+        WWColor* color = [[WWColor alloc] initWithColor:[attributes outlineColor]];
 
-    // Load the current outline color into the current program's uniform variable. Pass a pre-multiplied color because
-    // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
-    [color preMultiply];
-    [[dc currentProgram] loadUniformColor:@"color" color:color];
+        // Disable writing the shape's outline fragments to the depth buffer when the outline is semi-transparent.
+        if ([color a] < 1)
+        {
+            glDepthMask(GL_FALSE);
+        }
+
+        // Load the current outline color into the current program's uniform variable. Pass a pre-multiplied color because
+        // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
+        [color preMultiply];
+        [[dc currentProgram] loadUniformColor:@"color" color:color];
+    }
 
     glLineWidth([attributes outlineWidth]);
 }
@@ -299,6 +325,15 @@
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
     // Must be implemented by subclasses.
+}
+
+- (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
+{
+    return [[WWPickedObject alloc] initWithColorCode:colorCode
+                                          userObject:(_delegateOwner != nil ? _delegateOwner : self)
+                                           pickPoint:[dc pickPoint]
+                                            position:[self referencePosition]
+                                           isTerrain:NO];
 }
 
 @end

@@ -37,6 +37,8 @@
 *
 * Image retrieval occurs on a separate thread from the event dispatch thread. See retrieveTilImage for more
 * information.
+*
+* Layers of this type are not pickable. Their pick-enabled flag is initialized to NO and cannot be set to YES.
 */
 @interface WWTiledImageLayer : WWLayer <WWTileFactory>
 {

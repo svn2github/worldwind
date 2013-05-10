@@ -19,6 +19,8 @@
 @class WWGpuProgram;
 @class WWGpuResourceCache;
 @class WWGlobe;
+@class WWPickSupport;
+@class WWLayer;
 
 /**
 * The base class for most 3D shapes. This class is intended to be abstract and therefore requires subclasses to
@@ -33,6 +35,8 @@
     WWVec4* referencePoint; // the shape's local-coordinate origin.
     double verticalExaggeration; // the vertical exaggeration last used to create the shape's Cartesian representation
     NSString* _altitudeMode;
+    WWPickSupport* pickSupport;
+    WWLayer* pickLayer;
 }
 
 /// @name Shape Attributes

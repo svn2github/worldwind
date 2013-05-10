@@ -158,6 +158,7 @@
     [attributes setOutlineEnabled:true];
     [attributes setInteriorEnabled:false];
     [attributes setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+    [attributes setOutlineWidth:5];
 
     NSArray* features = [jData valueForKey:@"features"];
     for (NSUInteger i = 0; i < [features count]; i++)
@@ -409,7 +410,6 @@
     if ([recognizer state] == UIGestureRecognizerStateEnded)
     {
         CGPoint tapPoint = [recognizer locationInView:_wwv];
-//        NSLog(@"%f, %f", tapPoint.x, tapPoint.y);
 
         WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:tapPoint.x y:tapPoint.y z:0];
         WWPickedObjectList* pickedObjects = [_wwv pick:pickPoint];
@@ -418,6 +418,19 @@
         {
             WWPosition* position = [[pickedObjects terrainObject] position];
             NSLog(@"%f, %f, %f", [position latitude], [position longitude], [position altitude]);
+        }
+
+        NSLog(@"%d picked objects", [[pickedObjects objects] count]);
+
+        WWPickedObject* topObject = [pickedObjects topPickedObject];
+        if (![topObject isTerrain])
+        {
+            NSString* displayName = @"NO NAME";
+            if ([[topObject userObject] respondsToSelector:@selector(displayName)])
+            {
+                displayName = [[topObject userObject] displayName];
+            }
+            NSLog(@"Non-terrain object on top: %@", displayName);
         }
     }
 }

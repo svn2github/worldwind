@@ -84,6 +84,8 @@
     self->currentLoads = [[NSMutableSet alloc] init];
     self->absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
 
+    [self setPickEnabled:NO];
+
     // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleTextureRetrievalNotification:)
@@ -101,6 +103,11 @@
 - (void) dispose
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(void) setPickEnabled:(BOOL)pickEnabled
+{
+    // Picking can never be enabled for TiledImageLayer. It's disabled at initialization and can't be set.
 }
 
 - (void) handleTextureRetrievalNotification:(NSNotification*)notification

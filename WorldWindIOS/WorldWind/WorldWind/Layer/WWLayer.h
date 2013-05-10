@@ -25,6 +25,9 @@
 /// Indicates whether the layer should be displayed.
 @property(nonatomic) BOOL enabled;
 
+/// Indicates whether the layer currently participates in picking.
+@property(nonatomic) BOOL pickEnabled;
+
 /// Indicates the layer's opacity. 1 indicates full opacity. 0 indicates full transparency. Not all layers support
 // opacity.
 @property(nonatomic) float opacity;
@@ -41,7 +44,7 @@
 @property(nonatomic) BOOL networkRetrievalEnabled;
 
 /// Indicates the name of the image file for this layer. The image is shown in the layer list.
-@property (nonatomic) NSString* imageFile;
+@property(nonatomic) NSString* imageFile;
 
 /// @name Initializing Layers
 

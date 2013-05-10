@@ -232,7 +232,7 @@
 * @param vcx The X coordinate of the third triangle vertex.
 * @param vcy The Y coordinate of the third triangle vertex.
 * @param vcz The Z coordinate of the third triangle vertex.
-* @@param result A location to store the intersection point.
+* @param result A location to store the intersection point.
 *
 * @return YES if the line intersects the triangle, otherwise NO, which is also returned if the line is parallel to
 * the triangle's plane.

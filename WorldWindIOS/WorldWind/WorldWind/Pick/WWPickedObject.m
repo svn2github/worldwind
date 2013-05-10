@@ -7,20 +7,10 @@
 
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWPickedObject
-
-- (WWPickedObject*) initWithColorCode:(int)colorCode userObject:(id)userObject
-{
-    self = [super init];
-
-    _colorCode = colorCode;
-    _userObject = userObject;
-
-    return self;
-}
 
 - (WWPickedObject*) initWithColorCode:(int)colorCode
                            userObject:(id)userObject
@@ -28,6 +18,11 @@
                              position:(WWPosition*)position
                             isTerrain:(BOOL)isTerrain
 {
+    if (pickPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Pick point is nil")
+    }
+
     self = [super init];
 
     _colorCode = colorCode;

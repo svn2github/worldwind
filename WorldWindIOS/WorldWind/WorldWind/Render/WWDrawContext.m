@@ -187,7 +187,7 @@
     }
 }
 
-- (unsigned int) getUniquePickColor
+- (unsigned int) uniquePickColor
 {
     ++uniquePickNumber; // causes the pick numbers to start at 1
 

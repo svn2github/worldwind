@@ -17,6 +17,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Pick/WWPickedObject.h"
 
 @implementation WWSceneController
 
@@ -55,6 +56,11 @@
 
 - (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint
 {
+    if (pickPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Pick point is nil")
+    }
+
     @try
     {
         [self resetDrawContext];
@@ -164,6 +170,15 @@
     [self drawOrderedRenderables];
 }
 
+- (void) doPick
+{
+    [[[drawContext surfaceGeometry] tessellator] pick:drawContext];
+
+    [self doDraw];
+
+    [self resolveTopPick];
+}
+
 - (void) drawLayers
 {
     int nLayers = _layers.count;
@@ -172,9 +187,12 @@
         WWLayer* layer = [_layers layerAtIndex:i];
         if (layer != nil)
         {
-            [layer render:self->drawContext];
+            [drawContext setCurrentLayer:layer];
+            [layer render:drawContext];
         }
     }
+
+    [drawContext setCurrentLayer:nil];
 }
 
 - (void) drawOrderedRenderables
@@ -237,9 +255,32 @@
     [self->drawContext setOrderedRenderingMode:NO];
 }
 
-- (void) doPick
+- (void) resolveTopPick
 {
-    [[[drawContext surfaceGeometry] tessellator] pick:drawContext];
+    // Make a last reading to find out which is the top color.
+
+    WWPickedObjectList*  pickedObjects = [drawContext objectsAtPickPoint];
+    if ([[pickedObjects objects] count] == 1)
+    {
+        [[[pickedObjects objects] objectAtIndex:0] setIsOnTop:YES];
+    }
+    else if ([[pickedObjects objects] count] > 1)
+    {
+        unsigned int colorCode = [drawContext readPickColor:[drawContext pickPoint]];
+        if (colorCode != 0)
+        {
+            // Find the picked object with the top color code and set its "onTop" flag.
+            for (NSUInteger i = 0; i < [[pickedObjects objects] count]; i++)
+            {
+                WWPickedObject* po = [[pickedObjects objects] objectAtIndex:i];
+                if ([po colorCode] == colorCode)
+                {
+                    [po setIsOnTop:YES];
+                    break;
+                }
+            }
+        }
+    }
 }
 
 @end

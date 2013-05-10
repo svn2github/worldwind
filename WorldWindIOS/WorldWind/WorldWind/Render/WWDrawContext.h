@@ -26,6 +26,7 @@
 @class WWPickedObject;
 @class WWPickedObjectList;
 @class WWTerrainTile;
+@class WWLayer;
 
 /**
 * Provides current state during rendering. The current draw context is passed to most rendering methods in order to
@@ -103,6 +104,9 @@
 
 /// The pickable objects intersecting the pick point, including the terrain.
 @property(nonatomic, readonly) WWPickedObjectList* objectsAtPickPoint;
+
+/// The current layer being rendered.
+@property (nonatomic) WWLayer* currentLayer;
 
 /**
 * Binds and returns the default program, creating it if it doesn't already exist.
@@ -254,7 +258,7 @@
 *
 * @return A packed RGBA 32-bit unsigned integer containing the pick color.
 */
-- (unsigned int) getUniquePickColor;
+- (unsigned int) uniquePickColor;
 
 /**
 * Reads and returns the current frame buffer color at the pick point.

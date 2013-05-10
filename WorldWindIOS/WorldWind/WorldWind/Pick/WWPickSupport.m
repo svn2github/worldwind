@@ -27,12 +27,7 @@
     [_pickableObjects setValue:pickedObject forKey:[[NSString alloc] initWithFormat:@"%d", [pickedObject colorCode]]];
 }
 
-- (void) clearPickList
-{
-    [_pickableObjects removeAllObjects];
-}
-
-- (WWPickedObject*) getTopObject:(WWDrawContext*)dc pickPoint:(WWVec4*)pickPoint
+- (WWPickedObject*) topObject:(WWDrawContext*)dc pickPoint:(WWVec4*)pickPoint
 {
     if ([_pickableObjects count] == 0)
     {
@@ -48,9 +43,9 @@
     return [_pickableObjects valueForKey:[[NSString alloc] initWithFormat:@"%d", colorCode]];
 }
 
-- (WWPickedObject*) resolvePick:(WWDrawContext*)dc pickPoint:(WWVec4*)pickPoint layer:(WWLayer*)layer
+- (WWPickedObject*) resolvePick:(WWDrawContext*)dc layer:(WWLayer*)layer
 {
-    WWPickedObject* pickedObject = [self getTopObject:dc pickPoint:pickPoint];
+    WWPickedObject* pickedObject = [self topObject:dc pickPoint:[dc pickPoint]];
     if (pickedObject != nil)
     {
         if (layer != nil)
@@ -61,7 +56,7 @@
         [dc addPickedObject:pickedObject];
     }
 
-    [self clearPickList];
+    [_pickableObjects removeAllObjects]; // clear the pick list to avoid dangling references
 
     return pickedObject;
 }
