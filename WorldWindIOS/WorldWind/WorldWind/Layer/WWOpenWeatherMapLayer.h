@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 
+/**
+* Provides a layer for Open Weather Map data.
+*/
 @interface WWOpenWeatherMapLayer : WWRenderableLayer
 {
     NSTimer* timer;

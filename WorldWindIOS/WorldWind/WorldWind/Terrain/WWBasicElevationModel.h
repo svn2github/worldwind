@@ -17,6 +17,10 @@
 @protocol WWUrlBuilder;
 @class WWAbsentResourceList;
 
+/**
+* Represents the elevations associated with a globe. Used by the globe and the tessellator to determine elevations
+* throughout the globe.
+*/
 @interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory>
 {
 @protected

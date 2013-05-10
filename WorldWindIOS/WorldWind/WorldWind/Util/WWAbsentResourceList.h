@@ -67,7 +67,7 @@
 /**
 * Marks a specified resource as being absent.
 *
-* @param The resource's ID.
+* @param resourceID The resource's ID.
 */
 - (void) markResourceAbsent:(NSString*)resourceID;
 

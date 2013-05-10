@@ -20,6 +20,7 @@
 * @param url The URL from which to retrieve the data.
 * @param filePath The full path of the file in which to save the data. The directories in the path need not exist,
 * they will be created.
+* @param timeout The number of seconds to wait for a connection to the specified URL.
 *
 * @return YES if the operation was successful, otherwise NO. A log message is written if the operation is
 * unsuccessful.
@@ -32,6 +33,7 @@
 * Retrieves the data designated by a URL and returns it.
 *
 * @param url The URL from which to retrieve the data.
+* @param timeout The number of seconds to wait for a connection to the specified URL.
 *
 * @return The retrieved data if the operation was successful, otherwise nil. A log message is written if the
 * operation is unsuccessful.
@@ -58,6 +60,19 @@
 */
 + (NSString*) suffixForMimeType:(NSString*)mimeType;
 
+/**
+* Replaces the existing suffix of a file name with a new one.
+*
+* The right-most component after the final "." in the string is replaced. If there is no suffix, the new one is
+* appended to the original string.
+*
+* @param path The path containing the original suffix. The right-most component after the final "." in the string is
+* @param newSuffix The suffix to replace the original with. Do not specify the "."; it's implicit. If nil,
+* the existing suffix,
+ * if any, is stripped, including the ".", and the resulting string is returned.
+*
+* @return A new string with the original suffix replaced with the new one.
+*/
 + (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix;
 
 @end

@@ -11,6 +11,9 @@
 @class WWMemoryCache;
 @class WWSector;
 
+/**
+* Represents a tile of elevation data.
+*/
 @interface WWElevationImage : NSOperation <WWCacheable>
 {
 @protected

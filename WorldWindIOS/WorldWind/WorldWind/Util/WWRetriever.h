@@ -41,6 +41,7 @@
 * @param filePath The full path and name of the file in which to write the resource. If the directories in the path
 * do not exist they are created.
 * @param object The object to specify as the source in the WW_RETRIEVAL_STATUS notification.
+* @param timeout The number of seconds to wait to establish a connection to the specified URL.
 *
 * @return The initialized retriever.
 *

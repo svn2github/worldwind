@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Terrain/WWBasicElevationModel.h"
 
+/**
+* Provides an elevation model for Earth.
+*/
 @interface WWEarthElevationModel : WWBasicElevationModel
 
 /// @name Initializing the Earth Elevation Model
