@@ -34,7 +34,9 @@
 @interface WWDrawContext : NSObject
 {
 @protected
-    NSString* programKey; // cache key for the default program
+    NSString* defaultProgramKey; // cache key for the default program
+    NSString* defaultTextureProgramKey; // cache key for the default texture program
+    NSString* unitQuadKey; // cache key for the unit quadrilateral VBO
     unsigned int uniquePickNumber; // incrementing pick number for pick color
 }
 
@@ -105,9 +107,73 @@
 /**
 * Binds and returns the default program, creating it if it doesn't already exist.
 *
+* The default program draws geometry in a single solid color. The following uniform variables and attributes are
+* exposed:
+*
+* *Uniforms*
+*
+* - mat4 mvpMatrix - The modelview-projection matrix used to transform the vertexPoint attribute.
+* - vec4 color - The RGBA color used to draw the geometry.
+*
+* *Attributes*
+*
+* - vec4 vertexPoint - The geometry's vertex points, in model coordinates.
+*
 * @return The default program.
 */
 - (WWGpuProgram*) defaultProgram;
+
+/**
+* Binds and returns the default texture program, creating it if it doesn't already exist.
+*
+* The default texture program draws geometry in a single solid color with an optional texture. When the texture is
+* enabled the final fragment color is determined by multiplying the texture color with the solid color. The following
+* uniform variables and attributes are exposed:
+*
+* *Uniforms*
+*
+* - mat4 mvpMatrix - The modelview-projection matrix used to transform the vertexPoint attribute.
+* - vec4 color - The RGBA color used to draw the geometry.
+* - bool enableTexture - true to enable the textureSampler; otherwise false.
+* - sampler2D textureSampler - The texture unit the texture is bound to (0, 1, 2, etc.), typically 0.
+*
+* *Attributes*
+*
+* - vec4 vertexPoint - The geometry's vertex points, in model coordinates.
+* - vec4 vertexTexCoord - The geometry's vertex texture coordinates.
+*
+* @return The default program.
+*/
+- (WWGpuProgram*) defaultTextureProgram;
+
+/**
+* Returns the OpenGL ID for a vertex buffer object representing the points of a unit quad, in local coordinates.
+*
+* A unit quad has its lower left coordinate at (0, 0) and its upper left coordinate at (1, 1). This buffer object
+* contains four xy coordinates defining a unit quad appropriate for display as a triangle strip. Coordinates appear in
+* the following order: (0, 1) (0, 0) (1, 1) (1, 0).
+*
+* *Binding to a Vertex Attribute*
+*
+* Use the following arguments when binding this buffer object as the source of an OpenGL vertex attribute pointer:
+*
+* - size: 2
+* - type: GL_FLOAT
+* - normalized: GL_FALSE
+* - stride: 0
+* - pointer: 0
+*
+* *Drawing*
+*
+* Use the following arguments when drawing this buffer object in OpenGL via glDrawArrays:
+*
+* - mode: GL_TRIANGLE_STRIP
+* - first: 0
+* - count: 4
+*
+* @return An OpenGL ID for the unit quad's vertex buffer object.
+*/
+- (GLuint) unitQuadBuffer;
 
 /// @name Initializing a Draw Context
 

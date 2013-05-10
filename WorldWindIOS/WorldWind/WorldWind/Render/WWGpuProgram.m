@@ -300,4 +300,20 @@
     glUniform1f(location, value);
 }
 
+- (void) loadUniformBool:(NSString*)uniformName value:(BOOL)value
+{
+    if (uniformName == nil || uniformName.length == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is empty")
+    }
+
+    int location = [self getUniformLocation:uniformName];
+    if (location < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is invalid")
+    }
+
+    glUniform1i(location, value);
+}
+
 @end

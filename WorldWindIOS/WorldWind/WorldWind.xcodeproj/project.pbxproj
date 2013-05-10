@@ -449,6 +449,7 @@
 		1BF9AFDFF388F5BB6D7E606D /* WWPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPath.m; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
 		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigator.h; sourceTree = "<group>"; };
+		CC8CF0F946E4D3210B9D529A /* DefaultTextureShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = DefaultTextureShader.vert; sourceTree = "<group>"; };
 		CC8CF0FEA2510D74288768A7 /* WWLookAtNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWLookAtNavigator.m; sourceTree = "<group>"; };
 		CC8CF1EC84119508DA0479D6 /* WWOffset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWOffset.m; sourceTree = "<group>"; };
 		CC8CF3328494E380B2C72EFD /* WWZeroElevationModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWZeroElevationModel.m; sourceTree = "<group>"; };
@@ -474,6 +475,7 @@
 		CC8CFC7DC0C26514DF5F2944 /* WWBasicElevationModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicElevationModel.m; sourceTree = "<group>"; };
 		CC8CFC8D2F71793BC919DF73 /* WWElevationTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWElevationTile.m; sourceTree = "<group>"; };
 		CC8CFD1C592A33A3BF4E03B4 /* WWElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWElevationModel.h; sourceTree = "<group>"; };
+		CC8CFD29F1C1384A11B1ACA8 /* DefaultTextureShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = DefaultTextureShader.frag; sourceTree = "<group>"; };
 		CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWTileKey.m; sourceTree = "<group>"; };
 		CC8CFE191A782BBEC44A2E3B /* WWArcGisUrlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWArcGisUrlBuilder.h; sourceTree = "<group>"; };
 		CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicNavigatorState.h; sourceTree = "<group>"; };
@@ -705,6 +707,8 @@
 				1BF9AA973D779A9B2589F51E /* SurfaceTileRenderer.frag */,
 				1BF9ACD8E3A155149A18FC96 /* DefaultShader.vert */,
 				1BF9A5734AEA75C125618E5B /* DefaultShader.frag */,
+				CC8CFD29F1C1384A11B1ACA8 /* DefaultTextureShader.frag */,
+				CC8CF0F946E4D3210B9D529A /* DefaultTextureShader.vert */,
 			);
 			path = Shaders;
 			sourceTree = "<group>";

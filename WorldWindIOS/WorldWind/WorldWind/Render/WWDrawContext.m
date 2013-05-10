@@ -17,13 +17,14 @@
 #import "WorldWind/Shapes/WWOutlinedShape.h"
 #import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Terrain/WWBasicTerrain.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWDrawContext
 
@@ -41,7 +42,9 @@
     _objectsAtPickPoint = [[WWPickedObjectList alloc] init];
     _clearColor = [WWColor makeColorInt:77 g:77 b:77 a:255];
 
-    programKey = [WWUtil generateUUID];
+    defaultProgramKey = [WWUtil generateUUID];
+    defaultTextureProgramKey = [WWUtil generateUUID];
+    unitQuadKey = [WWUtil generateUUID];
 
     return self;
 }
@@ -91,6 +94,7 @@
 {
     if (orderedRenderable != nil)
     {
+        // TODO: Is there a reason that insertionTime is not set here?
         [orderedRenderable setEyeDistance:DBL_MAX];
         [_orderedRenderables addObject:orderedRenderable];
     }
@@ -228,10 +232,12 @@
 #define STRINGIFY(A) #A
 #import "WorldWind/Shaders/DefaultShader.vert"
 #import "WorldWind/Shaders/DefaultShader.frag"
+#import "WorldWind/Shaders/DefaultTextureShader.vert"
+#import "WorldWind/Shaders/DefaultTextureShader.frag"
 
 - (WWGpuProgram*) defaultProgram
 {
-    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:programKey];
+    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:defaultProgramKey];
     if (program != nil)
     {
         [program bind];
@@ -243,7 +249,7 @@
     {
         program = [[WWGpuProgram alloc] initWithShaderSource:DefaultVertexShader
                                               fragmentShader:DefaultFragmentShader];
-        [[self gpuResourceCache] putProgram:program forKey:self->programKey];
+        [[self gpuResourceCache] putProgram:program forKey:defaultProgramKey];
         [program bind];
         [self setCurrentProgram:program];
     }
@@ -253,6 +259,76 @@
     }
 
     return program;
+}
+
+- (WWGpuProgram*) defaultTextureProgram
+{
+    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:defaultTextureProgramKey];
+    if (program != nil)
+    {
+        [program bind];
+        [self setCurrentProgram:program];
+        return program;
+    }
+
+    @try
+    {
+        program = [[WWGpuProgram alloc] initWithShaderSource:DefaultTextureVertexShader
+                                              fragmentShader:DefaultTextureFragmentShader];
+        [[self gpuResourceCache] putProgram:program forKey:defaultTextureProgramKey];
+        [program bind];
+        [self setCurrentProgram:program];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"making GPU program", exception);
+    }
+
+    return program;
+}
+
+- (GLuint) unitQuadBuffer
+{
+    NSNumber* vboId = (NSNumber*) [_gpuResourceCache getResourceForKey:unitQuadKey];
+    if (vboId != nil)
+    {
+        return [vboId unsignedIntValue];
+    }
+
+    size_t size = 48; // 12 values at 32-bits each
+    float* points = malloc(size);
+
+    @try
+    {
+        float* point = points;
+        // upper left corner
+        *point++ = 0;
+        *point++ = 1;
+        // lower left corner
+        *point++ = 0;
+        *point++ = 0;
+        // upper right corner
+        *point++ = 1;
+        *point++ = 1;
+        // lower right corner
+        *point++ = 1;
+        *point = 0;
+
+        GLuint id;
+        glGenBuffers(1, &id);
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBufferData(GL_ARRAY_BUFFER, size, points, GL_STATIC_DRAW);
+
+        vboId = [[NSNumber alloc] initWithUnsignedInt:id];
+        [_gpuResourceCache putResource:vboId resourceType:WW_GPU_VBO size:size forKey:unitQuadKey];
+    }
+    @finally
+    {
+        free(points);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    return [vboId unsignedIntValue];
 }
 
 @end
