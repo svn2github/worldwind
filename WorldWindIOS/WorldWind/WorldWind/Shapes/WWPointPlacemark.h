@@ -10,7 +10,10 @@
 #import "WorldWind/Render/WWOrderedRenderable.h"
 
 @class WWColor;
+@class WWLayer;
 @class WWMatrix;
+@class WWPickedObject;
+@class WWPickSupport;
 @class WWPointPlacemarkAttributes;
 @class WWPosition;
 @class WWTexture;
@@ -29,9 +32,11 @@
     WWVec4* screenOffset;
     WWMatrix* imageTransform;
     CGRect imageRect;
-    // Rendering support.
+    // Rendering and picking support.
     WWMatrix* mvpMatrix;
     WWColor* color;
+    WWLayer* pickLayer;
+    WWPickSupport* pickSupport;
 }
 
 /// @name Point Placemark Attributes
@@ -49,6 +54,8 @@
 @property (nonatomic) WWPosition* position;
 
 @property (nonatomic) NSString* altitudeMode;
+
+@property (nonatomic) id delegateOwner;
 
 @property (nonatomic) double eyeDistance;
 
@@ -77,5 +84,7 @@
 - (void) beginDrawing:(WWDrawContext*)dc;
 
 - (void) endDrawing:(WWDrawContext*)dc;
+
+- (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode;
 
 @end

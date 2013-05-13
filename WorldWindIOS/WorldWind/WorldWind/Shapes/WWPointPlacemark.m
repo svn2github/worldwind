@@ -11,6 +11,8 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Pick/WWPickSupport.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Render/WWTexture.h"
@@ -52,6 +54,7 @@
     // Rendering support.
     mvpMatrix = [[WWMatrix alloc] initWithIdentity];
     color = [[WWColor alloc] init];
+    pickSupport = [[WWPickSupport alloc] init];
 
     _displayName = @"Placemark";
     _highlighted = NO;
@@ -117,6 +120,11 @@
     if (![self intersectsFrustum:dc])
     {
         return;
+    }
+
+    if ([dc pickingMode])
+    {
+        pickLayer = [dc currentLayer];
     }
 
     [dc addOrderedRenderable:self];
@@ -210,34 +218,46 @@
 {
     WWGpuProgram* program = [dc currentProgram];
 
-    if (activeTexture != nil)
-    {
-        [activeTexture bind:dc];
-        [program loadUniformSampler:@"textureSampler" value:0];
-        [program loadUniformBool:@"enableTexture" value:YES];
-    }
-    else
-    {
-        [program loadUniformBool:@"enableTexture" value:NO];
-    }
-
     [mvpMatrix setToMatrix:[dc screenProjection]];
     [mvpMatrix multiplyMatrix:imageTransform];
     [program loadUniformMatrix:@"mvpMatrix" matrix:mvpMatrix];
 
-    [color setToColor:[activeAttributes imageColor]];
-    [color preMultiply];
-    [program loadUniformColor:@"color" color:color];
+    if ([dc pickingMode])
+    {
+        unsigned int pickColor = [dc uniquePickColor];
+        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:pickColor]];
+        [program loadUniformColorInt:@"color" color:pickColor];
+        [program loadUniformBool:@"enableTexture" value:NO];
+    }
+    else
+    {
+        [color setToColor:[activeAttributes imageColor]];
+        [color preMultiply];
+        [program loadUniformColor:@"color" color:color];
+
+        BOOL enableTexture = [activeTexture bind:dc]; // returns NO if activeTexture is nil
+        [program loadUniformBool:@"enableTexture" value:enableTexture];
+        [program loadUniformSampler:@"textureSampler" value:0];
+    }
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    if ([dc pickingMode])
+    {
+        [pickSupport resolvePick:dc layer:pickLayer];
+    }
 }
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
+    // Bind the default texture program.
     WWGpuProgram* program = [dc defaultTextureProgram];
 
+    // Bind the unit quad vertex buffer object.
     glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
 
+    // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
+    // vertex point coordinates and vertex texture coordinate.
     GLuint location = (GLuint) [program getAttributeLocation:@"vertexPoint"];
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -251,14 +271,27 @@
 {
     WWGpuProgram* program = [dc currentProgram];
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
+    // Restore the GL shader's vertex attribute array state. This step must be performed before the GL program binding
+    // is restored below.
     GLuint location = (GLuint) [program getAttributeLocation:@"vertexPoint"];
     glDisableVertexAttribArray(location);
 
     location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
     glDisableVertexAttribArray(location);
+
+    // Restore the GL program binding, buffer binding and texture binding.
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+- (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
+{
+    return [[WWPickedObject alloc] initWithColorCode:colorCode
+                                          userObject:(_delegateOwner != nil ? _delegateOwner : self)
+                                           pickPoint:[dc pickPoint]
+                                            position:_position
+                                           isTerrain:NO];
 }
 
 @end
