@@ -295,12 +295,12 @@
         return [vboId unsignedIntValue];
     }
 
-    size_t size = 48; // 12 values at 32-bits each
-    float* points = malloc(size);
+    size_t size = (size_t) 8 * sizeof(GLfloat);
+    GLfloat* points = malloc(size);
 
     @try
     {
-        float* point = points;
+        GLfloat* point = points;
         // upper left corner
         *point++ = 0;
         *point++ = 1;
