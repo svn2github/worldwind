@@ -33,7 +33,7 @@
     WWMatrix* imageTransform;
     CGRect imageRect;
     // Rendering and picking support.
-    WWMatrix* mvpMatrix;
+    WWMatrix* matrix;
     WWColor* color;
     WWLayer* pickLayer;
     WWPickSupport* pickSupport;

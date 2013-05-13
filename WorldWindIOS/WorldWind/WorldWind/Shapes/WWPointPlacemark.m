@@ -52,7 +52,7 @@
     imageTransform = [[WWMatrix alloc] initWithIdentity];
 
     // Rendering support.
-    mvpMatrix = [[WWMatrix alloc] initWithIdentity];
+    matrix = [[WWMatrix alloc] initWithIdentity];
     color = [[WWColor alloc] init];
     pickSupport = [[WWPickSupport alloc] init];
 
@@ -218,9 +218,12 @@
 {
     WWGpuProgram* program = [dc currentProgram];
 
-    [mvpMatrix setToMatrix:[dc screenProjection]];
-    [mvpMatrix multiplyMatrix:imageTransform];
-    [program loadUniformMatrix:@"mvpMatrix" matrix:mvpMatrix];
+    [matrix setToMatrix:[dc screenProjection]];
+    [matrix multiplyMatrix:imageTransform];
+    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
+
+    [matrix setToUnitYFlip];
+    [program loadUniformMatrix:@"texCoordMatrix" matrix:matrix];
 
     if ([dc pickingMode])
     {

@@ -25,6 +25,11 @@ attribute vec4 vertexTexCoord;
  */
 uniform mat4 mvpMatrix;
 /*
+ * Input uniform matrix defining the texture coordinate transform matrix. Maps input texture coordinates to the desired
+ * texture coordinates.
+ */
+uniform mat4 texCoordMatrix;
+/*
  * Output variable vector to the fragment shader defining the texture coordinate for each fragment. This is specified
  * for each vertex and is interpolated for each rasterized fragment of each primitive. Although the input attribute used
  * to compute this value is a vec4, we output this as a vec2 to avoid unnecessary swizzling in the fragment shader.
@@ -36,10 +41,10 @@ varying vec2 texCoord;
  */
 void main()
 {
-    /* Transform the shape vertex point from model coordinates to eye coordinates. */
+    /* Transform the vertex point from model coordinates to eye coordinates. */
     gl_Position = mvpMatrix * vertexPoint;
 
-    /* Pass the s- and t-coordinates in the vertex texture coordinate directly to the fragment shader. */
-    texCoord = vertexTexCoord.st;
+    /* Transform the vertex texture coordinate by the texture coordinate matrix. */
+    texCoord = (texCoordMatrix * vertexTexCoord).st;
 }
 );
