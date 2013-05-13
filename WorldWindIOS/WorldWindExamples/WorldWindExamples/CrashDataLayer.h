@@ -16,6 +16,7 @@
     NSMutableDictionary* currentPlacemark;
     NSMutableString* currentName;
     NSMutableString* currentString;
+    NSString* iconFilePath;
 }
 
 - (CrashDataLayer*) initWithURL:(NSString*)urlString;

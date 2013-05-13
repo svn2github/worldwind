@@ -10,6 +10,8 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
+#import "WWPointPlacemarkAttributes.h"
+#import "WorldWindConstants.h"
 
 @implementation CrashDataLayer
 
@@ -26,6 +28,8 @@
         WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
         return self;
     }
+
+    iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"placemark_circle.png"];
 
     docParser = [[NSXMLParser alloc] initWithData:data];
     [docParser setDelegate:self];
@@ -66,7 +70,7 @@
 {
     if ([elementName isEqualToString:@"Placemark"])
     {
-        [self addCurrentPlacemark];
+        [self addCurrentPlacemarkToLayer];
         currentPlacemark = nil;
     }
     else if ([elementName isEqualToString:@"SimpleData"])
@@ -106,15 +110,20 @@
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:alt];
 }
 
-- (void) addCurrentPlacemark
+- (void) addCurrentPlacemarkToLayer
 {
     WWPosition* position = [currentPlacemark objectForKey:@"Position"];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
+    [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
     NSString* name = [currentPlacemark objectForKey:@"AcftName"];
     if (name != nil)
     {
         [pointPlacemark setDisplayName:name];
     }
+
+    WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
+    [attrs setImagePath:iconFilePath];
+    [pointPlacemark setAttributes:attrs];
 
     [self addRenderable:pointPlacemark];
 }
