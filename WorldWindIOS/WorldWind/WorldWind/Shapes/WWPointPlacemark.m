@@ -265,6 +265,9 @@
     location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Configure the GL depth state to suppress depth buffer writes.
+    glDepthMask(GL_FALSE);
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
@@ -283,6 +286,9 @@
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Restore the GL depth state.
+    glDepthMask(GL_TRUE);
 }
 
 - (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
