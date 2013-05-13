@@ -11,6 +11,7 @@
 #import "TrackingController.h"
 #import "AnyGestureRecognizer.h"
 #import "PathFollower.h"
+#import "CrashDataLayer.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
@@ -117,6 +118,10 @@
 //
 //    layer = [[WWShowTessellationLayer alloc] init];
 //    [layers addLayer:layer];
+
+    layer = [[CrashDataLayer alloc] initWithURL:@"http://worldwindserver.net/crashes.kml"];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];
