@@ -40,7 +40,7 @@
 /// placemark's geographic position. Setting imageScale to 0.0 causes the placemark to disappear.
 @property (nonatomic) double imageScale;
 
-/// @name Initializing Shape Attributes
+/// @name Initializing Point Placemark Attributes
 
 /**
 * Initializes this attributes instance to default values.
