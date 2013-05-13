@@ -1131,6 +1131,7 @@
 
 - (void) offsetPerspectiveDepth:(double)depthOffset
 {
+    // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, section 9.1.
     self->m[10] *= 1 + depthOffset;
 }
 
