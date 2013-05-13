@@ -197,22 +197,22 @@
 
 - (void) drawOrderedRenderables
 {
-    // Sort the ordered renderables by eye distance and then insertion time.
+    // Sort the ordered renderables by eye distance from back to front and then by insertion time.
     [[self->drawContext orderedRenderables] sortUsingComparator:
             ^(id <WWOrderedRenderable> orA, id <WWOrderedRenderable> orB)
             {
                 double eA = [orA eyeDistance];
                 double eB = [orB eyeDistance];
 
-                if (eA < eB)
+                if (eA > eB) // orA is further from the eye than orB; sort orA before orB
                 {
                     return NSOrderedAscending;
                 }
-                else if (eA > eB)
+                else if (eA < eB) // orA is closer to the eye than orB; sort orB before orA
                 {
                     return NSOrderedDescending;
                 }
-                else
+                else // orA and orB are the same distance from the eye; sort them based on insertion time
                 {
                     NSTimeInterval tA = [orA insertionTime];
                     NSTimeInterval tB = [orB insertionTime];
