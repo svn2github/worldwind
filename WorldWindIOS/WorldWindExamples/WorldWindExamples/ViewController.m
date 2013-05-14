@@ -18,9 +18,7 @@
 #import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWind/Layer/WWShowTessellationLayer.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
-#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
@@ -35,6 +33,8 @@
 #import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Shapes/WWPointPlacemark.h"
+#import "CrashDataViewController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -47,6 +47,8 @@
     UIBarButtonItem* flightButton;
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
+    UIPopoverController* crashDataPopoverController;
+    CrashDataViewController* crashDataViewController;
     NavigatorSettingsController* navigatorSettingsController;
     UIPopoverController* navigatorSettingsPopoverController;
     TrackingController* trackingController;
@@ -66,6 +68,9 @@
         self->geocoder = [[CLGeocoder alloc] init];
         self->anyGestureRecognizer = [[AnyGestureRecognizer alloc] initWithTarget:self action:@selector(handleAnyGestureFrom:)];
     }
+
+    crashDataViewController = [[CrashDataViewController alloc] init];
+    crashDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:crashDataViewController];
 
     return self;
 }
@@ -419,23 +424,38 @@
         WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:tapPoint.x y:tapPoint.y z:0];
         WWPickedObjectList* pickedObjects = [_wwv pick:pickPoint];
 
-        if ([pickedObjects terrainObject] != nil)
-        {
-            WWPosition* position = [[pickedObjects terrainObject] position];
-            NSLog(@"%f, %f, %f", [position latitude], [position longitude], [position altitude]);
-        }
-
-        NSLog(@"%d picked objects", [[pickedObjects objects] count]);
+//        if ([pickedObjects terrainObject] != nil)
+//        {
+//            WWPosition* position = [[pickedObjects terrainObject] position];
+//            NSLog(@"%f, %f, %f", [position latitude], [position longitude], [position altitude]);
+//        }
+//
+//        NSLog(@"%d picked objects", [[pickedObjects objects] count]);
 
         WWPickedObject* topObject = [pickedObjects topPickedObject];
-        if (![topObject isTerrain])
+//        if (![topObject isTerrain])
+//        {
+//            NSString* displayName = @"NO NAME";
+//            if ([[topObject userObject] respondsToSelector:@selector(displayName)])
+//            {
+//                displayName = [[topObject userObject] displayName];
+//            }
+//            NSLog(@"Non-terrain object on top: %@", displayName);
+//        }
+
+        if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
         {
-            NSString* displayName = @"NO NAME";
-            if ([[topObject userObject] respondsToSelector:@selector(displayName)])
+            WWPointPlacemark* pm = (WWPointPlacemark*) [topObject userObject];
+            id entries = [pm userObject];
+            if (entries != nil)
             {
-                displayName = [[topObject userObject] displayName];
+                [crashDataViewController setEntries:entries];
+                CGRect rect = CGRectMake(tapPoint.x, tapPoint.y, 4, 4);
+                [[crashDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                                           atScrollPosition:UITableViewScrollPositionTop animated:YES];
+                [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                                          permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
             }
-            NSLog(@"Non-terrain object on top: %@", displayName);
         }
     }
 }

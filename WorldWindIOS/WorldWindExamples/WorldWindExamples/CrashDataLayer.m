@@ -39,7 +39,7 @@
     {
         WWLog(@"Crash data parsing failed");
     }
-    NSLog(@"%d placemarks", [[self renderables] count]);
+//    NSLog(@"%d placemarks", [[self renderables] count]);
 
     return self;
 }
@@ -115,6 +115,8 @@
     WWPosition* position = [currentPlacemark objectForKey:@"Position"];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
     [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
+    [pointPlacemark setUserObject:currentPlacemark];
+
     NSString* name = [currentPlacemark objectForKey:@"AcftName"];
     if (name != nil)
     {
