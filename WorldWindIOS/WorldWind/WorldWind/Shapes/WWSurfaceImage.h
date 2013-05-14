@@ -34,6 +34,9 @@
 /// The opacity with which to draw the image.
 @property (nonatomic) float opacity;
 
+/// A field for application-specific use, typically used to associate application data with the shape.
+@property (nonatomic) id userObject;
+
 /// @name Initializing Surface Images
 
 /**

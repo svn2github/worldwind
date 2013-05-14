@@ -61,6 +61,9 @@
 
 @property (nonatomic) NSTimeInterval insertionTime;
 
+/// A field for application-specific use, typically used to associate application data with the shape.
+@property (nonatomic) id userObject;
+
 /// @name Initializing Point Placemarks
 
 - (WWPointPlacemark*) initWithPosition:(WWPosition*)position;

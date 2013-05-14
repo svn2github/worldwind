@@ -79,6 +79,9 @@
 /// WWWOrderedRenderable protocol.
 @property(nonatomic) NSTimeInterval insertionTime;
 
+/// A field for application-specific use, typically used to associate application data with the shape.
+@property (nonatomic) id userObject;
+
 /// @name Methods of Interest Only to Subclasses
 
 /**
