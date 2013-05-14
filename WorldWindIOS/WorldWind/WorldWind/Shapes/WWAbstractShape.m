@@ -330,7 +330,7 @@
 - (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
 {
     return [[WWPickedObject alloc] initWithColorCode:colorCode
-                                          userObject:(_delegateOwner != nil ? _delegateOwner : self)
+                                          userObject:(_pickDelegate != nil ? _pickDelegate : self)
                                            pickPoint:[dc pickPoint]
                                             position:[self referencePosition]
                                            isTerrain:NO];

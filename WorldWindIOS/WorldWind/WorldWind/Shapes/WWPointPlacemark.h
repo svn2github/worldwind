@@ -55,7 +55,7 @@
 
 @property (nonatomic) NSString* altitudeMode;
 
-@property (nonatomic) id delegateOwner;
+@property (nonatomic) id pickDelegate;
 
 @property (nonatomic) double eyeDistance;
 

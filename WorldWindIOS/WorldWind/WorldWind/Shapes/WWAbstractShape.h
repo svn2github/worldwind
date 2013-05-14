@@ -61,7 +61,7 @@
 @property(nonatomic) NSString* altitudeMode;
 
 /// The object to return as this shape's picked-object parent when this shape is picked.
-@property(nonatomic) id delegateOwner;
+@property(nonatomic) id pickDelegate;
 
 /// The position of this shape's local coordinate system.
 @property(nonatomic) WWPosition* referencePosition;
