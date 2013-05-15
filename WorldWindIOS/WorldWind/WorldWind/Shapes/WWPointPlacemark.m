@@ -119,7 +119,7 @@
         return;
     }
 
-    if (![self intersectsFrustum:dc])
+    if (![self isPlacemarkVisible:dc])
     {
         return;
     }
@@ -197,9 +197,19 @@
     }
 }
 
-- (BOOL) intersectsFrustum:(WWDrawContext*)dc
+- (BOOL) isPlacemarkVisible:(WWDrawContext*)dc
 {
-    return CGRectIntersectsRect([[dc navigatorState] viewport], imageRect);
+    CGRect viewport = [[dc navigatorState] viewport];
+
+    if ([dc pickingMode])
+    {
+        CGPoint pickPoint = CGPointMake((CGFloat) [[dc pickPoint] x], CGRectGetHeight(viewport) - (CGFloat) [[dc pickPoint] y]);
+        return CGRectContainsPoint(imageRect, pickPoint);
+    }
+    else
+    {
+        return CGRectIntersectsRect(imageRect, viewport);
+    }
 }
 
 - (void) drawOrderedRenderable:(WWDrawContext*)dc

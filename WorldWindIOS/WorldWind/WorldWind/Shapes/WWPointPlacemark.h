@@ -78,7 +78,7 @@
 
 - (void) determineActiveAttributes:(WWDrawContext*)dc;
 
-- (BOOL) intersectsFrustum:(WWDrawContext*)dc;
+- (BOOL) isPlacemarkVisible:(WWDrawContext*)dc;
 
 - (void) drawOrderedRenderable:(WWDrawContext*)dc;
 
