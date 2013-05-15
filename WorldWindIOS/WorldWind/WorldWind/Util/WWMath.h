@@ -26,6 +26,11 @@
 #define DEGREES(a) (a * 180.0 / M_PI)
 
 /**
+* Adjusts a specified floating point value to be within a specified minimum and maximum.
+*/
+#define WWCLAMP(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+
+/**
 * A collection of class methods for computing various values.
 */
 @interface WWMath : NSObject
