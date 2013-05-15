@@ -465,20 +465,39 @@
 - (WWFrustum*) extractFrustum;
 
 /**
-* Applies a specified depth offset to this perspective projection matrix.
+* Applies a specified depth offset to this projection matrix.
 *
-* This method assumes that this matrix represents a perspective projection matrix. If this does not represent a
-* perspective projection matrix the results are undefined. Perspective projection matrices can be created by calling
-* [WWMatrix setToPerspectiveProjection:nearDistance:farDistance:].
+* This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
+* the results are undefined. Projection matrices can be created by calling
+* setToPerspectiveProjection:nearDistance:farDistance: or setToScreenProjection:.
 *
-* The offset may be any real number and is typically used to draw subsequent shapes slightly closer to the user's eye in
-* order to give those shapes visual priority over terrain or surface shapes. An offset of zero has no effect on the
-* scene. An offset less than zero brings depth values closer to the eye, while an offset greater than zero pushes depth
-* values away from the eye.
+* The depth offset may be any real number and is typically used to draw geometry slightly closer to the user's eye in
+* order to give those shapes visual priority over nearby or geometry. An offset of zero has no effect. An offset less
+* than zero brings depth values closer to the eye, while an offset greater than zero pushes depth values away from the
+* eye.
+*
+* Depth offset may be applied to both perspective and orthographic projection matrices. The effect on each projection
+* type is outlined here:
+*
+* *Perspective Projection*
+*
+* The effect of depth offset on a perspective projection increases exponentially with distance from the eye. This
+* has the effect of adjusting the offset for the loss in depth precision with geometry drawn further from the eye.
+* Distant geometry requires a greater offset to differentiate itself from nearby geometry, while close geometry does
+* not.
+*
+* *Orthographic Projection*
+*
+* The effect of depth offset on an orthographic projection increases linearly with distance from the eye. While it is
+* reasonable to apply a depth offset to an orthographic projection, the effect is most appropriate when applied to the
+* projection used to draw the scene. For example, when an object's coordinates are projected by a perspective projection
+* into screen coordinates then drawn using an orthographic projection, it is best to apply the offset to the original
+* perspective projection. The method [WWNavigatorState project:result:depthOffset:] performs the correct behavior
+* for the projection type used to draw the scene.
 *
 * @param depthOffset The amount of offset to apply.
 */
-- (void) offsetPerspectiveDepth:(double)depthOffset;
+- (void) offsetProjectionDepth:(double)depthOffset;
 
 /// @name Matrix Operations
 

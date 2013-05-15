@@ -1129,7 +1129,7 @@
     [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][2] y:r[1][2] z:r[2][2]]];
 }
 
-- (void) offsetPerspectiveDepth:(double)depthOffset
+- (void) offsetProjectionDepth:(double)depthOffset
 {
     // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, section 9.1.
     self->m[10] *= 1 + depthOffset;

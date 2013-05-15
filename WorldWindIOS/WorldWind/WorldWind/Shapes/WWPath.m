@@ -235,7 +235,7 @@
         // Modify the standard modelview-projection matrix by applying a depth offset to the perspective matrix.
         // This pulls the path towards the eye just a bit to ensure it shows over the terrain.
         WWMatrix* mvp = [[WWMatrix alloc] initWithMatrix:[[dc navigatorState] projection]];
-        [mvp offsetPerspectiveDepth:-0.01];
+        [mvp offsetProjectionDepth:-0.01];
 
         [mvp multiplyMatrix:[[dc navigatorState] modelview]];
         [mvp multiplyMatrix:transformationMatrix];
