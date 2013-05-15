@@ -108,8 +108,8 @@
 * Transforms the specified modelPoint from model coordinates to screen coordinates.
 *
 * This stores the transformed point in the screenPoint parameter, and returns YES or NO to indicate whether or not the
-* transformation is successful. This returns NO if the modelview or projection matrices are malformed, or if the
-* specified modelPoint is behind the eye.
+* transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
+* malformed, or if the modelPoint is clipped by the near clipping plane or the far clipping plane.
 *
 * This performs the same computations as the OpenGL vertex transformation pipeline, but is not guaranteed to result in
 * the exact same floating point values.
@@ -124,11 +124,39 @@
 - (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint;
 
 /**
+* Transforms the specified modelPoint from model coordinates to screen coordinates, applying an offset to the
+* modelPoint's projected depth value.
+*
+* This stores the transformed point in the screenPoint parameter, and returns YES or NO to indicate whether or not the
+* transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
+* malformed, or if the modelPoint is clipped by the near clipping plane or the far clipping plane, ignoring the depth
+* offset.
+*
+* The depth offset may be any real number and is typically used to move the screenPoint slightly closer to the user's
+* eye in order to give it visual priority over nearby points. An offset of zero has no effect. An offset less than zero
+* brings the screenPoint closer to the eye, while an offset greater than zero pushes the screenPoint away from the eye.
+*
+* This performs the same computations as the OpenGL vertex transformation pipeline, but is not guaranteed to result in
+* the exact same floating point values. Applying a non-zero depth offset has no effect on on whether the modelPoint is
+* clipped by this method or by OpenGL. Clipping is performed on the original modelPoint ignoring the depth offset, and
+* the final depth value after applying the offset is clamped to the range [0,1].
+*
+* @param modelPoint The point to transform, in model coordinates.
+* @param screenPoint The transformed result, in screen coordinates.
+* @param offset The amount of offset to apply.
+*
+* @return YES if the transformation is successful, otherwise NO.
+*
+* @exception NSInvalidArgumentException If the modelPoint or the screenPoint are nil.
+*/
+- (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint depthOffset:(double)depthOffset;
+
+/**
 * Transforms the specified screenPoint from screen coordinates to model coordinates.
 *
 * This stores the transformed point in the modelPoint parameter, and returns YES or NO to indicate whether the
-* transformation is successful. This returns NO if the modelview or projection matrices are malformed, or if the
-* specified screenPoint's Z coordinate is less than zero.
+* transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
+* malformed, or if the screenPoint is clipped by the near clipping plane or the far clipping plane.
 *
 * This performs the same computations as the OpenGL vertex transformation pipeline, but is not guaranteed to result in
 * the exact same floating point values.

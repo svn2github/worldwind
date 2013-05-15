@@ -10,6 +10,7 @@
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWFrustum.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWBasicNavigatorState
@@ -58,13 +59,12 @@
 
     // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
     // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
-    // transforming the bottom-left and top-right points of the frustum from homogeneous clip coordinates to eye
-    // coordinates.
+    // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye coordinates.
     WWVec4* nbl = [[[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:-1] multiplyByMatrix:projectionInv];
     WWVec4* ntr = [[[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:-1] multiplyByMatrix:projectionInv];
     WWVec4* fbl = [[[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:+1] multiplyByMatrix:projectionInv];
     WWVec4* ftr = [[[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:+1] multiplyByMatrix:projectionInv];
-    [nbl divideByScalar:[nbl w]]; // Divide by the W coordinate to convert homogeneous clip coordinates to eye coordinates.
+    [nbl divideByScalar:[nbl w]]; // Divide by the W coordinate to convert clip coordinates to eye coordinates.
     [ntr divideByScalar:[ntr w]];
     [fbl divideByScalar:[fbl w]];
     [ftr divideByScalar:[ftr w]];
@@ -84,7 +84,7 @@
     return self;
 }
 
-- (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint
+- (BOOL) project:(WWVec4* __unsafe_unretained)modelPoint result:(WWVec4* __unsafe_unretained)screenPoint
 {
     if (modelPoint == nil)
     {
@@ -96,30 +96,36 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Screen point is nil");
     }
 
-    // TODO: Return NO if the modelPoint is behind the eye.
+    double mx = [modelPoint x];
+    double my = [modelPoint y];
+    double mz = [modelPoint z];
 
-    // Multiply the model point by the combined modelview-projection matrix. This has the effect of transforming the
-    // point from model coordinates to eye coordinates, then to clip coordinates. Additionally, this inverts the Z axis
-    // and stores the negative of the eye coordinate Z value in the W coordinate.
-    [screenPoint set:modelPoint];
-    [screenPoint setW:1]; // Fourth column of modelview projection must be multiplied by 1.
-    [screenPoint multiplyByMatrix:_modelviewProjection];
-
-    double x = [screenPoint x];
-    double y = [screenPoint y];
-    double z = [screenPoint z];
-    double w = [screenPoint w];
+    // Transform the model point from model coordinates to eye coordinates, then to clip coordinates. This inverts the Z
+    // axis and stores the negative of the eye coordinate Z value in the W coordinate. We inline the computation here
+    // instead of using [WWVec4 multiplyByMatrix:] in order to improve performance.
+    double* m = _modelviewProjection->m;
+    double x = m[0] * mx + m[1] * my + m[2] * mz + m[3];
+    double y = m[4] * mx + m[5] * my + m[6] * mz + m[7];
+    double z = m[8] * mx + m[9] * my + m[10] * mz + m[11];
+    double w = m[12] * mx + m[13] * my + m[14] * mz + m[15];
 
     if (w == 0)
     {
         return NO;
     }
 
-    // Complete the conversion from model coordinates to clip coordinates by dividing by the W coordinate.
+    // Complete the conversion from model coordinates to clip coordinates by dividing by the W coordinate. The resultant
+    // X Y and Z coordinates are in the range [-1, 1].
     x /= w;
     y /= w;
     z /= w;
-    w /= w;
+
+    // Clip the point against the near and far clip planes. In clip coordinates the near and far clip planes are
+    // perpendicular to the Z axis and are located at -1 and 1, respectively.
+    if (z < -1 || z > 1)
+    {
+        return NO;
+    }
 
     // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be converted to
     // screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
@@ -131,12 +137,92 @@
     x = x * CGRectGetWidth(_viewport) + CGRectGetMinX(_viewport);
     y = y * CGRectGetHeight(_viewport) + CGRectGetMinY(_viewport);
 
-    [screenPoint set:x y:y z:z w:w];
+    [screenPoint set:x y:y z:z];
 
     return YES;
 }
 
-- (BOOL) unProject:(WWVec4*)screenPoint result:(WWVec4*)modelPoint
+- (BOOL) project:(WWVec4* __unsafe_unretained)modelPoint result:(WWVec4* __unsafe_unretained)screenPoint depthOffset:(double)depthOffset
+{
+    if (modelPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Model point is nil");
+    }
+
+    if (screenPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Screen point is nil");
+    }
+
+    double mx = [modelPoint x];
+    double my = [modelPoint y];
+    double mz = [modelPoint z];
+
+    // Transform the model point from model coordinates to eye coordinates. We inline the computation here instead of
+    // using [WWVec4 multiplyByMatrix:] in order to improve performance. The eye coordinate and clip coordinate are
+    // computed separately in order to reuse the eye coordinate below.
+    double* mv = _modelview->m;
+    double ex = mv[0] * mx + mv[1] * my + mv[2] * mz + mv[3];
+    double ey = mv[4] * mx + mv[5] * my + mv[6] * mz + mv[7];
+    double ez = mv[8] * mx + mv[9] * my + mv[10] * mz + mv[11];
+    double ew = mv[12] * mx + mv[13] * my + mv[14] * mz + mv[15];
+
+    // Transform the model point from eye coordinates to clip coordinates. This inverts the Z axis and stores the
+    // negative of the eye coordinate Z value in the W coordinate. We inline the computation here instead of using
+    // [WWVec4 multiplyByMatrix:] in order to improve performance.
+    double* pr = _projection->m;
+    double x = pr[0] * ex + pr[1] * ey + pr[2] * ez + pr[3] * ew;
+    double y = pr[4] * ex + pr[5] * ey + pr[6] * ez + pr[7] * ew;
+    double z = pr[8] * ex + pr[9] * ey + pr[10] * ez + pr[11] * ew;
+    double w = pr[12] * ex + pr[13] * ey + pr[14] * ez + pr[15] * ew;
+
+    if (w == 0)
+    {
+        return NO;
+    }
+
+    // Complete the conversion from model coordinates to clip coordinates by dividing by the W coordinate. The resultant
+    // X Y and Z coordinates are in the range [-1, 1].
+    x /= w;
+    y /= w;
+    z /= w;
+
+    // Clip the point against the near and far clip planes. In clip coordinates the near and far clip planes are
+    // perpendicular to the Z axis and are located at -1 and 1, respectively.
+    if (z < -1 || z > 1)
+    {
+        return NO;
+    }
+
+    // Transform the Z eye coordinate to clip coordinates again, this time applying a depth offset. The depth offset is
+    // applied only to the matrix element affecting the projected Z coordinate, so we inline the computation here
+    // instead of re-computing X, Y, Z and W in order to improve performance. See [WWMatrix offsetProjectionDepth:] for
+    // more information on the effect of this offset.
+    z = pr[8] * ex + pr[9] * ey + pr[10] * ez * (1 + depthOffset) + pr[11] * ew;
+    z /= w;
+
+    // Clamp the point to the near and far clip planes. We know the point's original Z value is contained within the
+    // clip planes, so we limit its offset z value to the range [-1, 1] in order to ensure it is not clipped by OpenGL.
+    // In clip coordinates the near and far clip planes are perpendicular to the Z axis and are located at -1 and 1,
+    // respectively.
+    z = WWCLAMP(z, -1, 1);
+
+    // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be converted to
+    // screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
+    x = x * 0.5 + 0.5;
+    y = y * 0.5 + 0.5;
+    z = z * 0.5 + 0.5;
+
+    // Convert the XY coordinates from coordinates in the range [0, 1] to screen coordinates.
+    x = x * CGRectGetWidth(_viewport) + CGRectGetMinX(_viewport);
+    y = y * CGRectGetHeight(_viewport) + CGRectGetMinY(_viewport);
+
+    [screenPoint set:x y:y z:z];
+
+    return YES;
+}
+
+- (BOOL) unProject:(WWVec4* __unsafe_unretained)screenPoint result:(WWVec4* __unsafe_unretained)modelPoint
 {
     if (screenPoint == nil)
     {
@@ -148,36 +234,47 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Model point is nil");
     }
 
-    // TODO: Return NO if the screenPoint is behind the eye.
+    double sx = [screenPoint x];
+    double sy = [screenPoint y];
+    double sz = [screenPoint z];
 
-    double x = [screenPoint x];
-    double y = [screenPoint y];
-    double z = [screenPoint z];
-
-    // Convert the XY coordinates screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates
-    // to be converted to clip coordinates in the range [-1, 1].
-    x = (x - CGRectGetMinX(_viewport)) / CGRectGetWidth(_viewport);
-    y = (y - CGRectGetMinY(_viewport)) / CGRectGetHeight(_viewport);
+    // Convert the XY screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates to be
+    // converted to clip coordinates.
+    sx = (sx - CGRectGetMinX(_viewport)) / CGRectGetWidth(_viewport);
+    sy = (sy - CGRectGetMinY(_viewport)) / CGRectGetHeight(_viewport);
 
     // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
-    x = x * 2 - 1;
-    y = y * 2 - 1;
-    z = z * 2 - 1;
+    sx = sx * 2 - 1;
+    sy = sy * 2 - 1;
+    sz = sz * 2 - 1;
 
-    // Multiply the point in clip coordinates by the inverse of the combined modelview-projection matrix. This has the
-    // effect of transforming the point from clip coordinates to eye coordinates, then to model coordinates.
-    // Additionally, this inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
-    [modelPoint set:x y:y z:z w:1]; // Fourth column of modelview projection must be multiplied by 1.
-    [modelPoint multiplyByMatrix:modelviewProjectionInv];
+    // Clip the point against the near and far clip planes. In clip coordinates the near and far clip planes are
+    // perpendicular to the Z axis and are located at -1 and 1, respectively.
+    if (sz < -1 || sz > 1)
+    {
+        return NO;
+    }
 
-    double w = [modelPoint w];
+    // Transform the screen point from clip coordinates to eye coordinates, then to model coordinates. This inverts the
+    // Z axis and stores the  negative of the eye coordinate Z value in the W coordinate. We inline the computation here
+    // instead of using  [WWVec4 multiplyByMatrix:] in order to improve performance.
+    double* m = modelviewProjectionInv->m;
+    double x = m[0] * sx + m[1] * sy + m[2] * sz + m[3];
+    double y = m[4] * sx + m[5] * sy + m[6] * sz + m[7];
+    double z = m[8] * sx + m[9] * sy + m[10] * sz + m[11];
+    double w = m[12] * sx + m[13] * sy + m[14] * sz + m[15];
+
     if (w == 0)
     {
         return NO;
     }
 
-    // Complete the conversion from clip coordinate to model coordinates by dividing by the W coordinate.
-    [modelPoint divideByScalar:w];
+    // Complete the conversion from clip coordinates to model coordinates by dividing by the W coordinate.
+    x /= w;
+    y /= w;
+    z /= w;
+    
+    [modelPoint set:x y:y z:z];
 
     return YES;
 }
