@@ -26,6 +26,8 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
+#define DEFAULT_DEPTH_OFFSET -0.01
+
 @implementation WWPointPlacemark
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -140,7 +142,7 @@
 
     _eyeDistance = [[[dc navigatorState] eyePoint] distanceTo3:placePoint];
 
-    if (![[dc navigatorState] project:placePoint result:screenPoint])
+    if (![[dc navigatorState] project:placePoint result:screenPoint depthOffset:DEFAULT_DEPTH_OFFSET])
     {
         imageRect = CGRectMake(0, 0, 0, 0);
         return; // The place point is clipped by the near plane or the far plane.
