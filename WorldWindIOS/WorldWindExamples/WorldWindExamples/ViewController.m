@@ -16,6 +16,7 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Navigate/WWNavigator.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
@@ -35,6 +36,7 @@
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "CrashDataViewController.h"
+#import "WWGlobe.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -446,18 +448,38 @@
         if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
         {
             WWPointPlacemark* pm = (WWPointPlacemark*) [topObject userObject];
-            id entries = [pm userObject];
-            if (entries != nil)
+            if ([pm userObject] != nil)
             {
-                [crashDataViewController setEntries:entries];
-                CGRect rect = CGRectMake(tapPoint.x, tapPoint.y, 4, 4);
-                [[crashDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
-                                                           atScrollPosition:UITableViewScrollPositionTop animated:YES];
-                [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                                          permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+                [self showCrashData:pm];
             }
         }
     }
+}
+
+- (void) showCrashData:(WWPointPlacemark*)pm
+{
+    // Compute a screen position that corresponds with the placemarks' position, then show the  crash data popover at
+    // that screen position.
+
+    WWPosition* pmPos = [pm position];
+    WWVec4* pmPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
+                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
+    [[[_wwv navigator] currentState] project:pmPoint result:screenPoint];
+    CGRect rect = CGRectMake((CGFloat) [screenPoint x],
+            (CGFloat) ([[[_wwv navigator] currentState] viewport].size.height - [screenPoint y]), 1, 1);
+
+    // Give the controller the placemark's dictionary.
+    [crashDataViewController setEntries:[pm userObject]];
+
+    // Ensure that the first line of the data is at the top of the data table.
+    [[crashDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                               atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 @end
