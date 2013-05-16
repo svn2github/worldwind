@@ -37,11 +37,11 @@
     _timestamp = [NSDate date];
     _eyePosition = [[WWPosition alloc] initWithDegreesLatitude:0 longitude:0 altitude:0];
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
-    _orderedRenderables = [[NSMutableArray alloc] init];
     _screenProjection = [[WWMatrix alloc] initWithIdentity];
     _objectsAtPickPoint = [[WWPickedObjectList alloc] init];
     _clearColor = [WWColor makeColorInt:77 g:77 b:77 a:255];
 
+    orderedRenderables = [[NSMutableArray alloc] init];
     defaultProgramKey = [WWUtil generateUUID];
     defaultTextureProgramKey = [WWUtil generateUUID];
     unitQuadKey = [WWUtil generateUUID];
@@ -54,7 +54,7 @@
     _timestamp = [NSDate date];
     _verticalExaggeration = 1;
 
-    [_orderedRenderables removeAllObjects];
+    [orderedRenderables removeAllObjects];
     [_objectsAtPickPoint clear];
     _pickingMode = NO;
     _pickPoint = nil;
@@ -79,25 +79,6 @@
 //    double pixelsSize = numPixels * [_navigatorState pixelSizeAtDistance:distance];
 //
 //    return extentDiameter <= pixelsSize;
-}
-
-- (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable
-{
-    if (orderedRenderable != nil)
-    {
-        [orderedRenderable setInsertionTime:[NSDate timeIntervalSinceReferenceDate]];
-        [_orderedRenderables addObject:orderedRenderable];
-    }
-}
-
-- (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable
-{
-    if (orderedRenderable != nil)
-    {
-        // TODO: Is there a reason that insertionTime is not set here?
-        [orderedRenderable setEyeDistance:DBL_MAX];
-        [_orderedRenderables addObject:orderedRenderable];
-    }
 }
 
 - (void) drawOutlinedShape:(id <WWOutlinedShape>)shape
@@ -185,6 +166,91 @@
         glDepthMask(GL_TRUE);
         glPolygonOffset(0, 0);
     }
+}
+
+- (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable
+{
+    if (orderedRenderable != nil)
+    {
+        [orderedRenderable setInsertionTime:[NSDate timeIntervalSinceReferenceDate]];
+        [orderedRenderables addObject:orderedRenderable];
+    }
+}
+
+- (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable
+{
+    if (orderedRenderable != nil)
+    {
+        // TODO: Is there a reason that insertionTime is not set here?
+        [orderedRenderable setEyeDistance:DBL_MAX];
+        [orderedRenderables addObject:orderedRenderable];
+    }
+}
+
+- (id <WWOrderedRenderable>) peekOrderedRenderable
+{
+    if ([orderedRenderables count] > 0)
+    {
+        return [orderedRenderables lastObject];
+    }
+    else
+    {
+        return nil;
+    }
+}
+
+- (id <WWOrderedRenderable>) popOrderedRenderable
+{
+    if ([orderedRenderables count] > 0)
+    {
+        id <WWOrderedRenderable> lastObject = [orderedRenderables lastObject];
+        [orderedRenderables removeLastObject];
+        return lastObject;
+    }
+    else
+    {
+        return nil;
+    }
+}
+
+- (void) sortOrderedRenderables
+{
+    // Sort the ordered renderables by eye distance from front to back and then by insertion time. The ordered
+    // renderable list is processed front its last object to its first object below, thereby drawing ordered renderables
+    // from front to back.
+    [orderedRenderables sortUsingComparator:
+            ^(id <WWOrderedRenderable> orA, id <WWOrderedRenderable> orB)
+            {
+                double eA = [orA eyeDistance];
+                double eB = [orB eyeDistance];
+
+                if (eA < eB) // orA is closer to the eye than orB; sort orA before orB
+                {
+                    return NSOrderedAscending;
+                }
+                else if (eA > eB) // orA is farther from the eye than orB; sort orB before orA
+                {
+                    return NSOrderedDescending;
+                }
+                else // orA and orB are the same distance from the eye; sort them based on insertion time
+                {
+                    NSTimeInterval tA = [orA insertionTime];
+                    NSTimeInterval tB = [orB insertionTime];
+
+                    if (tA > tB)
+                    {
+                        return NSOrderedAscending;
+                    }
+                    else if (tA < tB)
+                    {
+                        return NSOrderedDescending;
+                    }
+                    else
+                    {
+                        return NSOrderedSame;
+                    }
+                }
+            }];
 }
 
 - (unsigned int) uniquePickColor

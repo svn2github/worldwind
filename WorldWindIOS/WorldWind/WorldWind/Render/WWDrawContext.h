@@ -35,6 +35,7 @@
 @interface WWDrawContext : NSObject
 {
 @protected
+    NSMutableArray* orderedRenderables; // ordered renderable queue
     NSString* defaultProgramKey; // cache key for the default program
     NSString* defaultTextureProgramKey; // cache key for the default texture program
     NSString* unitQuadKey; // cache key for the unit quadrilateral VBO
@@ -84,9 +85,6 @@
 
 /// The current tessellated terrain.
 @property(nonatomic, readonly) id <WWTerrain> terrain;
-
-/// The current list of ordered renderables.
-@property(nonatomic, readonly) NSMutableArray* orderedRenderables;
 
 /// The modelview-projection matrix appropriate for displaying objects in screen coordinates. This matrix has the effect
 /// of preserving coordinates that have already been projected using [WWNavigatorState project:result:]. The xy screen
@@ -232,24 +230,52 @@
 */
 - (void) drawOutlinedShape:(id <WWOutlinedShape>)shape;
 
-
-/// @name Ordered Renderable Operations on Draw Context
+/// @name Ordered Renderable Operations
 
 /**
-* Adds a specified shape to the scene controller's ordered renderable list.
+* Adds a specified renderable to this draw context's ordered renderable list.
 *
-* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
+* @param orderedRenderable The renderable to add to the ordered renderable list. May be nil, in which case the ordered
 * renderable list is not modified.
 */
 - (void) addOrderedRenderable:(id <WWOrderedRenderable>)orderedRenderable;
 
 /**
-* Adds a specified shape to the back of the scene controller's ordered renderable list.
+* Adds a specified renderable to the back of this draw context's ordered renderable list.
 *
-* @param orderedRenderable The shape to add to the ordered renderable list. May be nil, in which case the ordered
+* This causes the specified object to be drawn before other ordered renderables.
+*
+* @param orderedRenderable The renderable to add to the ordered renderable list. May be nil, in which case the ordered
 * renderable list is not modified.
 */
 - (void) addOrderedRenderableToBack:(id <WWOrderedRenderable>)orderedRenderable;
+
+/**
+* Returns the next ordered renderable in this draw context's ordered renderable list without modifying the list.
+*
+* This returns nil if the ordered renderable list is empty.
+*
+* @return The next ordered renderable, or nil if the list is empty.
+*/
+- (id <WWOrderedRenderable>) peekOrderedRenderable;
+
+/**
+* Removes and returns the next ordered renderable in this draw context's ordered renderable list.
+*
+* This returns nil if the ordered renderable list is empty.
+*
+* @return The next ordered renderable, or nil if the list is empty.
+*/
+- (id <WWOrderedRenderable>) popOrderedRenderable;
+
+/**
+* Sorts this draw context's ordered renderable list in order to prepare it for rendering objects from back to front.
+*
+* Subsequent calls to peekOrderedRenderable and popOrderedRenderable return objects in back to front order based on
+* distance from the viewer's eye point. Two objects with the same eye distance are returned in their relative order in
+* the layer list.
+*/
+- (void) sortOrderedRenderables;
 
 /// @name Picking Operations
 

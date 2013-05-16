@@ -197,52 +197,20 @@
 
 - (void) drawOrderedRenderables
 {
-    // Sort the ordered renderables by eye distance from back to front and then by insertion time.
-    [[self->drawContext orderedRenderables] sortUsingComparator:
-            ^(id <WWOrderedRenderable> orA, id <WWOrderedRenderable> orB)
-            {
-                double eA = [orA eyeDistance];
-                double eB = [orB eyeDistance];
-
-                if (eA > eB) // orA is further from the eye than orB; sort orA before orB
-                {
-                    return NSOrderedAscending;
-                }
-                else if (eA < eB) // orA is closer to the eye than orB; sort orB before orA
-                {
-                    return NSOrderedDescending;
-                }
-                else // orA and orB are the same distance from the eye; sort them based on insertion time
-                {
-                    NSTimeInterval tA = [orA insertionTime];
-                    NSTimeInterval tB = [orB insertionTime];
-
-                    if (tA < tB)
-                    {
-                        return NSOrderedAscending;
-                    }
-                    else if (tA > tB)
-                    {
-                        return NSOrderedDescending;
-                    }
-                    else
-                    {
-                        return NSOrderedSame;
-                    }
-                }
-            }];
+    // Sort the ordered renderable list to prepare it for
+    [drawContext sortOrderedRenderables];
 
     // Prepare to draw the sorted ordered renderables.
-    [self->drawContext setOrderedRenderingMode:YES];
+    [drawContext setOrderedRenderingMode:YES];
 
-    NSArray* ors = [self->drawContext orderedRenderables];
-    for (NSUInteger i = 0; i < [ors count]; i++)
+    // Process each ordered renderable in the queue. We avoid use of an iterator or enumerator and remove entries so
+    // that renderables may draw themselves in batch and remove themselves from the queue as they do so.
+    id <WWOrderedRenderable> or = nil;
+    while ((or = [drawContext popOrderedRenderable]) != nil)
     {
-        id <WWOrderedRenderable> or = [ors objectAtIndex:i];
-
         @try
         {
-            [or render:self->drawContext];
+            [or render:drawContext];
         }
         @catch (NSException* exception)
         {
@@ -252,7 +220,7 @@
         }
     }
 
-    [self->drawContext setOrderedRenderingMode:NO];
+    [drawContext setOrderedRenderingMode:NO];
 }
 
 - (void) resolveTopPick
