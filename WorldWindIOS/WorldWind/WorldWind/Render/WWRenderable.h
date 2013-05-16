@@ -10,7 +10,7 @@
 /**
 * Provides a method to draw an instance conforming to this protocol.
 */
-@protocol WWRenderable
+@protocol WWRenderable <NSObject>
 
 ///  @name Renderable Attributes
 
