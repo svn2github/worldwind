@@ -28,15 +28,10 @@
     WWTexture* activeTexture;
     // Placemark geometry.
     WWVec4* placePoint;
-    WWVec4* screenPoint;
-    WWVec4* screenOffset;
     WWMatrix* imageTransform;
-    CGRect imageRect;
-    // Rendering and picking support.
-    WWMatrix* matrix;
-    WWColor* color;
+    CGRect imageBounds;
+    // Picking attributes.
     WWLayer* pickLayer;
-    WWPickSupport* pickSupport;
 }
 
 /// @name Point Placemark Attributes
@@ -83,6 +78,8 @@
 - (void) drawOrderedRenderable:(WWDrawContext*)dc;
 
 - (void) doDrawOrderedRenderable:(WWDrawContext*)dc;
+
+- (void) doDrawBatchOrderedRenderables:(WWDrawContext*)dc;
 
 - (void) beginDrawing:(WWDrawContext*)dc;
 

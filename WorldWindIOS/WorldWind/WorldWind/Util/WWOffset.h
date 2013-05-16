@@ -111,10 +111,11 @@
 */
 - (WWOffset*) initWithOffset:(WWOffset*)offset;
 
-/// @name Computing the Absolute Offset
+/// @name Computing the Offset in Pixels
 
 /**
-* Computes the offset's absolute x- and y-coordinates in pixels for a rectangle of variable size and scale.
+* Computes this offset's absolute x- and y-coordinates in pixels for a rectangle of variable size and scale and adds
+* the coordinates to the specified result vector.
 *
 * The rectangle's width and height are understood to be defined in pixels.
 *
@@ -125,17 +126,42 @@
 * coordinates are always interpreted relative to the rectangle's scaled dimensions. If scale of 0.0 is specified, the
 * corresponding offset coordinate is also 0.0.
 *
-* The offset's absolute x- and y-coordinates are written to the result's x and y properties, respectively.
+* The offset's absolute x- and y-coordinates are added to the result vector's x- and y-coordinates, respectively.
 *
 * @param width The rectangle's width, in pixels.
 * @param height The rectangle's height, in pixels.
 * @param xScale The rectangle's x-scale, or 1.0 if the rectangle has no scale.
 * @param yScale The rectangle's y-scale, or 1.0 if the rectangle has no scale.
-* @param result The result that receives this offset's absolute x- and y-coordinates.
+* @param result The vector to add this offset's absolute x- and y-coordinates to.
 *
 * @exception NSInvalidArgumentException If the result is nil.
 */
-- (void) offsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                 result:(WWVec4*)result;
+- (void) addOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
+                    result:(WWVec4*)result;
 
+/**
+* Computes this offset's absolute x- and y-coordinates in pixels for a rectangle of variable size and scale and
+* subtracts the coordinates from the specified result vector.
+*
+* The rectangle's width and height are understood to be defined in pixels.
+*
+* The rectangle's x- and y-scale should be either 1.0 to indicate no scaling, or any scaling value that is applied to
+* the rectangle's coordinates during rendering. Scale values are specified independently from dimensions to preserve the
+* offset's location relative the rectangle in its original size. For example, if an offset is configured as pixel
+* coordinates of (10, 10) and a scale of 2x is applied, the absolute offset coordinates are (20, 20). Fractional
+* coordinates are always interpreted relative to the rectangle's scaled dimensions. If scale of 0.0 is specified, the
+* corresponding offset coordinate is also 0.0.
+*
+* The offset's absolute x- and y-coordinates are subtracted from the result vector's x- and y-coordinates, respectively.
+*
+* @param width The rectangle's width, in pixels.
+* @param height The rectangle's height, in pixels.
+* @param xScale The rectangle's x-scale, or 1.0 if the rectangle has no scale.
+* @param yScale The rectangle's y-scale, or 1.0 if the rectangle has no scale.
+* @param result The vector to subtract this offset's absolute x- and y-coordinates from.
+*
+* @exception NSInvalidArgumentException If the result is nil.
+*/
+- (void) subtractOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
+                         result:(WWVec4*)result;
 @end

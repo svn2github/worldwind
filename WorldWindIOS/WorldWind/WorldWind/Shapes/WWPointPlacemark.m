@@ -28,11 +28,32 @@
 
 #define DEFAULT_DEPTH_OFFSET -0.01
 
+// Temporary objects shared by all point placemarks and used during rendering.
+static WWVec4* point;
+static WWMatrix* matrix;
+static WWColor* color;
+static WWPickSupport* pickSupport;
+static WWTexture* currentTexture;
+
 @implementation WWPointPlacemark
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Point Placemarks --//
 //--------------------------------------------------------------------------------------------------------------------//
+
++ (void) initialize
+{
+    static BOOL initialized = NO; // protects against erroneous explicit calls to this method
+    if (!initialized)
+    {
+        initialized = YES;
+
+        point = [[WWVec4 alloc] initWithZeroVector];
+        matrix = [[WWMatrix alloc] initWithIdentity];
+        color = [[WWColor alloc] init];
+        pickSupport = [[WWPickSupport alloc] init];
+    }
+}
 
 - (WWPointPlacemark*) initWithPosition:(WWPosition*)position
 {
@@ -49,14 +70,7 @@
 
     // Placemark geometry.
     placePoint = [[WWVec4 alloc] initWithZeroVector];
-    screenPoint = [[WWVec4 alloc] initWithZeroVector];
-    screenOffset = [[WWVec4 alloc] initWithZeroVector];
     imageTransform = [[WWMatrix alloc] initWithIdentity];
-
-    // Rendering support.
-    matrix = [[WWMatrix alloc] initWithIdentity];
-    color = [[WWColor alloc] init];
-    pickSupport = [[WWPickSupport alloc] init];
 
     _displayName = @"Placemark";
     _highlighted = NO;
@@ -86,6 +100,11 @@
     if ([dc orderedRenderingMode])
     {
         [self drawOrderedRenderable:dc];
+
+        if ([dc pickingMode])
+        {
+            [pickSupport resolvePick:dc layer:pickLayer];
+        }
     }
     else
     {
@@ -114,7 +133,7 @@
     }
 
     [self doMakeOrderedRenderable:dc];
-    if (CGRectIsEmpty(imageRect))
+    if (CGRectIsEmpty(imageBounds))
     {
         return;
     }
@@ -142,9 +161,9 @@
 
     _eyeDistance = [[[dc navigatorState] eyePoint] distanceTo3:placePoint];
 
-    if (![[dc navigatorState] project:placePoint result:screenPoint depthOffset:DEFAULT_DEPTH_OFFSET])
+    if (![[dc navigatorState] project:placePoint result:point depthOffset:DEFAULT_DEPTH_OFFSET])
     {
-        imageRect = CGRectMake(0, 0, 0, 0);
+        imageBounds = CGRectMake(0, 0, 0, 0);
         return; // The place point is clipped by the near plane or the far plane.
     }
 
@@ -153,22 +172,19 @@
         double w = [activeTexture imageWidth];
         double h = [activeTexture imageHeight];
         double s = [activeAttributes imageScale];
-        [screenOffset setToZeroVector];
-        [[activeAttributes imageOffset] offsetForWidth:w height:h xScale:s yScale:s result:screenOffset];
-        [imageTransform setToIdentity];
-        [imageTransform setTranslation:[screenPoint x] - [screenOffset x] y:[screenPoint y] - [screenOffset y] z:[screenPoint z]];
+        [[activeAttributes imageOffset] subtractOffsetForWidth:w height:h xScale:s yScale:s result:point];
+        [imageTransform setTranslation:[point x] y:[point y] z:[point z]];
         [imageTransform setScale:w * s y:h * s z:1];
     }
     else
     {
         double s = [activeAttributes imageScale];
-        [screenOffset setToZeroVector];
-        [[activeAttributes imageOffset] offsetForWidth:s height:s xScale:1 yScale:1 result:screenOffset];
-        [imageTransform setTranslation:[screenPoint x] - [screenOffset x] y:[screenPoint y] - [screenOffset y] z:[screenPoint z]];
+        [[activeAttributes imageOffset] subtractOffsetForWidth:s height:s xScale:1 yScale:1 result:point];
+        [imageTransform setTranslation:[point x] y:[point y] z:[point z]];
         [imageTransform setScale:s y:s z:1];
     }
 
-    imageRect = [WWMath boundingRectForUnitQuad:imageTransform];
+    imageBounds = [WWMath boundingRectForUnitQuad:imageTransform];
 }
 
 - (void) determineActiveAttributes:(WWDrawContext*)dc
@@ -204,11 +220,11 @@
     if ([dc pickingMode])
     {
         CGPoint pickPoint = CGPointMake((CGFloat) [[dc pickPoint] x], CGRectGetHeight(viewport) - (CGFloat) [[dc pickPoint] y]);
-        return CGRectContainsPoint(imageRect, pickPoint);
+        return CGRectContainsPoint(imageBounds, pickPoint);
     }
     else
     {
-        return CGRectIntersectsRect(imageRect, viewport);
+        return CGRectIntersectsRect(imageBounds, viewport);
     }
 }
 
@@ -219,6 +235,7 @@
     @try
     {
         [self doDrawOrderedRenderable:dc];
+        [self doDrawBatchOrderedRenderables:dc];
     }
     @finally
     {
@@ -226,23 +243,15 @@
     }
 }
 
-- (void) doDrawOrderedRenderable:(WWDrawContext*)dc
+- (void) doDrawOrderedRenderable:(WWDrawContext*)dc;
 {
     WWGpuProgram* program = [dc currentProgram];
-
-    [matrix setToMatrix:[dc screenProjection]];
-    [matrix multiplyMatrix:imageTransform];
-    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
-
-    [matrix setToUnitYFlip];
-    [program loadUniformMatrix:@"texCoordMatrix" matrix:matrix];
 
     if ([dc pickingMode])
     {
         unsigned int pickColor = [dc uniquePickColor];
         [pickSupport addPickableObject:[self createPickedObject:dc colorCode:pickColor]];
         [program loadUniformColorInt:@"color" color:pickColor];
-        [program loadUniformBool:@"enableTexture" value:NO];
     }
     else
     {
@@ -250,39 +259,81 @@
         [color preMultiply];
         [program loadUniformColor:@"color" color:color];
 
-        BOOL enableTexture = [activeTexture bind:dc]; // returns NO if activeTexture is nil
-        [program loadUniformBool:@"enableTexture" value:enableTexture];
-        [program loadUniformSampler:@"textureSampler" value:0];
+        if (currentTexture != activeTexture) // avoid unnecessary texture state changes
+        {
+            BOOL enableTexture = [activeTexture bind:dc]; // returns NO if activeTexture is nil
+            [program loadUniformBool:@"enableTexture" value:enableTexture];
+            currentTexture = activeTexture;
+        }
     }
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    [matrix setToMatrix:[dc screenProjection]];
+    [matrix multiplyMatrix:imageTransform];
+    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
 
-    if ([dc pickingMode])
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+- (void) doDrawBatchOrderedRenderables:(WWDrawContext*)dc
+{
+    // Draw any subsequent point placemarks in the ordered renderable queue, removing each from the queue as it's
+    // processed. This avoids reduces the overhead of setting up and tearing down OpenGL state for each placemark.
+
+    id <WWOrderedRenderable> or = nil;
+    Class selfClass = [self class];
+
+    while ((or = [dc peekOrderedRenderable]) != nil && [or isKindOfClass:selfClass])
     {
-        [pickSupport resolvePick:dc layer:pickLayer];
+        [dc popOrderedRenderable]; // Remove it from the ordered renderable queue.
+
+        @try
+        {
+            [(WWPointPlacemark*) or doDrawOrderedRenderable:dc];
+        }
+        @catch (NSException* exception)
+        {
+            NSString* msg = [NSString stringWithFormat:@"rendering shape"];
+            WWLogE(msg, exception);
+            // Keep going. Render the rest of the ordered renderables.
+        }
     }
 }
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
-    // Bind the default texture program.
+    // Bind the default texture program. This sets the program as the current OpenGL program and the current draw
+    // context program.
     WWGpuProgram* program = [dc defaultTextureProgram];
-
-    // Bind the unit quad vertex buffer object.
-    glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
 
     // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
     // vertex point coordinates and vertex texture coordinate.
-    GLuint location = (GLuint) [program getAttributeLocation:@"vertexPoint"];
-    glEnableVertexAttribArray(location);
-    glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
+    int location = [program getAttributeLocation:@"vertexPoint"];
+    glEnableVertexAttribArray((GLuint) location);
+    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
-    glEnableVertexAttribArray(location);
-    glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    location = [program getAttributeLocation:@"vertexTexCoord"];
+    glEnableVertexAttribArray((GLuint) location);
+    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Load the texture coordinate matrix and texture sampler unit. These uniform variables do not change during the
+    // program's execution over multiple point placemarks.
+    [matrix setToUnitYFlip];
+    [program loadUniformMatrix:@"texCoordMatrix" matrix:matrix];
+    [program loadUniformSampler:@"textureSampler" value:0];
+
+    // Disable texturing when in picking mode. These uniform variables do not change during the program's execution over
+    // multiple point placemarks.
+    if ([dc pickingMode])
+    {
+        [program loadUniformBool:@"enableTexture" value:NO];
+    }
 
     // Configure the GL depth state to suppress depth buffer writes.
     glDepthMask(GL_FALSE);
+
+    // Clear the current texture reference. This ensures that the first texture used by a placemark is bound.
+    currentTexture = nil;
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
@@ -297,13 +348,14 @@
     location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
     glDisableVertexAttribArray(location);
 
-    // Restore the GL program binding, buffer binding and texture binding.
+    // Restore the GL program binding, buffer binding, texture binding, and depth state.
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Restore the GL depth state.
     glDepthMask(GL_TRUE);
+
+    // Avoid keeping a dangling reference to the current texture.
+    currentTexture = nil;
 }
 
 - (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode

@@ -62,39 +62,84 @@
     return self;
 }
 
-- (void) offsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                 result:(WWVec4*)result
+- (void) addOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
+                    result:(WWVec4*)result
 {
     if (result == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
     }
 
+    double x = [result x];
+    double y = [result y];
+
     if ([_xUnits isEqualToString:WW_FRACTION])
     {
-        [result setX:(width * _x) * xScale];
+        x += (width * _x) * xScale;
     }
     else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
     {
-        [result setX:(width - _x) * xScale];
+        x += (width - _x) * xScale;
     }
     else // default to WW_PIXELS
     {
-        [result setX:_x * xScale];
+        x += _x * xScale;
     }
 
     if ([_xUnits isEqualToString:WW_FRACTION])
     {
-        [result setY:(height * _y) * yScale];
+        y += (height * _y) * yScale;
     }
     else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
     {
-        [result setY:(height - _y) * yScale];
+        y += (height - _y) * yScale;
     }
     else // default to WW_PIXELS
     {
-        [result setY:_y * yScale];
+        y += _y * yScale;
     }
+
+    [result set:x y:y];
+}
+
+- (void) subtractOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
+                         result:(WWVec4*)result;
+{
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    double x = [result x];
+    double y = [result y];
+
+    if ([_xUnits isEqualToString:WW_FRACTION])
+    {
+        x -= (width * _x) * xScale;
+    }
+    else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
+    {
+        x -= (width - _x) * xScale;
+    }
+    else // default to WW_PIXELS
+    {
+        x -= _x * xScale;
+    }
+
+    if ([_xUnits isEqualToString:WW_FRACTION])
+    {
+        y -= (height * _y) * yScale;
+    }
+    else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
+    {
+        y -= (height - _y) * yScale;
+    }
+    else // default to WW_PIXELS
+    {
+        y -= _y * yScale;
+    }
+
+    [result set:x y:y];
 }
 
 @end
