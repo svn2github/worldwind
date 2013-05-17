@@ -15,6 +15,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.net.*;
+import java.text.*;
 import java.util.*;
 
 /**
@@ -196,7 +197,34 @@ public class WMSCapabilities extends OGCCapabilities
             }
         }
 
-        return null;
+        // See if the caps doc has a date in the update sequence.
+        return this.parseUpdateSequence(caps);
+    }
+
+    /**
+     * Checks the capabilities document's update sequence field for a date and returns the time since epoch for that
+     * date.
+     * @param caps The capabilities document.
+     * @return The epoch time for the update sequence date, if any, otherwise null.
+     */
+    protected Long parseUpdateSequence(WMSCapabilities caps)
+    {
+        String dateString = caps.getUpdateSequence();
+        if (dateString == null)
+            return null;
+
+        try
+        {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"); // ISO 8601:2000 format
+            dateString = dateString.replaceAll("Z", "-0000"); // replace the UTC designator
+            return dateFormat.parse(dateString).getTime();
+        }
+        catch (ParseException e)
+        {
+            String message = Logging.getMessage("WMS.UpdateSequenceFormatUnrecognized", dateString);
+            Logging.logger().info(message);
+            return null;
+        }
     }
 
     public Double[] getLayerExtremeElevations(WMSCapabilities caps, String[] layerNames)
