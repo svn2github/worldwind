@@ -205,6 +205,7 @@
 
     [self buildTileVertices:dc tile:tile];
     [self buildSharedGeometry:tile];
+    [[dc gpuResourceCache] removeResourceForKey:[tile cacheKey]]; // remove out of date VBOs from the GPU resource cache
 
     // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
     // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
