@@ -1322,8 +1322,7 @@ public class ImageUtil
     }
 
     /**
-     * Performs bilinear interpolation of 32-bit colors over a convex quadrilateral. The four colors are specified in
-     * counterclockwise order beginning with the lower left.
+     * Performs bilinear interpolation of 32-bit colors over a convex quadrilateral.
      *
      * @param x  horizontal coordinate of the interpolation point relative to the lower left corner of the
      *           quadrilateral. The value should generally be in the range [0, 1].
@@ -1331,8 +1330,8 @@ public class ImageUtil
      *           The value should generally be in the range [0, 1].
      * @param c0 color at the lower left corner of the quadrilateral.
      * @param c1 color at the lower right corner of the quadrilateral.
-     * @param c2 color at the pixel upper right corner of the quadrilateral.
-     * @param c3 color at the pixel upper left corner of the quadrilateral.
+     * @param c2 color at the pixel upper left corner of the quadrilateral.
+     * @param c3 color at the pixel upper right corner of the quadrilateral.
      *
      * @return int the interpolated color.
      */
@@ -2023,7 +2022,7 @@ public class ImageUtil
                 // - greater than max elevation or smaller than min elevation
                 if (v == missingDataSignal || v == 0 || v < min || v > max)
                 {
-                    data[BAND_Y][i] = (short) (0xFFFF & (int) missingDataReplacement);
+                    data[BAND_Y][i] = (short) (0xFFFF & missingDataReplacement);
                     data[BAND_ALPHA][i] = ALPHA_TRANSLUCENT;
                     hasVoids = true;
                 }
