@@ -23,6 +23,11 @@
     return self;
 }
 
+- (void) dispose
+{
+    // Intentionally left blank. Zero elevation model has nothing to dispose.
+}
+
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude;
 {
     return 0;

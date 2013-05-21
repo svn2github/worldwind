@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "WorldWind/Util/WWDisposable.h"
 
 @class WWSector;
 
@@ -23,7 +24,7 @@
 * elevationsForSector:numLat:numLon:targetResolution:verticalExaggeration:result: identifies the resolution achievable
 * with the data currently available. That resolution may not be the same as the target resolution.
 */
-@protocol WWElevationModel <NSObject>
+@protocol WWElevationModel <NSObject, WWDisposable>
 
 /// @name Elevation Model Attributes
 

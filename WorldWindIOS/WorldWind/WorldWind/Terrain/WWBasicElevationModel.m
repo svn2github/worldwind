@@ -21,6 +21,10 @@
 
 @implementation WWBasicElevationModel
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Elevation Models --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (WWBasicElevationModel*) initWithSector:(WWSector*)sector
                            levelZeroDelta:(WWLocation*)levelZeroDelta
                                 numLevels:(int)numLevels
@@ -89,6 +93,15 @@
 
     return self;
 }
+
+- (void) dispose
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Retrieving Elevations --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (double) elevationForLatitude:(double)latitude longitude:(double)longitude
 {
@@ -245,6 +258,10 @@
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Tile Factory Protocol --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
     NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
@@ -253,6 +270,10 @@
     return [[WWElevationTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath
                                              cache:imageCache];
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Methods of Interest Only to Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (WWLevel*) levelForResolution:(double)targetResolution
 {
