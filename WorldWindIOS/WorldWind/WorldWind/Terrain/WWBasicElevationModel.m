@@ -333,7 +333,7 @@
 {
     WWElevationTile* tile = [self tileForLevelNumber:[level levelNumber] row:row column:column];
 
-    if ([self isTileImageLocal:tile])
+    if ([self isTileImageInMemory:tile])
     {
         [currentTiles addObject:tile];
     }
@@ -341,7 +341,7 @@
     {
         if (retrieveTiles)
         {
-            [self retrieveTileImage:tile];
+            [self loadOrRetrieveTileImage:tile];
         }
 
         if ([level isFirstLevel])
@@ -366,7 +366,7 @@
     {
         tile = [self tileForLevelNumber:i row:r column:c];
 
-        if ([self isTileImageLocal:tile])
+        if ([self isTileImageInMemory:tile])
         {
             [currentTiles addObject:tile]; // Have an ancestor tile with an in-memory image.
             return;
@@ -383,7 +383,7 @@
 
     if (retrieveTiles)
     {
-        [self retrieveTileImage:tile];
+        [self loadOrRetrieveTileImage:tile];
     }
 }
 
@@ -408,41 +408,50 @@
     }
 }
 
-- (BOOL) isTileImageLocal:(WWElevationTile*)tile
+- (BOOL) isTileImageInMemory:(WWElevationTile*)tile
 {
     return [imageCache containsKey:[tile imagePath]];
 }
 
-- (void) retrieveTileImage:(WWElevationTile*)tile
+- (void) loadOrRetrieveTileImage:(WWElevationTile*)tile
 {
     // See if it's already on disk.
     if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
     {
-        if ([currentLoads containsObject:[tile imagePath]] || [absentResources isResourceAbsent:[tile imagePath]])
-        {
-            return;
-        }
+        [self loadTileImage:tile];
+    }
+    else // If the app is connected to the network, retrieve the image from there.
+    {
+        [self retrieveTileImage:tile];
+    }
+}
 
-        [currentLoads addObject:[tile imagePath]];
-
-        WWElevationImage* image = [[WWElevationImage alloc] initWithImagePath:[tile imagePath]
-                                                                       sector:[tile sector]
-                                                                   imageWidth:[tile tileWidth]
-                                                                  imageHeight:[tile tileHeight]
-                                                                        cache:imageCache
-                                                                       object:self];
-        [[WorldWind loadQueue] addOperation:image];
+- (void) loadTileImage:(WWElevationTile*)tile
+{
+    if ([currentLoads containsObject:[tile imagePath]])
+    {
         return;
     }
 
-    // If the app is connected to the network, retrieve the image from there.
+    [currentLoads addObject:[tile imagePath]];
 
+    WWElevationImage* image = [[WWElevationImage alloc] initWithImagePath:[tile imagePath]
+                                                                   sector:[tile sector]
+                                                               imageWidth:[tile tileWidth]
+                                                              imageHeight:[tile tileHeight]
+                                                                    cache:imageCache
+                                                                   object:self];
+    [[WorldWind loadQueue] addOperation:image];
+}
+
+- (void) retrieveTileImage:(WWElevationTile*)tile
+{
     if ([WorldWind isOfflineMode])
     {
         return;
     }
 
-    if ([currentRetrievals containsObject:[tile imagePath]])
+    if ([currentRetrievals containsObject:[tile imagePath]] || [absentResources isResourceAbsent:[tile imagePath]])
     {
         return;
     }

@@ -109,7 +109,11 @@
 
 - (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column;
 
-- (BOOL) isTileImageLocal:(WWElevationTile*)tile;
+- (BOOL) isTileImageInMemory:(WWElevationTile*)tile;
+
+- (void) loadOrRetrieveTileImage:(WWElevationTile*)tile;
+
+- (void) loadTileImage:(WWElevationTile*)tile;
 
 - (void) retrieveTileImage:(WWElevationTile*)tile;
 
