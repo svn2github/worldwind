@@ -23,7 +23,7 @@
             retrievalImageFormat:@"image/png"
                        cachePath:cachePath];
     [self setDisplayName:@"Open Street Map"];
-//    [self setImageFile:@"Bing"];
+    [self setEnabled:NO];
 
     NSString* serviceLocation = @"http://worldwind20.arc.nasa.gov/mapcache";
     WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
