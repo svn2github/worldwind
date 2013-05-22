@@ -9,10 +9,15 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/WorldWind.h"
+#import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
 
 @implementation WWI3LandsatLayer
 - (WWI3LandsatLayer*) init
 {
+    NSString* layerName = @"esat";
+    NSString* serviceAddress = @"http://worldwind25.arc.nasa.gov/wms";
+
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"I3Landsat"];
 
@@ -24,14 +29,18 @@
     [self setDisplayName:@"Landsat"];
     [self setImageFile:@"Landsat"];
 
-    NSString* serviceLocation = @"http://data.worldwind.arc.nasa.gov/wms";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:@"esat"
+    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
+                                                                        layerNames:layerName
                                                                         styleNames:@""
                                                                         wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:300e3];
-//    [self setMinActiveAltitude:10e3];
+
+    WWWMSLayerExpirationRetriever* expirationChecker =
+            [[WWWMSLayerExpirationRetriever alloc] initWithLayer:self
+                                                     layerName:layerName
+                                                serviceAddress:serviceAddress];
+    [[WorldWind loadQueue] addOperation:expirationChecker];
 
     return self;
 }

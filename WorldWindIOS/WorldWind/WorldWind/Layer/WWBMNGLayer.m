@@ -9,11 +9,16 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WWWMSLayerExpirationRetriever.h"
+#import "WorldWind/WorldWind.h"
 
 @implementation WWBMNGLayer
 
 - (WWBMNGLayer*) init
 {
+    NSString* layerName = @"BlueMarble-200405";
+    NSString* serviceAddress = @"http://worldwind25.arc.nasa.gov/wms";
+
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"BMNG"];
 
@@ -25,12 +30,17 @@
     [self setDisplayName:@"Blue Marble"];
     [self setImageFile:@"BlueMarble"];
 
-    NSString* serviceLocation = @"http://data.worldwind.arc.nasa.gov/wms";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:@"bmng200405"
+    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
+                                                                        layerNames:layerName
                                                                         styleNames:@""
                                                                         wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
+
+    WWWMSLayerExpirationRetriever* expirationChecker =
+            [[WWWMSLayerExpirationRetriever alloc] initWithLayer:self
+                                                     layerName:layerName
+                                                serviceAddress:serviceAddress];
+    [[WorldWind loadQueue] addOperation:expirationChecker];
 
     return self;
 }
