@@ -179,7 +179,7 @@ public class WMSCapabilities extends OGCCapabilities
             if (layer == null)
                 continue;
 
-            String update = layer.getLastUpdate();
+            String update = this.getLayerLastUpdate(layer);
             if (update != null && update.length() > 0 && (lastUpdate == null || update.compareTo(lastUpdate) > 0))
                 lastUpdate = update;
         }
@@ -197,31 +197,64 @@ public class WMSCapabilities extends OGCCapabilities
             }
         }
 
-        // See if the caps doc has a date in the update sequence.
-        return this.parseUpdateSequence(caps);
+        return null;
     }
 
     /**
-     * Checks the capabilities document's update sequence field for a date and returns the time since epoch for that
-     * date.
-     * @param caps The capabilities document.
-     * @return The epoch time for the update sequence date, if any, otherwise null.
+     * Checks the WMS layer capabilities for a LastUpdate entry, either an explicit element by that name or a layer
+     * keyword.
+     *
+     * @param layerCaps The layer's capabilities taken from the server's capabilities document.
+     *
+     * @return A string representation of the epoch time for the last update string, if any, otherwise null.
      */
-    protected Long parseUpdateSequence(WMSCapabilities caps)
+    protected String getLayerLastUpdate(WMSLayerCapabilities layerCaps)
     {
-        String dateString = caps.getUpdateSequence();
-        if (dateString == null)
+        // See if there's an explicit element. This is what the original WW servers contained in their caps docs.
+        String update = layerCaps.getLastUpdate();
+        if (update != null)
+            return update;
+
+        // See if there's a last-update keyword. This is the new mechanism for WW servers passing a last-update.
+        Set<String> keywords = layerCaps.getKeywords();
+        for (String keyword : keywords)
+        {
+            if (keyword.startsWith("LastUpdate="))
+            {
+                return this.parseLastUpdate(keyword);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Parse a LastUpdate string.
+     *
+     * @param lastUpdateString The string containing the LastUpdate string in the format "LastUpdate=yyyy-MM-dd'T'HH:mm:ssZ"
+     *
+     * @return A string representation of the epoch time for the last update string, of null if the string can't be
+     *         parsed as a date.
+     */
+    protected String parseLastUpdate(String lastUpdateString)
+    {
+        String[] splitKeyword = lastUpdateString.split("=");
+        if (splitKeyword.length != 2)
+            return null;
+
+        String dateString = splitKeyword[1];
+        if (dateString == null || dateString.length() == 0)
             return null;
 
         try
         {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"); // ISO 8601:2000 format
             dateString = dateString.replaceAll("Z", "-0000"); // replace the UTC designator
-            return dateFormat.parse(dateString).getTime();
+            return Long.toString(dateFormat.parse(dateString).getTime());
         }
         catch (ParseException e)
         {
-            String message = Logging.getMessage("WMS.UpdateSequenceFormatUnrecognized", dateString);
+            String message = Logging.getMessage("WMS.LastUpdateFormatUnrecognized", dateString);
             Logging.logger().info(message);
             return null;
         }
