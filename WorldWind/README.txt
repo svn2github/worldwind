@@ -72,6 +72,23 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Removed the need for the separate performance JAR file worldwind-performance.jar.
   Moved the performance package into gov.nasa.worldwindx.performance.
 
+  Note on using the JOGL libraries without the default runtime extraction of native binaries.
+    This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
+    path instead of dynamically using the native binary JAR files. Here are instructions on how to implement this:
+
+    1) Extract the GlueGen and JOGL native binary JAR files for the desired platform.
+    These JAR files follow the naming pattern gluegen-rt-natives-PLATFORM.jar and jogl-all-natives-PLATFORM.jar
+
+    2) Place the extracted native binaries either in the program's working directory or in a location specified as the
+    library path.
+    The following JOGL user's guide page outlines supported library path variables:
+    https://jogamp.org/jogl/doc/userguide/index.html#traditionallibraryloading
+
+    3) Remove the GlueGen and JOGL native binary JAR files from your application's workspace.
+    JOGL attempts to use the native binary JAR files before loading from the library path, so these files must not be
+    deployed with the application.
+
+    4) When running, specify the JVM argument -Djogamp.gluegen.UseTempJarCache=false
 
 New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 ------------------------------------------------------------
