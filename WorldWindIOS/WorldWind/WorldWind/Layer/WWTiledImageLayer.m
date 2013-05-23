@@ -204,8 +204,6 @@
     {
         [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:self->currentTiles opacity:[self opacity]];
 
-        // TODO: Check texture expiration
-
         [self->currentTiles removeAllObjects];
     }
 }
