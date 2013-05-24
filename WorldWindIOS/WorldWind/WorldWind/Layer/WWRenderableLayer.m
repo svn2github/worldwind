@@ -37,6 +37,19 @@
     [_renderables addObject:renderable];
 }
 
+- (void) addRenderables:(NSArray*)renderables
+{
+    if (renderables == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Renderables is nil")
+    }
+
+    for (id <WWRenderable> renderable in renderables)
+    {
+        [_renderables addObject:renderable];
+    }
+}
+
 - (void) removeRenderable:(id <WWRenderable>)renderable
 {
     if (renderable == nil)

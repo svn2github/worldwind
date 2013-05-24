@@ -43,6 +43,17 @@
 - (void) addRenderable:(id <WWRenderable>)renderable;
 
 /**
+* Add a specified list of renderables to this layer.
+*
+* The renderables are added to the end of this layer's renderable list.
+*
+* @param renderables The renderables to add.
+*
+* @exception NSInvalidArgumentException If the specified renderable list is nil.
+*/
+- (void) addRenderables:(NSArray*)renderables;
+
+/**
 * Remove a specified renderable from this layer.
 *
 * @param renderable The renderable to remove.
