@@ -6,7 +6,7 @@
  */
 
 #import "WMSServerListController.h"
-#import "WorldWindView.h"
+#import "WorldWind/WorldWindView.h"
 
 NSString* WW_WMS_SERVER_LIST = @"WMSServerList";
 NSString* WW_WMS_SERVER_TITLE = @"WMSServerTitle";
@@ -25,8 +25,14 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
 
     [self initializeServerList];
 
+
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
     [[self navigationItem] setTitle:@"WMS Servers"];
+
+    addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"05-plus"]
+                                                 style:UIBarButtonItemStylePlain
+                                                target:self action:@selector(handleAddButtonTap)];
+    [[self navigationItem] setLeftBarButtonItem:addButton];
 
     return self;
 }
@@ -92,6 +98,28 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+}
+
+- (void) handleAddButtonTap
+{
+    UIAlertView* inputView = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:@"Enter WMS server URL:"
+                                                       delegate:self
+                                              cancelButtonTitle:@"Cancel"
+                                              otherButtonTitles:@"Ok", nil];
+    [inputView setAlertViewStyle:UIAlertViewStylePlainTextInput];
+    [[inputView textFieldAtIndex:0] setText:@"http://"];
+    [[inputView textFieldAtIndex:0] setKeyboardType:UIKeyboardTypeURL];
+    [inputView show];
+}
+
+- (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1)
+    {
+        NSString* url = [[alertView textFieldAtIndex:0] text];
+        NSLog(@"%@", url);
+    }
 }
 
 @end

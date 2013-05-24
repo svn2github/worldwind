@@ -9,9 +9,10 @@
 
 @class WorldWindView;
 
-@interface WMSServerListController : UITableViewController
+@interface WMSServerListController : UITableViewController <UIAlertViewDelegate>
 {
     NSMutableArray* servers;
+    UIBarButtonItem* addButton;
 }
 
 @property (nonatomic, readonly) WorldWindView* wwv;
