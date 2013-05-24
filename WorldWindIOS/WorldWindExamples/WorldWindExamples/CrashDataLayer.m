@@ -12,6 +12,51 @@
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "WWPointPlacemarkAttributes.h"
 #import "WorldWindConstants.h"
+#import "WorldWind.h"
+
+@interface CrashDataLayerRetriever : NSOperation
+@end
+
+@implementation CrashDataLayerRetriever
+{
+    NSString* urlString;
+    CrashDataLayer* layer;
+}
+
+- (CrashDataLayerRetriever*)initWithUrl:(NSString*)url layer:(CrashDataLayer*)crashDataLayer
+{
+    self = [super init];
+
+    urlString = url;
+    layer = crashDataLayer;
+
+    return self;
+}
+
+- (void) main
+{
+    @autoreleasepool
+    {
+        NSURL* url = [[NSURL alloc] initWithString:urlString];
+        NSData* data = [WWUtil retrieveUrl:url timeout:5];
+        if (data == nil)
+        {
+            WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
+            return;
+        }
+
+        NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:data];
+        [docParser setDelegate:layer];
+
+        BOOL status = [docParser parse];
+        if (status == NO)
+        {
+            WWLog(@"Crash data parsing failed");
+        }
+    }
+}
+
+@end
 
 @implementation CrashDataLayer
 
@@ -21,25 +66,12 @@
 
     [self setDisplayName:@"Accidents"];
 
-    NSURL* url = [[NSURL alloc] initWithString:urlString];
-    NSData* data = [WWUtil retrieveUrl:url timeout:5];
-    if (data == nil)
-    {
-        WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
-        return self;
-    }
-
     iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"placemark_circle.png"];
+    placemarks = [[NSMutableArray alloc] init];
 
-    docParser = [[NSXMLParser alloc] initWithData:data];
-    [docParser setDelegate:self];
-
-    BOOL status = [docParser parse];
-    if (status == NO)
-    {
-        WWLog(@"Crash data parsing failed");
-    }
-//    NSLog(@"%d placemarks", [[self renderables] count]);
+    // Retrieve the crash data on a separate thread because it takes a while to download and parse.
+    CrashDataLayerRetriever* retriever = [[CrashDataLayerRetriever alloc] initWithUrl:urlString layer:self];
+    [[WorldWind loadQueue] addOperation:retriever];
 
     return self;
 }
@@ -70,7 +102,7 @@
 {
     if ([elementName isEqualToString:@"Placemark"])
     {
-        [self addCurrentPlacemarkToLayer];
+        [self addCurrentPlacemark];
         currentPlacemark = nil;
     }
     else if ([elementName isEqualToString:@"SimpleData"])
@@ -99,6 +131,24 @@
     }
 }
 
+- (void) parserDidEndDocument:(NSXMLParser*)parser
+{
+    [self performSelectorOnMainThread:@selector(addPlacemarksOnMainThread:)
+                           withObject:nil
+                        waitUntilDone:NO];
+}
+
+- (void) addPlacemarksOnMainThread:(id)object
+{
+    [self addRenderables:placemarks];
+
+    placemarks = nil; // placemark list is needed only during parsing
+
+    // Redraw in case the layer was enabled before all the placemarks were loaded.
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+}
+
 - (WWPosition*) parseCoordinates:(NSString*)string
 {
     NSArray* coords = [string componentsSeparatedByString:@","];
@@ -110,7 +160,7 @@
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:alt];
 }
 
-- (void) addCurrentPlacemarkToLayer
+- (void) addCurrentPlacemark
 {
     WWPosition* position = [currentPlacemark objectForKey:@"Position"];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
@@ -127,7 +177,7 @@
     [attrs setImagePath:iconFilePath];
     [pointPlacemark setAttributes:attrs];
 
-    [self addRenderable:pointPlacemark];
+    [placemarks addObject:pointPlacemark];
 }
 
 @end

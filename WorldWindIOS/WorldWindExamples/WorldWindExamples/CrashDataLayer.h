@@ -12,11 +12,11 @@
 
 @interface CrashDataLayer : WWRenderableLayer <NSXMLParserDelegate>
 {
-    NSXMLParser* docParser;
     NSMutableDictionary* currentPlacemark;
     NSMutableString* currentName;
     NSMutableString* currentString;
     NSString* iconFilePath;
+    NSMutableArray* placemarks;
 }
 
 - (CrashDataLayer*) initWithURL:(NSString*)urlString;
