@@ -31,6 +31,34 @@
         return nil;
     }
 
+    [self parseDoc:data pathForLogMessage:serverAddress];
+
+    return _root != nil ? self : nil;
+}
+
+- (WWWMSCapabilities*)initWithCapabilitiesFile:(NSString*)filePath
+{
+    if (filePath == nil || [filePath length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Capabilities file path is nil or empty")
+    }
+
+    self = [super init];
+
+    NSData* data = [[NSData alloc] initWithContentsOfFile:filePath];
+    if (data == nil)
+    {
+        WWLog(@"Unable to read WMS capabilities document from file %@", filePath);
+        return nil;
+    }
+
+    [self parseDoc:data pathForLogMessage:filePath];
+
+    return self;
+}
+
+- (void)parseDoc:(NSData*)data pathForLogMessage:(NSString*)pathForLogMessage
+{
     // These are the names of WMS Capabilities elements that may contain multiple elements of the same type. They
     // are captured in an array and the array is attached to the parent element's dictionary using the same name as
     // the child element.
@@ -42,13 +70,11 @@
     WWXMLParser* parser = [[WWXMLParser alloc] initWithData:data listElementNames:listElements];
     if (parser == nil)
     {
-        WWLog(@"WMS Capabilities parsing failed for %@", serverAddress);
-        return nil;
+        WWLog(@"WMS Capabilities parsing failed for %@", pathForLogMessage);
+        return;
     }
 
     _root = [parser root];
-
-    return self;
 }
 
 - (NSString*) composeRequestString:(NSString*)serverAddress

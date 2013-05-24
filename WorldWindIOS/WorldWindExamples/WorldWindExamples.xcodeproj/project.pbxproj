@@ -32,13 +32,16 @@
 		1BF9A54C4E58461263B7308F /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */; };
 		1BF9A5A868AB1E0EFEA8FD70 /* CrashDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */; };
 		1BF9A7A5B73DAF4595B19E9D /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A33B6444E14E329DF631 /* LayerListController.m */; };
+		1BF9A87BCA5ED57E97A98C8E /* WMSServerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */; };
 		1BF9A9BC62EEAA4E0169097B /* placemark_circle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */; };
 		1BF9AA78132C53846348F275 /* LocationArrowWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */; };
+		1BF9AB4C9D70238AE41EDCB1 /* 401-globe.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */; };
 		1BF9AB9434B6C975724AC5AF /* LocationArrowWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */; };
 		1BF9ABA85CFA76FF0DFD4111 /* LayerList@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */; };
 		1BF9ABF69A7796F56CAB773A /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA3FE811C2CC7278B79E /* 431-yes.png */; };
 		1BF9ACC3960E65076911FC95 /* CrashDataLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0F045D17989445FC7AC /* CrashDataLayer.m */; };
 		1BF9AE4238EBFC5BB68AFD33 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4AEA039503D44E9A622 /* ImageLayerDetailController.m */; };
+		1BF9AF344D1D325BDD5FFF06 /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */; };
 		CC8CF2F9C5BBEDDCD4B6B2EE /* 12-eye@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFEB25C541BB31BFC44EC /* 12-eye@2x.png */; };
 		CC8CF7787B8343277F898428 /* 38-airplane-location@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFBBC5C1B77073C064455 /* 38-airplane-location@2x.png */; };
 		CC8CF84C16F54B3F06D028BA /* 38-airplane@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF99E42B3AB6C6A14F456 /* 38-airplane@2x.png */; };
@@ -77,14 +80,17 @@
 		1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = placemark_circle.png; sourceTree = "<group>"; };
 		1BF9A2ACDA03167D93507F15 /* FAAChartsAlaskaLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAAChartsAlaskaLayer.h; sourceTree = "<group>"; };
 		1BF9A33B6444E14E329DF631 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
+		1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe@2x.png"; sourceTree = "<group>"; };
 		1BF9A4AEA039503D44E9A622 /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A6256E1642A6427E09E8 /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
 		1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWithLine.png; sourceTree = "<group>"; };
 		1BF9A733BBE27F55CE4009C9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
+		1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerListController.h; sourceTree = "<group>"; };
 		1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWhite@2x.png"; sourceTree = "<group>"; };
 		1BF9A97EAF1D8CDC2B054235 /* CrashDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashDataViewController.h; sourceTree = "<group>"; };
 		1BF9A9864578F443A43068DA /* CrashDataLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashDataLayer.h; sourceTree = "<group>"; };
+		1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSServerListController.m; sourceTree = "<group>"; };
 		1BF9AA3FE811C2CC7278B79E /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
 		1BF9AB1691F5F503DA190C9D /* LocationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrow.png; sourceTree = "<group>"; };
 		1BF9AB2921F75FC223A80E69 /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
@@ -95,6 +101,7 @@
 		1BF9ADD8201254F0EE8F68D7 /* PathFollower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PathFollower.m; sourceTree = "<group>"; };
 		1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LayerList@2x.png"; sourceTree = "<group>"; };
 		1BF9AE069D70D0DD13A35EC5 /* PathFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathFollower.h; sourceTree = "<group>"; };
+		1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
 		1BF9AF7CA370D26918C6F6C2 /* LayerList.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LayerList.png; sourceTree = "<group>"; };
 		CC8CF249E01F7C0375359BBD /* TrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingController.h; sourceTree = "<group>"; };
 		CC8CF367AC10A6D009DC52FF /* NavigatorSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigatorSettingsController.h; sourceTree = "<group>"; };
@@ -190,6 +197,8 @@
 				1BF9A9864578F443A43068DA /* CrashDataLayer.h */,
 				1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */,
 				1BF9A97EAF1D8CDC2B054235 /* CrashDataViewController.h */,
+				1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */,
+				1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -221,6 +230,8 @@
 				CC8CFA4D046C38F2004FBE20 /* 12-eye.png */,
 				CC8CFEB25C541BB31BFC44EC /* 12-eye@2x.png */,
 				1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */,
+				1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */,
+				1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -297,6 +308,8 @@
 				CC8CF9C4C16D03A3F7123513 /* 12-eye.png in Resources */,
 				CC8CF2F9C5BBEDDCD4B6B2EE /* 12-eye@2x.png in Resources */,
 				1BF9A9BC62EEAA4E0169097B /* placemark_circle.png in Resources */,
+				1BF9AB4C9D70238AE41EDCB1 /* 401-globe.png in Resources */,
+				1BF9AF344D1D325BDD5FFF06 /* 401-globe@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +333,7 @@
 				CC8CFC0ABD6A375894C4F67E /* NavigatorSettingsController.m in Sources */,
 				1BF9ACC3960E65076911FC95 /* CrashDataLayer.m in Sources */,
 				1BF9A5A868AB1E0EFEA8FD70 /* CrashDataViewController.m in Sources */,
+				1BF9A87BCA5ED57E97A98C8E /* WMSServerListController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -36,7 +36,8 @@
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "CrashDataViewController.h"
-#import "WWGlobe.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WMSServerListController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -44,11 +45,14 @@
 @implementation ViewController
 {
     UIBarButtonItem* layerButton;
+    UIBarButtonItem* wmsServersButton;
     UIBarButtonItem* navigatorButton;
     UIBarButtonItem* trackButton;
     UIBarButtonItem* flightButton;
     LayerListController* layerListController;
+    WMSServerListController* wmsServersListController;
     UIPopoverController* layerListPopoverController;
+    UIPopoverController* wmsServersListPopoverController;
     UIPopoverController* crashDataPopoverController;
     CrashDataViewController* crashDataViewController;
     NavigatorSettingsController* navigatorSettingsController;
@@ -270,6 +274,13 @@
             initWithRootViewController:layerListController];
     layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
+    wmsServersButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"401-globe"]
+                                                        style:UIBarButtonItemStylePlain
+                                                       target:self action:@selector(handleWMSServersListButtonTap)];
+    wmsServersListController = [[WMSServerListController alloc] initWithWorldWindView:_wwv];
+    navController = [[UINavigationController alloc] initWithRootViewController:wmsServersListController];
+    wmsServersListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+
     navigatorButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"12-eye"]
                                                        style:UIBarButtonItemStylePlain
                                                       target:self action:@selector(handleNavigatorButtonTap)];
@@ -298,6 +309,8 @@
 
     [_toolbar setItems:[NSArray arrayWithObjects:
             layerButton,
+            fixedSpace1,
+            wmsServersButton,
             flexibleSpace1,
             navigatorButton,
             fixedSpace1,
@@ -313,6 +326,12 @@
 {
     [layerListPopoverController presentPopoverFromBarButtonItem:layerButton
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) handleWMSServersListButtonTap
+{
+    [wmsServersListPopoverController presentPopoverFromBarButtonItem:wmsServersButton
+                                            permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleNavigatorButtonTap
