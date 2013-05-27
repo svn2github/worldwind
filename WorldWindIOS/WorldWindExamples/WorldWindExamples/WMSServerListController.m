@@ -119,6 +119,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+    [self serverSelected:tableView indexPath:indexPath];
 }
 
 - (void) handleAddButtonTap
@@ -169,6 +170,11 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 }
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
+{
+    [self serverSelected:tableView indexPath:indexPath];
+}
+
+- (void)serverSelected:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
 {
     UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     NSString* serverAddress = [[cell detailTextLabel] text];
