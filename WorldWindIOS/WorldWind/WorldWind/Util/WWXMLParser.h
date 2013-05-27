@@ -46,4 +46,6 @@
 */
 - (WWXMLParser*)initWithData:(NSData*)data listElementNames:(NSSet*)listElementNames;
 
++ (void) writeXML:(NSDictionary*)xml toFile:(NSString*)filePath;
+
 @end

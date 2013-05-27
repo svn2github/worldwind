@@ -15,7 +15,7 @@
     UIBarButtonItem* addButton;
 }
 
-@property (nonatomic, readonly) WorldWindView* wwv;
+@property (nonatomic, readonly) WorldWindView* wwv; // TODO: This may not be needed
 
 - (WMSServerListController*) initWithWorldWindView:(WorldWindView*)wwv;
 

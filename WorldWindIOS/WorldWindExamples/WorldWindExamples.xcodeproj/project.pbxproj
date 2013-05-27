@@ -22,6 +22,7 @@
 		0B98142D165FFB1200193E50 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B98142A165FFB1200193E50 /* QuartzCore.framework */; };
 		0BA1E9DE16B09B92004F3619 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */; };
 		1BF9A0795355CE505BDA7B79 /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A01B81E26189A95F3975 /* 431-yes@2x.png */; };
+		1BF9A1502D44897945819C46 /* TextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AD514AAFF11ABADB45A5 /* TextViewController.m */; };
 		1BF9A1F56C3FEB0A8EF83D17 /* LocationArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB1691F5F503DA190C9D /* LocationArrow.png */; };
 		1BF9A22D44C02F8D4B15054C /* FAAChartsAlaskaLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A6256E1642A6427E09E8 /* FAAChartsAlaskaLayer.m */; };
 		1BF9A28899441A9DD158CB5E /* PathFollower.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADD8201254F0EE8F68D7 /* PathFollower.m */; };
@@ -31,9 +32,11 @@
 		1BF9A4B7FC05EAA0A17C18B7 /* LocationArrowWithLine.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */; };
 		1BF9A54C4E58461263B7308F /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */; };
 		1BF9A5A868AB1E0EFEA8FD70 /* CrashDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */; };
+		1BF9A5B5A929248F1D2032CA /* WMSServerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8D51F69D01809241BB6 /* WMSServerDetailController.m */; };
 		1BF9A7A5B73DAF4595B19E9D /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A33B6444E14E329DF631 /* LayerListController.m */; };
 		1BF9A7DFC72EB2865630EB6D /* 05-plus@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AACF3638955AF051E92A /* 05-plus@2x.png */; };
 		1BF9A87BCA5ED57E97A98C8E /* WMSServerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */; };
+		1BF9A8EB0D672FF9BB960898 /* WMSLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA200F75C073152E5028 /* WMSLayerDetailController.m */; };
 		1BF9A9BC62EEAA4E0169097B /* placemark_circle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */; };
 		1BF9AA78132C53846348F275 /* LocationArrowWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */; };
 		1BF9AB4C9D70238AE41EDCB1 /* 401-globe.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */; };
@@ -79,6 +82,7 @@
 		1BF9A01B81E26189A95F3975 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A0F045D17989445FC7AC /* CrashDataLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashDataLayer.m; sourceTree = "<group>"; };
 		1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWhite.png; sourceTree = "<group>"; };
+		1BF9A20092F812AEB8748191 /* WMSServerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerDetailController.h; sourceTree = "<group>"; };
 		1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = placemark_circle.png; sourceTree = "<group>"; };
 		1BF9A2ACDA03167D93507F15 /* FAAChartsAlaskaLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAAChartsAlaskaLayer.h; sourceTree = "<group>"; };
 		1BF9A33B6444E14E329DF631 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
@@ -90,10 +94,13 @@
 		1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerListController.h; sourceTree = "<group>"; };
 		1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A7DDCF1150BE8DC39CB4 /* 05-plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "05-plus.png"; sourceTree = "<group>"; };
+		1BF9A83D6101A50B80BAD937 /* TextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextViewController.h; sourceTree = "<group>"; };
 		1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWhite@2x.png"; sourceTree = "<group>"; };
+		1BF9A8D51F69D01809241BB6 /* WMSServerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSServerDetailController.m; sourceTree = "<group>"; };
 		1BF9A97EAF1D8CDC2B054235 /* CrashDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashDataViewController.h; sourceTree = "<group>"; };
 		1BF9A9864578F443A43068DA /* CrashDataLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashDataLayer.h; sourceTree = "<group>"; };
 		1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSServerListController.m; sourceTree = "<group>"; };
+		1BF9AA200F75C073152E5028 /* WMSLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9AA3FE811C2CC7278B79E /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
 		1BF9AACF3638955AF051E92A /* 05-plus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "05-plus@2x.png"; sourceTree = "<group>"; };
 		1BF9AB1691F5F503DA190C9D /* LocationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrow.png; sourceTree = "<group>"; };
@@ -102,10 +109,12 @@
 		1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrow@2x.png"; sourceTree = "<group>"; };
 		1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashDataViewController.m; sourceTree = "<group>"; };
 		1BF9ACFE62D5FF843B414122 /* LocationArrowWithLine@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWithLine@2x.png"; sourceTree = "<group>"; };
+		1BF9AD514AAFF11ABADB45A5 /* TextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewController.m; sourceTree = "<group>"; };
 		1BF9ADD8201254F0EE8F68D7 /* PathFollower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PathFollower.m; sourceTree = "<group>"; };
 		1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LayerList@2x.png"; sourceTree = "<group>"; };
 		1BF9AE069D70D0DD13A35EC5 /* PathFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathFollower.h; sourceTree = "<group>"; };
 		1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
+		1BF9AF001C236733126C9309 /* WMSLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AF7CA370D26918C6F6C2 /* LayerList.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LayerList.png; sourceTree = "<group>"; };
 		CC8CF249E01F7C0375359BBD /* TrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingController.h; sourceTree = "<group>"; };
 		CC8CF367AC10A6D009DC52FF /* NavigatorSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigatorSettingsController.h; sourceTree = "<group>"; };
@@ -203,6 +212,12 @@
 				1BF9A97EAF1D8CDC2B054235 /* CrashDataViewController.h */,
 				1BF9A9B79FB64BB44A6B544F /* WMSServerListController.m */,
 				1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */,
+				1BF9A8D51F69D01809241BB6 /* WMSServerDetailController.m */,
+				1BF9A20092F812AEB8748191 /* WMSServerDetailController.h */,
+				1BF9AA200F75C073152E5028 /* WMSLayerDetailController.m */,
+				1BF9AF001C236733126C9309 /* WMSLayerDetailController.h */,
+				1BF9AD514AAFF11ABADB45A5 /* TextViewController.m */,
+				1BF9A83D6101A50B80BAD937 /* TextViewController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -342,6 +357,9 @@
 				1BF9ACC3960E65076911FC95 /* CrashDataLayer.m in Sources */,
 				1BF9A5A868AB1E0EFEA8FD70 /* CrashDataViewController.m in Sources */,
 				1BF9A87BCA5ED57E97A98C8E /* WMSServerListController.m in Sources */,
+				1BF9A5B5A929248F1D2032CA /* WMSServerDetailController.m in Sources */,
+				1BF9A8EB0D672FF9BB960898 /* WMSLayerDetailController.m in Sources */,
+				1BF9A1502D44897945819C46 /* TextViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

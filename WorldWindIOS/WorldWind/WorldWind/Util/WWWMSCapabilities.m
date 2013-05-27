@@ -12,6 +12,15 @@
 
 @implementation WWWMSCapabilities
 
+- (WWWMSCapabilities*) initWithCapabilitiesDictionary:(NSDictionary*)dictionary
+{
+    self = [super init];
+
+    _root = dictionary;
+
+    return self;
+}
+
 - (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
 {
     if (serverAddress == nil || [serverAddress length] == 0)
@@ -54,7 +63,7 @@
 
     [self parseDoc:data pathForLogMessage:filePath];
 
-    return self;
+    return _root != nil ? self : nil;
 }
 
 - (void)parseDoc:(NSData*)data pathForLogMessage:(NSString*)pathForLogMessage
@@ -75,6 +84,15 @@
     }
 
     _root = [parser root];
+
+    // Verify that it is indeed a WMS capabilities document.
+    NSString* rootElementName = [_root objectForKey:@"elementname"];
+    if (!([rootElementName isEqualToString:@"wms_capabilities"]
+    || [rootElementName isEqualToString:@"wmt_ms_capabilities"]))
+    {
+        WWLog(@"Not a WMS Capabilities document %@", pathForLogMessage);
+        _root = nil;
+    }
 }
 
 - (NSString*) composeRequestString:(NSString*)serverAddress
@@ -96,6 +114,32 @@
     [urls appendString:@"service=WMS&request=GetCapabilities"];
 
     return urls;
+}
+
+- (NSString*) serviceTitle
+{
+    NSDictionary* titleDict = [[_root objectForKey:@"service"] objectForKey:@"title"];
+
+    return titleDict != nil ? [titleDict objectForKey:@"characters"] : nil;
+}
+
+- (NSString*) serviceName
+{
+    NSDictionary* titleDict = [[_root objectForKey:@"service"] objectForKey:@"name"];
+
+    return titleDict != nil ? [titleDict objectForKey:@"characters"] : nil;
+}
+
+- (NSString*)serviceAbstract
+{
+    NSDictionary* abstract = [[_root objectForKey:@"service"] objectForKey:@"abstract"];
+
+    return abstract != nil ? [abstract objectForKey:@"characters"] : nil;
+}
+
+- (NSArray*)layers
+{
+    return [[_root objectForKey:@"capability"] objectForKey:@"layer"];
 }
 
 - (NSArray*)namedLayers
@@ -145,7 +189,7 @@
     {
         for (NSDictionary* layerCaps in namedLayers)
         {
-            NSString* name = [self layerName:layerCaps];
+            NSString* name = [WWWMSCapabilities layerName:layerCaps];
             if ([name isEqualToString:layerName])
             {
                 return layerCaps;
@@ -156,7 +200,7 @@
     return nil;
 }
 
-- (NSString*)layerName:(NSDictionary*)layerCaps
++ (NSString*)layerName:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
     {
@@ -172,7 +216,44 @@
     return nil;
 }
 
-- (NSDate*) layerLastUpdateTime:(NSDictionary*)layerCaps
++ (NSString*)layerAbstract:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSDictionary* abstract = [layerCaps objectForKey:@"abstract"];
+    if (abstract != nil)
+    {
+        return [abstract objectForKey:@"characters"];
+    }
+
+    return nil;
+}
+
++ (NSString*)layerTitle:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSDictionary* name = [layerCaps objectForKey:@"title"];
+    if (name != nil)
+    {
+        return [name objectForKey:@"characters"];
+    }
+
+    return nil;
+}
+
++ (NSArray*)layers:(NSDictionary*)layerCaps
+{
+    return [layerCaps objectForKey:@"layer"];
+}
+
++ (NSDate*) layerLastUpdateTime:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
     {

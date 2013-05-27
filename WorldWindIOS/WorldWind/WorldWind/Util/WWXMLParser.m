@@ -30,6 +30,11 @@
 
     BOOL status = [docParser parse];
 
+    if (status == YES)
+    {
+        [self removeParentElements:_root];
+    }
+
     return status == YES ? self : nil;
 }
 
@@ -50,7 +55,7 @@
         // Add this element to its parents list for this type of element.
         [self addListElements:lcElementName element:element];
     }
-    else
+    else if (currentElement != nil)
     {
         // Add this element directly to the parent's dictionary.
         [currentElement setObject:element forKey:[elementName lowercaseString]];
@@ -123,6 +128,78 @@
     {
         [currentString appendString:string];
     }
+}
+
+-(void) removeParentElements:(NSMutableDictionary*)element
+{
+    [element removeObjectForKey:@"parent"];
+
+    for (NSString* key in [element allKeys])
+    {
+        id childElement = [element objectForKey:key];
+        if  ([childElement isKindOfClass:[NSArray class]])
+        {
+            for (NSMutableDictionary* dict in (NSArray*)childElement)
+            {
+                [self removeParentElements:dict];
+            }
+        }
+        else if  ([childElement isKindOfClass:[NSDictionary class]])
+        {
+            [self removeParentElements:childElement];
+        }
+    }
+}
+
++ (void) writeXML:(NSDictionary*)xml toFile:(NSString*)filePath
+{
+    NSMutableString* outputString = [[NSMutableString alloc] init];
+
+    [WWXMLParser writeElement:xml outputString:outputString];
+
+    NSError* error = nil;
+    [outputString writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    if (error != nil)
+    {
+        WWLog("@Error \"%@\" writing XML to %@", [error description], filePath);
+        return;
+    }
+}
+
++ (void) writeElement:(NSDictionary*)element outputString:(NSMutableString*)outputString
+{
+    [outputString appendString:@"<"];
+    [outputString appendString:[element objectForKey:@"elementname"]];
+    [outputString appendString:@">"];
+
+    for (NSString* key in [element allKeys])
+    {
+        if ([key isEqualToString:@"elementname"] || [key isEqualToString:@"parent"])
+            continue;
+
+        if ([key isEqualToString:@"characters"])
+        {
+            [outputString appendString:[element objectForKey:key]];
+            continue;
+        }
+
+        id childElement = [element objectForKey:key];
+        if  ([childElement isKindOfClass:[NSArray class]])
+        {
+            for (NSDictionary* dict in (NSArray*)childElement)
+            {
+                [self writeElement:dict outputString:outputString];
+            }
+        }
+        else if  ([childElement isKindOfClass:[NSDictionary class]])
+        {
+            [self writeElement:childElement outputString:outputString];
+        }
+    }
+
+    [outputString appendString:@"</"];
+    [outputString appendString:[element objectForKey:@"elementname"]];
+    [outputString appendString:@">"];
 }
 
 @end

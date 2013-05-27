@@ -52,7 +52,7 @@
             NSDictionary* layerCaps = [caps namedLayer:_layerName];
             if (layerCaps != nil)
             {
-                NSDate* layerLastUpdateTime = [caps layerLastUpdateTime:layerCaps];
+                NSDate* layerLastUpdateTime = [WWWMSCapabilities layerLastUpdateTime:layerCaps];
                 if (layerLastUpdateTime != nil)
                 {
                     [self performSelectorOnMainThread:@selector(setExpiration:)

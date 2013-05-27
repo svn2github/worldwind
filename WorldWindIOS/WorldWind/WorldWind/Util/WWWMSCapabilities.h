@@ -16,7 +16,9 @@
 /// @name WMS Capabilities Attributes
 
 /// The root of the parsed capabilities document. See WWXMLParser for a description of the root element's contents.
-@property(nonatomic, readonly) NSMutableDictionary* root;
+@property(nonatomic, readonly) NSDictionary* root;
+
+/// @name Initializing WMS Capabilities
 
 /**
 * Initialize this instance. Retrieve and parse the capabilities document for the specified WMS server.
@@ -28,6 +30,20 @@
 * @exception NSInvalidArgumentException If the specified server address is nil or empty.
 */
 - (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress;
+
+- (WWWMSCapabilities*) initWithCapabilitiesFile:(NSString*)filePath;
+
+- (WWWMSCapabilities*) initWithCapabilitiesDictionary:(NSDictionary*)dictionary;
+
+/// @name Getting Information from WMS Capabilities
+
+- (NSString*)serviceTitle;
+
+- (NSString*)serviceName;
+
+- (NSString*)serviceAbstract;
+
+- (NSArray*)layers;
 
 /**
 * Returns all the layers with Name elements in the capabilities document.
@@ -60,7 +76,13 @@
  *
  * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
 */
-- (NSString*) layerName:(NSDictionary*)layerCaps;
++ (NSString*) layerName:(NSDictionary*)layerCaps;
+
++ (NSString*) layerTitle:(NSDictionary*)layerCaps;
+
++ (NSString*) layerAbstract:(NSDictionary*)layerCaps;
+
++ (NSArray*) layers:(NSDictionary*)layerCaps;
 
 /**
 * Return the last update time given in a specified layer's keywords.
@@ -78,6 +100,6 @@
 *
 * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
 */
-- (NSDate*) layerLastUpdateTime:(NSDictionary*)layerCaps;
++ (NSDate*) layerLastUpdateTime:(NSDictionary*)layerCaps;
 
 @end
