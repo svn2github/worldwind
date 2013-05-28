@@ -9,7 +9,8 @@
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WMSLayerDetailController.h"
 #import "TextViewController.h"
-#import "WorldWindView.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WMSServerDetailController
 
@@ -18,6 +19,21 @@
                                                size:(CGSize)size
                                              wwview:(WorldWindView*)wwv;
 {
+    if (capabilities == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server capabilities is nil.")
+    }
+
+    if (serverAddress == nil || [serverAddress length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server address is nil or empty.")
+    }
+
+    if (wwv == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"World Wind View is nil.")
+    }
+
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     [self setContentSizeForViewInPopover:size];
@@ -64,7 +80,7 @@
 
     if (section == 1)
     {
-        return @"";
+        return @""; // no title for this section
     }
 
     if (section == 2)

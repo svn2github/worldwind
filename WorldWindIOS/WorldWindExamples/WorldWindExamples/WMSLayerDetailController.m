@@ -8,11 +8,12 @@
 #import "WMSLayerDetailController.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "TextViewController.h"
-#import "WorldWindView.h"
-#import "WWWMSTiledImageLayer.h"
-#import "WWSceneController.h"
-#import "WWLayerList.h"
-#import "WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WMSLayerDetailController
 
@@ -21,6 +22,21 @@
                                                    size:(CGSize)size
                                                  wwView:(WorldWindView*)wwv;
 {
+    if (serverCapabilities == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server capabilities is nil.")
+    }
+
+    if (layerCapabilities == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil.")
+    }
+
+    if (wwv == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"World Wind View is nil.")
+    }
+
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     [self setContentSizeForViewInPopover:size];
@@ -31,6 +47,7 @@
     _layerCapabilities = layerCapabilities;
     _wwv = wwv;
 
+    // Create a layer ID for named layers. The ID is used to identify the layer in the WW layer list.
     NSString* layerName = [WWWMSCapabilities layerName:_layerCapabilities];
     if (layerName != nil)
     {
@@ -310,9 +327,9 @@
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
     }
-    @catch (NSException* exception1)
+    @catch (NSException* exception)
     {
-        NSLog(@"Exception occurred: %@, %@", exception1, [exception1 userInfo]); // TODO
+        WWLogE(@"Exception attempting to add layer to layer list", exception);
     }
 }
 

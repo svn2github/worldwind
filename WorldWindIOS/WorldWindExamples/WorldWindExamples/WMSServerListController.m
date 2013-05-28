@@ -9,6 +9,7 @@
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WMSServerDetailController.h"
+#import "WorldWind/WWLog.h"
 
 NSString* WW_WMS_SERVER_LIST = @"WMSServerList";
 NSString* WW_WMS_SERVER_TITLE = @"WMSServerTitle";
@@ -18,6 +19,11 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
 
 - (WMSServerListController*) initWithWorldWindView:(WorldWindView*)wwv
 {
+    if (wwv == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"World Wind View is nil.")
+    }
+
     self = [super initWithStyle:UITableViewStylePlain];
 
     CGSize size = CGSizeMake(400, 400);
@@ -42,14 +48,16 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
 {
     servers = [[NSMutableArray alloc] init];
 
+    // Check for a persisted version of the server list. If one doesn't exist, then create it, persist it then read it
+    // back from persistent storage.
     NSArray* serverList = [[NSUserDefaults standardUserDefaults] objectForKey:WW_WMS_SERVER_LIST];
     if (serverList == nil)
     {
         [self addServer:@"http://neowms.sci.gsfc.nasa.gov/wms/wms" serviceTitle:@"NASA Earth Observations (NEO) WMS"];
-
         serverList = [[NSUserDefaults standardUserDefaults] objectForKey:WW_WMS_SERVER_LIST];
     }
 
+    // Add all the default servers to the servers list.
     for (NSDictionary* dict in serverList)
     {
         [servers addObject:dict];
@@ -58,11 +66,13 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
 
 - (void) addServer:(NSString*)serviceAddress serviceTitle:(NSString*)serviceTitle
 {
+    // Create a dictionary for the server.
     NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
     [dict setObject:serviceTitle forKey:WW_WMS_SERVER_TITLE];
     [dict setObject:serviceAddress forKey:WW_WMS_SERVER_ADDRESS];
     [servers addObject:dict];
 
+    // Persist the updated servers list.
     [[NSUserDefaults standardUserDefaults] setObject:servers forKey:WW_WMS_SERVER_LIST];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -112,6 +122,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
         [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                          withRowAnimation:UITableViewRowAnimationFade];
 
+        // Persist the updated servers list.
         [[NSUserDefaults standardUserDefaults] setObject:servers forKey:WW_WMS_SERVER_LIST];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -137,6 +148,8 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
 - (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    // TODO: Perform this in a separate thread and within an exception handler.
+
     if (buttonIndex == 1)
     {
         NSString* serverAddress = [[alertView textFieldAtIndex:0] text];
@@ -160,6 +173,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
                 }
                 [self addServer:serverAddress serviceTitle:serviceTitle];
 
+                // Persist the capabilities document.
                 [[NSUserDefaults standardUserDefaults] setObject:[caps root] forKey:serverAddress];
                 [[NSUserDefaults standardUserDefaults] synchronize];
 

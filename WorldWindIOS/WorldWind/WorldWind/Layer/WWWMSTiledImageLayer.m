@@ -5,34 +5,52 @@
  @version $Id$
  */
 
-#import "WWWMSTiledImageLayer.h"
-#import "WWWMSCapabilities.h"
-#import "WWSector.h"
+#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWUtil.h"
-#import "WWLocation.h"
-#import "WWWmsUrlBuilder.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWWMSTiledImageLayer
 
 - (WWWMSTiledImageLayer*) initWithWMSCapabilities:(WWWMSCapabilities*)serverCapabilities
                                 layerCapabilities:(NSDictionary*)layerCapabilities
 {
-    WWSector* boundingBox = [serverCapabilities geographicBoundingBoxForNamedLayer:layerCapabilities];
-    if (boundingBox == nil)
-        return nil;
+    if (serverCapabilities == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server capabilities is nil.")
+    }
 
-    NSString* getMapURL = [serverCapabilities getMapURL];
-    if (getMapURL == nil)
-        return nil;
-
-    NSString* layerCacheDir = [WWUtil makeValidFilePath:getMapURL];
+    if (layerCapabilities == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil.")
+    }
 
     NSString* layerName = [WWWMSCapabilities layerName:layerCapabilities];
-    if (layerName == nil)
-        return nil;
+    if (layerName == nil || [layerName length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is not a named layer.")
+    }
 
+    NSString* getMapURL = [serverCapabilities getMapURL];
+    if (getMapURL == nil || [getMapURL length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"GetMap URL is nil or empty.")
+    }
+
+    WWSector* boundingBox = [serverCapabilities geographicBoundingBoxForNamedLayer:layerCapabilities];
+    if (boundingBox == nil)
+    {
+        // A layer must have a bounding box according to the WMS spec, but we check just in case and provide a default
+        // one.
+        boundingBox = [[WWSector alloc] initWithFullSphere];
+    }
+
+    // Determine a cache directory.
+    NSString* layerCacheDir = [WWUtil makeValidFilePath:getMapURL];
     layerCacheDir = [layerCacheDir stringByAppendingPathComponent:layerName];
-
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
 
