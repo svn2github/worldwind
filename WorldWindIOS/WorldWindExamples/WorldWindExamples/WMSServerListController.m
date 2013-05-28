@@ -174,7 +174,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     [self serverSelected:tableView indexPath:indexPath];
 }
 
-- (void)serverSelected:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
+- (void) serverSelected:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
 {
     UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     NSString* serverAddress = [[cell detailTextLabel] text];
@@ -200,7 +200,8 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
         WMSServerDetailController* detailController =
                 [[WMSServerDetailController alloc] initWithCapabilities:caps
                                                           serverAddress:serverAddress
-                                                                   size:[self contentSizeForViewInPopover]];
+                                                                   size:[self contentSizeForViewInPopover]
+                                                                 wwview:_wwv];
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
 }

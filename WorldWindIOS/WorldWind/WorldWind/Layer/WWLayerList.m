@@ -8,6 +8,7 @@
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWindConstants.h"
 
 @implementation WWLayerList
 
@@ -25,6 +26,11 @@
     return [self->layers count];
 }
 
+- (NSArray*) allLayers
+{
+    return [[NSArray alloc] initWithArray:layers];
+}
+
 - (WWLayer*)layerAtIndex:(NSUInteger)index
 {
     return (WWLayer*) [self->layers objectAtIndex:index];
@@ -38,6 +44,7 @@
     }
 
     [self->layers addObject:layer];
+    [self notifyLayerListChange];
 }
 
 - (void) insertLayer:(WWLayer*)layer atIndex:(NSUInteger)atIndex
@@ -48,6 +55,7 @@
     }
 
     [self->layers insertObject:layer atIndex:atIndex];
+    [self notifyLayerListChange];
 }
 
 - (void) removeLayer:(WWLayer*)layer
@@ -58,6 +66,7 @@
     }
 
     [layers removeObject:layer];
+    [self notifyLayerListChange];
 }
 
 - (void) removeLayerAtRow:(int)rowIndex
@@ -70,6 +79,7 @@
 
     WWLayer* layer = [layers objectAtIndex:(NSUInteger)rowIndex];
     [self removeLayer:layer];
+    [self notifyLayerListChange];
 }
 
 - (void) moveLayerAtRow:(int)fromIndex toRow:(int)toIndex
@@ -90,6 +100,13 @@
 
     [layers removeObjectAtIndex:(NSUInteger)fromIndex];
     [layers insertObject:layer atIndex:(NSUInteger)toIndex];
+    [self notifyLayerListChange];
+}
+
+- (void) notifyLayerListChange
+{
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_LAYER_LIST_CHANGED object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
 
 @end

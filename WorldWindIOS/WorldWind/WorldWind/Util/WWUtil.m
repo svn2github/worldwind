@@ -115,4 +115,20 @@
     return [[path stringByDeletingPathExtension] stringByAppendingPathExtension:newSuffix];
 }
 
++ (NSString*) makeValidFilePath:(NSString*)path
+{
+    if (path == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Path is nil")
+    }
+
+    // TODO: Verify that this set of characters is the correct set of invalid file name characters.
+    NSString* filePath = [path stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    filePath = [filePath stringByReplacingOccurrencesOfString:@"?" withString:@"_"];
+    filePath = [filePath stringByReplacingOccurrencesOfString:@":" withString:@"_"];
+    filePath = [filePath stringByReplacingOccurrencesOfString:@"*" withString:@"_"];
+
+    return filePath;
+}
+
 @end

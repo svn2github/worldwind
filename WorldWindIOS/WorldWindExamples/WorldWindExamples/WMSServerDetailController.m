@@ -9,12 +9,14 @@
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WMSLayerDetailController.h"
 #import "TextViewController.h"
+#import "WorldWindView.h"
 
 @implementation WMSServerDetailController
 
 - (WMSServerDetailController*) initWithCapabilities:(WWWMSCapabilities*)capabilities
                                       serverAddress:(NSString*)serverAddress
                                                size:(CGSize)size
+                                             wwview:(WorldWindView*)wwv;
 {
     self = [super initWithStyle:UITableViewStyleGrouped];
 
@@ -24,6 +26,7 @@
 
     _capabilities = capabilities;
     _serverAddress = serverAddress;
+    _wwv = wwv;
 
     return self;
 }
@@ -233,8 +236,10 @@
     NSDictionary* layerCaps = [layers objectAtIndex:(NSUInteger) [indexPath row]];
 
     WMSLayerDetailController* detailController =
-            [[WMSLayerDetailController alloc] initWithLayerCapabilities:layerCaps
-                                                                   size:[self contentSizeForViewInPopover]];
+            [[WMSLayerDetailController alloc] initWithLayerCapabilities:_capabilities
+                                                      layerCapabilities:layerCaps
+                                                                   size:[self contentSizeForViewInPopover]
+                                                                 wwView:_wwv];
     [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
 }
 

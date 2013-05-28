@@ -8,7 +8,6 @@
 #import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
 
 @implementation WWLayer
 
@@ -23,6 +22,7 @@
     _minActiveAltitude = -DBL_MAX;
     _maxActiveAltitude = DBL_MAX;
     _networkRetrievalEnabled = YES;
+    _userTags = [[NSMutableDictionary alloc] initWithCapacity:1]; // minimize size in case it's not used
 
     return self;
 }

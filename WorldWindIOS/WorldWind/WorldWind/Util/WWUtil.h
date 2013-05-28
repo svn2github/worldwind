@@ -75,4 +75,15 @@
 */
 + (NSString*) replaceSuffixInPath:(NSString*)path newSuffix:(NSString*)newSuffix;
 
+/**
+* Replaces all characters not allowed in file names with "_".
+*
+* @param path The path to modify.
+*
+* @return The modified path.
+*
+* @exception NSInvalidArgumentException If the specified path is nil.
+*/
++ (NSString*) makeValidFilePath:(NSString*)path;
+
 @end

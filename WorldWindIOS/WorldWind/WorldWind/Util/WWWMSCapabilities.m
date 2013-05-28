@@ -9,6 +9,7 @@
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWXMLParser.h"
+#import "WorldWind/Geometry/WWSector.h"
 
 @implementation WWWMSCapabilities
 
@@ -45,7 +46,7 @@
     return _root != nil ? self : nil;
 }
 
-- (WWWMSCapabilities*)initWithCapabilitiesFile:(NSString*)filePath
+- (WWWMSCapabilities*) initWithCapabilitiesFile:(NSString*)filePath
 {
     if (filePath == nil || [filePath length] == 0)
     {
@@ -66,7 +67,7 @@
     return _root != nil ? self : nil;
 }
 
-- (void)parseDoc:(NSData*)data pathForLogMessage:(NSString*)pathForLogMessage
+- (void) parseDoc:(NSData*)data pathForLogMessage:(NSString*)pathForLogMessage
 {
     // These are the names of WMS Capabilities elements that may contain multiple elements of the same type. They
     // are captured in an array and the array is attached to the parent element's dictionary using the same name as
@@ -88,7 +89,7 @@
     // Verify that it is indeed a WMS capabilities document.
     NSString* rootElementName = [_root objectForKey:@"elementname"];
     if (!([rootElementName isEqualToString:@"wms_capabilities"]
-    || [rootElementName isEqualToString:@"wmt_ms_capabilities"]))
+            || [rootElementName isEqualToString:@"wmt_ms_capabilities"]))
     {
         WWLog(@"Not a WMS Capabilities document %@", pathForLogMessage);
         _root = nil;
@@ -116,6 +117,57 @@
     return urls;
 }
 
+- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCapabilities
+{
+    NSString* layerName = [WWWMSCapabilities layerName:layerCapabilities];
+    if (layerName == nil)
+        return nil;
+
+    NSArray* rootLayers = [self layers];
+    if (rootLayers == nil)
+        return nil;
+
+    NSDictionary* bbox = [self doFindGeographicBoundingBoxForNamedLayer:rootLayers
+                                                              layerName:layerName
+                                                            ancestorBox:nil];
+    if (bbox == nil)
+        return nil;
+
+    return [WWWMSCapabilities makeGeographicBoundingBox:bbox];
+}
+
+- (NSDictionary*) doFindGeographicBoundingBoxForNamedLayer:(NSArray*)layerElements
+                                                 layerName:(NSString*)layerName
+                                               ancestorBox:(NSDictionary*)ancestorBox
+{
+    for (NSMutableDictionary* layerElement in layerElements)
+    {
+        NSDictionary* geographicBoundingBox = [layerElement objectForKey:@"ex_geographicboundingbox"];
+        if (geographicBoundingBox == nil && ancestorBox != nil)
+        {
+            geographicBoundingBox = ancestorBox;
+        }
+
+        NSString* lname = [WWWMSCapabilities layerName:layerElement];
+        if (lname != nil && [lname isEqualToString:layerName])
+        {
+            return geographicBoundingBox;
+        }
+
+        NSArray* subLayers = [layerElement objectForKey:@"layer"];
+        if (subLayers != nil)
+        {
+            NSDictionary* bbox = [self doFindGeographicBoundingBoxForNamedLayer:subLayers
+                                                                      layerName:layerName
+                                                                    ancestorBox:geographicBoundingBox];
+            if (bbox != nil)
+                return bbox;
+        }
+    }
+
+    return nil;
+}
+
 - (NSString*) serviceTitle
 {
     NSDictionary* titleDict = [[_root objectForKey:@"service"] objectForKey:@"title"];
@@ -130,19 +182,24 @@
     return titleDict != nil ? [titleDict objectForKey:@"characters"] : nil;
 }
 
-- (NSString*)serviceAbstract
+- (NSString*) serviceAbstract
 {
     NSDictionary* abstract = [[_root objectForKey:@"service"] objectForKey:@"abstract"];
 
     return abstract != nil ? [abstract objectForKey:@"characters"] : nil;
 }
 
-- (NSArray*)layers
+- (NSString*) serverWMSVersion
+{
+    return [_root objectForKey:@"version"];
+}
+
+- (NSArray*) layers
 {
     return [[_root objectForKey:@"capability"] objectForKey:@"layer"];
 }
 
-- (NSArray*)namedLayers
+- (NSArray*) namedLayers
 {
     NSArray* rootLayers = [[_root objectForKey:@"capability"] objectForKey:@"layer"];
     if (rootLayers == nil)
@@ -162,6 +219,16 @@
 
 - (void) doGetNamedLayers:(NSMutableDictionary*)layer layerList:(NSMutableArray*)layerList
 {
+    if (layer == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
+    }
+
+    if (layerList == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer list is nil")
+    }
+
     if ([layer objectForKey:@"name"] != nil)
     {
         [layerList addObject:layer];
@@ -200,7 +267,34 @@
     return nil;
 }
 
-+ (NSString*)layerName:(NSDictionary*)layerCaps
+- (NSString*) getMapURL
+{
+    NSDictionary* element = [_root objectForKey:@"capability"];
+    element = [element objectForKey:@"request"];
+    element = [element objectForKey:@"getmap"];
+
+    NSArray* dcpTypes = [element objectForKey:@"dcptype"];
+    for (NSDictionary* dict in dcpTypes)
+    {
+        element = [dict objectForKey:@"http"];
+        if (element != nil)
+        {
+            element = [element objectForKey:@"get"];
+            element = [element objectForKey:@"onlineresource"];
+            break;
+        }
+    }
+
+    NSString* url = [element objectForKey:@"href"];
+    if (url == nil)
+    {
+        url = [element objectForKey:@"xlink:href"];
+    }
+
+    return url;
+}
+
++ (NSString*) layerName:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
     {
@@ -216,7 +310,7 @@
     return nil;
 }
 
-+ (NSString*)layerAbstract:(NSDictionary*)layerCaps
++ (NSString*) layerAbstract:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
     {
@@ -232,7 +326,7 @@
     return nil;
 }
 
-+ (NSString*)layerTitle:(NSDictionary*)layerCaps
++ (NSString*) layerTitle:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
     {
@@ -248,7 +342,7 @@
     return nil;
 }
 
-+ (NSArray*)layers:(NSDictionary*)layerCaps
++ (NSArray*) layers:(NSDictionary*)layerCaps
 {
     return [layerCaps objectForKey:@"layer"];
 }
@@ -289,6 +383,30 @@
     }
 
     return nil;
+}
+
++ (WWSector*) makeGeographicBoundingBox:(NSDictionary*)boundingBoxElement
+{
+    NSDictionary* wbl = [boundingBoxElement objectForKey:@"westboundlongitude"];
+    NSDictionary* ebl = [boundingBoxElement objectForKey:@"eastboundlongitude"];
+    NSDictionary* sbl = [boundingBoxElement objectForKey:@"southboundlatitude"];
+    NSDictionary* nbl = [boundingBoxElement objectForKey:@"northboundlatitude"];
+
+    if (wbl == nil || ebl == nil || sbl == nil || nbl == nil)
+        return nil;
+
+    NSString* minLon = [wbl objectForKey:@"characters"];
+    NSString* maxLon = [ebl objectForKey:@"characters"];
+    NSString* minLat = [sbl objectForKey:@"characters"];
+    NSString* maxLat = [nbl objectForKey:@"characters"];
+
+    if (minLon == nil || maxLon == nil || minLat == nil || maxLat == nil)
+        return nil;
+
+    return [[WWSector alloc] initWithDegreesMinLatitude:[minLat doubleValue]
+                                            maxLatitude:[maxLat doubleValue]
+                                           minLongitude:[minLon doubleValue]
+                                           maxLongitude:[maxLon doubleValue]];
 }
 
 @end

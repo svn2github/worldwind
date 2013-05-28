@@ -18,6 +18,7 @@ extern NSString* const WW_GPU_VBO;
 extern NSString* const WW_GREAT_CIRCLE;
 extern NSString* const WW_HEADING;
 extern NSString* const WW_INSET_PIXELS;
+extern NSString* const WW_LAYER_LIST_CHANGED;
 extern NSString* const WW_LINEAR;
 extern NSString* const WW_NAVIGATOR_CHANGED;
 extern NSString* const WW_NAVIGATOR_ANIMATION_BEGAN;

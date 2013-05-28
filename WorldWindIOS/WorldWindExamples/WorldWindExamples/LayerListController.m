@@ -26,6 +26,12 @@
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
     [[self navigationItem] setTitle:@"Layers"];
 
+    // Set up to handle layer list changes.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleNotification:)
+                                                 name:WW_LAYER_LIST_CHANGED
+                                               object:nil];
+
     return self;
 }
 
@@ -122,6 +128,14 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 {
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+}
+
+- (void) handleNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_LAYER_LIST_CHANGED])
+    {
+        [[self tableView] reloadData];
+    }
 }
 
 @end

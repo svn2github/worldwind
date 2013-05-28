@@ -46,6 +46,10 @@
 /// Indicates the name of the image file for this layer. The image is shown in the layer list.
 @property(nonatomic) NSString* imageFile;
 
+/// Provides a dictionary for the application to associate arbitrary data with the layer. World Wind makes no
+/// explicit use of this property or its contents, which are entirely application dependent.
+@property(nonatomic, readonly) NSMutableDictionary* userTags;
+
 /// @name Initializing Layers
 
 /**

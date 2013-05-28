@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class WWSector;
+
 /**
 * Holds the contents of a parsed WMS Capabilities document and provides accessors to commonly used element contents.
 * Each element of the document is held as a dictionary. See WWXMLParser for details.
@@ -37,12 +39,39 @@
 
 /// @name Getting Information from WMS Capabilities
 
+/**
+* Returns the service title.
+*
+* @return The service title, or nil if no title is specified in the capabilities.
+*/
 - (NSString*)serviceTitle;
 
+/**
+* Returns the service name.
+*
+* @return The service name, or nil if no name is specified in the capabilities.
+*/
 - (NSString*)serviceName;
 
+/**
+* Returns the service abstract.
+*
+* @return The service abstract, or nil if no abstract is specified in the capabilities.
+*/
 - (NSString*)serviceAbstract;
 
+/**
+* Returns the service version.
+*
+* @return The service version, or nil if no version is specified in the capabilities.
+*/
+- (NSString*)serverWMSVersion;
+
+/**
+* Returns the layers in the capabilities' Capability section. Only the top-most layers are returned.
+*
+* @return The layers in the capabilities' Capability section, or nil if the capabilities contains no layers.
+*/
 - (NSArray*)layers;
 
 /**
@@ -67,6 +96,24 @@
 - (NSDictionary*) namedLayer:(NSString*)layerName;
 
 /**
+* Returns the GetMap request URL string.
+*
+* @return The GetMap request URL as a string.
+*/
+- (NSString*)getMapURL;
+
+/**
+* Returns the geographic bounding box for a specified layer.
+*
+* The bounding box returned is either that of the layer itself or the nearest ancestor specifying a geographic
+* bounding box.
+*
+* @return The effective geographic bounding box for the specified layer, or nil if one cannot be found in the layer
+* or its ancestors (which would indicate an invalid capabilities document).
+*/
+- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCapabilities;
+
+/**
 * Return the layer name for the specified layer capabilities.
 *
 * @param layerCaps The layer capabilities.
@@ -78,10 +125,31 @@
 */
 + (NSString*) layerName:(NSDictionary*)layerCaps;
 
+/**
+* Returns the title of a specified layer.
+*
+* @return The specified layer's title, or nil if it has no title.
+ *
+ * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+*/
 + (NSString*) layerTitle:(NSDictionary*)layerCaps;
 
+/**
+* Returns the abstract of a specified layer.
+*
+* @return The specified layer's abstract, or nil if it has no abstract.
+ *
+ * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+*/
 + (NSString*) layerAbstract:(NSDictionary*)layerCaps;
 
+/**
+* Returns the sub-layers of a specified layer.
+*
+* @return The specified layer's sub-layers, or nil if it has no sub-layers.
+ *
+ * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+*/
 + (NSArray*) layers:(NSDictionary*)layerCaps;
 
 /**

@@ -11,6 +11,8 @@
 
 /**
 * Holds a list of WWLayer instances in the order in which they are to be rendered.
+*
+* When the layer list changes it sends a WW_LAYER_LIST_CHANGED notification to the default notification center.
 */
 @interface WWLayerList : NSObject
 {
@@ -20,7 +22,11 @@
 
 /// @name Layer List Attributes
 
+/// The number of layers in the layer list.
 - (NSUInteger) count;
+
+/// An array of all the layers in the layer list.
+- (NSArray*) allLayers;
 
 /// @name Initializing
 

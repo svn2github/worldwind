@@ -8,10 +8,18 @@
 #import "WMSLayerDetailController.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "TextViewController.h"
+#import "WorldWindView.h"
+#import "WWWMSTiledImageLayer.h"
+#import "WWSceneController.h"
+#import "WWLayerList.h"
+#import "WorldWindConstants.h"
 
 @implementation WMSLayerDetailController
 
-- (WMSLayerDetailController*) initWithLayerCapabilities:(NSDictionary*)capabilities size:(CGSize)size
+- (WMSLayerDetailController*) initWithLayerCapabilities:(WWWMSCapabilities*)serverCapabilities
+                                      layerCapabilities:(NSDictionary*)layerCapabilities
+                                                   size:(CGSize)size
+                                                 wwView:(WorldWindView*)wwv;
 {
     self = [super initWithStyle:UITableViewStyleGrouped];
 
@@ -19,7 +27,18 @@
 
     [[self navigationItem] setTitle:@"Layer Detail"];
 
-    _layerCapabilities = capabilities;
+    _serverCapabilities = serverCapabilities;
+    _layerCapabilities = layerCapabilities;
+    _wwv = wwv;
+
+    NSString* layerName = [WWWMSCapabilities layerName:_layerCapabilities];
+    if (layerName != nil)
+    {
+        NSString* getMapURL = [_serverCapabilities getMapURL];
+        NSMutableString* lid = [[NSMutableString alloc] initWithString:getMapURL];
+        [lid appendString:layerName];
+        layerID = lid;
+    }
 
     return self;
 }
@@ -158,13 +177,23 @@
         if (cell == nil)
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchCell];
+
             UISwitch* layerSwitch = [[UISwitch alloc] init];
+            [layerSwitch addTarget:self action:@selector(handleShowLayerSwitch:)
+                  forControlEvents:UIControlEventValueChanged];
+            WWLayer* layer = [self findLayerByLayerID];
+            if (layer != nil)
+            {
+                [layerSwitch setOn:YES];
+            }
             [cell setAccessoryView:[[UIView alloc] initWithFrame:[layerSwitch frame]]];
             [[cell accessoryView] addSubview:layerSwitch];
         }
 
-        [[cell textLabel] setText:@"Show Layer"];
+        [[cell textLabel] setText:@"Show in Layer List"];
     }
+
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
 
     return cell;
 }
@@ -247,9 +276,59 @@
     NSDictionary* layerCaps = [layers objectAtIndex:(NSUInteger) [indexPath row]];
 
     WMSLayerDetailController* detailController =
-            [[WMSLayerDetailController alloc] initWithLayerCapabilities:layerCaps
-                                                                   size:[self contentSizeForViewInPopover]];
+            [[WMSLayerDetailController alloc] initWithLayerCapabilities:_serverCapabilities
+                                                      layerCapabilities:layerCaps
+                                                                   size:[self contentSizeForViewInPopover]
+                                                                 wwView:_wwv];
     [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+}
+
+- (void)handleShowLayerSwitch:(UISwitch*)layerSwitch
+{
+    @try
+    {
+        if ([layerSwitch isOn])
+        {
+            WWWMSTiledImageLayer* layer = [[WWWMSTiledImageLayer alloc] initWithWMSCapabilities:_serverCapabilities
+                                                                              layerCapabilities:_layerCapabilities];
+            if (layer == nil)
+                return;
+
+            [[layer userTags] setObject:layerID forKey:@"layerid"];
+            [layer setEnabled:YES];
+
+            [[[_wwv sceneController] layers] addLayer:layer];
+        }
+        else
+        {
+            WWLayer* layer = [self findLayerByLayerID];
+            if (layer != nil)
+            {
+                [[[_wwv sceneController] layers] removeLayer:layer];
+            }
+        }
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
+    @catch (NSException* exception1)
+    {
+        NSLog(@"Exception occurred: %@, %@", exception1, [exception1 userInfo]); // TODO
+    }
+}
+
+- (WWLayer*)findLayerByLayerID
+{
+    NSArray* layerList = [[[_wwv sceneController] layers] allLayers];
+    for (WWLayer* layer in layerList)
+    {
+        NSString* lid = [[layer userTags] objectForKey:@"layerid"];
+        if (lid != nil && [lid isEqualToString:layerID])
+        {
+            return layer;
+        }
+    }
+
+    return nil;
 }
 
 @end

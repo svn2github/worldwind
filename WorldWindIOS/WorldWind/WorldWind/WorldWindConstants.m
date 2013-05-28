@@ -20,6 +20,7 @@ NSString* const WW_GPU_VBO = @"gov.nasa.worldwind.GpuVbo";
 NSString* const WW_GREAT_CIRCLE = @"gov.nasa.worldwind.GreatCircle";
 NSString* const WW_HEADING = @"gov.nasa.worldwind.Heading";
 NSString* const WW_INSET_PIXELS = @"gov.nasa.worldwind.InsetPixels";
+NSString* const WW_LAYER_LIST_CHANGED = @"gov.nasa.worldwind.LayerListChanged";
 NSString* const WW_LINEAR = @"gov.nasa.worldwind.Linear";
 NSString* const WW_NAVIGATOR_CHANGED = @"gov.nasa.worldwind.NavigatorChanged";
 NSString* const WW_NAVIGATOR_ANIMATION_BEGAN = @"gov.nasa.worldwind.NavigatorAnimationBegan";

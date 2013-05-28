@@ -7,10 +7,21 @@
 
 #import <Foundation/Foundation.h>
 
+@class WorldWindView;
+@class WWWMSCapabilities;
+
 @interface WMSLayerDetailController : UITableViewController
+{
+    NSString* layerID;
+}
 
-@property (nonatomic, readonly) NSDictionary* layerCapabilities;
+@property(nonatomic, readonly) WWWMSCapabilities* serverCapabilities;
+@property(nonatomic, readonly) NSDictionary* layerCapabilities;
+@property(nonatomic, readonly) WorldWindView* wwv;
 
-- (WMSLayerDetailController*) initWithLayerCapabilities:(NSDictionary*)capabilities size:(CGSize)size;
+- (WMSLayerDetailController*) initWithLayerCapabilities:(WWWMSCapabilities*)serverCapabilities
+                                      layerCapabilities:(NSDictionary*)layerCapabilities
+                                                   size:(CGSize)size
+                                                 wwView:(WorldWindView*)wwv;
 
 @end
