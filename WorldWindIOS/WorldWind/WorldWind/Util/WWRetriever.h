@@ -17,6 +17,10 @@
  * file path (WW_FILE_PATH).
 */
 @interface WWRetriever : NSOperation
+{
+    NSMutableDictionary* responseDictionary;
+    NSMutableData* retrievedData;
+}
 
 /// @name Attributes
 

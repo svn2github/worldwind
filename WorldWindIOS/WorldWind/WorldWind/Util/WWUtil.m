@@ -76,7 +76,7 @@
 
         // Get the data from the URL.
         NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url
-                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                   timeoutInterval:timeout];
         NSURLResponse* response;
         NSError* error = nil;
