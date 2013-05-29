@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
@@ -107,9 +108,17 @@
 
     [urls appendString:serverAddress];
 
-    if (![serverAddress hasSuffix:@"?"])
+    NSRange range = [serverAddress rangeOfString:@"?"];
+    if (range.location == NSNotFound)
     {
         [urls appendString:@"?"];
+    }
+    else
+    {
+        if (![serverAddress hasSuffix:@"?"])
+        {
+            [urls appendString:@"&"];
+        }
     }
 
     [urls appendString:@"service=WMS&request=GetCapabilities"];
