@@ -49,6 +49,8 @@
     int lastCol;
 }
 
+/// @name Level Set Enumerator Attributes
+
 /// The level set to enumerate. This retains the level set during enumeration and releases it when the enumeration is
 /// exhausted.
 @property (nonatomic, readonly) WWLevelSet* levelSet;

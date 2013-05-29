@@ -17,7 +17,7 @@
 */
 @interface WWLevel : NSObject
 
-/// @name Attributes
+/// @name Level Attributes
 
 /// The WWLevelSet this level is a member of.
 @property (nonatomic, readonly, weak) WWLevelSet* parent;

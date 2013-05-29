@@ -25,7 +25,7 @@
     NSMutableArray* levels;
 }
 
-/// @name Attributes
+/// @name Level Set Attributes
 
 /// The sector this level set covers.
 @property(nonatomic, readonly) WWSector* sector;
