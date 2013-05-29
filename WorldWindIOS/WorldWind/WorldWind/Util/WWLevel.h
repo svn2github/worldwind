@@ -28,7 +28,7 @@
 /// The geographic size of tiles in this level.
 @property (nonatomic, readonly) WWLocation* tileDelta;
 
-/// The size of pixels or elevation cells in this level.
+/// The size of pixels or elevation cells in this level, in radians per pixel or cell.
 @property (nonatomic, readonly) double texelSize;
 
 /**

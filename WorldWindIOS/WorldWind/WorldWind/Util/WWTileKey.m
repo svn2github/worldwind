@@ -40,13 +40,15 @@
     return self;
 }
 
-- (void) setLevelNumber:(int)levelNumber row:(int)row column:(int)column
+- (WWTileKey*) setLevelNumber:(int)levelNumber row:(int)row column:(int)column
 {
     _levelNumber = levelNumber;
     _row = row;
     _column = column;
 
     hash = TILE_HASH(_levelNumber, _row, _column);
+
+    return self;
 }
 
 - (id) copyWithZone:(NSZone*)zone

@@ -23,13 +23,13 @@
 ///@name Tile Key Attributes
 
 /// The level number this key is associated with.
-@property(nonatomic, readonly) int levelNumber;
+@property (nonatomic, readonly) int levelNumber;
 
 /// The tile's row in the associated level.
-@property(nonatomic, readonly) int row;
+@property (nonatomic, readonly) int row;
 
 /// The tile's column in the associated level.
-@property(nonatomic, readonly) int column;
+@property (nonatomic, readonly) int column;
 
 /// @name Initializing Tile Keys
 
@@ -59,7 +59,7 @@
 *
 * @exception NSInvalidArgumentException If the levelNumber, row or column number are less than 0.
 */
-- (void) setLevelNumber:(int)levelNumber row:(int)row column:(int)column;
+- (WWTileKey*) setLevelNumber:(int)levelNumber row:(int)row column:(int)column;
 
 /// @name Copying Tile Keys
 

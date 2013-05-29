@@ -36,7 +36,6 @@
     _parent = parent;
     _levelNumber = levelNumber;
     _tileDelta = tileDelta;
-
     _texelSize = RADIANS([tileDelta latitude]) / [_parent tileHeight];
 
     return self;

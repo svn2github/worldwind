@@ -8,6 +8,7 @@
 #import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWLevelSetEnumerator.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/WWLog.h"
@@ -124,12 +125,117 @@
     return levelNumber == [self->levels count] - 1;
 }
 
-- (int) numColumnsInLevel:(WWLevel*)level
+- (WWLevel*) levelForTexelSize:(double)texelSize;
 {
-    int levelDelta = [level levelNumber] - [[self firstLevel] levelNumber];
-    double twoToTheN = pow(2, levelDelta);
+    // TODO: Replace this loop with a computation.
+    WWLevel* lastLevel = [levels lastObject];
 
-    return (int) twoToTheN * _numLevelZeroColumns;
+    if ([lastLevel texelSize] >= texelSize)
+    {
+        return lastLevel; // Can't do any better than the last level.
+    }
+
+    for (WWLevel* level in levels)
+    {
+        if ([level texelSize] <= texelSize)
+        {
+            return level;
+        }
+    }
+
+    return lastLevel;
+}
+
+- (WWLevel*) levelForTileDelta:(double)deltaLatDegrees
+{
+    // TODO: Replace this loop with a computation.
+    WWLevel* lastLevel = [levels lastObject];
+
+    if ([[lastLevel tileDelta] latitude] >= deltaLatDegrees)
+    {
+        return lastLevel; // Can't do any better than the last level.
+    }
+
+    for (WWLevel* level in levels)
+    {
+        if ([[level tileDelta] latitude] <= deltaLatDegrees)
+        {
+            return level;
+        }
+    }
+
+    return lastLevel;
+}
+
+- (NSUInteger) tileCountForSector:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    return [self tileCountForSector:sector lastLevel:[levels count] - 1];
+}
+
+- (NSUInteger) tileCountForSector:(WWSector*)sector lastLevel:(int)lastLevel
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (lastLevel < 0 || lastLevel >= [levels count])
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Last level is invalid")
+    }
+
+    // Intersect the specified sector with the level set's coverage area. This avoids attempting to enumerate tiles that
+    // are outside the coverage area.
+    WWSector* coverageSector = [[WWSector alloc] initWithSector:sector];
+    [coverageSector intersection:_sector];
+
+    NSUInteger tileCount = 0;
+
+    for (NSUInteger i = 0; i <= lastLevel; i++)
+    {
+        WWLevel* level = [levels objectAtIndex:i];
+        double deltaLat = [[level tileDelta] latitude];
+        double deltaLon = [[level tileDelta] longitude];
+
+        int firstRow = [WWTile computeRow:deltaLat latitude:[coverageSector minLatitude]];
+        int lastRow = [WWTile computeRow:deltaLat latitude:[coverageSector maxLatitude]];
+        int firstCol = [WWTile computeColumn:deltaLon longitude:[coverageSector minLongitude]];
+        int lastCol = [WWTile computeColumn:deltaLon longitude:[coverageSector maxLongitude]];
+
+        tileCount += (lastRow - firstRow + 1) * (lastCol - firstCol + 1);
+    }
+
+    return tileCount;
+}
+
+- (NSEnumerator*) tileEnumeratorForSector:(WWSector*)sector
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    return [[WWLevelSetEnumerator alloc] initWithLevelSet:self sector:sector firstLevel:0 lastLevel:[levels count] - 1];
+}
+
+- (NSEnumerator*) tileEnumeratorForSector:(WWSector*)sector lastLevel:(int)lastLevel
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    if (lastLevel < 0 || lastLevel >= [levels count])
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Last level is invalid")
+    }
+
+    return [[WWLevelSetEnumerator alloc] initWithLevelSet:self sector:sector firstLevel:0 lastLevel:lastLevel];
 }
 
 @end
