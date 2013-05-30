@@ -62,7 +62,7 @@
 
     self = [super init];
 
-    self->tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
+    tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
 
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
@@ -70,17 +70,17 @@
 
     _textureFormat = WW_TEXTURE_RGBA_5551;
 
-    self->detailHintOrigin = 2.5;
+    detailHintOrigin = 2.5;
 
-    self->levels = [[WWLevelSet alloc] initWithSector:sector
+    levels = [[WWLevelSet alloc] initWithSector:sector
                                        levelZeroDelta:levelZeroDelta
                                             numLevels:numLevels];
 
-    self->currentTiles = [[NSMutableArray alloc] init];
-    self->topLevelTiles = [[NSMutableArray alloc] init];
-    self->currentRetrievals = [[NSMutableSet alloc] init];
-    self->currentLoads = [[NSMutableSet alloc] init];
-    self->absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
+    currentTiles = [[NSMutableArray alloc] init];
+    topLevelTiles = [[NSMutableArray alloc] init];
+    currentRetrievals = [[NSMutableSet alloc] init];
+    currentLoads = [[NSMutableSet alloc] init];
+    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
 
     [self setPickEnabled:NO];
 
@@ -157,7 +157,7 @@
     {
         @synchronized (currentRetrievals)
         {
-            [self->currentRetrievals removeObject:pathKey];
+            [currentRetrievals removeObject:pathKey];
         }
     }
 }
@@ -180,18 +180,18 @@
     {
         @synchronized (currentLoads)
         {
-            [self->currentLoads removeObject:imagePath];
+            [currentLoads removeObject:imagePath];
         }
     }
 }
 
 - (void) createTopLevelTiles
 {
-    [self->topLevelTiles removeAllObjects];
+    [topLevelTiles removeAllObjects];
 
-    [WWTile createTilesForLevel:[self->levels firstLevel]
+    [WWTile createTilesForLevel:[levels firstLevel]
                     tileFactory:self
-                       tilesOut:self->topLevelTiles];
+                       tilesOut:topLevelTiles];
 }
 
 - (void) doRender:(WWDrawContext*)dc
@@ -201,19 +201,19 @@
 
     [self assembleTiles:dc];
 
-//    NSLog(@"CURRENT TILES %d", [self->currentTiles count]);
-//    for (NSUInteger i = 0; i < [self->currentTiles count]; i++)
+//    NSLog(@"CURRENT TILES %d", [currentTiles count]);
+//    for (NSUInteger i = 0; i < [currentTiles count]; i++)
 //    {
-//        WWTextureTile* tile = [self->currentTiles objectAtIndex:i];
+//        WWTextureTile* tile = [currentTiles objectAtIndex:i];
 //        WWSector* s = [tile sector];
 //        NSLog(@"SHOWING %f, %f, %f, %f", [s minLatitude], [s maxLatitude], [s minLongitude], [s maxLongitude]);
 //    }
 
-    if ([self->currentTiles count] > 0)
+    if ([currentTiles count] > 0)
     {
-        [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:self->currentTiles opacity:[self opacity]];
+        [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:currentTiles opacity:[self opacity]];
 
-        [self->currentTiles removeAllObjects];
+        [currentTiles removeAllObjects];
     }
 }
 
@@ -221,7 +221,7 @@
 {
     WWSector* visibleSector = [dc visibleSector];
 
-    return visibleSector == nil || [visibleSector intersects:[self->levels sector]];
+    return visibleSector == nil || [visibleSector intersects:[levels sector]];
 }
 
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTextureTile*)tile
@@ -236,21 +236,21 @@
 
 - (void) assembleTiles:(WWDrawContext*)dc
 {
-    [self->currentTiles removeAllObjects];
+    [currentTiles removeAllObjects];
 
-    if ([self->topLevelTiles count] == 0)
+    if ([topLevelTiles count] == 0)
     {
         [self createTopLevelTiles];
     }
 
-    for (NSUInteger i = 0; i < [self->topLevelTiles count]; i++)
+    for (NSUInteger i = 0; i < [topLevelTiles count]; i++)
     {
-        WWTextureTile* tile = [self->topLevelTiles objectAtIndex:i];
+        WWTextureTile* tile = [topLevelTiles objectAtIndex:i];
 
         [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
         [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
-        self->currentAncestorTile = nil;
+        currentAncestorTile = nil;
 
         if ([self isTileVisible:dc tile:tile])
         {
@@ -273,13 +273,13 @@
     {
         if ([self isTileTextureInMemory:dc tile:tile] || [[tile level] levelNumber] == 0)
         {
-            ancestorTile = self->currentAncestorTile;
-            self->currentAncestorTile = tile;
+            ancestorTile = currentAncestorTile;
+            currentAncestorTile = tile;
         }
 
         // TODO: Surround this loop with an autorelease pool since a lot of tiles are generated?
-        WWLevel* nextLevel = [self->levels level:[[tile level] levelNumber] + 1];
-        NSArray* subTiles = [tile subdivide:nextLevel cache:self->tileCache tileFactory:self];
+        WWLevel* nextLevel = [levels level:[[tile level] levelNumber] + 1];
+        NSArray* subTiles = [tile subdivide:nextLevel cache:tileCache tileFactory:self];
         for (NSUInteger i = 0; i < 4; i++)
         {
             WWTile* child = [subTiles objectAtIndex:i];
@@ -287,7 +287,7 @@
             [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
             [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
-            if ([[self->levels sector] intersects:[child sector]]
+            if ([[levels sector] intersects:[child sector]]
                     && [self isTileVisible:dc tile:(WWTextureTile*) child])
             {
                 [self addTileOrDescendants:dc tile:(WWTextureTile*) child];
@@ -298,7 +298,7 @@
     {
         if (ancestorTile != nil)
         {
-            self->currentAncestorTile = ancestorTile;
+            currentAncestorTile = ancestorTile;
         }
     }
 }
@@ -310,7 +310,7 @@
     WWTexture* texture = (WWTexture*) [[dc gpuResourceCache] getResourceForKey:[tile imagePath]];
     if (texture != nil)
     {
-        [self->currentTiles addObject:tile];
+        [currentTiles addObject:tile];
 
         // If the tile's texture has expired, cause it to be re-retrieved. Note that the current,
         // expired texture is still used until the updated one arrives.
@@ -324,16 +324,16 @@
 
     [self loadOrRetrieveTileImage:dc tile:tile];
 
-    if (self->currentAncestorTile != nil)
+    if (currentAncestorTile != nil)
     {
-        if ([self isTileTextureInMemory:dc tile:self->currentAncestorTile])
+        if ([self isTileTextureInMemory:dc tile:currentAncestorTile])
         {
-            [tile setFallbackTile:self->currentAncestorTile];
-            [self->currentTiles addObject:tile];
+            [tile setFallbackTile:currentAncestorTile];
+            [currentTiles addObject:tile];
         }
-        else if ([[self->currentAncestorTile level] levelNumber] == 0)
+        else if ([[currentAncestorTile level] levelNumber] == 0)
         {
-            [self loadOrRetrieveTileImage:dc tile:self->currentAncestorTile];
+            [self loadOrRetrieveTileImage:dc tile:currentAncestorTile];
         }
     }
 }
@@ -373,8 +373,8 @@
 
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    return [self->levels isLastLevel:[[tile level] levelNumber]]
-            || ![tile mustSubdivide:dc detailFactor:(self->detailHintOrigin + _detailHint)];
+    return [levels isLastLevel:[[tile level] levelNumber]]
+            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
 }
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
