@@ -349,6 +349,31 @@
     return url;
 }
 
+- (NSArray*) getMapFormats
+{
+    NSDictionary* element = [_root objectForKey:@"capability"];
+    element = [element objectForKey:@"request"];
+    element = [element objectForKey:@"getmap"];
+
+
+    NSArray* formats = [element objectForKey:@"format"];
+    if (formats == nil || [formats count] == 0)
+        return nil;
+
+    NSMutableArray* result = [[NSMutableArray alloc] initWithCapacity:[formats count]];
+
+    for (NSDictionary* format in formats)
+    {
+        NSString* formatString = [format objectForKey:@"characters"];
+        if (formatString != nil && [formatString length] > 0)
+        {
+            [result addObject:[formatString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+    }
+
+    return result;
+}
+
 + (NSString*) layerName:(NSDictionary*)layerCaps
 {
     if (layerCaps == nil)
@@ -438,6 +463,18 @@
     }
 
     return nil;
+}
+
++ (BOOL) layerIsOpaque:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSString* opaque = [layerCaps objectForKey:@"opaque"];
+
+    return opaque != nil && [opaque isEqualToString:@"1"];
 }
 
 + (WWSector*) makeGeographicBoundingBox:(NSDictionary*)boundingBoxElement

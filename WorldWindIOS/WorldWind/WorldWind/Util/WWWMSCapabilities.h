@@ -60,7 +60,7 @@
 */
 - (WWWMSCapabilities*) initWithCapabilitiesDictionary:(NSDictionary*)dictionary;
 
-/// @name Getting Information from WMS Capabilities
+/// @name Getting Server Information from WMS Capabilities
 
 /**
 * Returns the service title.
@@ -126,6 +126,15 @@
 - (NSString*) getMapURL;
 
 /**
+* Returns the image formats supported by the GetMap request.
+*
+* @return The supported image formats. Returns nil if no formats are specified in the capabilities document.
+*/
+- (NSArray*) getMapFormats;
+
+/// @name Getting Layer Information from WMS Capabilities
+
+/**
 * Returns the geographic bounding box for a specified layer.
 *
 * The bounding box returned is either that of the layer itself or the nearest ancestor specifying a geographic
@@ -146,7 +155,7 @@
 * @return The contents of the Name element of the specified layer capabilities, or nil if the capabilities contain no
  * layer name.
  *
- * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+ * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSString*) layerName:(NSDictionary*)layerCaps;
 
@@ -157,7 +166,7 @@
 *
 * @return The specified layer's title, or nil if it has no title.
  *
- * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+ * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSString*) layerTitle:(NSDictionary*)layerCaps;
 
@@ -168,7 +177,7 @@
 *
 * @return The specified layer's abstract, or nil if it has no abstract.
  *
- * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+ * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSString*) layerAbstract:(NSDictionary*)layerCaps;
 
@@ -179,7 +188,7 @@
 *
 * @return The specified layer's sub-layers, or nil if it has no sub-layers.
  *
- * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+ * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSArray*) layers:(NSDictionary*)layerCaps;
 
@@ -197,8 +206,19 @@
 * @return The date and time given in the layer's capabilities LastUpdate keyword,
 * or nil if that keyword does not exist.
 *
-* @exception NSInvalidArgumentException if the specified layer capabilities is nil.
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSDate*) layerLastUpdateTime:(NSDictionary*)layerCaps;
+
+/**
+* Indicates whether a specified layer is marked as opaque in its capabilities.
+*
+* @param layerCaps The layer's capabilities.
+*
+* @return YES if the layer is marked as opaque, otherwise NO.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (BOOL) layerIsOpaque:(NSDictionary*)layerCaps;
 
 @end

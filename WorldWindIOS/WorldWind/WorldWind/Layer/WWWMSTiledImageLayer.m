@@ -54,10 +54,16 @@
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
 
+    NSString* imageFormat = [self determineImageFormat:serverCapabilities layerCaps:layerCapabilities];
+    if (imageFormat == nil)
+    {
+        imageFormat = @"image/png"; // The WMS spec recommends that all servers support this format
+    }
+
     self = [super initWithSector:boundingBox
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
                        numLevels:16
-            retrievalImageFormat:@"image/png" // TODO: determine available formats from layer caps
+            retrievalImageFormat:imageFormat
                        cachePath:cachePath];
 
     NSString* title = [WWWMSCapabilities layerTitle:layerCapabilities];
@@ -76,6 +82,38 @@
     [self setUrlBuilder:urlBuilder];
 
     return self;
+}
+
+- (NSString*) determineImageFormat:(WWWMSCapabilities*)serverCaps layerCaps:(NSDictionary*)layerCaps
+{
+    NSArray* formats = [serverCaps getMapFormats];
+    if (formats == nil || [formats count] == 0) // this should never happen, but have a response ready anyway
+        return nil;
+
+    NSArray* desiredFormatList;
+    if ([WWWMSCapabilities layerIsOpaque:layerCaps])
+    {
+        desiredFormatList = [[NSArray alloc] initWithObjects:
+                @"image/jpeg", @"image/png", @"image/tiff", @"image/gif", nil];
+    }
+    else
+    {
+        desiredFormatList = [[NSArray alloc] initWithObjects:
+                @"image/png", @"image/jpeg", @"image/tiff", @"image/gif", nil];
+    }
+
+    for (NSString* desiredFormat in desiredFormatList)
+    {
+        for (NSString* format in formats)
+        {
+            if ([format caseInsensitiveCompare:desiredFormat] == NSOrderedSame)
+            {
+                return format;
+            }
+        }
+    }
+
+    return nil;
 }
 
 @end
