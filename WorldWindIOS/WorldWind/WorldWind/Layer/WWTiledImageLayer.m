@@ -6,28 +6,26 @@
  */
 
 #import "WorldWind/Layer/WWTiledImageLayer.h"
-#import "WorldWind/Util/WWLevelSet.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Render/WWSurfaceTileRenderer.h"
-#import "WorldWind/Util/WWTile.h"
-#import "WorldWind/Render/WWSurfaceTile.h"
-#import "WorldWind/Render/WWTextureTile.h"
-#import "WorldWind/Util/WWLevel.h"
-#import "WorldWind/Util/WWGpuResourceCache.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Util/WWUtil.h"
-#import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Util/WWMemoryCache.h"
-#import "WorldWind/WorldWind.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Render/WWSurfaceTile.h"
+#import "WorldWind/Render/WWSurfaceTileRenderer.h"
 #import "WorldWind/Render/WWTexture.h"
+#import "WorldWind/Render/WWTextureTile.h"
 #import "WorldWind/Util/WWAbsentResourceList.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWLevelSet.h"
+#import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Util/WWRetrieverToFile.h"
+#import "WorldWind/Util/WWTileKey.h"
+#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/WorldWind.h"
 
 @implementation WWTiledImageLayer
 
@@ -157,7 +155,10 @@
     }
     @finally
     {
-        [self->currentRetrievals removeObject:pathKey];
+        @synchronized (currentRetrievals)
+        {
+            [self->currentRetrievals removeObject:pathKey];
+        }
     }
 }
 
@@ -167,12 +168,20 @@
     NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    [self->currentLoads removeObject:imagePath];
-
-    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+    @try
     {
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+        {
+            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+    }
+    @finally
+    {
+        @synchronized (currentLoads)
+        {
+            [self->currentLoads removeObject:imagePath];
+        }
     }
 }
 
@@ -339,9 +348,27 @@
     return [[texture fileModificationDate] timeIntervalSinceDate:_expiration] < 0;
 }
 
+- (BOOL) isTextureOnDiskExpired:(WWTextureTile*)tile
+{
+    if (_expiration != nil)
+    {
+        // Determine whether the disk image has expired.
+        NSDictionary* fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[tile imagePath] error:nil];
+        NSDate* fileDate = [fileAttrs objectForKey:NSFileModificationDate];
+        return [fileDate timeIntervalSinceDate:_expiration] < 0;
+    }
+
+    return NO;
+}
+
 - (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
     return [dc.gpuResourceCache containsKey:[tile imagePath]];
+}
+
+- (BOOL) isTileTextureOnDisk:(WWTextureTile*)tile
+{
+    return [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
 }
 
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
@@ -373,26 +400,29 @@
     return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }
 
+- (WWTile*) createTile:(WWTileKey*)key
+{
+    WWLevel* level = [levels level:[key levelNumber]];
+    int row = [key row];
+    int column = [key column];
+
+    WWSector* sector = [WWTile computeSector:level row:row column:column];
+
+    return [self createTile:sector level:level row:row column:column];
+}
+
 - (void) loadOrRetrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
     // See if it's already on disk.
-    if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
+    if ([self isTileTextureOnDisk:tile])
     {
-        if (_expiration != nil)
+        if ([self isTextureOnDiskExpired:tile])
         {
-            // Determine whether the disk image has expired.
-            NSDictionary* fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[tile imagePath]
-                                                                                            error:nil];
-            NSDate* fileDate = [fileAttributes objectForKey:NSFileModificationDate];
-            if ([fileDate timeIntervalSinceDate:_expiration] < 0)
-            {
-                // Existing image file is out of date, so initiate retrieval of an up-to-date one.
-                [self retrieveTileImage:tile];
+            [self retrieveTileImage:tile]; // Existing image file is out of date, so initiate retrieval of an up-to-date one.
 
-                if ([self isTileTextureInMemory:dc tile:tile])
-                {
-                    return; // Out-of-date tile is in memory so don't load the old image file again.
-                }
+            if ([self isTileTextureInMemory:dc tile:tile])
+            {
+                return; // Out-of-date tile is in memory so don't load the old image file again.
             }
         }
 
@@ -409,9 +439,15 @@
 
 - (void) loadTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    if ([self->currentLoads containsObject:[tile imagePath]])
-        return;
-    [self->currentLoads addObject:[tile imagePath]];
+    @synchronized (currentLoads)
+    {
+        if ([currentLoads containsObject:[tile imagePath]])
+        {
+            return;
+        }
+
+        [currentLoads addObject:[tile imagePath]];
+    }
 
     WWTexture* texture = [[WWTexture alloc] initWithImagePath:[tile imagePath]
                                                         cache:[dc gpuResourceCache]
@@ -425,19 +461,38 @@
     [[WorldWind loadQueue] addOperation:texture];
 }
 
-- (void) retrieveTileImage:(WWTextureTile*)tile
+- (NSString*) retrieveTileImage:(WWTextureTile*)tile
 {
     // If the app is connected to the network, retrieve the image from there.
 
     if ([WorldWind isOfflineMode])
-        return;
+    {
+        return nil; // don't know the tile's status in offline mode
+    }
 
     NSString* pathKey = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:nil];
-    if ([self->currentRetrievals containsObject:pathKey] || [absentResources isResourceAbsent:pathKey])
+    if ([absentResources isResourceAbsent:pathKey])
     {
-        return;
+        return WW_ABSENT;
     }
-    [self->currentRetrievals addObject:pathKey];
+
+    @synchronized (currentRetrievals)
+    {
+        // Synchronize checking for the file on disk with adding the tile to currentRetrievals. This avoids unnecessary
+        // retrievals initiated when a retrieval completes between the time this thread checks for the file on disk and
+        // checks the currentRetrievals list.
+
+        if ([self isTileTextureOnDisk:tile] && ![self isTextureOnDiskExpired:tile])
+        {
+            return WW_LOCAL;
+        }
+        else if ([currentRetrievals containsObject:pathKey])
+        {
+            return nil; // don't know the tile's status until retrieval completes
+        }
+
+        [currentRetrievals addObject:pathKey];
+    }
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
@@ -465,6 +520,8 @@
 
     [retriever setThreadPriority:0.0];
     [[WorldWind retrievalQueue] addOperation:retriever];
+
+    return nil; // don't know the tile's status until retrieval completes
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat
