@@ -5,12 +5,12 @@
  @version $Id$
  */
 
-#import "WWWMSLayerExpirationRetriever.h"
-#import "WWLayer.h"
-#import "WWWMSCapabilities.h"
-#import "WWTiledImageLayer.h"
-#import "WWLog.h"
-#import "WorldWindConstants.h"
+#import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
+#import "WorldWind/Layer/WWLayer.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Layer/WWTiledImageLayer.h"
+#import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWWMSLayerExpirationRetriever
 
@@ -44,34 +44,35 @@
 
 - (void) main
 {
-    @autoreleasepool
+    WWWMSCapabilities __unused * caps =
+            [[WWWMSCapabilities alloc] initWithServerAddress:_serviceAddress
+                                               finishedBlock:^(WWWMSCapabilities* capabilities)
+                                               {
+                                                   [self performSelectorOnMainThread:@selector(setExpiration:)
+                                                                          withObject:capabilities
+                                                                       waitUntilDone:NO];
+                                               }];
+}
+
+- (void) setExpiration:(id)capabilities
+{
+    if (capabilities != nil)
     {
-        WWWMSCapabilities* caps = [[WWWMSCapabilities alloc] initWithServerAddress:_serviceAddress];
-        if (caps != nil)
+        NSDictionary* layerCaps = [capabilities namedLayer:_layerName];
+        if (layerCaps != nil)
         {
-            NSDictionary* layerCaps = [caps namedLayer:_layerName];
-            if (layerCaps != nil)
+            NSDate* layerLastUpdateTime = [WWWMSCapabilities layerLastUpdateTime:layerCaps];
+            if (layerLastUpdateTime != nil)
             {
-                NSDate* layerLastUpdateTime = [WWWMSCapabilities layerLastUpdateTime:layerCaps];
-                if (layerLastUpdateTime != nil)
-                {
-                    [self performSelectorOnMainThread:@selector(setExpiration:)
-                                           withObject:layerLastUpdateTime
-                                        waitUntilDone:NO];
-                }
+                // Note that the "layer" may be a tiled image layer or an elevation model.
+                [_layer setExpiration:layerLastUpdateTime];
+
+                // Request a redraw so the layer can updated itself.
+                NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+                [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
             }
         }
     }
-}
-
-- (void) setExpiration:(id)layerLastUpdateTime
-{
-    // Note that the "layer" may be a tiled image layer or an elevation model.
-    [_layer setExpiration:layerLastUpdateTime];
-
-    // Request a redraw so the layer can updated itself.
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
 
 @end

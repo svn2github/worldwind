@@ -11,52 +11,59 @@
 * Provides retrieval and caching of resources. This class is typically used to retrieve image and elevation resources
  * from the internet and save them to the local World Wind file system cache.
  *
- * When a retrieval is complete, a notification is sent indicating retrieval status. The notification's user info
- * dictionary includes the retrieval status (WW_RETRIEVAL_STATUS) of either WW_SUCCEEDED,
- * WW_FAILED or WW_CANCELED. The dictionary also includes the retriever's URL (WW_URL) and its
- * file path (WW_FILE_PATH).
+ * The retrieval is performed on a separate thread from that of the initializer. The finished block is called on the
+ * same thread that performRetrieval is called on.
+ *
+ * Instances of this class can be used directly by calling performRetrieval or as an NSOperation. In the latter case
+ * the call to performRetrieval is made on the NSOperation's thread.
 */
-@interface WWRetriever : NSOperation
+@interface WWRetriever : NSOperation <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 {
-    NSMutableDictionary* responseDictionary;
-    NSMutableData* retrievedData;
+    void (^finished)(WWRetriever* retriever);
 }
 
-/// @name Attributes
+/// name Retriever Attributes
 
 /// The URL from which to retrieve the resource.
 @property(nonatomic, readonly) NSURL* url;
 
-/// The full path and name of the file in which to store the resource.
-@property(nonatomic, readonly) NSString* filePath;
-
-/// The optional argument specified as the source in the WW_RETRIEVAL_STATUS notification.
-@property(nonatomic, readonly) id object;
+/// The status of the retrieval when the finished block is called. Will be one of WW_SUCCEEDED, WW_CANCELED or
+/// WW_FAILED.
+@property(nonatomic, readonly) NSString* status;
 
 /// The number of seconds to wait before the request times out.
-@property (nonatomic, readonly) NSTimeInterval timeout;
+@property(nonatomic, readonly) NSTimeInterval timeout;
+
+/// The retrieved data. Available only once the finished block is called.
+@property(nonatomic, readonly) NSMutableData* retrievedData;
 
 /// @name Initializing Retrievers
 
 /**
-* Initialize a retriever with a specified URL, file path and notification source.
+* Initializes this instance.
 *
-* @param url The URL from which to retrieve the resource.
-* @param filePath The full path and name of the file in which to write the resource. If the directories in the path
-* do not exist they are created.
-* @param object The object to specify as the source in the WW_RETRIEVAL_STATUS notification.
-* @param timeout The number of seconds to wait to establish a connection to the specified URL.
+* The specified finished block is called when the download completed. It is called on the same thread that
+* initialized this instance.
 *
-* @return The initialized retriever.
+* Call performRetrieval to begin the download.
 *
-* @exception NSInvalidArgumentException If the url or file path are nil.
+* @param url The URL to download from.
+* @param timeout The number of seconds to wait for a connection.
+* @param finishedBlock The block to call when the download is complete.
+*
+* @return This instance, initialized.
+*
+* @exception NSInvalidArgumentException If either the specified url or finished block is nil.
 */
-- (WWRetriever*) initWithUrl:(NSURL*)url filePath:(NSString*)filePath object:(id)object timeout:(NSTimeInterval)timeout;
-
-/// @name Operations
+- (WWRetriever*) initWithUrl:(NSURL*)url
+                     timeout:(NSTimeInterval)timeout
+               finishedBlock:(void (^) (WWRetriever*))finishedBlock;
 
 /**
-* Perform the retrieval on the current thread.
+* Perform the download.
+*
+* The finished block specified at initialization is called when the download completes. It is called on the same
+* thread that the call to performRetrieval is made.
 */
 - (void) performRetrieval;
 

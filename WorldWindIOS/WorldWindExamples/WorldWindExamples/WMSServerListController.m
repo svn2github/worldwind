@@ -148,8 +148,6 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
 - (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    // TODO: Perform this in a separate thread and within an exception handler.
-
     if (buttonIndex == 1)
     {
         NSString* serverAddress = [[alertView textFieldAtIndex:0] text];
@@ -163,22 +161,26 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
                 }
             }
 
-            WWWMSCapabilities* caps = [[WWWMSCapabilities alloc] initWithServerAddress:serverAddress];
-            if (caps != nil)
-            {
-                NSString* serviceTitle = [caps serviceTitle];
-                if (serviceTitle == nil)
-                {
-                    serviceTitle = @"WMS Server";
-                }
-                [self addServer:serverAddress serviceTitle:serviceTitle];
+            WWWMSCapabilities __unused * caps = [[WWWMSCapabilities alloc]
+                    initWithServerAddress:serverAddress
+                            finishedBlock:^(WWWMSCapabilities* capabilities)
+                            {
+                                if (capabilities != nil)
+                                {
+                                    NSString* serviceTitle = [capabilities serviceTitle];
+                                    if (serviceTitle == nil)
+                                    {
+                                        serviceTitle = @"WMS Server";
+                                    }
+                                    [self addServer:serverAddress serviceTitle:serviceTitle];
 
-                // Persist the capabilities document.
-                [[NSUserDefaults standardUserDefaults] setObject:[caps root] forKey:serverAddress];
-                [[NSUserDefaults standardUserDefaults] synchronize];
+                                    // Persist the capabilities document.
+                                    [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
+                                    [[NSUserDefaults standardUserDefaults] synchronize];
 
-                [[self tableView] reloadData];
-            }
+                                    [[self tableView] reloadData];
+                                }
+                            }];
         }
     }
 }
@@ -193,26 +195,35 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     NSString* serverAddress = [[cell detailTextLabel] text];
 
-    WWWMSCapabilities* caps;
     NSDictionary* capsRoot = [[NSUserDefaults standardUserDefaults] objectForKey:serverAddress];
     if (capsRoot == nil)
     {
-        caps = [[WWWMSCapabilities alloc] initWithServerAddress:serverAddress];
-        if (caps != nil)
-        {
-            [[NSUserDefaults standardUserDefaults] setObject:[caps root] forKey:serverAddress];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        }
+        // Retrieve the capabilities from the web.
+        WWWMSCapabilities __unused * caps = [[WWWMSCapabilities alloc]
+                initWithServerAddress:serverAddress
+                        finishedBlock:^(WWWMSCapabilities* capabilities)
+                        {
+                            if (capabilities != nil)
+                            {
+                                [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                [self pushDetailController:capabilities serverAddress:serverAddress];
+                            }
+                        }];
     }
     else
     {
-        caps = [[WWWMSCapabilities alloc] initWithCapabilitiesDictionary:capsRoot];
+        WWWMSCapabilities* caps = [[WWWMSCapabilities alloc] initWithCapabilitiesDictionary:capsRoot];
+        [self pushDetailController:caps serverAddress:serverAddress];
     }
+}
 
-    if (caps != nil)
+- (void) pushDetailController:(WWWMSCapabilities*)capabilities serverAddress:(NSString*)serverAddress
+{
+    if (capabilities != nil)
     {
         WMSServerDetailController* detailController =
-                [[WMSServerDetailController alloc] initWithCapabilities:caps
+                [[WMSServerDetailController alloc] initWithCapabilities:capabilities
                                                           serverAddress:serverAddress
                                                                    size:[self contentSizeForViewInPopover]
                                                                  wwview:_wwv];

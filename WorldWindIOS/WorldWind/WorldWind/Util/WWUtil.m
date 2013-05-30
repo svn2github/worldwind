@@ -21,78 +21,78 @@
 
     return uuidStr;
 }
-
-+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout
-{
-    if (url == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
-    }
-
-    if (filePath == nil || [filePath length] == 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"File path is nil or empty")
-    }
-
-    // Get the data from the URL.
-    NSData* data = [self retrieveUrl:url timeout:timeout];
-    if (data == nil)
-    {
-        return NO;
-    }
-
-    // Ensure that the directory for the file exists.
-    NSError* error = nil;
-    NSString* pathDir = [filePath stringByDeletingLastPathComponent];
-    [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
-                              withIntermediateDirectories:YES attributes:nil error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" creating path %@", [error description], filePath);
-        return NO;
-    }
-
-    // Write the data to the file.
-    [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
-    if (error != nil)
-    {
-        WWLog("@Error \"%@\" writing file %@", [error description], filePath);
-        return NO;
-    }
-
-    return YES;
-}
-
-+ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout
-{
-    if (url == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
-    }
-
-    @try
-    {
-        [WorldWind setNetworkBusySignalVisible:YES];
-
-        // Get the data from the URL.
-        NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url
-                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                  timeoutInterval:timeout];
-        NSURLResponse* response;
-        NSError* error = nil;
-        NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-        if (error != nil)
-        {
-            WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
-        }
-
-        return data;
-    }
-    @finally
-    {
-        [WorldWind setNetworkBusySignalVisible:NO];
-    }
-}
+//
+//+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout
+//{
+//    if (url == nil)
+//    {
+//        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
+//    }
+//
+//    if (filePath == nil || [filePath length] == 0)
+//    {
+//        WWLOG_AND_THROW(NSInvalidArgumentException, @"File path is nil or empty")
+//    }
+//
+//    // Get the data from the URL.
+//    NSData* data = [self retrieveUrl:url timeout:timeout];
+//    if (data == nil)
+//    {
+//        return NO;
+//    }
+//
+//    // Ensure that the directory for the file exists.
+//    NSError* error = nil;
+//    NSString* pathDir = [filePath stringByDeletingLastPathComponent];
+//    [[NSFileManager defaultManager] createDirectoryAtPath:pathDir
+//                              withIntermediateDirectories:YES attributes:nil error:&error];
+//    if (error != nil)
+//    {
+//        WWLog("@Error \"%@\" creating path %@", [error description], filePath);
+//        return NO;
+//    }
+//
+//    // Write the data to the file.
+//    [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
+//    if (error != nil)
+//    {
+//        WWLog("@Error \"%@\" writing file %@", [error description], filePath);
+//        return NO;
+//    }
+//
+//    return YES;
+//}
+//
+//+ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout
+//{
+//    if (url == nil)
+//    {
+//        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
+//    }
+//
+//    @try
+//    {
+//        [WorldWind setNetworkBusySignalVisible:YES];
+//
+//        // Get the data from the URL.
+//        NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url
+//                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+//                                                  timeoutInterval:timeout];
+//        NSURLResponse* response;
+//        NSError* error = nil;
+//        NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+//        if (error != nil)
+//        {
+//            WWLog("@Error \"%@\" retrieving %@", [error description], [url absoluteString]);
+//        }
+//
+//        return data;
+//    }
+//    @finally
+//    {
+//        [WorldWind setNetworkBusySignalVisible:NO];
+//    }
+//}
 
 + (NSString*) suffixForMimeType:(NSString*)mimeType
 {

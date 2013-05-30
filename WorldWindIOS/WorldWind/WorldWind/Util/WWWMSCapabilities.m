@@ -7,10 +7,11 @@
 
 #import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWWMSCapabilities.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWXMLParser.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Util/WWRetriever.h"
 
 @implementation WWWMSCapabilities
 
@@ -32,19 +33,63 @@
 
     self = [super init];
 
+    _serverAddress = serverAddress;
+
     NSString* fullUrlString = [self composeRequestString:serverAddress];
     NSURL* url = [[NSURL alloc] initWithString:fullUrlString];
 
-    NSData* data = [WWUtil retrieveUrl:url timeout:10];
-    if (data == nil)
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
+                                                finishedBlock:^(WWRetriever* myRetriever)
+                                                {
+                                                    [self parseCapabilities:myRetriever];
+                                                }];
+    [retriever performRetrieval];
+
+    return self;
+}
+
+- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
+                               finishedBlock:(void (^)(WWWMSCapabilities*))finishedBlock
+{
+    if (serverAddress == nil || [serverAddress length] == 0)
     {
-        WWLog(@"Unable to download WMS capabilities document with request URL %@", [url absoluteString]);
-        return nil;
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server address is nil or empty")
     }
 
-    [self parseDoc:data pathForLogMessage:serverAddress];
+    if (finishedBlock == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Finish block is nil")
+    }
 
-    return _root != nil ? self : nil;
+    self = [super init];
+
+    _serverAddress = serverAddress;
+
+    finished = finishedBlock;
+
+    NSString* fullUrlString = [self composeRequestString:serverAddress];
+    NSURL* url = [[NSURL alloc] initWithString:fullUrlString];
+
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
+                                              finishedBlock:^(WWRetriever* myRetriever)
+                                              {
+                                                  [self parseCapabilities:myRetriever];
+                                              }];
+    [retriever performRetrieval];
+
+    return self;
+}
+
+- (void) parseCapabilities:(WWRetriever*)retriever
+{
+    if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
+    {
+        WWLog(@"Unable to download WMS capabilities for %@", [self serverAddress]);
+        return;
+    }
+
+    [self parseDoc:[retriever retrievedData] pathForLogMessage:[self serverAddress]];
+    finished(_root != nil ? self : nil);
 }
 
 - (WWWMSCapabilities*) initWithCapabilitiesFile:(NSString*)filePath
@@ -374,7 +419,7 @@
             for (NSDictionary* keywordElement in keywordElementList)
             {
                 NSString* characters = [keywordElement objectForKey:@"characters"];
-                if ([characters hasSuffix:@"LastUpdate="])
+                if ([characters hasPrefix:@"LastUpdate="])
                 {
                     NSArray* splitString = [characters componentsSeparatedByString:@"="];
                     if ([splitString count] == 2)

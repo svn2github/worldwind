@@ -8,11 +8,11 @@
 #import "CrashDataLayer.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
-#import "WWPointPlacemarkAttributes.h"
-#import "WorldWindConstants.h"
-#import "WorldWind.h"
+#import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWind.h"
+#import "WorldWind/Util/WWRetriever.h"
 
 @interface CrashDataLayerRetriever : NSOperation
 @end
@@ -35,17 +35,26 @@
 
 - (void) main
 {
-    @autoreleasepool
-    {
-        NSURL* url = [[NSURL alloc] initWithString:urlString];
-        NSData* data = [WWUtil retrieveUrl:url timeout:5];
-        if (data == nil)
-        {
-            WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
-            return;
-        }
+    NSURL* url = [[NSURL alloc] initWithString:urlString];
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
+                                              finishedBlock:^(WWRetriever* myRetriever)
+                                              {
+                                                  [self parseData:myRetriever];
+                                              }];
+    [retriever performRetrieval];
+}
 
-        NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:data];
+- (void) parseData:(WWRetriever*)retriever
+{
+    if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
+    {
+        WWLog(@"Unable to download crash data %@", [[retriever url] absoluteString]);
+        return;
+    }
+
+    @try
+    {
+        NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:[retriever retrievedData]];
         [docParser setDelegate:layer];
 
         BOOL status = [docParser parse];
@@ -53,6 +62,10 @@
         {
             WWLog(@"Crash data parsing failed");
         }
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"Exception loading crash data", exception);
     }
 }
 

@@ -13,11 +13,11 @@
 #import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWMemoryCache.h"
-#import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/Util/WWAbsentResourceList.h"
+#import "WorldWind/Util/WWRetrieverToFile.h"
 
 @implementation WWBasicElevationModel
 
@@ -137,11 +137,11 @@
 }
 
 - (double) elevationsForSector:(WWSector*)sector
-                       numLat:(int)numLat
-                       numLon:(int)numLon
-             targetResolution:(double)targetResolution
-         verticalExaggeration:(double)verticalExaggeration
-                       result:(double[])result
+                        numLat:(int)numLat
+                        numLon:(int)numLon
+              targetResolution:(double)targetResolution
+          verticalExaggeration:(double)verticalExaggeration
+                        result:(double [])result
 {
     if (sector == nil)
     {
@@ -200,7 +200,7 @@
     return maxResolution;
 }
 
-- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double [])result
 {
     if (sector == nil)
     {
@@ -480,7 +480,7 @@
     [currentRetrievals addObject:[tile imagePath]];
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
+    WWRetrieverToFile* retriever = [[WWRetrieverToFile alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
     [[WorldWind retrievalQueue] addOperation:retriever];
 }
 

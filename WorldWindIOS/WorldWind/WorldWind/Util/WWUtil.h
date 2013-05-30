@@ -12,37 +12,37 @@
 */
 @interface WWUtil : NSObject
 
-/// @name I/O and Caching
+// /// @name I/O and Caching
+//
+///**
+//* Retrieves the data designated by a URL and saves it in a local file.
+//*
+//* @param url The URL from which to retrieve the data.
+//* @param filePath The full path of the file in which to save the data. The directories in the path need not exist,
+//* they will be created.
+//* @param timeout The number of seconds to wait for a connection to the specified URL.
+//*
+//* @return YES if the operation was successful, otherwise NO. A log message is written if the operation is
+//* unsuccessful.
+//*
+//* @exception NSInvalidArgumentException if the url or file path are nil or the file path is empty.
+//*/
+//+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout;
+//
+///**
+//* Retrieves the data designated by a URL and returns it.
+//*
+//* @param url The URL from which to retrieve the data.
+//* @param timeout The number of seconds to wait for a connection to the specified URL.
+//*
+//* @return The retrieved data if the operation was successful, otherwise nil. A log message is written if the
+//* operation is unsuccessful.
+//*
+//* @exception NSInvalidArgumentException if the url is nil.
+//*/
+//+ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout;
 
-/**
-* Retrieves the data designated by a URL and saves it in a local file.
-*
-* @param url The URL from which to retrieve the data.
-* @param filePath The full path of the file in which to save the data. The directories in the path need not exist,
-* they will be created.
-* @param timeout The number of seconds to wait for a connection to the specified URL.
-*
-* @return YES if the operation was successful, otherwise NO. A log message is written if the operation is
-* unsuccessful.
-*
-* @exception NSInvalidArgumentException if the url or file path are nil or the file path is empty.
-*/
-+ (BOOL) retrieveUrl:(NSURL*)url toFile:(NSString*)filePath timeout:(NSTimeInterval)timeout;
-
-/**
-* Retrieves the data designated by a URL and returns it.
-*
-* @param url The URL from which to retrieve the data.
-* @param timeout The number of seconds to wait for a connection to the specified URL.
-*
-* @return The retrieved data if the operation was successful, otherwise nil. A log message is written if the
-* operation is unsuccessful.
-*
-* @exception NSInvalidArgumentException if the url is nil.
-*/
-+ (NSData*) retrieveUrl:(NSURL*)url timeout:(NSTimeInterval)timeout;
-
-/// @name Other Utilities
+/// @name Utilities
 
 /**
 * Generate a unique string.

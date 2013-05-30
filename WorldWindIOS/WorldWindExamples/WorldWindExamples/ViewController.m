@@ -29,7 +29,6 @@
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "FAAChartsAlaskaLayer.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -38,6 +37,7 @@
 #import "CrashDataViewController.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WMSServerListController.h"
+#import "WorldWind/Util/WWRetriever.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -149,12 +149,23 @@
 - (void) makeFlightPathsLayer
 {
     NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/PassageWays.json"];
-    NSData* data = [WWUtil retrieveUrl:url timeout:5];
-    if (data == nil)
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
+                                              finishedBlock:^(WWRetriever* myRetriever)
+                                              {
+                                                  [self doMakeFlightPathsLayer:myRetriever];
+                                              }];
+    [retriever performRetrieval];
+}
+
+- (void) doMakeFlightPathsLayer:(WWRetriever*)retriever
+{
+    if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
     {
-        WWLog(@"Unable to download flight paths file %@", [url absoluteString]);
+        WWLog(@"Unable to download flight paths file %@", [[retriever url] absoluteString]);
         return;
     }
+
+    NSData* data = [retriever retrievedData];
 
     NSError* error;
     NSDictionary* jData = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
@@ -162,7 +173,7 @@
     {
         NSDictionary* userInfo = [error userInfo];
         NSString* errMsg = [[userInfo objectForKey:NSUnderlyingErrorKey] localizedDescription];
-        WWLog(@"Error %@ reading flight paths file %@", errMsg, [url absoluteString]);
+        WWLog(@"Error %@ reading flight paths file %@", errMsg, [[retriever url] absoluteString]);
         return;
     }
 

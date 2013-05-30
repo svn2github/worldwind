@@ -18,7 +18,6 @@
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
-#import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
@@ -28,6 +27,7 @@
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/Util/WWAbsentResourceList.h"
+#import "WorldWind/Util/WWRetrieverToFile.h"
 
 @implementation WWTiledImageLayer
 
@@ -105,7 +105,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void) setPickEnabled:(BOOL)pickEnabled
+- (void) setPickEnabled:(BOOL)pickEnabled
 {
     // Picking can never be enabled for TiledImageLayer. It's disabled at initialization and can't be set.
 }
@@ -441,7 +441,7 @@
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
-    WWRetriever* retriever;
+    WWRetrieverToFile* retriever;
     if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP]
             || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551]
             || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
@@ -450,11 +450,11 @@
         // the notification of download success is received in handleNotification above.
         NSString* suffix = [WWUtil suffixForMimeType:_retrievalImageFormat];
         NSString* filePath = [WWUtil replaceSuffixInPath:[tile imagePath] newSuffix:suffix];
-        retriever = [[WWRetriever alloc] initWithUrl:url filePath:filePath object:self timeout:_timeout];
+        retriever = [[WWRetrieverToFile alloc] initWithUrl:url filePath:filePath object:self timeout:_timeout];
     }
     else
     {
-        retriever = [[WWRetriever alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
+        retriever = [[WWRetrieverToFile alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
     }
 
 //    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),

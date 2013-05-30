@@ -14,27 +14,50 @@
 * Each element of the document is held as a dictionary. See WWXMLParser for details.
 */
 @interface WWWMSCapabilities : NSObject
+{
+    void (^finished)(WWWMSCapabilities* retriever); // the completion handler called after downloading and parsing
+}
 
 /// @name WMS Capabilities Attributes
 
 /// The root of the parsed capabilities document. See WWXMLParser for a description of the root element's contents.
 @property(nonatomic, readonly) NSDictionary* root;
 
+/// The server address specified to initWithServerAddress.
+@property(nonatomic, readonly) NSString* serverAddress;
+
 /// @name Initializing WMS Capabilities
 
 /**
 * Initialize this instance. Retrieve and parse the capabilities document for the specified WMS server.
 *
+* This method initiates the download and parsing of the specified server's WMS capabilities. The capabilities contents
+* are not available until the specified finishedBlock is called.
+*
 * @param serverAddress The address of the WMS server, e.g, "http://example.com/wms".
+* @param finishedBlock The block to call once the capabilities have been downloaded and parsed.
 *
-* @return This instance with its parsed capabilities document, or nil if the document could not be retrieved or parsed.
+* @return This instance initialized. Note that the documents contents are not available until the finishedBlock is
+* called.
 *
-* @exception NSInvalidArgumentException If the specified server address is nil or empty.
+* @exception NSInvalidArgumentException If the specified server address is nil or empty or the specified finish
+* block is nil.
 */
-- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress;
+- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
+                               finishedBlock:(void (^) (WWWMSCapabilities*))finishedBlock;
 
 - (WWWMSCapabilities*) initWithCapabilitiesFile:(NSString*)filePath;
 
+/**
+* Initialize this instance from a specified dictionary of capabilities, typical retrieved from user defaults.
+*
+* @param dictionary A dictionary containing the capabilities. This dictionary becomes the root property of this
+* instance.
+*
+* @return This instance, initialized.
+*
+* @exception NSInvalidArgumentException if the dictionary is nil.
+*/
 - (WWWMSCapabilities*) initWithCapabilitiesDictionary:(NSDictionary*)dictionary;
 
 /// @name Getting Information from WMS Capabilities
@@ -44,35 +67,35 @@
 *
 * @return The service title, or nil if no title is specified in the capabilities.
 */
-- (NSString*)serviceTitle;
+- (NSString*) serviceTitle;
 
 /**
 * Returns the service name.
 *
 * @return The service name, or nil if no name is specified in the capabilities.
 */
-- (NSString*)serviceName;
+- (NSString*) serviceName;
 
 /**
 * Returns the service abstract.
 *
 * @return The service abstract, or nil if no abstract is specified in the capabilities.
 */
-- (NSString*)serviceAbstract;
+- (NSString*) serviceAbstract;
 
 /**
 * Returns the service version.
 *
 * @return The service version, or nil if no version is specified in the capabilities.
 */
-- (NSString*)serverWMSVersion;
+- (NSString*) serverWMSVersion;
 
 /**
 * Returns the layers in the capabilities' Capability section. Only the top-most layers are returned.
 *
 * @return The layers in the capabilities' Capability section, or nil if the capabilities contains no layers.
 */
-- (NSArray*)layers;
+- (NSArray*) layers;
 
 /**
 * Returns all the layers with Name elements in the capabilities document.
@@ -100,7 +123,7 @@
 *
 * @return The GetMap request URL as a string.
 */
-- (NSString*)getMapURL;
+- (NSString*) getMapURL;
 
 /**
 * Returns the geographic bounding box for a specified layer.
