@@ -131,10 +131,12 @@
 * The bounding box returned is either that of the layer itself or the nearest ancestor specifying a geographic
 * bounding box.
 *
+* @param layerCaps The layer capabilities.
+*
 * @return The effective geographic bounding box for the specified layer, or nil if one cannot be found in the layer
 * or its ancestors (which would indicate an invalid capabilities document).
 */
-- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCapabilities;
+- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCaps;
 
 /**
 * Return the layer name for the specified layer capabilities.
@@ -151,6 +153,8 @@
 /**
 * Returns the title of a specified layer.
 *
+* @param layerCaps The layer capabilities.
+*
 * @return The specified layer's title, or nil if it has no title.
  *
  * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
@@ -160,6 +164,8 @@
 /**
 * Returns the abstract of a specified layer.
 *
+* @param layerCaps The layer capabilities.
+*
 * @return The specified layer's abstract, or nil if it has no abstract.
  *
  * @exception NSInvalidArgumentException if the specified layer capabilities is nil.
@@ -168,6 +174,8 @@
 
 /**
 * Returns the sub-layers of a specified layer.
+*
+* @param layerCaps The layer capabilities.
 *
 * @return The specified layer's sub-layers, or nil if it has no sub-layers.
  *

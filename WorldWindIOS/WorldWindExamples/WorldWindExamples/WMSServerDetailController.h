@@ -33,7 +33,6 @@
 *
 * @param capabilities The WMS capabilities of the associated server.
 * @param serverAddress The web address of the WMS server.
-* @param size The popover size for the detail controller view.
 * @param wwv The application's World Wind View.
 *
 * @return The initialized instance.
@@ -44,7 +43,6 @@
 */
 - (WMSServerDetailController*) initWithCapabilities:(WWWMSCapabilities*)capabilities
                                       serverAddress:(NSString*)serverAddress
-                                               size:(CGSize)size
                                              wwview:(WorldWindView*)wwv;
 
 @end

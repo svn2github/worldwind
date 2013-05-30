@@ -34,7 +34,6 @@
 *
 * @param serverCapabilities The WMS capabilities of the associated server.
 * @param layerCapabilities The WMS layer capabilities of the associated layer.
-* @param size The popover size for the detail controller view.
 * @param wwv The application's World Wind View.
 *
 * @return The initialized instance.
@@ -45,7 +44,6 @@
 */
 - (WMSLayerDetailController*) initWithLayerCapabilities:(WWWMSCapabilities*)serverCapabilities
                                       layerCapabilities:(NSDictionary*)layerCapabilities
-                                                   size:(CGSize)size
                                                  wwView:(WorldWindView*)wwv;
 
 @end

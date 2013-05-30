@@ -225,8 +225,8 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
         WMSServerDetailController* detailController =
                 [[WMSServerDetailController alloc] initWithCapabilities:capabilities
                                                           serverAddress:serverAddress
-                                                                   size:[self contentSizeForViewInPopover]
                                                                  wwview:_wwv];
+        [detailController setContentSizeForViewInPopover:[self contentSizeForViewInPopover]];
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
 }

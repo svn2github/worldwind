@@ -19,7 +19,6 @@
 
 - (WMSLayerDetailController*) initWithLayerCapabilities:(WWWMSCapabilities*)serverCapabilities
                                       layerCapabilities:(NSDictionary*)layerCapabilities
-                                                   size:(CGSize)size
                                                  wwView:(WorldWindView*)wwv;
 {
     if (serverCapabilities == nil)
@@ -38,8 +37,6 @@
     }
 
     self = [super initWithStyle:UITableViewStyleGrouped];
-
-    [self setContentSizeForViewInPopover:size];
 
     [[self navigationItem] setTitle:@"Layer Detail"];
 
@@ -295,8 +292,8 @@
     WMSLayerDetailController* detailController =
             [[WMSLayerDetailController alloc] initWithLayerCapabilities:_serverCapabilities
                                                       layerCapabilities:layerCaps
-                                                                   size:[self contentSizeForViewInPopover]
                                                                  wwView:_wwv];
+    [detailController setContentSizeForViewInPopover:[self contentSizeForViewInPopover]];
     [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
 }
 

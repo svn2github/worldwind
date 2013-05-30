@@ -12,6 +12,7 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWRetriever.h"
+#import "WWMath.h"
 
 @implementation WWWMSCapabilities
 
@@ -171,9 +172,9 @@
     return urls;
 }
 
-- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCapabilities
+- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCaps
 {
-    NSString* layerName = [WWWMSCapabilities layerName:layerCapabilities];
+    NSString* layerName = [WWWMSCapabilities layerName:layerCaps];
     if (layerName == nil)
         return nil;
 
@@ -457,10 +458,17 @@
     if (minLon == nil || maxLon == nil || minLat == nil || maxLat == nil)
         return nil;
 
-    return [[WWSector alloc] initWithDegreesMinLatitude:[minLat doubleValue]
-                                            maxLatitude:[maxLat doubleValue]
-                                           minLongitude:[minLon doubleValue]
-                                           maxLongitude:[maxLon doubleValue]];
+    double latMin = [minLat doubleValue];
+    double latMax = [maxLat doubleValue];
+    double lonMin = [minLon doubleValue];
+    double lonMax = [maxLon doubleValue];
+
+    // Some servers return bounding boxes that are just slightly outside the normal bounds, e.g., 180.0000000001.
+    // Clamp such values to be in range.
+    return [[WWSector alloc] initWithDegreesMinLatitude:[WWMath clampValue:latMin min:-90 max:90]
+                                            maxLatitude:[WWMath clampValue:latMax min:-90 max:90]
+                                           minLongitude:[WWMath clampValue:lonMin min:-180 max:180]
+                                           maxLongitude:[WWMath clampValue:lonMax min:-180 max:180]];
 }
 
 @end
