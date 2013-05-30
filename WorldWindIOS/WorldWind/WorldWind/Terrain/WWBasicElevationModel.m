@@ -10,14 +10,14 @@
 #import "WorldWind/Terrain/WWElevationTile.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Util/WWLevelSet.h"
+#import "WorldWind/Util/WWAbsentResourceList.h"
 #import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWMemoryCache.h"
+#import "WorldWind/Util/WWRetrieverToFile.h"
 #import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
-#import "WorldWind/Util/WWAbsentResourceList.h"
-#import "WorldWind/Util/WWRetrieverToFile.h"
 
 @implementation WWBasicElevationModel
 
@@ -87,7 +87,7 @@
                                                object:self];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleImageReadNotification:)
+                                             selector:@selector(handleImageLoadNotification:)
                                                  name:WW_REQUEST_STATUS // opening image file on disk
                                                object:self];
 
@@ -158,7 +158,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Num lat or num lon is not positive")
     }
 
-    WWLevel* level = [self levelForResolution:targetResolution];
+    WWLevel* level = [levels levelForTexelSize:targetResolution];
     [self assembleTilesForLevel:level sector:sector retrieveTiles:YES];
 
     if ([currentTiles count] == 0)
@@ -212,7 +212,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    WWLevel* level = [self levelForTileDelta:[sector deltaLat]];
+    WWLevel* level = [levels levelForTileDelta:[sector deltaLat]];
     [self assembleTilesForLevel:level sector:sector retrieveTiles:NO];
 
     if ([currentTiles count] == 0)
@@ -259,7 +259,7 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Tile Factory Protocol --//
+//-- Creating Elevation Tiles --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
@@ -271,53 +271,20 @@
                                              cache:imageCache];
 }
 
+- (WWTile*) createTile:(WWTileKey*)key
+{
+    WWLevel* level = [levels level:[key levelNumber]];
+    int row = [key row];
+    int column = [key column];
+
+    WWSector* sector = [WWTile computeSector:level row:row column:column];
+
+    return [self createTile:sector level:level row:row column:column];
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Methods of Interest Only to Subclasses --//
 //--------------------------------------------------------------------------------------------------------------------//
-
-- (WWLevel*) levelForResolution:(double)targetResolution
-{
-    WWLevel* lastLevel = [levels lastLevel];
-
-    if ([lastLevel texelSize] >= targetResolution)
-    {
-        return lastLevel; // Can't do any better than the last level.
-    }
-
-    for (int i = 0; i < [levels numLevels]; i++)
-    {
-        WWLevel* level = [levels level:i];
-
-        if ([level texelSize] <= targetResolution)
-        {
-            return level;
-        }
-    }
-
-    return lastLevel;
-}
-
-- (WWLevel*) levelForTileDelta:(double)deltaLat
-{
-    WWLevel* lastLevel = [levels lastLevel];
-
-    if ([[lastLevel tileDelta] latitude] >= deltaLat)
-    {
-        return lastLevel; // Can't do any better than the last level.
-    }
-
-    for (int i = 0; i < [levels numLevels]; i++)
-    {
-        WWLevel* level = [levels level:i];
-
-        if ([[level tileDelta] latitude] <= deltaLat)
-        {
-            return level;
-        }
-    }
-
-    return lastLevel;
-}
 
 - (void) assembleTilesForLevel:(WWLevel*)level sector:(WWSector*)sector retrieveTiles:(BOOL)retrieveTiles
 {
@@ -352,7 +319,7 @@
 
 - (void) addTileOrAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles
 {
-    WWElevationTile* tile = [self tileForLevelNumber:[level levelNumber] row:row column:column];
+    WWElevationTile* tile = [self tileForLevelNumber:[level levelNumber] row:row column:column cache:tileCache];
 
     if ([self isTileImageInMemory:tile])
     {
@@ -385,7 +352,7 @@
 
     for (int i = [level levelNumber] - 1; i >= 0; i--) // Iterate from the parent level to the first level.
     {
-        tile = [self tileForLevelNumber:i row:r column:c];
+        tile = [self tileForLevelNumber:i row:r column:c cache:tileCache];
 
         if ([self isTileImageInMemory:tile])
         {
@@ -408,10 +375,10 @@
     }
 }
 
-- (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column
+- (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column cache:(WWMemoryCache*)cache
 {
     [tileKey setLevelNumber:levelNumber row:row column:column];
-    WWTile* tile = [tileCache getValueForKey:tileKey];
+    WWTile* tile = [cache getValueForKey:tileKey];
 
     if (tile != nil)
     {
@@ -423,7 +390,7 @@
         WWSector* sector = [WWTile computeSector:level row:row column:column];
 
         tile = [self createTile:sector level:level row:row column:column];
-        [tileCache putValue:tile forKey:[tileKey copy]];
+        [cache putValue:tile forKey:[tileKey copy]];
 
         return (WWElevationTile*) tile;
     }
@@ -434,14 +401,18 @@
     return [imageCache containsKey:[tile imagePath]];
 }
 
+- (BOOL) isTileImageOnDisk:(WWElevationTile*)tile
+{
+    return [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
+}
+
 - (void) loadOrRetrieveTileImage:(WWElevationTile*)tile
 {
-    // See if it's already on disk.
-    if ([[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]])
+    if ([self isTileImageOnDisk:tile])
     {
         [self loadTileImage:tile];
     }
-    else // If the app is connected to the network, retrieve the image from there.
+    else
     {
         [self retrieveTileImage:tile];
     }
@@ -449,12 +420,15 @@
 
 - (void) loadTileImage:(WWElevationTile*)tile
 {
-    if ([currentLoads containsObject:[tile imagePath]])
+    @synchronized (currentLoads)
     {
-        return;
-    }
+        if ([currentLoads containsObject:[tile imagePath]])
+        {
+            return;
+        }
 
-    [currentLoads addObject:[tile imagePath]];
+        [currentLoads addObject:[tile imagePath]];
+    }
 
     WWElevationImage* image = [[WWElevationImage alloc] initWithImagePath:[tile imagePath]
                                                                    sector:[tile sector]
@@ -465,23 +439,41 @@
     [[WorldWind loadQueue] addOperation:image];
 }
 
-- (void) retrieveTileImage:(WWElevationTile*)tile
+- (NSString*) retrieveTileImage:(WWElevationTile*)tile
 {
     if ([WorldWind isOfflineMode])
     {
-        return;
+        return nil; // don't know the tile's status in offline mode
     }
 
-    if ([currentRetrievals containsObject:[tile imagePath]] || [absentResources isResourceAbsent:[tile imagePath]])
+    if ([absentResources isResourceAbsent:[tile imagePath]])
     {
-        return;
+        return WW_ABSENT;
     }
 
-    [currentRetrievals addObject:[tile imagePath]];
+    @synchronized (currentRetrievals)
+    {
+        // Synchronize checking for the file on disk with adding the tile to currentRetrievals. This avoids unnecessary
+        // retrievals initiated when a retrieval completes between the time this thread checks for the file on disk and
+        // checks the currentRetrievals list.
+
+        if ([self isTileImageOnDisk:tile])
+        {
+            return WW_LOCAL;
+        }
+        else if ([currentRetrievals containsObject:[tile imagePath]])
+        {
+            return nil; // don't know the tile's status until retrieval completes
+        }
+
+        [currentRetrievals addObject:[tile imagePath]];
+    }
 
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
     WWRetrieverToFile* retriever = [[WWRetrieverToFile alloc] initWithUrl:url filePath:[tile imagePath] object:self timeout:_timeout];
     [[WorldWind retrievalQueue] addOperation:retriever];
+
+    return nil; // don't know the tile's status until retrieval completes
 }
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat
@@ -504,42 +496,54 @@
     return [_urlBuilder urlForTile:tile imageFormat:imageFormat];
 }
 
+- (void) handleImageLoadNotification:(NSNotification*)notification
+{
+    NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
+    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+
+    @try
+    {
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+        {
+            _timestamp = [NSDate date];
+            [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+        }
+    }
+    @finally
+    {
+        @synchronized (currentLoads)
+        {
+            [currentLoads removeObject:imagePath];
+        }
+    }
+}
+
 - (void) handleImageRetrievalNotification:(NSNotification*)notification
 {
     NSDictionary* avList = [notification userInfo];
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
 
-    [currentRetrievals removeObject:imagePath];
-
-    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+    @try
     {
-        _timestamp = [NSDate date];
-        [absentResources unmarkResourceAbsent:imagePath];
-
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+        {
+            _timestamp = [NSDate date];
+            [absentResources unmarkResourceAbsent:imagePath];
+            [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+        }
+        else
+        {
+            [absentResources markResourceAbsent:imagePath];
+        }
     }
-    else
+    @finally
     {
-        [absentResources markResourceAbsent:imagePath];
-    }
-}
-
-- (void) handleImageReadNotification:(NSNotification*)notification
-{
-    NSDictionary* avList = [notification userInfo];
-    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
-    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
-
-    [currentLoads removeObject:imagePath];
-
-    if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
-    {
-        _timestamp = [NSDate date];
-
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        @synchronized (currentRetrievals)
+        {
+            [currentRetrievals removeObject:imagePath];
+        }
     }
 }
 

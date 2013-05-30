@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+extern NSString* const WW_ABSENT;
 extern NSString* const WW_ALTITUDE_MODE_ABSOLUTE;
 extern NSString* const WW_ALTITUDE_MODE_CLAMP_TO_GROUND;
 extern NSString* const WW_ALTITUDE_MODE_RELATIVE_TO_GROUND;
@@ -20,6 +21,7 @@ extern NSString* const WW_HEADING;
 extern NSString* const WW_INSET_PIXELS;
 extern NSString* const WW_LAYER_LIST_CHANGED;
 extern NSString* const WW_LINEAR;
+extern NSString* const WW_LOCAL;
 extern NSString* const WW_NAVIGATOR_CHANGED;
 extern NSString* const WW_NAVIGATOR_ANIMATION_BEGAN;
 extern NSString* const WW_NAVIGATOR_ANIMATION_CANCELLED;

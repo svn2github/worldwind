@@ -7,6 +7,7 @@
 
 #import "WorldWind/WorldWindConstants.h"
 
+NSString* const WW_ABSENT = @"gov.nasa.worldwind.Absent";
 NSString* const WW_ALTITUDE_MODE_ABSOLUTE = @"gov.nasa.worldwind.AltitudeMode.Absolute";
 NSString* const WW_ALTITUDE_MODE_CLAMP_TO_GROUND = @"gov.nasa.worldwind.AltitudeMode.ClampToGround";
 NSString* const WW_ALTITUDE_MODE_RELATIVE_TO_GROUND = @"gov.nasa.worldwind.AltitudeMode.RelativeToGround";
@@ -22,6 +23,7 @@ NSString* const WW_HEADING = @"gov.nasa.worldwind.Heading";
 NSString* const WW_INSET_PIXELS = @"gov.nasa.worldwind.InsetPixels";
 NSString* const WW_LAYER_LIST_CHANGED = @"gov.nasa.worldwind.LayerListChanged";
 NSString* const WW_LINEAR = @"gov.nasa.worldwind.Linear";
+NSString* const WW_LOCAL = @"gov.nasa.worldwind.Local";
 NSString* const WW_NAVIGATOR_CHANGED = @"gov.nasa.worldwind.NavigatorChanged";
 NSString* const WW_NAVIGATOR_ANIMATION_BEGAN = @"gov.nasa.worldwind.NavigatorAnimationBegan";
 NSString* const WW_NAVIGATOR_ANIMATION_CANCELLED = @"gov.nasa.worldwind.NavigatorAnimationCancelled";

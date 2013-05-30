@@ -9,13 +9,14 @@
 #import "Worldwind/Terrain/WWElevationModel.h"
 #import "WorldWind/Util/WWTileFactory.h"
 
+@class WWAbsentResourceList;
+@class WWBulkRetriever;
 @class WWElevationTile;
 @class WWLevelSet;
 @class WWLocation;
 @class WWMemoryCache;
 @class WWTileKey;
 @protocol WWUrlBuilder;
-@class WWAbsentResourceList;
 
 /**
 * Represents the elevations associated with a globe. Used by the globe and the tessellator to determine elevations
@@ -44,29 +45,29 @@
 /// @name Elevation Model Attributes
 
 /// The elevation image format to request from the remote server. The default is _application/bil16_.
-@property(nonatomic, readonly) NSString* retrievalImageFormat;
+@property (nonatomic, readonly) NSString* retrievalImageFormat;
 
 /// The file system path to the local directory holding this instance's cached elevation images.
-@property(nonatomic, readonly) NSString* cachePath;
+@property (nonatomic, readonly) NSString* cachePath;
 
 /// Indicates the date and time at which the elevation model last changed.
 /// This can be used to invalidate cached computations based on the elevation model's values.
-@property(readonly) NSDate* timestamp; // This property is accessed from multiple threads, and is therefore declared atomic.
+@property (atomic, readonly) NSDate* timestamp; // This property is accessed from multiple threads, and is therefore declared atomic.
 
 /// Indicates the elevation model's minimum elevation for all values in the model.
 /// The minimum and maximum elevation values for a specific geographic area can be determined by calling
 /// minAndMaxElevationsForSector:result:.
-@property(nonatomic) double minElevation;
+@property (nonatomic) double minElevation;
 
 /// Indicates the elevation model's maximum elevation for all values in the model.
 /// The minimum and maximum elevation values for a specific geographic area can be determined by calling
 /// minAndMaxElevationsForSector:result:.
-@property(nonatomic) double maxElevation;
+@property (nonatomic) double maxElevation;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific elevation tile. For WMS
 /// elevation models the specified instance generates an HTTP URL for the WMS protocol. This property must be specified
 /// prior to using the model. Although it is initialized to nil, it may not be nil when the model becomes active.
-@property(nonatomic) id <WWUrlBuilder> urlBuilder;
+@property (nonatomic) id <WWUrlBuilder> urlBuilder;
 
 /// The number of seconds to wait before retrieval requests time out.
 @property (nonatomic) NSTimeInterval timeout;
@@ -95,11 +96,13 @@
                      retrievalImageFormat:(NSString*)retrievalImageFormat
                                 cachePath:(NSString*)cachePath;
 
+/// @name Creating Elevation Tiles
+
+- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column;
+
+- (WWTile*) createTile:(WWTileKey*)key;
+
 /// @name Methods of Interest Only to Subclasses
-
-- (WWLevel*) levelForResolution:(double)targetResolution;
-
-- (WWLevel*) levelForTileDelta:(double)deltaLat;
 
 - (void) assembleTilesForLevel:(WWLevel*)level sector:(WWSector*)sector retrieveTiles:(BOOL)retrieveTiles;
 
@@ -107,20 +110,22 @@
 
 - (void) addAncestorForLevel:(WWLevel*)level row:(int)row column:(int)column retrieveTiles:(BOOL)retrieveTiles;
 
-- (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column;
+- (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column cache:(WWMemoryCache*)cache;
 
 - (BOOL) isTileImageInMemory:(WWElevationTile*)tile;
+
+- (BOOL) isTileImageOnDisk:(WWElevationTile*)tile;
 
 - (void) loadOrRetrieveTileImage:(WWElevationTile*)tile;
 
 - (void) loadTileImage:(WWElevationTile*)tile;
 
-- (void) retrieveTileImage:(WWElevationTile*)tile;
+- (NSString*) retrieveTileImage:(WWElevationTile*)tile;
 
 - (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat;
 
-- (void) handleImageRetrievalNotification:(NSNotification*)notification;
+- (void) handleImageLoadNotification:(NSNotification*)notification;
 
-- (void) handleImageReadNotification:(NSNotification*)notification;
+- (void) handleImageRetrievalNotification:(NSNotification*)notification;
 
 @end
