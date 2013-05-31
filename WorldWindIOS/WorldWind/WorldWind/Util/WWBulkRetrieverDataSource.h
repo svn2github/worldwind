@@ -24,8 +24,8 @@
 @protocol WWBulkRetrieverDataSource <NSObject>
 
 /**
-* Requests that this bulk retriever data source download all resources for region and resolution specified by the bulk
-* retriever.
+* Requests that this bulk retriever data source download all resources for the region and resolution specified by the
+* bulk retriever.
 *
 * The receiver of this message can assume that this message is sent from a non-UI thread, and may therefore perform long
 * running tasks.
