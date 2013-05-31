@@ -140,19 +140,6 @@
 /// @name Getting Layer Information from WMS Capabilities
 
 /**
-* Returns the geographic bounding box for a specified layer.
-*
-* The bounding box returned is either that of the layer itself or the nearest ancestor specifying a geographic
-* bounding box.
-*
-* @param layerCaps The layer capabilities.
-*
-* @return The effective geographic bounding box for the specified layer, or nil if one cannot be found in the layer
-* or its ancestors (which would indicate an invalid capabilities document).
-*/
-- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCaps;
-
-/**
 * Return the layer name for the specified layer capabilities.
 *
 * @param layerCaps The layer capabilities.
@@ -198,6 +185,17 @@
 + (NSArray*) layers:(NSDictionary*)layerCaps;
 
 /**
+* Returns the list of coordinate systems supported by a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return the list of coordinate systems supported by the layer, or nil if no coordinate systems are declared.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
+- (NSArray*) layerCoordinateSystems:(NSDictionary*)layerCaps;
+
+/**
 * Return the last update time given in a specified layer's keywords.
 *
 * This element searches a layer's keywords for a keyword with the following pattern: "LastUpdate=yyyy-MM-dd'T'HH:mm:ssZ".
@@ -225,5 +223,18 @@
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (BOOL) layerIsOpaque:(NSDictionary*)layerCaps;
+
+/**
+* Returns the geographic bounding box for a specified layer.
+*
+* The bounding box returned is either that of the layer itself or the nearest ancestor specifying a geographic
+* bounding box.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The effective geographic bounding box for the specified layer, or nil if one cannot be found in the layer
+* or its ancestors (which would indicate an invalid capabilities document).
+*/
+- (WWSector*) layerGeographicBoundingBox:(NSDictionary*)layerCaps;
 
 @end

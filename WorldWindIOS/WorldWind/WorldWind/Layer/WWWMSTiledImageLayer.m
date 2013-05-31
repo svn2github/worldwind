@@ -10,7 +10,7 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWWMSTiledImageLayer
@@ -40,7 +40,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"GetMap URL is nil or empty.")
     }
 
-    WWSector* boundingBox = [serverCapabilities geographicBoundingBoxForNamedLayer:layerCapabilities];
+    WWSector* boundingBox = [serverCapabilities layerGeographicBoundingBox:layerCapabilities];
     if (boundingBox == nil)
     {
         // A layer must have a bounding box according to the WMS spec, but we check just in case and provide a default
@@ -75,10 +75,8 @@
         version = @"1.1.1";
     }
 
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:getMapURL
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:version];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceCapabilities:serverCapabilities
+                                                                             layerCaps:layerCapabilities];
     [self setUrlBuilder:urlBuilder];
 
     return self;

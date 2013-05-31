@@ -24,7 +24,7 @@
 #import "WorldWind/Util/WWRetrieverToFile.h"
 #import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWUtil.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -6,7 +6,7 @@
  */
 
 #import <WorldWind/WWTiledImageLayer.h>
-#import <WorldWind/WWWmsUrlBuilder.h>
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "FAAChartsAlaskaLayer.h"
@@ -226,10 +226,10 @@
     [layer setDisplayName:displayName];
 
     NSString* serviceLocation = @"http://wms.alaskamapped.org/faa_charts";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceLocation
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [layer setUrlBuilder:urlBuilder];
 
     return layer;

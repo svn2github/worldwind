@@ -8,7 +8,7 @@
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 
 @implementation WWBingLayer
 
@@ -26,10 +26,10 @@
     [self setImageFile:@"Bing"];
 
     NSString* serviceLocation = @"http://worldwind27.arc.nasa.gov/wms/virtualearth";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:@"ve"
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceLocation
+                                                                       layerNames:@"ve"
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:10e3];
 

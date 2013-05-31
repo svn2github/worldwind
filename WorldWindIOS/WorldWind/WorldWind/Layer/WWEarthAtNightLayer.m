@@ -6,7 +6,7 @@
  */
 
 #import "WorldWind/Layer/WWEarthAtNightLayer.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/Geometry/WWSector.h"
@@ -29,10 +29,10 @@
                        cachePath:cachePath];
     [self setDisplayName:@"Earth at Night"];
 
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
     WWWMSLayerExpirationRetriever* expirationChecker =

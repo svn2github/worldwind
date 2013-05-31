@@ -11,15 +11,16 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
 
-@implementation WWWmsUrlBuilder
+@implementation WWWMSUrlBuilder
 
-- (WWWmsUrlBuilder*) initWithServiceLocation:(NSString*)serviceLocation
-                                  layerNames:(NSString*)layerNames
-                                  styleNames:(NSString*)styleNames
-                                  wmsVersion:(NSString*)wmsVersion
+- (WWWMSUrlBuilder*) initWithServiceAddress:(NSString*)serviceAddress
+                                 layerNames:(NSString*)layerNames
+                                 styleNames:(NSString*)styleNames
+                                 wmsVersion:(NSString*)wmsVersion
 {
-    if (serviceLocation == nil)
+    if (serviceAddress == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer names is nil")
     }
@@ -31,14 +32,16 @@
 
     self = [super init];
 
-    _serviceLocation = serviceLocation;
+    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
+
+    _serviceAddress = serviceAddress;
     _layerNames = layerNames;
     _styleNames = styleNames != nil ? styleNames : @"";
     _wmsVersion = wmsVersion != nil ? wmsVersion : @"1.3.0";
     _transparent = YES;
 
     NSString* maxVersion = @"1.3.0";
-    if (_wmsVersion == nil || [_wmsVersion compare:maxVersion] != NSOrderedAscending)
+    if (isWMS13OrGreater)
     {
         _wmsVersion = maxVersion;
         _crs = @"&crs=CRS:84";
@@ -49,6 +52,85 @@
     }
 
     return self;
+}
+
+- (WWWMSUrlBuilder*) initWithServiceCapabilities:(WWWMSCapabilities*)serviceCaps
+                                       layerCaps:(NSDictionary*)layerCaps
+{
+    if (serviceCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Service capabilities is nil")
+    }
+
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSString* layerName = [WWWMSCapabilities layerName:layerCaps];
+    if (layerName == nil || [layerName length] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Not a named layer")
+    }
+
+    self = [super init];
+
+    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
+
+    _serviceAddress = [serviceCaps getMapURL];
+    _layerNames = layerName;
+    _styleNames = @"";
+    _wmsVersion = [serviceCaps serviceWMSVersion];
+    _transparent = [WWWMSCapabilities layerIsOpaque:layerCaps] ? NO : YES;
+
+    [self findCoordinateSystem:serviceCaps layerCaps:layerCaps];
+
+    return self;
+}
+
+- (void) findCoordinateSystem:(WWWMSCapabilities*)serviceCaps layerCaps:(NSDictionary*)layerCaps
+{
+    NSArray* csList = [serviceCaps layerCoordinateSystems:layerCaps];
+    if (csList == nil || [csList count] == 0)
+    {
+        _crs = isWMS13OrGreater ? @"&crs=CRS:84" : @"&srs=EPSG:4326";
+        return;
+    }
+
+    NSString* coordinateSystem = nil;
+    for (NSString* cs in csList)
+    {
+        // Try for EPSG:4326 first.
+        if ([cs caseInsensitiveCompare:@"EPSG:4326"] == NSOrderedSame)
+        {
+            coordinateSystem = cs;
+            break;
+        }
+
+        // Try for CRS:84 next.
+        if ([cs caseInsensitiveCompare:@"CRS:84"] == NSOrderedSame)
+        {
+            coordinateSystem = cs;
+            break;
+        }
+    }
+
+    if (coordinateSystem == nil)
+    {
+        _crs = isWMS13OrGreater ? @"&crs=CRS:84" : @"&srs=EPSG:4326";
+        return;
+    }
+
+    coordinateSystem = [coordinateSystem stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+    if (isWMS13OrGreater)
+    {
+        _crs = [[NSString alloc] initWithFormat:@"crs=%@", coordinateSystem];
+    }
+    else
+    {
+        _crs = [[NSString alloc] initWithFormat:@"srs=%@", coordinateSystem];
+    }
 }
 
 - (NSURL*) urlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat
@@ -67,7 +149,7 @@
 
     if (sb == nil)
     {
-        sb = [WWWmsUrlBuilder fixGetMapString:_serviceLocation];
+        sb = [WWWMSUrlBuilder fixGetMapString:_serviceAddress];
 
         NSRange r = [sb rangeOfString:@"service=wms" options:NSCaseInsensitiveSearch];
         if (r.location == NSNotFound)
@@ -77,7 +159,7 @@
 
         sb = [sb stringByAppendingString:@"&request=GetMap"];
         sb = [sb stringByAppendingFormat:@"&version=%@", _wmsVersion];
-        sb = [sb stringByAppendingString:_crs];
+        sb = [[sb stringByAppendingString:@"&"] stringByAppendingString:_crs];
         sb = [sb stringByAppendingFormat:@"&layers=%@", _layerNames];
         sb = [sb stringByAppendingFormat:@"&styles=%@", _styleNames];
         sb = [sb stringByAppendingFormat:@"&transparent=%@", _transparent ? @"TRUE" : @"FALSE"];
@@ -90,8 +172,16 @@
     sb = [sb stringByAppendingFormat:@"&height=%d", [tile tileHeight]];
 
     WWSector* s = [tile sector];
-    sb = [sb stringByAppendingFormat:@"&bbox=%f,%f,%f,%f",
-                                     [s minLongitude], [s minLatitude], [s maxLongitude], [s maxLatitude]];
+    if (!isWMS13OrGreater || [_crs caseInsensitiveCompare:@"crs=CRS:84"] == NSOrderedSame)
+    {
+        sb = [sb stringByAppendingFormat:@"&bbox=%f,%f,%f,%f",
+                                         [s minLongitude], [s minLatitude], [s maxLongitude], [s maxLatitude]];
+    }
+    else
+    {
+        sb = [sb stringByAppendingFormat:@"&bbox=%f,%f,%f,%f",
+                                         [s minLatitude], [s minLongitude], [s maxLatitude], [s maxLongitude]];
+    }
 
     sb = [sb stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
 

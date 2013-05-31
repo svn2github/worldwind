@@ -7,7 +7,7 @@
 
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Layer/WWOpenWeatherMapLayer.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WorldWindConstants.h"
@@ -108,10 +108,10 @@
     [layer setDisplayName:displayName];
 
     NSString* serviceLocation = @"http://wms.openweathermap.org/service";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.1.1"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceLocation
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.1.1"];
     [layer setUrlBuilder:urlBuilder];
 
     return layer;

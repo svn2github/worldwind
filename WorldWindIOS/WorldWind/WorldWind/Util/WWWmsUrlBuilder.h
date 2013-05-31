@@ -8,19 +8,22 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWUrlBuilder.h"
 
+@class WWWMSCapabilities;
+
 /**
 * Provides a WWUrlBuilder implementation for forming WMS URLs.
 */
-@interface WWWmsUrlBuilder : NSObject <WWUrlBuilder>
+@interface WWWMSUrlBuilder : NSObject <WWUrlBuilder>
 {
 @protected
     NSString* urlTemplate; // the common elements of the URL, computed once then cached here
+    BOOL isWMS13OrGreater;
 }
 
 /// @name Attributes
 
 /// The URL scheme, host and path to the WMS server, e.g., _http://data.worldwind.arc.nasa.gov/wms_
-@property(nonatomic, readonly) NSString* serviceLocation;
+@property(nonatomic, readonly) NSString* serviceAddress;
 
 /// The comma separated layer names to include in the URL.
 @property(nonatomic, readonly) NSString* layerNames;
@@ -44,7 +47,7 @@
 /**
 * Initialize a URL builder.
 *
-* @param serviceLocation The URL scheme, host and path to the WMS server, e.g.,
+* @param serviceAddress The URL scheme, host and path to the WMS server, e.g.,
 * _http://data.worldwind.arc.nasa.gov/wms_.
 * @param layerNames A comma separated list of layer names to include in the URL.
 * @param styleNames A comma separated list of style names to include in the URL. May be nil indicating no styles.
@@ -55,9 +58,12 @@
 *
 * @exception NSInvalidArgumentException if the service location or layer names are nil.
 */
-- (WWWmsUrlBuilder*) initWithServiceLocation:(NSString*)serviceLocation
-                                  layerNames:(NSString*)layerNames
-                                  styleNames:(NSString*)styleNames
-                                  wmsVersion:(NSString*)wmsVersion;
+- (WWWMSUrlBuilder*) initWithServiceAddress:(NSString*)serviceAddress
+                                 layerNames:(NSString*)layerNames
+                                 styleNames:(NSString*)styleNames
+                                 wmsVersion:(NSString*)wmsVersion;
+
+- (WWWMSUrlBuilder*) initWithServiceCapabilities:(WWWMSCapabilities*)serviceCaps
+                                       layerCaps:(NSDictionary*)layerCaps;
 
 @end

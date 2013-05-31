@@ -8,7 +8,7 @@
 #import "WorldWind/Layer/WWBMNGLayer.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WWWMSLayerExpirationRetriever.h"
 #import "WorldWind/WorldWind.h"
 
@@ -30,10 +30,10 @@
     [self setDisplayName:@"Blue Marble"];
     [self setImageFile:@"BlueMarble"];
 
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
     WWWMSLayerExpirationRetriever* expirationChecker =

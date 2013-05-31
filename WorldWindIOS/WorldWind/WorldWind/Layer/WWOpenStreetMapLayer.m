@@ -8,7 +8,7 @@
 #import "WorldWind/Layer/WWOpenStreetMapLayer.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 
 @implementation WWOpenStreetMapLayer
 
@@ -26,10 +26,10 @@
     [self setEnabled:NO];
 
     NSString* serviceLocation = @"http://worldwind20.arc.nasa.gov/mapcache";
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceLocation
-                                                                        layerNames:@"osm"
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.1.1"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceLocation
+                                                                       layerNames:@"osm"
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.1.1"];
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:100e3];
 

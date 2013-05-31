@@ -8,7 +8,7 @@
 #import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
 
@@ -29,10 +29,10 @@
     [self setDisplayName:@"Landsat"];
     [self setImageFile:@"Landsat"];
 
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:300e3];
 

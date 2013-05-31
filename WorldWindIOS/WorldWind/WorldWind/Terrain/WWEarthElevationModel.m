@@ -8,7 +8,7 @@
 #import "WorldWind/Terrain/WWEarthElevationModel.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Util/WWWmsUrlBuilder.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
 #import "WorldWind/WorldWind.h"
 
@@ -28,10 +28,10 @@
             retrievalImageFormat:@"application/bil16"
                        cachePath:cachePath];
 
-    WWWmsUrlBuilder* urlBuilder = [[WWWmsUrlBuilder alloc] initWithServiceLocation:serviceAddress
-                                                                        layerNames:layerName
-                                                                        styleNames:@""
-                                                                        wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
+                                                                       layerNames:layerName
+                                                                       styleNames:@""
+                                                                       wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
     [self setMinElevation:-11000]; // Depth of Marianas Trench, in meters.

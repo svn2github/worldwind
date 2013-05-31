@@ -25,30 +25,6 @@
     return self;
 }
 
-- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serviceAddress
-{
-    if (serviceAddress == nil || [serviceAddress length] == 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Server address is nil or empty")
-    }
-
-    self = [super init];
-
-    _serviceAddress = serviceAddress;
-
-    NSString* fullUrlString = [self composeRequestString:serviceAddress];
-    NSURL* url = [[NSURL alloc] initWithString:fullUrlString];
-
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
-                                                finishedBlock:^(WWRetriever* myRetriever)
-                                                {
-                                                    [self parseCapabilities:myRetriever];
-                                                }];
-    [retriever performRetrieval];
-
-    return self;
-}
-
 - (WWWMSCapabilities*) initWithServiceAddress:(NSString*)serverAddress
                                 finishedBlock:(void (^)(WWWMSCapabilities*))finishedBlock
 {
@@ -72,10 +48,10 @@
     NSURL* url = [[NSURL alloc] initWithString:fullUrlString];
 
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
-                                              finishedBlock:^(WWRetriever* myRetriever)
-                                              {
-                                                  [self parseCapabilities:myRetriever];
-                                              }];
+                                                finishedBlock:^(WWRetriever* myRetriever)
+                                                {
+                                                    [self parseCapabilities:myRetriever];
+                                                }];
     [retriever performRetrieval];
 
     return self;
@@ -173,7 +149,7 @@
     return urls;
 }
 
-- (WWSector*) geographicBoundingBoxForNamedLayer:(NSDictionary*)layerCaps
+- (WWSector*) layerGeographicBoundingBox:(NSDictionary*)layerCaps
 {
     NSString* layerName = [WWWMSCapabilities layerName:layerCaps];
     if (layerName == nil)
@@ -247,7 +223,9 @@
 
 - (NSString*) serviceWMSVersion
 {
-    return [_root objectForKey:@"version"];
+    NSString* version = [_root objectForKey:@"version"];
+
+    return (version != nil && [version length] > 0) ? version : @"1.3.0";
 }
 
 - (NSString*) serviceContactOrganization
@@ -390,6 +368,66 @@
     }
 
     return result;
+}
+
+- (NSArray*) layerCoordinateSystems:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSArray* rootLayers = [[_root objectForKey:@"capability"] objectForKey:@"layer"];
+    if (rootLayers == nil)
+    {
+        return nil;
+    }
+
+    // WMS 1.1 coordinate system elements are named "SRS", whereas 1.3 are named "CRS".
+    NSComparisonResult order = [[self serviceWMSVersion] compare:@"1.3.0"];
+    NSString* crsName = order == NSOrderedAscending ? @"srs" : @"crs";
+
+    NSMutableSet* csList = [[NSMutableSet alloc] init];
+
+    for (NSMutableDictionary* layer in rootLayers)
+    {
+        [self doGetLayerCoordinateSystems:layer crsName:crsName coordSystemList:csList stopLayer:layerCaps];
+    }
+
+    return [csList allObjects];
+}
+
+- (void) doGetLayerCoordinateSystems:(NSMutableDictionary*)layer
+                             crsName:(NSString*)crsName
+                     coordSystemList:(NSMutableSet*)csList
+                           stopLayer:(NSDictionary*)stopLayer
+{
+    NSArray* layersCoordSystemList = [layer objectForKey:crsName];
+    if (layersCoordSystemList != nil)
+    {
+        for (NSDictionary* coordSystemElement in layersCoordSystemList)
+        {
+            NSString* cs = [coordSystemElement objectForKey:@"characters"];
+            if (cs != nil && [cs length] > 0)
+            {
+                [csList addObject:cs];
+            }
+        }
+    }
+
+    if (layer == stopLayer)
+    {
+        return;
+    }
+
+    NSArray* layers = [layer objectForKey:@"layer"];
+    if (layers != nil)
+    {
+        for (NSMutableDictionary* childLayer in layers)
+        {
+            [self doGetLayerCoordinateSystems:childLayer crsName:crsName coordSystemList:csList stopLayer:stopLayer];
+        }
+    }
 }
 
 + (NSString*) layerName:(NSDictionary*)layerCaps
