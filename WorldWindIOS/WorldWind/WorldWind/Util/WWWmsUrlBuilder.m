@@ -5,7 +5,6 @@
  @version $Id$
  */
 
-#import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
 #import "WorldWind/WWLog.h"
@@ -44,11 +43,11 @@
     if (isWMS13OrGreater)
     {
         _wmsVersion = maxVersion;
-        _crs = @"&crs=CRS:84";
+        _crs = @"crs=CRS:84";
     }
     else
     {
-        _crs = @"&srs=EPSG:4326";
+        _crs = @"srs=EPSG:4326";
     }
 
     return self;
@@ -93,7 +92,7 @@
     NSArray* csList = [serviceCaps layerCoordinateSystems:layerCaps];
     if (csList == nil || [csList count] == 0)
     {
-        _crs = isWMS13OrGreater ? @"&crs=CRS:84" : @"&srs=EPSG:4326";
+        _crs = isWMS13OrGreater ? @"crs=CRS:84" : @"srs=EPSG:4326";
         return;
     }
 
@@ -117,7 +116,7 @@
 
     if (coordinateSystem == nil)
     {
-        _crs = isWMS13OrGreater ? @"&crs=CRS:84" : @"&srs=EPSG:4326";
+        _crs = isWMS13OrGreater ? @"crs=CRS:84" : @"srs=EPSG:4326";
         return;
     }
 
