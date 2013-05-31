@@ -86,6 +86,7 @@
     if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
     {
         WWLog(@"Unable to download WMS capabilities for %@", _serviceAddress);
+        finished(nil);
         return;
     }
 

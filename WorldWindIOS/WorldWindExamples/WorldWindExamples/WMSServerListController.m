@@ -180,9 +180,24 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
                                      [[self tableView] reloadData];
                                  }
+                                 else
+                                 {
+                                     [self showFailureAlert];
+                                 }
                              }];
         }
     }
+}
+
+- (void) showFailureAlert
+{
+    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:@"Server connection failed"
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Ok", nil];
+    [alertView setAlertViewStyle:UIAlertViewStyleDefault];
+    [alertView show];
 }
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath

@@ -86,7 +86,7 @@
 {
     [WorldWind setNetworkBusySignalVisible:NO];
     _status = WW_FAILED;
-    [self stopRunLoop];
+    [self doFinish];
 }
 
 - (void) connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response
@@ -104,7 +104,11 @@
     [WorldWind setNetworkBusySignalVisible:NO];
 
     _status = WW_SUCCEEDED;
+    [self doFinish];
+}
 
+- (void) doFinish
+{
     @try
     {
         finished(self);
