@@ -162,25 +162,25 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
             }
 
             WWWMSCapabilities __unused * caps = [[WWWMSCapabilities alloc]
-                    initWithServerAddress:serverAddress
-                            finishedBlock:^(WWWMSCapabilities* capabilities)
-                            {
-                                if (capabilities != nil)
-                                {
-                                    NSString* serviceTitle = [capabilities serviceTitle];
-                                    if (serviceTitle == nil)
-                                    {
-                                        serviceTitle = @"WMS Server";
-                                    }
-                                    [self addServer:serverAddress serviceTitle:serviceTitle];
+                    initWithServiceAddress:serverAddress
+                             finishedBlock:^(WWWMSCapabilities* capabilities)
+                             {
+                                 if (capabilities != nil)
+                                 {
+                                     NSString* serviceTitle = [capabilities serviceTitle];
+                                     if (serviceTitle == nil)
+                                     {
+                                         serviceTitle = @"WMS Server";
+                                     }
+                                     [self addServer:serverAddress serviceTitle:serviceTitle];
 
-                                    // Persist the capabilities document.
-                                    [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
-                                    [[NSUserDefaults standardUserDefaults] synchronize];
+                                     // Persist the capabilities document.
+                                     [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
+                                     [[NSUserDefaults standardUserDefaults] synchronize];
 
-                                    [[self tableView] reloadData];
-                                }
-                            }];
+                                     [[self tableView] reloadData];
+                                 }
+                             }];
         }
     }
 }
@@ -200,16 +200,16 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     {
         // Retrieve the capabilities from the web.
         WWWMSCapabilities __unused * caps = [[WWWMSCapabilities alloc]
-                initWithServerAddress:serverAddress
-                        finishedBlock:^(WWWMSCapabilities* capabilities)
-                        {
-                            if (capabilities != nil)
-                            {
-                                [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
-                                [[NSUserDefaults standardUserDefaults] synchronize];
-                                [self pushDetailController:capabilities serverAddress:serverAddress];
-                            }
-                        }];
+                initWithServiceAddress:serverAddress
+                         finishedBlock:^(WWWMSCapabilities* capabilities)
+                         {
+                             if (capabilities != nil)
+                             {
+                                 [[NSUserDefaults standardUserDefaults] setObject:[capabilities root] forKey:serverAddress];
+                                 [[NSUserDefaults standardUserDefaults] synchronize];
+                                 [self pushDetailController:capabilities serverAddress:serverAddress];
+                             }
+                         }];
     }
     else
     {

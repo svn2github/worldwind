@@ -12,7 +12,7 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWRetriever.h"
-#import "WWMath.h"
+#import "WorldWind/Util/WWMath.h"
 
 @implementation WWWMSCapabilities
 
@@ -25,18 +25,18 @@
     return self;
 }
 
-- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
+- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serviceAddress
 {
-    if (serverAddress == nil || [serverAddress length] == 0)
+    if (serviceAddress == nil || [serviceAddress length] == 0)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Server address is nil or empty")
     }
 
     self = [super init];
 
-    _serverAddress = serverAddress;
+    _serviceAddress = serviceAddress;
 
-    NSString* fullUrlString = [self composeRequestString:serverAddress];
+    NSString* fullUrlString = [self composeRequestString:serviceAddress];
     NSURL* url = [[NSURL alloc] initWithString:fullUrlString];
 
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
@@ -49,8 +49,8 @@
     return self;
 }
 
-- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
-                               finishedBlock:(void (^)(WWWMSCapabilities*))finishedBlock
+- (WWWMSCapabilities*) initWithServiceAddress:(NSString*)serverAddress
+                                finishedBlock:(void (^)(WWWMSCapabilities*))finishedBlock
 {
     if (serverAddress == nil || [serverAddress length] == 0)
     {
@@ -64,7 +64,7 @@
 
     self = [super init];
 
-    _serverAddress = serverAddress;
+    _serviceAddress = serverAddress;
 
     finished = finishedBlock;
 
@@ -85,11 +85,11 @@
 {
     if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
     {
-        WWLog(@"Unable to download WMS capabilities for %@", [self serverAddress]);
+        WWLog(@"Unable to download WMS capabilities for %@", _serviceAddress);
         return;
     }
 
-    [self parseDoc:[retriever retrievedData] pathForLogMessage:[self serverAddress]];
+    [self parseDoc:[retriever retrievedData] pathForLogMessage:_serviceAddress];
     finished(_root != nil ? self : nil);
 }
 
@@ -244,9 +244,26 @@
     return abstract != nil ? [abstract objectForKey:@"characters"] : nil;
 }
 
-- (NSString*) serverWMSVersion
+- (NSString*) serviceWMSVersion
 {
     return [_root objectForKey:@"version"];
+}
+
+- (NSString*) serviceContactOrganization
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"contactinformation"];
+    if (element == nil)
+        return nil;
+
+    element = [element objectForKey:@"contactpersonprimary"];
+    if (element == nil)
+        return nil;
+
+    element = [element objectForKey:@"contactorganization"];
+    if (element == nil)
+        return nil;
+
+    return [element objectForKey:@"characters"];
 }
 
 - (NSArray*) layers

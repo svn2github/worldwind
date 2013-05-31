@@ -121,9 +121,9 @@
 
     if ([indexPath row] == 0)
     {
-        [[cell textLabel] setText:@"Name"];
-        NSString* name = [_capabilities serviceName];
-        [[cell detailTextLabel] setText:name != nil ? name : @""];
+        [[cell textLabel] setText:@"Owner"];
+        NSString* organization = [_capabilities serviceContactOrganization];
+        [[cell detailTextLabel] setText:organization != nil ? organization : @""];
     }
 
     return cell;

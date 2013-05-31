@@ -69,7 +69,7 @@
     NSString* title = [WWWMSCapabilities layerTitle:layerCapabilities];
     [self setDisplayName:title != nil ? title : layerName];
 
-    NSString* version = [serverCapabilities serverWMSVersion];
+    NSString* version = [serverCapabilities serviceWMSVersion];
     if (version == nil)
     {
         version = @"1.1.1";

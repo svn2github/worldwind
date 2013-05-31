@@ -23,28 +23,28 @@
 /// The root of the parsed capabilities document. See WWXMLParser for a description of the root element's contents.
 @property(nonatomic, readonly) NSDictionary* root;
 
-/// The server address specified to initWithServerAddress.
-@property(nonatomic, readonly) NSString* serverAddress;
+/// The service address specified to initWithServiceAddress.
+@property(nonatomic, readonly) NSString* serviceAddress;
 
 /// @name Initializing WMS Capabilities
 
 /**
-* Initialize this instance. Retrieve and parse the capabilities document for the specified WMS server.
+* Initialize this instance. Retrieve and parse the capabilities document for the specified WMS service.
 *
-* This method initiates the download and parsing of the specified server's WMS capabilities. The capabilities contents
+* This method initiates the download and parsing of the specified service's WMS capabilities. The capabilities contents
 * are not available until the specified finishedBlock is called.
 *
-* @param serverAddress The address of the WMS server, e.g, "http://example.com/wms".
+* @param serviceAddress The address of the WMS service, e.g, "http://example.com/wms".
 * @param finishedBlock The block to call once the capabilities have been downloaded and parsed.
 *
 * @return This instance initialized. Note that the documents contents are not available until the finishedBlock is
 * called.
 *
-* @exception NSInvalidArgumentException If the specified server address is nil or empty or the specified finish
+* @exception NSInvalidArgumentException If the specified service address is nil or empty or the specified finish
 * block is nil.
 */
-- (WWWMSCapabilities*) initWithServerAddress:(NSString*)serverAddress
-                               finishedBlock:(void (^) (WWWMSCapabilities*))finishedBlock;
+- (WWWMSCapabilities*) initWithServiceAddress:(NSString*)serviceAddress
+                                finishedBlock:(void (^) (WWWMSCapabilities*))finishedBlock;
 
 - (WWWMSCapabilities*) initWithCapabilitiesFile:(NSString*)filePath;
 
@@ -60,7 +60,7 @@
 */
 - (WWWMSCapabilities*) initWithCapabilitiesDictionary:(NSDictionary*)dictionary;
 
-/// @name Getting Server Information from WMS Capabilities
+/// @name Getting Service Information from WMS Capabilities
 
 /**
 * Returns the service title.
@@ -88,7 +88,12 @@
 *
 * @return The service version, or nil if no version is specified in the capabilities.
 */
-- (NSString*) serverWMSVersion;
+- (NSString*) serviceWMSVersion;
+
+/**
+* Returns the service contact organization, or nil if no organization is specified in the capabilities.
+*/
+- (NSString*) serviceContactOrganization;
 
 /**
 * Returns the layers in the capabilities' Capability section. Only the top-most layers are returned.

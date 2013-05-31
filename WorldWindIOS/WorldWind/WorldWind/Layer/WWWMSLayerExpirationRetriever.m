@@ -45,13 +45,13 @@
 - (void) main
 {
     WWWMSCapabilities __unused * caps =
-            [[WWWMSCapabilities alloc] initWithServerAddress:_serviceAddress
-                                               finishedBlock:^(WWWMSCapabilities* capabilities)
-                                               {
-                                                   [self performSelectorOnMainThread:@selector(setExpiration:)
-                                                                          withObject:capabilities
-                                                                       waitUntilDone:NO];
-                                               }];
+            [[WWWMSCapabilities alloc] initWithServiceAddress:_serviceAddress
+                                                finishedBlock:^(WWWMSCapabilities* capabilities)
+                                                {
+                                                    [self performSelectorOnMainThread:@selector(setExpiration:)
+                                                                           withObject:capabilities
+                                                                        waitUntilDone:NO];
+                                                }];
 }
 
 - (void) setExpiration:(id)capabilities
