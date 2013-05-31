@@ -27,6 +27,10 @@
 #import "WorldWind/Util/WWWmsUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Tiled Image Layers --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 @implementation WWTiledImageLayer
 
 - (WWTiledImageLayer*) initWithSector:(WWSector*)sector
@@ -62,22 +66,19 @@
 
     self = [super init];
 
-    tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
-
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
     _timeout = 20; // seconds
-
     _textureFormat = WW_TEXTURE_RGBA_5551;
 
+    levels = [[WWLevelSet alloc] initWithSector:sector
+                                 levelZeroDelta:levelZeroDelta
+                                      numLevels:numLevels];
+    topLevelTiles = [[NSMutableArray alloc] init];
+    currentTiles = [[NSMutableArray alloc] init];
+    tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
     detailHintOrigin = 2.5;
 
-    levels = [[WWLevelSet alloc] initWithSector:sector
-                                       levelZeroDelta:levelZeroDelta
-                                            numLevels:numLevels];
-
-    currentTiles = [[NSMutableArray alloc] init];
-    topLevelTiles = [[NSMutableArray alloc] init];
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];
     absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
@@ -91,7 +92,7 @@
                                                object:self];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleTextureReadNotification:)
+                                             selector:@selector(handleTextureLoadNotification:)
                                                  name:WW_REQUEST_STATUS // opening image file on disk
                                                object:self];
 
@@ -108,91 +109,47 @@
     // Picking can never be enabled for TiledImageLayer. It's disabled at initialization and can't be set.
 }
 
-- (void) handleTextureRetrievalNotification:(NSNotification*)notification
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Creating Image Tiles --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSDictionary* avList = [notification userInfo];
-    NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
-    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
-    NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
+    NSString* formatSuffix = _retrievalImageFormat;
 
-    @try
+    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
     {
-        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
-        {
-            if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
-            {
-                [WWPVRTCImage compressFile:imagePath];
-                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-            }
-            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
-            {
-                [WWTexture convertTextureTo8888:imagePath];
-                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-            }
-            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
-            {
-                [WWTexture convertTextureTo5551:imagePath];
-                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-            }
-
-            [absentResources unmarkResourceAbsent:pathKey];
-
-            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
-        }
-        else
-        {
-            [absentResources markResourceAbsent:pathKey];
-        }
+        formatSuffix = @"pvr";
     }
-    @catch (NSException* exception)
+    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
     {
-        [absentResources markResourceAbsent:pathKey];
-        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-
-        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
-        WWLogE(msg, exception);
+        formatSuffix = @"5551";
     }
-    @finally
+    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
     {
-        @synchronized (currentRetrievals)
-        {
-            [currentRetrievals removeObject:pathKey];
-        }
+        formatSuffix = @"8888";
     }
+
+    NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
+                                                     _cachePath, [level levelNumber], row, row, column, formatSuffix];
+
+    return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
 }
 
-- (void) handleTextureReadNotification:(NSNotification*)notification
+- (WWTile*) createTile:(WWTileKey*)key
 {
-    NSDictionary* avList = [notification userInfo];
-    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
-    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+    WWLevel* level = [levels level:[key levelNumber]];
+    int row = [key row];
+    int column = [key column];
 
-    @try
-    {
-        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
-        {
-            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
-        }
-    }
-    @finally
-    {
-        @synchronized (currentLoads)
-        {
-            [currentLoads removeObject:imagePath];
-        }
-    }
+    WWSector* sector = [WWTile computeSector:level row:row column:column];
+
+    return [self createTile:sector level:level row:row column:column];
 }
 
-- (void) createTopLevelTiles
-{
-    [topLevelTiles removeAllObjects];
-
-    [WWTile createTilesForLevel:[levels firstLevel]
-                    tileFactory:self
-                       tilesOut:topLevelTiles];
-}
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Methods of Interest Only to Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) doRender:(WWDrawContext*)dc
 {
@@ -224,14 +181,13 @@
     return visibleSector == nil || [visibleSector intersects:[levels sector]];
 }
 
-- (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+- (void) createTopLevelTiles
 {
-    WWSector* visibleSector = [dc visibleSector];
+    [topLevelTiles removeAllObjects];
 
-    if (visibleSector != nil && ![visibleSector intersects:[tile sector]])
-        return NO;
-
-    return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
+    [WWTile createTilesForLevel:[levels firstLevel]
+                    tileFactory:self
+                       tilesOut:topLevelTiles];
 }
 
 - (void) assembleTiles:(WWDrawContext*)dc
@@ -338,6 +294,32 @@
     }
 }
 
+- (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+{
+    WWSector* visibleSector = [dc visibleSector];
+
+    if (visibleSector != nil && ![visibleSector intersects:[tile sector]])
+        return NO;
+
+    return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
+}
+
+- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+{
+    return [levels isLastLevel:[[tile level] levelNumber]]
+            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
+}
+
+- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile
+{
+    return [dc.gpuResourceCache containsKey:[tile imagePath]];
+}
+
+- (BOOL) isTileTextureOnDisk:(WWTextureTile*)tile
+{
+    return [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
+}
+
 - (BOOL) isTextureExpired:(WWTexture*)texture
 {
     if (_expiration == nil || [_expiration timeIntervalSinceNow] > 0)
@@ -359,56 +341,6 @@
     }
 
     return NO;
-}
-
-- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile
-{
-    return [dc.gpuResourceCache containsKey:[tile imagePath]];
-}
-
-- (BOOL) isTileTextureOnDisk:(WWTextureTile*)tile
-{
-    return [[NSFileManager defaultManager] fileExistsAtPath:[tile imagePath]];
-}
-
-- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
-{
-    return [levels isLastLevel:[[tile level] levelNumber]]
-            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
-}
-
-- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
-{
-    NSString* formatSuffix = _retrievalImageFormat;
-
-    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
-    {
-        formatSuffix = @"pvr";
-    }
-    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
-    {
-        formatSuffix = @"5551";
-    }
-    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
-    {
-        formatSuffix = @"8888";
-    }
-
-    NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
-                                                     _cachePath, [level levelNumber], row, row, column, formatSuffix];
-
-    return [[WWTextureTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath];
-}
-
-- (WWTile*) createTile:(WWTileKey*)key
-{
-    WWLevel* level = [levels level:[key levelNumber]];
-    int row = [key row];
-    int column = [key column];
-
-    WWSector* sector = [WWTile computeSector:level row:row column:column];
-
-    return [self createTile:sector level:level row:row column:column];
 }
 
 - (void) loadOrRetrieveTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
@@ -542,6 +474,83 @@
     }
 
     return [_urlBuilder urlForTile:tile imageFormat:imageFormat];
+}
+
+- (void) handleTextureLoadNotification:(NSNotification*)notification
+{
+    NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_REQUEST_STATUS];
+    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+
+    @try
+    {
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+        {
+            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+    }
+    @finally
+    {
+        @synchronized (currentLoads)
+        {
+            [currentLoads removeObject:imagePath];
+        }
+    }
+}
+
+- (void) handleTextureRetrievalNotification:(NSNotification*)notification
+{
+    NSDictionary* avList = [notification userInfo];
+    NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
+    NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+    NSString* pathKey = [WWUtil replaceSuffixInPath:imagePath newSuffix:nil];
+
+    @try
+    {
+        if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
+        {
+            if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
+            {
+                [WWPVRTCImage compressFile:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
+            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
+            {
+                [WWTexture convertTextureTo8888:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
+            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
+            {
+                [WWTexture convertTextureTo5551:imagePath];
+                [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+            }
+
+            [absentResources unmarkResourceAbsent:pathKey];
+
+            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+        else
+        {
+            [absentResources markResourceAbsent:pathKey];
+        }
+    }
+    @catch (NSException* exception)
+    {
+        [absentResources markResourceAbsent:pathKey];
+        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+
+        NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", imagePath];
+        WWLogE(msg, exception);
+    }
+    @finally
+    {
+        @synchronized (currentRetrievals)
+        {
+            [currentRetrievals removeObject:pathKey];
+        }
+    }
 }
 
 @end

@@ -17,6 +17,7 @@
 @class WWLocation;
 @class WWMemoryCache;
 @class WWSector;
+@class WWTexture;
 @class WWTextureTile;
 @class WWTileKey;
 @protocol WWUrlBuilder;
@@ -44,48 +45,45 @@
 @interface WWTiledImageLayer : WWLayer <WWTileFactory>
 {
 @protected
+    // Image tiles and tile level set.
     WWLevelSet* levels;
     NSMutableArray* topLevelTiles;
-    double detailHintOrigin;
-    WWMemoryCache* tileCache;
-
-    // Stuff computed each frame.
     NSMutableArray* currentTiles;
     WWTextureTile* currentAncestorTile;
-
-    // The following fields are used to prevent duplicate retrievals.
+    WWMemoryCache* tileCache;
+    double detailHintOrigin;
+    // Sets used to eliminate duplicate image retrievals and loads.
     NSMutableSet* currentRetrievals;
     NSMutableSet* currentLoads;
-
     WWAbsentResourceList* absentResources;
 }
 
 /// @name Attributes
 
-/// The file system path to the local directory holding this instance's cached imagery.
-@property(nonatomic, readonly) NSString* cachePath;
-
 /// The image format to request from the remote server. The default is _image/png_.
-@property(nonatomic, readonly) NSString* retrievalImageFormat;
+@property (nonatomic, readonly) NSString* retrievalImageFormat;
+
+/// The file system path to the local directory holding this instance's cached imagery.
+@property (nonatomic, readonly) NSString* cachePath;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS
 // tiled image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be
 // specified prior to using the layer. Although it is initialized to nil, it may not be nil when the layer becomes
 // active.
-@property(nonatomic) id <WWUrlBuilder> urlBuilder;
+@property (nonatomic) id <WWUrlBuilder> urlBuilder;
 
-/// The current detail hint.
-@property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
+/// The number of seconds to wait before retrieval requests time out.
+@property (nonatomic) NSTimeInterval timeout;
+
+/// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
+@property (nonatomic) NSDate* expiration;
 
 /// The texture format to use for the OpenGL texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551
 // or WW_TEXTURE_PVRTC_4BPP. If nil, the texture is passed as RGBA 8888.
 @property (nonatomic) NSString* textureFormat;
 
-/// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
-@property (nonatomic) NSDate* expiration;
-
-/// The number of seconds to wait before retrieval requests time out.
-@property (nonatomic) NSTimeInterval timeout;
+/// The current detail hint.
+@property (nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
 
 /// @name Initializing Tiled Image Layers
 
@@ -111,41 +109,7 @@
                  retrievalImageFormat:(NSString*)retrievalImageFormat
                             cachePath:(NSString*)cachePath;
 
-/// @name Methods of Interest Only to Subclasses
-
-/**
-* Once an image tile is determined to be in view and visible at the current eye position,
-* adds the tile to the list of tiles to draw in the current frame.
-*
-* This method initiates image retrieval by calling retrieveTileImage if the image is not in the local image cache. In
- * that case, the tile is not added to the list of tiles to draw.
- *
- * This method is typically not overridden by subclasses.
-*
-* @param dc The current draw context.
-* @param tile The tile to add.
-*/
-- (void) addTile:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
-
-/**
-* Once a tile is determined to be in view, determines whether the tile or its descendants are added to the list of
-* tiles to draw in the current frame.
-*
-* This method is typically not overridden by subclasses.
-*
-* @param dc The current draw context.
-* @param tile The image tile to consider.
-*/
-- (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
-
-/**
-* Determines which image tiles to display in the current frame.
-*
-* This method is typically not overridden by subclasses.
-*
-* @param dc The current draw context.
-*/
-- (void) assembleTiles:(WWDrawContext*)dc;
+/// @name Creating Image Tiles
 
 /**
 * Creates an image tile corresponding to a specified sector and level. Implements the method of WWTileFactory.
@@ -175,14 +139,7 @@
 */
 - (WWTile*) createTile:(WWTileKey*)key;
 
-/**
-* Creates the top-level image tiles for this layer.
-*
-* This method creates the image tiles associated with level 0, the lowest resolution level.
-*
-* This method is typically not overridden by subclasses.
-*/
-- (void) createTopLevelTiles;
+/// @name Methods of Interest Only to Subclasses
 
 /**
 * Overrides the doRender method of the WWLayer base class in order to draw the layer.
@@ -204,6 +161,49 @@
 - (BOOL) isLayerInView:(WWDrawContext*)dc;
 
 /**
+* Creates the top-level image tiles for this layer.
+*
+* This method creates the image tiles associated with level 0, the lowest resolution level.
+*
+* This method is typically not overridden by subclasses.
+*/
+- (void) createTopLevelTiles;
+
+/**
+* Determines which image tiles to display in the current frame.
+*
+* This method is typically not overridden by subclasses.
+*
+* @param dc The current draw context.
+*/
+- (void) assembleTiles:(WWDrawContext*)dc;
+
+/**
+* Once a tile is determined to be in view, determines whether the tile or its descendants are added to the list of
+* tiles to draw in the current frame.
+*
+* This method is typically not overridden by subclasses.
+*
+* @param dc The current draw context.
+* @param tile The image tile to consider.
+*/
+- (void) addTileOrDescendants:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
+* Once an image tile is determined to be in view and visible at the current eye position,
+* adds the tile to the list of tiles to draw in the current frame.
+*
+* This method initiates image retrieval by calling retrieveTileImage if the image is not in the local image cache. In
+ * that case, the tile is not added to the list of tiles to draw.
+ *
+ * This method is typically not overridden by subclasses.
+*
+* @param dc The current draw context.
+* @param tile The tile to add.
+*/
+- (void) addTile:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
 * Determines whether a specified tile of this layer is potentially within the view of the current frame.
 *
 * This method is called by assembleTiles to determine the potential visibility of individual tiles. It is typically
@@ -217,21 +217,58 @@
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
 
 /**
-* Forms the URL used to retrieve the specified tile's image. Called by retrieveTileImage.
+* Indicates whether a specified tile meets the resolution criteria determining whether it is drawn in the current
+* frame.
 *
-* The default implementation of this method obtains the URL from the WWUrlBuilder associated with this layer instance.
+* @param dc The current draw context.
+* @param tile The tile to consider.
 *
-* This method is called on a thread separate from the UI thread.
-*
-* @param tile The tile whose image URL is requested.
-* @param imageFormat The image format of the requested image.
-*
-* @return The newly formed URL.
-*
-* @exception NSInvalidArgumentException If the tile is nil or the image format string is nil or empty.
-* @exception NSInconsistentStateException If this layer instance has no WWUrlBuilder associated with it.
+* @return YES if the tile meets the render criteria, otherwise NO.
 */
-- (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat;
+- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
+* Indicates whether a tile's texture image is in the memory cache.
+*
+* @param dc The current draw context.
+* @param tile The tile in question.
+*
+* @return YES if the tile's texture is in the texture cache, otherwise NO.
+*/
+- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+
+/**
+* Indicates whether a tile's texture image is in the file system.
+*
+* @param tile The tile in question.
+*
+* @return YES if the tile's texture image is in the file system, otherwise NO.
+*/
+- (BOOL) isTileTextureOnDisk:(WWTextureTile*)tile;
+
+/**
+* Indicates whether a texture image has expired.
+*
+* A texture is considered expired when this layer's expiration date has passed, and the texture's fileModificationDate
+* is earlier than the layer expiration date.
+*
+* @param texture The texture in question.
+*
+* @return YES if the texture has expired, otherwise NO.
+*/
+- (BOOL) isTextureExpired:(WWTexture*)texture;
+
+/**
+* Indicates whether a tile's image on disk has expired.
+*
+* A tile image is considered expired when this layer's expiration date has passed, and the file corresponding to the
+* tile image has a modification date earlier than the layer expiration date.
+*
+* @param tile The tile in question.
+*
+*@return YES if the tile's image has expired, otherwise NO.
+*/
+- (BOOL) isTextureOnDiskExpired:(WWTextureTile*)tile;
 
 /**
 * Retrieves or reads from disk the image associated with a specified image tile of the layer.
@@ -282,34 +319,30 @@
 - (NSString*) retrieveTileImage:(WWTextureTile*)tile;
 
 /**
-* Indicates whether a specified tile meets the resolution criteria determining whether it is drawn in the current
-* frame.
+* Forms the URL used to retrieve the specified tile's image. Called by retrieveTileImage.
 *
-* @param dc The current draw context.
-* @param tile The tile to consider.
+* The default implementation of this method obtains the URL from the WWUrlBuilder associated with this layer instance.
 *
-* @return YES if the tile meets the render criteria, otherwise NO.
+* This method is called on a thread separate from the UI thread.
+*
+* @param tile The tile whose image URL is requested.
+* @param imageFormat The image format of the requested image.
+*
+* @return The newly formed URL.
+*
+* @exception NSInvalidArgumentException If the tile is nil or the image format string is nil or empty.
+* @exception NSInconsistentStateException If this layer instance has no WWUrlBuilder associated with it.
 */
-- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
+- (NSURL*) resourceUrlForTile:(WWTile*)tile imageFormat:(NSString*)imageFormat;
 
 /**
-* Indicates whether a tile's texture image is in the memory cache.
+* Responds to WW_REQUEST_STATUS notifications.
 *
-* @param dc The current draw context.
-* @param tile The tile in question.
-*
-* @return YES if the tile's texture is in the texture cache, otherwise NO.
+* @param notification The notification, which contains the image path (WW_FILE_PATH) and retrieval
+* status (WW_RETRIEVAL_STATUS) in its dictionary. The retrieval status is one of WW_SUCCEEDED,
+* WW_FAILED or WW_CANCELED.
 */
-- (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile;
-
-/**
-* Indicates whether a tile's texture image is in the file system.
-*
-* @param tile The tile in question.
-*
-* @return YES if the tile's texture image is in the file system, otherwise NO.
-*/
-- (BOOL) isTileTextureOnDisk:(WWTextureTile*)tile;
+- (void) handleTextureLoadNotification:(NSNotification*)notification;
 
 /**
 * Responds to WW_RETRIEVAL_STATUS notifications.
@@ -319,14 +352,5 @@
 * WW_FAILED or WW_CANCELED.
 */
 - (void) handleTextureRetrievalNotification:(NSNotification*)notification;
-
-/**
-* Responds to WW_REQUEST_STATUS notifications.
-*
-* @param notification The notification, which contains the image path (WW_FILE_PATH) and retrieval
-* status (WW_RETRIEVAL_STATUS) in its dictionary. The retrieval status is one of WW_SUCCEEDED,
-* WW_FAILED or WW_CANCELED.
-*/
-- (void) handleTextureReadNotification:(NSNotification*)notification;
 
 @end
