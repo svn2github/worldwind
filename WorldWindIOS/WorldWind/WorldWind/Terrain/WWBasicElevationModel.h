@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "Worldwind/Terrain/WWElevationModel.h"
+#import "WorldWind/Util/WWBulkRetrieverDataSource.h"
 #import "WorldWind/Util/WWTileFactory.h"
 
 @class WWAbsentResourceList;
@@ -22,7 +23,7 @@
 * Represents the elevations associated with a globe. Used by the globe and the tessellator to determine elevations
 * throughout the globe.
 */
-@interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory>
+@interface WWBasicElevationModel : NSObject <WWElevationModel, WWTileFactory, WWBulkRetrieverDataSource>
 {
 @protected
     // Coverage sector and current requested sector.
@@ -101,6 +102,33 @@
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column;
 
 - (WWTile*) createTile:(WWTileKey*)key;
+
+/// @name Bulk Retrieval
+
+/**
+* Retrieves all elevation tiles for the region and resolution specified by the bulk retriever.
+*
+* WWBasicElevationModel assumes that this message is sent from a non-UI thread, and therefore performs a long running
+* task to retrieve the necessary elevation tiles.
+*
+* @param retriever The retriever defining the region and resolution to download resources for.
+*
+* @exception NSInvalidArgumentException If the retriever is nil.
+*/
+- (void) performBulkRetrieval:(WWBulkRetriever*)retriever;
+
+/**
+* Updates the specified bulk retriever's progress according to the number of completed tiles and the total number of
+* tiles that this bulk retriever data source is currently retrieving.
+*
+* The progress is computed as a floating-point value between 0.0 and 1.0, inclusive. A value of 1.0 indicates that the
+* number of completed tiles has reached the total tile count, and the retriever's task is complete.
+*
+* @param retriever The retriever whose progress is updated.
+* @param completed The number of completed tiles.
+* @param count The total number of tiles this data source is currently retrieving.
+*/
+- (void) bulkRetriever:(WWBulkRetriever*)retriever tilesCompleted:(NSUInteger)completed tileCount:(NSUInteger)count;
 
 /// @name Methods of Interest Only to Subclasses
 

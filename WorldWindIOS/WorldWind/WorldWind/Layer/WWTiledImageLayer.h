@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWLayer.h"
+#import "WorldWind/Util/WWBulkRetrieverDataSource.h"
 #import "WorldWind/Util/WWTileFactory.h"
 
 @class WWAbsentResourceList;
@@ -42,7 +43,7 @@
 *
 * Layers of this type are not pickable. Their pick-enabled flag is initialized to NO and cannot be set to YES.
 */
-@interface WWTiledImageLayer : WWLayer <WWTileFactory>
+@interface WWTiledImageLayer : WWLayer <WWTileFactory, WWBulkRetrieverDataSource>
 {
 @protected
     // Image tiles and tile level set.
@@ -66,10 +67,9 @@
 /// The file system path to the local directory holding this instance's cached imagery.
 @property (nonatomic, readonly) NSString* cachePath;
 
-/// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS
-// tiled image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be
-// specified prior to using the layer. Although it is initialized to nil, it may not be nil when the layer becomes
-// active.
+/// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS tiled
+/// image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be specified
+/// prior to using the layer. Although it is initialized to nil, it may not be nil when the layer becomes active.
 @property (nonatomic) id <WWUrlBuilder> urlBuilder;
 
 /// The number of seconds to wait before retrieval requests time out.
@@ -78,8 +78,8 @@
 /// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
 @property (nonatomic) NSDate* expiration;
 
-/// The texture format to use for the OpenGL texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551
-// or WW_TEXTURE_PVRTC_4BPP. If nil, the texture is passed as RGBA 8888.
+/// The texture format to use for the OpenGL texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551 or
+/// WW_TEXTURE_PVRTC_4BPP. If nil, the texture is passed as RGBA 8888.
 @property (nonatomic) NSString* textureFormat;
 
 /// The current detail hint.
@@ -138,6 +138,33 @@
 * @return The new tile, initialized.
 */
 - (WWTile*) createTile:(WWTileKey*)key;
+
+/// @name Bulk Retrieval
+
+/**
+* Retrieves all image tiles for the region and resolution specified by the bulk retriever.
+*
+* WWTiledImageLayer assumes that this message is sent from a non-UI thread, and therefore performs a long running task
+* to retrieve the necessary image tiles.
+*
+* @param retriever The retriever defining the region and resolution to download resources for.
+*
+* @exception NSInvalidArgumentException If the retriever is nil.
+*/
+- (void) performBulkRetrieval:(WWBulkRetriever*)retriever;
+
+/**
+* Updates the specified bulk retriever's progress according to the number of completed tiles and the total number of
+* tiles that this bulk retriever data source is currently retrieving.
+*
+* The progress is computed as a floating-point value between 0.0 and 1.0, inclusive. A value of 1.0 indicates that the
+* number of completed tiles has reached the total tile count, and the retriever's task is complete.
+*
+* @param retriever The retriever whose progress is updated.
+* @param completed The number of completed tiles.
+* @param count The total number of tiles this data source is currently retrieving.
+*/
+- (void) bulkRetriever:(WWBulkRetriever*)retriever tilesCompleted:(NSUInteger)completed tileCount:(NSUInteger)count;
 
 /// @name Methods of Interest Only to Subclasses
 
