@@ -38,6 +38,7 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WMSServerListController.h"
 #import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/Layer/WWEarthAtNightLayer.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -121,6 +122,11 @@
 
     layer = [[WWOpenWeatherMapLayer alloc] init];
     [layer setOpacity:0.4];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWEarthAtNightLayer alloc] init];
+    [layer setOpacity:0.75];
     [layer setEnabled:NO];
     [layers addLayer:layer];
 
