@@ -22,7 +22,7 @@
 @implementation WWBasicElevationModel
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Initializing Elevation Models --//
+//--  --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (WWBasicElevationModel*) initWithSector:(WWSector*)sector
@@ -58,17 +58,15 @@
 
     self = [super init];
 
-    _timestamp = [NSDate date];
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
     _timeout = 20; // seconds
+    _timestamp = [NSDate date];
 
     coverageSector = sector;
     currentSector = [[WWSector alloc] initWithDegreesMinLatitude:0 maxLatitude:0 minLongitude:0 maxLongitude:0];
 
-    levels = [[WWLevelSet alloc] initWithSector:sector
-                                 levelZeroDelta:levelZeroDelta
-                                      numLevels:numLevels];
+    levels = [[WWLevelSet alloc] initWithSector:sector levelZeroDelta:levelZeroDelta numLevels:numLevels];
     currentTiles = [[NSMutableSet alloc] init];
     tileSortDescriptors = [NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"level" ascending:YES]];
 

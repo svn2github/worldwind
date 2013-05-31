@@ -56,6 +56,22 @@
 */
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
 
+/// @name Creating Tessellator Tiles
+
+/**
+* Creates an tessellator tile corresponding to a specified sector and level. Implements the method of WWTileFactory.
+*
+* This method is typically not overridden by subclasses.
+*
+* @param sector The sector over which the tile spans.
+* @param level The tile's level.
+* @param row The tile's row.
+* @param column The tile's column.
+*
+* @return The new tile, initialized.
+*/
+- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column;
+
 /// @name Methods of Interest Only to Subclasses
 
 /**
@@ -81,16 +97,6 @@
 - (void) addTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 /**
-* Indicates whether a specified tile meets the criteria to be included in the current frame.
-*
-* @param dc The current draw context.
-* @param tile The tile to consider.
-*
-* @return YES if the tile meets the criteria, otherwise NO.
-*/
-- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
 * Indicates whether a specified tile is visible in the current view.
 *
 * @param dc The current draw context.
@@ -99,6 +105,16 @@
 * @return YES if the tile is at least partially visible in the current frame, otherwise NO.
 */
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Indicates whether a specified tile meets the criteria to be included in the current frame.
+*
+* @param dc The current draw context.
+* @param tile The tile to consider.
+*
+* @return YES if the tile meets the criteria, otherwise NO.
+*/
+- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 /**
 * Indicates whether the terrain geometry for a specified tile must be re-created.

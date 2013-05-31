@@ -42,6 +42,10 @@
     double* tileElevations;
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Tessellators --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (WWTessellator*) initWithGlobe:(WWGlobe*)globe
 {
     if (globe == nil)
@@ -78,6 +82,10 @@
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Tessellating a Globe --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc
 {
     if (dc == nil)
@@ -109,6 +117,19 @@
 
     return self->currentTiles;
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Creating Tessellator Tiles --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
+{
+    return [[WWTerrainTile alloc] initWithSector:sector level:level row:row column:column tessellator:self];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Methods of Interest Only to Subclasses --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) createTopLevelTiles
 {
@@ -158,20 +179,15 @@
     }
 }
 
-- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
-{
-    // TODO: Consider also using the best-resolution test in the desktop and android versions.
-    return [[tile level] isLastLevel] || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
-}
-
 - (BOOL) isTileVisible:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     return [[tile extent] intersects:[[dc navigatorState] frustumInModelCoordinates]];
 }
 
-- (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
+- (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    return [[WWTerrainTile alloc] initWithSector:sector level:level row:row column:column tessellator:self];
+    // TODO: Consider also using the best-resolution test in the desktop and android versions.
+    return [[tile level] isLastLevel] || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
 }
 
 - (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
