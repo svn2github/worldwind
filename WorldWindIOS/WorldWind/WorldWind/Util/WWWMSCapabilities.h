@@ -234,7 +234,64 @@
 *
 * @return The effective geographic bounding box for the specified layer, or nil if one cannot be found in the layer
 * or its ancestors (which would indicate an invalid capabilities document).
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 - (WWSector*) layerGeographicBoundingBox:(NSDictionary*)layerCaps;
+
+/**
+* Returns the data URLs for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The list of data URLs for the specified layer.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSArray*) layerDataURLs:(NSDictionary*)layerCaps;
+
+/**
+* Returns the metadata URLs for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The list of metadata URLs for the specified layer.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSArray*) layerMetadataURLs:(NSDictionary*)layerCaps;
+
+/**
+* Returns the keywords for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The list of keywords for the specified layer.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSArray*) layerKeywords:(NSDictionary*)layerCaps;
+
+/**
+* Returns the min-scale-denominator for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The min-scale-denominator for the specified layer.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSNumber*) layerMinScaleDenominator:(NSDictionary*) layerCaps;
+
+/**
+* Returns the max-scale-denominator for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The max-scale-denominator for the specified layer.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSNumber*) layerMaxScaleDenominator:(NSDictionary*) layerCaps;
 
 @end

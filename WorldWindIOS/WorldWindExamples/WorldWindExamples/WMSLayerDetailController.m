@@ -7,13 +7,14 @@
 
 #import "WMSLayerDetailController.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
-#import "TextViewController.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Layer/WWWMSTiledImageLayer.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
+#import "WebViewController.h"
+#import "WorldWind/Geometry/WWSector.h"
 
 @implementation WMSLayerDetailController
 
@@ -48,38 +49,51 @@
     NSString* layerName = [WWWMSCapabilities layerName:_layerCapabilities];
     if (layerName != nil)
     {
+        isNamedLayer = YES;
         NSString* getMapURL = [_serverCapabilities getMapURL];
         NSMutableString* lid = [[NSMutableString alloc] initWithString:getMapURL];
         [lid appendString:layerName];
         layerID = lid;
     }
 
+    NSArray* layers = [WWWMSCapabilities layers:_layerCapabilities];
+    if (layers != nil)
+    {
+        hasLayers = YES;
+    }
+
+    dataSection = 0;
+    controlSection = isNamedLayer ? 1 : -1;
+    layerSection = hasLayers ? (isNamedLayer ? 2 : 1) : -1;
+
     return self;
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    NSArray* layers = [WWWMSCapabilities layers:_layerCapabilities];
+    int numSections = 1; // there's always a data section
 
-    return layers != nil ? 3 : 2;
+    if (isNamedLayer)
+        ++numSections; // the controls section
+
+    if (hasLayers)
+        ++numSections; // the layers section
+
+    return numSections;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    switch (section)
-    {
-        case 0:
-            return 1;
+    if (section == controlSection)
+        return 1;
 
-        case 1:
-            return [WWWMSCapabilities layerName:_layerCapabilities] != nil ? 2 : 1;
+    if (section == dataSection)
+        return 2;
 
-        case 2:
-            return [[WWWMSCapabilities layers:_layerCapabilities] count];
+    if (section == layerSection)
+        return [[WWWMSCapabilities layers:_layerCapabilities] count];
 
-        default:
-            return 0;
-    }
+    return 0;
 }
 
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
@@ -101,32 +115,25 @@
         return @"Layer";
     }
 
-    if (section == 1)
-    {
-        return @"";
-    }
-
-    if (section == 2)
-    {
+    if (section == layerSection)
         return @"Layers";
-    }
 
     return nil;
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    if ([indexPath section] == 0)
+    if ([indexPath section] == controlSection)
     {
-        return [self cellForDetailSection:tableView indexPath:indexPath];
+        return [self cellForControlSection:tableView indexPath:indexPath];
     }
 
-    if ([indexPath section] == 1)
+    if ([indexPath section] == dataSection)
     {
-        return [self cellForExpansionSection:tableView indexPath:indexPath];
+        return [self cellForDataSection:tableView indexPath:indexPath];
     }
 
-    if ([indexPath section] == 2)
+    if ([indexPath section] == layerSection)
     {
         return [self cellForLayerList:tableView indexPath:indexPath];
     }
@@ -134,43 +141,33 @@
     return nil;
 }
 
-- (UITableViewCell*) cellForDetailSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
+- (UITableViewCell*) cellForControlSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
 {
-    static NSString* cellIdentifier = @"detailCell";
-
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    if (cell == nil)
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
-        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-    }
+    UITableViewCell* cell = nil;
 
     if ([indexPath row] == 0)
     {
-        [[cell textLabel] setText:@"Name"];
-        NSString* name = [WWWMSCapabilities layerName:_layerCapabilities];
-        [[cell detailTextLabel] setText:name != nil ? name : @""];
+        cell = [self switchCellForLayerEnable:tableView];
     }
 
     return cell;
 }
 
-- (UITableViewCell*) cellForExpansionSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
+- (UITableViewCell*) cellForDataSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
 {
-    static NSString* expansionCell = @"expansionCell";
-    static NSString* switchCell = @"switchCell";
+    static NSString* expansionCell = @"dataCell";
 
-    UITableViewCell* cell = nil;
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:expansionCell];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:expansionCell];
+        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    }
+
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
 
     if ([indexPath row] == 0)
     {
-        cell = [tableView dequeueReusableCellWithIdentifier:expansionCell];
-        if (cell == nil)
-        {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:expansionCell];
-            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-        }
-
         [[cell textLabel] setText:@"Abstract"];
 
         NSString* abstract = [WWWMSCapabilities layerAbstract:_layerCapabilities];
@@ -187,27 +184,19 @@
     }
     else if ([indexPath row] == 1)
     {
-        cell = [tableView dequeueReusableCellWithIdentifier:switchCell];
-        if (cell == nil)
+        [[cell textLabel] setText:@"More Info"];
+
+        if ([self hasMoreInfo])
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchCell];
-
-            UISwitch* layerSwitch = [[UISwitch alloc] init];
-            [layerSwitch addTarget:self action:@selector(handleShowLayerSwitch:)
-                  forControlEvents:UIControlEventValueChanged];
-            WWLayer* layer = [self findLayerByLayerID];
-            if (layer != nil)
-            {
-                [layerSwitch setOn:YES];
-            }
-            [cell setAccessoryView:[[UIView alloc] initWithFrame:[layerSwitch frame]]];
-            [[cell accessoryView] addSubview:layerSwitch];
+            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+            [[cell textLabel] setTextColor:[UIColor blackColor]];
         }
-
-        [[cell textLabel] setText:@"Show in Layer List"];
+        else
+        {
+            [[cell textLabel] setTextColor:[UIColor lightGrayColor]];
+            [cell setAccessoryType:UITableViewCellAccessoryNone];
+        }
     }
-
-    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
 
     return cell;
 }
@@ -245,13 +234,40 @@
     return cell;
 }
 
+- (UITableViewCell*) switchCellForLayerEnable:(UITableView*)tableView
+{
+    static NSString* switchCell = @"switchCellForLayerEnable";
+
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:switchCell];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchCell];
+
+        UISwitch* layerSwitch = [[UISwitch alloc] init];
+        [layerSwitch addTarget:self action:@selector(handleShowLayerSwitch:)
+              forControlEvents:UIControlEventValueChanged];
+        WWLayer* layer = [self findLayerByLayerID];
+        if (layer != nil)
+        {
+            [layerSwitch setOn:YES];
+        }
+        [cell setAccessoryView:[[UIView alloc] initWithFrame:[layerSwitch frame]]];
+        [[cell accessoryView] addSubview:layerSwitch];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+    }
+
+    [[cell textLabel] setText:@"Show Layer"];
+
+    return cell;
+}
+
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    if ([indexPath section] == 1)
+    if ([indexPath section] == dataSection)
     {
-        [self buttonTappedForDisclosureSection:indexPath];
+        [self buttonTappedForDataSection:indexPath];
     }
-    else if ([indexPath section] == 2)
+    else if ([indexPath section] == layerSection)
     {
         [self buttonTappedForLayersSection:indexPath];
     }
@@ -259,17 +275,17 @@
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
 {
-    if ([indexPath section] == 1)
+    if ([indexPath section] == dataSection)
     {
-        [self buttonTappedForDisclosureSection:indexPath];
+        [self buttonTappedForDataSection:indexPath];
     }
-    else if ([indexPath section] == 2)
+    else if ([indexPath section] == layerSection)
     {
         [self buttonTappedForLayersSection:indexPath];
     }
 }
 
-- (void) buttonTappedForDisclosureSection:(NSIndexPath*)indexPath
+- (void) buttonTappedForDataSection:(NSIndexPath*)indexPath
 {
     if ([indexPath row] == 0)
     {
@@ -277,10 +293,14 @@
         if (abstract == nil)
             return;
 
-        TextViewController* detailController = [[TextViewController alloc] initWithFrame:[[self tableView] frame]];
+        WebViewController* detailController = [[WebViewController alloc] initWithFrame:[[self tableView] frame]];
         [[detailController navigationItem] setTitle:@"Abstract"];
-        [[detailController textView] setText:abstract];
+        [[detailController webView] loadHTMLString:abstract baseURL:nil];
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+    else if ([indexPath row] == 1)
+    {
+        [self showMoreInfoView];
     }
 }
 
@@ -297,7 +317,7 @@
     [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
 }
 
-- (void)handleShowLayerSwitch:(UISwitch*)layerSwitch
+- (void) handleShowLayerSwitch:(UISwitch*)layerSwitch
 {
     @try
     {
@@ -330,7 +350,7 @@
     }
 }
 
-- (WWLayer*)findLayerByLayerID
+- (WWLayer*) findLayerByLayerID
 {
     NSArray* layerList = [[[_wwv sceneController] layers] allLayers];
     for (WWLayer* layer in layerList)
@@ -343,6 +363,140 @@
     }
 
     return nil;
+}
+
+- (BOOL) hasMoreInfo
+{
+    if ([WWWMSCapabilities layerName:_layerCapabilities] != nil)
+        return YES;
+
+    if ([WWWMSCapabilities layerDataURLs:_layerCapabilities] != nil)
+        return YES;
+
+    if ([_serverCapabilities layerGeographicBoundingBox:_layerCapabilities] != nil)
+        return YES;
+
+    if ([WWWMSCapabilities layerKeywords:_layerCapabilities])
+        return YES;
+
+    if ([WWWMSCapabilities layerMinScaleDenominator:_layerCapabilities] != nil)
+        return YES;
+
+    if ([WWWMSCapabilities layerMaxScaleDenominator:_layerCapabilities] != nil)
+        return YES;
+
+    return NO;
+}
+
+- (void) showMoreInfoView
+{
+    WebViewController* detailController = [[WebViewController alloc] initWithFrame:[[self tableView] frame]];
+    [[detailController navigationItem] setTitle:@"Layer Info"];
+
+    NSMutableString* htmlString = [[NSMutableString alloc] init];
+
+    NSString* name = [WWWMSCapabilities layerName:_layerCapabilities];
+    if (name != nil && [name length] > 0)
+    {
+        [htmlString appendString:@"<b>Name:</b> "];
+        [htmlString appendString:name];
+        [htmlString appendFormat:@"<br><br>"];
+    }
+
+    NSArray* dataURLs = [WWWMSCapabilities layerDataURLs:_layerCapabilities];
+    if (dataURLs != nil && [dataURLs count] > 0)
+    {
+        for (NSString* dataURL in dataURLs)
+        {
+            [htmlString appendString:@"<b>Data URL:</b> "];
+            [htmlString appendString:[self wrapLink:dataURL]];
+            [htmlString appendFormat:@"<br><br>"];
+        }
+    }
+
+    NSArray* metadataURLs = [WWWMSCapabilities layerMetadataURLs:_layerCapabilities];
+    if (metadataURLs != nil && [metadataURLs count] > 0)
+    {
+        for (NSString* dataURL in metadataURLs)
+        {
+            [htmlString appendString:@"<b>Metadata URL:</b> "];
+            [htmlString appendString:[self wrapLink:dataURL]];
+            [htmlString appendFormat:@"<br><br>"];
+        }
+    }
+
+    WWSector* bbox = [_serverCapabilities layerGeographicBoundingBox:_layerCapabilities];
+    if (bbox != nil)
+    {
+        NSMutableArray* tableData = [[NSMutableArray alloc] initWithCapacity:8];
+        [tableData addObject:@"Min Latitude"];
+        [tableData addObject:[[NSString alloc] initWithFormat:@"%f", [bbox minLatitude]]];
+        [tableData addObject:@"Max Latitude"];
+        [tableData addObject:[[NSString alloc] initWithFormat:@"%f", [bbox maxLatitude]]];
+        [tableData addObject:@"Min Longitude"];
+        [tableData addObject:[[NSString alloc] initWithFormat:@"%f", [bbox minLongitude]]];
+        [tableData addObject:@"Max Longitude"];
+        [tableData addObject:[[NSString alloc] initWithFormat:@"%f", [bbox maxLongitude]]];
+
+        [htmlString appendFormat:@"<b>Bounding Box</b>:"];
+        [htmlString appendString:[self twoColumnTable:tableData]];
+        [htmlString appendFormat:@"<br>"];
+    }
+
+    NSNumber* minScale = [WWWMSCapabilities layerMinScaleDenominator:_layerCapabilities];
+    if (minScale != nil)
+    {
+        [htmlString appendFormat:@"<b>Min Scale:</b> %f<br>", [minScale doubleValue]];
+    }
+
+    NSNumber* maxScale = [WWWMSCapabilities layerMaxScaleDenominator:_layerCapabilities];
+    if (minScale != nil)
+    {
+        [htmlString appendFormat:@"<b>Max Scale:</b> %f<br><br>", [maxScale doubleValue]];
+    }
+
+    NSArray* keywords = [WWWMSCapabilities layerKeywords:_layerCapabilities];
+    if (keywords != nil)
+    {
+        [htmlString appendFormat:@"<b>Keywords</b>:"];
+        [htmlString appendString:[self twoColumnTable:keywords]];
+        [htmlString appendFormat:@"<br>"];
+    }
+
+    if ([htmlString length] > 0)
+    {
+        [[detailController webView] loadHTMLString:htmlString baseURL:nil];
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+}
+
+- (NSString*) wrapLink:(NSString*)url
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] init];
+
+    [htmlString appendString:@"<a href=\""];
+    [htmlString appendString:url];
+    [htmlString appendString:@"\">"];
+    [htmlString appendString:url];
+    [htmlString appendString:@"</a>"];
+
+    return htmlString;
+}
+
+- (NSString*) twoColumnTable:(NSArray*)data
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] initWithString:@"<table border=\"0\">"];
+
+    for (NSUInteger i = 0; i < [data count]; i += 2)
+    {
+        [htmlString appendString:@"<tr>"];
+        [htmlString appendFormat:@"<td>%@, %@</td>",
+                        [data objectAtIndex:i], i + 1 < [data count] ? [data objectAtIndex:i + 1] : @""];
+    }
+
+    [htmlString appendString:@"</table>"];
+
+    return htmlString;
 }
 
 @end

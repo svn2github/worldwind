@@ -16,6 +16,11 @@
 @interface WMSLayerDetailController : UITableViewController
 {
     NSString* layerID; // a unique identifying string for the layer
+    BOOL isNamedLayer;
+    BOOL hasLayers;
+    int controlSection;
+    int dataSection;
+    int layerSection;
 }
 
 /// @name WMS Server Detail Controller Attributes

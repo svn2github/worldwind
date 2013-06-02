@@ -159,11 +159,32 @@
     if (rootLayers == nil)
         return nil;
 
-    NSDictionary* bbox = [self doFindGeographicBoundingBoxForNamedLayer:rootLayers
-                                                              layerName:layerName
-                                                            ancestorBox:nil];
-    if (bbox == nil)
+    // EX_GeographicBoundingBox elements can be inherited, with descendant bounding boxes replacing that of an
+    // ancestor. So get a path to the layer and search it from bottom to top order to find the first layer that
+    // specifies an EX_GeographicBoundingBox.
+
+    NSMutableArray* pathToLayer = [[NSMutableArray alloc] init];
+    for (NSDictionary* layer in rootLayers)
+    {
+        if ([self makePathToLayer:layer layerToFind:layerCaps path:pathToLayer])
+            break;
+    }
+    if ([pathToLayer count] == 0)
+    {
         return nil;
+    }
+
+    NSDictionary* bbox = nil;
+    for (int i = [pathToLayer count] - 1; i >= 0; i--)
+    {
+        bbox = [[pathToLayer objectAtIndex:(NSUInteger)i] objectForKey:@"ex_geographicboundingbox"];
+        if (bbox != nil)
+            break;
+    }
+    if (bbox == nil)
+    {
+        return nil;
+    }
 
     return [WWWMSCapabilities makeGeographicBoundingBox:bbox];
 }
@@ -272,12 +293,7 @@
 {
     if (layer == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
-    }
-
-    if (layerList == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer list is nil")
+        return;
     }
 
     if ([layer objectForKey:@"name"] != nil)
@@ -383,51 +399,67 @@
         return nil;
     }
 
+    // Coordinate systems are inherited, so get a path to the layer then traverse that path to collect all the
+    // coordinate systems defined in each ancestor layer and the target layer, itself.
+
+    NSMutableArray* pathToLayer = [[NSMutableArray alloc] init];
+    for (NSDictionary* layer in rootLayers)
+    {
+        if ([self makePathToLayer:layer layerToFind:layerCaps path:pathToLayer])
+            break;
+    }
+    if ([pathToLayer count] == 0)
+    {
+        return nil;
+    }
+
     // WMS 1.1 coordinate system elements are named "SRS", whereas 1.3 are named "CRS".
     NSComparisonResult order = [[self serviceWMSVersion] compare:@"1.3.0"];
     NSString* crsName = order == NSOrderedAscending ? @"srs" : @"crs";
 
     NSMutableSet* csList = [[NSMutableSet alloc] init];
-
-    for (NSMutableDictionary* layer in rootLayers)
+    for (NSDictionary* layer in pathToLayer)
     {
-        [self doGetLayerCoordinateSystems:layer crsName:crsName coordSystemList:csList stopLayer:layerCaps];
+        NSArray* layersCoordSystemList = [layer objectForKey:crsName];
+        if (layersCoordSystemList != nil)
+        {
+            for (NSDictionary* coordSystemElement in layersCoordSystemList)
+            {
+                NSString* cs = [coordSystemElement objectForKey:@"characters"];
+                if (cs != nil && [cs length] > 0)
+                {
+                    [csList addObject:cs];
+                }
+            }
+        }
     }
 
     return [csList allObjects];
 }
 
-- (void) doGetLayerCoordinateSystems:(NSMutableDictionary*)layer
-                             crsName:(NSString*)crsName
-                     coordSystemList:(NSMutableSet*)csList
-                           stopLayer:(NSDictionary*)stopLayer
+- (BOOL) makePathToLayer:(NSDictionary*)layerCaps layerToFind:(NSDictionary*)layerToFind path:(NSMutableArray*)path
 {
-    NSArray* layersCoordSystemList = [layer objectForKey:crsName];
-    if (layersCoordSystemList != nil)
+    if (layerCaps == layerToFind)
     {
-        for (NSDictionary* coordSystemElement in layersCoordSystemList)
-        {
-            NSString* cs = [coordSystemElement objectForKey:@"characters"];
-            if (cs != nil && [cs length] > 0)
-            {
-                [csList addObject:cs];
-            }
-        }
+        [path addObject:layerCaps];
+        return YES;
     }
 
-    if (layer == stopLayer)
-    {
-        return;
-    }
+    NSArray* layers = [WWWMSCapabilities layers:layerCaps];
+    if (layers == nil || [layers count] == 0)
+        return NO;
 
-    NSArray* layers = [layer objectForKey:@"layer"];
-    if (layers != nil)
+    [path addObject:layerCaps];
+    for (NSDictionary* childLayer in layers)
     {
-        for (NSMutableDictionary* childLayer in layers)
+        if ([self makePathToLayer:childLayer layerToFind:layerToFind path:path])
         {
-            [self doGetLayerCoordinateSystems:childLayer crsName:crsName coordSystemList:csList stopLayer:stopLayer];
+            return YES;
         }
     }
+    [path removeLastObject];
+
+    return NO;
 }
 
 + (NSString*) layerName:(NSDictionary*)layerCaps
@@ -562,6 +594,124 @@
                                             maxLatitude:[WWMath clampValue:latMax min:-90 max:90]
                                            minLongitude:[WWMath clampValue:lonMin min:-180 max:180]
                                            maxLongitude:[WWMath clampValue:lonMax min:-180 max:180]];
+}
+
++ (NSArray*) layerDataURLs:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSArray* dataURLs = [layerCaps objectForKey:@"dataurl"];
+    if (dataURLs == nil || [dataURLs count] == 0)
+        return nil;
+
+    NSMutableArray* urls = [[NSMutableArray alloc] initWithCapacity:[dataURLs count]];
+    for (NSDictionary* dataURL in dataURLs)
+    {
+        NSDictionary* orl = [dataURL objectForKey:@"onlineresource"];
+        if (orl == nil)
+            continue;
+
+        NSString* url = [orl objectForKey:@"href"];
+        if (url == nil)
+        {
+            url = [orl objectForKey:@"xlink:href"];
+        }
+
+        if (url != nil && [url length] > 0)
+        {
+            [urls addObject:url];
+        }
+    }
+
+    return [urls count] > 0 ? urls : nil;
+}
+
++ (NSArray*) layerMetadataURLs:(NSDictionary*)layerCaps
+{
+    NSArray* dataURLs = [layerCaps objectForKey:@"metadataurl"];
+    if (dataURLs == nil || [dataURLs count] == 0)
+        return nil;
+
+    NSMutableArray* urls = [[NSMutableArray alloc] initWithCapacity:[dataURLs count]];
+    for (NSDictionary* dataURL in dataURLs)
+    {
+        NSDictionary* orl = [dataURL objectForKey:@"onlineresource"];
+        if (orl == nil)
+            continue;
+
+        NSString* url = [orl objectForKey:@"href"];
+        if (url == nil)
+        {
+            url = [orl objectForKey:@"xlink:href"];
+        }
+
+        if (url != nil && [url length] > 0)
+        {
+            [urls addObject:url];
+        }
+    }
+
+    return [urls count] > 0 ? urls : nil;
+}
+
++ (NSArray*) layerKeywords:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSMutableDictionary* keywordListElement = [layerCaps objectForKey:@"keywordlist"];
+    if (keywordListElement != nil)
+    {
+        NSMutableArray* keywordsOut = [[NSMutableArray alloc] init];
+
+        NSArray* keywordElementList = [keywordListElement objectForKey:@"keyword"];
+        if (keywordElementList != nil)
+        {
+            for (NSDictionary* keywordElement in keywordElementList)
+            {
+                NSString* keyword = [keywordElement objectForKey:@"characters"];
+                if (keyword != nil)
+                {
+                    [keywordsOut addObject:keyword];
+                }
+            }
+        }
+
+        return [keywordsOut count] > 0 ? keywordsOut : nil;
+    }
+
+    return nil;
+}
+
++ (NSNumber*) layerMinScaleDenominator:(NSDictionary*)layerCaps
+{
+    NSDictionary* minScale = [layerCaps objectForKey:@"minscaledenominator"];
+    if (minScale == nil)
+        return nil;
+
+    NSString* numberString = [minScale objectForKey:@"characters"];
+    if (numberString == nil || [numberString length] == 0)
+        return nil;
+
+    return [[NSNumber alloc] initWithDouble:[numberString doubleValue]];
+}
+
++ (NSNumber*) layerMaxScaleDenominator:(NSDictionary*)layerCaps
+{
+    NSDictionary* minScale = [layerCaps objectForKey:@"maxscaledenominator"];
+    if (minScale == nil)
+        return nil;
+
+    NSString* numberString = [minScale objectForKey:@"characters"];
+    if (numberString == nil || [numberString length] == 0)
+        return nil;
+
+    return [[NSNumber alloc] initWithDouble:[numberString doubleValue]];
 }
 
 @end

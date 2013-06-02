@@ -45,6 +45,7 @@
 		1BF9ABF69A7796F56CAB773A /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA3FE811C2CC7278B79E /* 431-yes.png */; };
 		1BF9ACC3960E65076911FC95 /* CrashDataLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0F045D17989445FC7AC /* CrashDataLayer.m */; };
 		1BF9ACDFB5114A1409060406 /* 05-plus.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7DDCF1150BE8DC39CB4 /* 05-plus.png */; };
+		1BF9AD0880D26B6D6F5BD587 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A883A9B7EC2E84177CA1 /* WebViewController.m */; };
 		1BF9AE4238EBFC5BB68AFD33 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4AEA039503D44E9A622 /* ImageLayerDetailController.m */; };
 		1BF9AF344D1D325BDD5FFF06 /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */; };
 		CC8CF2F9C5BBEDDCD4B6B2EE /* 12-eye@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFEB25C541BB31BFC44EC /* 12-eye@2x.png */; };
@@ -95,6 +96,8 @@
 		1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A7DDCF1150BE8DC39CB4 /* 05-plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "05-plus.png"; sourceTree = "<group>"; };
 		1BF9A83D6101A50B80BAD937 /* TextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextViewController.h; sourceTree = "<group>"; };
+		1BF9A883A9B7EC2E84177CA1 /* WebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebViewController.m; sourceTree = "<group>"; };
+		1BF9A89430D386868AB0E815 /* WebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewController.h; sourceTree = "<group>"; };
 		1BF9A8D3C40F4DA7C5A36B5A /* LocationArrowWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWhite@2x.png"; sourceTree = "<group>"; };
 		1BF9A8D51F69D01809241BB6 /* WMSServerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSServerDetailController.m; sourceTree = "<group>"; };
 		1BF9A97EAF1D8CDC2B054235 /* CrashDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashDataViewController.h; sourceTree = "<group>"; };
@@ -218,6 +221,8 @@
 				1BF9AF001C236733126C9309 /* WMSLayerDetailController.h */,
 				1BF9AD514AAFF11ABADB45A5 /* TextViewController.m */,
 				1BF9A83D6101A50B80BAD937 /* TextViewController.h */,
+				1BF9A883A9B7EC2E84177CA1 /* WebViewController.m */,
+				1BF9A89430D386868AB0E815 /* WebViewController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -360,6 +365,7 @@
 				1BF9A5B5A929248F1D2032CA /* WMSServerDetailController.m in Sources */,
 				1BF9A8EB0D672FF9BB960898 /* WMSLayerDetailController.m in Sources */,
 				1BF9A1502D44897945819C46 /* TextViewController.m in Sources */,
+				1BF9AD0880D26B6D6F5BD587 /* WebViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
