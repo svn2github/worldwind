@@ -103,6 +103,17 @@
 
 - (void) connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response
 {
+    if ([responseDictionary objectForKey:WW_RESPONSE_CODE] == nil)
+    {
+        if ([response isKindOfClass:[NSHTTPURLResponse class]])
+        {
+            NSNumber* responseCode = [[NSNumber alloc] initWithInt:[(NSHTTPURLResponse*)response statusCode]];
+            [responseDictionary setObject:responseCode forKey:WW_RESPONSE_CODE];
+        }
+    }
+
+    [responseDictionary setObject:[response MIMEType] forKey:WW_MIME_TYPE];
+
     [retrievedData setLength:0];
 }
 

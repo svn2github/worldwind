@@ -599,6 +599,37 @@
     NSDictionary* avList = [notification userInfo];
     NSString* retrievalStatus = [avList valueForKey:WW_RETRIEVAL_STATUS];
     NSString* imagePath = [avList valueForKey:WW_FILE_PATH];
+    NSNumber* responseCode = [avList valueForKey:WW_RESPONSE_CODE];
+    NSURL* url = [avList objectForKey:WW_URL];
+
+    // Check the response code.
+    if (responseCode == nil || [responseCode intValue] != 200)
+    {
+        WWLog(@"Unexpected response code %@ retrieving %@",
+        responseCode != nil ? [responseCode stringValue] : @"(no response code)", [url absoluteString]);
+
+        [absentResources markResourceAbsent:imagePath];
+        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        return;
+    }
+
+    // Check to see that the mime type returned is the same as the one requested. When these are inconsistent it
+    // usually means that the request failed and the server returned an exception message in either HTML or XML.
+    NSString* mimeType = [avList objectForKey:WW_MIME_TYPE];
+    if (mimeType == nil || [mimeType caseInsensitiveCompare:_retrievalImageFormat] != NSOrderedSame)
+    {
+        // Any exception message would have been written to the output file. Read and show the message.
+        NSError* error = nil;
+        NSString* msg = [[NSString alloc] initWithContentsOfFile:imagePath
+                                                        encoding:NSUTF8StringEncoding
+                                                           error:&error];
+        WWLog(@"Unexpeted mime type %@ for request %@: %@",
+        mimeType != nil ? mimeType : @"(no mime type in response)", [url absoluteString], error == nil ? msg : @"");
+
+        [absentResources markResourceAbsent:imagePath];
+        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        return;
+    }
 
     @try
     {
