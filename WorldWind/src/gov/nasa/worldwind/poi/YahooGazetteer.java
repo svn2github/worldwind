@@ -27,7 +27,7 @@ import java.util.logging.Level;
 public class YahooGazetteer implements Gazetteer
 {
     protected static final String GEOCODE_SERVICE =
-        "http://where.yahooapis.com/geocode?appid=nasaworldwind&location=";
+        "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.placefinder%20where%20text%3D";
 
     public List<PointOfInterest> findPlaces(String lookupString) throws NoItemException, ServiceException
     {
@@ -39,12 +39,16 @@ public class YahooGazetteer implements Gazetteer
         String urlString;
         try
         {
-            urlString = GEOCODE_SERVICE + URLEncoder.encode(lookupString, "UTF-8");
+            urlString = GEOCODE_SERVICE + "%22" + URLEncoder.encode(lookupString, "UTF-8") + "%22";
         }
         catch (UnsupportedEncodingException e)
         {
-            urlString = GEOCODE_SERVICE + lookupString.replaceAll(" ", "+");
+            urlString = GEOCODE_SERVICE + "%22" + lookupString.replaceAll(" ", "+") + "%22";
         }
+
+        if (isNumber(lookupString))
+            lookupString += "%20and%20gflags%3D%22R%22";
+
         String locationString = POIUtils.callService(urlString);
 
         if (locationString == null || locationString.length() < 1)
@@ -53,6 +57,13 @@ public class YahooGazetteer implements Gazetteer
         }
 
         return this.parseLocationString(locationString);
+    }
+
+    protected boolean isNumber(String lookupString)
+    {
+        lookupString = lookupString.trim();
+
+        return lookupString.startsWith("-") || lookupString.startsWith("+") || Character.isDigit(lookupString.charAt(0));
     }
 
     protected ArrayList<PointOfInterest> parseLocationString(String locationString) throws WWRuntimeException
@@ -68,7 +79,7 @@ public class YahooGazetteer implements Gazetteer
             XPath xpath = xpFactory.newXPath();
 
             org.w3c.dom.NodeList resultNodes =
-                (org.w3c.dom.NodeList) xpath.evaluate("/ResultSet/Result", doc, XPathConstants.NODESET);
+                (org.w3c.dom.NodeList) xpath.evaluate("/query/results/Result", doc, XPathConstants.NODESET);
 
             ArrayList<PointOfInterest> positions = new ArrayList<PointOfInterest>(resultNodes.getLength());
 
