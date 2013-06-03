@@ -14,6 +14,9 @@
 * Displays the details of a WMS server and allows selection of its layers.
 */
 @interface WMSServerDetailController : UITableViewController
+{
+    UIBarButtonItem* refreshButton;
+}
 
 /// @name WMS Server Detail Controller Attributes
 

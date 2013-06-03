@@ -41,7 +41,46 @@
     _serverAddress = serverAddress;
     _wwv = wwv;
 
+    refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"01-refresh"]
+                                                     style:UIBarButtonItemStylePlain
+                                                    target:self action:@selector(handleRefreshButtonTap)];
+    [[self navigationItem] setRightBarButtonItem:refreshButton];
+
     return self;
+}
+
+- (void) handleRefreshButtonTap
+{
+    WWWMSCapabilities __unused * caps = [[WWWMSCapabilities alloc]
+            initWithServiceAddress:_serverAddress
+                     finishedBlock:^(WWWMSCapabilities* capabilities)
+                     {
+                         if (capabilities != nil)
+                         {
+                             // Persist the capabilities document.
+                             [[NSUserDefaults standardUserDefaults] setObject:[capabilities root]
+                                                                       forKey:_serverAddress];
+                             [[NSUserDefaults standardUserDefaults] synchronize];
+
+                             _capabilities = capabilities;
+                             [[self tableView] reloadData];
+                         }
+                         else
+                         {
+                             [self showFailureAlert];
+                         }
+                     }];
+}
+
+- (void) showFailureAlert
+{
+    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:@"Server connection failed"
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Ok", nil];
+    [alertView setAlertViewStyle:UIAlertViewStyleDefault];
+    [alertView show];
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
