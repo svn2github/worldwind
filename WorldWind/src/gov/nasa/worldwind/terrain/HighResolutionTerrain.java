@@ -6,7 +6,7 @@
 
 package gov.nasa.worldwind.terrain;
 
-import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
@@ -390,6 +390,33 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         {
             this.startTime.set(null); // signals that no operation is active
         }
+    }
+
+    /** {@inheritDoc} */
+    public Intersection[] intersect(Position pA, Position pB, int altitudeMode)
+    {
+        if (pA == null || pB == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // The intersect method expects altitudes to be relative to ground, so make them so if they aren't already.
+        double altitudeA = pA.getAltitude();
+        double altitudeB = pB.getAltitude();
+        if (altitudeMode == WorldWind.ABSOLUTE)
+        {
+            altitudeA -= this.getElevation(pA);
+            altitudeB -= this.getElevation(pB);
+        }
+        else if (altitudeMode == WorldWind.CLAMP_TO_GROUND)
+        {
+            altitudeA = 0;
+            altitudeB = 0;
+        }
+
+        return this.intersect(new Position(pA, altitudeA), new Position(pB, altitudeB));
     }
 
     /**

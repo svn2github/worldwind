@@ -1463,6 +1463,32 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             return sectorGeometry.intersect(new Line(ptA, ptB.subtract3(ptA)));
         }
 
+        public Intersection[] intersect(Position pA, Position pB, int altitudeMode)
+        {
+            if (pA == null || pB == null)
+            {
+                String msg = Logging.getMessage("nullValue.PositionIsNull");
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            // The intersect method expects altitudes to be relative to ground, so make them so if they aren't already.
+            double altitudeA = pA.getAltitude();
+            double altitudeB = pB.getAltitude();
+            if (altitudeMode == WorldWind.ABSOLUTE)
+            {
+                altitudeA -= this.getElevation(pA);
+                altitudeB -= this.getElevation(pB);
+            }
+            else if (altitudeMode == WorldWind.CLAMP_TO_GROUND)
+            {
+                altitudeA = 0;
+                altitudeB = 0;
+            }
+
+            return this.intersect(new Position(pA, altitudeA), new Position(pB, altitudeB));
+        }
+
         public Double getElevation(LatLon location)
         {
             if (location == null)
