@@ -71,6 +71,8 @@ New features and improvements in World Wind Java SDK 2.0.0
   gov.nasa.worldwind.database, gov.nasa.worldwind.ows, gov.nasa.worldwind.wfs, gov.nasa.worldwind.wss
 - Removed the need for the separate performance JAR file worldwind-performance.jar.
   Moved the performance package into gov.nasa.worldwindx.performance.
+- Repaired a problem that caused the compass not to be displayed when another instance of the layer had been used in
+  another WorldWindow.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
