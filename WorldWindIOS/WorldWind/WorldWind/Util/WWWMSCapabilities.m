@@ -249,6 +249,32 @@
     return (version != nil && [version length] > 0) ? version : @"1.3.0";
 }
 
+- (NSArray*) serviceKeywords
+{
+    NSDictionary* keywordListElement = [[_root objectForKey:@"service"] objectForKey:@"keywordlist"];
+    if (keywordListElement != nil)
+    {
+        NSMutableArray* keywordsOut = [[NSMutableArray alloc] init];
+
+        NSArray* keywordElementList = [keywordListElement objectForKey:@"keyword"];
+        if (keywordElementList != nil)
+        {
+            for (NSDictionary* keywordElement in keywordElementList)
+            {
+                NSString* keyword = [keywordElement objectForKey:@"characters"];
+                if (keyword != nil)
+                {
+                    [keywordsOut addObject:keyword];
+                }
+            }
+        }
+
+        return [keywordsOut count] > 0 ? keywordsOut : nil;
+    }
+
+    return nil;
+}
+
 - (NSString*) serviceContactOrganization
 {
     NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"contactinformation"];
@@ -264,6 +290,110 @@
         return nil;
 
     return [element objectForKey:@"characters"];
+}
+
+-(BOOL) serviceHasContactInfo
+{
+    return [[_root objectForKey:@"service"] objectForKey:@"contactinformation"] != nil;
+}
+
+- (NSDictionary*) serviceContactInfo
+{
+    NSDictionary* contactInfoRoot = [[_root objectForKey:@"service"] objectForKey:@"contactinformation"];
+    if (contactInfoRoot == nil)
+        return nil;
+
+    NSMutableDictionary* contactInfoResult = [[NSMutableDictionary alloc] init];
+    NSDictionary* element;
+
+    NSDictionary* contactPersonElement = [contactInfoRoot objectForKey:@"contactpersonprimary"];
+    if (contactPersonElement != nil)
+    {
+        element = [contactPersonElement objectForKey:@"contactorganization"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactorganization"];
+
+        element = [contactPersonElement objectForKey:@"contactperson"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactperson"];
+
+    }
+
+    element = [contactInfoRoot objectForKey:@"contactposition"];
+    if (element != nil && [element objectForKey:@"characters"] != nil)
+        [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactposition"];
+
+    element = [contactInfoRoot objectForKey:@"contactvoicetelephone"];
+    if (element != nil && [element objectForKey:@"characters"] != nil)
+        [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactvoicetelephone"];
+
+    element = [contactInfoRoot objectForKey:@"contactfacsimiletelephone"];
+    if (element != nil && [element objectForKey:@"characters"] != nil)
+        [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactfacsimiletelephone"];
+
+    element = [contactInfoRoot objectForKey:@"contactelectronicmailaddress"];
+    if (element != nil && [element objectForKey:@"characters"] != nil)
+        [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"contactelectronicmailaddress"];
+
+    NSDictionary* contactAddressElement = [contactInfoRoot objectForKey:@"contactaddress"];
+    if (contactPersonElement != nil)
+    {
+        element = [contactAddressElement objectForKey:@"addresstype"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"addresstype"];
+
+        element = [contactAddressElement objectForKey:@"address"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"address"];
+
+        element = [contactAddressElement objectForKey:@"city"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"city"];
+
+        element = [contactAddressElement objectForKey:@"stateorprovince"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"stateorprovince"];
+
+        element = [contactAddressElement objectForKey:@"postcode"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"postcode"];
+
+        element = [contactAddressElement objectForKey:@"country"];
+        if (element != nil && [element objectForKey:@"characters"] != nil)
+            [contactInfoResult setObject:[element objectForKey:@"characters"] forKey:@"country"];
+    }
+
+    return [contactInfoResult count] > 0 ? contactInfoResult : nil;
+}
+
+- (NSString*) serviceMaxWidth
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"maxwidth"];
+    return element != nil ? [element objectForKey:@"characters"] : nil;
+}
+
+- (NSString*) serviceMaxHeight
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"maxheight"];
+    return element != nil ? [element objectForKey:@"characters"] : nil;
+}
+
+- (NSString*) serviceLayerLimit
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"layerlimit"];
+    return element != nil ? [element objectForKey:@"characters"] : nil;
+}
+
+- (NSString*) serviceAccessConstraints
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"accessconstraints"];
+    return element != nil ? [element objectForKey:@"characters"] : nil;
+}
+
+- (NSString*) serviceFees
+{
+    NSDictionary* element = [[_root objectForKey:@"service"] objectForKey:@"fees"];
+    return element != nil ? [element objectForKey:@"characters"] : nil;
 }
 
 - (NSArray*) layers

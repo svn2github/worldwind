@@ -456,10 +456,10 @@
     }
 
     NSArray* keywords = [WWWMSCapabilities layerKeywords:_layerCapabilities];
-    if (keywords != nil)
+    if (keywords != nil && [keywords count] > 0)
     {
         [htmlString appendFormat:@"<b>Keywords</b>:"];
-        [htmlString appendString:[self twoColumnTable:keywords]];
+        [htmlString appendString:[self oneColumnTable:keywords]];
         [htmlString appendFormat:@"<br>"];
     }
 
@@ -483,6 +483,21 @@
     return htmlString;
 }
 
+- (NSString*) oneColumnTable:(NSArray*)data
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] initWithString:@"<table>"];
+
+    for (NSString* dataObject in data)
+    {
+        [htmlString appendString:@"<tr>"];
+        [htmlString appendFormat:@"<td>%@</td>", dataObject];
+    }
+
+    [htmlString appendString:@"</table>"];
+
+    return htmlString;
+}
+
 - (NSString*) twoColumnTable:(NSArray*)data
 {
     NSMutableString* htmlString = [[NSMutableString alloc] initWithString:@"<table border=\"0\">"];
@@ -490,8 +505,9 @@
     for (NSUInteger i = 0; i < [data count]; i += 2)
     {
         [htmlString appendString:@"<tr>"];
-        [htmlString appendFormat:@"<td>%@, %@</td>",
-                        [data objectAtIndex:i], i + 1 < [data count] ? [data objectAtIndex:i + 1] : @""];
+        [htmlString appendFormat:@"<td>%@</td>", [data objectAtIndex:i]];
+        [htmlString appendFormat:@"<td>%@</td>", i + 1 < [data count] ? [data objectAtIndex:i + 1] : @""];
+        [htmlString appendString:@"</tr>"];
     }
 
     [htmlString appendString:@"</table>"];

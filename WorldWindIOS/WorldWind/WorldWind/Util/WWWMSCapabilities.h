@@ -91,9 +91,66 @@
 - (NSString*) serviceWMSVersion;
 
 /**
+* Returns the service keywords, or nil if no keywords are specified in the capabilities.
+*/
+- (NSArray*) serviceKeywords;
+
+/**
 * Returns the service contact organization, or nil if no organization is specified in the capabilities.
 */
 - (NSString*) serviceContactOrganization;
+
+/**
+* Indicates whether the capabilities contains contact information.
+*
+* @return YES if the capabilities contains contact information, otherwise NO.
+*/
+- (BOOL) serviceHasContactInfo;
+
+/**
+* Returns the service's contact info.
+*
+* The individual contact items are returned in a dictionary keyed to the lower-case WMS element name, e.g.,
+* "contactperson".
+*
+* @return The service's contact information, or nil if none is declared.
+*/
+- (NSDictionary*) serviceContactInfo;
+
+/**
+* Returns the service's max width.
+*
+* @return The service's max width, or nil if none is declared.
+*/
+- (NSString*) serviceMaxWidth;
+
+/**
+* Returns the service's max height.
+*
+* @return The service's max height, or nil if none is declared.
+*/
+- (NSString*) serviceMaxHeight;
+
+/**
+* Returns the service's fees.
+*
+* @return The service's fees, or nil if none is declared.
+*/
+- (NSString*) serviceFees;
+
+/**
+* Returns the service's access constraints.
+*
+* @return The service's access constraints, or nil if none is declared.
+*/
+- (NSString*) serviceAccessConstraints;
+
+/**
+* Returns the service's layer limit.
+*
+* @return The service's layer limit, or nil if none is declared.
+*/
+- (NSString*) serviceLayerLimit;
 
 /**
 * Returns the layers in the capabilities' Capability section. Only the top-most layers are returned.

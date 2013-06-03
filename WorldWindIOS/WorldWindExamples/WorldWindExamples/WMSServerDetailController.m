@@ -8,9 +8,9 @@
 #import "WMSServerDetailController.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WMSLayerDetailController.h"
-#import "TextViewController.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
+#import "WebViewController.h"
 
 @implementation WMSServerDetailController
 
@@ -57,7 +57,7 @@
             return 1;
 
         case 1:
-            return 1;
+            return 2;
 
         case 2:
             return [_capabilities layers] != nil ? [[_capabilities layers] count] : 0;
@@ -139,6 +139,11 @@
     {
         label = @"Abstract";
         hasValue = [_capabilities serviceAbstract] != nil;
+    }
+    else if ([indexPath row] == 1)
+    {
+        label = @"More Info";
+        hasValue = [self hasMoreInfo];
     }
 
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -236,10 +241,14 @@
         if (abstract == nil)
             return;
 
-        TextViewController* detailController = [[TextViewController alloc] initWithFrame:[[self tableView] frame]];
+        WebViewController* detailController = [[WebViewController alloc] initWithFrame:[[self tableView] frame]];
         [[detailController navigationItem] setTitle:@"Abstract"];
-        [[detailController textView] setText:abstract];
+        [[detailController webView] loadHTMLString:abstract baseURL:nil];
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+    if ([indexPath row] == 1)
+    {
+        [self showMoreInfoView];
     }
 }
 
@@ -254,6 +263,165 @@
                                                                  wwView:_wwv];
     [detailController setContentSizeForViewInPopover:[self contentSizeForViewInPopover]];
     [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+}
+
+- (BOOL) hasMoreInfo
+{
+    if ([_capabilities serviceKeywords] != nil)
+        return YES;
+
+    if ([_capabilities serviceHasContactInfo])
+        return YES;
+
+    if ([_capabilities serviceMaxWidth] != nil)
+        return YES;
+
+    if ([_capabilities serviceMaxHeight] != nil)
+        return YES;
+
+    if ([_capabilities serviceLayerLimit] != nil)
+        return YES;
+
+    if ([_capabilities serviceAccessConstraints] != nil)
+        return YES;
+
+    if ([_capabilities serviceFees] != nil)
+        return YES;
+
+    return NO;
+}
+
+- (void) showMoreInfoView
+{
+    WebViewController* detailController = [[WebViewController alloc] initWithFrame:[[self tableView] frame]];
+    [[detailController navigationItem] setTitle:@"Layer Info"];
+
+    NSMutableString* htmlString = [[NSMutableString alloc] init];
+
+    NSArray* keywords = [_capabilities serviceKeywords];
+    if (keywords != nil && [keywords count] > 0)
+    {
+        [htmlString appendFormat:@"<b>Keywords</b>:"];
+        [htmlString appendString:[self oneColumnTable:keywords]];
+        [htmlString appendFormat:@"<br>"];
+    }
+
+    NSDictionary* contactInfo = [_capabilities serviceContactInfo];
+    if (contactInfo != nil)
+    {
+        NSMutableArray* tableValues = [[NSMutableArray alloc] initWithCapacity:[contactInfo count]];
+
+        [self addItemIfDefined:@"contactorganization" element:contactInfo title:@"Organization:" itemsOut:tableValues];
+        [self addItemIfDefined:@"contactperson" element:contactInfo title:@"Person:" itemsOut:tableValues];
+        [self addItemIfDefined:@"contactposition" element:contactInfo title:@"Position:" itemsOut:tableValues];
+        [self addItemIfDefined:@"contactvoicetelephone" element:contactInfo title:@"Phone:" itemsOut:tableValues];
+        [self addItemIfDefined:@"contactfacsimiletelephone" element:contactInfo title:@"Fax:" itemsOut:tableValues];
+        [self addItemIfDefined:@"contactelectronicmailaddress" element:contactInfo title:@"Email:" itemsOut:tableValues];
+        [self addItemIfDefined:@"addresstype" element:contactInfo title:@"Address Type:" itemsOut:tableValues];
+        [self addItemIfDefined:@"address" element:contactInfo title:@"Address:" itemsOut:tableValues];
+        [self addItemIfDefined:@"city" element:contactInfo title:@"City:" itemsOut:tableValues];
+        [self addItemIfDefined:@"stateorprovince" element:contactInfo title:@"State/Province:" itemsOut:tableValues];
+        [self addItemIfDefined:@"postcode" element:contactInfo title:@"Postcode:" itemsOut:tableValues];
+        [self addItemIfDefined:@"country" element:contactInfo title:@"Country:" itemsOut:tableValues];
+
+        [htmlString appendString:@"<b>Contact Info:</b>"];
+        [htmlString appendString:[self twoColumnTable:tableValues]];
+        [htmlString appendFormat:@"<br>"];
+    }
+
+    NSString* value = [_capabilities serviceMaxWidth];
+    if (value != nil && [value length] > 0)
+    {
+        [htmlString appendFormat:@"<b>Max Width:</b> %@<br>", value];
+    }
+
+    value = [_capabilities serviceMaxHeight];
+    if (value != nil && [value length] > 0)
+    {
+        [htmlString appendFormat:@"<b>Max Height:</b> %@<br>", value];
+    }
+
+    value = [_capabilities serviceLayerLimit];
+    if (value != nil && [value length] > 0)
+    {
+        [htmlString appendFormat:@"<b>Layer Limit:</b> %@<br>", value];
+    }
+
+    value = [_capabilities serviceAccessConstraints];
+    if (value != nil && [value length] > 0)
+    {
+        [htmlString appendFormat:@"<b>Access Constraints:</b> %@<br>", value];
+    }
+
+    value = [_capabilities serviceFees];
+    if (value != nil && [value length] > 0)
+    {
+        [htmlString appendFormat:@"<b>Fees:</b> %@</b><br>", value];
+    }
+
+    if ([htmlString length] > 0)
+    {
+        [[detailController webView] loadHTMLString:htmlString baseURL:nil];
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+}
+
+- (void) addItemIfDefined:(NSString*)name
+                  element:(NSDictionary*)element
+                    title:(NSString*)title
+                 itemsOut:(NSMutableArray*)itemsOut
+{
+    NSString* item = [element objectForKey:name];
+    if (item != nil)
+    {
+        [itemsOut addObject:title];
+        [itemsOut addObject:item];
+    }
+}
+
+- (NSString*) wrapLink:(NSString*)url
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] init];
+
+    [htmlString appendString:@"<a href=\""];
+    [htmlString appendString:url];
+    [htmlString appendString:@"\">"];
+    [htmlString appendString:url];
+    [htmlString appendString:@"</a>"];
+
+    return htmlString;
+}
+
+- (NSString*) oneColumnTable:(NSArray*)data
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] initWithString:@"<table>"];
+
+    for (NSString* dataObject in data)
+    {
+        [htmlString appendString:@"<tr>"];
+        [htmlString appendFormat:@"<td>%@</td>", dataObject];
+    }
+
+    [htmlString appendString:@"</table>"];
+
+    return htmlString;
+}
+
+- (NSString*) twoColumnTable:(NSArray*)data
+{
+    NSMutableString* htmlString = [[NSMutableString alloc] initWithString:@"<table border=\"0\">"];
+
+    for (NSUInteger i = 0; i < [data count]; i += 2)
+    {
+        [htmlString appendString:@"<tr>"];
+        [htmlString appendFormat:@"<td>%@</td>", [data objectAtIndex:i]];
+        [htmlString appendFormat:@"<td>%@</td>", i + 1 < [data count] ? [data objectAtIndex:i + 1] : @""];
+        [htmlString appendString:@"</tr>"];
+    }
+
+    [htmlString appendString:@"</table>"];
+
+    return htmlString;
 }
 
 @end
