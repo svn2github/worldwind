@@ -18,16 +18,20 @@
 
 /// @name Attributes
 
+/// Indicates the elevation model's display name.
+@property (nonatomic) NSString* displayName;
+
 /// Indicates the date and time at which the elevation model last changed.
+///
 /// Since a zero elevation model never changes, this always returns the date and time at which the elevation model was
-/// initialized.
-@property(readonly) NSDate* timestamp;
+/// initialized. This property is typically accessed from multiple threads, and is therefore declared atomic.
+@property (atomic, readonly) NSDate* timestamp;
 
 /// Indicates the elevation model's minimum elevation for all values in the model. This property is always zero.
-@property(nonatomic, readonly) double minElevation;
+@property (nonatomic) double minElevation;
 
 /// Indicates the elevation model's maximum elevation for all values in the model. This property is always zero.
-@property(nonatomic, readonly) double maxElevation;
+@property (nonatomic) double maxElevation;
 
 /// @name Retrieving Elevations
 
