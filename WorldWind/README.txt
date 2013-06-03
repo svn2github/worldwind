@@ -73,6 +73,10 @@ New features and improvements in World Wind Java SDK 2.0.0
   Moved the performance package into gov.nasa.worldwindx.performance.
 - Repaired a problem that caused the compass not to be displayed when another instance of the layer had been used in
   another WorldWindow.
+- Changed the meaning of passing null to the WorldWindowGLCanvas and WorldWindowGLJPanel constructors that have a
+  share-with argument to indicate that a null value causes the gpu resource cache not to be cleared when the window
+  is destroyed. This keeps its contents available to other windows that may have been opened and shared after the
+  initial one.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
