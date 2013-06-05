@@ -39,6 +39,8 @@
 #import "WMSServerListController.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Layer/WWEarthAtNightLayer.h"
+#import "METARLayer.h"
+#import "METARDataViewController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -56,6 +58,8 @@
     UIPopoverController* wmsServersListPopoverController;
     UIPopoverController* crashDataPopoverController;
     CrashDataViewController* crashDataViewController;
+    UIPopoverController* metarDataPopoverController;
+    METARDataViewController* metarDataViewController;
     NavigatorSettingsController* navigatorSettingsController;
     UIPopoverController* navigatorSettingsPopoverController;
     TrackingController* trackingController;
@@ -78,6 +82,9 @@
 
     crashDataViewController = [[CrashDataViewController alloc] init];
     crashDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:crashDataViewController];
+
+    metarDataViewController = [[METARDataViewController alloc] init];
+    metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
 
     return self;
 }
@@ -140,6 +147,10 @@
     [layer setEnabled:NO];
     [layers addLayer:layer];
 
+    layer = [[METARLayer alloc] init];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];
     [_wwv addGestureRecognizer:tapGestureRecognizer];
@@ -156,10 +167,10 @@
 {
     NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/PassageWays.json"];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
-                                              finishedBlock:^(WWRetriever* myRetriever)
-                                              {
-                                                  [self doMakeFlightPathsLayer:myRetriever];
-                                              }];
+                                                finishedBlock:^(WWRetriever* myRetriever)
+                                                {
+                                                    [self doMakeFlightPathsLayer:myRetriever];
+                                                }];
     [retriever performRetrieval];
 }
 
@@ -486,7 +497,10 @@
             WWPointPlacemark* pm = (WWPointPlacemark*) [topObject userObject];
             if ([pm userObject] != nil)
             {
-                [self showCrashData:pm];
+                if ([[[topObject parentLayer] displayName] isEqualToString:@"Accidents"])
+                    [self showCrashData:pm];
+                else if ([[[topObject parentLayer] displayName] isEqualToString:@"METAR Weather"])
+                    [self showMETARData:pm];
             }
         }
     }
@@ -515,6 +529,32 @@
                                                atScrollPosition:UITableViewScrollPositionTop animated:YES];
 
     [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) showMETARData:(WWPointPlacemark*)pm
+{
+    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
+    // that screen position.
+
+    WWPosition* pmPos = [pm position];
+    WWVec4* pmPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
+                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
+    [[[_wwv navigator] currentState] project:pmPoint result:screenPoint];
+    CGRect rect = CGRectMake((CGFloat) [screenPoint x],
+            (CGFloat) ([[[_wwv navigator] currentState] viewport].size.height - [screenPoint y]), 1, 1);
+
+    // Give the controller the placemark's dictionary.
+    [metarDataViewController setEntries:[pm userObject]];
+
+    // Ensure that the first line of the data is at the top of the data table.
+    [[metarDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                               atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
