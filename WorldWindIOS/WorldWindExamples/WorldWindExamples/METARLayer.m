@@ -103,12 +103,19 @@
     }
     else if ([elementName isEqualToString:@"sky_condition"])
     {
-        NSString* sky_cover = [attributeDict objectForKey:@"sky_cover"];
-        [currentPlacemark setObject:sky_cover forKey:@"sky_cover"];
-
+        NSMutableString* cover = [[NSMutableString alloc] initWithString:[attributeDict objectForKey:@"sky_cover"]];
         NSString* cloud_bases = [attributeDict objectForKey:@"cloud_base_ft_agl"];
         if (cloud_bases != nil)
-            [currentPlacemark setObject:cloud_bases forKey:@"cloud_base"];
+            [cover appendFormat:@" @ %@ meters AGL", cloud_bases];
+
+        NSMutableArray* skyCovers = [currentPlacemark objectForKey:@"sky_conditions"];
+        if (skyCovers == nil)
+        {
+            skyCovers = [[NSMutableArray alloc] initWithCapacity:1];
+            [currentPlacemark setObject:skyCovers forKey:@"sky_conditions"];
+        }
+
+        [skyCovers addObject:cover];
     }
     else
     {

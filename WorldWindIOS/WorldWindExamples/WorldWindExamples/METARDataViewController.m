@@ -22,12 +22,17 @@
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 1;
+    return [_entries objectForKey:@"sky_conditions"] != nil ? 2 : 1;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 13;
+    return section == 0 ? 11 : [[_entries objectForKey:@"sky_conditions"] count];
+}
+
+- (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return section == 0 ? @"" : @"Sky Conditions";
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -39,6 +44,14 @@
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
+    }
+
+    if ([indexPath section] == 1)
+    {
+        NSArray* skyConditions = [_entries objectForKey:@"sky_conditions"];
+        [[cell textLabel] setText:nil];
+        [[cell detailTextLabel] setText:[skyConditions objectAtIndex:(NSUInteger)[indexPath row]]];
+        return cell;
     }
 
     switch ([indexPath row])
@@ -82,20 +95,6 @@
         }
 
         case 5:
-            [[cell textLabel] setText:@"Sky Cover"];
-            [[cell detailTextLabel] setText:[_entries objectForKey:@"sky_cover"]];
-            break;
-
-        case 6:
-        {
-            [[cell textLabel] setText:@"Cloud Base"];
-            NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"cloud_base"]];
-            [detail appendString:@" ft agl"];
-            [[cell detailTextLabel] setText:detail];
-            break;
-        }
-
-        case 7:
         {
             [[cell textLabel] setText:@"Altimeter"];
             NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"altim_in_hg"]];
@@ -104,7 +103,7 @@
             break;
         }
 
-        case 8:
+        case 6:
         {
             [[cell textLabel] setText:@"Elevation"];
             NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"elevation_m"]];
@@ -113,22 +112,22 @@
             break;
         }
 
-        case 9:
+        case 7:
             [[cell textLabel] setText:@"Latitude"];
             [[cell detailTextLabel] setText:[_entries objectForKey:@"latitude"]];
             break;
 
-        case 10:
+        case 8:
             [[cell textLabel] setText:@"Longitude"];
             [[cell detailTextLabel] setText:[_entries objectForKey:@"longitude"]];
             break;
 
-        case 11:
+        case 9:
             [[cell textLabel] setText:@"Category"];
             [[cell detailTextLabel] setText:[_entries objectForKey:@"flight_category"]];
             break;
 
-        case 12:
+        case 10:
             [[cell textLabel] setText:@"Type"];
             [[cell detailTextLabel] setText:[_entries objectForKey:@"metar_type"]];
             break;
