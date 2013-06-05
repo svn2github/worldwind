@@ -31,13 +31,13 @@
 
     self = [super init];
 
-    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
-
     _serviceAddress = serviceAddress;
     _layerNames = layerNames;
     _styleNames = styleNames != nil ? styleNames : @"";
     _wmsVersion = wmsVersion != nil ? wmsVersion : @"1.3.0";
     _transparent = YES;
+
+    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
 
     NSString* maxVersion = @"1.3.0";
     if (isWMS13OrGreater)
@@ -74,13 +74,13 @@
 
     self = [super init];
 
-    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
-
     _serviceAddress = [serviceCaps getMapURL];
     _layerNames = layerName;
     _styleNames = @"";
     _wmsVersion = [serviceCaps serviceWMSVersion];
     _transparent = [WWWMSCapabilities layerIsOpaque:layerCaps] ? NO : YES;
+
+    isWMS13OrGreater = [_wmsVersion compare:@"1.3.0"] != NSOrderedAscending;
 
     [self findCoordinateSystem:serviceCaps layerCaps:layerCaps];
 
