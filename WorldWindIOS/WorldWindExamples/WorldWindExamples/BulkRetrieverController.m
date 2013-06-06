@@ -66,7 +66,7 @@
     GLfloat btnHeight = height;
     UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
     [button setFrame:CGRectMake(width - btnWidth, 0, btnWidth, btnHeight)];
-    [button setImage:[UIImage imageNamed:@"54-stop"] forState:UIControlStateNormal];
+    [button setImage:[UIImage imageNamed:@"433-x"] forState:UIControlStateNormal];
     [button addTarget:self action:@selector(stopRetrieving) forControlEvents:UIControlEventTouchDown];
     [view addSubview:button];
 
