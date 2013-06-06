@@ -70,6 +70,10 @@
         {
             WWLogE(@"during bulk retrieval", exception);
         }
+        @finally
+        {
+            _dataSource = nil; // don't need the data source anymore
+        }
     }
 }
 
