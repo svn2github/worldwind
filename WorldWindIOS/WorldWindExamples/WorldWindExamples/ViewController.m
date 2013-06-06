@@ -15,6 +15,7 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWSceneController.h"
@@ -41,6 +42,7 @@
 #import "WorldWind/Layer/WWEarthAtNightLayer.h"
 #import "METARLayer.h"
 #import "METARDataViewController.h"
+#import "BulkRetrieverController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -49,6 +51,7 @@
 {
     UIBarButtonItem* layerButton;
     UIBarButtonItem* wmsServersButton;
+    UIBarButtonItem* bulkRetrieverButton;
     UIBarButtonItem* navigatorButton;
     UIBarButtonItem* trackButton;
     UIBarButtonItem* flightButton;
@@ -56,6 +59,8 @@
     WMSServerListController* wmsServersListController;
     UIPopoverController* layerListPopoverController;
     UIPopoverController* wmsServersListPopoverController;
+    BulkRetrieverController* bulkRetrieverController;
+    UIPopoverController* bulkRetrieverPopoverController;
     UIPopoverController* crashDataPopoverController;
     CrashDataViewController* crashDataViewController;
     UIPopoverController* metarDataPopoverController;
@@ -68,6 +73,7 @@
     CLGeocoder* geocoder;
     AnyGestureRecognizer* anyGestureRecognizer;
     UITapGestureRecognizer* tapGestureRecognizer;
+    id selectedPath;
 }
 
 - (id) init
@@ -198,11 +204,13 @@
     [pathsLayer setDisplayName:@"Alaska Flight Paths"];
     [[[_wwv sceneController] layers] addLayer:pathsLayer];
 
-    WWShapeAttributes* attributes = [[WWShapeAttributes alloc] init];
-    [attributes setOutlineEnabled:true];
-    [attributes setInteriorEnabled:false];
-    [attributes setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
-    [attributes setOutlineWidth:5];
+    WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+    [attrs setOutlineWidth:5];
+
+    WWShapeAttributes* highlightAttrs = [[WWShapeAttributes alloc] init];
+    [highlightAttrs setOutlineColor:[[WWColor alloc] initWithR:1.0 g:0.7 b:0.7 a:1.0]];
+    [highlightAttrs setOutlineWidth:7];
 
     NSArray* features = [jData valueForKey:@"features"];
     for (NSUInteger i = 0; i < [features count]; i++)
@@ -231,7 +239,8 @@
         WWPath* path = [[WWPath alloc] initWithPositions:pathCoords];
         [path setDisplayName:[NSString stringWithFormat:@"Flight Path %d", i + 1]];
         [path setAltitudeMode:WW_ALTITUDE_MODE_ABSOLUTE];
-        [path setAttributes:attributes];
+        [path setAttributes:attrs];
+        [path setHighlightAttributes:highlightAttrs];
         [pathsLayer addRenderable:path];
 
         if (i == [features count] - 1)
@@ -309,6 +318,14 @@
     navController = [[UINavigationController alloc] initWithRootViewController:wmsServersListController];
     wmsServersListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
+    bulkRetrieverButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"265-download"]
+                                                           style:UIBarButtonItemStylePlain
+                                                          target:self action:@selector(handleBulkRetrieverButtonTap)];
+    [bulkRetrieverButton setEnabled:NO];
+    bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
+    navController = [[UINavigationController alloc] initWithRootViewController:bulkRetrieverController];
+    bulkRetrieverPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+
     navigatorButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"12-eye"]
                                                        style:UIBarButtonItemStylePlain
                                                       target:self action:@selector(handleNavigatorButtonTap)];
@@ -339,6 +356,8 @@
             layerButton,
             fixedSpace1,
             wmsServersButton,
+            fixedSpace1,
+            bulkRetrieverButton,
             flexibleSpace1,
             navigatorButton,
             fixedSpace1,
@@ -360,6 +379,12 @@
 {
     [wmsServersListPopoverController presentPopoverFromBarButtonItem:wmsServersButton
                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) handleBulkRetrieverButtonTap
+{
+    [bulkRetrieverPopoverController presentPopoverFromBarButtonItem:bulkRetrieverButton
+                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleNavigatorButtonTap
@@ -503,6 +528,16 @@
                     [self showMETARData:pm];
             }
         }
+
+        if ([[topObject userObject] isKindOfClass:[WWPath class]])
+        {
+            WWPath* path = (WWPath*) [topObject userObject];
+            [self setSelectedPath:path];
+        }
+        else
+        {
+            [self setSelectedPath:nil];
+        }
     }
 }
 
@@ -556,6 +591,30 @@
 
     [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) setSelectedPath:(WWPath*)path
+{
+    if ([[bulkRetrieverController operationQueue] operationCount] > 0)
+    {
+        return; // Prevent selection changes while the bulk retriever is running.
+    }
+
+    [selectedPath setHighlighted:NO];
+    [path setHighlighted:YES];
+    selectedPath = path;
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+
+    if (path != nil)
+    {
+        [bulkRetrieverController setSector:[[WWSector alloc] initWithLocations:[path positions]]];
+        [bulkRetrieverButton setEnabled:YES];
+    }
+    else
+    {
+        [bulkRetrieverController setSector:nil];
+        [bulkRetrieverButton setEnabled:NO];
+    }
 }
 
 @end
