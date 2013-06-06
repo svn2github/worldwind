@@ -20,6 +20,8 @@
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWMath.h"
 
+#define PICK_LINE_WIDTH 16.0
+
 // TODO: Draw pole positions as vertical lines.
 // TODO: Don't redraw each frame.
 
@@ -244,6 +246,16 @@
     else
     {
         [super applyModelviewProjectionMatrix:dc];
+    }
+}
+
+- (void) prepareToDrawOutline:(WWDrawContext *)dc attributes:(WWShapeAttributes *)attributes
+{
+    [super prepareToDrawOutline:dc attributes:attributes];
+
+    if ([dc pickingMode])
+    {
+        glLineWidth(PICK_LINE_WIDTH);
     }
 }
 
