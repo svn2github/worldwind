@@ -204,13 +204,14 @@
     [pathsLayer setDisplayName:@"Alaska Flight Paths"];
     [[[_wwv sceneController] layers] addLayer:pathsLayer];
 
+    // Path colors derived from http://www.colorcombos.com/color-schemes/95/ColorCombo95.html
     WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
-    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
-    [attrs setOutlineWidth:5];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:0.8 g:0.2 b:0.2 a:1]];
+    [attrs setOutlineWidth:3];
 
     WWShapeAttributes* highlightAttrs = [[WWShapeAttributes alloc] init];
-    [highlightAttrs setOutlineColor:[[WWColor alloc] initWithR:1.0 g:0.7 b:0.7 a:1.0]];
-    [highlightAttrs setOutlineWidth:7];
+    [highlightAttrs setOutlineColor:[[WWColor alloc] initWithR:1.0 g:0.6 b:0 a:1]];
+    [highlightAttrs setOutlineWidth:5];
 
     NSArray* features = [jData valueForKey:@"features"];
     for (NSUInteger i = 0; i < [features count]; i++)
