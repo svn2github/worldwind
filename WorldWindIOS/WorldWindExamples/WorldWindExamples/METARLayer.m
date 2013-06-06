@@ -46,15 +46,43 @@
 
 - (void) parseData:(WWRetriever*)retriever
 {
-    if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
-    {
-        WWLog(@"Unable to download METAR data %@", [[retriever url] absoluteString]);
-        return;
-    }
-
     @try
     {
-        NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:[retriever retrievedData]];
+        NSError* error = nil;
+        NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"METARData"];
+        NSString* filePath = [cachePath stringByAppendingPathComponent:@"METARData.xml"];
+
+        NSData* metarData = nil;
+
+        if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
+        {
+            WWLog(@"Unable to download METAR data %@", [[retriever url] absoluteString]);
+
+            // Use the previous copy if one is available.
+            metarData = [[NSData alloc] initWithContentsOfFile:filePath];
+        }
+        else
+        {
+            [[NSFileManager defaultManager] createDirectoryAtPath:cachePath
+                                      withIntermediateDirectories:YES attributes:nil error:&error];
+            if (error != nil)
+            {
+                WWLog("@Error \"%@\" creating METAR cache directory %@", [error description], cachePath);
+            }
+            else
+            {
+                // Save this fresh copy so the data is available while off-line.
+                [[retriever retrievedData] writeToFile:filePath atomically:YES];
+            }
+
+            metarData = [retriever retrievedData];
+        }
+
+        if (metarData == nil || [metarData length] == 0)
+            return;
+
+        NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:metarData];
         [docParser setDelegate:layer];
 
         BOOL status = [docParser parse];
@@ -80,14 +108,26 @@
     [self setDisplayName:@"METAR Weather"];
 
     iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
-    placemarks = [[NSMutableArray alloc] init];
 
+    return self;
+}
+
+- (void) setEnabled:(BOOL)enabled
+{
+    if (enabled)
+    {
+        [self refreshData];
+    }
+
+    [super setEnabled:enabled];
+}
+
+- (void) refreshData
+{
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://weather.aero/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&stationString=PA*&hoursBeforeNow=1";
     METARLayerRetriever* retriever = [[METARLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
-
-    return self;
 }
 
 - (void) parser:(NSXMLParser*)parser parseErrorOccurred:(NSError*)parseError
@@ -103,6 +143,8 @@
     }
     else if ([elementName isEqualToString:@"sky_condition"])
     {
+        // There can be multiple sky_condition elements, so capture them in an array.
+
         NSMutableString* cover = [[NSMutableString alloc] initWithString:[attributeDict objectForKey:@"sky_cover"]];
         NSString* cloud_bases = [attributeDict objectForKey:@"cloud_base_ft_agl"];
         if (cloud_bases != nil)
@@ -157,13 +199,20 @@
 
 - (void) addPlacemarksOnMainThread:(id)object
 {
-    [self addRenderables:placemarks];
+    @try
+    {
+        [self addRenderables:placemarks];
 
-    placemarks = nil; // placemark list is needed only during parsing
+        placemarks = nil; // placemark list is needed only during parsing
 
-    // Redraw in case the layer was enabled before all the placemarks were loaded.
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        // Redraw in case the layer was enabled before all the placemarks were loaded.
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"Adding METAR data to layer", exception);
+    }
 }
 
 - (void) addCurrentPlacemark
@@ -183,6 +232,10 @@
     [attrs setImagePath:iconFilePath];
     [pointPlacemark setAttributes:attrs];
 
+    if (placemarks == nil)
+    {
+        placemarks = [[NSMutableArray alloc] init];
+    }
     [placemarks addObject:pointPlacemark];
 }
 

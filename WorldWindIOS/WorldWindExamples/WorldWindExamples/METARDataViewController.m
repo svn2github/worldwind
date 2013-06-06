@@ -57,7 +57,7 @@
     switch ([indexPath row])
     {
         case 0:
-            [[cell textLabel] setText:@"Data Time"];
+            [[cell textLabel] setText:@"Observed at"];
             [[cell detailTextLabel] setText:[_entries objectForKey:@"observation_time"]];
             break;
 
