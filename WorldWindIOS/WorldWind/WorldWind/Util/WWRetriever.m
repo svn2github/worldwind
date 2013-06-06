@@ -45,6 +45,7 @@
     if (![WorldWind isNetworkAvailable])
     {
         _status = WW_CANCELED;
+        [self doFinish];
     }
     else
     {
