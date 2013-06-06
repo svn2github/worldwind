@@ -102,14 +102,6 @@
                             maxLongitude:(double)maxLongitude;
 
 /**
-* Initializes a sector defining the full extent of the globe: minumum and maximum latitudes of -90 and 90,
-* and minimum and maximum longitudes of -180 and 180..
-*
-* @return This sector initialized to the full sphere.
-*/
-- (WWSector*) initWithFullSphere;
-
-/**
 * Initializes a sector to the values of a specified sector.
 *
 * @param sector The sector whose values to copy.
@@ -119,6 +111,28 @@
 * @exception NSInvalidArgumentException If the specified sector is nil.
 */
 - (WWSector*) initWithSector:(WWSector*)sector;
+
+/**
+* Initializes a sector to the geographic bounds of the specified locations.
+*
+* The locations array must contain at least one element. The elements in the array may be of type WWLocation or
+* WWPosition.
+*
+* @param locations The locations to bound.
+*
+* @return This sector initialized to the bounds of the specified locations.
+*
+* @exception NSInvalidArgumentException If locations is nil or empty.
+*/
+- (WWSector*) initWithLocations:(NSArray*)locations;
+
+/**
+* Initializes a sector defining the full extent of the globe: minimum and maximum latitudes of -90 and 90, and minimum
+* and maximum longitudes of -180 and 180.
+*
+* @return This sector initialized to the full sphere.
+*/
+- (WWSector*) initWithFullSphere;
 
 /// @name Changing Sector Values
 

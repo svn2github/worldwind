@@ -30,18 +30,6 @@
     return self;
 }
 
-- (WWSector*) initWithFullSphere
-{
-    self = [super init];
-
-    _minLatitude = -90;
-    _maxLatitude = 90;
-    _minLongitude = -180;
-    _maxLongitude = 180;
-
-    return self;
-}
-
 - (WWSector*) initWithSector:(WWSector*)sector
 {
     if (sector == nil)
@@ -55,6 +43,58 @@
     _maxLatitude = sector->_maxLatitude;
     _minLongitude = sector->_minLongitude;
     _maxLongitude = sector->_maxLongitude;
+
+    return self;
+}
+
+- (WWSector*) initWithLocations:(NSArray*)locations
+{
+    if (locations == nil || [locations count] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Locations is nil or zero length")
+    }
+
+    self = [super init];
+
+    _minLatitude = DBL_MAX;
+    _maxLatitude = -DBL_MAX;
+    _minLongitude = DBL_MAX;
+    _maxLongitude = -DBL_MAX;
+
+    for (WWLocation* location in locations)
+    {
+        double lat = [location latitude];
+        if (_minLatitude > lat)
+        {
+            _minLatitude = lat;
+        }
+        if (_maxLatitude < lat)
+        {
+            _maxLatitude = lat;
+        }
+
+        double lon = [location longitude];
+        if (_minLongitude > lon)
+        {
+            _minLongitude = lon;
+        }
+        if (_maxLongitude < lon)
+        {
+            _maxLongitude = lon;
+        }
+    }
+
+    return self;
+}
+
+- (WWSector*) initWithFullSphere
+{
+    self = [super init];
+
+    _minLatitude = -90;
+    _maxLatitude = 90;
+    _minLongitude = -180;
+    _maxLongitude = 180;
 
     return self;
 }
