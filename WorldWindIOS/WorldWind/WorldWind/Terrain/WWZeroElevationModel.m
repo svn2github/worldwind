@@ -15,10 +15,8 @@
 {
     self = [super init];
 
-    if (self != nil)
-    {
-        _timestamp = [NSDate date]; // Zero elevation model never changes. Set the timestamp once in the initializer.
-    }
+    _displayName = @"Zero Elevations";
+    _timestamp = [NSDate date]; // Zero elevation model never changes. Set the timestamp once in the initializer.
 
     return self;
 }

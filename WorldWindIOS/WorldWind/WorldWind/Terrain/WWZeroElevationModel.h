@@ -18,7 +18,7 @@
 
 /// @name Attributes
 
-/// Indicates the elevation model's display name.
+/// Indicates the elevation model's display name. Initialized to "Zero Elevations".
 @property (nonatomic) NSString* displayName;
 
 /// Indicates the date and time at which the elevation model last changed.
