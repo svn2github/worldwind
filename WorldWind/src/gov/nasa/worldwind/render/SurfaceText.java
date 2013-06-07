@@ -204,7 +204,7 @@ public class SurfaceText extends AbstractSurfaceObject implements GeographicText
             throw new IllegalArgumentException(message);
         }
 
-        if (!bgColor.equals(background))
+        if (bgColor == null || !bgColor.equals(background))
         {
             this.bgColor = background;
             this.updateModifiedTime();
