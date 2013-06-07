@@ -339,7 +339,7 @@
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     UIBarButtonItem* fixedSpace1 = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    [fixedSpace1 setWidth:UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 40 : 20];
+    [fixedSpace1 setWidth:UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 40 : 10];
 
     [_toolbar setItems:[NSArray arrayWithObjects:
             layerButton,
