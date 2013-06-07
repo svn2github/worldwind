@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CGGeometry.h>
 #import <OpenGLES/ES2/gl.h>
 
 @class WWGlobe;
@@ -97,8 +98,12 @@
 /// Indicates whether this frame is generating a pick rather than displaying.
 @property(nonatomic) BOOL pickingMode;
 
-/// The current pick point as specified by the application.
-@property(nonatomic) WWVec4* pickPoint;
+/// The current pick point as specified by the application, in UIKit screen coordinates.
+///
+/// The pick point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
+/// that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
+/// in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+@property(nonatomic) CGPoint pickPoint;
 
 /// The pickable objects intersecting the pick point, including the terrain.
 @property(nonatomic, readonly) WWPickedObjectList* objectsAtPickPoint;
@@ -289,13 +294,15 @@
 /**
 * Reads and returns the current frame buffer color at the pick point.
 *
-* @param pickPoint The screen coordinate point to read. Only the X and Y values are used.
+* The pick point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
+* that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
+* in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+*
+* @param pickPoint The UIKit screen coordinate point to read.
 *
 * @return A packed RGBA 32-bit unsigned integer identifying the frame buffer color at the pick point.
-*
-* @exception NSInvalidArgumentException if the specified pick point is nil.
 */
-- (unsigned int) readPickColor:(WWVec4*)pickPoint;
+- (unsigned int) readPickColor:(CGPoint)pickPoint;
 
 /**
 * Adds an object to this instance's picked object list.

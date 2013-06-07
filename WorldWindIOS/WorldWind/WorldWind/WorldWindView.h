@@ -32,6 +32,6 @@
 - (void) drawView;
 - (void) tearDownGL;
 - (void) handleNotification:(NSNotification*)notification;
-- (WWPickedObjectList*) pick:(WWVec4*)pickPoint;
+- (WWPickedObjectList*) pick:(CGPoint)pickPoint;
 
 @end

@@ -14,7 +14,6 @@
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Render/WWOrderedRenderable.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Pick/WWPickedObject.h"
@@ -54,13 +53,8 @@
     }
 }
 
-- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint
+- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(CGPoint)pickPoint
 {
-    if (pickPoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Pick point is nil")
-    }
-
     @try
     {
         [self resetDrawContext];
@@ -73,6 +67,8 @@
     @catch (NSException* exception)
     {
         WWLogE(@"Picking Scene", exception);
+
+        return nil;
     }
 }
 

@@ -23,8 +23,6 @@
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWResourceLoader.h"
 #import "WorldWind/WorldWind.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WWLog.h"
 
 #define DEFAULT_DEPTH_OFFSET -0.01
 
@@ -219,8 +217,10 @@ static WWTexture* currentTexture;
 
     if ([dc pickingMode])
     {
-        CGPoint pickPoint = CGPointMake((CGFloat) [[dc pickPoint] x], CGRectGetHeight(viewport) - (CGFloat) [[dc pickPoint] y]);
-        return CGRectContainsPoint(imageBounds, pickPoint);
+        // Convert the pick point from UIKit screen coordinates to OpenGL screen coordinates.
+        CGPoint uiPickPoint = [dc pickPoint];
+        CGPoint glPickPoint = CGPointMake(uiPickPoint.x, CGRectGetHeight(viewport) - uiPickPoint.y);
+        return CGRectContainsPoint(imageBounds, glPickPoint);
     }
     else
     {

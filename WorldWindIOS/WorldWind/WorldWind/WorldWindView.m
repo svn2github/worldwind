@@ -11,7 +11,6 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
-#import "WorldWind/Geometry/WWVec4.h"
 
 @implementation WorldWindView
 {
@@ -157,13 +156,8 @@
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
-- (WWPickedObjectList*)pick:(WWVec4*)pickPoint
+- (WWPickedObjectList*)pick:(CGPoint)pickPoint
 {
-    if (pickPoint == nil)
-    {
-        return nil;
-    }
-
     [EAGLContext setCurrentContext:self.context];
     glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);
 

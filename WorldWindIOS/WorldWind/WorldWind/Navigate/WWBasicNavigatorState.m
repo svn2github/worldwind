@@ -279,11 +279,13 @@
     return YES;
 }
 
-- (WWLine*) rayFromScreenPoint:(double)x y:(double)y
+- (WWLine*) rayFromScreenPoint:(CGPoint)point
 {
-    WWVec4* screenPoint = [[WWVec4 alloc] initWithZeroVector];
+    // Convert the point from UIKit coordinates to OpenGL coordinates.
+    double x = point.x;
+    double y = CGRectGetHeight(_viewport) - point.y;
 
-    [screenPoint set:x y:y z:0];
+    WWVec4* screenPoint = [[WWVec4 alloc] initWithCoordinates:x y:y z:0];
     WWVec4* nearPoint = [[WWVec4 alloc] initWithZeroVector];
     if (![self unProject:screenPoint result:nearPoint])
     {

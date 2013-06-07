@@ -850,8 +850,8 @@
 - (void) pick:(WWDrawContext*)dc
 {
     WWTerrainTileList* tiles = [dc surfaceGeometry];
-    WWVec4* pickPoint = [dc pickPoint];
-    if (tiles == nil || [tiles count] < 1 || pickPoint == nil)
+    CGPoint pickPoint = [dc pickPoint];
+    if (tiles == nil || [tiles count] < 1)
     {
         return;
     }
@@ -937,10 +937,9 @@
     [dc addPickedObject:po];
 }
 
-- (WWVec4*) computePickedPoint:(WWDrawContext*)dc tile:(WWTerrainTile*)tile pickPoint:(WWVec4*)pickPoint
+- (WWVec4*) computePickedPoint:(WWDrawContext*)dc tile:(WWTerrainTile*)tile pickPoint:(CGPoint)pickPoint
 {
-    CGRect vp = [[dc navigatorState] viewport];
-    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:[pickPoint x] y:CGRectGetHeight(vp) - [pickPoint y]];
+    WWLine* ray = [[dc navigatorState] rayFromScreenPoint:pickPoint];
     if (ray == nil)
     {
         return nil;

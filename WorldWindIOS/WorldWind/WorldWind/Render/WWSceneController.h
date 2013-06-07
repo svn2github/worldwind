@@ -154,16 +154,18 @@
 * Performs a pick of the current model. Traverses the terrain to determine the geographic position at the specified
 * pick point, and traverses pickable shapes to determine which intersect the pick point.
 *
+* The pick point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
+* that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
+* in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+*
 * This method is not meant to be called by applications. It is called internally as needed. Subclasses may override
 * this method to implement alternate or additional behavior.
 *
 * @param viewport The viewport in which to perform the pick.
-* @param pickPoint The screen coordinate point to test for pickable items. Only the X and Y coordinates are used.
+* @param pickPoint The UIKit screen coordinate point to test for pickable items.
 *
-* @return The list of picked items, which is empty if no items are at the specified pick point or the pick point is
-* nil.
-*
-* @exception NSInvalidArgumentException if the specified pick point is nil.
+* @return The list of picked items, which is empty if no items are at the specified pick point.
 */
-- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(WWVec4*)pickPoint;
+- (WWPickedObjectList*) pick:(CGRect)viewport pickPoint:(CGPoint)pickPoint;
+
 @end

@@ -8,7 +8,6 @@
 #import "WorldWind/Pick/WWPickSupport.h"
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Layer/WWLayer.h"
 
 @implementation WWPickSupport
@@ -27,7 +26,7 @@
     [_pickableObjects setValue:pickedObject forKey:[[NSString alloc] initWithFormat:@"%d", [pickedObject colorCode]]];
 }
 
-- (WWPickedObject*) topObject:(WWDrawContext*)dc pickPoint:(WWVec4*)pickPoint
+- (WWPickedObject*) topObject:(WWDrawContext*)dc pickPoint:(CGPoint)pickPoint
 {
     if ([_pickableObjects count] == 0)
     {

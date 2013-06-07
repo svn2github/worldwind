@@ -656,25 +656,22 @@
 
 - (WWVec4*) touchPointFor:(UIGestureRecognizer*)recognizer
 {
-    UIView* view = [recognizer view];
-    CGPoint uiScreenPoint = [recognizer locationInView:view];
-    double x = uiScreenPoint.x;
-    double y = CGRectGetHeight([view bounds]) - uiScreenPoint.y;
-
     id<WWNavigatorState> state = [self currentState];
-    WWGlobe* globe = [[[self view] sceneController] globe];
-    WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+    UIView* view = [recognizer view];
+    CGPoint screenPoint = [recognizer locationInView:view];
 
-    WWLine* ray = [state rayFromScreenPoint:x y:y];
-    if ([globe intersectWithRay:ray result:point])
+    WWGlobe* globe = [[[self view] sceneController] globe];
+    WWLine* ray = [state rayFromScreenPoint:screenPoint];
+    WWVec4* modelPoint = [[WWVec4 alloc] initWithZeroVector];
+    if ([globe intersectWithRay:ray result:modelPoint])
     {
-        return point;
+        return modelPoint;
     }
 
     ray = [state forwardRay];
-    if ([globe intersectWithRay:ray result:point])
+    if ([globe intersectWithRay:ray result:modelPoint])
     {
-        return point;
+        return modelPoint;
     }
 
     return nil;

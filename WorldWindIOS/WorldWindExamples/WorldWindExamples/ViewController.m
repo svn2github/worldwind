@@ -495,9 +495,7 @@
     if ([recognizer state] == UIGestureRecognizerStateEnded)
     {
         CGPoint tapPoint = [recognizer locationInView:_wwv];
-
-        WWVec4* pickPoint = [[WWVec4 alloc] initWithCoordinates:tapPoint.x y:tapPoint.y z:0];
-        WWPickedObjectList* pickedObjects = [_wwv pick:pickPoint];
+        WWPickedObjectList* pickedObjects = [_wwv pick:tapPoint];
 
 //        if ([pickedObjects terrainObject] != nil)
 //        {

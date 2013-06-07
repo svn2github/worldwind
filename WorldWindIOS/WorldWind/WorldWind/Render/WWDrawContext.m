@@ -57,7 +57,7 @@
     [orderedRenderables removeAllObjects];
     [_objectsAtPickPoint clear];
     _pickingMode = NO;
-    _pickPoint = nil;
+    _pickPoint = CGPointMake(0, 0);
 }
 
 - (void) update
@@ -271,16 +271,14 @@
     return pickColor;
 }
 
-- (unsigned int) readPickColor:(WWVec4*)pickPoint
+- (unsigned int) readPickColor:(CGPoint)pickPoint
 {
-    if (pickPoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Pick point is nil")
-    }
+    // Convert the point from UIKit coordinates to OpenGL coordinates.
+    GLint x = (GLint) pickPoint.x;
+    GLint y = (GLint) (CGRectGetHeight([_navigatorState viewport]) - pickPoint.y);
 
-    GLint yInGLCoords = (GLint) (CGRectGetHeight([_navigatorState viewport]) - [pickPoint y]);
     GLubyte colorBytes[4];
-    glReadPixels((GLint)[pickPoint x], yInGLCoords, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, colorBytes);
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, colorBytes);
     unsigned int colorInt = [WWColor makeColorInt:colorBytes[0] g:colorBytes[1] b:colorBytes[2] a:colorBytes[3]];
 
     return colorInt != _clearColor ? colorInt : 0;

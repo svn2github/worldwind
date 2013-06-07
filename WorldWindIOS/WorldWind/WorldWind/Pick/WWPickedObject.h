@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CGGeometry.h>
 
 @class WWVec4;
 @class WWLayer;
@@ -21,8 +22,12 @@
 
 /// @name Picked Object Attributes
 
-/// The screen coordinate pick point used to determine this picked object.
-@property(nonatomic, readonly) WWVec4* pickPoint;
+/// The UIKit screen coordinate pick point used to determine this picked object.
+///
+/// The pick point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
+/// that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
+/// in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+@property(nonatomic, readonly) CGPoint pickPoint;
 
 /// The color code used to distinguish this object from others during picking. Not normally used by applications.
 @property(nonatomic, readonly) int colorCode;
@@ -54,15 +59,13 @@
 * @param colorCode The color code used to distinguish this object from others during picking. See the colorCode
 * property description.
 * @param userObject The user-recognizable object actually picked. See the userObject property description.
-* @param pickPoint The screen coordinate pick point used to determine this picked object. See the property description.
+* @param pickPoint The UIKit screen coordinate pick point used to determine this picked object. See the property description.
 * @param position The geographic position of this picked object. See the property description.
 * @param isTerrain Indicates whether this picked object is terrain. See the property description.
-*
-* @exception NSInvalidArgumentException If the specified pick point is nil.
 */
 - (WWPickedObject*) initWithColorCode:(int)colorCode
                            userObject:(id)userObject
-                            pickPoint:(WWVec4*)pickPoint
+                            pickPoint:(CGPoint)pickPoint
                              position:(WWPosition*)position
                             isTerrain:(BOOL)isTerrain;
 
