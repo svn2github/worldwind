@@ -87,10 +87,7 @@
     }
 
     crashDataViewController = [[CrashDataViewController alloc] init];
-    crashDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:crashDataViewController];
-
     metarDataViewController = [[METARDataViewController alloc] init];
-    metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
 
     return self;
 }
@@ -308,31 +305,22 @@
                                                    style:UIBarButtonItemStylePlain
                                                   target:self action:@selector(handleLayerButtonTap)];
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    UINavigationController* navController = [[UINavigationController alloc]
-            initWithRootViewController:layerListController];
-    layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
     wmsServersButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"401-globe"]
                                                         style:UIBarButtonItemStylePlain
                                                        target:self action:@selector(handleWMSServersListButtonTap)];
     wmsServersListController = [[WMSServerListController alloc] initWithWorldWindView:_wwv];
-    navController = [[UINavigationController alloc] initWithRootViewController:wmsServersListController];
-    wmsServersListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
     bulkRetrieverButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"265-download"]
                                                            style:UIBarButtonItemStylePlain
                                                           target:self action:@selector(handleBulkRetrieverButtonTap)];
     [bulkRetrieverButton setEnabled:NO];
     bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
-    navController = [[UINavigationController alloc] initWithRootViewController:bulkRetrieverController];
-    bulkRetrieverPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
     navigatorButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"12-eye"]
                                                        style:UIBarButtonItemStylePlain
                                                       target:self action:@selector(handleNavigatorButtonTap)];
     navigatorSettingsController = [[NavigatorSettingsController alloc] initWithWorldWindView:_wwv];
-    navController = [[UINavigationController alloc] initWithRootViewController:navigatorSettingsController];
-    navigatorSettingsPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
 
     trackButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
                                                   target:self action:@selector(handleTrackButtonTap)];
@@ -351,7 +339,7 @@
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     UIBarButtonItem* fixedSpace1 = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    [fixedSpace1 setWidth:40];
+    [fixedSpace1 setWidth:UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 40 : 20];
 
     [_toolbar setItems:[NSArray arrayWithObjects:
             layerButton,
@@ -372,26 +360,82 @@
 
 - (void) handleLayerButtonTap
 {
-    [layerListPopoverController presentPopoverFromBarButtonItem:layerButton
-                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (layerListPopoverController == nil)
+        {
+            UINavigationController* navController = [[UINavigationController alloc]
+                    initWithRootViewController:layerListController];
+            layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+        }
+        [layerListPopoverController presentPopoverFromBarButtonItem:layerButton
+                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:layerListController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) handleWMSServersListButtonTap
 {
-    [wmsServersListPopoverController presentPopoverFromBarButtonItem:wmsServersButton
-                                            permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (wmsServersListPopoverController == nil)
+        {
+            UINavigationController* navController = [[UINavigationController alloc]
+                    initWithRootViewController:wmsServersListController];
+            wmsServersListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+        }
+        [wmsServersListPopoverController presentPopoverFromBarButtonItem:wmsServersButton
+                                                permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:wmsServersListController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) handleBulkRetrieverButtonTap
 {
-    [bulkRetrieverPopoverController presentPopoverFromBarButtonItem:bulkRetrieverButton
-                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (bulkRetrieverPopoverController == nil)
+        {
+            UINavigationController* navController = [[UINavigationController alloc]
+                    initWithRootViewController:bulkRetrieverController];
+            bulkRetrieverPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+        }
+        [bulkRetrieverPopoverController presentPopoverFromBarButtonItem:bulkRetrieverButton
+                                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:bulkRetrieverController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) handleNavigatorButtonTap
 {
-    [navigatorSettingsPopoverController presentPopoverFromBarButtonItem:navigatorButton
-                                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (navigatorSettingsPopoverController == nil)
+        {
+            UINavigationController* navController = [[UINavigationController alloc]
+                    initWithRootViewController:navigatorSettingsController];
+            navigatorSettingsPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+        }
+        [navigatorSettingsPopoverController presentPopoverFromBarButtonItem:navigatorButton
+                                                   permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:navigatorSettingsController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) handleTrackButtonTap
@@ -562,8 +606,18 @@
     [[crashDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
                                                atScrollPosition:UITableViewScrollPositionTop animated:YES];
 
-    [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (crashDataPopoverController == nil)
+            crashDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:crashDataViewController];
+        [crashDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:crashDataViewController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm
@@ -588,8 +642,18 @@
     [[metarDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
                                                atScrollPosition:UITableViewScrollPositionTop animated:YES];
 
-    [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (metarDataPopoverController == nil)
+            metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
+        [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:metarDataViewController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 - (void) setSelectedPath:(WWPath*)path

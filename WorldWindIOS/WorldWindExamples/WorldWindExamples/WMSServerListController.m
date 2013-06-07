@@ -39,6 +39,7 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
     addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"05-plus"]
                                                  style:UIBarButtonItemStylePlain
                                                 target:self action:@selector(handleAddButtonTap)];
+    [[self navigationItem] setLeftItemsSupplementBackButton:YES]; // needed to have Back and + visible on iPhone
     [[self navigationItem] setLeftBarButtonItem:addButton];
 
     return self;
