@@ -38,6 +38,7 @@
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     }
 
     switch ([indexPath row])
