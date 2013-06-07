@@ -171,14 +171,49 @@
 - (BOOL) unProject:(WWVec4*)screenPoint result:(WWVec4*)modelPoint;
 
 /**
+* Converts an OpenGL screen point to UIKit coordinates.
+*
+* The specified point is understood to be in the OpenGL screen coordinate system defined by the WorldWindView viewport
+* associated with the navigator, with its origin in the bottom-left corner and axes that extend up and to the right from
+* the origin point.
+*
+* The returned point is in the UIKit coordinate system of the WorldWindView, with its origin in the top-left corner and
+* axes that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate
+* Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+*
+* @param point The OpenGL screen point.
+*
+* @return The OpenGL screen point converted to UIKit coordinates.
+*
+* @exception NSInvalidArgumentException If the screenPoint is nil.
+*/
+- (CGPoint) convertPointToView:(WWVec4*)screenPoint;
+
+/**
+* Converts a UIKit screen point to OpenGL screen coordinates.
+*
+* The specified point is understood to be in the UIKit coordinate system of the WorldWindView associated with the
+* navigator, with its origin in the top-left corner and axes that extend down and to the right from the origin point.
+* See the section titled View Geometry and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+*
+* The returned point is in the OpenGL screen coordinate system defined by the WorldWindView's viewport, with its origin
+* in the bottom-left corner and axes that extend up and to the right from the origin point.
+*
+* @param point The UIKit screen point.
+*
+* @return The UIKit screen point converted to OpenGL screen coordinates.
+*/
+- (WWVec4*) convertPointToViewport:(CGPoint)point;
+
+/**
 * Computes a ray originating at the navigator's eyePoint and extending through the specified point in UIKit screen
 * coordinates.
 *
-* The screen point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
-* that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
-* in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+* The screen point is understood to be in the UIKit coordinate system of the WorldWindView associated with the
+* navigator, with its origin in the top-left corner and axes that extend down and to the right from the origin point.
+* See the section titled View Geometry and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
 *
-* The results of this method are undefined if the specified point is outside of the viewport rectangle.
+* The results of this method are undefined if the specified point is outside of the WorldWindView's bounds.
 *
 * @param point The UIKit screen coordinate to compute a ray for.
 *

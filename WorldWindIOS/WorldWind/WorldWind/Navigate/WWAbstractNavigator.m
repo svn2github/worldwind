@@ -120,7 +120,7 @@
     WWMatrix* projection = [[WWMatrix alloc] initWithIdentity];
     [projection setToPerspectiveProjection:viewport nearDistance:_nearDistance farDistance:_farDistance];
 
-    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection viewport:viewport];
+    return [[WWBasicNavigatorState alloc] initWithModelview:modelview projection:projection view:_view];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -11,13 +11,14 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWBasicNavigatorState
 
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
-                                    viewport:(CGRect)viewport;
+                                        view:(WorldWindView*)view
 {
     if (modelviewMatrix == nil)
     {
@@ -29,13 +30,19 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Projection matrix is nil");
     }
 
+    if (view == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"View is nil")
+    }
+
     self = [super init];
 
     // Store the modelview, projection, and modelview-projection matrices and
     _modelview = modelviewMatrix;
     _projection = projectionMatrix;
     _modelviewProjection = [[WWMatrix alloc] initWithMultiply:projectionMatrix matrixB:modelviewMatrix];
-    _viewport = viewport;
+    _viewport = [view viewport];
+    viewBounds = [view bounds];
 
     // Compute the eye point and forward ray in model coordinates.
     _eyePoint = [_modelview extractEyePoint];
@@ -279,26 +286,72 @@
     return YES;
 }
 
+- (CGPoint) convertPointToView:(WWVec4*)screenPoint
+{
+    if (screenPoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Screen point is nil")
+    }
+
+    double x = [screenPoint x];
+    double y = [screenPoint y];
+
+    // Convert the point form OpenGL screen coordinates to normalized coordinates in the range [0, 1].
+    x = (x - CGRectGetMinX(_viewport)) / CGRectGetWidth(_viewport);
+    y = (y - CGRectGetMinY(_viewport)) / CGRectGetHeight(_viewport);
+
+    // Transform the origin from the bottom-left corner to the top-left corner.
+    y = 1 - y;
+
+    // Convert the point from normalized coordinates in the range [0, 1] to UIKit coordinates.
+    x = x * CGRectGetWidth(viewBounds) + CGRectGetMinX(viewBounds);
+    y = y * CGRectGetHeight(viewBounds) + CGRectGetMinY(viewBounds);
+
+    return CGPointMake((CGFloat) x, (CGFloat) y);
+}
+
+- (WWVec4*) convertPointToViewport:(CGPoint)point
+{
+    double x = point.x;
+    double y = point.y;
+
+    // Convert the point from UIKit coordinates to normalized coordinates in the range [0, 1].
+    x = (x - CGRectGetMinX(viewBounds)) / CGRectGetWidth(viewBounds);
+    y = (y - CGRectGetMinY(viewBounds)) / CGRectGetHeight(viewBounds);
+
+    // Transform the origin from the top-left corner to the bottom-left corner.
+    y = 1 - y;
+
+    // Convert the point from normalized coordinates in the range [0, 1] to OpenGL screen coordinates.
+    x = x * CGRectGetWidth(_viewport) + CGRectGetMinX(_viewport);
+    y = y * CGRectGetHeight(_viewport) + CGRectGetMinY(_viewport);
+
+    return [[WWVec4 alloc] initWithCoordinates:x y:y z:0];
+}
+
 - (WWLine*) rayFromScreenPoint:(CGPoint)point
 {
-    // Convert the point from UIKit coordinates to OpenGL coordinates.
-    double x = point.x;
-    double y = CGRectGetHeight(_viewport) - point.y;
+    // Convert the point's xy coordinates from UIKit coordinates to OpenGL coordinates.
+    WWVec4* screenPoint = [self convertPointToViewport:point];
 
-    WWVec4* screenPoint = [[WWVec4 alloc] initWithCoordinates:x y:y z:0];
+    // Compute the model coordinate point on the near clip plane with the xy coordinates and depth 0.
+    [screenPoint setZ:0];
     WWVec4* nearPoint = [[WWVec4 alloc] initWithZeroVector];
     if (![self unProject:screenPoint result:nearPoint])
     {
         return nil;
     }
 
-    [screenPoint set:x y:y z:1];
+    // Compute the model coordinate point on the far clip plane with the xy coordinates and depth 1.
+    [screenPoint setZ:1];
     WWVec4* farPoint = [[WWVec4 alloc] initWithZeroVector];
     if (![self unProject:screenPoint result:farPoint])
     {
         return nil;
     }
 
+    // Compute a ray originating at the eye point and with direction pointing from the xy coordinate on the near plane
+    // to the same xy coordinate on the far plane.
     WWVec4* origin = [[WWVec4 alloc] initWithVector:_eyePoint];
     WWVec4* direction = [[WWVec4 alloc] initWithZeroVector];
     [direction set:farPoint];

@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Navigate/WWNavigatorState.h"
 
+@class WorldWindView;
 @class WWMatrix;
 @class WWVec4;
 @class WWFrustum;
@@ -22,6 +23,8 @@
     WWMatrix* modelviewInv;
     WWMatrix* projectionInv;
     WWMatrix* modelviewProjectionInv;
+    // The bounds for the view associated with the navigator.
+    CGRect viewBounds;
     // Constants computed during initialization and used in pixelSizeAtDistance.
     double pixelSizeScale;
     double pixelSizeOffset;
@@ -60,7 +63,7 @@
 *
 * @param modelviewMatrix The navigator's modelview matrix.
 * @param projectionMatrix The navigator's projection matrix.
-* @param viewport The navigator's viewport rectangle in screen coordinates.
+* @param view The World Wind view associated with the navigator. This view defines the navigator's viewport.
 *
 * @return The initialized instance.
 *
@@ -68,6 +71,6 @@
 */
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
-                                    viewport:(CGRect)viewport;
+                                        view:(WorldWindView*)view;
 
 @end
