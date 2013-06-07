@@ -62,6 +62,12 @@
         hasLayers = YES;
     }
 
+    NSDictionary* legendCaps = [WWWMSCapabilities layerFirstLegendURL:_layerCapabilities];
+    if (legendCaps != nil && [WWWMSCapabilities legendHref:legendCaps] != nil)
+    {
+        hasLegend = YES;
+    }
+
     dataSection = 0;
     controlSection = isNamedLayer ? 1 : -1;
     layerSection = hasLayers ? (isNamedLayer ? 2 : 1) : -1;
@@ -330,6 +336,8 @@
 
             [[layer userTags] setObject:layerID forKey:@"layerid"];
             [layer setEnabled:YES];
+            if (hasLegend)
+                [layer setLegendEnabled:YES];
 
             [[[_wwv sceneController] layers] addLayer:layer];
         }

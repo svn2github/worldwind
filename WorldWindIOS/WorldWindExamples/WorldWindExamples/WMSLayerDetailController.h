@@ -18,6 +18,7 @@
     NSString* layerID; // a unique identifying string for the layer
     BOOL isNamedLayer;
     BOOL hasLayers;
+    BOOL hasLegend;
     int controlSection;
     int dataSection;
     int layerSection;

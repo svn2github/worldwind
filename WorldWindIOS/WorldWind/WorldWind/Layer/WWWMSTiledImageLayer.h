@@ -29,7 +29,7 @@
 /// The WMS layer capabilities specified at initialization.
 @property(nonatomic, readonly) NSDictionary* layerCapabilities;
 
-@property (nonatomic) BOOL showLegend;
+@property (nonatomic) BOOL legendEnabled;
 
 /// @name Initializing WMS Tiled Image Layer
 
