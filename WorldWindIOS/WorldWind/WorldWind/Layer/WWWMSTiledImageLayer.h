@@ -16,6 +16,10 @@
 * See WWWMSCapabilities for more information about WMS capabilities documents and their representation in World Wind.
 */
 @interface WWWMSTiledImageLayer : WWTiledImageLayer
+{
+    NSString* cachePath;
+    id screenOverlay;
+}
 
 /// @name WMS Tiled Image Layer Attributes
 
@@ -24,6 +28,8 @@
 
 /// The WMS layer capabilities specified at initialization.
 @property(nonatomic, readonly) NSDictionary* layerCapabilities;
+
+@property (nonatomic) BOOL showLegend;
 
 /// @name Initializing WMS Tiled Image Layer
 

@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <UIKit/UIKit.h>
 #import "WorldWind/Layer/WWWMSTiledImageLayer.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Geometry/WWSector.h"
@@ -12,6 +13,8 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWWMSTiledImageLayer
 
@@ -48,11 +51,13 @@
         boundingBox = [[WWSector alloc] initWithFullSphere];
     }
 
+    _layerCapabilities = layerCapabilities;
+
     // Determine a cache directory.
     NSString* layerCacheDir = [WWUtil makeValidFilePath:getMapURL];
     layerCacheDir = [layerCacheDir stringByAppendingPathComponent:layerName];
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
+    cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
 
     NSString* imageFormat = [self determineImageFormat:serverCapabilities layerCaps:layerCapabilities];
     if (imageFormat == nil)
@@ -68,12 +73,6 @@
 
     NSString* title = [WWWMSCapabilities layerTitle:layerCapabilities];
     [self setDisplayName:title != nil ? title : layerName];
-
-    NSString* version = [serverCapabilities serviceWMSVersion];
-    if (version == nil)
-    {
-        version = @"1.1.1";
-    }
 
     WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceCapabilities:serverCapabilities
                                                                              layerCaps:layerCapabilities];
@@ -112,6 +111,66 @@
     }
 
     return nil;
+}
+
+- (void) setEnabled:(BOOL)enabled
+{
+    if (enabled && screenOverlay == nil)
+    {
+        [self setupLegend];
+    }
+
+    [super setEnabled:enabled];
+}
+
+- (void) setupLegend
+{
+    NSDictionary* legend = [WWWMSCapabilities layerFirstLegendURL:_layerCapabilities];
+    if (legend == nil)
+        return;
+
+    NSString* legendUrl = [WWWMSCapabilities legendHref:legend];
+    if (legendUrl == nil || [legendUrl length] == 0)
+        return;
+
+    NSURL* url = [[NSURL alloc] initWithString:legendUrl];
+
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10 finishedBlock:^(WWRetriever* myRetriever)
+    {
+        [self handleLegendRetrieval:myRetriever];
+    }];
+    [retriever performRetrieval];
+}
+
+- (void) handleLegendRetrieval:(WWRetriever*)retriever
+{
+    NSString* filePath = [cachePath stringByAppendingPathComponent:@"Legend"];
+
+    if ([retriever status] != WW_SUCCEEDED
+            || [retriever retrievedData] == nil || [[retriever retrievedData] length] == 0)
+    {
+        WWLog(@"Legend retrieval for %@ failed", [[retriever url] absoluteString]);
+
+        // See if it's been previously cached.
+        if (![[NSFileManager defaultManager] fileExistsAtPath:filePath])
+            return;
+    }
+    else
+    {
+        // See if it's a valid image.
+        UIImage* image = [[UIImage alloc] initWithData:[retriever retrievedData]];
+        if (image == nil)
+        {
+            WWLog(@"Legend image is not in a recognized format: %@", [[retriever url] absoluteString]);
+            return;
+        }
+
+        // Cache it if so.
+        [[retriever retrievedData] writeToFile:filePath atomically:YES];
+    }
+
+    // Create the screen overlay for the legend image.
+    screenOverlay = @"";
 }
 
 @end

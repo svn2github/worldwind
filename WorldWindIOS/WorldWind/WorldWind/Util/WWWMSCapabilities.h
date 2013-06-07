@@ -37,7 +37,7 @@
 * @param serviceAddress The address of the WMS service, e.g, "http://example.com/wms".
 * @param finishedBlock The block to call once the capabilities have been downloaded and parsed.
 *
-* @return This instance initialized. Note that the documents contents are not available until the finishedBlock is
+* @return This instance initialized. Note that the document's contents are not available until the finishedBlock is
 * called.
 *
 * @exception NSInvalidArgumentException If the specified service address is nil or empty or the specified finish
@@ -301,7 +301,7 @@
 *
 * @param layerCaps The layer capabilities.
 *
-* @return The list of data URLs for the specified layer.
+* @return The list of data URLs for the specified layer, or nil if none are declared.
 *
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
@@ -312,7 +312,7 @@
 *
 * @param layerCaps The layer capabilities.
 *
-* @return The list of metadata URLs for the specified layer.
+* @return The list of metadata URLs for the specified layer, or nil if none are declared.
 *
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
@@ -323,7 +323,7 @@
 *
 * @param layerCaps The layer capabilities.
 *
-* @return The list of keywords for the specified layer.
+* @return The list of keywords for the specified layer, or nil if no keyword list is declared.
 *
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
@@ -334,21 +334,124 @@
 *
 * @param layerCaps The layer capabilities.
 *
-* @return The min-scale-denominator for the specified layer.
+* @return The min-scale-denominator for the specified layer, or nil if no scale is declared.
 *
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
-+ (NSNumber*) layerMinScaleDenominator:(NSDictionary*) layerCaps;
++ (NSNumber*) layerMinScaleDenominator:(NSDictionary*)layerCaps;
 
 /**
 * Returns the max-scale-denominator for a specified layer.
 *
 * @param layerCaps The layer capabilities.
 *
-* @return The max-scale-denominator for the specified layer.
+* @return The max-scale-denominator for the specified layer, or nil if no scale is declared.
 *
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
-+ (NSNumber*) layerMaxScaleDenominator:(NSDictionary*) layerCaps;
++ (NSNumber*) layerMaxScaleDenominator:(NSDictionary*)layerCaps;
+
+/**
+* Returns the LegendURL element of the first style element for a specified layer.
+*
+* This is a convenience method to find the most likely appropriate legend for a specified layer. Layers typically have
+* only one style and one legend URL.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The first-listed LegendURL element for the specified layer, of nil if there are no styles or the first
+* style does not contain a legend URL element.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSDictionary*) layerFirstLegendURL:(NSDictionary*)layerCaps;
+
+/**
+* Returns the layer styles for a specified layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The layer styles for the specified layer, or nil if the layer has no declared styles.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (NSArray*) layerStyles:(NSDictionary*)layerCaps;
+
+/**
+* Returns the legend URLs for a specified layer style.
+*
+* @param The style capabilities.
+*
+* @return The style's legend URL elements, or nil if none are declared.
+*
+* @exception NSInvalidArgumentException If the specified style capabilities is nil.
+*/
++ (NSArray*) styleLegendURLs:(NSDictionary*)styleCaps;
+
+/**
+* Returns the style name for a specified layer style.
+*
+* @param styleCaps The style capabilities.
+*
+* @return The style's name, or nil if none is declared.
+*
+* @exception NSInvalidArgumentException If the specified style capabilities is nil.
+*/
++ (NSString*) styleName:(NSDictionary*)styleCaps;
+
+/**
+* Returns the LegendURL elements of a specified layer style.
+*
+* @param styleCaps The style capabilities.
+*
+* @return The style's title, or nil if none is declared.
+*
+* @exception NSInvalidArgumentException If the specified style capabilities is nil.
+*/
++ (NSString*) styleTitle:(NSDictionary*)styleCaps;
+
+/**
+* Returns a LegendURL element's legend width.
+*
+* @param legendCaps The legendURL element.
+*
+* @return The LegendURL's legend width, or nil if no width is declared.
+*
+* @exception NSInvalidArgumentException If the specified legend capabilities is nil.
+*/
++ (NSNumber*) legendWidth:(NSDictionary*)legendCaps;
+
+/**
+* Returns a LegendURL element's legend height.
+*
+* @param legendCaps The legendURL element.
+*
+* @return The LegendURL's legend height, or nil if no width is declared.
+*
+* @exception NSInvalidArgumentException If the specified legend capabilities is nil.
+*/
++ (NSNumber*) legendHeight:(NSDictionary*)legendCaps;
+
+/**
+* Returns a LegendURL element's format.
+*
+* @param legendCaps The legendURL element.
+*
+* @return The LegendURL's legend format, or nil if no format is declared.
+*
+* @exception NSInvalidArgumentException If the specified legend capabilities is nil.
+*/
++ (NSString*) legendFormat:(NSDictionary*)legendCaps;
+
+/**
+* Returns a LegendURL element's HREF link.
+*
+* @param legendCaps The legendURL element.
+*
+* @return The LegendURL's legend HREF link, or nil if no link is declared.
+*
+* @exception NSInvalidArgumentException If the specified legend capabilities is nil.
+*/
++ (NSString*) legendHref:(NSDictionary*)legendCaps;
 
 @end

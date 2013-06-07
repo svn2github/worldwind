@@ -844,4 +844,112 @@
     return [[NSNumber alloc] initWithDouble:[numberString doubleValue]];
 }
 
++ (NSDictionary*) layerFirstLegendURL:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSArray* styleCaps = [WWWMSCapabilities layerStyles:layerCaps];
+    if (styleCaps == nil || [styleCaps count] == 0)
+        return nil;
+
+    NSArray* legendUrls = [WWWMSCapabilities styleLegendURLs:[styleCaps objectAtIndex:0]];
+    if (legendUrls == nil || [legendUrls count] == 0)
+        return nil;
+
+    return [legendUrls objectAtIndex:0];
+}
+
++ (NSArray*) layerStyles:(NSDictionary*)layerCaps
+{
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    return [layerCaps objectForKey:@"style"];
+}
+
++ (NSString*) styleName:(NSDictionary*)styleCaps
+{
+    if (styleCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Style capabilities is nil")
+    }
+
+    return [styleCaps objectForKey:@"name"];
+}
+
++ (NSString*) styleTitle:(NSDictionary*)styleCaps
+{
+    if (styleCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Style capabilities is nil")
+    }
+
+    return [styleCaps objectForKey:@"title"];
+}
+
++ (NSArray*) styleLegendURLs:(NSDictionary*)styleCaps
+{
+    if (styleCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Style capabilities is nil")
+    }
+
+    return [styleCaps objectForKey:@"legendurl"];
+}
+
++ (NSNumber*) legendWidth:(NSDictionary*)legendCaps
+{
+    if (legendCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Legend capabilities is nil")
+    }
+
+    return [legendCaps objectForKey:@"width"];
+}
+
++ (NSNumber*) legendHeight:(NSDictionary*)legendCaps
+{
+    if (legendCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Legend capabilities is nil")
+    }
+
+    return [legendCaps objectForKey:@"height"];
+}
+
++ (NSString*) legendFormat:(NSDictionary*)legendCaps
+{
+    if (legendCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Legend capabilities is nil")
+    }
+
+    return [legendCaps objectForKey:@"legendformat"];
+}
+
++ (NSString*) legendHref:(NSDictionary*)legendCaps
+{
+    if (legendCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Legend capabilities is nil")
+    }
+
+    NSDictionary* onlineResource = [legendCaps objectForKey:@"onlineresource"];
+    if (onlineResource == nil)
+        return nil;
+
+    NSString* url = [onlineResource objectForKey:@"href"];
+    if (url == nil)
+    {
+        url = [onlineResource objectForKey:@"xlink:href"];
+    }
+
+    return url;
+}
+
 @end
