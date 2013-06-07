@@ -389,13 +389,14 @@
         double dy = panTranslation.y - lastPanTranslation.y;
         lastPanTranslation = panTranslation;
 
-        // Convert the translation from the view's local coordinate system to meters, assuming the translation is
-        // intended for an object that is 'range' meters away form the eye position. Convert from change in screen
-        // relative coordinates to change in model relative coordinates by inverting the change in X. There is no need
-        // to invert the change in Y because the Y axis coordinates are already inverted.
-        CGRect viewport = [[self view] viewport];
+        // Convert the translation from screen coordinates to meters, assuming the translation is intended for an object
+        // that is 'range' meters away form the eye position. Use the view bounds instead of the viewport to maintain
+        // the same screen coordinates used by the translation values. Convert from change in screen relative
+        // coordinates to change in model relative coordinates by inverting the change in X. There is no need to invert
+        // the change in Y because the Y axis coordinates are already inverted.
+        CGRect bounds = [[self view] bounds];
         double distance = MAX(1, _range);
-        double metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:distance];
+        double metersPerPixel = [WWMath perspectivePixelSize:bounds atDistance:distance];
         double forwardMeters = dy * metersPerPixel;
         double sideMeters = -dx * metersPerPixel;
 
