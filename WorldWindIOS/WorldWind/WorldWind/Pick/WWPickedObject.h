@@ -24,9 +24,9 @@
 
 /// The UIKit screen coordinate pick point used to determine this picked object.
 ///
-/// The pick point is understood to be in the UIKit coordinate system, with its origin in the top-left corner and axes
-/// that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate Systems
-/// in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+/// The pick point is understood to be in the UIKit coordinate system of the WorldWindView, with its origin in the
+/// top-left corner and axes that extend down and to the right from the origin point. See the section titled View
+/// Geometry and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
 @property(nonatomic, readonly) CGPoint pickPoint;
 
 /// The color code used to distinguish this object from others during picking. Not normally used by applications.
