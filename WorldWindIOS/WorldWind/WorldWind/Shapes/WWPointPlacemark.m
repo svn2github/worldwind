@@ -218,9 +218,9 @@ static WWTexture* currentTexture;
     if ([dc pickingMode])
     {
         // Convert the pick point from UIKit screen coordinates to OpenGL screen coordinates.
-        CGPoint uiPickPoint = [dc pickPoint];
-        CGPoint glPickPoint = CGPointMake(uiPickPoint.x, CGRectGetHeight(viewport) - uiPickPoint.y);
-        return CGRectContainsPoint(imageBounds, glPickPoint);
+        WWVec4* glPickPoint = [[dc navigatorState] convertPointToViewport:[dc pickPoint]];
+        CGPoint point = CGPointMake((CGFloat) [glPickPoint x], (CGFloat) [glPickPoint y]);
+        return CGRectContainsPoint(imageBounds, point);
     }
     else
     {

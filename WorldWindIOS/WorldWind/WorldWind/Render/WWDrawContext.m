@@ -274,8 +274,9 @@
 - (unsigned int) readPickColor:(CGPoint)pickPoint
 {
     // Convert the point from UIKit coordinates to OpenGL coordinates.
-    GLint x = (GLint) pickPoint.x;
-    GLint y = (GLint) (CGRectGetHeight([_navigatorState viewport]) - pickPoint.y);
+    WWVec4* glPickPoint = [_navigatorState convertPointToViewport:pickPoint];
+    GLint x = (GLint) [glPickPoint x];
+    GLint y = (GLint) [glPickPoint y];
 
     GLubyte colorBytes[4];
     glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, colorBytes);

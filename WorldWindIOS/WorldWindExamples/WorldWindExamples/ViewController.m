@@ -595,9 +595,10 @@
 
     [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
                                                     altitude:[pmPos altitude] outputPoint:pmPoint];
-    [[[_wwv navigator] currentState] project:pmPoint result:screenPoint];
-    CGRect rect = CGRectMake((CGFloat) [screenPoint x],
-            (CGFloat) ([[[_wwv navigator] currentState] viewport].size.height - [screenPoint y]), 1, 1);
+    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
 
     // Give the controller the placemark's dictionary.
     [crashDataViewController setEntries:[pm userObject]];
@@ -631,9 +632,10 @@
 
     [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
                                                     altitude:[pmPos altitude] outputPoint:pmPoint];
-    [[[_wwv navigator] currentState] project:pmPoint result:screenPoint];
-    CGRect rect = CGRectMake((CGFloat) [screenPoint x],
-            (CGFloat) ([[[_wwv navigator] currentState] viewport].size.height - [screenPoint y]), 1, 1);
+    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
 
     // Give the controller the placemark's dictionary.
     [metarDataViewController setEntries:[pm userObject]];
