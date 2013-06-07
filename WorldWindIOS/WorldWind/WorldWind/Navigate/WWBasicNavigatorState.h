@@ -41,7 +41,10 @@
 /// The navigator's combined modelview - projection matrix.
 @property (nonatomic, readonly) WWMatrix* modelviewProjection;
 
-/// The navigator's viewport rectangle in screen coordinates.
+/// The navigator's viewport rectangle in OpenGL screen coordinates.
+///
+/// The viewport is in the OpenGL screen coordinate system of the WorldWindView, with its origin in the bottom-left
+/// corner and axes that extend up and to the right from the origin point.
 @property (nonatomic, readonly) CGRect viewport;
 
 /// The navigator's eye point in model coordinates.

@@ -363,10 +363,12 @@
 * direction. The near distance and the far distance identify the minimum and maximum distance, respectively, at which an
 * object in the scene is visible. Near and far distances must be positive and may not be equal.
 *
-* The resultant projection matrix preserves the scene's size on screen when the viewport width and height are swapped.
-* This has the effect of maintaining the scene's size when the device is rotated.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point. The resultant projection matrix preserves the scene's size on screen when
+* the viewport width and height are swapped. This has the effect of maintaining the scene's size when the device is
+* rotated.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param near The near clip plane distance, in model coordinates.
 * @param far The far clip plane distance, in model coordinates.
 *
@@ -389,7 +391,10 @@
 * The resultant projection matrix has the effect of preserving coordinates that have already been projected using
 * [WWNavigatorState project:result:].
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 *
 * @return This matrix set to a screen projection matrix.
 *

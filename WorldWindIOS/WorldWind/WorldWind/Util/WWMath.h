@@ -206,17 +206,19 @@
 /**
 * Computes the rectangle bounding a unit quad transformed by the specified matrix.
 *
+* The computed rectangle is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes
+* that extend up and to the right from the origin point.
+*
 * The untransformed unit quad has its lower left coordinate at (0, 0) and its upper left coordinate at (1, 1). When the
 * transform matrix is an identity matrix, the returned rectangle has coordinates (x, y, width, height) of (0, 0, 1, 1).
 * Otherwise, the returned rectangle is an axis-aligned rectangle that bounds the transformed quad. For example, if the
 * transform matrix has a scale of 2 and an x-translation of 10, the returned rectangle has coordinates (10, 0, 2, 2).
-*
 * Note that the transformed quad and the returned rectangle are not necessarily equivalent. For example, if the
 * transform matrix contains any rotation or shearing then the returned rectangle covers an area larger than the quad.
 *
 * @param transformMatrix A homogeneous transform matrix used to transform the unit quad.
 *
-* @return An axis-aligned rectangle bounding the transformed unit quad, in screen coordinates.
+* @return An axis-aligned rectangle bounding the transformed unit quad, in OpenGL screen coordinates.
 *
 * @exception NSInvalidArgumentException If the transformMatrix is nil.
 */
@@ -297,7 +299,10 @@
 * This computes a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
 * height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param distance The distance along the negative z axis, in model coordinates.
 *
 * @return The frustum rectangle coordinates, in model coordinates.
@@ -315,7 +320,10 @@
 * pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than
 * zero.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param distance The distance from the perspective eye point at which to determine pixel size, in model coordinates.
 *
 * @return The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
@@ -328,7 +336,11 @@
 * Computes the minimum distance between the eye point and an object with the specified size needed to make the object
 * completely visible in a perspective projection.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point. This method assumes that the scene is situated such that the center of the
+* object appears in the center of the viewport.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param radius The radius of the object to fit in the viewport, in model coordinates.
 *
 * @return The minimum eye distance, in model coordinates.
@@ -342,9 +354,11 @@
 * Computes the minimum distance between the eye point needed to keep the two positions completely visible in a
 * perspective projection on the given globe.
 *
-* This method assumes that the viewport is placed at the center of the two positions.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point. This method assumes that the scene is situated such that the center of the
+* two positions appears in the center of the viewport.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param posA The first position to fit in the viewport.
 * @param posB The second position to fit in the viewport.
 * @param globe The globe the two positions are associated with.
@@ -368,7 +382,10 @@
 * smallest distance between the eye and the object being viewed, but may be an approximation if an exact distance is not
 * required.
 *
-* @param viewport The viewport rectangle, in screen coordinates.
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
 * @param distance The distance from the perspective eye point to the nearest object, in model coordinates.
 *
 * @return The maximum near clip distance, in model coordinates.

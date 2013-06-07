@@ -53,7 +53,10 @@
 - (WWMatrix*) modelviewProjection;
 
 /**
-* Returns the navigator's viewport rectangle in screen coordinates.
+* Returns the navigator's viewport rectangle in OpenGL screen coordinates.
+*
+* The viewport is in the OpenGL screen coordinate system of the WorldWindView, with its origin in the bottom-left corner
+* and axes that extend up and to the right from the origin point.
 *
 * The viewport rectangle defines the location of the drawing region on screen as well as its resolution in pixels. This
 * rectangle's lower left corner maps to (-1, -1, -1) in clip coordinates, and its upper right corner maps to (1, 1, -1).
@@ -105,7 +108,10 @@
 /// @name Operations on Navigator State
 
 /**
-* Transforms the specified modelPoint from model coordinates to screen coordinates.
+* Transforms the specified modelPoint from model coordinates to OpenGL screen coordinates.
+*
+* The resultant screen point is in the OpenGL screen coordinate system of the WorldWindView, with its origin in the
+* bottom-left corner and axes that extend up and to the right from the origin point.
 *
 * This stores the transformed point in the screenPoint parameter, and returns YES or NO to indicate whether or not the
 * transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
@@ -115,7 +121,7 @@
 * the exact same floating point values.
 *
 * @param modelPoint The point to transform, in model coordinates.
-* @param screenPoint The transformed result, in screen coordinates.
+* @param screenPoint The transformed result, in OpenGL screen coordinates.
 *
 * @return YES if the transformation is successful, otherwise NO.
 *
@@ -124,8 +130,11 @@
 - (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint;
 
 /**
-* Transforms the specified modelPoint from model coordinates to screen coordinates, applying an offset to the
+* Transforms the specified modelPoint from model coordinates to OpenGL screen coordinates, applying an offset to the
 * modelPoint's projected depth value.
+*
+* The resultant screen point is in the OpenGL screen coordinate system of the WorldWindView, with its origin in the
+* bottom-left corner and axes that extend up and to the right from the origin point.
 *
 * This stores the transformed point in the screenPoint parameter, and returns YES or NO to indicate whether or not the
 * transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
@@ -142,7 +151,7 @@
 * the final depth value after applying the offset is clamped to the range [0,1].
 *
 * @param modelPoint The point to transform, in model coordinates.
-* @param screenPoint The transformed result, in screen coordinates.
+* @param screenPoint The transformed result, in OpenGL screen coordinates.
 * @param offset The amount of offset to apply.
 *
 * @return YES if the transformation is successful, otherwise NO.
@@ -152,7 +161,10 @@
 - (BOOL) project:(WWVec4*)modelPoint result:(WWVec4*)screenPoint depthOffset:(double)depthOffset;
 
 /**
-* Transforms the specified screenPoint from screen coordinates to model coordinates.
+* Transforms the specified screen point from OpenGL screen coordinates to model coordinates.
+*
+* The screen point is understood to be in the OpenGL screen coordinate system of the WorldWindView, with its origin in
+* the bottom-left corner and axes that extend up and to the right from the origin point.
 *
 * This stores the transformed point in the modelPoint parameter, and returns YES or NO to indicate whether the
 * transformation is successful. This returns NO if this navigator state's modelview or projection matrices are
@@ -161,7 +173,7 @@
 * This performs the same computations as the OpenGL vertex transformation pipeline, but is not guaranteed to result in
 * the exact same floating point values.
 *
-* @param screenPoint The point to transform, in screen coordinates.
+* @param screenPoint The point to transform, in OpenGL screen coordinates.
 * @param modelPoint The transformed result, in model coordinates.
 *
 * @return YES if the transformation is successful, otherwise NO.
@@ -173,9 +185,8 @@
 /**
 * Converts an OpenGL screen point to UIKit coordinates.
 *
-* The specified point is understood to be in the OpenGL screen coordinate system defined by the WorldWindView viewport
-* associated with the navigator, with its origin in the bottom-left corner and axes that extend up and to the right from
-* the origin point.
+* The specified point is understood to be in the OpenGL screen coordinate of the WorldWindView, with its origin in the
+* bottom-left corner and axes that extend up and to the right from the origin point.
 *
 * The returned point is in the UIKit coordinate system of the WorldWindView, with its origin in the top-left corner and
 * axes that extend down and to the right from the origin point. See the section titled View Geometry and Coordinate
@@ -192,12 +203,12 @@
 /**
 * Converts a UIKit screen point to OpenGL screen coordinates.
 *
-* The specified point is understood to be in the UIKit coordinate system of the WorldWindView associated with the
-* navigator, with its origin in the top-left corner and axes that extend down and to the right from the origin point.
-* See the section titled View Geometry and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+* The specified point is understood to be in the UIKit coordinate system of the WorldWindView, with its origin in the
+* top-left corner and axes that extend down and to the right from the origin point. See the section titled View Geometry
+* and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
 *
-* The returned point is in the OpenGL screen coordinate system defined by the WorldWindView's viewport, with its origin
-* in the bottom-left corner and axes that extend up and to the right from the origin point.
+* The returned point is in the OpenGL screen coordinate system of the WorldWindView, with its origin in the bottom-left
+* corner and axes that extend up and to the right from the origin point.
 *
 * @param point The UIKit screen point.
 *
@@ -209,9 +220,9 @@
 * Computes a ray originating at the navigator's eyePoint and extending through the specified point in UIKit screen
 * coordinates.
 *
-* The screen point is understood to be in the UIKit coordinate system of the WorldWindView associated with the
-* navigator, with its origin in the top-left corner and axes that extend down and to the right from the origin point.
-* See the section titled View Geometry and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
+* The screen point is understood to be in the UIKit coordinate system of the WorldWindView, with its origin in the
+* top-left corner and axes that extend down and to the right from the origin point. See the section titled View Geometry
+* and Coordinate Systems in the [View Programming Guide for iOS](http://developer.apple.com/library/ios/#documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html).
 *
 * The results of this method are undefined if the specified point is outside of the WorldWindView's bounds.
 *
