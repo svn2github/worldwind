@@ -162,6 +162,7 @@
 
     [self->drawContext setSurfaceGeometry:surfaceGeometry];
     [self->drawContext setVisibleSector:surfaceGeometry.sector];
+    [self->drawContext setNumElevationTiles:[surfaceGeometry count]];
 }
 
 - (void) doDraw
@@ -278,6 +279,21 @@
         _frameTimeMin = DBL_MAX;
         _frameTimeMax = -DBL_MAX;
     }
+}
+
+- (int) numImageTiles
+{
+    return [drawContext numImageTiles];
+}
+
+- (int) numElevationTiles
+{
+    return [drawContext numElevationTiles];
+}
+
+- (int) numRenderedTiles
+{
+    return [drawContext numRenderedTiles];
 }
 
 @end

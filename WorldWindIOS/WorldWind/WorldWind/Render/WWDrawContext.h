@@ -111,6 +111,15 @@
 /// The current layer being rendered.
 @property (nonatomic) WWLayer* currentLayer;
 
+/// The number of elevation tiles in the most recent frame.
+@property (nonatomic) int numElevationTiles;
+
+/// The number of WWTiledImageLayer tiles in the most recent frame.
+@property (nonatomic) int numImageTiles;
+
+/// The number of rendered tiles in the most recent frame.
+@property (nonatomic) int numRenderedTiles;
+
 /**
 * Binds and returns the default program, creating it if it doesn't already exist.
 *

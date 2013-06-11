@@ -56,6 +56,15 @@
 /// The average frame rate over the most recent two seconds.
 @property(nonatomic, readonly) NSTimeInterval frameRateAverage;
 
+/// The number of elevation tiles in the most recent frame.
+@property (nonatomic, readonly) int numElevationTiles;
+
+/// The number of WWTiledImageLayer tiles in the most recent frame.
+@property (nonatomic, readonly) int numImageTiles;
+
+/// The number of rendered tiles in the most recent frame.
+@property (nonatomic, readonly) int numRenderedTiles;
+
 /// @name Initializing a Scene Controller
 
 /**

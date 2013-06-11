@@ -246,6 +246,7 @@
 
     if ([currentTiles count] > 0)
     {
+        [dc setNumImageTiles:[dc numImageTiles] + [currentTiles count]];
         [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:currentTiles opacity:[self opacity]];
 
         [currentTiles removeAllObjects];

@@ -602,7 +602,7 @@
             if (statisticsController == nil)
             {
                 statisticsController = [[FrameStatisticsController alloc] initWithView:_wwv];
-                CGRect rect = CGRectMake([_wwv bounds].size.width - 210, 50, 200, 200);
+                CGRect rect = CGRectMake([_wwv bounds].size.width - 210, 50, 200, 320);
                 [[statisticsController view] setFrame:rect];
                 [self addChildViewController:statisticsController];
                 [[self view] addSubview:[statisticsController view]];

@@ -58,6 +58,10 @@
     [_objectsAtPickPoint clear];
     _pickingMode = NO;
     _pickPoint = CGPointMake(0, 0);
+
+    _numElevationTiles = 0;
+    _numImageTiles = 0;
+    _numRenderedTiles = 0;
 }
 
 - (void) update

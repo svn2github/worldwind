@@ -134,6 +134,7 @@
             [terrainTile beginRendering:dc];
             @try
             {
+                [dc setNumRenderedTiles:[dc numRenderedTiles] + [_intersectingTiles count]];
                 for (NSUInteger j = 0; j < [_intersectingTiles count]; j++)
                 {
                     id <WWSurfaceTile> surfaceTile = [_intersectingTiles objectAtIndex:j];
