@@ -53,6 +53,7 @@
 		1BF9AD0880D26B6D6F5BD587 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A883A9B7EC2E84177CA1 /* WebViewController.m */; };
 		1BF9AE4238EBFC5BB68AFD33 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4AEA039503D44E9A622 /* ImageLayerDetailController.m */; };
 		1BF9AF344D1D325BDD5FFF06 /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */; };
+		1BF9AFC1758FD5C46F500C11 /* FrameStatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */; };
 		CC8CF2F9C5BBEDDCD4B6B2EE /* 12-eye@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFEB25C541BB31BFC44EC /* 12-eye@2x.png */; };
 		CC8CF4BD558DF026E054686A /* 265-download.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFF4DFF5AD42484FD6282 /* 265-download.png */; };
 		CC8CF5512B53C3EF0B0435E2 /* 433-x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF5EEA389022B9C529C1B /* 433-x.png */; };
@@ -105,6 +106,7 @@
 		1BF9A6256E1642A6427E09E8 /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
 		1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWithLine.png; sourceTree = "<group>"; };
 		1BF9A6D3C61508551E33096C /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
+		1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameStatisticsController.m; sourceTree = "<group>"; };
 		1BF9A733BBE27F55CE4009C9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerListController.h; sourceTree = "<group>"; };
 		1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 		1BF9AE0128F759974BCF9E0F /* LayerList@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LayerList@2x.png"; sourceTree = "<group>"; };
 		1BF9AE069D70D0DD13A35EC5 /* PathFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathFollower.h; sourceTree = "<group>"; };
 		1BF9AE7F3ED17C02DDD3B2F2 /* 01-refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh.png"; sourceTree = "<group>"; };
+		1BF9AED496831506CFBA44B6 /* FrameStatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameStatisticsController.h; sourceTree = "<group>"; };
 		1BF9AEFC0470E1CAD0CBEEAC /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
 		1BF9AF001C236733126C9309 /* WMSLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AF5C7DA04FDC61BD6955 /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
@@ -252,6 +255,8 @@
 				1BF9AABCB01FFA0F4CD1C565 /* METARDataViewController.h */,
 				CC8CFFB4CFEAA52868C0E392 /* BulkRetrieverController.h */,
 				CC8CF74B640D7FE573F97C3E /* BulkRetrieverController.m */,
+				1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */,
+				1BF9AED496831506CFBA44B6 /* FrameStatisticsController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -412,6 +417,7 @@
 				1BF9A8A660B45B1F88E9F4F1 /* METARLayer.m in Sources */,
 				1BF9A4D3DD8852CE0212B32B /* METARDataViewController.m in Sources */,
 				CC8CFA42FE2EA85F20F51660 /* BulkRetrieverController.m in Sources */,
+				1BF9AFC1758FD5C46F500C11 /* FrameStatisticsController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

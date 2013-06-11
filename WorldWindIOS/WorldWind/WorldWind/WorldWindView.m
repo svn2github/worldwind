@@ -154,9 +154,15 @@
     // Requests that Core Animation display the renderbuffer currently bound to GL_RENDERBUFFER. This assumes that the
     // color renderbuffer is currently bound.
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
+
+    if (_drawContinuously)
+    {
+        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    }
 }
 
-- (WWPickedObjectList*)pick:(CGPoint)pickPoint
+- (WWPickedObjectList*) pick:(CGPoint)pickPoint
 {
     [EAGLContext setCurrentContext:self.context];
     glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);

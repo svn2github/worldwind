@@ -27,6 +27,10 @@
 {
 @protected
     WWDrawContext* drawContext;
+    int frameCount;
+    NSTimeInterval frameTime;
+    NSTimeInterval frameTimeBase;
+    NSTimeInterval frameTimeCumulative;
 }
 
 /// @name Scene Controller Attributes
@@ -39,6 +43,18 @@
 @property(nonatomic) id <WWNavigatorState> navigatorState;
 /// The GPU resource cache in which to hold and manage all OpenGL resources.
 @property(readonly, nonatomic) WWGpuResourceCache* gpuResourceCache;
+
+/// The minimum frame time over the most recent two seconds.
+@property(nonatomic, readonly) NSTimeInterval frameTimeMin;
+
+/// The average frame time over the most recent two seconds.
+@property(nonatomic, readonly) NSTimeInterval frameTimeAverage;
+
+/// The maximum frame time over the most recent two seconds.
+@property(nonatomic, readonly) NSTimeInterval frameTimeMax;
+
+/// The average frame rate over the most recent two seconds.
+@property(nonatomic, readonly) NSTimeInterval frameRateAverage;
 
 /// @name Initializing a Scene Controller
 

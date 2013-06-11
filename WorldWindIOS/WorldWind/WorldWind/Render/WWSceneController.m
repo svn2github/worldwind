@@ -106,6 +106,8 @@
 
 - (void) beginFrame:(CGRect)viewport
 {
+    [self beginStatistics];
+
     glViewport((int) viewport.origin.x, (int) viewport.origin.y, (int) viewport.size.width, (int) viewport.size.height);
 
     if ([drawContext pickingMode])
@@ -132,6 +134,8 @@
     glBlendFunc(GL_ONE, GL_ZERO);
     glDepthFunc(GL_LESS);
     glClearColor(0, 0, 0, 1);
+
+    [self endStatistics];
 }
 
 - (void) clearFrame
@@ -244,6 +248,35 @@
                 }
             }
         }
+    }
+}
+
+- (void) beginStatistics
+{
+    ++frameCount;
+    frameTime = [NSDate timeIntervalSinceReferenceDate];
+}
+
+- (void) endStatistics
+{
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    frameTime = now - frameTime;
+    frameTimeCumulative += frameTime;
+
+    if (frameTime < _frameTimeMin)
+        _frameTimeMin = frameTime;
+    if (frameTime > _frameTimeMax)
+            _frameTimeMax = frameTime;
+
+    if (now - frameTimeBase > 2)
+    {
+        _frameRateAverage = frameCount / (now - frameTimeBase);
+        _frameTimeAverage = frameTimeCumulative / frameCount;
+        frameTimeBase = now;
+        frameCount = 0;
+        frameTimeCumulative = 0;
+        _frameTimeMin = DBL_MAX;
+        _frameTimeMax = -DBL_MAX;
     }
 }
 

@@ -28,6 +28,7 @@
 @property (nonatomic, readonly) WWSceneController* sceneController;
 @property (nonatomic) id<WWNavigator> navigator;
 @property BOOL redrawRequested;
+@property (nonatomic) BOOL drawContinuously;
 
 - (void) drawView;
 - (void) tearDownGL;

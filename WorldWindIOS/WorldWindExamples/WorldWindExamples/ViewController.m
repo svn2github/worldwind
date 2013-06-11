@@ -43,6 +43,7 @@
 #import "METARLayer.h"
 #import "METARDataViewController.h"
 #import "BulkRetrieverController.h"
+#import "FrameStatisticsController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -64,6 +65,7 @@
     UIPopoverController* crashDataPopoverController;
     CrashDataViewController* crashDataViewController;
     UIPopoverController* metarDataPopoverController;
+    FrameStatisticsController* statisticsController;
     METARDataViewController* metarDataViewController;
     NavigatorSettingsController* navigatorSettingsController;
     UIPopoverController* navigatorSettingsPopoverController;
@@ -73,6 +75,7 @@
     CLGeocoder* geocoder;
     AnyGestureRecognizer* anyGestureRecognizer;
     UITapGestureRecognizer* tapGestureRecognizer;
+    UITapGestureRecognizer* tripleTapGestureRecognizer;
     id selectedPath;
 }
 
@@ -156,7 +159,13 @@
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];
+    [tapGestureRecognizer setNumberOfTouchesRequired:1];
     [_wwv addGestureRecognizer:tapGestureRecognizer];
+
+    tripleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTripleTap:)];
+    [tripleTapGestureRecognizer setNumberOfTapsRequired:3];
+    [tripleTapGestureRecognizer setNumberOfTouchesRequired:2];
+    [_wwv addGestureRecognizer:tripleTapGestureRecognizer];
 }
 
 - (void) makeTrackingController
@@ -580,6 +589,39 @@
         else
         {
             [self setSelectedPath:nil];
+        }
+    }
+}
+
+- (void) handleTripleTap:(UITapGestureRecognizer*)recognizer
+{
+    if ([recognizer state] == UIGestureRecognizerStateEnded)
+    {
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+        {
+            if (statisticsController == nil)
+            {
+                statisticsController = [[FrameStatisticsController alloc] initWithView:_wwv];
+                CGRect rect = CGRectMake([_wwv bounds].size.width - 210, 50, 200, 200);
+                [[statisticsController view] setFrame:rect];
+                [self addChildViewController:statisticsController];
+                [[self view] addSubview:[statisticsController view]];
+                [statisticsController didMoveToParentViewController:self];
+            }
+            else
+            {
+                [statisticsController willMoveToParentViewController:nil];
+                [[statisticsController view] removeFromSuperview];
+                [statisticsController removeFromParentViewController];
+                statisticsController = nil;
+            }
+        }
+        else
+        {
+            if (statisticsController == nil)
+                statisticsController = [[FrameStatisticsController alloc] initWithView:_wwv];
+            [((UINavigationController*) [self parentViewController]) pushViewController:statisticsController animated:YES];
+            [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
         }
     }
 }
