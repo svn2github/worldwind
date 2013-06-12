@@ -106,6 +106,7 @@ static int numIndices; // the number of indices defining the sphere
                                   result:referencePoint];
     WWVec4* rpt = referencePoint;
     [transformationMatrix setTranslation:[rpt x] y:[rpt y] z:[rpt z]];
+    [self setEyeDistance:[[[dc navigatorState] eyePoint] distanceTo3:rpt]];
 
     // Determine the actual radius in meters, which if screen dependent could change every frame.
     radiusInMeters = _radius;
