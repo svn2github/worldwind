@@ -23,14 +23,14 @@
 * - WW_INSET_PIXELS - Parameters indicate inset pixels relative to the virtual rectangle's corner diagonal to its
 * origin.
 * - WW_FRACTION - Parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], where
-* [0,0] corresponds to the rectangle's origin.
+* 0 indicates the rectangle's origin and 1 indicates the corner opposite its origin.
 *
 * ### Coordinate Systems ###
 *
 * WWOffset implicitly adopts the coordinate system used by the caller. For example, an offset may be used with
 * coordinates in either the UIKit coordinates of a UIView or in the OpenGL coordinates of a WorldWindow. The values of
-* any x- and y-parameters in pixels or inset pixels must be in the same coordinate system as the width and height passed
-* to offsetForWidth:height:.
+* any x- and y-parameters in pixels or inset pixels must be in the same coordinate system as the arguments passed to
+* offsetForWidth:height:.
 */
 @interface WWOffset : NSObject
 
@@ -100,11 +100,11 @@
 /**
 * Initializes this offset as fractional coordinates.
 *
-* The x- and y-parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], where [0,0]
-* corresponds to the rectangle's origin.
+* The x- and y-parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], where 0
+* indicates the rectangle's origin and 1 indicates the corner opposite its origin.
 *
-* @param x The x-coordinate, in fractions.
-* @param y The y-coordinate, in fractions.
+* @param x The x-coordinate, as a fraction in the range [0,1].
+* @param y The y-coordinate, as a fraction in the range [0,1].
 *
 * @return This offset initialized with the specified fractional coordinates.
 */
