@@ -133,7 +133,7 @@
                 break;
 
             case 1:
-                name = @"Elevation";
+                name = @"Terrain";
                 value = [[NSString alloc] initWithFormat:@"%d", [sc numElevationTiles]];
                 break;
 
