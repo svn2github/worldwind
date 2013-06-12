@@ -379,6 +379,16 @@
     return self;
 }
 
+- (WWMatrix*) multiplyByScale:(double)x y:(double)y z:(double)z
+{
+    [self multiply:x m01:0 m02:0 m03:0
+               m10:0 m11:y m12:0 m13:0
+               m20:0 m21:0 m22:z m23:0
+               m30:0 m31:0 m32:0 m33:1];
+
+    return self;
+}
+
 - (WWMatrix*) setScale:(double)x y:(double)y z:(double)z
 {
     // Row 1

@@ -212,6 +212,17 @@
 - (WWMatrix*) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle;
 
 /**
+* Multiplies this matrix by a scaling matrix with the specified values.
+*
+* @param x The X scaling component.
+* @param y The Y scaling component.
+* @param z The Z scaling component.
+*
+* @return This matrix multiplied by a scaling matrix.
+*/
+- (WWMatrix*) multiplyByScale:(double)x y:(double)y z:(double)z;
+
+/**
 * Sets the scale components of this matrix to specified values, leaving the other components unmodified.
 *
 * @param x The X component of scale.
