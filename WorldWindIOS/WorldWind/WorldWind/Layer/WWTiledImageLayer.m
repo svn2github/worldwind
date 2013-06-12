@@ -79,7 +79,7 @@
     topLevelTiles = [[NSMutableArray alloc] init];
     currentTiles = [[NSMutableArray alloc] init];
     tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
-    detailHintOrigin = 2.5;
+    detailHintOrigin = 2.4;
 
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];

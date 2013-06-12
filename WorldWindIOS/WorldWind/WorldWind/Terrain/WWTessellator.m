@@ -68,7 +68,7 @@
         self->topLevelTiles = [[NSMutableArray alloc] init];
         self->currentTiles = [[WWTerrainTileList alloc] initWithTessellator:self];
         self->tileCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 316 32x32 tiles.
-        self->detailHintOrigin = 1.2;
+        self->detailHintOrigin = 1.1;
     }
 
     return self;
