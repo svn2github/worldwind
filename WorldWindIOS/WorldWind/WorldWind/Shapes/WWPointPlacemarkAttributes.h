@@ -21,23 +21,30 @@
 
 /// @name Point Placemark Attributes
 
-/// Indicates the full file-system path to the placemark's image. May be nil to indicate the placemark is drawn as a
-/// square in its imageColor.
+/// Indicates the full file-system path to the placemark's image.
+///
+/// May be nil to indicate the placemark is drawn as a square in its imageColor.
 @property (nonatomic) NSString* imagePath;
 
-/// Indicate the placemark's color. When the placemark attributes have a valid imagePath the placemark's image is
-/// multiplied by this color to achieve the final placemark color. Otherwise, placemark is drawn in this color.
+/// Indicate the placemark's color.
+///
+/// When this attribute bundle has a valid imagePath the placemark's image is multiplied by the color to achieve the
+/// final placemark color. Otherwise, placemark is drawn in the color.
 @property (nonatomic) WWColor* imageColor;
 
-/// Indicates the location of the placemark relative to its geographic position. When the placemark attributes have a
-/// valid imagePath this offset is relative to the image dimensions. Otherwise, this offset is relative to a square with
-/// width and height equal to imageScale. May be nil to indicate the placemark's lower left corner is placed at its
-/// geographic position.
+/// Indicates a location within the placemark's image or square that is placed at the placemark's geographic position.
+///
+/// When this attribute bundle has a valid imagePath the offset is relative to the image dimensions. Otherwise, the
+/// offset is relative to a square with width and height equal to imageScale. The offset has its origin at the image or
+/// square's bottom-left corner and has axes that extend up and to the right from the origin point. May be nil to
+/// indicate that the image or squares's bottom-left corner should be placed at the geographic position.
 @property (nonatomic) WWOffset* imageOffset;
 
-/// Indicates the amount to scale the placemark's image. When the placemark attributes have a valid imagePath this scale
-/// is applied to the image's dimensions. Otherwise, this scale indicates the dimensions of a square drawn at the point
-/// placemark's geographic position. Setting imageScale to 0.0 causes the placemark to disappear.
+/// Indicates the amount to scale the placemark's image.
+///
+/// When this attribute bundle has a valid imagePath the scale is applied to the image's dimensions. Otherwise, the
+/// scale indicates the dimensions of a square drawn at the point placemark's geographic position. Setting imageScale to
+/// 0 causes the placemark to disappear.
 @property (nonatomic) double imageScale;
 
 /// @name Initializing Point Placemark Attributes

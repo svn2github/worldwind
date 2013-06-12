@@ -6,42 +6,54 @@
  */
 
 #import <Foundation/Foundation.h>
-
-@class WWVec4;
+#import <CoreGraphics/CoreGraphics.h>
 
 /**
 * WWOffset describes an x- and y-offset relative to a virtual rectangle of variable size, typically in screen
-* coordinates. World Wind uses WWOffset to define the relationship of an image, label or other screen shape relative to
-* another screen shape or screen point.
+* coordinates. World Wind uses WWOffset to define the location of a 2D image, label or other screen shape relative to
+* a reference location.
 *
-* An offset contains an x parameter, a y parameter, and an xUnits and yUnits indicating the independent coordinate units
-* for each of these parameters. Recognized units values are as follows:
+* ### Parameters and Units ###
 *
-* - WW_PIXELS - Parameters indicate pixels relative to a virtual rectangle's lower left corner. The positive x- and
-* y-axes are pointing to the right and up, respectively.
-* - WW_INSET_PIXELS - Parameters indicate inset pixels relative to a virtual rectangle's upper right corner. The
-* positive x- and y-axes are pointing to the left and down, respectively.
-* - WW_FRACTION - Parameters indicate fractions of a virtual rectangle's width and height in the range [0,1], relative
-* to its lower left corner.
+* WWOffset contains an x-parameter, a y-parameter, and an x-units and y-units indicating the independent coordinate
+* units for each of these parameters. The meaning of a parameter value depends on the corresponding unit. Supported unit
+* values are as follows:
+*
+* - WW_PIXELS (default) - Parameters indicate pixels relative to the virtual rectangle's origin.
+* - WW_INSET_PIXELS - Parameters indicate inset pixels relative to the virtual rectangle's corner diagonal to its
+* origin.
+* - WW_FRACTION - Parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], where
+* [0,0] corresponds to the rectangle's origin.
+*
+* ### Coordinate Systems ###
+*
+* WWOffset implicitly adopts the coordinate system used by the caller. For example, an offset may be used with
+* coordinates in either the UIKit coordinates of a UIView or in the OpenGL coordinates of a WorldWindow. The values of
+* any x- and y-parameters in pixels or inset pixels must be in the same coordinate system as the width and height passed
+* to offsetForWidth:height:.
 */
 @interface WWOffset : NSObject
 
-/// @name Offset Attributes
+/// @name Attributes
 
-/// The offset's x parameter. May be interpreted as pixels, inset pixels or a fraction, depending on the value of
-/// xUnits.
+/// The offset's x-parameter.
+///
+/// May be interpreted as pixels, inset pixels, or a fraction, depending on the value of xUnits.
 @property (nonatomic) double x;
 
-/// The offset's y parameter. May be interpreted as pixels, inset pixels or a fraction, depending on the value of
-/// yUnits.
+/// The offset's y parameter.
+///
+/// May be interpreted as pixels, inset pixels, or a fraction, depending on the value of yUnits.
 @property (nonatomic) double y;
 
-/// The units for this offset's x parameter. May be one of WW_PIXELS, WW_INSET_PIXELS, WW_FRACTION, or nil. When set to
-/// nil the x units defaults to WW_PIXELS.
+/// The units for this offset's x-parameter.
+///
+/// May be one of WW_PIXELS, WW_INSET_PIXELS, WW_FRACTION, or nil. When set to nil the xUnits defaults to WW_PIXELS.
 @property (nonatomic) NSString* xUnits;
 
-/// The units for this offset's y parameter. May be one of WW_PIXELS, WW_INSET_PIXELS, WW_FRACTION, or nil. When set to
-/// nil the y units defaults to WW_PIXELS.
+/// The units for this offset's y-parameter.
+///
+/// May be one of WW_PIXELS, WW_INSET_PIXELS, WW_FRACTION, or nil. When set to nil yUnits defaults to WW_PIXELS.
 @property (nonatomic) NSString* yUnits;
 
 /// @name Initializing Offsets
@@ -52,10 +64,10 @@
 * The parameters may be any real value. The units may be one of WW_PIXELS, WW_INSET_PIXELS, WW_FRACTION, or nil. Units
 * specified as nil default to WW_PIXELS.
 *
-* @param x The offset's x parameter.
-* @param y The offset's y parameter.
-* @param xUnits The units for the offset's x parameter, may be nil.
-* @param yUnits The units for the offset's y parameter, may be nil.
+* @param x The offset's x-parameter.
+* @param y The offset's y-parameter.
+* @param xUnits The units for the offset's x-parameter, may be nil.
+* @param yUnits The units for the offset's y-parameter, may be nil.
 *
 * @return This offset initialized with the specified parameters and units.
 */
@@ -64,8 +76,7 @@
 /**
 * Initializes this offset as pixel coordinates.
 *
-* The x- and y-parameters indicate pixels relative to a virtual rectangle's lower left corner. The positive x- and
-* y-axes are pointing to the right and up, respectively.
+* The x- and y-parameters indicate pixels relative to the virtual rectangle's origin.
 *
 * @param x The x-coordinate, in pixels.
 * @param y The y-coordinate, in pixels.
@@ -77,8 +88,7 @@
 /**
 * Initializes this offset as inset pixel coordinates.
 *
-* The x- and y-parameters indicate pixels relative to a virtual rectangle's upper right corner. The positive x- and
-* y-axes are pointing to the left and down, respectively.
+* The x- and y-parameters indicate inset pixels relative to the virtual rectangle's corner diagonal to its origin.
 *
 * @param x The x-coordinate, in inset pixels.
 * @param y The y-coordinate, in inset pixels.
@@ -90,8 +100,8 @@
 /**
 * Initializes this offset as fractional coordinates.
 *
-* The x- and y-parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], relative to
-* its lower left corner.
+* The x- and y-parameters indicate fractions of the virtual rectangle's width and height in the range [0,1], where [0,0]
+* corresponds to the rectangle's origin.
 *
 * @param x The x-coordinate, in fractions.
 * @param y The y-coordinate, in fractions.
@@ -111,57 +121,19 @@
 */
 - (WWOffset*) initWithOffset:(WWOffset*)offset;
 
-/// @name Computing the Offset in Pixels
+/// @name Computing the Absolute Offset
 
 /**
-* Computes this offset's absolute x- and y-coordinates in pixels for a rectangle of variable size and scale and adds
-* the coordinates to the specified result vector.
+* Computes this offset's absolute x- and y-coordinates in pixels for a rectangle of a specified size in pixels.
 *
-* The rectangle's width and height are understood to be defined in pixels.
-*
-* The rectangle's x- and y-scale should be either 1.0 to indicate no scaling, or any scaling value that is applied to
-* the rectangle's coordinates during rendering. Scale values are specified independently from dimensions to preserve the
-* offset's location relative the rectangle in its original size. For example, if an offset is configured as pixel
-* coordinates of (10, 10) and a scale of 2x is applied, the absolute offset coordinates are (20, 20). Fractional
-* coordinates are always interpreted relative to the rectangle's scaled dimensions. If scale of 0.0 is specified, the
-* corresponding offset coordinate is also 0.0.
-*
-* The offset's absolute x- and y-coordinates are added to the result vector's x- and y-coordinates, respectively.
+* The returned offset is in pixels relative to the rectangle's origin, and is defined in the coordinate system used by
+* the caller.
 *
 * @param width The rectangle's width, in pixels.
 * @param height The rectangle's height, in pixels.
-* @param xScale The rectangle's x-scale, or 1.0 if the rectangle has no scale.
-* @param yScale The rectangle's y-scale, or 1.0 if the rectangle has no scale.
-* @param result The vector to add this offset's absolute x- and y-coordinates to.
 *
-* @exception NSInvalidArgumentException If the result is nil.
+* @return The offset's absolute x- and y-coordinates in pixels relative to the rectangle's origin.
 */
-- (void) addOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                    result:(WWVec4*)result;
+- (CGPoint) offsetForWidth:(double)width height:(double)height;
 
-/**
-* Computes this offset's absolute x- and y-coordinates in pixels for a rectangle of variable size and scale and
-* subtracts the coordinates from the specified result vector.
-*
-* The rectangle's width and height are understood to be defined in pixels.
-*
-* The rectangle's x- and y-scale should be either 1.0 to indicate no scaling, or any scaling value that is applied to
-* the rectangle's coordinates during rendering. Scale values are specified independently from dimensions to preserve the
-* offset's location relative the rectangle in its original size. For example, if an offset is configured as pixel
-* coordinates of (10, 10) and a scale of 2x is applied, the absolute offset coordinates are (20, 20). Fractional
-* coordinates are always interpreted relative to the rectangle's scaled dimensions. If scale of 0.0 is specified, the
-* corresponding offset coordinate is also 0.0.
-*
-* The offset's absolute x- and y-coordinates are subtracted from the result vector's x- and y-coordinates, respectively.
-*
-* @param width The rectangle's width, in pixels.
-* @param height The rectangle's height, in pixels.
-* @param xScale The rectangle's x-scale, or 1.0 if the rectangle has no scale.
-* @param yScale The rectangle's y-scale, or 1.0 if the rectangle has no scale.
-* @param result The vector to subtract this offset's absolute x- and y-coordinates from.
-*
-* @exception NSInvalidArgumentException If the result is nil.
-*/
-- (void) subtractOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                         result:(WWVec4*)result;
 @end

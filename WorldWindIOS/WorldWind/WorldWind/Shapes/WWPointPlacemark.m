@@ -80,7 +80,7 @@ static WWTexture* currentTexture;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Renderable Interface --//
+//-- Drawing Renderables --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (void) render:(WWDrawContext*)dc
@@ -151,6 +151,7 @@ static WWTexture* currentTexture;
 
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
 {
+    // Compute the placemark's model point and corresponding distance to the eye point.
     [[dc terrain] surfacePointAtLatitude:[_position latitude]
                                longitude:[_position longitude]
                                   offset:[_position altitude]
@@ -159,29 +160,39 @@ static WWTexture* currentTexture;
 
     _eyeDistance = [[[dc navigatorState] eyePoint] distanceTo3:placePoint];
 
+    // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its model
+    // coordinate point onto the viewport. Apply a depth offset in order to cause the placemark to appear above nearby
+    // terrain. When a placemark is displayed near the terrain portions of its geometry are often behind the terrain,
+    // yet as a screen element the placemark is expected to be visible. We adjust its depth values rather than moving
+    // the placemark itself to avoid obscuring its actual position.
     if (![[dc navigatorState] project:placePoint result:point depthOffset:DEFAULT_DEPTH_OFFSET])
     {
         imageBounds = CGRectMake(0, 0, 0, 0);
         return; // The place point is clipped by the near plane or the far plane.
     }
 
+    // Compute the placemark's transform matrix according to its screen point, image size, image offset and image scale.
+    // The image offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the
+    // right from the origin point. When the placemark has no active texture the image scale defines the image size and
+    // no other scaling is applied.
     if (activeTexture != nil)
     {
         double w = [activeTexture imageWidth];
         double h = [activeTexture imageHeight];
         double s = [activeAttributes imageScale];
-        [[activeAttributes imageOffset] subtractOffsetForWidth:w height:h xScale:s yScale:s result:point];
-        [imageTransform setTranslation:[point x] y:[point y] z:[point z]];
+        CGPoint offset = [[activeAttributes imageOffset] offsetForWidth:w height:h];
+        [imageTransform setTranslation:[point x] - offset.x * s y:[point y] - offset.y * s z:[point z]];
         [imageTransform setScale:w * s y:h * s z:1];
     }
     else
     {
         double s = [activeAttributes imageScale];
-        [[activeAttributes imageOffset] subtractOffsetForWidth:s height:s xScale:1 yScale:1 result:point];
-        [imageTransform setTranslation:[point x] y:[point y] z:[point z]];
+        CGPoint offset = [[activeAttributes imageOffset] offsetForWidth:s height:s];
+        [imageTransform setTranslation:[point x] - offset.x y:[point y] - offset.y z:[point z]];
         [imageTransform setScale:s y:s z:1];
     }
 
+    // Compute the rectangle bounding the placemark in the OpenGL coordinate system of the WorldWindow.
     imageBounds = [WWMath boundingRectForUnitQuad:imageTransform];
 }
 
@@ -247,6 +258,10 @@ static WWTexture* currentTexture;
 {
     WWGpuProgram* program = [dc currentProgram];
 
+    [matrix setToMatrix:[dc screenProjection]];
+    [matrix multiplyMatrix:imageTransform];
+    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
+
     if ([dc pickingMode])
     {
         unsigned int pickColor = [dc uniquePickColor];
@@ -266,10 +281,6 @@ static WWTexture* currentTexture;
             currentTexture = activeTexture;
         }
     }
-
-    [matrix setToMatrix:[dc screenProjection]];
-    [matrix multiplyMatrix:imageTransform];
-    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }

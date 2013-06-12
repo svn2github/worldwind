@@ -6,11 +6,14 @@
  */
 
 #import "WorldWind/Util/WWOffset.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWOffset
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing Offsets --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (WWOffset*) initWithX:(double)x y:(double)y xUnits:(NSString*)xUnits yUnits:(NSString*)yUnits
 {
@@ -26,21 +29,36 @@
 
 - (WWOffset*) initWithPixelsX:(double)x y:(double)y
 {
-    self = [self initWithX:x y:y xUnits:WW_PIXELS yUnits:WW_PIXELS];
+    self = [super init];
+
+    _x = x;
+    _y = y;
+    _xUnits = WW_PIXELS;
+    _yUnits = WW_PIXELS;
 
     return self;
 }
 
 - (WWOffset*) initWithInsetPixelsX:(double)x y:(double)y
 {
-    self = [self initWithX:x y:y xUnits:WW_INSET_PIXELS yUnits:WW_INSET_PIXELS];
+    self = [super init];
+
+    _x = x;
+    _y = y;
+    _xUnits = WW_INSET_PIXELS;
+    _yUnits = WW_INSET_PIXELS;
 
     return self;
 }
 
 - (WWOffset*) initWithFractionX:(double)x y:(double)y
 {
-    self = [self initWithX:x y:y xUnits:WW_FRACTION yUnits:WW_FRACTION];
+    self = [super init];
+
+    _x = x;
+    _y = y;
+    _xUnits = WW_FRACTION;
+    _yUnits = WW_FRACTION;
 
     return self;
 }
@@ -62,84 +80,41 @@
     return self;
 }
 
-- (void) addOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                    result:(WWVec4*)result
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Computing the Absolute Offset--//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (CGPoint) offsetForWidth:(double)width height:(double)height
 {
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
-    double x = [result x];
-    double y = [result y];
-
+    double x;
     if ([_xUnits isEqualToString:WW_FRACTION])
     {
-        x += (width * _x) * xScale;
+        x = width * _x;
     }
     else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
     {
-        x += (width - _x) * xScale;
+        x = width - _x;
     }
     else // default to WW_PIXELS
     {
-        x += _x * xScale;
+        x = _x;
     }
 
+    double y;
     if ([_xUnits isEqualToString:WW_FRACTION])
     {
-        y += (height * _y) * yScale;
+        y = height * _y;
     }
     else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
     {
-        y += (height - _y) * yScale;
+        y = height - _y;
     }
     else // default to WW_PIXELS
     {
-        y += _y * yScale;
+        y = _y;
     }
 
-    [result set:x y:y];
-}
-
-- (void) subtractOffsetForWidth:(double)width height:(double)height xScale:(double)xScale yScale:(double)yScale
-                         result:(WWVec4*)result;
-{
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
-    double x = [result x];
-    double y = [result y];
-
-    if ([_xUnits isEqualToString:WW_FRACTION])
-    {
-        x -= (width * _x) * xScale;
-    }
-    else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
-    {
-        x -= (width - _x) * xScale;
-    }
-    else // default to WW_PIXELS
-    {
-        x -= _x * xScale;
-    }
-
-    if ([_xUnits isEqualToString:WW_FRACTION])
-    {
-        y -= (height * _y) * yScale;
-    }
-    else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
-    {
-        y -= (height - _y) * yScale;
-    }
-    else // default to WW_PIXELS
-    {
-        y -= _y * yScale;
-    }
-
-    [result set:x y:y];
+    return CGPointMake((CGFloat) x, (CGFloat) y);
 }
 
 @end
