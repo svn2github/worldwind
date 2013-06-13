@@ -7,14 +7,17 @@
 
 #import <UIKit/UIKit.h>
 #import "WorldWind/Layer/WWWMSTiledImageLayer.h"
-#import "WorldWind/Util/WWWMSCapabilities.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWWMSUrlBuilder.h"
-#import "WorldWind/WWLog.h"
+#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Shapes/WWScreenImage.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWWMSTiledImageLayer
 
@@ -113,14 +116,32 @@
     return nil;
 }
 
-- (void) setEnabled:(BOOL)enabled
+- (void) setLegendEnabled:(BOOL)legendEnabled
 {
-    if (enabled && screenOverlay == nil)
+    if (legendEnabled && legendOverlay == nil)
     {
         [self setupLegend];
     }
 
-    [super setEnabled:enabled];
+    _legendEnabled = legendEnabled;
+}
+
+- (void) doRender:(WWDrawContext*)dc
+{
+    [super doRender:dc];
+
+    if (_legendEnabled)
+    {
+        [self renderLegend:dc];
+    }
+}
+
+- (void) renderLegend:(WWDrawContext*)dc
+{
+    if (legendOverlay != nil)
+    {
+        [legendOverlay render:dc];
+    }
 }
 
 - (void) setupLegend
@@ -166,11 +187,33 @@
         }
 
         // Cache it if so.
-        [[retriever retrievedData] writeToFile:filePath atomically:YES];
+        NSError* error = nil;
+        [[NSFileManager defaultManager] createDirectoryAtPath:cachePath
+                                  withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error != nil)
+        {
+            WWLog("@Error creating legend path %@", [error description]);
+            return;
+        }
+
+        error = nil;
+        [[retriever retrievedData] writeToFile:filePath options:NSDataWritingAtomic error:&error];
+        if (error != nil)
+        {
+            WWLog(@"Error writing legend image to file: %@", [error description]);
+            return;
+        }
     }
 
-    // Create the screen overlay for the legend image.
-    screenOverlay = @"";
+    // Create the screen overlay for the legend image. Place the legend's bottom-right corner 40 pixels to the left and
+    // above the screen's bottom right corner.
+    WWOffset* screenOffset = [[WWOffset alloc] initWithX:40 y:40 xUnits:WW_INSET_PIXELS yUnits:WW_PIXELS];
+    WWOffset* imageOffset = [[WWOffset alloc] initWithFractionX:1 y:0];
+    legendOverlay = [[WWScreenImage alloc] initWithScreenOffset:screenOffset imagePath:filePath];
+    [legendOverlay setImageOffset:imageOffset];
+
+    // Cause the WorldWindView to draw itself.
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 @end

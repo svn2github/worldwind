@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 
+@class WWScreenImage;
 @class WWWMSCapabilities;
 
 /**
@@ -18,7 +19,7 @@
 @interface WWWMSTiledImageLayer : WWTiledImageLayer
 {
     NSString* cachePath;
-    id screenOverlay;
+    WWScreenImage* legendOverlay;
 }
 
 /// @name WMS Tiled Image Layer Attributes
