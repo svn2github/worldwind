@@ -69,6 +69,7 @@ static WWTexture* currentTexture;
     // Placemark geometry.
     placePoint = [[WWVec4 alloc] initWithZeroVector];
     imageTransform = [[WWMatrix alloc] initWithIdentity];
+    texCoordMatrix = [[WWMatrix alloc] initWithIdentity];
 
     _displayName = @"Placemark";
     _highlighted = NO;
@@ -171,18 +172,20 @@ static WWTexture* currentTexture;
         return; // The place point is clipped by the near plane or the far plane.
     }
 
-    // Compute the placemark's transform matrix according to its screen point, image size, image offset and image scale.
-    // The image offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the
-    // right from the origin point. When the placemark has no active texture the image scale defines the image size and
-    // no other scaling is applied.
+    // Compute the placemark's transform matrix and texture coordinate matrix according to its screen point, image size,
+    // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
+    // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
+    // scale defines the image size and no other scaling is applied.
     if (activeTexture != nil)
     {
-        double w = [activeTexture imageWidth];
-        double h = [activeTexture imageHeight];
+        double w = [activeTexture originalImageWidth];
+        double h = [activeTexture originalImageHeight];
         double s = [activeAttributes imageScale];
         CGPoint offset = [[activeAttributes imageOffset] offsetForWidth:w height:h];
         [imageTransform setTranslation:[point x] - offset.x * s y:[point y] - offset.y * s z:[point z]];
         [imageTransform setScale:w * s y:h * s z:1];
+        [texCoordMatrix setToIdentity];
+        [texCoordMatrix multiplyByTextureTransform:activeTexture];
     }
     else
     {
@@ -190,6 +193,7 @@ static WWTexture* currentTexture;
         CGPoint offset = [[activeAttributes imageOffset] offsetForWidth:s height:s];
         [imageTransform setTranslation:[point x] - offset.x y:[point y] - offset.y z:[point z]];
         [imageTransform setScale:s y:s z:1];
+        [texCoordMatrix setToIdentity];
     }
 
     // Compute the rectangle bounding the placemark in the OpenGL coordinate system of the WorldWindow.
@@ -261,6 +265,7 @@ static WWTexture* currentTexture;
     [matrix setToMatrix:[dc screenProjection]];
     [matrix multiplyMatrix:imageTransform];
     [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
+    [program loadUniformMatrix:@"texCoordMatrix" matrix:texCoordMatrix];
 
     if ([dc pickingMode])
     {
@@ -327,14 +332,10 @@ static WWTexture* currentTexture;
     glEnableVertexAttribArray((GLuint) location);
     glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    // Load the texture coordinate matrix and texture sampler unit. These uniform variables do not change during the
-    // program's execution over multiple point placemarks.
-    [matrix setToUnitYFlip];
-    [program loadUniformMatrix:@"texCoordMatrix" matrix:matrix];
+    // Load the texture sampler unit and disable texturing (when in picking mode). These uniform variables do not change
+    // during the program's execution over multiple point placemarks.
     [program loadUniformSampler:@"textureSampler" value:0];
 
-    // Disable texturing when in picking mode. These uniform variables do not change during the program's execution over
-    // multiple point placemarks.
     if ([dc pickingMode])
     {
         [program loadUniformBool:@"enableTexture" value:NO];

@@ -106,10 +106,11 @@
     [self assembleActiveTexture:dc];
     if (texture != nil)
     {
-        int iw = [texture imageWidth];
-        int ih = [texture imageHeight];
-        is = [_imageSize sizeForOriginalWidth:iw originalHeight:ih containerWidth:vs.width containerHeight:vs.height];
-        [texCoordMatrix setToUnitYFlip];
+        double w = [texture originalImageWidth];
+        double h = [texture originalImageHeight];
+        is = [_imageSize sizeForOriginalWidth:w originalHeight:h containerWidth:vs.width containerHeight:vs.height];
+        [texCoordMatrix setToIdentity];
+        [texCoordMatrix multiplyByTextureTransform:texture];
     }
     else
     {

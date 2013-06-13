@@ -29,6 +29,7 @@
     // Placemark geometry.
     WWVec4* placePoint;
     WWMatrix* imageTransform;
+    WWMatrix* texCoordMatrix;
     CGRect imageBounds;
     // Picking attributes.
     WWLayer* pickLayer;
