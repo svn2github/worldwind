@@ -101,11 +101,11 @@
     }
 
     double y;
-    if ([_xUnits isEqualToString:WW_FRACTION])
+    if ([_yUnits isEqualToString:WW_FRACTION])
     {
         y = height * _y;
     }
-    else if ([_xUnits isEqualToString:WW_INSET_PIXELS])
+    else if ([_yUnits isEqualToString:WW_INSET_PIXELS])
     {
         y = height - _y;
     }
