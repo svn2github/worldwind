@@ -297,6 +297,7 @@
         return;
     }
 
+    //[_wwv setContentScaleFactor:[[UIScreen mainScreen] scale]]; // enable retina resolution
     [self.view addSubview:_wwv];
 }
 
