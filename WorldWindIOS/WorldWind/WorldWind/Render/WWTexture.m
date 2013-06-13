@@ -5,13 +5,14 @@
  @version $Id$
  */
 
-#import "UIKit/UIKit.h"
+#import <UIKit/UIKit.h>
 #import "WorldWind/Render/WWTexture.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWTexture
 
@@ -158,7 +159,7 @@
 
     int levelWidth = _imageWidth;
     int levelHeight = _imageHeight;
-    void* levelBits = ((void*) ([self->imageData bytes])) + 13 * sizeof(int);
+    void* levelBits = ((void*) [self->imageData bytes]) + 13 * sizeof(int);
 
     for (int levelNum = 0; levelNum < _numLevels; levelNum++)
     {
@@ -203,6 +204,8 @@
     _textureSize = [self->imageData length];
     _imageWidth = [image imageWidth];
     _imageHeight = [image imageHeight];
+    _originalImageWidth = _imageWidth;
+    _originalImageHeight = _imageHeight;
     _numLevels = [image numLevels];
 }
 
@@ -215,6 +218,8 @@
     _textureSize = [self->imageData length];
     _imageWidth = (int) sqrt([self->imageData length] / bytesPerPixel);
     _imageHeight = _imageWidth;
+    _originalImageWidth = _imageWidth;
+    _originalImageHeight = _imageHeight;
 }
 
 - (void) loadEncodedTexture
@@ -229,15 +234,17 @@
 
     CGImageRef cgImage = [uiImage CGImage];
 
-    _imageWidth = CGImageGetWidth(cgImage);
-    _imageHeight = CGImageGetHeight(cgImage);
-    if (_imageWidth == 0 || _imageHeight == 0)
+    _originalImageWidth = CGImageGetWidth(cgImage);
+    _originalImageHeight = CGImageGetHeight(cgImage);
+    if (_originalImageWidth == 0 || _originalImageHeight == 0)
     {
         _textureCreationFailed = YES;
         WWLog(@"Image size is zero for file %@", _filePath);
         return;
     }
 
+    _imageWidth = [WWMath powerOfTwoCeiling:_originalImageWidth];
+    _imageHeight = [WWMath powerOfTwoCeiling:_originalImageHeight];
     _textureSize = _imageWidth * _imageHeight * 4; // assume 4 bytes per pixel
     void* data = malloc((size_t) _textureSize); // allocate space for the image
 
@@ -247,16 +254,17 @@
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
         context = CGBitmapContextCreate(data, (size_t) _imageWidth, (size_t) _imageHeight,
                 8, (size_t) (4 * _imageWidth), colorSpace, kCGImageAlphaPremultipliedLast);
-        CGRect rect = CGRectMake(0, 0, _imageWidth, _imageHeight);
-        CGContextClearRect(context, rect);
-        CGContextDrawImage(context, rect, cgImage);
+        CGRect clearRect = CGRectMake(0, 0, _imageWidth, _imageHeight);
+        CGRect drawRect = CGRectMake(0, _imageHeight - _originalImageHeight, _originalImageWidth, _originalImageHeight);
+        CGContextClearRect(context, clearRect);
+        CGContextDrawImage(context, drawRect, cgImage);
 
-        self->imageData = [[NSData alloc] initWithBytesNoCopy:data length:(NSUInteger) _textureSize];
+        imageData = [[NSData alloc] initWithBytesNoCopy:data length:(NSUInteger) _textureSize];
     }
     @catch (NSException* exception)
     {
         _textureCreationFailed = YES;
-        self->imageData = nil;
+        imageData = nil;
 
         NSString* msg = [NSString stringWithFormat:@"loading texture data for file %@", _filePath];
         WWLogE(msg, exception);

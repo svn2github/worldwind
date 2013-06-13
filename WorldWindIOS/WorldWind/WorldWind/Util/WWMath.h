@@ -172,6 +172,18 @@
 */
 + (double) normalizeDegreesLongitude:(double)longitude;
 
+/**
+* Returns the next power-of-two given the specified value.
+*
+* This returns the smallest power-of-two that is greater than or equal to than the specified value. This returns 0 if
+* the specified value is zero.
+*
+* @param value The value to compute a power-of-two ceiling for.
+*
+* @return The next power-of-two given the specified value.
+*/
++ (int) powerOfTwoCeiling:(int)value;
+
 /// @name Computing Information About Shapes
 
 /**

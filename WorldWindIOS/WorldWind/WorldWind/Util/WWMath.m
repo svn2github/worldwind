@@ -116,6 +116,26 @@
     return lon > 180 ? lon - 360 : (lon < -180 ? 360 + lon : lon);
 }
 
++ (int) powerOfTwoCeiling:(int)value
+{
+    // Return the value if it's either zero or is already a power of two. Otherwise return the smallest power of two
+    // that's greater than the value.
+
+    if (value == 0)
+    {
+        return 0;
+    }
+    else if (value != 0 && (value & (value - 1)) == 0)
+    {
+        return value; // take from http://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+    }
+    else
+    {
+        double n = ceil(log2(value)); // the n'th power of two larger than value
+        return (int) exp2(n);
+    }
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Computing Information About Shapes --//
 //--------------------------------------------------------------------------------------------------------------------//

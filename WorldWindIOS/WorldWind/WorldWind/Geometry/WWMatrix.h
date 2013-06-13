@@ -11,6 +11,7 @@
 @class WWFrustum;
 @class WWPosition;
 @class WWGlobe;
+@class WWTexture;
 @class WWVec4;
 
 /**
@@ -260,6 +261,21 @@
 * @exception NSInvalidArgumentException If either argument is nil.
 */
 - (WWMatrix*) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
+
+/**
+* Multiplies this matrix by a texture image transform for the specified texture.
+*
+* A texture image transform maps the bottom-left corner of the texture's image data to coordinate [0,0] and maps the
+* top-right of the texture's image data to coordinate [1,1]. This correctly handles textures whose image data has
+* non-power-of-two dimensions, and correctly orients textures whose image data has its origin in the upper-left corner.
+*
+* @param texture The texture to multiply a transform for.
+*
+* @return This matrix multiplied by a texture transform matrix.
+*
+* @exception NSInvalidArgumentException If the texture is nil.
+*/
+- (WWMatrix*) multiplyByTextureTransform:(WWTexture*)texture;
 
 /**
 * Extracts this transform matrix's translation components.
