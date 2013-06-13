@@ -455,41 +455,13 @@
     }
 
     // Compute the scale necessary to map the edge of the image data to the range [0,1]. When the texture contains
-    // power-of-two image data, the scale is set to 1 and has no effect. Otherwise, the scale is configured such that
-    // the portion of the texture containing image data maps to coordinates [0,0] and [0,1]. Additionally, we offset the
-    // texture coordinates at the top-right corner of the image data by 1/2 pixel. This simulates the effect on texture
-    // coordinates normally performed by texture edge clamping by suppressing the sampling of one pixel beyond the image
-    // data. This does not happen otherwise since the image data ends before the texture data. See the OpenGL ES
-    // specification, sections 3.7.6 and 3.7.7 for an overview of texture coordinates and edge clamping:
-    // http://www.khronos.org/registry/gles/specs/2.0/es_full_spec_2.0.25.pdf
+    // power-of-two image data the scale is 1 and has no effect. Otherwise, the scale is computed such that the portion
+    // of the texture containing image data maps to the range [0,1].
+    double sx = (double) [texture originalImageWidth] / (double) [texture imageWidth];
+    double sy = (double) [texture originalImageHeight] / (double) [texture imageHeight];
 
-    double iw = [texture imageWidth];
-    double ih = [texture imageHeight];
-    double ow = [texture originalImageWidth];
-    double oh = [texture originalImageHeight];
-
-    double sx;
-    if (iw == ow) // texture image width is a power-of-two; no scaling necessary
-    {
-        sx = 1;
-    }
-    else // texture image width is smaller than the texture width; scale to fit the texture image width
-    {
-        sx = ow / iw - 1 / (2 * iw);
-    }
-
-    double sy;
-    if (ih == oh) // texture image height is a power-of-two; no scaling necessary
-    {
-        sy = oh / ih - 1 / (2 * ih);
-    }
-    else // texture image height is smaller than the texture width; scale to fit the texture image height
-    {
-        sy = 1;
-    }
-
-    // Multiply this by a scaling matrix that maps the edges of image data to the range [0,1] and inverts the y axis. We
-    // have precomputed the result here in order to avoid an unnecessary matrix multiplication.
+    // Multiply this by a scaling matrix that maps the texture's image data to the range [0,1] and inverts the y axis.
+    // We have precomputed the result here in order to avoid an unnecessary matrix multiplication.
     [self multiply:sx m01:0 m02:0 m03:0
                m10:0 m11:-sy m12:0 m13:sy
                m20:0 m21:0 m22:1 m23:0
