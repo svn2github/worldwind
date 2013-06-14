@@ -162,6 +162,19 @@
 - (void) loadUniformFloat:(NSString*)uniformName value:(float)value;
 
 /**
+* Sets the value of a named uniform int to a specified value.
+*
+* An OpenGL context must be current when this method is called.
+*
+* @param uniformName The name of the uniform variable.
+* @param value The value to set the uniform variable to.
+*
+* @exception NSInvalidArgumentException If the specified uniform name is nil or empty or the uniform variable does
+* not exist in the program.
+*/
+- (void) loadUniformInt:(NSString*)uniformName value:(int)value;
+
+/**
 * Sets the value of a named uniform bool to a specified value.
 *
 * An OpenGL context must be current when this method is called.

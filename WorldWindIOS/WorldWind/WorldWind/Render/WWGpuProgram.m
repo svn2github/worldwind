@@ -235,7 +235,8 @@
     int location = [self getUniformLocation:samplerName];
     if (location < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform sampler name is invalid")
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform sampler name %@ is invalid", samplerName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     glUniform1i(location, value);
@@ -251,7 +252,8 @@
     int location = [self getUniformLocation:colorName];
     if (location < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is invalid")
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform color name %@ is invalid", colorName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     if (color == nil)
@@ -272,7 +274,8 @@
     int location = [self getUniformLocation:colorName];
     if (location < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color name is invalid")
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform color name %@ is invalid", colorName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     // Convert the color from a packed int.
@@ -294,10 +297,28 @@
     int location = [self getUniformLocation:uniformName];
     if (location < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is invalid")
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform name %@ is invalid", uniformName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     glUniform1f(location, value);
+}
+
+- (void) loadUniformInt:(NSString*)uniformName value:(int)value
+{
+    if (uniformName == nil || uniformName.length == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is empty")
+    }
+
+    int location = [self getUniformLocation:uniformName];
+    if (location < 0)
+    {
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform name %@ is invalid", uniformName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    glUniform1i(location, value);
 }
 
 - (void) loadUniformBool:(NSString*)uniformName value:(BOOL)value
@@ -310,7 +331,8 @@
     int location = [self getUniformLocation:uniformName];
     if (location < 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Uniform name is invalid")
+        NSString* msg = [[NSString alloc] initWithFormat:@"Uniform name %@ is invalid", uniformName];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
     glUniform1i(location, value);
