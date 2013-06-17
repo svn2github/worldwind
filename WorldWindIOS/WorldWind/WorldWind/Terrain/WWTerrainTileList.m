@@ -74,9 +74,8 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
     }
 
-    for (NSUInteger i = 0; i < [self->tiles count]; i++)
+    for (WWTerrainTile* tile in tiles)
     {
-        WWTerrainTile* tile = [self->tiles objectAtIndex:i];
         if ([[tile sector] contains:latitude longitude:longitude])
         {
             [tile surfacePoint:latitude longitude:longitude offset:offset result:result];

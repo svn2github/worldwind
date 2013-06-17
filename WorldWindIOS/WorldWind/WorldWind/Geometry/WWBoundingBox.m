@@ -45,10 +45,8 @@
     double minDotT = DBL_MAX;
     double maxDotT = -minDotT;
 
-    for (NSUInteger i = 0; i < [points count]; i++)
+    for (WWVec4* p in points)
     {
-        WWVec4* p = [points objectAtIndex:i];
-
         if (p == nil)
             continue;
 

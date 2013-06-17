@@ -206,10 +206,8 @@
     double c13 = 0;
     double c23 = 0;
 
-    for (NSUInteger i = 0; i < [points count]; i++)
+    for (WWVec4* vec in points)
     {
-        WWVec4* vec = [points objectAtIndex:i];
-
         if (vec == nil)
             continue;
 

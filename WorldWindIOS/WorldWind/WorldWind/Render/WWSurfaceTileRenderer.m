@@ -69,10 +69,8 @@
             [_intersectingGeometry removeAllObjects];
             [self assembleIntersectingGeometry:surfaceTile terrainTiles:terrainTiles];
 
-            for (NSUInteger i = 0; i < [_intersectingGeometry count]; i++)
+            for (WWTerrainTile* terrainTile in _intersectingGeometry)
             {
-                WWTerrainTile* terrainTile = [_intersectingGeometry objectAtIndex:i];
-
                 [terrainTile beginRendering:dc];
                 @try
                 {
@@ -135,9 +133,8 @@
             @try
             {
                 [dc setNumRenderedTiles:[dc numRenderedTiles] + [_intersectingTiles count]];
-                for (NSUInteger j = 0; j < [_intersectingTiles count]; j++)
+                for (id <WWSurfaceTile> surfaceTile in _intersectingTiles)
                 {
-                    id <WWSurfaceTile> surfaceTile = [_intersectingTiles objectAtIndex:j];
                     if ([surfaceTile bind:dc])
                     {
                         [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];

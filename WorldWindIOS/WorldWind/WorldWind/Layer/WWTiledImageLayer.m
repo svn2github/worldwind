@@ -278,10 +278,8 @@
         [self createTopLevelTiles];
     }
 
-    for (NSUInteger i = 0; i < [topLevelTiles count]; i++)
+    for (WWTextureTile* tile in topLevelTiles)
     {
-        WWTextureTile* tile = [topLevelTiles objectAtIndex:i];
-
         [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
         [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 
@@ -312,13 +310,10 @@
             currentAncestorTile = tile;
         }
 
-        // TODO: Surround this loop with an autorelease pool since a lot of tiles are generated?
         WWLevel* nextLevel = [levels level:[[tile level] levelNumber] + 1];
         NSArray* subTiles = [tile subdivide:nextLevel cache:tileCache tileFactory:self];
-        for (NSUInteger i = 0; i < 4; i++)
+        for (WWTile* child in subTiles)
         {
-            WWTile* child = [subTiles objectAtIndex:i];
-
             [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
             [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
 

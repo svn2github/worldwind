@@ -66,9 +66,8 @@
 
     // TODO: Rather than set the opacity field of renderables, set a field for "layer opacity" in the draw context
     // and implement the renderables to composite it with their own opacity.
-    for (NSUInteger i = 0; i < [[self renderables] count]; i++)
+    for (id renderable in [self renderables])
     {
-        id renderable = [[self renderables] objectAtIndex:i];
         if ([renderable isMemberOfClass:[WWTiledImageLayer class]])
         {
             [((WWTiledImageLayer*) renderable) setOpacity:opacity];
@@ -78,9 +77,9 @@
 
 - (void) doRender:(WWDrawContext*)dc
 {
-    for (NSUInteger i = 0; i < [_renderables count]; i++)
+    for (id renderable in [self renderables])
     {
-        [[_renderables objectAtIndex:i] render:dc];
+        [renderable render:dc];
     }
 }
 
