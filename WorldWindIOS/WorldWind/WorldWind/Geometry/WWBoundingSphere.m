@@ -10,6 +10,7 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWFrustum.h"
 #import "WorldWind/Geometry/WWPlane.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWBoundingSphere
 
@@ -30,10 +31,8 @@
     double ymax = ymin;
     double zmax = zmin;
 
-    for (NSUInteger i = 0; i < [points count]; i++)
+    for (WWVec4* point in points)
     {
-        WWVec4* point = [points objectAtIndex:i];
-
         double x = [point x];
         if (x > xmax)
             xmax = x;
@@ -129,6 +128,52 @@
         return NO;
 
     return YES;
+}
+
++ (int) intersectsFrustum:(WWFrustum*)frustum center:(WWVec4*)center radius:(double)radius
+{
+    if (frustum == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Frustum is nil")
+    }
+
+    double d = [[frustum far] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    d = [[frustum near] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    d = [[frustum left] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    d = [[frustum right] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    d = [[frustum top] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    d = [[frustum bottom] dot:center];
+    if (d <= -radius)
+        return WW_OUT;
+    if (fabs(d) < radius)
+        return WW_INTERSECTS;
+
+    return WW_IN;
 }
 
 @end

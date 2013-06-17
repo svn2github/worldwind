@@ -5,6 +5,10 @@
  @version $Id$
  */
 
+#define WW_IN (0)
+#define WW_INTERSECTS (1)
+#define WW_OUT (2)
+
 extern NSString* const WW_ABSENT;
 extern NSString* const WW_ALTITUDE_MODE_ABSOLUTE;
 extern NSString* const WW_ALTITUDE_MODE_CLAMP_TO_GROUND;

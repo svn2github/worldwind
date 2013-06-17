@@ -49,4 +49,18 @@
 */
 - (WWBoundingSphere*) initWithPoint:(WWVec4*)point radius:(double)radius;
 
+/**
+* Determines whether a sphere's relationship to a specified frustum.
+*
+* @param frustum The frustum to test.
+* @param center The sphere's center point.
+* @param radius The sphere's radius.
+*
+* @return WW_OUT if the sphere is outside the frustum. WW_INTERSECTS if the sphere intersects the frustum, or
+* WW_IN if the sphere is wholly contained within the frustum.
+*
+* @exception NSInvalidArgumentException If the frustum is nil.
+*/
++ (int) intersectsFrustum:(WWFrustum*)frustum center:(WWVec4*)center radius:(double)radius;
+
 @end
