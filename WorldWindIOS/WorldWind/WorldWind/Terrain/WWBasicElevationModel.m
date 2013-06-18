@@ -610,6 +610,7 @@
 
         [absentResources markResourceAbsent:imagePath];
         [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        [currentRetrievals removeObject:imagePath];
         return;
     }
 
@@ -628,6 +629,7 @@
 
         [absentResources markResourceAbsent:imagePath];
         [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        [currentRetrievals removeObject:imagePath];
         return;
     }
 
