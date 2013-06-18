@@ -28,6 +28,7 @@
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Tiled Image Layers --//
@@ -78,6 +79,7 @@
                                       numLevels:numLevels];
     topLevelTiles = [[NSMutableArray alloc] init];
     currentTiles = [[NSMutableArray alloc] init];
+    _currentTilesInvalid = YES;
     tileCache = [[WWMemoryCache alloc] initWithCapacity:500000 lowWater:400000];
     detailHintOrigin = 2.4;
 
@@ -234,22 +236,19 @@
     if ([dc surfaceGeometry] == nil)
         return;
 
-    [self assembleTiles:dc];
-
-//    NSLog(@"CURRENT TILES %d", [currentTiles count]);
-//    for (NSUInteger i = 0; i < [currentTiles count]; i++)
-//    {
-//        WWTextureTile* tile = [currentTiles objectAtIndex:i];
-//        WWSector* s = [tile sector];
-//        NSLog(@"SHOWING %f, %f, %f, %f", [s minLatitude], [s maxLatitude], [s minLongitude], [s maxLongitude]);
-//    }
+    // See if we can reuse the previous set of tiles. We can if the modelview-projection matrix, which governs the
+    // frustum, is the same as when we last generated the set.
+    if ([self currentTilesInvalid] || lasTtMVP == nil || ![[[dc navigatorState] modelviewProjection] isEqual:lasTtMVP])
+    {
+        [self assembleTiles:dc];
+        [self setCurrentTilesInvalid:NO];
+    }
+    lasTtMVP = [[dc navigatorState] modelviewProjection];
 
     if ([currentTiles count] > 0)
     {
         [dc setNumImageTiles:[dc numImageTiles] + [currentTiles count]];
         [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:currentTiles opacity:[self opacity]];
-
-        [currentTiles removeAllObjects];
     }
 }
 
@@ -560,6 +559,7 @@
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
+            [self setCurrentTilesInvalid:YES];
             NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
             [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
         }
@@ -590,6 +590,7 @@
 
         [absentResources markResourceAbsent:pathKey];
         [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        [currentRetrievals removeObject:pathKey];
         return;
     }
 
@@ -608,6 +609,7 @@
 
         [absentResources markResourceAbsent:pathKey];
         [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+        [currentRetrievals removeObject:pathKey];
         return;
     }
 
@@ -631,6 +633,7 @@
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
 
+            [self setCurrentTilesInvalid:YES];
             [absentResources unmarkResourceAbsent:pathKey];
 
             NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];

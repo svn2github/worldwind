@@ -79,6 +79,26 @@
     return self;
 }
 
+- (BOOL) isEqual:(WWMatrix*)n
+{
+    return self->m[0] == n->m[0]
+            && self->m[1] == n->m[1]
+            && self->m[2] == n->m[2]
+            && self->m[3] == n->m[3]
+            && self->m[4] == n->m[4]
+            && self->m[5] == n->m[5]
+            && self->m[6] == n->m[6]
+            && self->m[7] == n->m[7]
+            && self->m[8] == n->m[8]
+            && self->m[9] == n->m[9]
+            && self->m[10] == n->m[10]
+            && self->m[11] == n->m[11]
+            && self->m[12] == n->m[12]
+            && self->m[13] == n->m[13]
+            && self->m[14] == n->m[14]
+            && self->m[15] == n->m[15];
+}
+
 - (WWMatrix*) initWithMatrix:(WWMatrix*)matrix
 {
     if (matrix == nil)

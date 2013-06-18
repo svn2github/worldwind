@@ -22,6 +22,8 @@
 @class WWTextureTile;
 @class WWTileKey;
 @protocol WWUrlBuilder;
+@class WWMatrix;
+@class WWFrustum;
 
 /**
 * Provides a layer that displays multi-resolution imagery arranged as adjacent tiles. This is the primary World
@@ -57,6 +59,7 @@
     NSMutableSet* currentRetrievals;
     NSMutableSet* currentLoads;
     WWAbsentResourceList* absentResources;
+    WWMatrix* lasTtMVP;
 }
 
 /// @name Attributes
@@ -84,6 +87,9 @@
 
 /// The current detail hint.
 @property (nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
+
+/// For internal use only.
+@property BOOL currentTilesInvalid; // must be atomic because it's accessed by separate threads
 
 /// @name Initializing Tiled Image Layers
 
