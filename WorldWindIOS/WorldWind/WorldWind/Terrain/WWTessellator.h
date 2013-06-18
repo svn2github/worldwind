@@ -19,28 +19,12 @@
 @class WWLevelSet;
 @class WWMemoryCache;
 @class WWPickedObject;
-@class WWMatrix;
 
 /**
 * Provides tessellation of a globe. Applications typically do not interact with a tessellator. Tessellators are
 * created by globe instances and invoked by scene controller.
 */
 @interface WWTessellator : NSObject <WWTileFactory>
-{
-    WWLevelSet* levels;
-    NSMutableArray* topLevelTiles;
-    WWTerrainTileList* currentTiles;
-    WWSector* currentCoverage;
-    double detailHintOrigin;
-
-    WWMemoryCache* tileCache;
-    NSDate* elevationTimestamp;
-    double* tileElevations;
-    WWMatrix* lastMVP;
-
-    int vertexPointLocation;
-    int vertexTexCoordLocation;
-}
 
 /// @name Tessellator Attributes
 
