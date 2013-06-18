@@ -30,20 +30,6 @@
 #import "WorldWind/Util/WWMath.h"
 
 @implementation WWTessellator
-{
-    WWLevelSet* levels;
-    NSMutableArray* topLevelTiles;
-    WWTerrainTileList* currentTiles;
-    WWSector* currentCoverage;
-    double detailHintOrigin;
-
-    WWMemoryCache* tileCache;
-    NSDate* elevationTimestamp;
-    double* tileElevations;
-
-    int vertexPointLocation;
-    int vertexTexCoordLocation;
-}
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Tessellators --//
@@ -96,9 +82,18 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
+    NSDate* lastElevationsChange = [[dc globe] elevationTimestamp];
+    if ([currentTiles count] > 0
+            && elevationTimestamp != nil && [elevationTimestamp isEqualToDate:lastElevationsChange]
+            && lastMVP != nil && [[[dc navigatorState] modelviewProjection] isEqual:lastMVP])
+    {
+        return currentTiles;
+    }
+    lastMVP = [[dc navigatorState] modelviewProjection];
+
     [self->currentTiles removeAllTiles];
     self->currentCoverage = nil;
-    self->elevationTimestamp = [[dc globe] elevationTimestamp]; // Store the elevation timestamp to prevent it from changing during tessellation.
+    self->elevationTimestamp = lastElevationsChange; // Store the elevation timestamp to prevent it from changing during tessellation.
 
     if ([self->topLevelTiles count] == 0)
     {
@@ -920,7 +915,7 @@
 
     // Check all triangles for intersection with the pick ray.
 
-    BOOL found = NO;
+    BOOL found;
     WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
     int nIndices = [_sharedGeometry numIndices];
     short* indices = [_sharedGeometry indices];
