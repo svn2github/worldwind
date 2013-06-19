@@ -6,8 +6,8 @@
  */
 
 #import "WorldWind/Geometry/WWLine.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/WWLog.h"
-#import "WWVec4.h"
 
 @implementation WWLine
 
@@ -36,7 +36,7 @@
     return self;
 }
 
-- (void) pointAt:(double)distance result:(WWVec4*)result
+- (void) pointAt:(double)distance result:(WWVec4* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -46,7 +46,7 @@
     [WWVec4 pointOnLine:_origin direction:_direction t:distance result:result];
 }
 
-- (void) nearestPointTo:(WWVec4*)point result:(WWVec4*)result
+- (void) nearestPointTo:(WWVec4* __unsafe_unretained)point result:(WWVec4* __unsafe_unretained)result
 {
     if (point == nil)
     {

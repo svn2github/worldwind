@@ -42,7 +42,7 @@
 *
 * @return The initialized line.
 *
-* @exception NSInvalidArgumentException If either parameter is nil, or if the direction vector's length is zero.
+* @exception NSInvalidArgumentException If either argument is nil, or if the direction has zero length.
 */
 - (WWLine*) initWithOrigin:(WWVec4*)origin direction:(WWVec4*)direction;
 
@@ -70,7 +70,7 @@
 * @param point The point by which the nearest point on this line is determined.
 * @param result A WWVec4 instance in which to return the nearest point.
 *
-* @exception NSInvalidArgumentException If either parameter is nil.
+* @exception NSInvalidArgumentException If either argument is nil.
 */
 - (void) nearestPointTo:(WWVec4*)point result:(WWVec4*)result;
 
