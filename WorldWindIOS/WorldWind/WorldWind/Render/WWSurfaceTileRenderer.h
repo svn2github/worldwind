@@ -30,12 +30,6 @@
 
 /// @name Surface Tile Renderer Attributes
 
-/// The surface tiles intersecting the terrain tile most recently specified to assembleIntersectingTiles.
-@property (nonatomic, readonly) NSMutableArray* intersectingTiles;
-
-/// The terrain tiles intersecting the surface tile most recently specified to assembleIntersectingGeometry.
-@property (nonatomic, readonly) NSMutableArray* intersectingGeometry;
-
 /**
 * Returns the GPU program (WWGpuProgram) used by this surface tile renderer.
 *
@@ -82,40 +76,24 @@
 
 /// @name Supporting Methods of Interest Only to Subclasses
 
-/**
-* Determine the surface tiles that intersect a specified terrain tile.
-*
-* This method places the set of intersecting surface tiles in this instance's intersectingTiles property.
-*
-* @param terrainTile The terrain tile to find intersections for.
-* @param surfaceTiles The surface tiles to test for intersection.
-*/
-- (void) assembleIntersectingTiles:(WWTerrainTile*)terrainTile surfaceTiles:(NSArray*)surfaceTiles;
-
-/**
-* Determine the terrain tiles that intersect a specified surface tile.
-*
-* This method places the set of intersecting tiles in this instance's intersectingGeometry property.
-*
-* @param surfaceTile The surface tile to find intersections for.
-* @param terrainTiles The terrain tiles to test for intersection.
-*/
-- (void) assembleIntersectingGeometry:(id <WWSurfaceTile>)surfaceTile terrainTiles:(WWTerrainTileList*)terrainTiles;
-
-
 // The following methods are intentionally not documented.
-
-- (void) applyTileState:(WWDrawContext*)dc
-            terrainTile:(WWTerrainTile*)terrainTile
-            surfaceTile:(id <WWSurfaceTile>)surfaceTile;
-
-- (void) computeTileCoordMatrix:(WWTerrainTile*)terrainTile
-                    surfaceTile:(id <WWSurfaceTile>)surfaceTile
-                         result:(WWMatrix*)result;
 
 - (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program opacity:(float)opacity;
 
 - (void) endRendering:(WWDrawContext*)dc;
 
-@end
+- (void) drawIntersectingTiles:(WWDrawContext*)dc
+                   terrainTile:(WWTerrainTile*)terrainTile
+                  surfaceTiles:(NSArray*)surfaceTiles
+                     tileCount:(NSUInteger*)tileCount;
 
+- (void) drawIntersectingTiles:(WWDrawContext*)dc
+                   surfaceTile:(id <WWSurfaceTile>)surfaceTile
+                  terrainTiles:(WWTerrainTileList*)terrainTiles
+                     tileCount:(NSUInteger*)tileCount;
+
+- (void) applyTileState:(WWDrawContext*)dc
+            terrainTile:(WWTerrainTile*)terrainTile
+            surfaceTile:(id <WWSurfaceTile>)surfaceTile;
+
+@end
