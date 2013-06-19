@@ -232,4 +232,10 @@
     }
 }
 
+- (void) requestRedraw
+{
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+}
+
 @end

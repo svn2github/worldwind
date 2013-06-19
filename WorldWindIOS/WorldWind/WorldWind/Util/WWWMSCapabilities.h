@@ -380,7 +380,7 @@
 /**
 * Returns the legend URLs for a specified layer style.
 *
-* @param The style capabilities.
+* @param styleCaps The style capabilities.
 *
 * @return The style's legend URL elements, or nil if none are declared.
 *
