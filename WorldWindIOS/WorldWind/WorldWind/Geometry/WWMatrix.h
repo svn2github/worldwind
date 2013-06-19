@@ -77,7 +77,7 @@
 *
 * @return The initialized matrix.
 *
-* @exception NSInvalidArgumentException if the specified matrix is nil or cannot be inverted.
+* @exception NSInvalidArgumentException if the matrix is nil or cannot be inverted.
 */
 - (WWMatrix*) initWithInverse:(WWMatrix*)matrix;
 
@@ -89,7 +89,7 @@
 *
 * @return The initialized matrix.
 *
-* @exception NSInvalidArgumentException if the specified matrix is nil.
+* @exception NSInvalidArgumentException if the matrix is nil.
 */
 - (WWMatrix*) initWithTransformInverse:(WWMatrix*)matrix;
 
@@ -100,7 +100,7 @@
 *
 * @return This matrix initialized to the transpose of the specified matrix.
 *
-* @exception NSInvalidArgumentException if the specified matrix is nil.
+* @exception NSInvalidArgumentException if the matrix is nil.
 */
 - (WWMatrix*) initWithTranspose:(WWMatrix*)matrix;
 
@@ -119,10 +119,8 @@
 
 /**
 * Sets this matrix to the identity matrix.
-*
-* @return This matrix set to the identity matrix.
 */
-- (WWMatrix*) setToIdentity;
+- (void) setToIdentity;
 
 /**
 * Sets all values of this matrix to specified values.
@@ -143,24 +141,20 @@
 * @param m31 The value at row 3 column 1;
 * @param m32 The value at row 3 column 2;
 * @param m33 The value at row 3 column 3;
-*
-* @return This matrix with the specified values.
 */
-- (WWMatrix*) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
-              m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
-              m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
-              m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
+- (void) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
+         m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
+         m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
+         m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
 /**
 * Sets this matrix to the values of a specified matrix.
 *
 * @param matrix The matrix whose values are assigned to this instance's.
 *
-* @return This matrix with its values set to those of the specified matrix.
-*
 * @exception NSInvalidArgumentException If the matrix is nil.
 */
-- (WWMatrix*) setToMatrix:(WWMatrix*)matrix;
+- (void) setToMatrix:(WWMatrix*)matrix;
 
 /// @name Working With Transform Matrices
 
@@ -170,10 +164,8 @@
 * @param x The X translation component.
 * @param y The Y translation component.
 * @param z The Z translation component.
-*
-* @return This matrix as a translation matrix for a translation of the specified values.
 */
-- (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z;
+- (void) setToTranslation:(double)x y:(double)y z:(double)z;
 
 /**
 * Sets the translation components of this matrix to specified values, leaving the other components unmodified.
@@ -181,10 +173,8 @@
 * @param x The X component of translation.
 * @param y The Y component of translation.
 * @param z The Z component of translation.
-*
-* @return This matrix with its translation components set to the specified values.
 */
-- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z;
+- (void) setTranslation:(double)x y:(double)y z:(double)z;
 
 /**
 * Multiplies this matrix by a translation matrix with the specified translation values.
@@ -192,10 +182,8 @@
 * @param x The X translation component.
 * @param y The Y translation component.
 * @param z The Z translation component.
-*
-* @return This matrix multiplied by a translation matrix.
 */
-- (WWMatrix*) multiplyByTranslation:(double)x y:(double)y z:(double)z;
+- (void) multiplyByTranslation:(double)x y:(double)y z:(double)z;
 
 /**
 * Multiplies this matrix by a rotation matrix about the specified axis and angle.
@@ -207,10 +195,8 @@
 * @param y The rotation axis' Y component.
 * @param z The rotation axis' Z component.
 * @param angle The rotation angle, in degrees.
-*
-* @return This matrix multiplied by a rotation matrix.
 */
-- (WWMatrix*) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle;
+- (void) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle;
 
 /**
 * Multiplies this matrix by a scaling matrix with the specified values.
@@ -218,10 +204,8 @@
 * @param x The X scaling component.
 * @param y The Y scaling component.
 * @param z The Z scaling component.
-*
-* @return This matrix multiplied by a scaling matrix.
 */
-- (WWMatrix*) multiplyByScale:(double)x y:(double)y z:(double)z;
+- (void) multiplyByScale:(double)x y:(double)y z:(double)z;
 
 /**
 * Sets the scale components of this matrix to specified values, leaving the other components unmodified.
@@ -229,22 +213,18 @@
 * @param x The X component of scale.
 * @param y The Y component of scale.
 * @param z The Z component of scale.
-*
-* @return This matrix with its scale components set to the specified values.
 */
-- (WWMatrix*) setScale:(double)x y:(double)y z:(double)z;
+- (void) setScale:(double)x y:(double)y z:(double)z;
 
 /**
 * Sets this matrix to one that flips and shifts the y-axis.
 *
-* All existing values are overwritten. This matrix is
-* usually used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin.
-* This is typically necessary to align the coordinate system of images (upper left origin) with that of OpenGL (lower
-* left origin).
-*
-* @return A matrix that maps Y=0 to Y = 1 and Y=1 to Y=0.
+* The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0. All existing values are overwritten. This matrix is usually used
+* to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin. This is
+* typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL (bottom-left
+* origin).
 */
-- (WWMatrix*) setToUnitYFlip;
+- (void) setToUnitYFlip;
 
 /**
 * Multiplies this matrix by a local coordinate system transform for the specified globe.
@@ -256,11 +236,9 @@
 * @param origin The local coordinate system origin, in model coordinates.
 * @param globe The globe the coordinate system is relative to.
 *
-* @return This matrix multiplied by a local coordinate system transform matrix.
-*
 * @exception NSInvalidArgumentException If either argument is nil.
 */
-- (WWMatrix*) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
+- (void) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe;
 
 /**
 * Multiplies this matrix by a texture image transform for the specified texture.
@@ -271,11 +249,9 @@
 *
 * @param texture The texture to multiply a transform for.
 *
-* @return This matrix multiplied by a texture transform matrix.
-*
 * @exception NSInvalidArgumentException If the texture is nil.
 */
-- (WWMatrix*) multiplyByTextureTransform:(WWTexture*)texture;
+- (void) multiplyByTextureTransform:(WWTexture*)texture;
 
 /**
 * Extracts this transform matrix's translation components.
@@ -331,15 +307,13 @@
 * @param roll The viewer's angle relative to the horizon, in degrees.
 * @param globe The globe the viewer is looking at.
 *
-* @return This matrix multiplied by a first person viewing matrix.
-*
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWMatrix*) multiplyByFirstPersonModelview:(WWPosition*)eyePosition
-                              headingDegrees:(double)heading
-                                 tiltDegrees:(double)tilt
-                                 rollDegrees:(double)roll
-                                     onGlobe:(WWGlobe*)globe;
+- (void) multiplyByFirstPersonModelview:(WWPosition*)eyePosition
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                            rollDegrees:(double)roll
+                                onGlobe:(WWGlobe*)globe;
 /**
 * Multiplies this matrix by a look at viewing matrix for the specified globe.
 *
@@ -370,16 +344,14 @@
 * @param roll The viewer's angle relative to the horizon, in degrees.
 * @param globe The globe the viewer is looking at.
 *
-* @return This matrix multiplied by a look at viewing matrix.
-*
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWMatrix*) multiplyByLookAtModelview:(WWPosition*)lookAtPosition
-                                  range:(double)range
-                         headingDegrees:(double)heading
-                            tiltDegrees:(double)tilt
-                            rollDegrees:(double)roll
-                                onGlobe:(WWGlobe*)globe;
+- (void) multiplyByLookAtModelview:(WWPosition*)lookAtPosition
+                             range:(double)range
+                    headingDegrees:(double)heading
+                       tiltDegrees:(double)tilt
+                       rollDegrees:(double)roll
+                           onGlobe:(WWGlobe*)globe;
 
 /**
 * Sets this matrix to a perspective projection matrix for the specified viewport and clip distances.
@@ -399,12 +371,10 @@
 * @param near The near clip plane distance, in model coordinates.
 * @param far The far clip plane distance, in model coordinates.
 *
-* @return This matrix set to a perspective projection matrix.
-*
 * @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, if near and far
 * are equivalent, or if either near or far ar not positive.
 */
-- (WWMatrix*) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far;
+- (void) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far;
 
 /**
 * Sets this matrix to an screen projection matrix for the specified viewport.
@@ -423,11 +393,9 @@
 *
 * @param viewport The viewport rectangle, in OpenGL screen coordinates.
 *
-* @return This matrix set to a screen projection matrix.
-*
 * @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
 */
-- (WWMatrix*) setToScreenProjection:(CGRect)viewport;
+- (void) setToScreenProjection:(CGRect)viewport;
 
 /**
 * Extracts this viewing matrix's eye point.
@@ -538,11 +506,9 @@
 *
 * @param matrix The matrix to multiply with this matrix.
 *
-* @return This matrix multiplied by the specified matrix: *this matrix X input matrix*.
-*
-* @exception NSInvalidArgumentException if the specified matrix is nil.
+* @exception NSInvalidArgumentException if the matrix is nil.
 */
-- (WWMatrix*) multiplyMatrix:(WWMatrix*)matrix;
+- (void) multiplyMatrix:(WWMatrix*)matrix;
 
 /**
 * Multiplies this matrix by a matrix specified by individual components.
@@ -563,13 +529,11 @@
 * @param m31 The value at row 3 column 1;
 * @param m32 The value at row 3 column 2;
 * @param m33 The value at row 3 column 3;
-*
-* @return This matrix multiplied by the matrix with the specified values.
 */
-- (WWMatrix*) multiply:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
-                   m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
-                   m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
-                   m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
+- (void) multiply:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
+              m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
+              m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
+              m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33;
 
 /**
 * Inverts the specified matrix and stores the result in this matrix.
@@ -580,11 +544,9 @@
 *
 * @param matrix The matrix whose inverse is computed.
 *
-* @return This matrix with its values set to the inverse of the specified matrix.
-*
-* @exception NSInvalidArgumentException If the specified matrix is nil or cannot be inverted.
+* @exception NSInvalidArgumentException If the matrix is nil or cannot be inverted.
 */
-- (WWMatrix*) invert:(WWMatrix*)matrix;
+- (void) invert:(WWMatrix*)matrix;
 
 /**
 * Inverts the specified matrix and stores the result in this matrix.
@@ -597,11 +559,9 @@
 * @param matrix The matrix whose inverse is computed. This matrix is assumed to represent an orthonormal transform
 * matrix.
 *
-* @return This matrix with its values set to the inverse of the specified matrix.
-*
-* @exception NSInvalidArgumentException If the specified matrix is nil.
+* @exception NSInvalidArgumentException If the matrix is nil.
 */
-- (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix;
+- (void) invertTransformMatrix:(WWMatrix*)matrix;
 
 /**
 * Computes the eigensystem of a specified matrix.

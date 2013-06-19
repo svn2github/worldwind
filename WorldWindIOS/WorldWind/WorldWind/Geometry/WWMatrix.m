@@ -22,11 +22,6 @@
 
 @implementation WWMatrix
 
-- (id) copyWithZone:(NSZone*)zone
-{
-    return [[[self class] alloc] initWithMatrix:self];
-}
-
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -79,27 +74,7 @@
     return self;
 }
 
-- (BOOL) isEqual:(WWMatrix*)n
-{
-    return self->m[0] == n->m[0]
-            && self->m[1] == n->m[1]
-            && self->m[2] == n->m[2]
-            && self->m[3] == n->m[3]
-            && self->m[4] == n->m[4]
-            && self->m[5] == n->m[5]
-            && self->m[6] == n->m[6]
-            && self->m[7] == n->m[7]
-            && self->m[8] == n->m[8]
-            && self->m[9] == n->m[9]
-            && self->m[10] == n->m[10]
-            && self->m[11] == n->m[11]
-            && self->m[12] == n->m[12]
-            && self->m[13] == n->m[13]
-            && self->m[14] == n->m[14]
-            && self->m[15] == n->m[15];
-}
-
-- (WWMatrix*) initWithMatrix:(WWMatrix*)matrix
+- (WWMatrix*) initWithMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -113,7 +88,7 @@
     return self;
 }
 
-- (WWMatrix*) initWithInverse:(WWMatrix*)matrix
+- (WWMatrix*) initWithInverse:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -122,10 +97,12 @@
 
     self = [super init];
 
-    return [self invert:matrix];
+    [self invert:matrix];
+
+    return self;
 }
 
-- (WWMatrix*) initWithTransformInverse:(WWMatrix*)matrix
+- (WWMatrix*) initWithTransformInverse:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -134,10 +111,12 @@
 
     self = [super init];
 
-    return [self invertTransformMatrix:matrix];
+    [self invertTransformMatrix:matrix];
+
+    return self;
 }
 
-- (WWMatrix*) initWithTranspose:(WWMatrix*)matrix
+- (WWMatrix*) initWithTranspose:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -166,7 +145,7 @@
     return self;
 }
 
-- (WWMatrix*) initWithMultiply:(WWMatrix*)matrixA matrixB:(WWMatrix*)matrixB
+- (WWMatrix*) initWithMultiply:(WWMatrix* __unsafe_unretained)matrixA matrixB:(WWMatrix* __unsafe_unretained)matrixB
 {
     self = [super init];
 
@@ -207,7 +186,7 @@
     return self;
 }
 
-- (WWMatrix*) initWithCovarianceOfPoints:(NSArray*)points
+- (WWMatrix*) initWithCovarianceOfPoints:(NSArray* __unsafe_unretained)points
 {
     if (points == nil || [points count] == 0)
     {
@@ -232,7 +211,7 @@
     double c13 = 0;
     double c23 = 0;
 
-    for (WWVec4* vec in points) // no need to check for nil; NSArray does not permit nil elements
+    for (WWVec4* __unsafe_unretained vec in points) // no need to check for nil; NSArray does not permit nil elements
     {
         dx = [vec x] - mx;
         dy = [vec y] - my;
@@ -274,11 +253,36 @@
     return self;
 }
 
+- (BOOL) isEqual:(WWMatrix* __unsafe_unretained)n
+{
+    return self->m[0] == n->m[0]
+            && self->m[1] == n->m[1]
+            && self->m[2] == n->m[2]
+            && self->m[3] == n->m[3]
+            && self->m[4] == n->m[4]
+            && self->m[5] == n->m[5]
+            && self->m[6] == n->m[6]
+            && self->m[7] == n->m[7]
+            && self->m[8] == n->m[8]
+            && self->m[9] == n->m[9]
+            && self->m[10] == n->m[10]
+            && self->m[11] == n->m[11]
+            && self->m[12] == n->m[12]
+            && self->m[13] == n->m[13]
+            && self->m[14] == n->m[14]
+            && self->m[15] == n->m[15];
+}
+
+- (id) copyWithZone:(NSZone*)zone
+{
+    return [[[self class] alloc] initWithMatrix:self];
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Setting the Contents of Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWMatrix*) setToIdentity
+- (void) setToIdentity
 {
     self->m[0] = 1;
     self->m[1] = 0;
@@ -296,14 +300,12 @@
     self->m[13] = 0;
     self->m[14] = 0;
     self->m[15] = 1;
-
-    return self;
 }
 
-- (WWMatrix*) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
-              m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
-              m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
-              m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33
+- (void) set:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
+         m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
+         m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
+         m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33
 {
     self->m[0] = m00;
     self->m[1] = m01;
@@ -321,11 +323,9 @@
     self->m[13] = m31;
     self->m[14] = m32;
     self->m[15] = m33;
-
-    return self;
 }
 
-- (WWMatrix*) setToMatrix:(WWMatrix*)matrix
+- (void) setToMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -333,15 +333,13 @@
     }
 
     memcpy(self->m, matrix->m, (size_t) (16 * sizeof(double)));
-
-    return self;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Working With Transform Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWMatrix*) setToTranslation:(double)x y:(double)y z:(double)z
+- (void) setToTranslation:(double)x y:(double)y z:(double)z
 {
     // Row 1
     self->m[0] = 1;
@@ -363,31 +361,25 @@
     self->m[13] = 0;
     self->m[14] = 0;
     self->m[15] = 1;
-
-    return self;
 }
 
-- (WWMatrix*) setTranslation:(double)x y:(double)y z:(double)z
+- (void) setTranslation:(double)x y:(double)y z:(double)z
 {
     // Row 1
     self->m[3] = x;
     self->m[7] = y;
     self->m[11] = z;
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByTranslation:(double)x y:(double)y z:(double)z
+- (void) multiplyByTranslation:(double)x y:(double)y z:(double)z
 {
     [self multiply:1 m01:0 m02:0 m03:x
                m10:0 m11:1 m12:0 m13:y
                m20:0 m21:0 m22:1 m23:z
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle
+- (void) multiplyByRotationAxis:(double)x y:(double)y z:(double)z angleDegrees:(double)angle
 {
     // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 3.22.
 
@@ -398,31 +390,25 @@
                m10:(1 - c) * x * y + s * z m11:c + (1 - c) * y * y     m12:(1 - c) * y * z - s * x m13:0
                m20:(1 - c) * x * z - s * y m21:(1 - c) * y * z + s * x m22:c + (1 - c) * z * z     m23:0
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByScale:(double)x y:(double)y z:(double)z
+- (void) multiplyByScale:(double)x y:(double)y z:(double)z
 {
     [self multiply:x m01:0 m02:0 m03:0
                m10:0 m11:y m12:0 m13:0
                m20:0 m21:0 m22:z m23:0
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
-- (WWMatrix*) setScale:(double)x y:(double)y z:(double)z
+- (void) setScale:(double)x y:(double)y z:(double)z
 {
     // Row 1
     self->m[0] = x;
     self->m[5] = y;
     self->m[10] = z;
-
-    return self;
 }
 
-- (WWMatrix*) setToUnitYFlip
+- (void) setToUnitYFlip
 {
     self->m[0] = 1;
     self->m[1] = 0;
@@ -440,11 +426,9 @@
     self->m[13] = 0;
     self->m[14] = 0;
     self->m[15] = 1;
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByLocalCoordinateTransform:(WWVec4*)origin onGlobe:(WWGlobe*)globe
+- (void) multiplyByLocalCoordinateTransform:(WWVec4* __unsafe_unretained)origin onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (origin == nil)
     {
@@ -465,11 +449,9 @@
                m10:[xaxis y] m11:[yaxis y] m12:[zaxis y] m13:[origin y]
                m20:[xaxis z] m21:[yaxis z] m22:[zaxis z] m23:[origin z]
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByTextureTransform:(WWTexture*)texture
+- (void) multiplyByTextureTransform:(WWTexture* __unsafe_unretained)texture
 {
     if (texture == nil)
     {
@@ -488,8 +470,6 @@
                m10:0 m11:-sy m12:0 m13:sy
                m20:0 m21:0 m22:1 m23:0
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
 - (WWVec4*) extractTranslation
@@ -515,11 +495,11 @@
 //-- Working With Viewing and Perspective Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWMatrix*) multiplyByFirstPersonModelview:(WWPosition*)eyePosition
-                              headingDegrees:(double)heading
-                                 tiltDegrees:(double)tilt
-                                 rollDegrees:(double)roll
-                                     onGlobe:(WWGlobe*)globe
+- (void) multiplyByFirstPersonModelview:(WWPosition* __unsafe_unretained)eyePosition
+                         headingDegrees:(double)heading
+                            tiltDegrees:(double)tilt
+                            rollDegrees:(double)roll
+                                onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (eyePosition == nil)
     {
@@ -591,16 +571,14 @@
                m10:yx m11:yy m12:yz m13:-yx * ex - yy * ey - yz * ez
                m20:zx m21:zy m22:zz m23:-zx * ex - zy * ey - zz * ez
                m30:0 m31:0 m32:0 m33:1];
-
-    return self;
 }
 
-- (WWMatrix*) multiplyByLookAtModelview:(WWPosition*)lookAtPosition
-                                  range:(double)range
-                         headingDegrees:(double)heading
-                            tiltDegrees:(double)tilt
-                            rollDegrees:(double)roll
-                                onGlobe:(WWGlobe*)globe
+- (void) multiplyByLookAtModelview:(WWPosition* __unsafe_unretained)lookAtPosition
+                             range:(double)range
+                    headingDegrees:(double)heading
+                       tiltDegrees:(double)tilt
+                       rollDegrees:(double)roll
+                           onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (lookAtPosition == nil)
     {
@@ -627,11 +605,9 @@
                              tiltDegrees:tilt
                              rollDegrees:roll
                                  onGlobe:globe];
-
-    return self;
 }
 
-- (WWMatrix*) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far
+- (void) setToPerspectiveProjection:(CGRect)viewport nearDistance:(double)near farDistance:(double)far
 {
     if (CGRectGetWidth(viewport) == 0)
     {
@@ -687,11 +663,9 @@
     self->m[13] = 0;
     self->m[14] = -1;
     self->m[15] = 0;
-
-    return self;
 }
 
-- (WWMatrix*) setToScreenProjection:(CGRect)viewport
+- (void) setToScreenProjection:(CGRect)viewport
 {
     double left = CGRectGetMinX(viewport);
     double right = CGRectGetMaxX(viewport);
@@ -743,8 +717,6 @@
     self->m[13] = 0;
     self->m[14] = 0;
     self->m[15] = 1;
-
-    return self;
 }
 
 - (WWVec4*) extractEyePoint
@@ -766,7 +738,7 @@
     return [[WWVec4 alloc] initWithCoordinates:-m[8] y:-m[9] z:-m[10]];
 }
 
-- (NSDictionary*) extractViewingParameters:(WWVec4*)origin forRollDegrees:(double)roll onGlobe:(WWGlobe*)globe
+- (NSDictionary*) extractViewingParameters:(WWVec4* __unsafe_unretained)origin forRollDegrees:(double)roll onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (origin == nil)
     {
@@ -873,7 +845,7 @@
 //-- Matrix Operations --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WWMatrix*) multiplyMatrix:(WWMatrix*)matrix
+- (void) multiplyMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -922,14 +894,12 @@
     ma[13] = (ma0 * mb[1]) + (ma1 * mb[5]) + (ma2 * mb[9]) + (ma3 * mb[13]);
     ma[14] = (ma0 * mb[2]) + (ma1 * mb[6]) + (ma2 * mb[10]) + (ma3 * mb[14]);
     ma[15] = (ma0 * mb[3]) + (ma1 * mb[7]) + (ma2 * mb[11]) + (ma3 * mb[15]);
-
-    return self;
 }
 
-- (WWMatrix*) multiply:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
-                   m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
-                   m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
-                   m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33
+- (void) multiply:(double)m00 m01:(double)m01 m02:(double)m02 m03:(double)m03
+              m10:(double)m10 m11:(double)m11 m12:(double)m12 m13:(double)m13
+              m20:(double)m20 m21:(double)m21 m22:(double)m22 m23:(double)m23
+              m30:(double)m30 m31:(double)m31 m32:(double)m32 m33:(double)m33
 {
     double* ma = self->m;
 
@@ -972,11 +942,9 @@
     ma[13] = (ma0 * m01) + (ma1 * m11) + (ma2 * m21) + (ma3 * m31);
     ma[14] = (ma0 * m02) + (ma1 * m12) + (ma2 * m22) + (ma3 * m32);
     ma[15] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
-
-    return self;
 }
 
-- (WWMatrix*) invert:(WWMatrix*)matrix
+- (void) invert:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -1012,11 +980,9 @@
             ma[INDEX(i, j)] = col[i];
         }
     }
-
-    return self;
 }
 
-- (WWMatrix*) invertTransformMatrix:(WWMatrix*)matrix
+- (void) invertTransformMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -1050,13 +1016,11 @@
     ma[13] = mb[13];
     ma[14] = mb[14];
     ma[15] = mb[15];
-
-    return self;
 }
 
-+ (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix
-                      resultEigenvalues:(NSMutableArray*)resultEigenvalues
-                     resultEigenvectors:(NSMutableArray*)resultEigenvectors
++ (void) eigensystemFromSymmetricMatrix:(WWMatrix* __unsafe_unretained)matrix
+                      resultEigenvalues:(NSMutableArray* __unsafe_unretained)resultEigenvalues
+                     resultEigenvectors:(NSMutableArray* __unsafe_unretained)resultEigenvectors
 {
     if (matrix == nil)
     {
