@@ -13,7 +13,7 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Util/WWTile.h"
 
-@interface MyURLBuilder : WWWMSUrlBuilder
+@interface WWBMNGLandsatURLBuilder : WWWMSUrlBuilder
 
 - (WWWMSUrlBuilder*) initWithServiceAddress:(NSString*)serviceAddress
                                  layerNames:(NSString*)layerNames
@@ -21,7 +21,7 @@
                                  wmsVersion:(NSString*)wmsVersion;
 @end
 
-@implementation MyURLBuilder
+@implementation WWBMNGLandsatURLBuilder
 
 - (WWWMSUrlBuilder*) initWithServiceAddress:(NSString*)serviceAddress
                                  layerNames:(NSString*)layerNames
@@ -69,10 +69,10 @@
                        cachePath:cachePath];
     [self setDisplayName:@"Blue Marble + Landsat"];
 
-    WWWMSUrlBuilder* urlBuilder = [[MyURLBuilder alloc] initWithServiceAddress:serviceAddress
-                                                                    layerNames:layerName
-                                                                    styleNames:@""
-                                                                    wmsVersion:@"1.3.0"];
+    WWWMSUrlBuilder* urlBuilder = [[WWBMNGLandsatURLBuilder alloc] initWithServiceAddress:serviceAddress
+                                                                               layerNames:layerName
+                                                                               styleNames:@""
+                                                                               wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
     WWWMSLayerExpirationRetriever* expirationChecker =
