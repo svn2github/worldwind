@@ -159,13 +159,13 @@
         sb = [sb stringByAppendingString:@"&request=GetMap"];
         sb = [sb stringByAppendingFormat:@"&version=%@", _wmsVersion];
         sb = [[sb stringByAppendingString:@"&"] stringByAppendingString:_crs];
-        sb = [sb stringByAppendingFormat:@"&layers=%@", _layerNames];
-        sb = [sb stringByAppendingFormat:@"&styles=%@", _styleNames];
         sb = [sb stringByAppendingFormat:@"&transparent=%@", _transparent ? @"TRUE" : @"FALSE"];
 
         self->urlTemplate = sb;
     }
 
+    sb = [sb stringByAppendingFormat:@"&layers=%@", [self layersParameter:tile]];
+    sb = [sb stringByAppendingFormat:@"&styles=%@", [self stylesParameter:tile]];
     sb = [sb stringByAppendingFormat:@"&format=%@", imageFormat];
     sb = [sb stringByAppendingFormat:@"&width=%d", [tile tileWidth]];
     sb = [sb stringByAppendingFormat:@"&height=%d", [tile tileHeight]];
@@ -185,6 +185,16 @@
     sb = [sb stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
 
     return [[NSURL alloc] initWithString:sb];
+}
+
+- (NSString*) layersParameter:(WWTile* )tile
+{
+    return _layerNames;
+}
+
+- (NSString*) stylesParameter:(WWTile* )tile
+{
+    return _styleNames;
 }
 
 + (NSString*) fixGetMapString:(NSString*)gms

@@ -44,6 +44,7 @@
 #import "METARDataViewController.h"
 #import "BulkRetrieverController.h"
 #import "FrameStatisticsController.h"
+#import "WorldWind/Layer/WWBMNGLandsatCombinedLayer.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -112,10 +113,7 @@
 
     WWLayerList* layers = [[_wwv sceneController] layers];
 
-    WWLayer* layer = [[WWBMNGLayer alloc] init];
-    [layers addLayer:layer];
-
-    layer = [[WWI3LandsatLayer alloc] init];
+    WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [layers addLayer:layer];
 
     layer = [[WWBingLayer alloc] init];

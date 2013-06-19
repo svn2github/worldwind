@@ -66,4 +66,26 @@
 - (WWWMSUrlBuilder*) initWithServiceCapabilities:(WWWMSCapabilities*)serviceCaps
                                        layerCaps:(NSDictionary*)layerCaps;
 
+/// @name Methods used only by subclasses
+
+/**
+* Returns the WMS layer names for the current request.
+*
+* This method may consult the provided draw context to determine the layer names. For example,
+* it may return different layer names depending on the tile's resolution.
+*
+* @param tile The tile for which to determine the layer names.
+*/
+- (NSString*)layersParameter:(WWTile*)tile;
+
+/**
+* Returns the WMS style names for the current request.
+*
+* This method may consult the provided tile to determine the style names. For example,
+* it may return different layer names depending on the tile's resolution.
+*
+* @param tile The tile for which to determine the layer names.
+*/
+- (NSString*)stylesParameter:(WWTile*)tile;
+
 @end
