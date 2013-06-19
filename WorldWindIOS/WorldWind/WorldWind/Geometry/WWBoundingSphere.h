@@ -45,7 +45,7 @@
 *
 * @return The bounding sphere set to the specified center point and radius.
 *
-* @exception NSInvalidArgumentException If the specified point is nil or the radius is less than or equal to 0.
+* @exception NSInvalidArgumentException If the point is nil or the radius is less than or equal to 0.
 */
 - (WWBoundingSphere*) initWithPoint:(WWVec4*)point radius:(double)radius;
 

@@ -43,7 +43,7 @@
 *
 * @return The distance between the point and this box.
 *
-* @exception NSInvalidArgumentException If the specified point is nil.
+* @exception NSInvalidArgumentException If the point is nil.
 */
 - (double) distanceTo:(WWVec4*)point;
 
@@ -54,7 +54,7 @@
 *
 * @return The effective radius.
 *
-* @exception NSInvalidArgumentException If the specified plane is nil.
+* @exception NSInvalidArgumentException If the plane is nil.
 */
 - (double) effectiveRadius:(WWPlane*)plane;
 
@@ -65,7 +65,7 @@
 *
 * @return YES if this box and the frustum intersect, otherwise NO.
 *
-* @exception NSInvalidArgumentException if the specified frustum is nil.
+* @exception NSInvalidArgumentException if the frustum is nil.
 */
 - (BOOL) intersects:(WWFrustum*)frustum;
 

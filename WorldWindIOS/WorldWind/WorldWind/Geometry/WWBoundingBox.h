@@ -77,7 +77,7 @@
 *
 * @return The bounding box initialized to contain the specified points.
 *
-* @exception NSInvalidArgumentException If the specified list of points is nil or empty.
+* @exception NSInvalidArgumentException If the list of points is nil or empty.
 */
 - (WWBoundingBox*) initWithPoints:(NSArray*)points;
 
@@ -88,7 +88,7 @@
 *
 * @param translation The translation vector.
 *
-* @exception NSInvalidArgumentException If the specified translation vector is nil.
+* @exception NSInvalidArgumentException If the translation vector is nil.
 */
 - (void) translate:(WWVec4*)translation;
 
@@ -103,7 +103,7 @@
 *
 * @return the distance from the edge of this bounding box to the specified point.
 *
-* @exception NSInvalidArgumentException If the specified point is nil.
+* @exception NSInvalidArgumentException If the point is nil.
 */
 - (double) distanceTo:(WWVec4*)point;
 
@@ -114,7 +114,7 @@
 *
 * @return The effective radius of this bounding box to the specified plane.
 *
-* @exception NSInvalidArgumentException If the specified plane is nil.
+* @exception NSInvalidArgumentException If the plane is nil.
 */
 - (double) effectiveRadius:(WWPlane*)plane;
 
@@ -125,7 +125,7 @@
 *
 * @return YES if this bounding box intersects the specified frustum, otherwise NO.
 *
-* @exception NSInvalidArgumentException if the specified frustum is nil.
+* @exception NSInvalidArgumentException if the frustum is nil.
 */
 - (BOOL) intersects:(WWFrustum*)frustum;
 

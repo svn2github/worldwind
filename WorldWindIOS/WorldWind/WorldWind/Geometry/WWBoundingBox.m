@@ -14,7 +14,7 @@
 
 @implementation WWBoundingBox
 
-- (WWBoundingBox*) initWithPoints:(NSArray*)points
+- (WWBoundingBox*) initWithPoints:(NSArray* __unsafe_unretained)points
 {
     if (points == nil || [points count] == 0)
     {
@@ -40,7 +40,7 @@
     double minDotT = DBL_MAX;
     double maxDotT = -minDotT;
 
-    for (WWVec4* p in points) // no need to check for nil; NSArray does not permit nil elements
+    for (WWVec4* __unsafe_unretained p in points) // no need to check for nil; NSArray does not permit nil elements
     {
         double pdr = [p dot3:_ru];
         if (pdr < minDotR)
@@ -112,7 +112,7 @@
     return self;
 }
 
-- (double) distanceTo:(WWVec4*)point
+- (double) distanceTo:(WWVec4* __unsafe_unretained)point
 {
     if (point == nil)
     {
@@ -124,7 +124,7 @@
     return d >= 0 ? d : 0;
 }
 
-- (double) effectiveRadius:(WWPlane*)plane
+- (double) effectiveRadius:(WWPlane* __unsafe_unretained)plane
 {
     if (plane == nil)
         return 0;
@@ -134,7 +134,7 @@
     return 0.5 * (fabs([_r dot3:n]) + fabs([_s dot3:n]) + fabs([_t dot3:n]));
 }
 
-- (BOOL) intersects:(WWFrustum*)frustum
+- (BOOL) intersects:(WWFrustum* __unsafe_unretained)frustum
 {
     if (frustum == nil)
     {
@@ -207,10 +207,10 @@
     return intersectionPoint >= 0;
 }
 
-- (double) intersectsAt:(WWPlane*)plane
+- (double) intersectsAt:(WWPlane* __unsafe_unretained)plane
               effRadius:(double)effRadius
-              endPoint1:(WWVec4*)endPoint1
-              endPoint2:(WWVec4*)endPoint2
+              endPoint1:(WWVec4* __unsafe_unretained)endPoint1
+              endPoint2:(WWVec4* __unsafe_unretained)endPoint2
 {
     // Test the distance from the first end-point.
     double dq1 = [plane dot:endPoint1];
@@ -245,7 +245,7 @@
     return t;
 }
 
-- (void) translate:(WWVec4*)translation
+- (void) translate:(WWVec4* __unsafe_unretained)translation
 {
     if (translation == nil)
     {
@@ -256,9 +256,9 @@
     [_topCenter add3:translation];
     [_center add3:translation];
 
-    for (NSUInteger i = 0; i < [_planes count]; i++)
+    for (WWPlane* plane __unsafe_unretained in _planes)
     {
-        [[_planes objectAtIndex:i] translate:translation];
+        [plane translate:translation];
     }
 }
 

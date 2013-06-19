@@ -14,7 +14,7 @@
 
 @implementation WWBoundingSphere
 
-- (WWBoundingSphere*) initWithPoints:(NSArray*)points
+- (WWBoundingSphere*) initWithPoints:(NSArray* __unsafe_unretained)points
 {
     if (points == nil)
     {
@@ -31,7 +31,7 @@
     double ymax = ymin;
     double zmax = zmin;
 
-    for (WWVec4* point in points)
+    for (WWVec4* __unsafe_unretained point in points)
     {
         double x = [point x];
         if (x > xmax)
@@ -62,7 +62,7 @@
     return self;
 }
 
-- (WWBoundingSphere*) initWithPoint:(WWVec4*)point radius:(double)radius
+- (WWBoundingSphere*) initWithPoint:(WWVec4* __unsafe_unretained)point radius:(double)radius
 {
     if (point == nil)
     {
@@ -82,19 +82,19 @@
     return self;
 }
 
-- (double) distanceTo:(WWVec4*)point
+- (double) distanceTo:(WWVec4* __unsafe_unretained)point
 {
     if (point == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Point is nil")
     }
 
-    double d = [point distanceTo3:_center] - [self radius];
+    double d = [point distanceTo3:_center] - _radius;
 
     return d >= 0 ? d : 0;
 }
 
-- (double) effectiveRadius:(WWPlane*)plane
+- (double) effectiveRadius:(WWPlane* __unsafe_unretained)plane
 {
     if (plane == nil)
         return 0;
@@ -102,7 +102,7 @@
     return _radius;
 }
 
-- (BOOL) intersects:(WWFrustum*)frustum
+- (BOOL) intersects:(WWFrustum* __unsafe_unretained)frustum
 {
     if (frustum == nil)
     {
@@ -130,7 +130,7 @@
     return YES;
 }
 
-+ (int) intersectsFrustum:(WWFrustum*)frustum center:(WWVec4*)center radius:(double)radius
++ (int) intersectsFrustum:(WWFrustum* __unsafe_unretained)frustum center:(WWVec4* __unsafe_unretained)center radius:(double)radius
 {
     if (frustum == nil)
     {

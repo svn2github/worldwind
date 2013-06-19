@@ -147,7 +147,7 @@ void swap(double* a, double* b)
     *b = tmp;
 }
 
-+ (NSArray*) principalAxesFromPoints:(NSArray*)points
++ (NSArray*) principalAxesFromPoints:(NSArray* __unsafe_unretained)points
 {
     if (points == nil || [points count] == 0)
     {
@@ -183,7 +183,7 @@ void swap(double* a, double* b)
     return eigenvectors;
 }
 
-+ (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe
++ (NSArray*) localCoordinateAxesAtPoint:(WWVec4* __unsafe_unretained)point onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (point == nil)
     {
@@ -225,7 +225,7 @@ void swap(double* a, double* b)
     return [[NSArray alloc] initWithObjects:xaxis, yaxis, zaxis, nil];
 }
 
-+ (CGRect) boundingRectForUnitQuad:(WWMatrix*)transformMatrix
++ (CGRect) boundingRectForUnitQuad:(WWMatrix* __unsafe_unretained)transformMatrix
 {
     if (transformMatrix == nil)
     {
@@ -258,9 +258,9 @@ void swap(double* a, double* b)
 //-- Computing Viewing and Navigation Information --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-+ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
-                                             endPosition:(WWPosition*)posB
-                                                 onGlobe:(WWGlobe*)globe
++ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition* __unsafe_unretained)posA
+                                             endPosition:(WWPosition* __unsafe_unretained)posB
+                                                 onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (posA == nil)
     {
@@ -389,9 +389,9 @@ void swap(double* a, double* b)
 }
 
 + (double) perspectiveFitDistance:(CGRect)viewport
-                     forPositionA:(WWPosition*)posA
-                        positionB:(WWPosition*)posB
-                          onGlobe:(WWGlobe*)globe
+                     forPositionA:(WWPosition* __unsafe_unretained)posA
+                        positionB:(WWPosition* __unsafe_unretained)posB
+                          onGlobe:(WWGlobe* __unsafe_unretained)globe
 {
     if (CGRectGetWidth(viewport) == 0)
     {
@@ -467,7 +467,7 @@ void swap(double* a, double* b)
     return 2 * distance / sqrt(aspect * aspect + 5);
 }
 
-+ (BOOL) computeTriangleIntersection:(WWLine*)line
++ (BOOL) computeTriangleIntersection:(WWLine* __unsafe_unretained)line
                                  vax:(double)vax
                                  vay:(double)vay
                                  vaz:(double)vaz
@@ -477,7 +477,7 @@ void swap(double* a, double* b)
                                  vcx:(double)vcx
                                  vcy:(double)vcy
                                  vcz:(double)vcz
-                              result:(WWVec4*)result
+                              result:(WWVec4* __unsafe_unretained)result
 {
     // Taken from Moller and Trumbore
     // http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/

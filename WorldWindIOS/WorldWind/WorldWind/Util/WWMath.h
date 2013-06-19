@@ -195,7 +195,7 @@
 * corresponds to the longest axis. The third vector in the array corresponds to the shortest axis. The second vector
 * in the array correspond to the intermediate length axis.
 *
-* @exception NSInvalidArgumentException If the specified list of points is nil or empty.
+* @exception NSInvalidArgumentException If the list of points is nil or empty.
 */
 + (NSArray*) principalAxesFromPoints:(NSArray*)points;
 
