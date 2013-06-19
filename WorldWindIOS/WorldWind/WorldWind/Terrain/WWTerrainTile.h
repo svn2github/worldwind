@@ -10,7 +10,7 @@
 
 @class WWTessellator;
 @class WWDrawContext;
-@class WWTerrainGeometry;
+@class WWMatrix;
 @class WWLevel;
 @class WWVec4;
 
@@ -23,19 +23,34 @@
 /// @name Attributes
 
 /// The tessellator this tile is used by.
+///
 /// The tessellator property is weak because the tessellator can point to the tile,
 /// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
 @property(nonatomic, readonly, weak) WWTessellator* tessellator;
 
-/// The terrain geometry for this tile.
-@property(nonatomic) WWTerrainGeometry* terrainGeometry;
-
-/// Indicates the date and time at which this tile's terrain geometry was computed. This is used to invalidate the
-/// terrain geometry when the globe's elevations change.
-@property(nonatomic) NSDate* timestamp;
-
 /// The GPU resource cache ID for this tile's Cartesian coordinates VBO.
 @property (nonatomic) NSString* cacheKey;
+
+/// The origin point that the terrain tile's model coordinate points are relative to.
+@property (nonatomic) WWVec4* referenceCenter;
+
+/// The transform matrix that maps tile local coordinate to model coordinates.
+@property (nonatomic) WWMatrix* transformationMatrix;
+
+/// The number of model coordinate points this tile contains.
+@property (nonatomic) int numPoints;
+
+/// Pointer to the terrain tile's model coordinate points.
+///
+/// The memory referenced by this pointer contains 3 * numPoints 32-bit floating point values. This memory is owned by
+/// the terrain tile and is released when the tile is deallocated.
+@property (nonatomic) float* points;
+
+/// Indicates the date and time at which this tile's terrain geometry was computed.
+///
+/// This is used to invalidate the
+/// terrain geometry when the globe's elevations change.
+@property(nonatomic) NSDate* timestamp;
 
 /// @name Initializing Terrain Tiles
 

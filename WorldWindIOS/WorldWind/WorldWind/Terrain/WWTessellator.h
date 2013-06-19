@@ -12,7 +12,6 @@
 @class WWSector;
 @class WWTerrainTile;
 @class WWTerrainTileList;
-@class WWTerrainGeometry;
 @class WWTerrainSharedGeometry;
 @class WWDrawContext;
 @class WWVec4;

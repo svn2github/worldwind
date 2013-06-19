@@ -11,7 +11,6 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Terrain/WWTerrainSharedGeometry.h"
-#import "WorldWind/Terrain/WWTerrainGeometry.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Util/WWLevelSet.h"
@@ -190,32 +189,18 @@
 
 - (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    if ([tile terrainGeometry] == nil)
-    {
-        return YES;
-    }
-    else
-    {
-        NSDate* timestamp = [tile timestamp];
-        return timestamp == nil || [timestamp compare:self->elevationTimestamp] == NSOrderedAscending;
-    }
+    NSDate* timestamp = [tile timestamp];
+    return timestamp == nil || [timestamp compare:self->elevationTimestamp] == NSOrderedAscending;
 }
 
 - (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
-    if (terrainGeometry == nil)
-    {
-        terrainGeometry = [[WWTerrainGeometry alloc] init];
-        [tile setTerrainGeometry:terrainGeometry];
-    }
-
     // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
     // center here and establish a translation transform that is used later to move the tile coordinates into place
     // relative to the globe.
-    WWVec4* refCenter = terrainGeometry.referenceCenter;
+    WWVec4* refCenter = [tile referenceCenter];
     [self referenceCenterForTile:dc tile:tile outputPoint:refCenter];
-    [terrainGeometry.transformationMatrix setToTranslation:refCenter.x y:refCenter.y z:refCenter.z];
+    [[tile transformationMatrix] setTranslation:[refCenter x] y:[refCenter y] z:[refCenter z]];
 
     [self buildTileVertices:dc tile:tile];
     [self buildSharedGeometry:tile];
@@ -265,14 +250,15 @@
     double minElevation = dc.globe.minElevation * dc.verticalExaggeration;
 
     // Allocate space for the Cartesian vertices.
-    if (!tile.terrainGeometry.points)
+    if (![tile points])
     {
         int numPoints = (numLatVertices + 2) * (numLonVertices + 2);
-        tile.terrainGeometry.numPoints = numPoints;
-        tile.terrainGeometry.points = malloc((size_t) (numPoints * 3 * sizeof(float)));
+        float* points = malloc((size_t) (numPoints * 3 * sizeof(float)));
+        [tile setNumPoints:numPoints];
+        [tile setPoints:points];
     }
 
-    float* points = tile.terrainGeometry.points; // running pointer to the portion of the array that will hold the computed vertices
+    float* points = [tile points]; // running pointer to the portion of the array that will hold the computed vertices
 
     WWSector* sector = tile.sector;
     double minLat = sector.minLatitude;
@@ -295,7 +281,7 @@
                 numRowVertices:numLonVertices
                     elevations:nil constantElevation:&minElevation // specifies constant elevation for the row
                   minElevation:minElevation
-                     refCenter:tile.terrainGeometry.referenceCenter
+                     refCenter:[tile referenceCenter]
                         points:points];
     points += 3 * (numLonVertices + 2); // the interior vertex count plus the skirt vertices at either end
 
@@ -324,7 +310,7 @@
                         elevations:&self->tileElevations[elevOffset]
                  constantElevation:nil // we're using elevations per vertex here, unlike at the skirt rows
                       minElevation:minElevation
-                         refCenter:tile.terrainGeometry.referenceCenter
+                         refCenter:[tile referenceCenter]
                             points:points];
 
         // Update the pointers to the elevations array and the vertices array
@@ -340,7 +326,7 @@
                 numRowVertices:numLonVertices
                     elevations:nil constantElevation:&minElevation
                   minElevation:minElevation
-                     refCenter:tile.terrainGeometry.referenceCenter
+                     refCenter:[tile referenceCenter]
                         points:points];
 }
 
@@ -677,7 +663,7 @@
     }
 
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
-                                               matrixB:[[tile terrainGeometry] transformationMatrix]];
+                                               matrixB:[tile transformationMatrix]];
     [program loadUniformMatrix:@"mvpMatrix" matrix:mvp];
 
     GLuint vboId;
@@ -685,11 +671,10 @@
     NSNumber* vbo = (NSNumber*) [gpuResourceCache getResourceForKey:[tile cacheKey]];
     if (vbo == nil)
     {
-        WWTerrainGeometry* terrainGeometry = tile.terrainGeometry;
-        GLsizei size = [terrainGeometry numPoints] * 3 * sizeof(float);
+        GLsizei size = [tile numPoints] * 3 * sizeof(float);
         glGenBuffers(1, &vboId);
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, size, [terrainGeometry points], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size, [tile points], GL_STATIC_DRAW);
         [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:vboId]
                          resourceType:WW_GPU_VBO
                                  size:size
@@ -910,7 +895,7 @@
     // Transform the ray to model coordinates so that we don't have to add the reference center to all the triangle
     // vertices. The pick is therefore done in model coordinates rather than world coordinates. The result, if any, is
     // transformed to world coordinates below.
-    WWVec4* refCenter = [[tile terrainGeometry] referenceCenter];
+    WWVec4* refCenter = [tile referenceCenter];
     [[ray origin] subtract3:refCenter];
 
     // Check all triangles for intersection with the pick ray.
@@ -919,7 +904,7 @@
     WWVec4* pickedPoint = [[WWVec4 alloc] initWithZeroVector];
     int nIndices = [_sharedGeometry numIndices];
     short* indices = [_sharedGeometry indices];
-    float* points = [[tile terrainGeometry] points];
+    float* points = [tile points];
     for (NSUInteger i = 0; i < nIndices - 2; i++)
     {
         // Form the 3 triangle vertices. The vertex order doesn't matter to the intersection algorithm.

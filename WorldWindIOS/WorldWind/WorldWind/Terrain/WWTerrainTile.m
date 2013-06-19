@@ -11,7 +11,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Terrain/WWTerrainGeometry.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Util/WWLevel.h"
 
@@ -32,27 +32,32 @@
 
     self = [super initWithSector:sector level:level row:row column:column];
 
-    if (self != nil)
-    {
-        _tessellator = tessellator;
-        _cacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
-    }
+    _tessellator = tessellator;
+    _cacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
+    _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
+    _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
+    _points = 0;
 
     return self;
 }
 
+- (void) dealloc
+{
+    if (_points)
+    {
+        free(_points);
+    }
+}
+
 - (long) sizeInBytes
 {
-    long terrainGeometrySize = (4 + 32) // reference center
+    long size = 4 // tessellator pointer
+            + 10 // cache key (approx)
+            + (4 + 32) // reference center
             + (4 + 128) // transformation matrix
             + (4) // numPoints
-            + (4 + (tileHeight + 3) * (tileWidth + 3) * 3 * 4); // points
-
-    long size = terrainGeometrySize
-            + 4 // tessellator pointer
-            + (8) // numlat + numlon
-            + 10 // cache key (approx)
-            + (4); // terrain geometry pointer
+            + (4 + (tileHeight + 3) * (tileWidth + 3) * 3 * 4) // points
+            + 4; // timestamp pointer
 
     return size + [super sizeInBytes];
 }
@@ -116,7 +121,7 @@
     int ti = (t < tileHeight ? (int) t : tileHeight - 1) + 1;
     int rowStride = tileWidth + 3;
 
-    float* vertices = [_terrainGeometry points];
+    float* vertices = _points;
     float points[12]; // temporary working buffer
     int k = 3 * (si  + ti * rowStride); // lower-left and lower-right vertices
     for (int i = 0; i < 6; i++)
@@ -153,7 +158,7 @@
         [result set:x y:y z:z];
     }
 
-    [result add3:[_terrainGeometry referenceCenter]];
+    [result add3:_referenceCenter];
 
     // Apply the offset.
     if (offset != 0)
