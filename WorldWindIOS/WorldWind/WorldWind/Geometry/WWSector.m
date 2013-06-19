@@ -30,7 +30,7 @@
     return self;
 }
 
-- (WWSector*) initWithSector:(WWSector*)sector
+- (WWSector*) initWithSector:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
     {
@@ -47,11 +47,11 @@
     return self;
 }
 
-- (WWSector*) initWithLocations:(NSArray*)locations
+- (WWSector*) initWithLocations:(NSArray* __unsafe_unretained)locations
 {
     if (locations == nil || [locations count] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Locations is nil or zero length")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Locations is nil or empty")
     }
 
     self = [super init];
@@ -61,7 +61,7 @@
     _minLongitude = DBL_MAX;
     _maxLongitude = -DBL_MAX;
 
-    for (WWLocation* location in locations)
+    for (WWLocation* __unsafe_unretained location in locations) // no need to check for nil; NSArray does not permit nil elements
     {
         double lat = [location latitude];
         if (_minLatitude > lat)
@@ -104,7 +104,7 @@
     return [[[self class] alloc] initWithDegreesMinLatitude:_minLatitude maxLatitude:_maxLatitude minLongitude:_minLongitude maxLongitude:_maxLongitude];
 }
 
-- (void) centroidLocation:(WWLocation*)result
+- (void) centroidLocation:(WWLocation* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -145,7 +145,7 @@
     return RADIANS(_maxLongitude);
 }
 
-- (WWSector*) set:(WWSector*)sector
+- (void) set:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
     {
@@ -156,8 +156,6 @@
     _maxLatitude = sector->_maxLatitude;
     _minLongitude = sector->_minLongitude;
     _maxLongitude = sector->_maxLongitude;
-
-    return self;
 }
 
 - (BOOL) isEmpty
@@ -165,37 +163,34 @@
     return _minLatitude == _maxLatitude && _minLongitude == _maxLongitude;
 }
 
-- (BOOL) intersects:(WWSector*)sector
+- (BOOL) intersects:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
         return NO;
 
     // Assumes normalized angles: [-180, 180], [-90, 90].
-    if (sector->_maxLongitude < _minLongitude)
-        return NO;
-    if (sector->_minLongitude > _maxLongitude)
-        return NO;
-    if (sector->_maxLatitude < _minLatitude)
-        return NO;
-    if (sector->_minLatitude > _maxLatitude)
-        return NO;
-
-    return YES;
+    return _minLongitude <= sector->_maxLongitude
+        && _maxLongitude >= sector->_minLongitude
+        && _minLatitude <= sector->_maxLatitude
+        && _maxLatitude >= sector->_minLatitude;
 }
 
 - (BOOL) contains:(double)latitude longitude:(double)longitude
 {
-    return latitude >= _minLatitude && latitude <= _maxLatitude && longitude >= _minLongitude
-            && longitude <= _maxLongitude;
+    return _minLatitude <= latitude
+        && _maxLatitude >= latitude
+        && _minLongitude <= longitude
+        && _maxLongitude >= longitude;
 }
 
-- (void) intersection:(WWSector*)sector
+- (void) intersection:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
     }
 
+    // Assumes normalized angles: [-180, 180], [-90, 90].
     if (_minLatitude < sector->_minLatitude)
         _minLatitude = sector->_minLatitude;
     if (_maxLatitude > sector->_maxLatitude)
@@ -214,13 +209,14 @@
         _maxLongitude = _minLongitude;
 }
 
-- (void) union:(WWSector*)sector
+- (void) union:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
     }
 
+    // Assumes normalized angles: [-180, 180], [-90, 90].
     if (_minLatitude > sector->_minLatitude)
         _minLatitude = sector->_minLatitude;
     if (_maxLatitude < sector->_maxLatitude)
@@ -231,7 +227,7 @@
         _maxLongitude = sector->_maxLongitude;
 }
 
-- (void) computeReferencePoints:(WWGlobe*)globe elevation:(double)elevation result:(NSMutableArray*)result
+- (void) computeReferencePoints:(WWGlobe* __unsafe_unretained)globe elevation:(double)elevation result:(NSMutableArray* __unsafe_unretained)result
 {
     if (globe == nil)
     {
@@ -259,10 +255,10 @@
     [globe computePointFromPosition:centerLat longitude:centerLon altitude:elevation outputPoint:centerPoint];
 }
 
-- (void) computeExtremePoints:(WWGlobe*)globe
+- (void) computeExtremePoints:(WWGlobe* __unsafe_unretained)globe
                  minElevation:(double)minElevation
                  maxElevation:(double)maxElevation
-                       result:(NSMutableArray*)result
+                       result:(NSMutableArray* __unsafe_unretained)result
 {
     if (globe == nil)
     {
@@ -384,7 +380,7 @@
     }
 }
 
-- (WWBoundingBox*) computeBoundingBox:(WWGlobe*)globe
+- (WWBoundingBox*) computeBoundingBox:(WWGlobe* __unsafe_unretained)globe
                          minElevation:(double)minElevation
                          maxElevation:(double)maxElevation
 {

@@ -108,7 +108,7 @@
 *
 * @return This sector initialized to the latitudes and longitudes of the specified sector.
 *
-* @exception NSInvalidArgumentException If the specified sector is nil.
+* @exception NSInvalidArgumentException If the sector is nil.
 */
 - (WWSector*) initWithSector:(WWSector*)sector;
 
@@ -137,15 +137,13 @@
 /// @name Changing Sector Values
 
 /**
-* Sets this sector to the values of a specified sector.
+* Sets this sector to the latitudes and longitudes of a specified sector.
 *
 * @param sector The sector whose values should be used.
 *
-* @return This sector with its values set to the latitudes and longitudes of the specified sector.
-*
-* @exception NSInvalidArgumentException If the specified sector is nil.
+* @exception NSInvalidArgumentException If the sector is nil.
 */
-- (WWSector*) set:(WWSector*)sector;
+- (void) set:(WWSector*)sector;
 
 /// @name Intersection and Inclusion Operations
 
@@ -187,7 +185,7 @@
 *
 * @param sector The sector to intersect with this one.
 *
-* @exception NSInvalidArgumentException If the specified sector is nil.
+* @exception NSInvalidArgumentException If the sector is nil.
 */
 - (void) intersection:(WWSector*)sector;
 
@@ -196,7 +194,7 @@
 *
 * @param sector The sector to union with this one.
 *
-* @exception NSInvalidArgumentException If the specified sector is nil.
+* @exception NSInvalidArgumentException If the sector is nil.
 */
 - (void) union:(WWSector*)sector;
 
