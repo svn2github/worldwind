@@ -28,11 +28,6 @@
     tmp3 = [[WWVec4 alloc] initWithZeroVector];
 
     NSArray* unitAxes = [WWMath principalAxesFromPoints:points];
-    if (unitAxes == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Unable to compute principal axes")
-    }
-
     _ru = [unitAxes objectAtIndex:0];
     _su = [unitAxes objectAtIndex:1];
     _tu = [unitAxes objectAtIndex:2];
@@ -45,11 +40,8 @@
     double minDotT = DBL_MAX;
     double maxDotT = -minDotT;
 
-    for (WWVec4* p in points)
+    for (WWVec4* p in points) // no need to check for nil; NSArray does not permit nil elements
     {
-        if (p == nil)
-            continue;
-
         double pdr = [p dot3:_ru];
         if (pdr < minDotR)
             minDotR = pdr;
@@ -91,9 +83,12 @@
 
     _radius = 0.5 * sqrt(_rLength * _rLength + _sLength * _sLength + _tLength * _tLength);
 
-    WWVec4* ruh = [[[WWVec4 alloc] initWithVector:_ru] multiplyByScalar3:0.5 * (maxDotR + minDotR)];
-    WWVec4* suh = [[[WWVec4 alloc] initWithVector:_su] multiplyByScalar3:0.5 * (maxDotS + minDotS)];
-    WWVec4* tuh = [[[WWVec4 alloc] initWithVector:_tu] multiplyByScalar3:0.5 * (maxDotT + minDotT)];
+    WWVec4* ruh = [[WWVec4 alloc] initWithVector:_ru];
+    WWVec4* suh = [[WWVec4 alloc] initWithVector:_su];
+    WWVec4* tuh = [[WWVec4 alloc] initWithVector:_tu];
+    [ruh multiplyByScalar3:0.5 * (maxDotR + minDotR)];
+    [suh multiplyByScalar3:0.5 * (maxDotS + minDotS)];
+    [tuh multiplyByScalar3:0.5 * (maxDotT + minDotT)];
     _center = [[WWVec4 alloc] initWithVector:ruh];
     [_center add3:suh];
     [_center add3:tuh];

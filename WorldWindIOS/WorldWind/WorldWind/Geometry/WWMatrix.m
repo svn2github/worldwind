@@ -209,14 +209,20 @@
 
 - (WWMatrix*) initWithCovarianceOfPoints:(NSArray*)points
 {
-    if (points == nil)
+    if (points == nil || [points count] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or empty");
     }
     
     self = [super init];
 
     WWVec4* mean = [[WWVec4 alloc] initWithAverageOfVectors:points];
+    double mx = [mean x];
+    double my = [mean y];
+    double mz = [mean z];
+    double dx;
+    double dy;
+    double dz;
 
     int count = 0;
     double c11 = 0;
@@ -226,22 +232,20 @@
     double c13 = 0;
     double c23 = 0;
 
-    for (WWVec4* vec in points)
+    for (WWVec4* vec in points) // no need to check for nil; NSArray does not permit nil elements
     {
-        if (vec == nil)
-            continue;
+        dx = [vec x] - mx;
+        dy = [vec y] - my;
+        dz = [vec z] - mz;
 
         ++count;
-        c11 += ([vec x] - [mean x]) * ([vec x] - [mean x]);
-        c22 += ([vec y] - [mean y]) * ([vec y] - [mean y]);
-        c33 += ([vec z] - [mean z]) * ([vec z] - [mean z]);
-        c12 += ([vec x] - [mean x]) * ([vec y] - [mean y]); // c12 = c21
-        c13 += ([vec x] - [mean x]) * ([vec z] - [mean z]); // c13 = c31
-        c23 += ([vec y] - [mean y]) * ([vec z] - [mean z]); // c23 = c32
+        c11 += dx * dx;
+        c22 += dy * dy;
+        c33 += dz * dz;
+        c12 += dx * dy; // c12 = c21
+        c13 += dx * dz; // c13 = c31
+        c23 += dy * dz; // c23 = c32
     }
-
-    if (count == 0)
-        return nil;
 
     // Row 1
     self->m[0] = c11 / (double) count;

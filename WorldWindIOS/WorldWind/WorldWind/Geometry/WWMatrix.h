@@ -111,7 +111,7 @@
 *
 * @return This matrix initialized to the covariant matrix for the specified list of points.
 *
-* @exception NSInvalidArgumentException if the specified list of points is nil.
+* @exception NSInvalidArgumentException if the specified list of points is nil or empty.
 */
 - (WWMatrix*) initWithCovarianceOfPoints:(NSArray*)points;
 

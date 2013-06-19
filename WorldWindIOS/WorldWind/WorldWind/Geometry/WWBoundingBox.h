@@ -77,7 +77,7 @@
 *
 * @return The bounding box initialized to contain the specified points.
 *
-* @exception NSInvalidArgumentException If the specified list of points is nil or zero length.
+* @exception NSInvalidArgumentException If the specified list of points is nil or empty.
 */
 - (WWBoundingBox*) initWithPoints:(NSArray*)points;
 

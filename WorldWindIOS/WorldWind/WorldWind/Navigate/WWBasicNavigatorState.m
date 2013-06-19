@@ -67,11 +67,18 @@
     // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
     // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
     // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye coordinates.
-    WWVec4* nbl = [[[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:-1] multiplyByMatrix:projectionInv];
-    WWVec4* ntr = [[[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:-1] multiplyByMatrix:projectionInv];
-    WWVec4* fbl = [[[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:+1] multiplyByMatrix:projectionInv];
-    WWVec4* ftr = [[[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:+1] multiplyByMatrix:projectionInv];
-    [nbl divideByScalar:[nbl w]]; // Divide by the W coordinate to convert clip coordinates to eye coordinates.
+    WWVec4* nbl = [[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:-1];
+    WWVec4* ntr = [[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:-1];
+    WWVec4* fbl = [[WWVec4 alloc] initWithCoordinates:-1 y:-1 z:+1];
+    WWVec4* ftr = [[WWVec4 alloc] initWithCoordinates:+1 y:+1 z:+1];
+    // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse projection
+    // matrix.
+    [nbl multiplyByMatrix:projectionInv];
+    [ntr multiplyByMatrix:projectionInv];
+    [fbl multiplyByMatrix:projectionInv];
+    [ftr multiplyByMatrix:projectionInv];
+    // Divide by the W coordinate to complete the conversion from clip coordinates to eye coordinates.
+    [nbl divideByScalar:[nbl w]];
     [ntr divideByScalar:[ntr w]];
     [fbl divideByScalar:[fbl w]];
     [ftr divideByScalar:[ftr w]];

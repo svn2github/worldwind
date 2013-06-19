@@ -140,17 +140,22 @@
 //-- Computing Information About Shapes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
+void swap(double* a, double* b)
+{
+    double tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
 + (NSArray*) principalAxesFromPoints:(NSArray*)points
 {
-    if (points == nil)
+    if (points == nil || [points count] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or empty")
     }
 
     // Compute the covariance matrix.
     WWMatrix* covariance = [[WWMatrix alloc] initWithCovarianceOfPoints:points];
-    if (covariance == nil)
-        return nil;
 
     // Compute the eigenvectors and eigenvalues of the covariance matrix. Since the covariance matrix is symmetric by
     // definition, we can safely use the "symmetric" method below.
@@ -160,30 +165,22 @@
                            resultEigenvalues:eigenvalues
                           resultEigenvectors:eigenvectors];
 
-    // Return the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
-    // normalized orthogonal vectors defining a coordinate system, with the vectors sorted from the most prominent
-    // axis to the lease prominent.
-    NSArray* indexArray = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:0],
-                                                           [NSNumber numberWithInt:1],
-                                                           [NSNumber numberWithInt:2], nil];
-    NSArray* sortedIndexArray = [indexArray sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
-    {
-        NSUInteger indexA = (NSUInteger) [(NSNumber*) a intValue];
-        NSUInteger indexB = (NSUInteger) [(NSNumber*) b intValue];
+    // Normalize the eigenvectors.
+    [eigenvectors makeObjectsPerformSelector:@selector(normalize3)];
 
-        return [[eigenvalues objectAtIndex:indexA] compare:[eigenvalues objectAtIndex:indexB]];
-    }];
+    // Sort the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
+    // normalized orthogonal vectors defining a coordinate system, with the vectors sorted from the most prominent axis
+    // to the lease prominent axis. The algorithm below is an unrolled bubble sort. Since the list of eigenvectors
+    // contains exactly three elements it takes at most three swaps to sort the list.
+    double e0 = [[eigenvalues objectAtIndex:0] doubleValue];
+    double e1 = [[eigenvalues objectAtIndex:1] doubleValue];
+    double e2 = [[eigenvalues objectAtIndex:2] doubleValue];
 
-    NSUInteger index0 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:0] intValue];
-    NSUInteger index1 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:1] intValue];
-    NSUInteger index2 = (NSUInteger) [(NSNumber*) [sortedIndexArray objectAtIndex:2] intValue];
+    if (e0 < e1) {[eigenvectors exchangeObjectAtIndex:0 withObjectAtIndex:1]; swap(&e0, &e1);}
+    if (e1 < e2) {[eigenvectors exchangeObjectAtIndex:1 withObjectAtIndex:2]; swap(&e1, &e2);}
+    if (e0 < e1) {[eigenvectors exchangeObjectAtIndex:0 withObjectAtIndex:1]; swap(&e0, &e1);}
 
-    NSMutableArray* resultArray = [[NSMutableArray alloc] initWithCapacity:3];
-    [resultArray addObject:[[eigenvectors objectAtIndex:index2] normalize3]];
-    [resultArray addObject:[[eigenvectors objectAtIndex:index1] normalize3]];
-    [resultArray addObject:[[eigenvectors objectAtIndex:index0] normalize3]];
-
-    return resultArray;
+    return eigenvectors;
 }
 
 + (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe
