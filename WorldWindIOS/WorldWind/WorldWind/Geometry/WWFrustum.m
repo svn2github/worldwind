@@ -75,7 +75,7 @@
     return self;
 }
 
-- (WWFrustum*) transformByMatrix:(WWMatrix*)matrix
+- (void) transformByMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -88,11 +88,9 @@
     [_top transformByMatrix:matrix];
     [_near transformByMatrix:matrix];
     [_far transformByMatrix:matrix];
-
-    return self;
 }
 
-- (WWFrustum*) normalize
+- (void) normalize
 {
     [_left normalize];
     [_right normalize];
@@ -100,8 +98,6 @@
     [_top normalize];
     [_near normalize];
     [_far normalize];
-
-    return self;
 }
 
 @end

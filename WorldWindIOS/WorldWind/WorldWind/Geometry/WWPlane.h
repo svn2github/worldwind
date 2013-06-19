@@ -29,7 +29,7 @@
 *
 * @return This plane initialized to the specified vector.
 *
-* @exception NSInvalidArgumentException If the specified vector is nil.
+* @exception NSInvalidArgumentException If the vector is nil or has zero length.
 */
 - (WWPlane*) initWithNormal:(WWVec4*)vector;
 
@@ -42,6 +42,8 @@
 * @param distance The negative of the plane's distance from the origin.
 *
 * @return This plane initialized as specified.
+*
+* @exception NSInvalidArgumentException If the coordinate have zero length.
 */
 - (WWPlane*) initWithCoordinates:(double)x y:(double)y z:(double)z distance:(double)distance;
 
@@ -54,7 +56,7 @@
 *
 * @return The dot product.
 *
-* @exception NSInvalidArgumentException if the specified vector is nil.
+* @exception NSInvalidArgumentException if the vector is nil.
 */
 - (double) dot:(WWVec4*)vector;
 
@@ -63,7 +65,7 @@
 *
 * @param matrix The matrix to apply to this plane.
 *
-* @exception NSInvalidArgumentException if the specified matrix is nil.
+* @exception NSInvalidArgumentException if the matrix is nil.
 */
 - (void) transformByMatrix:(WWMatrix*)matrix;
 
@@ -72,7 +74,7 @@
 *
 * @param translation The translation vector.
 *
-* @exception NSInvalidArgumentException If the specified translation vector is nil.
+* @exception NSInvalidArgumentException If the translation vector is nil.
 */
 - (void) translate:(WWVec4*)translation;
 

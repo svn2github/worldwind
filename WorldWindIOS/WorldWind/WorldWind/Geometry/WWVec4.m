@@ -313,6 +313,16 @@
     return _x * vector->_x + _y * vector->_y + _z * vector->_z;
 }
 
+- (double) dot4:(WWVec4* __unsafe_unretained)vector
+{
+    if (vector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
+    }
+
+    return _x * vector->_x + _y * vector->_y + _z * vector->_z + _w * vector->_w;
+}
+
 - (void) cross3:(WWVec4* __unsafe_unretained)vector
 {
     if (vector == nil)

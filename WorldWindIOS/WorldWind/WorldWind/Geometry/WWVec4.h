@@ -230,6 +230,17 @@
 - (double) dot3:(WWVec4*)vector;
 
 /**
+* Computes the X, Y, Z, W dot product of this vector with a specified vector.
+*
+* @param vector The vector to dot with this vector.
+*
+* @return The dot product.
+*
+* @exception NSInvalidArgumentException If the vector is nil.
+*/
+- (double) dot4:(WWVec4*)vector;
+
+/**
 * Computes the cross product of this vector and a specified vector, then stores the result in this vector.
 *
 * The cross product computed by this method is equivalent to va = va x vb, where 'va' is this vector and 'vb' is the

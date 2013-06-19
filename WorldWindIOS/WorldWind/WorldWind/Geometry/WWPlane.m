@@ -14,7 +14,7 @@
 
 @implementation WWPlane
 
-- (WWPlane*) initWithNormal:(WWVec4*)vector
+- (WWPlane*) initWithNormal:(WWVec4* __unsafe_unretained)vector
 {
     if (vector == nil)
     {
@@ -23,12 +23,12 @@
 
     if ([vector length3] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is zero length")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector has zero length")
     }
 
     self = [super init];
 
-    _vector = [[WWVec4 alloc] initWithCoordinates:[vector x] y:[vector y] z:[vector z] w:[vector w]];
+    _vector = [[WWVec4 alloc] initWithVector:vector];
 
     return self;
 }
@@ -41,23 +41,23 @@
 
     if ([_vector length3] == 0)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is zero length")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector has zero length")
     }
 
     return self;
 }
 
-- (double) dot:vector
+- (double) dot:(WWVec4* __unsafe_unretained)vector
 {
     if (vector == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Vector is nil")
     }
 
-    return [_vector x] * [vector x] + [_vector y] * [vector y] + [_vector z] * [vector z] + [_vector w] * [vector w];
+    return [_vector dot4:vector];
 }
 
-- (void) transformByMatrix:(WWMatrix*)matrix
+- (void) transformByMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
@@ -67,14 +67,15 @@
     [_vector multiplyByMatrix:matrix];
 }
 
-- (void) translate:(WWVec4*)translation
+- (void) translate:(WWVec4* __unsafe_unretained)translation
 {
     if (translation == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Translation is nil")
     }
 
-    [_vector set:[_vector x] y:[_vector y] z:[_vector z] w:[_vector w] - [_vector dot3:translation]];
+    double dot = [_vector dot3:translation];
+    [_vector setW:[_vector w] - dot];
 }
 
 - (void) normalize
