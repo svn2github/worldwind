@@ -47,7 +47,7 @@
 *
 * @return The initialized position.
 *
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
 - (WWPosition*) initWithLocation:(WWLocation*)location altitude:(double)metersAltitude;
 
@@ -58,7 +58,7 @@
 *
 * @return The initialized position.
 *
-* @exception NSInvalidArgumentException If the specified position is nil.
+* @exception NSInvalidArgumentException If the position is nil.
 */
 - (WWPosition*) initWithPosition:(WWPosition*)position;
 
@@ -72,7 +72,7 @@
 *
 * @return The initialized position.
 *
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
 - (WWPosition*) initWithCLLocation:(CLLocation*)location altitude:(double)metersAltitude;
 
@@ -86,7 +86,7 @@
 *
 * @return The initialized position.
 *
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
 - (WWPosition*) initWithCLPosition:(CLLocation*)location;
 
@@ -118,10 +118,8 @@
 * @param latitude The new latitude, in degrees.
 * @param longitude The new longitude, in degrees.
 * @param metersAltitude The new altitude, in meters.
-*
-* @return This position with the specified latitude, longitude and altitude.
 */
-- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersAltitude;
+- (void) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersAltitude;
 
 /**
 * Sets a position to the latitude, longitude and altitude of a specified location and altitude.
@@ -129,22 +127,18 @@
 * @param location The location containing the new latitude and longitude.
 * @param metersAltitude The new altitude, in meters.
 *
-* @return This position with the specified latitude, longitude and altitude.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWPosition*) setLocation:(WWLocation*)location altitude:(double)metersAltitude;
+- (void) setLocation:(WWLocation*)location altitude:(double)metersAltitude;
 
 /**
 * Sets a position to the latitude, longitude and altitude of a specified position.
 *
 * @param position The position containing the new latitude, longitude and altitude.
 *
-* @return This position with the specified latitude, longitude and altitude.
-*
-* @exception NSInvalidArgumentException If the specified position is nil.
+* @exception NSInvalidArgumentException If the position is nil.
 */
-- (WWPosition*) setPosition:(WWPosition*)position;
+- (void) setPosition:(WWPosition*)position;
 
 /**
 * Sets a position to the latitude, longitude and altitude of a specified CLLocation and altitude.
@@ -154,11 +148,9 @@
 * @param location The position containing the new latitude and longitude.
 * @param metersAltitude The altitude, in meters.
 *
-* @return  This position with the specified latitude, longitude and altitude.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWPosition*) setCLLocation:(CLLocation*)location altitude:(double)metersAltitude;
+- (void) setCLLocation:(CLLocation*)location altitude:(double)metersAltitude;
 
 /**
 * Sets a position to the latitude, longitude and altitude of a specified CLLocation.
@@ -168,11 +160,9 @@
 *
 * @param location The location containing the new latitude, longitude and altitude.
 *
-* @return This position with the specified latitude, longitude and altitude.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWPosition*) setCLPosition:(CLLocation*)location;
+- (void) setCLPosition:(CLLocation*)location;
 
 /**
 * Sets a position to the latitude, longitude and altitude of a specified CLLocationCoordinate2D and altitude.
@@ -182,10 +172,8 @@
 *
 * @param locationCoordinate The location coordinate containing the latitude and longitude.
 * @param metersAltitude The altitude, in meters.
-*
-* @return This position with the specified latitude, longitude and altitude.
 */
-- (WWPosition*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude;
+- (void) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude;
 
 /// @name Common Geographic Operations
 

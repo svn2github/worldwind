@@ -27,7 +27,7 @@
     return self;
 }
 
-- (WWPosition*) initWithLocation:(WWLocation*)location altitude:(double)metersAltitude
+- (WWPosition*) initWithLocation:(WWLocation* __unsafe_unretained)location altitude:(double)metersAltitude
 {
     if (location == nil)
     {
@@ -41,7 +41,7 @@
     return self;
 }
 
-- (WWPosition*) initWithPosition:(WWPosition*)position
+- (WWPosition*) initWithPosition:(WWPosition* __unsafe_unretained)position
 {
     if (position == nil)
     {
@@ -55,7 +55,7 @@
     return self;
 }
 
-- (WWPosition*) initWithCLLocation:(CLLocation*)location altitude:(double)metersAltitude
+- (WWPosition*) initWithCLLocation:(CLLocation* __unsafe_unretained)location altitude:(double)metersAltitude
 {
     if (location == nil)
     {
@@ -69,7 +69,7 @@
     return self;
 }
 
-- (WWPosition*) initWithCLPosition:(CLLocation*)location
+- (WWPosition*) initWithCLPosition:(CLLocation* __unsafe_unretained)location
 {
     if (location == nil)
     {
@@ -101,16 +101,14 @@
     return self;
 }
 
-- (WWPosition*) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersAltitude
+- (void) setDegreesLatitude:(double)latitude longitude:(double)longitude altitude:(double)metersAltitude
 {
     [super setDegreesLatitude:latitude longitude:longitude];
 
     _altitude = metersAltitude;
-
-    return self;
 }
 
-- (WWPosition*) setLocation:(WWLocation*)location altitude:(double)metersAltitude
+- (void) setLocation:(WWLocation* __unsafe_unretained)location altitude:(double)metersAltitude
 {
     if (location == nil)
     {
@@ -120,11 +118,9 @@
     [super setLocation:location];
 
     _altitude = metersAltitude;
-
-    return self;
 }
 
-- (WWPosition*) setPosition:(WWPosition*)position
+- (void) setPosition:(WWPosition* __unsafe_unretained)position
 {
     if (position == nil)
     {
@@ -134,11 +130,9 @@
     [super setLocation:position]; // Let the superclass set the latitude and longitude.
 
     _altitude = position->_altitude;
-
-    return self;
 }
 
-- (WWPosition*) setCLLocation:(CLLocation*)location altitude:(double)metersAltitude
+- (void) setCLLocation:(CLLocation* __unsafe_unretained)location altitude:(double)metersAltitude
 {
     if (location == nil)
     {
@@ -148,11 +142,9 @@
     [super setCLLocation:location]; // Let the superclass set the latitude and longitude.
 
     _altitude = metersAltitude;
-
-    return self;
 }
 
-- (WWPosition*) setCLPosition:(CLLocation*)location
+- (void) setCLPosition:(CLLocation* __unsafe_unretained)location
 {
     if (location == nil)
     {
@@ -162,23 +154,19 @@
     [super setCLLocation:location]; // Let the superclass set the latitude and longitude.
 
     _altitude = [location altitude];
-
-    return self;
 }
 
-- (WWPosition*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude
+- (void) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate altitude:(double)metersAltitude
 {
     [super setCLCoordinate:locationCoordinate]; // Let the superclass set the latitude and longitude.
 
     _altitude = metersAltitude;
-
-    return self;
 }
 
-+ (void) greatCircleInterpolate:(WWPosition*)beginPosition
-                    endPosition:(WWPosition*)endPosition
++ (void) greatCircleInterpolate:(WWPosition* __unsafe_unretained)beginPosition
+                    endPosition:(WWPosition* __unsafe_unretained)endPosition
                          amount:(double)amount
-                 outputPosition:(WWPosition*)result
+                 outputPosition:(WWPosition* __unsafe_unretained)result
 {
     if (beginPosition == nil)
     {
@@ -196,13 +184,13 @@
     }
 
     [WWLocation greatCircleInterpolate:beginPosition endLocation:endPosition amount:amount outputLocation:result];
-    result->_altitude = [WWMath interpolateValue1:[beginPosition altitude] value2:[endPosition altitude] amount:amount];
+    result->_altitude = [WWMath interpolateValue1:beginPosition->_altitude value2:endPosition->_altitude amount:amount];
 }
 
-+ (void) rhumbInterpolate:(WWPosition*)beginPosition
-              endPosition:(WWPosition*)endPosition
++ (void) rhumbInterpolate:(WWPosition* __unsafe_unretained)beginPosition
+              endPosition:(WWPosition* __unsafe_unretained)endPosition
                    amount:(double)amount
-           outputPosition:(WWPosition*)result
+           outputPosition:(WWPosition* __unsafe_unretained)result
 {
     if (beginPosition == nil)
     {
@@ -220,13 +208,13 @@
     }
 
     [WWLocation rhumbInterpolate:beginPosition endLocation:endPosition amount:amount outputLocation:result];
-    result->_altitude = [WWMath interpolateValue1:[beginPosition altitude] value2:[endPosition altitude] amount:amount];
+    result->_altitude = [WWMath interpolateValue1:beginPosition->_altitude value2:endPosition->_altitude amount:amount];
 }
 
-+ (void) linearInterpolate:(WWPosition*)beginPosition
-               endPosition:(WWPosition*)endPosition
++ (void) linearInterpolate:(WWPosition* __unsafe_unretained)beginPosition
+               endPosition:(WWPosition* __unsafe_unretained)endPosition
                     amount:(double)amount
-            outputPosition:(WWPosition*)result
+            outputPosition:(WWPosition* __unsafe_unretained)result
 {
     if (beginPosition == nil)
     {
@@ -244,13 +232,13 @@
     }
 
     [WWLocation linearInterpolate:beginPosition endLocation:endPosition amount:amount outputLocation:result];
-    result->_altitude = [WWMath interpolateValue1:[beginPosition altitude] value2:[endPosition altitude] amount:amount];
+    result->_altitude = [WWMath interpolateValue1:beginPosition->_altitude value2:endPosition->_altitude amount:amount];
 }
 
-+ (void) forecastPosition:(CLLocation*)location
-                  forDate:(NSDate*)date
-                  onGlobe:(WWGlobe*)globe
-           outputPosition:(WWPosition*)result
++ (void) forecastPosition:(CLLocation* __unsafe_unretained)location
+                  forDate:(NSDate* __unsafe_unretained)date
+                  onGlobe:(WWGlobe* __unsafe_unretained)globe
+           outputPosition:(WWPosition* __unsafe_unretained)result
 {
     if (location == nil)
     {

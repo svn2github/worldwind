@@ -55,7 +55,7 @@
 *
 * @return The initialized location.
 *
-* @exception NSInvalidArgumentException If the specified time zone is nil.
+* @exception NSInvalidArgumentException If the time zone is nil.
 */
 - (WWLocation*) initWithDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
 
@@ -66,7 +66,7 @@
 *
 * @return The initialized location.
 *
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
 - (WWLocation*) initWithLocation:(WWLocation*)location;
 
@@ -79,7 +79,7 @@
 *
 * @return The initialized location.
 *
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
 - (WWLocation*) initWithCLLocation:(CLLocation*)location;
 
@@ -109,10 +109,8 @@
 *
 * @param latitude The location's latitude.
 * @param longitude The location's longitude.
-*
-* @return This location with the specified latitude and longitude.
 */
-- (WWLocation*) setDegreesLatitude:(double)latitude longitude:(double)longitude;
+- (void) setDegreesLatitude:(double)latitude longitude:(double)longitude;
 
 /**
 * Specifies a location's latitude and longitude.
@@ -126,22 +124,18 @@
 * @param latitude The location's latitude in degrees.
 * @param timeZone The time zone associated with the location's longitude.
 *
-* @return This location with the specified latitude and longitude.
-*
-* @exception NSInvalidArgumentException If the specified time zone is nil.
+* @exception NSInvalidArgumentException If the time zone is nil.
 */
-- (WWLocation*) setDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
+- (void) setDegreesLatitude:(double)latitude timeZoneForLongitude:(NSTimeZone*)timeZone;
 
 /**
 * Sets a location to the latitude and longitude of a specified location.
 *
 * @param location The location containing the new latitude and longitude.
 *
-* @return This location with the specified latitude and longitude.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWLocation*) setLocation:(WWLocation*)location;
+- (void) setLocation:(WWLocation*)location;
 
 /**
 * Sets a location to the latitude and longitude of a specified CLLocation.
@@ -150,11 +144,9 @@
 *
 * @param location The location containing the new latitude and longitude.
 *
-* @return This location with the specified latitude and longitude.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWLocation*) setCLLocation:(CLLocation*)location;
+- (void) setCLLocation:(CLLocation*)location;
 
 /**
 * Sets a location to the latitude and longitude of a specified CLLocationCoordinate2D.
@@ -163,10 +155,8 @@
 * and longitude fields.
 *
 * @param locationCoordinate The location coordinate containing the latitude and longitude.
-*
-* @return This location with the specified latitude and longitude.
 */
-- (WWLocation*) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate;
+- (void) setCLCoordinate:(CLLocationCoordinate2D)locationCoordinate;
 
 /// @name Operations on Locations
 
@@ -175,22 +165,18 @@
 *
 * @param location The location whose latitude and longitude are to be added.
 *
-* @return This location with the specified location added to it.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWLocation*) addLocation:(WWLocation*)location;
+- (void) addLocation:(WWLocation*)location;
 
 /**
 * Subtracts a specified location's latitude and longitude from this location's latitude and longitude.
 *
 * @param location The location whose latitude and longitude are to be subtracted from this location.
 *
-* @return This location with the specified location subtracted from it.
-*
-* @exception NSInvalidArgumentException If the specified location is nil.
+* @exception NSInvalidArgumentException If the location is nil.
 */
-- (WWLocation*) subtractLocation:(WWLocation*)location;
+- (void) subtractLocation:(WWLocation*)location;
 
 /// @name Common Geographic Operations
 
