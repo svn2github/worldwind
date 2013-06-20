@@ -8,6 +8,8 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
+#define WW_VERSION (@"0.1")
+
 @class WWResourceLoader;
 
 /**

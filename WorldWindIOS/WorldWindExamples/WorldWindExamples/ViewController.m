@@ -45,6 +45,7 @@
 #import "BulkRetrieverController.h"
 #import "FrameStatisticsController.h"
 #import "WorldWind/Layer/WWBMNGLandsatCombinedLayer.h"
+#import "WorldWind.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -109,7 +110,7 @@
 {
     [super viewDidLoad];
 
-    WWLog(@"View Did Load");
+    WWLog(@"View Did Load. World Wind iOS Version %@", WW_VERSION);
 
     WWLayerList* layers = [[_wwv sceneController] layers];
 
