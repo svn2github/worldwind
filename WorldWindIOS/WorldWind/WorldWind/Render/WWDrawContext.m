@@ -185,7 +185,7 @@
 {
     if (orderedRenderable != nil)
     {
-        // TODO: Is there a reason that insertionTime is not set here?
+        [orderedRenderable setInsertionTime:[NSDate timeIntervalSinceReferenceDate]];
         [orderedRenderable setEyeDistance:DBL_MAX];
         [orderedRenderables addObject:orderedRenderable];
     }
