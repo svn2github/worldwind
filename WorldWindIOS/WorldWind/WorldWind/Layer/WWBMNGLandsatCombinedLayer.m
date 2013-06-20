@@ -13,6 +13,9 @@
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Util/WWTile.h"
 
+/**
+* An internal class to control switching between BMNG and Landsat
+*/
 @interface WWBMNGLandsatURLBuilder : WWWMSUrlBuilder
 
 - (WWWMSUrlBuilder*) initWithServiceAddress:(NSString*)serviceAddress
