@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B6B6A8C177271720099EC33 /* AppIconPhone.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B6B6A8B177271720099EC33 /* AppIconPhone.png */; };
+		0B6B6A8E1772717C0099EC33 /* AppIconPhone@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B6B6A8D1772717C0099EC33 /* AppIconPhone@2x.png */; };
+		0B6B6A90177271840099EC33 /* AppIconPad.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B6B6A8F177271840099EC33 /* AppIconPad.png */; };
+		0B6B6A92177271890099EC33 /* AppIconPad@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B6B6A91177271890099EC33 /* AppIconPad@2x.png */; };
 		0B981409165FFA4900193E50 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B981408165FFA4900193E50 /* UIKit.framework */; };
 		0B98140B165FFA4900193E50 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B98140A165FFA4900193E50 /* Foundation.framework */; };
 		0B98140D165FFA4900193E50 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B98140C165FFA4900193E50 /* CoreGraphics.framework */; };
@@ -72,6 +76,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0B6B6A8B177271720099EC33 /* AppIconPhone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIconPhone.png; sourceTree = "<group>"; };
+		0B6B6A8D1772717C0099EC33 /* AppIconPhone@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIconPhone@2x.png"; sourceTree = "<group>"; };
+		0B6B6A8F177271840099EC33 /* AppIconPad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIconPad.png; sourceTree = "<group>"; };
+		0B6B6A91177271890099EC33 /* AppIconPad@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIconPad@2x.png"; sourceTree = "<group>"; };
 		0B981404165FFA4900193E50 /* WorldWindExamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorldWindExamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B981408165FFA4900193E50 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0B98140A165FFA4900193E50 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -182,6 +190,10 @@
 		0B9813F9165FFA4900193E50 = {
 			isa = PBXGroup;
 			children = (
+				0B6B6A91177271890099EC33 /* AppIconPad@2x.png */,
+				0B6B6A8F177271840099EC33 /* AppIconPad.png */,
+				0B6B6A8D1772717C0099EC33 /* AppIconPhone@2x.png */,
+				0B6B6A8B177271720099EC33 /* AppIconPhone.png */,
 				0BA1E9DD16B09B92004F3619 /* SystemConfiguration.framework */,
 				0B98140E165FFA4900193E50 /* WorldWindExamples */,
 				0B981407165FFA4900193E50 /* Frameworks */,
@@ -386,6 +398,10 @@
 				CC8CFA0C900B142B4810209B /* 265-download@2x.png in Resources */,
 				CC8CF5512B53C3EF0B0435E2 /* 433-x.png in Resources */,
 				CC8CFD084BA434A8AFC44978 /* 433-x@2x.png in Resources */,
+				0B6B6A8C177271720099EC33 /* AppIconPhone.png in Resources */,
+				0B6B6A8E1772717C0099EC33 /* AppIconPhone@2x.png in Resources */,
+				0B6B6A90177271840099EC33 /* AppIconPad.png in Resources */,
+				0B6B6A92177271890099EC33 /* AppIconPad@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

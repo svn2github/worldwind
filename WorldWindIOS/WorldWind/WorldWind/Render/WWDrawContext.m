@@ -39,7 +39,7 @@
     _terrain = [[WWBasicTerrain alloc] initWithDrawContext:self];
     _screenProjection = [[WWMatrix alloc] initWithIdentity];
     _objectsAtPickPoint = [[WWPickedObjectList alloc] init];
-    _clearColor = [WWColor makeColorInt:77 g:77 b:77 a:255];
+    _clearColor = [WWColor makeColorInt:200 g:200 b:200 a:255];
 
     orderedRenderables = [[NSMutableArray alloc] init];
     defaultProgramKey = [WWUtil generateUUID];
