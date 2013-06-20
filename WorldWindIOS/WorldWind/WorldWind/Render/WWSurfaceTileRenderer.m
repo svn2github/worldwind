@@ -215,7 +215,7 @@
 
 - (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [[dc gpuResourceCache] getProgramForKey:programKey];
+    WWGpuProgram* program = [[dc gpuResourceCache] programForKey:programKey];
     if (program != nil)
         return program;
 

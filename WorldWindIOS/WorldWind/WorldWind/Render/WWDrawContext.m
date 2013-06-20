@@ -306,7 +306,7 @@
 
 - (WWGpuProgram*) defaultProgram
 {
-    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:defaultProgramKey];
+    WWGpuProgram* program = [[self gpuResourceCache] programForKey:defaultProgramKey];
     if (program != nil)
     {
         [program bind];
@@ -332,7 +332,7 @@
 
 - (WWGpuProgram*) defaultTextureProgram
 {
-    WWGpuProgram* program = [[self gpuResourceCache] getProgramForKey:defaultTextureProgramKey];
+    WWGpuProgram* program = [[self gpuResourceCache] programForKey:defaultTextureProgramKey];
     if (program != nil)
     {
         [program bind];
@@ -358,7 +358,7 @@
 
 - (GLuint) unitQuadBuffer
 {
-    NSNumber* vboId = (NSNumber*) [_gpuResourceCache getResourceForKey:unitQuadKey];
+    NSNumber* vboId = (NSNumber*) [_gpuResourceCache resourceForKey:unitQuadKey];
     if (vboId != nil)
     {
         return [vboId unsignedIntValue];

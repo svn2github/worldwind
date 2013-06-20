@@ -336,7 +336,7 @@
 {
     [tile setFallbackTile:nil];
 
-    WWTexture* texture = (WWTexture*) [[dc gpuResourceCache] getResourceForKey:[tile imagePath]];
+    WWTexture* texture = (WWTexture*) [[dc gpuResourceCache] resourceForKey:[tile imagePath]];
     if (texture != nil)
     {
         [currentTiles addObject:tile];

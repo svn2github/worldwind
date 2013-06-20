@@ -616,13 +616,13 @@
     {
         // Enable the program's texture coordinate attribute.
         vertexTexCoordLocation = [program getAttributeLocation:@"vertexTexCoord"];
-        NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+        NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
         glEnableVertexAttribArray((GLuint) vertexTexCoordLocation);
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
         glVertexAttribPointer((GLuint) vertexTexCoordLocation, 2, GL_FLOAT, false, 0, 0);
     }
 
-    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) [indicesVboId intValue]);
 }
 
@@ -668,7 +668,7 @@
 
     GLuint vboId;
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
-    NSNumber* vbo = (NSNumber*) [gpuResourceCache getResourceForKey:[tile cacheKey]];
+    NSNumber* vbo = (NSNumber*) [gpuResourceCache resourceForKey:[tile cacheKey]];
     if (vbo == nil)
     {
         GLsizei size = [tile numPoints] * 3 * sizeof(float);
@@ -763,7 +763,7 @@
 {
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
-    NSNumber* texCoordVbo = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+    NSNumber* texCoordVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
     if (texCoordVbo == nil)
     {
         GLuint texCoordVboId;
@@ -778,7 +778,7 @@
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    NSNumber* indicesVbo = (NSNumber*) [gpuResourceCache getResourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    NSNumber* indicesVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
     if (indicesVbo == nil)
     {
         GLuint indicesVboId;

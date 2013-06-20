@@ -43,7 +43,7 @@
 
 - (BOOL) bind:(WWDrawContext*)dc
 {
-    WWTexture* texture = [[dc gpuResourceCache] getTextureForKey:_imagePath];
+    WWTexture* texture = [[dc gpuResourceCache] textureForKey:_imagePath];
     if (texture != nil)
     {
         return [texture bind:dc];
@@ -59,7 +59,7 @@
 
 - (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
 {
-    if (_fallbackTile != nil && [[dc gpuResourceCache] getTextureForKey:_imagePath] == nil)
+    if (_fallbackTile != nil && [[dc gpuResourceCache] textureForKey:_imagePath] == nil)
     {
         // Must apply a texture transform to map the tile's sector into its fallback's image.
         [self applyFallbackTransform:dc matrix:matrix];

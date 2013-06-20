@@ -27,7 +27,7 @@
     _globe = [[WWGlobe alloc] init];
     _layers = [[WWLayerList alloc] init];
 
-    _gpuResourceCache = [[WWGpuResourceCache alloc] initWithLowWater:(long) 150e6 highWater:(long) 250e6];
+    _gpuResourceCache = [[WWGpuResourceCache alloc] initWithLowWater:(long) 150e6 capacity:(long) 250e6];
 
     self->drawContext = [[WWDrawContext alloc] init];
     [self->drawContext setGpuResourceCache:_gpuResourceCache];

@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+* Internal class that represents data shared within the tessellator.
+*/
 @interface WWTerrainSharedGeometry : NSObject
 
 @property (nonatomic) int numTexCoords;

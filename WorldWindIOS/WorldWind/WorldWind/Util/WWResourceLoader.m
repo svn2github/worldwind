@@ -50,7 +50,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Resource cache is nil")
     }
 
-    WWTexture* texture = [cache getTextureForKey:imagePath];
+    WWTexture* texture = [cache textureForKey:imagePath];
     if (texture != nil)
     {
         return texture; // use the cached texture

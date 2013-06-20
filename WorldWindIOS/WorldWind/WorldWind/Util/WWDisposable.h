@@ -5,8 +5,15 @@
  @version $Id$
  */
 
+/**
+* A protocol implemented by all objects that must explicitly deallocate resources when the object is no longer
+* needed. The relevant resources vary with the class and class instance.
+*/
 @protocol WWDisposable
 
+/**
+* Deallocate resources specific to the object.
+*/
 - (void) dispose;
 
 @end

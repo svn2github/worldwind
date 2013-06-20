@@ -38,7 +38,7 @@
 
 - (BOOL) bind:(WWDrawContext*)dc
 {
-    WWTexture* texture = [[dc gpuResourceCache] getTextureForKey:_imagePath];
+    WWTexture* texture = [[dc gpuResourceCache] textureForKey:_imagePath];
     if (texture != nil)
     {
         return [texture bind:dc];

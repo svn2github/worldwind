@@ -43,11 +43,11 @@
 
 @implementation WWGpuResourceCache
 
-- (WWGpuResourceCache*) initWithLowWater:(long)lowWater highWater:(long)highWater
+- (WWGpuResourceCache*) initWithLowWater:(long)lowWater capacity:(long)capacity
 {
     self = [super init];
 
-    self->resources = [[WWMemoryCache alloc] initWithCapacity:highWater lowWater:lowWater];
+    self->resources = [[WWMemoryCache alloc] initWithCapacity:capacity lowWater:lowWater];
     [self->resources addCacheListener:self]; // install entry-removed and removal-exception handler
 
     return self;
@@ -83,7 +83,7 @@
     WWLogE(@"removing GPU resource", exception);
 }
 
-- (NSObject*) getResourceForKey:(id <NSCopying>)key
+- (NSObject*) resourceForKey:(id <NSCopying>)key
 {
     if (key == nil)
     {
@@ -95,7 +95,7 @@
     return entry != nil ? [entry resource] : nil;
 }
 
-- (WWGpuProgram*) getProgramForKey:(id <NSCopying>)key
+- (WWGpuProgram*) programForKey:(id <NSCopying>)key
 {
     if (key == nil)
     {
@@ -107,7 +107,7 @@
     return entry != nil && [[entry resourceType] isEqual:WW_GPU_PROGRAM] ? (WWGpuProgram*) [entry resource] : nil;
 }
 
-- (WWTexture*) getTextureForKey:(id <NSCopying>)key
+- (WWTexture*) textureForKey:(id <NSCopying>)key
 {
     if (key == nil)
     {
@@ -166,7 +166,7 @@
 
     WWGpuResourceCacheEntry* entry = [[WWGpuResourceCacheEntry alloc] initWithResource:program
                                                                           resourceType:WW_GPU_PROGRAM];
-    [entry setResourceSize:[self computeEntrySize:entry]];
+    [entry setResourceSize:[self entrySize:entry]];
 
     [self->resources putValue:entry forKey:key];
 }
@@ -185,12 +185,12 @@
 
     WWGpuResourceCacheEntry* entry = [[WWGpuResourceCacheEntry alloc] initWithResource:texture
                                                                           resourceType:WW_GPU_TEXTURE];
-    [entry setResourceSize:[self computeEntrySize:entry]];
+    [entry setResourceSize:[self entrySize:entry]];
 
     [self->resources putValue:entry forKey:key];
 }
 
-- (long) computeEntrySize:(WWGpuResourceCacheEntry*)entry
+- (long) entrySize:(WWGpuResourceCacheEntry*)entry
 {
     if ([[entry resource] respondsToSelector:@selector(sizeInBytes)])
     {

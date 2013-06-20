@@ -154,15 +154,15 @@ static int numIndices; // the number of indices defining the sphere
 {
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
-    NSNumber* verticesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:verticesVboCacheKey];
-    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:indicesVboCacheKey];
+    NSNumber* verticesVboId = (NSNumber*) [gpuResourceCache resourceForKey:verticesVboCacheKey];
+    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:indicesVboCacheKey];
 
     if (verticesVboId == nil || indicesVboId == nil)
     {
         [self tessellateSphere:dc];
 
-        verticesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:verticesVboCacheKey];
-        indicesVboId = (NSNumber*) [gpuResourceCache getResourceForKey:indicesVboCacheKey];
+        verticesVboId = (NSNumber*) [gpuResourceCache resourceForKey:verticesVboCacheKey];
+        indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:indicesVboCacheKey];
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [verticesVboId intValue]);
