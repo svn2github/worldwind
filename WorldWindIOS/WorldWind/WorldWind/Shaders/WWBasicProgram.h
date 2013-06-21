@@ -31,14 +31,12 @@
 @interface WWBasicProgram : WWGpuProgram
 {
 @protected
+    GLuint vertexPointLocation;
     GLuint mvpMatrixLocation;
     GLuint colorLocation;
 }
 
-/// The OpenGL location index for this program's `vertexPoint` vertex attribute.
-///
-/// This property is suitable for use as the index argument in glVertexAttribPointer.
-@property (nonatomic, readonly) GLuint vertexPointLocation;
+/// @name Initializing GPU Programs
 
 /**
 * Initializes, compiles and links this GLSL program with the source code for its vertex and fragment shaders.
@@ -55,6 +53,19 @@
 * program fails.
 */
 - (WWBasicProgram*) init;
+
+/// @name Accessing Vertex Attributes
+
+/**
+ * Indicates the OpenGL location index for this program's `vertexPoint` vertex attribute.
+ *
+ * The returned value is suitable for use as the index argument in glVertexAttribPointer.
+ *
+ * @return The location index for this program's `vertexPoint` vertex attribute.
+ */
+- (GLuint) vertexPointLocation;
+
+/// @name Accessing Uniform Variables
 
 /**
 * Loads the specified matrix as the value of this program's `mvpMatrix` uniform variable.

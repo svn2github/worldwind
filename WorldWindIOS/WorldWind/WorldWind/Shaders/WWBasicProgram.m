@@ -18,15 +18,20 @@
 {
     self = [super initWithShaderSource:BasicVertexShader fragmentShader:BasicFragmentShader];
 
-    _vertexPointLocation = (GLuint) [self getAttributeLocation:@"vertexPoint"];
-    mvpMatrixLocation = (GLuint) [self getUniformLocation:@"mvpMatrix"];
-    colorLocation = (GLuint) [self getUniformLocation:@"color"];
+    vertexPointLocation = (GLuint) [self attributeLocation:@"vertexPoint"];
+    mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
+    colorLocation = (GLuint) [self uniformLocation:@"color"];
 
     [self bind];
-    glEnableVertexAttribArray(_vertexPointLocation);
+    glEnableVertexAttribArray(vertexPointLocation);
     glUseProgram(0);
 
     return self;
+}
+
+- (GLuint) vertexPointLocation
+{
+    return vertexPointLocation;
 }
 
 - (void) loadModelviewProjection:(WWMatrix* __unsafe_unretained)matrix

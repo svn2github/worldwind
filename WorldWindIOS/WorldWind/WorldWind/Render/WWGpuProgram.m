@@ -136,7 +136,7 @@
     glUseProgram(_programId);
 }
 
-- (int) getAttributeLocation:(NSString*)attributeName
+- (int) attributeLocation:(NSString*)attributeName
 {
     if (attributeName == nil || attributeName.length == 0)
     {
@@ -157,7 +157,7 @@
     return location.intValue;
 }
 
-- (int) getUniformLocation:(NSString*)uniformName
+- (int) uniformLocation:(NSString*)uniformName
 {
     if (uniformName == nil || uniformName.length == 0)
     {

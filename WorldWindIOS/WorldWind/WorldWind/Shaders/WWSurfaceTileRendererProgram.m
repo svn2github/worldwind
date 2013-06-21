@@ -18,21 +18,31 @@
 {
     self = [super initWithShaderSource:SurfaceTileRendererVertexShader fragmentShader:SurfaceTileRendererFragmentShader];
 
-    _vertexPointLocation = (GLuint) [self getAttributeLocation:@"vertexPoint"];
-    _vertexTexCoordLocation = (GLuint) [self getAttributeLocation:@"vertexTexCoord"];
-    mvpMatrixLocation = (GLuint) [self getUniformLocation:@"mvpMatrix"];
-    tileCoordMatrixLocation = (GLuint) [self getUniformLocation:@"tileCoordMatrix"];
-    textureUnitLocation = (GLuint) [self getUniformLocation:@"textureSampler"];
-    textureMatrixLocation = (GLuint) [self getUniformLocation:@"texCoordMatrix"];
-    opacityLocation = (GLuint) [self getUniformLocation:@"opacity"];
+    vertexPointLocation = (GLuint) [self attributeLocation:@"vertexPoint"];
+    vertexTexCoordLocation = (GLuint) [self attributeLocation:@"vertexTexCoord"];
+    mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
+    tileCoordMatrixLocation = (GLuint) [self uniformLocation:@"tileCoordMatrix"];
+    textureUnitLocation = (GLuint) [self uniformLocation:@"textureSampler"];
+    textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
+    opacityLocation = (GLuint) [self uniformLocation:@"opacity"];
 
     [self bind];
-    glEnableVertexAttribArray(_vertexPointLocation);
-    glEnableVertexAttribArray(_vertexTexCoordLocation);
+    glEnableVertexAttribArray(vertexPointLocation);
+    glEnableVertexAttribArray(vertexTexCoordLocation);
     glUniform1i(textureUnitLocation, 0);
     glUseProgram(0);
 
     return self;
+}
+
+- (GLuint) vertexPointLocation
+{
+    return vertexPointLocation;
+}
+
+- (GLuint) vertexTexCoordLocation
+{
+    return vertexTexCoordLocation;
 }
 
 - (void) loadModelviewProjection:(WWMatrix* __unsafe_unretained)matrix

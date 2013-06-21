@@ -609,14 +609,14 @@
 
     // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
     // bound, and therefore must look up the location of attributes rather by conventional name.
-    vertexPointLocation = (GLuint) [program getAttributeLocation:@"vertexPoint"];
-    mvpMatrixLocation = (GLuint) [program getUniformLocation:@"mvpMatrix"];
+    vertexPointLocation = (GLuint) [program attributeLocation:@"vertexPoint"];
+    mvpMatrixLocation = (GLuint) [program uniformLocation:@"mvpMatrix"];
 
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
     if (![dc pickingMode])
     {
-        vertexTexCoordLocation = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
+        vertexTexCoordLocation = (GLuint) [program attributeLocation:@"vertexTexCoord"];
         NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
         glVertexAttribPointer((GLuint) vertexTexCoordLocation, 2, GL_FLOAT, false, 0, 0);

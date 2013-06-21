@@ -71,7 +71,7 @@
 */
 - (void) dispose;
 
-/// @name Accessing Shader Variables
+/// @name Accessing Vertex Attributes
 
 /**
 * Returns the GLSL attribute location of a specified attribute name.
@@ -84,7 +84,9 @@
 *
 * @exception NSInvalidArgumentException If the specified name is nil or empty.
 */
-- (int) getAttributeLocation:(NSString*)attributeName;
+- (int) attributeLocation:(NSString*)attributeName;
+
+/// @name Accessing Uniform Variables
 
 /**
 * Returns the GLSL uniform variable location of a specified uniform name.
@@ -97,9 +99,7 @@
 *
 * @exception NSInvalidArgumentException If the specified name is nil or empty.
 */
-- (int) getUniformLocation:(NSString*)uniformName;
-
-/// @name Convenience Functions
+- (int) uniformLocation:(NSString*)uniformName;
 
 /**
 * Loads the specified matrix as the value of a GLSL 4x4 matrix uniform variable with the specified location index.

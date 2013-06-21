@@ -18,21 +18,31 @@
 {
     self = [super initWithShaderSource:BasicTextureVertexShader fragmentShader:BasicTextureFragmentShader];
 
-    _vertexPointLocation = (GLuint) [self getAttributeLocation:@"vertexPoint"];
-    _vertexTexCoordLocation = (GLuint) [self getAttributeLocation:@"vertexTexCoord"];
-    mvpMatrixLocation = (GLuint) [self getUniformLocation:@"mvpMatrix"];
-    colorLocation = (GLuint) [self getUniformLocation:@"color"];
-    textureEnabledLocation = (GLuint) [self getUniformLocation:@"enableTexture"];
-    textureUnitLocation = (GLuint) [self getUniformLocation:@"textureSampler"];
-    textureMatrixLocation = (GLuint) [self getUniformLocation:@"texCoordMatrix"];
+    vertexPointLocation = (GLuint) [self attributeLocation:@"vertexPoint"];
+    vertexTexCoordLocation = (GLuint) [self attributeLocation:@"vertexTexCoord"];
+    mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
+    colorLocation = (GLuint) [self uniformLocation:@"color"];
+    textureEnabledLocation = (GLuint) [self uniformLocation:@"enableTexture"];
+    textureUnitLocation = (GLuint) [self uniformLocation:@"textureSampler"];
+    textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
 
     [self bind];
-    glEnableVertexAttribArray(_vertexPointLocation);
-    glEnableVertexAttribArray(_vertexTexCoordLocation);
+    glEnableVertexAttribArray(vertexPointLocation);
+    glEnableVertexAttribArray(vertexTexCoordLocation);
     glUniform1i(textureUnitLocation, 0);
     glUseProgram(0);
 
     return self;
+}
+
+- (GLuint) vertexPointLocation
+{
+    return vertexPointLocation;
+}
+
+- (GLuint) vertexTexCoordLocation
+{
+    return vertexTexCoordLocation;
 }
 
 - (void) loadModelviewProjection:(WWMatrix* __unsafe_unretained)matrix

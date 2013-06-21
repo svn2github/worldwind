@@ -46,6 +46,8 @@
 @interface WWSurfaceTileRendererProgram : WWGpuProgram
 {
 @protected
+    GLuint vertexPointLocation;
+    GLuint vertexTexCoordLocation;
     GLuint mvpMatrixLocation;
     GLuint tileCoordMatrixLocation;
     GLuint textureUnitLocation;
@@ -53,15 +55,7 @@
     GLuint opacityLocation;
 }
 
-/// The OpenGL location index for this program's `vertexPoint` vertex attribute.
-///
-/// This property is suitable for use as the index argument in glVertexAttribPointer.
-@property (nonatomic, readonly) GLuint vertexPointLocation;
-
-/// The OpenGL location index for this program's `vertexTexCoord` vertex attribute.
-///
-/// This property is suitable for use as the index argument in glVertexAttribPointer.
-@property (nonatomic, readonly) GLuint vertexTexCoordLocation;
+/// @name Initializing GPU Programs
 
 /**
 * Initializes, compiles and links this GLSL program with the source code for its vertex and fragment shaders.
@@ -78,6 +72,28 @@
 * program fails.
 */
 - (WWSurfaceTileRendererProgram*) init;
+
+/// @name Accessing Vertex Attributes
+
+/**
+ * Indicates the OpenGL location index for this program's `vertexPoint` vertex attribute.
+ *
+ * The returned value is suitable for use as the index argument in glVertexAttribPointer.
+ *
+ * @return The location index for this program's `vertexPoint` vertex attribute.
+ */
+- (GLuint) vertexPointLocation;
+
+/**
+ * Indicates the OpenGL location index for this program's `vertexTexCoord` vertex attribute.
+ *
+ * The returned value is suitable for use as the index argument in glVertexAttribPointer.
+ *
+ * @return The location index for this program's `vertexTexCoord` vertex attribute.
+ */
+- (GLuint) vertexTexCoordLocation;
+
+/// @name Accessing Uniform Variables
 
 /**
 * Loads the specified matrix as the value of this program's `mvpMatrix` uniform variable.
