@@ -25,17 +25,8 @@
 @protected
     NSString* programKey;
     WWMatrix* tileCoordMatrix;
-    WWMatrix* texCoordMatrix;
+    WWMatrix* textureMatrix;
 }
-
-/// @name Surface Tile Renderer Attributes
-
-/**
-* Returns the GPU program (WWGpuProgram) used by this surface tile renderer.
-*
-* @param dc The current draw context.
-*/
-- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc;
 
 /// @name Initialized a Surface Tile Renderer
 
@@ -78,9 +69,11 @@
 
 // The following methods are intentionally not documented.
 
-- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program opacity:(float)opacity;
+- (void) beginRendering:(WWDrawContext*)dc opacity:(float)opacity;
 
 - (void) endRendering:(WWDrawContext*)dc;
+
+- (void) bindProgram:(WWDrawContext*)dc;
 
 - (void) drawIntersectingTiles:(WWDrawContext*)dc
                    terrainTile:(WWTerrainTile*)terrainTile

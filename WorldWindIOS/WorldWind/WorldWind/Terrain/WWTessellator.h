@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <OpenGLES/ES2/gl.h>
 #import "WorldWind/Util/WWTileFactory.h"
 
 @class WWGlobe;
@@ -37,8 +38,9 @@
     double* tileElevations;
     WWMatrix* lastMVP;
 
-    int vertexPointLocation;
-    int vertexTexCoordLocation;
+    GLuint vertexPointLocation;
+    GLuint vertexTexCoordLocation;
+    GLuint mvpMatrixLocation;
 }
 
 /// @name Tessellator Attributes

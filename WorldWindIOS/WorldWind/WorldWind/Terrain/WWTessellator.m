@@ -6,27 +6,28 @@
  */
 
 #import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWLine.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Shaders/WWBasicProgram.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Terrain/WWTerrainSharedGeometry.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Terrain/WWTerrainSharedGeometry.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Util/WWLevelSet.h"
-#import "WorldWind/Util/WWLevel.h"
-#import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Render/WWGpuProgram.h"
-#import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Util/WWMemoryCache.h"
-#import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Geometry/WWLine.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWLevelSet.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/Util/WWMemoryCache.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWTessellator
 
@@ -597,7 +598,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    WWGpuProgram* program = dc.currentProgram;
+    WWGpuProgram* program = [dc currentProgram]; // use the current program; the caller configures other program state
     if (program == nil)
     {
         WWLog(@"Current program is nil");
@@ -606,18 +607,17 @@
 
     [self cacheSharedGeometryVBOs:dc];
 
-    // Enable the program's vertex attribute, if one exists.
-    vertexPointLocation = [program getAttributeLocation:@"vertexPoint"];
-    glEnableVertexAttribArray((GLuint) vertexPointLocation);
+    // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
+    // bound, and therefore must look up the location of attributes rather by conventional name.
+    vertexPointLocation = (GLuint) [program getAttributeLocation:@"vertexPoint"];
+    mvpMatrixLocation = (GLuint) [program getUniformLocation:@"mvpMatrix"];
 
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
     if (![dc pickingMode])
     {
-        // Enable the program's texture coordinate attribute.
-        vertexTexCoordLocation = [program getAttributeLocation:@"vertexTexCoord"];
+        vertexTexCoordLocation = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
         NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
-        glEnableVertexAttribArray((GLuint) vertexTexCoordLocation);
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
         glVertexAttribPointer((GLuint) vertexTexCoordLocation, 2, GL_FLOAT, false, 0, 0);
     }
@@ -635,13 +635,6 @@
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    glDisableVertexAttribArray((GLuint) vertexPointLocation);
-
-    if (![dc pickingMode])
-    {
-        glDisableVertexAttribArray((GLuint) vertexTexCoordLocation);
-    }
 }
 
 - (void) beginRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -656,15 +649,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    WWGpuProgram* program = dc.currentProgram;
-    if (program == nil)
-    {
-        return;
-    }
-
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
                                                matrixB:[tile transformationMatrix]];
-    [program loadUniformMatrix:@"mvpMatrix" matrix:mvp];
+    [WWGpuProgram loadUniformMatrix:mvp location:mvpMatrixLocation];
 
     GLuint vboId;
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
@@ -803,7 +790,7 @@
         return;
     }
 
-    WWGpuProgram* program = [dc defaultProgram];
+    WWBasicProgram* program = (WWBasicProgram*) [dc defaultProgram]; // bind the default program
     if (program == nil)
     {
         return;
@@ -834,7 +821,7 @@
 
             @try
             {
-                [program loadUniformColorInt:@"color" color:colorInt];
+                [program loadPickColor:colorInt];
                 [tile render:dc]; // render the tile
             }
             @finally

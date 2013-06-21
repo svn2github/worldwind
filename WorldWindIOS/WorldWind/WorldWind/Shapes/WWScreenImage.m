@@ -15,6 +15,7 @@
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Render/WWTexture.h"
+#import "WorldWind/Shaders/WWBasicTextureProgram.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWResourceLoader.h"
@@ -43,7 +44,6 @@
     // Rendering attributes.
     mvpMatrix = [[WWMatrix alloc] initWithIdentity];
     texCoordMatrix = [[WWMatrix alloc] initWithIdentity];
-    color = [[WWColor alloc] init];
 
     // Picking attributes.
     pickSupport = [[WWPickSupport alloc] init];
@@ -154,27 +154,22 @@
 
 - (void) doDrawOrderedRenderable:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [dc currentProgram];
-
-    [program loadUniformMatrix:@"mvpMatrix" matrix:mvpMatrix];
-    [program loadUniformMatrix:@"texCoordMatrix" matrix:texCoordMatrix];
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
+    [program loadModelviewProjection:mvpMatrix];
+    [program loadTextureMatrix:texCoordMatrix];
 
     if ([dc pickingMode])
     {
-        unsigned int pickColor = [dc uniquePickColor];
-        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:pickColor]];
-        [program loadUniformColorInt:@"color" color:pickColor];
-        [program loadUniformBool:@"enableTexture" value:NO];
-        [program loadUniformSampler:@"textureSampler" value:0];
+        unsigned int color = [dc uniquePickColor];
+        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:color]];
+        [program loadPickColor:color];
+        [program loadTextureEnabled:NO];
     }
     else
     {
-        [color setToColor:_imageColor];
-        [color preMultiply];
         BOOL textureBound = [texture bind:dc]; // returns NO if activeTexture is nil
-        [program loadUniformColor:@"color" color:color];
-        [program loadUniformBool:@"enableTexture" value:textureBound];
-        [program loadUniformSampler:@"textureSampler" value:0];
+        [program loadColor:_imageColor];
+        [program loadTextureEnabled:textureBound];
     }
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -184,18 +179,13 @@
 {
     // Bind the default texture program. This sets the program as the current OpenGL program and the current draw
     // context program.
-    WWGpuProgram* program = [dc defaultTextureProgram];
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc defaultTextureProgram];
 
     // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
     // vertex point coordinates and vertex texture coordinate.
     glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
-    int location = [program getAttributeLocation:@"vertexPoint"];
-    glEnableVertexAttribArray((GLuint) location);
-    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    location = [program getAttributeLocation:@"vertexTexCoord"];
-    glEnableVertexAttribArray((GLuint) location);
-    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer([program vertexPointLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer([program vertexTexCoordLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     // Configure the GL depth state to disable depth testing.
     glDisable(GL_DEPTH_TEST);
@@ -203,17 +193,8 @@
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [dc currentProgram];
-
-    // Restore the GL shader's vertex attribute array state. This step must be performed before the GL program binding
-    // is restored below.
-    GLuint location = (GLuint) [program getAttributeLocation:@"vertexPoint"];
-    glDisableVertexAttribArray(location);
-
-    location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
-    glDisableVertexAttribArray(location);
-
     // Restore the GL program binding, buffer binding, texture binding, and depth state.
+    [dc setCurrentProgram:nil];
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);

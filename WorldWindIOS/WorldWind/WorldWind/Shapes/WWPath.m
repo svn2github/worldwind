@@ -6,19 +6,19 @@
  */
 
 #import "WorldWind/Shapes/WWPath.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Terrain/WWTerrain.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Shaders/WWBasicProgram.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 #define PICK_LINE_WIDTH 16.0
 
@@ -238,10 +238,9 @@
         // This pulls the path towards the eye just a bit to ensure it shows over the terrain.
         WWMatrix* mvp = [[WWMatrix alloc] initWithMatrix:[[dc navigatorState] projection]];
         [mvp offsetProjectionDepth:-0.01];
-
         [mvp multiplyMatrix:[[dc navigatorState] modelview]];
         [mvp multiplyMatrix:transformationMatrix];
-        [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
+        [(WWBasicProgram*) [dc currentProgram] loadModelviewProjection:mvp];
     }
     else
     {
@@ -261,18 +260,18 @@
 
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
-    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
     BOOL extrudeIt = [self mustDrawInterior];
     int stride = extrudeIt ? 24 : 12;
     int nPts = extrudeIt ? numPoints / 2 : numPoints;
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, stride, points);
+    GLuint location = [(WWBasicProgram*) [dc currentProgram] vertexPointLocation];
+    glVertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE, stride, points);
     glDrawArrays(GL_LINE_STRIP, 0, nPts);
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc
 {
-    int location = [dc.currentProgram getAttributeLocation:@"vertexPoint"];
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, points);
+    GLuint location = [(WWBasicProgram*) [dc currentProgram] vertexPointLocation];
+    glVertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE, 0, points);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, numPoints);
 }
 

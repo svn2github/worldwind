@@ -6,17 +6,17 @@
  */
 
 #import "WorldWind/Shapes/WWAbstractShape.h"
+#import "WorldWind/Geometry/WWExtent.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Pick/WWPickSupport.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Shaders/WWBasicProgram.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Geometry/WWExtent.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Render/WWGpuProgram.h"
-#import "WorldWind/Pick/WWPickSupport.h"
-#import "WorldWind/Pick/WWPickedObject.h"
 
 @implementation WWAbstractShape
 
@@ -188,7 +188,7 @@
     {
         unsigned int color = [dc uniquePickColor];
         [pickSupport addPickableObject:[self createPickedObject:dc colorCode:color]];
-        [[dc currentProgram] loadUniformColorInt:@"color" color:color];
+        [(WWBasicProgram*) [dc currentProgram] loadPickColor:color];
     }
 
     [self applyModelviewProjectionMatrix:dc];
@@ -230,32 +230,14 @@
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [dc defaultProgram];
-
-    int attributeLocation = [program getAttributeLocation:@"vertexPoint"];
-    if (attributeLocation >= 0)
-    {
-        glEnableVertexAttribArray((GLuint) attributeLocation);
-    }
+    [dc defaultProgram]; // Bind the default program.
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [dc currentProgram];
-    if (program == nil)
-    {
-        return;
-    }
-
-    // Disable the program's vertexPoint attribute. This restores the program state modified in beginDrawing. This
-    // must be done while the program is still bound.
-    int attributeLocation = [program getAttributeLocation:@"vertexPoint"];
-    if (attributeLocation >= 0)
-    {
-        glDisableVertexAttribArray((GLuint) attributeLocation);
-    }
-
     // Restore OpenGL state.
+    [dc setCurrentProgram:nil];
+    glUseProgram(0);
     glDepthMask(GL_TRUE);
     glLineWidth(1);
 }
@@ -264,7 +246,7 @@
 {
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
                                                matrixB:transformationMatrix];
-    [dc.currentProgram loadUniformMatrix:@"mvpMatrix" matrix:mvp];
+    [(WWBasicProgram *) [dc currentProgram] loadModelviewProjection:mvp];
 }
 
 - (void) prepareToDrawInterior:(WWDrawContext*)dc attributes:(WWShapeAttributes*)attributes
@@ -276,7 +258,7 @@
 
     if (![dc pickingMode])
     {
-        WWColor* color = [[WWColor alloc] initWithColor:[attributes interiorColor]];
+        WWColor* color = [attributes interiorColor];
 
         // Disable writing the shape's interior fragments to the depth buffer when the interior is semi-transparent.
         if ([color a] < 1)
@@ -284,10 +266,8 @@
             glDepthMask(GL_FALSE);
         }
 
-        // Load the current interior color into the current program's uniform variable. Pass a pre-multiplied color because
-        // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
-        [color preMultiply];
-        [[dc currentProgram] loadUniformColor:@"color" color:color];
+        // Load the current interior color into the current program's uniform variable.
+        [(WWBasicProgram *) [dc currentProgram] loadColor:color];
     }
 }
 
@@ -305,7 +285,7 @@
 
     if (![dc pickingMode])
     {
-        WWColor* color = [[WWColor alloc] initWithColor:[attributes outlineColor]];
+        WWColor* color = [attributes outlineColor];
 
         // Disable writing the shape's outline fragments to the depth buffer when the outline is semi-transparent.
         if ([color a] < 1)
@@ -313,10 +293,8 @@
             glDepthMask(GL_FALSE);
         }
 
-        // Load the current outline color into the current program's uniform variable. Pass a pre-multiplied color because
-        // the scene controller configures the OpenGL blending mode for pre-multiplied colors.
-        [color preMultiply];
-        [[dc currentProgram] loadUniformColor:@"color" color:color];
+        // Load the current outline color into the current program's uniform variable.
+        [(WWBasicProgram *) [dc currentProgram] loadColor:color];
     }
 
     glLineWidth([attributes outlineWidth]);

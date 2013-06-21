@@ -16,6 +16,7 @@
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Render/WWGpuProgram.h"
 #import "WorldWind/Render/WWTexture.h"
+#import "WorldWind/Shaders/WWBasicTextureProgram.h"
 #import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
@@ -29,7 +30,6 @@
 // Temporary objects shared by all point placemarks and used during rendering.
 static WWVec4* point;
 static WWMatrix* matrix;
-static WWColor* color;
 static WWPickSupport* pickSupport;
 static WWTexture* currentTexture;
 
@@ -48,7 +48,6 @@ static WWTexture* currentTexture;
 
         point = [[WWVec4 alloc] initWithZeroVector];
         matrix = [[WWMatrix alloc] initWithIdentity];
-        color = [[WWColor alloc] init];
         pickSupport = [[WWPickSupport alloc] init];
     }
 }
@@ -260,29 +259,27 @@ static WWTexture* currentTexture;
 
 - (void) doDrawOrderedRenderable:(WWDrawContext*)dc;
 {
-    WWGpuProgram* program = [dc currentProgram];
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
 
     [matrix setToMatrix:[dc screenProjection]];
     [matrix multiplyMatrix:imageTransform];
-    [program loadUniformMatrix:@"mvpMatrix" matrix:matrix];
-    [program loadUniformMatrix:@"texCoordMatrix" matrix:texCoordMatrix];
+    [program loadModelviewProjection:matrix];
+    [program loadTextureMatrix:texCoordMatrix];
 
     if ([dc pickingMode])
     {
-        unsigned int pickColor = [dc uniquePickColor];
-        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:pickColor]];
-        [program loadUniformColorInt:@"color" color:pickColor];
+        unsigned int color = [dc uniquePickColor];
+        [pickSupport addPickableObject:[self createPickedObject:dc colorCode:color]];
+        [program loadPickColor:color];
     }
     else
     {
-        [color setToColor:[activeAttributes imageColor]];
-        [color preMultiply];
-        [program loadUniformColor:@"color" color:color];
+        [program loadColor:[activeAttributes imageColor]];
 
         if (currentTexture != activeTexture) // avoid unnecessary texture state changes
         {
-            BOOL enableTexture = [activeTexture bind:dc]; // returns NO if activeTexture is nil
-            [program loadUniformBool:@"enableTexture" value:enableTexture];
+            BOOL textureBound = [activeTexture bind:dc]; // returns NO if activeTexture is nil or cannot be bound
+            [program loadTextureEnabled:textureBound];
             currentTexture = activeTexture;
         }
     }
@@ -319,26 +316,19 @@ static WWTexture* currentTexture;
 {
     // Bind the default texture program. This sets the program as the current OpenGL program and the current draw
     // context program.
-    WWGpuProgram* program = [dc defaultTextureProgram];
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc defaultTextureProgram];
 
     // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
     // vertex point coordinates and vertex texture coordinate.
     glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
-    int location = [program getAttributeLocation:@"vertexPoint"];
-    glEnableVertexAttribArray((GLuint) location);
-    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer([program vertexPointLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer([program vertexTexCoordLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    location = [program getAttributeLocation:@"vertexTexCoord"];
-    glEnableVertexAttribArray((GLuint) location);
-    glVertexAttribPointer((GLuint) location, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    // Load the texture sampler unit and disable texturing (when in picking mode). These uniform variables do not change
-    // during the program's execution over multiple point placemarks.
-    [program loadUniformSampler:@"textureSampler" value:0];
-
+    // Disable texturing when in picking mode. This uniform variable does not change during the program's execution over
+    // multiple point placemarks.
     if ([dc pickingMode])
     {
-        [program loadUniformBool:@"enableTexture" value:NO];
+        [program loadTextureEnabled:NO];
     }
 
     // Configure the GL depth state to suppress depth buffer writes.
@@ -350,17 +340,8 @@ static WWTexture* currentTexture;
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
-    WWGpuProgram* program = [dc currentProgram];
-
-    // Restore the GL shader's vertex attribute array state. This step must be performed before the GL program binding
-    // is restored below.
-    GLuint location = (GLuint) [program getAttributeLocation:@"vertexPoint"];
-    glDisableVertexAttribArray(location);
-
-    location = (GLuint) [program getAttributeLocation:@"vertexTexCoord"];
-    glDisableVertexAttribArray(location);
-
     // Restore the GL program binding, buffer binding, texture binding, and depth state.
+    [dc setCurrentProgram:nil];
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);

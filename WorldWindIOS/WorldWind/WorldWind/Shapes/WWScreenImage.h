@@ -30,7 +30,6 @@
     WWMatrix* mvpMatrix;
     WWMatrix* texCoordMatrix;
     WWTexture* texture;
-    WWColor* color;
     // Picking attributes.
     WWPickSupport* pickSupport;
     WWLayer* pickLayer;

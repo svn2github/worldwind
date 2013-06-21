@@ -6,17 +6,17 @@
  */
 
 #import "WorldWind/Shapes/WWSphere.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Terrain/WWTerrain.h"
+#import "WorldWind/Geometry/WWBoundingSphere.h"
 #import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Shaders/WWBasicProgram.h"
+#import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Render/WWGpuProgram.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Geometry/WWBoundingSphere.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWSphere
 
@@ -140,9 +140,8 @@ static int numIndices; // the number of indices defining the sphere
 {
     [self bindVbos:dc];
 
-    int location = [[dc currentProgram] getAttributeLocation:@"vertexPoint"];
-    glVertexAttribPointer((GLuint) location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
+    GLuint location = [(WWBasicProgram*) [dc currentProgram] vertexPointLocation];
+    glVertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glDrawElements(GL_TRIANGLE_STRIP, numIndices, GL_UNSIGNED_SHORT, 0);
 
     // Clean up

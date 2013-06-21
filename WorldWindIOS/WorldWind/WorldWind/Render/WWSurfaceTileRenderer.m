@@ -6,22 +6,18 @@
  */
 
 #import "WorldWind/Render/WWSurfaceTileRenderer.h"
-#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Render/WWSurfaceTile.h"
+#import "WorldWind/Shaders/WWSurfaceTileRendererProgram.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
-#import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Render/WWSurfaceTile.h"
-#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWUtil.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWMath.h"
-
-// STRINGIFY is used in the shader files.
-#define STRINGIFY(A) #A
-#import "WorldWind/Shaders/SurfaceTileRenderer.vert"
-#import "WorldWind/Shaders/SurfaceTileRenderer.frag"
+#import "WorldWind/WWLog.h"
 
 @implementation WWSurfaceTileRenderer
 
@@ -31,7 +27,7 @@
 
     programKey = [WWUtil generateUUID];
     tileCoordMatrix = [[WWMatrix alloc] initWithIdentity];
-    texCoordMatrix = [[WWMatrix alloc] initWithIdentity];
+    textureMatrix = [[WWMatrix alloc] initWithIdentity];
 
     return self;
 }
@@ -55,11 +51,9 @@
         return;
     }
 
-    WWGpuProgram* program = [self gpuProgram:dc];
-    [self beginRendering:dc program:program opacity:opacity];
-    [terrainTiles beginRendering:dc];
     NSUInteger tileCount = 0;
-
+    [self beginRendering:dc opacity:opacity];
+    [terrainTiles beginRendering:dc];
     @try
     {
         if ([surfaceTile bind:dc])
@@ -94,11 +88,9 @@
         return;
     }
 
-    WWGpuProgram* program = [self gpuProgram:dc];
-    [self beginRendering:dc program:program opacity:opacity];
-    [terrainTiles beginRendering:dc];
     NSUInteger tileCount = 0;
-
+    [self beginRendering:dc opacity:opacity];
+    [terrainTiles beginRendering:dc];
     @try
     {
         for (NSUInteger i = 0; i < [terrainTiles count]; i++)
@@ -115,19 +107,39 @@
     }
 }
 
-- (void) beginRendering:(WWDrawContext*)dc program:(WWGpuProgram*)program opacity:(float)opacity
+- (void) beginRendering:(WWDrawContext*)dc opacity:(float)opacity
 {
-    [program bind];
-    [dc setCurrentProgram:program];
-
-    [program loadUniformSampler:@"tileTexture" value:0];
-    [program loadUniformFloat:@"opacity" value:opacity];
+    [self bindProgram:dc];
+    [(WWSurfaceTileRendererProgram*) [dc currentProgram] loadOpacity:opacity];
 }
 
 - (void) endRendering:(WWDrawContext*)dc
 {
-    glUseProgram(0);
     [dc setCurrentProgram:nil];
+    glUseProgram(0);
+}
+
+- (void) bindProgram:(WWDrawContext*)dc
+{
+    WWGpuProgram* program = [[dc gpuResourceCache] programForKey:programKey];
+    if (program != nil)
+    {
+        [program bind];
+        [dc setCurrentProgram:program];
+        return;
+    }
+
+    @try
+    {
+        program = [[WWSurfaceTileRendererProgram alloc] init];
+        [program bind];
+        [dc setCurrentProgram:program];
+        [[dc gpuResourceCache] putProgram:program forKey:programKey];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"making GPU program", exception);
+    }
 }
 
 - (void) drawIntersectingTiles:(WWDrawContext*)dc
@@ -186,7 +198,7 @@
 
 - (void) applyTileState:(WWDrawContext*)dc terrainTile:(WWTerrainTile*)terrainTile surfaceTile:(id <WWSurfaceTile>)surfaceTile
 {
-    WWGpuProgram* prog = [dc currentProgram];
+    WWSurfaceTileRendererProgram* program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
 
     WWSector* terrainSector = [terrainTile sector];
     double terrainDeltaLon = RADIANS([terrainSector deltaLon]);
@@ -205,32 +217,12 @@
             m10:0 m11:tScale m12:0 m13:tScale * tTrans
             m20:0 m21:0 m22:1 m23:0
             m30:0 m31:0 m32:0 m33:1];
-    [prog loadUniformMatrix:@"tileCoordMatrix" matrix:tileCoordMatrix];
+    [program loadTileCoordMatrix:tileCoordMatrix];
 
-    [texCoordMatrix setToUnitYFlip];
-    [surfaceTile applyInternalTransform:dc matrix:texCoordMatrix];
-    [texCoordMatrix multiplyMatrix:tileCoordMatrix];
-    [prog loadUniformMatrix:@"texCoordMatrix" matrix:texCoordMatrix];
-}
-
-- (WWGpuProgram*) gpuProgram:(WWDrawContext*)dc
-{
-    WWGpuProgram* program = [[dc gpuResourceCache] programForKey:programKey];
-    if (program != nil)
-        return program;
-
-    @try
-    {
-        program = [[WWGpuProgram alloc] initWithShaderSource:SurfaceTileRendererVertexShader
-                                              fragmentShader:SurfaceTileRendererFragmentShader];
-        [[dc gpuResourceCache] putProgram:program forKey:programKey];
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"making GPU program", exception);
-    }
-
-    return program;
+    [textureMatrix setToUnitYFlip];
+    [surfaceTile applyInternalTransform:dc matrix:textureMatrix];
+    [textureMatrix multiplyMatrix:tileCoordMatrix];
+    [program loadTextureMatrix:textureMatrix];
 }
 
 @end
