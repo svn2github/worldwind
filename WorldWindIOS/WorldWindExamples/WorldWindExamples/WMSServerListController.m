@@ -55,13 +55,14 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
     if (serverList == nil)
     {
         [self addServer:@"http://neowms.sci.gsfc.nasa.gov/wms/wms" serviceTitle:@"NASA Earth Observations (NEO) WMS"];
-        serverList = [[NSUserDefaults standardUserDefaults] objectForKey:WW_WMS_SERVER_LIST];
     }
-
-    // Add all the default servers to the servers list.
-    for (NSDictionary* dict in serverList)
+    else
     {
-        [servers addObject:dict];
+        // Add all the persisted servers to the servers list.
+        for (NSDictionary* dict in serverList)
+        {
+            [servers addObject:dict];
+        }
     }
 }
 
