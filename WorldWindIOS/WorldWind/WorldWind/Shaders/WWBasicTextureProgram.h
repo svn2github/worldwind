@@ -54,6 +54,16 @@
     GLuint textureMatrixLocation;
 }
 
+/// @name GPU Program Attributes
+
+/**
+* Returns a unique string appropriate for identifying a shared instance of WWBasicTextureProgram in a
+* WWGpuResourceCache.
+*
+* @return A unique string identifier for WWBasicTextureProgram.
+*/
++ (NSString*) programKey;
+
 /// @name Initializing GPU Programs
 
 /**

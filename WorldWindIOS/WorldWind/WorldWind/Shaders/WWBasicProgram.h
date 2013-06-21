@@ -36,6 +36,15 @@
     GLuint colorLocation;
 }
 
+/// @name GPU Program Attributes
+
+/**
+* Returns a unique string appropriate for identifying a shared instance of WWBasicProgram in a WWGpuResourceCache.
+*
+* @return A unique string identifier for WWBasicProgram.
+*/
++ (NSString*) programKey;
+
 /// @name Initializing GPU Programs
 
 /**

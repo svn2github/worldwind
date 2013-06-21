@@ -66,14 +66,13 @@
 
 - (void) beginRendering:(WWDrawContext*)dc
 {
-    [dc defaultProgram]; // bind the default program
+    [dc bindProgramForKey:[WWBasicProgram programKey] class:[WWBasicProgram class]];
     glDepthMask(GL_FALSE); // Disable depth buffer writes. The diagnostics should not occlude any other objects.
 }
 
 - (void) endRendering:(WWDrawContext*)dc
 {
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
+    [dc bindProgram:nil];
     glDepthMask(GL_TRUE); // Re-enable depth buffer writes.
 }
 

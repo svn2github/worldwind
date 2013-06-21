@@ -55,6 +55,16 @@
     GLuint opacityLocation;
 }
 
+/// @name GPU Program Attributes
+
+/**
+* Returns a unique string appropriate for identifying a shared instance of WWSurfaceTileRendererProgram in a
+* WWGpuResourceCache.
+*
+* @return A unique string identifier for WWSurfaceTileRendererProgram.
+*/
++ (NSString*) programKey;
+
 /// @name Initializing GPU Programs
 
 /**

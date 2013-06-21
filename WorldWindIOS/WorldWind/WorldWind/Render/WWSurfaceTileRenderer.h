@@ -73,8 +73,6 @@
 
 - (void) endRendering:(WWDrawContext*)dc;
 
-- (void) bindProgram:(WWDrawContext*)dc;
-
 - (void) drawIntersectingTiles:(WWDrawContext*)dc
                    terrainTile:(WWTerrainTile*)terrainTile
                   surfaceTiles:(NSArray*)surfaceTiles

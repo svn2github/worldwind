@@ -14,7 +14,6 @@
 #import "WorldWind/Shaders/WWSurfaceTileRendererProgram.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
-#import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
@@ -109,37 +108,13 @@
 
 - (void) beginRendering:(WWDrawContext*)dc opacity:(float)opacity
 {
-    [self bindProgram:dc];
+    [dc bindProgramForKey:[WWSurfaceTileRendererProgram programKey] class:[WWSurfaceTileRendererProgram class]];
     [(WWSurfaceTileRendererProgram*) [dc currentProgram] loadOpacity:opacity];
 }
 
 - (void) endRendering:(WWDrawContext*)dc
 {
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
-}
-
-- (void) bindProgram:(WWDrawContext*)dc
-{
-    WWGpuProgram* program = [[dc gpuResourceCache] programForKey:programKey];
-    if (program != nil)
-    {
-        [program bind];
-        [dc setCurrentProgram:program];
-        return;
-    }
-
-    @try
-    {
-        program = [[WWSurfaceTileRendererProgram alloc] init];
-        [program bind];
-        [dc setCurrentProgram:program];
-        [[dc gpuResourceCache] putProgram:program forKey:programKey];
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"making GPU program", exception);
-    }
+    [dc bindProgram:nil];
 }
 
 - (void) drawIntersectingTiles:(WWDrawContext*)dc

@@ -43,8 +43,6 @@
     _clearColor = [WWColor makeColorInt:200 g:200 b:200 a:255];
 
     orderedRenderables = [[NSMutableArray alloc] init];
-    defaultProgramKey = [WWUtil generateUUID];
-    defaultTextureProgramKey = [WWUtil generateUUID];
     unitQuadKey = [WWUtil generateUUID];
 
     return self;
@@ -298,53 +296,48 @@
     }
 }
 
-- (WWGpuProgram*) defaultProgram
+- (void) bindProgram:(WWGpuProgram*)program
 {
-    WWGpuProgram* program = [[self gpuResourceCache] programForKey:defaultProgramKey];
     if (program != nil)
     {
         [program bind];
-        [self setCurrentProgram:program];
-        return program;
+    }
+    else
+    {
+        glUseProgram(0);
     }
 
-    @try
-    {
-        program = [[WWBasicProgram alloc] init];
-        [program bind];
-        [self setCurrentProgram:program];
-        [[self gpuResourceCache] putProgram:program forKey:defaultProgramKey];
-        return program;
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"making GPU program", exception);
-        return nil;
-    }
+    [self setCurrentProgram:program];
 }
 
-- (WWGpuProgram*) defaultTextureProgram
+- (void) bindProgramForKey:(id <NSCopying>)key class:(Class)class;
 {
-    WWGpuProgram* program = [[self gpuResourceCache] programForKey:defaultTextureProgramKey];
+    if (key == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
+    }
+
+    if (class == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Class is nil")
+    }
+
+    WWGpuProgram* program = [_gpuResourceCache programForKey:key];
     if (program != nil)
     {
-        [program bind];
-        [self setCurrentProgram:program];
-        return program;
+        [self bindProgram:program];
+        return;
     }
 
     @try
     {
-        program = [[WWBasicTextureProgram alloc] init];
-        [program bind];
-        [self setCurrentProgram:program];
-        [[self gpuResourceCache] putProgram:program forKey:defaultTextureProgramKey];
-        return program;
+        program = [[class alloc] init];
+        [self bindProgram:program];
+        [_gpuResourceCache putProgram:program forKey:key];
     }
     @catch (NSException* exception)
     {
         WWLogE(@"making GPU program", exception);
-        return nil;
     }
 }
 

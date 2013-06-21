@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Shaders/WWBasicProgram.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 
 #define STRINGIFY(A) #A
@@ -27,6 +28,17 @@
     glUseProgram(0);
 
     return self;
+}
+
++ (NSString*) programKey
+{
+    static NSString* key = nil;
+    if (key == nil)
+    {
+        key = [WWUtil generateUUID];
+    }
+
+    return key;
 }
 
 - (GLuint) vertexPointLocation

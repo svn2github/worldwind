@@ -314,9 +314,10 @@ static WWTexture* currentTexture;
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
-    // Bind the default texture program. This sets the program as the current OpenGL program and the current draw
-    // context program.
-    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc defaultTextureProgram];
+    // Bind the basic texture program. This sets the program as the current OpenGL program and the current draw
+    // context's program.
+    [dc bindProgramForKey:[WWBasicTextureProgram programKey] class:[WWBasicTextureProgram class]];
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
 
     // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
     // vertex point coordinates and vertex texture coordinate.
@@ -341,8 +342,7 @@ static WWTexture* currentTexture;
 - (void) endDrawing:(WWDrawContext*)dc
 {
     // Restore the GL program binding, buffer binding, texture binding, and depth state.
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
+    [dc bindProgram:nil];
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glDepthMask(GL_TRUE);

@@ -37,8 +37,6 @@
 {
 @protected
     NSMutableArray* orderedRenderables; // ordered renderable queue
-    NSString* defaultProgramKey; // cache key for the default program
-    NSString* defaultTextureProgramKey; // cache key for the default texture program
     NSString* unitQuadKey; // cache key for the unit quadrilateral VBO
     unsigned int uniquePickNumber; // incrementing pick number for pick color
 }
@@ -119,77 +117,6 @@
 
 /// The number of rendered tiles in the most recent frame.
 @property (nonatomic) int numRenderedTiles;
-
-/**
-* Binds and returns the default program, creating it if it doesn't already exist.
-*
-* The default program draws geometry in a single solid color. The following uniform variables and attributes are
-* exposed:
-*
-* *Uniforms*
-*
-* - mat4 mvpMatrix - The modelview-projection matrix used to transform the vertexPoint attribute.
-* - vec4 color - The RGBA color used to draw the geometry.
-*
-* *Attributes*
-*
-* - vec4 vertexPoint - The geometry's vertex points, in model coordinates.
-*
-* @return The default program.
-*/
-- (WWGpuProgram*) defaultProgram;
-
-/**
-* Binds and returns the default texture program, creating it if it doesn't already exist.
-*
-* The default texture program draws geometry in a single solid color with an optional texture. When the texture is
-* enabled the final fragment color is determined by multiplying the texture color with the solid color. The following
-* uniform variables and attributes are exposed:
-*
-* *Uniforms*
-*
-* - mat4 mvpMatrix - The modelview-projection matrix used to transform the vertexPoint attribute.
-* - vec4 color - The RGBA color used to draw the geometry.
-* - bool enableTexture - true to enable the textureSampler; otherwise false.
-* - sampler2D textureSampler - The texture unit the texture is bound to (0, 1, 2, etc.), typically 0.
-*
-* *Attributes*
-*
-* - vec4 vertexPoint - The geometry's vertex points, in model coordinates.
-* - vec4 vertexTexCoord - The geometry's vertex texture coordinates.
-*
-* @return The default program.
-*/
-- (WWGpuProgram*) defaultTextureProgram;
-
-/**
-* Returns the OpenGL ID for a vertex buffer object representing the points of a unit quad, in local coordinates.
-*
-* A unit quad has its lower left coordinate at (0, 0) and its upper left coordinate at (1, 1). This buffer object
-* contains four xy coordinates defining a unit quad appropriate for display as a triangle strip. Coordinates appear in
-* the following order: (0, 1) (0, 0) (1, 1) (1, 0).
-*
-* *Binding to a Vertex Attribute*
-*
-* Use the following arguments when binding this buffer object as the source of an OpenGL vertex attribute pointer:
-*
-* - size: 2
-* - type: GL_FLOAT
-* - normalized: GL_FALSE
-* - stride: 0
-* - pointer: 0
-*
-* *Drawing*
-*
-* Use the following arguments when drawing this buffer object in OpenGL via glDrawArrays:
-*
-* - mode: GL_TRIANGLE_STRIP
-* - first: 0
-* - count: 4
-*
-* @return An OpenGL ID for the unit quad's vertex buffer object.
-*/
-- (GLuint) unitQuadBuffer;
 
 /// @name Initializing a Draw Context
 
@@ -319,5 +246,63 @@
 * @param pickedObject The object to add.
 */
 - (void) addPickedObject:(WWPickedObject*)pickedObject;
+
+/// @name OpenGL State Operations
+
+/**
+* Binds a program as the current OpenGL program and assigns it to this draw context's currentProgram property.
+*
+* If the specified program is nil, this binds the current OpenGL program to ID 0 and sets this draw context's
+* currentProgram property to nil.
+*
+* @param program The OpenGL program to bind. May be nil, indicating no program should be bound.
+*/
+- (void) bindProgram:(WWGpuProgram*)program;
+
+/**
+* Binds an OpenGL program associated with the specified key and class, creating one if it doesn't already exist.
+*
+* This attempts to find an instance of WWGpuProgram in this draw context's gpuResourceCache using the specified key. If
+* one is found the program is bound as the current OpenGL program and assigned to this draw context's currentProgram
+* property. If no program exists a new one is created by instantiating an instance of the specified class and invoking
+* its no-argument initializer. The new program is also bound and assigned as the current program.
+*
+* The bound program can be accessed through this draw context's currentProgram property after this method returns.
+*
+* @param key The key identifying the program in this draw context's GPU resource cache.
+* @param class The program's class. Must be a subclass of WWGpuProgram with a no-argument initializer.
+*
+* @exception NSInvalidArgumentException If any argument is nil.
+*/
+- (void) bindProgramForKey:(id <NSCopying>)key class:(Class)class;
+
+/**
+* Returns the OpenGL ID for a vertex buffer object representing the points of a unit quad, in local coordinates.
+*
+* A unit quad has its lower left coordinate at (0, 0) and its upper left coordinate at (1, 1). This buffer object
+* contains four xy coordinates defining a unit quad appropriate for display as a triangle strip. Coordinates appear in
+* the following order: (0, 1) (0, 0) (1, 1) (1, 0).
+*
+* *Binding to a Vertex Attribute*
+*
+* Use the following arguments when binding this buffer object as the source of an OpenGL vertex attribute pointer:
+*
+* - size: 2
+* - type: GL_FLOAT
+* - normalized: GL_FALSE
+* - stride: 0
+* - pointer: 0
+*
+* *Drawing*
+*
+* Use the following arguments when drawing this buffer object in OpenGL via glDrawArrays:
+*
+* - mode: GL_TRIANGLE_STRIP
+* - first: 0
+* - count: 4
+*
+* @return An OpenGL ID for the unit quad's vertex buffer object.
+*/
+- (GLuint) unitQuadBuffer;
 
 @end

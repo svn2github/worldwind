@@ -790,7 +790,8 @@
         return;
     }
 
-    WWBasicProgram* program = (WWBasicProgram*) [dc defaultProgram]; // bind the default program
+    [dc bindProgramForKey:[WWBasicProgram programKey] class:[WWBasicProgram class]];
+    WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
     if (program == nil)
     {
         return;

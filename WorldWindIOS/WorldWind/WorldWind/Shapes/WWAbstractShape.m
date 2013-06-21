@@ -230,14 +230,13 @@
 
 - (void) beginDrawing:(WWDrawContext*)dc
 {
-    [dc defaultProgram]; // Bind the default program.
+    [dc bindProgramForKey:[WWBasicProgram programKey] class:[WWBasicProgram class]];
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
     // Restore OpenGL state.
-    [dc setCurrentProgram:nil];
-    glUseProgram(0);
+    [dc bindProgram:nil];
     glDepthMask(GL_TRUE);
     glLineWidth(1);
 }
