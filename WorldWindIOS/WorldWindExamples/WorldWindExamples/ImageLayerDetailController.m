@@ -65,6 +65,7 @@
         if (cell == nil)
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:layerControlCellIdentifier];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
             [[cell textLabel] setText:@"Opacity"];
             UISlider* slider = [[UISlider alloc] init];
             [slider setTag:sliderTag];
