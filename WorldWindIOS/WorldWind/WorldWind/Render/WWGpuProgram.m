@@ -338,4 +338,41 @@
     glUniform1i(location, value);
 }
 
++ (void) loadUniformMatrix:(WWMatrix* __unsafe_unretained)matrix location:(GLuint)location
+{
+    if (matrix == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
+    }
+
+    static GLfloat components[16];
+    [matrix columnMajorComponents:components];
+
+    glUniformMatrix4fv(location, 1, GL_FALSE, components);
+}
+
++ (void) loadUniformColor:(WWColor* __unsafe_unretained)color location:(GLuint)location
+{
+    if (color == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color is nil")
+    }
+
+    static GLfloat components[4];
+    [color premultipliedComponents:components];
+
+    glUniform4fv(location, 1, components);
+}
+
++ (void) loadUniformPickColor:(unsigned int)color location:(GLuint)location
+{
+    // Convert the color from a packed int.
+    GLfloat r = ((color >> 24) & 0xff) / 255.0;
+    GLfloat g = ((color >> 16) & 0xff) / 255.0;
+    GLfloat b = ((color >> 8) & 0xff) / 255.0;
+    GLfloat a = (color & 0xff) / 255.0;
+
+    glUniform4f(location, r, g, b, a);
+}
+
 @end

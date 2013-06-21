@@ -6,23 +6,24 @@
  */
 
 #import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Render/WWSurfaceTileRenderer.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWExtent.h"
-#import "WorldWind/Render/WWOrderedRenderable.h"
-#import "WorldWind/Shapes/WWOutlinedShape.h"
-#import "WorldWind/Terrain/WWTerrain.h"
-#import "WorldWind/Terrain/WWBasicTerrain.h"
-#import "WorldWind/Util/WWGpuResourceCache.h"
-#import "WorldWind/Util/WWUtil.h"
-#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Pick/WWPickedObject.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Render/WWOrderedRenderable.h"
+#import "WorldWind/Render/WWSurfaceTileRenderer.h"
+#import "WorldWind/Render/WWGpuProgram.h"
+#import "WorldWind/Shaders/WWBasicProgram.h"
+#import "WorldWind/Shaders/WWBasicTextureProgram.h"
+#import "WorldWind/Shapes/WWOutlinedShape.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Terrain/WWBasicTerrain.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
@@ -297,13 +298,6 @@
     }
 }
 
-// STRINGIFY is used in the shader files.
-#define STRINGIFY(A) #A
-#import "WorldWind/Shaders/DefaultShader.vert"
-#import "WorldWind/Shaders/DefaultShader.frag"
-#import "WorldWind/Shaders/DefaultTextureShader.vert"
-#import "WorldWind/Shaders/DefaultTextureShader.frag"
-
 - (WWGpuProgram*) defaultProgram
 {
     WWGpuProgram* program = [[self gpuResourceCache] programForKey:defaultProgramKey];
@@ -316,18 +310,17 @@
 
     @try
     {
-        program = [[WWGpuProgram alloc] initWithShaderSource:DefaultVertexShader
-                                              fragmentShader:DefaultFragmentShader];
-        [[self gpuResourceCache] putProgram:program forKey:defaultProgramKey];
+        program = [[WWBasicProgram alloc] init];
         [program bind];
         [self setCurrentProgram:program];
+        [[self gpuResourceCache] putProgram:program forKey:defaultProgramKey];
+        return program;
     }
     @catch (NSException* exception)
     {
         WWLogE(@"making GPU program", exception);
+        return nil;
     }
-
-    return program;
 }
 
 - (WWGpuProgram*) defaultTextureProgram
@@ -342,18 +335,17 @@
 
     @try
     {
-        program = [[WWGpuProgram alloc] initWithShaderSource:DefaultTextureVertexShader
-                                              fragmentShader:DefaultTextureFragmentShader];
-        [[self gpuResourceCache] putProgram:program forKey:defaultTextureProgramKey];
+        program = [[WWBasicTextureProgram alloc] init];
         [program bind];
         [self setCurrentProgram:program];
+        [[self gpuResourceCache] putProgram:program forKey:defaultTextureProgramKey];
+        return program;
     }
     @catch (NSException* exception)
     {
         WWLogE(@"making GPU program", exception);
+        return nil;
     }
-
-    return program;
 }
 
 - (GLuint) unitQuadBuffer

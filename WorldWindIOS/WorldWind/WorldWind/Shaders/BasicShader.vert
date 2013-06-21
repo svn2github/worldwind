@@ -1,19 +1,18 @@
-const char* DefaultVertexShader = STRINGIFY(
+const char* BasicVertexShader = STRINGIFY(
 /* Copyright (C) 2013 United States Government as represented by
 the Administrator of the National Aeronautics and Space Administration.
 All Rights Reserved.
 */
 
 /*
- * OpenGL ES Shading Language v1.00 vertex shader for default rendering. Transforms shape points from model coordinates
+ * OpenGL ES Shading Language v1.00 vertex shader for basic rendering. Transforms shape points from model coordinates
  * to eye coordinates.
  *
  * version $Id$
  */
 
 /*
- * Input vertex attribute defining the surface vertex point in model coordinates. This attribute is specified in
- * SurfaceGeometry.render.
+ * Input vertex attribute defining the surface vertex point in model coordinates.
  */
 attribute vec4 vertexPoint;
 /*

@@ -9,7 +9,7 @@
 #import <OpenGLES/ES2/gl.h>
 
 /**
-* Represents and RGBA color.
+* Represents an RGBA color.
 */
 @interface WWColor : NSObject
 
@@ -26,6 +26,21 @@
 
 /// The color's alpha component in the range [0,1].
 @property (nonatomic) float a;
+
+/**
+* Stores this color's premultiplied red, green, blue and alpha components in the specified array as 32-bit floating
+* point values in the range [0,1].
+*
+* The array must have space for at least 4 elements. This color's red, green, blue and alpha components are stored in
+* array elements 0, 1, 2 and 3, respectively. The red, green and blue components are then multiplied by the alpha
+* component.
+*
+* @param array An array of at least 4 elements. Contains the color's premultiplied red, green, blue and alpha components
+* in elements 0, 1, 2, and 3 after this method returns.
+*
+* @exception NSInvalidArgumentException If the array is NULL.
+*/
+- (void) premultipliedComponents:(float[])array;
 
 /// @name Initializing Colors
 

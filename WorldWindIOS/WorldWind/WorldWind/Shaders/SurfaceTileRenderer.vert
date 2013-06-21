@@ -18,8 +18,7 @@ const char* SurfaceTileRendererVertexShader = STRINGIFY(
 attribute vec4 vertexPoint;
 
 /*
- * Input vertex attribute defining the surface vertex normalized texture coordinate. This attribute is specified in
- * SurfaceGeometry.render.
+ * Input vertex attribute defining the surface vertex normalized texture coordinate.
  */
 attribute vec4 vertexTexCoord;
 

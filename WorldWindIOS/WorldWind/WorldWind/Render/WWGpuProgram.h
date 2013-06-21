@@ -187,6 +187,55 @@
 */
 - (void) loadUniformBool:(NSString*)uniformName value:(BOOL)value;
 
+/// @name Convenience Functions
+
+/**
+* Loads the specified matrix as the value of a GLSL 4x4 matrix uniform variable with the specified location index.
+*
+* An OpenGL context must be current when this method is called, and an OpenGL program must be bound. The result of this
+* method is undefined if there is no current OpenGL context or no current program.
+*
+* This converts the matrix into column-major order prior to loading its components into the GLSL uniform variable, but
+* does not modify the specified matrix.
+*
+* @param matrix The matrix to set the uniform variable to.
+* @param location The location index of the uniform variable in the currently bound OpenGL program.
+*
+* @exception NSInvalidArgumentException If the matrix is nil.
+*/
++ (void) loadUniformMatrix:(WWMatrix*)matrix location:(GLuint)location;
+
+/**
+* Loads the specified color as the value of a GLSL vec4 uniform variable with the specified location index.
+*
+* An OpenGL context must be current when this method is called, and an OpenGL program must be bound. The result of this
+* method is undefined if there is no current OpenGL context or no current program.
+*
+* This multiplies the red, green and blue components by the alpha component prior to loading the color in the GLSL
+* uniform variable, but does not modify the specified color.
+*
+* @param color The color to set the uniform variable to.
+* @param location The location index of the uniform variable in the currently bound OpenGL program.
+*
+* @exception NSInvalidArgumentException If the color is nil.
+*/
++ (void) loadUniformColor:(WWColor*)color location:(GLuint)location;
+
+/**
+* Loads the specified pick color as the value of a GLSL vec4 uniform variable with the specified location index.
+*
+* An OpenGL context must be current when this method is called, and an OpenGL program must be bound. The result of this
+* method is undefined if there is no current OpenGL context or no current program.
+*
+* This converts the color from a packed 32-bit integer representation in the range [0,255] to a floating-point
+* representation in the range [0,1]. The red, green, blue and alpha components are otherwise loaded in the GLSL uniform
+* variable without modification.
+*
+* @param color The color to set the uniform variable to.
+* @param location The location index of the uniform variable in the currently bound OpenGL program.
+*/
++ (void) loadUniformPickColor:(unsigned int)color location:(GLuint)location;
+
 /// @name Supporting Methods
 
 /**

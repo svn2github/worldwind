@@ -23,6 +23,39 @@
 @implementation WWMatrix
 
 //--------------------------------------------------------------------------------------------------------------------//
+//-- Matrix Attributes --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) columnMajorComponents:(float[])array
+{
+    if (!array)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Array is NULL");
+    }
+
+    // Column 1
+    array[0] = (float) m[0];
+    array[1] = (float) m[4];
+    array[2] = (float) m[8];
+    array[3] = (float) m[12];
+    // Column 2
+    array[4] = (float) m[1];
+    array[5] = (float) m[5];
+    array[6] = (float) m[9];
+    array[7] = (float) m[13];
+    // Column 3
+    array[8] = (float) m[2];
+    array[9] = (float) m[6];
+    array[10] = (float) m[10];
+    array[11] = (float) m[14];
+    // Column 4
+    array[12] = (float) m[3];
+    array[13] = (float) m[7];
+    array[14] = (float) m[11];
+    array[15] = (float) m[15];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Matrices --//
 //--------------------------------------------------------------------------------------------------------------------//
 

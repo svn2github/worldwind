@@ -1,11 +1,11 @@
-const char* DefaultFragmentShader = STRINGIFY(
+const char* BasicFragmentShader = STRINGIFY(
 /* Copyright (C) 2001, 2012 United States Government as represented by
 the Administrator of the National Aeronautics and Space Administration.
 All Rights Reserved.
 */
 
 /*
- * OpenGL ES Shading Language v1.00 fragment shader for default rendering.
+ * OpenGL ES Shading Language v1.00 fragment shader for basic rendering. Draws fragments in a solid color.
  *
  * version $Id$
  */
