@@ -23,10 +23,6 @@
     mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
     colorLocation = (GLuint) [self uniformLocation:@"color"];
 
-    [self bind];
-    glEnableVertexAttribArray(vertexPointLocation);
-    glUseProgram(0);
-
     return self;
 }
 

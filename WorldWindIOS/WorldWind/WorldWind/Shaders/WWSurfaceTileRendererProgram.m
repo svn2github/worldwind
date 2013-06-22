@@ -23,15 +23,9 @@
     vertexTexCoordLocation = (GLuint) [self attributeLocation:@"vertexTexCoord"];
     mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
     tileCoordMatrixLocation = (GLuint) [self uniformLocation:@"tileCoordMatrix"];
-    textureUnitLocation = (GLuint) [self uniformLocation:@"textureSampler"];
+    textureUnitLocation = (GLuint) [self uniformLocation:@"tileTexture"];
     textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
     opacityLocation = (GLuint) [self uniformLocation:@"opacity"];
-
-    [self bind];
-    glEnableVertexAttribArray(vertexPointLocation);
-    glEnableVertexAttribArray(vertexTexCoordLocation);
-    glUniform1i(textureUnitLocation, 0);
-    glUseProgram(0);
 
     return self;
 }

@@ -231,10 +231,18 @@
 - (void) beginDrawing:(WWDrawContext*)dc
 {
     [dc bindProgramForKey:[WWBasicProgram programKey] class:[WWBasicProgram class]];
+
+    WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
+    glEnableVertexAttribArray([program vertexPointLocation]);
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
+    // Restore the global OpenGL vertex attribute array state. This step must be performed before the GL program binding
+    // is restored below in order to access the vertex attribute array indices from the current program.
+    WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
+    glDisableVertexAttribArray([program vertexPointLocation]);
+
     // Restore OpenGL state.
     [dc bindProgram:nil];
     glDepthMask(GL_TRUE);

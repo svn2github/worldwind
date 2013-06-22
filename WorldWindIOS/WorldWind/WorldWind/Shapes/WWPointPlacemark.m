@@ -317,13 +317,19 @@ static WWTexture* currentTexture;
     // Bind the basic texture program. This sets the program as the current OpenGL program and the current draw
     // context's program.
     [dc bindProgramForKey:[WWBasicTextureProgram programKey] class:[WWBasicTextureProgram class]];
-    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
 
     // Configure the GL shader's vertex attribute arrays to use the unit quad vertex buffer object as the source of
     // vertex point coordinates and vertex texture coordinate.
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
     glBindBuffer(GL_ARRAY_BUFFER, [dc unitQuadBuffer]);
     glVertexAttribPointer([program vertexPointLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
     glVertexAttribPointer([program vertexTexCoordLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray([program vertexPointLocation]);
+    glEnableVertexAttribArray([program vertexTexCoordLocation]);
+
+    // Set the texture unit that placemark textures are bound to. This uniform variable does not change during the
+    // program's execution over multiple point placemarks.
+    [program loadTextureUnit:GL_TEXTURE0];
 
     // Disable texturing when in picking mode. This uniform variable does not change during the program's execution over
     // multiple point placemarks.
@@ -341,6 +347,12 @@ static WWTexture* currentTexture;
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
+    // Restore the global OpenGL vertex attribute array state. This step must be performed before the GL program binding
+    // is restored below in order to access the vertex attribute array indices from the current program.
+    WWBasicTextureProgram* program = (WWBasicTextureProgram*) [dc currentProgram];
+    glDisableVertexAttribArray([program vertexPointLocation]);
+    glDisableVertexAttribArray([program vertexTexCoordLocation]);
+
     // Restore the GL program binding, buffer binding, texture binding, and depth state.
     [dc bindProgram:nil];
     glBindBuffer(GL_ARRAY_BUFFER, 0);

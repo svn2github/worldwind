@@ -109,7 +109,10 @@
 - (void) beginRendering:(WWDrawContext*)dc opacity:(float)opacity
 {
     [dc bindProgramForKey:[WWSurfaceTileRendererProgram programKey] class:[WWSurfaceTileRendererProgram class]];
-    [(WWSurfaceTileRendererProgram*) [dc currentProgram] loadOpacity:opacity];
+
+    WWSurfaceTileRendererProgram* program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
+    [program loadTextureUnit:GL_TEXTURE0];
+    [program loadOpacity:opacity];
 }
 
 - (void) endRendering:(WWDrawContext*)dc

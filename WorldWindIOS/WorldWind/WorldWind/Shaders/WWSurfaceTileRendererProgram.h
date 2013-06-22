@@ -20,10 +20,10 @@
 * ###Vertex Attributes###
 *
 * `vec4 vertexPoint` - The geometry's vertex points, in model coordinates. This attribute's location is provided by
-* the vertexPointLocation property. This vertex attribute array is enabled by default.
+* the vertexPointLocation property.
 *
 * `vec4 vertexTexCoord` - The geometry's vertex texture coordinates. This attribute's location is provided by
-* the vertexTexCoordLocation property. This vertex attribute array is enabled by default.
+* the vertexTexCoordLocation property.
 *
 * ###Uniform Variables###
 *
@@ -41,7 +41,7 @@
 * loadOpacity:.
 *
 * `sampler2D tileTexture` - The texture unit the texture is bound to (GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, etc.).
-* Initialized to GL_TEXTURE0. Specified using loadTextureUnit:.
+* Specified using loadTextureUnit:.
 */
 @interface WWSurfaceTileRendererProgram : WWGpuProgram
 {

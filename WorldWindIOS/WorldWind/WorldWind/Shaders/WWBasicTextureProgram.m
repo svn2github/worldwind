@@ -27,12 +27,6 @@
     textureUnitLocation = (GLuint) [self uniformLocation:@"textureSampler"];
     textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
 
-    [self bind];
-    glEnableVertexAttribArray(vertexPointLocation);
-    glEnableVertexAttribArray(vertexTexCoordLocation);
-    glUniform1i(textureUnitLocation, 0);
-    glUseProgram(0);
-
     return self;
 }
 
