@@ -62,7 +62,7 @@
     double deltaLat = [_sector deltaLat];
     double deltaLon = [_sector deltaLon];
 
-    // Texel coordinates of the specified location, given an image origin in the upper left corner.
+    // Image coordinates of the specified location, given an image origin in the top-left corner.
     double x = (_imageWidth - 1) * (longitude - minLon) / deltaLon;
     double y = (_imageHeight - 1) * (maxLat - latitude) / deltaLat;
 
@@ -103,8 +103,8 @@
     double maxLatSelf = [_sector maxLatitude];
     double minLonSelf = [_sector minLongitude];
     double maxLonSelf = [_sector maxLongitude];
-    double deltaLatSelf = [_sector deltaLat];
-    double deltaLonSelf = [_sector deltaLon];
+    double deltaLatSelf = maxLatSelf - minLatSelf;
+    double deltaLonSelf = maxLonSelf - minLonSelf;
 
     double minLatOther = [sector minLatitude];
     double maxLatOther = [sector maxLatitude];
@@ -132,7 +132,7 @@
 
         if (lat >= minLatSelf && lat <= maxLatSelf)
         {
-            // Texel coordinates of the specified location, given an image origin in the upper left corner.
+            // Image y-coordinate of the specified location, given an image origin in the top-left corner.
             double y = (_imageHeight - 1) * (maxLatSelf - lat) / deltaLatSelf;
             int y0 = CLAMP(0, _imageHeight - 1, (int) y);
             int y1 = CLAMP(0, _imageHeight - 1, y0 + 1);
@@ -151,7 +151,7 @@
 
                 if (lon >= minLonSelf && lon <= maxLonSelf)
                 {
-                    // Texel coordinates of the specified location, given an image origin in the upper left corner.
+                    // Image x-coordinate of the specified location, given an image origin in the top-left corner.
                     double x = (_imageWidth - 1) * (lon - minLonSelf) / deltaLonSelf;
                     int x0 = CLAMP(0, _imageWidth - 1, (int) x);
                     int x1 = CLAMP(0, _imageWidth - 1, x0 + 1);
@@ -173,6 +173,63 @@
         {
             index += numLon; // Skip this row.
         }
+    }
+}
+
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result
+{
+    double maxLatSelf = [_sector maxLatitude];
+    double minLonSelf = [_sector minLongitude];
+    double deltaLatSelf = [_sector deltaLat];
+    double deltaLonSelf = [_sector deltaLon];
+
+    double minLatOther = [sector minLatitude];
+    double maxLatOther = [sector maxLatitude];
+    double minLonOther = [sector minLongitude];
+    double maxLonOther = [sector maxLongitude];
+
+    // Image coordinates of the specified sector, given an image origin in the top-left corner. We take the floor and
+    // ceiling of the min and max coordinates, respectively, in order to capture all pixels that would contribute to
+    // elevations computed for the specified sector in a call to elevationsForSector.
+    int minY = (int) floor((_imageHeight - 1) * (maxLatSelf - maxLatOther) / deltaLatSelf);
+    int maxY = (int) ceil((_imageHeight - 1) * (maxLatSelf - minLatOther) / deltaLatSelf);
+    int minX = (int) floor((_imageWidth - 1) * (minLonOther - minLonSelf) / deltaLonSelf);
+    int maxX = (int) ceil((_imageWidth - 1) * (maxLonOther - minLonSelf) / deltaLonSelf);
+    minY = CLAMP(0, _imageHeight - 1, minY);
+    maxY = CLAMP(0, _imageHeight - 1, maxY);
+    minX = CLAMP(0, _imageWidth - 1, minX);
+    maxX = CLAMP(0, _imageWidth - 1, maxX);
+
+    const short* pixels = [imageData bytes];
+    short min = SHRT_MAX;
+    short max = SHRT_MIN;
+
+    for (int y = minY; y <= maxY; y++)
+    {
+        for (int x = minX; x <= maxX; x++)
+        {
+            short p = pixels[x + y * _imageWidth];
+
+            if (min > p)
+            {
+                min = p;
+            }
+
+            if (max < p)
+            {
+                max = p;
+            }
+        }
+    }
+
+    if (result[0] > min)
+    {
+        result[0] = min;
+    }
+
+    if (result[1] < max)
+    {
+        result[1] = max;
     }
 }
 
@@ -223,45 +280,7 @@
 
 - (void) loadImage
 {
-    [self readImageFromFile];
-    [self findMinAndMaxElevation];
-}
-
-- (void) readImageFromFile
-{
     imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
-}
-
-- (void) findMinAndMaxElevation
-{
-    if (imageData != nil && [imageData length] > 0)
-    {
-        _minElevation = +DBL_MAX;
-        _maxElevation = -DBL_MAX;
-
-        const short* pixels = [imageData bytes];
-        int numPixels = [imageData length] / sizeof(short);
-
-        for (int i = 0; i < numPixels; i++)
-        {
-            short p = pixels[i];
-
-            if (_minElevation > p)
-            {
-                _minElevation = p;
-            }
-
-            if (_maxElevation < p)
-            {
-                _maxElevation = p;
-            }
-        }
-    }
-    else
-    {
-        _minElevation = 0;
-        _maxElevation = 0;
-    }
 }
 
 @end

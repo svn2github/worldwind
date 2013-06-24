@@ -200,7 +200,7 @@
     return maxResolution;
 }
 
-- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double [])result
+- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result
 {
     if (sector == nil)
     {
@@ -212,7 +212,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    WWLevel* level = [levels levelForTileDelta:[sector deltaLat]];
+    WWLevel* level = [levels levelForTileDelta:[sector deltaLat] * 4];
     [self assembleTilesForLevel:level sector:sector retrieveTiles:NO];
 
     if ([currentTiles count] == 0)
@@ -220,41 +220,26 @@
         return; // Sector is outside the elevation model's coverage area. Do not modify the result array.
     }
 
-    BOOL haveElevations = NO;
-    double elevation;
-    double minElevation = +DBL_MAX;
-    double maxElevation = -DBL_MAX;
+    // Assign the output extreme elevations to the largest and smallest double values, respectively. This has the effect
+    // of expanding the extremes with each subsequent tile as needed. If we initialized this array with zeros then the
+    // output extreme elevations would always contain zero, even when the range of the image's extreme elevations in the
+    // sector does not contain zero.
+    result[0] = +DBL_MAX;
+    result[1] = -DBL_MAX;
 
     for (WWElevationTile* tile in currentTiles) // No need to sort.
     {
         WWElevationImage* image = [tile image];
         if (image != nil)
         {
-            haveElevations = YES;
-
-            elevation = [image minElevation];
-            if (minElevation > elevation)
-            {
-                minElevation = elevation;
-            }
-
-            elevation = [image maxElevation];
-            if (maxElevation < elevation)
-            {
-                maxElevation = elevation;
-            }
+            [image minAndMaxElevationsForSector:sector result:result];
         }
-    }
-
-    if (haveElevations)
-    {
-        result[0] = minElevation;
-        result[1] = maxElevation;
-    }
-    else
-    {
-        result[0] = _minElevation;
-        result[1] = _maxElevation;
+        else
+        {
+            result[0] = _minElevation;
+            result[1] = _maxElevation;
+            return; // At least one tile image is not in memory; return the model's extreme elevations.
+        }
     }
 }
 
