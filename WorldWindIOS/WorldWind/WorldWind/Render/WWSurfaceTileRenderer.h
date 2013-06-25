@@ -73,16 +73,6 @@
 
 - (void) endRendering:(WWDrawContext*)dc;
 
-- (void) drawIntersectingTiles:(WWDrawContext*)dc
-                   terrainTile:(WWTerrainTile*)terrainTile
-                  surfaceTiles:(NSArray*)surfaceTiles
-                     tileCount:(NSUInteger*)tileCount;
-
-- (void) drawIntersectingTiles:(WWDrawContext*)dc
-                   surfaceTile:(id <WWSurfaceTile>)surfaceTile
-                  terrainTiles:(WWTerrainTileList*)terrainTiles
-                     tileCount:(NSUInteger*)tileCount;
-
 - (void) applyTileState:(WWDrawContext*)dc
             terrainTile:(WWTerrainTile*)terrainTile
             surfaceTile:(id <WWSurfaceTile>)surfaceTile;

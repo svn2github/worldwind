@@ -11,6 +11,7 @@
 #import "WorldWind/Shaders/WWBasicProgram.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WWLog.h"
 
@@ -31,8 +32,11 @@
     }
 
     WWTerrainTileList* surfaceTiles = [dc surfaceGeometry];
-    if (surfaceTiles == nil || [surfaceTiles count] == 0)
+    WWTessellator* tess = [surfaceTiles tessellator];
+    if (surfaceTiles == nil || tess == nil)
+    {
         return;
+    }
 
     WWColor* wireframeColor = [[WWColor alloc] initWithR:1 g:1 b:1 a:1];
     WWColor* outlineColor = [[WWColor alloc] initWithR:1 g:0 b:0 a:1];
@@ -40,7 +44,7 @@
     [self beginRendering:dc];
     @try
     {
-        [surfaceTiles beginRendering:dc];
+        [tess beginRendering:dc];
         WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
 
         NSUInteger count = [surfaceTiles count];
@@ -48,17 +52,17 @@
         {
             WWTerrainTile* tile = [surfaceTiles objectAtIndex:i];
 
-            [tile beginRendering:dc];
+            [tess beginRendering:dc tile:tile];
             [program loadColor:wireframeColor];
-            [tile renderWireframe:dc];
+            [tess renderWireframe:dc tile:tile];
             [program loadColor:outlineColor];
-            [tile renderOutline:dc];
-            [tile endRendering:dc];
+            [tess renderOutline:dc tile:tile];
+            [tess endRendering:dc tile:tile];
         }
     }
     @finally
     {
-        [surfaceTiles endRendering:dc];
+        [tess endRendering:dc];
         [self endRendering:dc];
     }
 

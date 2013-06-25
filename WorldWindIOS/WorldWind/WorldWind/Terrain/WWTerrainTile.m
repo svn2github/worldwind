@@ -12,7 +12,6 @@
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWMatrix.h"
-#import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Util/WWLevel.h"
 
 @implementation WWTerrainTile
@@ -62,31 +61,6 @@
     return size + [super sizeInBytes];
 }
 
-- (void) beginRendering:(WWDrawContext*)dc
-{
-    [_tessellator beginRendering:dc tile:self];
-}
-
-- (void) endRendering:(WWDrawContext*)dc
-{
-    [_tessellator endRendering:dc tile:self];
-}
-
-- (void) render:(WWDrawContext*)dc
-{
-    [_tessellator render:dc tile:self];
-}
-
-- (void) renderWireframe:(WWDrawContext*)dc
-{
-    [_tessellator renderWireFrame:dc tile:self];
-}
-
-- (void) renderOutline:(WWDrawContext*)dc
-{
-    [_tessellator renderOutline:dc tile:self];
-}
-
 - (void) surfacePoint:(double)latitude longitude:(double)longitude offset:(double)offset result:(WWVec4*)result
 {
     if (result == nil)
@@ -95,7 +69,6 @@
     }
 
     WWSector* tileSector = [self sector];
-
     double minLat = [tileSector minLatitude];
     double maxLat = [tileSector maxLatitude];
     double minLon = [tileSector minLongitude];
@@ -168,4 +141,5 @@
         [WWVec4 pointOnLine:result direction:normal t:offset result:result];
     }
 }
+
 @end

@@ -14,6 +14,7 @@
 #import "WorldWind/Shaders/WWSurfaceTileRendererProgram.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/Terrain/WWTessellator.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
@@ -44,7 +45,8 @@
     }
 
     WWTerrainTileList* terrainTiles = [dc surfaceGeometry];
-    if (terrainTiles == nil)
+    WWTessellator* tess = [terrainTiles tessellator];
+    if (terrainTiles == nil || tess == nil)
     {
         WWLog(@"No surface geometry");
         return;
@@ -52,17 +54,36 @@
 
     NSUInteger tileCount = 0;
     [self beginRendering:dc opacity:opacity];
-    [terrainTiles beginRendering:dc];
+    [tess beginRendering:dc];
     @try
     {
         if ([surfaceTile bind:dc])
         {
-            [self drawIntersectingTiles:dc surfaceTile:surfaceTile terrainTiles:terrainTiles tileCount:&tileCount];
+            WWSector* surfaceTileSector = [surfaceTile sector];
+
+            for (NSUInteger i = 0; i < [terrainTiles count]; i++)
+            {
+                WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
+                if ([[terrainTile sector] intersects:surfaceTileSector])
+                {
+                    [tess beginRendering:dc tile:terrainTile];
+                    @try
+                    {
+                        [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
+                        [tess render:dc tile:terrainTile];
+                        tileCount++;
+                    }
+                    @finally
+                    {
+                        [tess endRendering:dc tile:terrainTile];
+                    }
+                }
+            }
         }
     }
     @finally
     {
-        [terrainTiles endRendering:dc];
+        [tess endRendering:dc];
         [self endRendering:dc];
         [dc setNumRenderedTiles:[dc numRenderedTiles] + tileCount];
     }
@@ -81,7 +102,8 @@
     }
 
     WWTerrainTileList* terrainTiles = [dc surfaceGeometry];
-    if (terrainTiles == nil)
+    WWTessellator* tess = [terrainTiles tessellator];
+    if (terrainTiles == nil || tess == nil)
     {
         WWLog(@"No surface geometry");
         return;
@@ -89,18 +111,35 @@
 
     NSUInteger tileCount = 0;
     [self beginRendering:dc opacity:opacity];
-    [terrainTiles beginRendering:dc];
+    [tess beginRendering:dc];
     @try
     {
         for (NSUInteger i = 0; i < [terrainTiles count]; i++)
         {
             WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
-            [self drawIntersectingTiles:dc terrainTile:terrainTile surfaceTiles:surfaceTiles tileCount:&tileCount];
+            WWSector* terrainTileSector = [terrainTile sector];
+            [tess beginRendering:dc tile:terrainTile];
+            @try
+            {
+                for (id <WWSurfaceTile> surfaceTile in surfaceTiles)
+                {
+                    if ([[surfaceTile sector] intersects:terrainTileSector] && [surfaceTile bind:dc])
+                    {
+                        [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
+                        [tess render:dc tile:terrainTile];
+                        tileCount++;
+                    }
+                }
+            }
+            @finally
+            {
+                [tess endRendering:dc tile:terrainTile];
+            }
         }
     }
     @finally
     {
-        [terrainTiles endRendering:dc];
+        [tess endRendering:dc];
         [self endRendering:dc];
         [dc setNumRenderedTiles:[dc numRenderedTiles] + tileCount];
     }
@@ -118,60 +157,6 @@
 - (void) endRendering:(WWDrawContext*)dc
 {
     [dc bindProgram:nil];
-}
-
-- (void) drawIntersectingTiles:(WWDrawContext*)dc
-                   terrainTile:(WWTerrainTile*)terrainTile
-                  surfaceTiles:(NSArray*)surfaceTiles
-                     tileCount:(NSUInteger*)tileCount
-{
-    WWSector* terrainTileSector = [terrainTile sector];
-
-    [terrainTile beginRendering:dc];
-    @try
-    {
-        for (id <WWSurfaceTile> surfaceTile in surfaceTiles)
-        {
-            if ([[surfaceTile sector] intersects:terrainTileSector] && [surfaceTile bind:dc])
-            {
-                [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
-                [terrainTile render:dc];
-                (*tileCount)++;
-            }
-        }
-    }
-    @finally
-    {
-        [terrainTile endRendering:dc];
-    }
-}
-
-- (void) drawIntersectingTiles:(WWDrawContext*)dc
-                   surfaceTile:(id <WWSurfaceTile>)surfaceTile
-                  terrainTiles:(WWTerrainTileList*)terrainTiles
-                     tileCount:(NSUInteger*)tileCount
-{
-    WWSector* surfaceTileSector = [surfaceTile sector];
-
-    for (NSUInteger i = 0; i < [terrainTiles count]; i++)
-    {
-        WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
-
-        if ([[terrainTile sector] intersects:surfaceTileSector])
-        {
-            [terrainTile beginRendering:dc];
-            @try
-            {
-                [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
-                [terrainTile render:dc];
-                (*tileCount)++;
-            }
-            @finally
-            {
-                [terrainTile endRendering:dc];
-            }
-        }
-    }
 }
 
 - (void) applyTileState:(WWDrawContext*)dc terrainTile:(WWTerrainTile*)terrainTile surfaceTile:(id <WWSurfaceTile>)surfaceTile

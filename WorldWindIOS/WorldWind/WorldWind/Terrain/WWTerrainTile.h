@@ -26,7 +26,7 @@
 ///
 /// The tessellator property is weak because the tessellator can point to the tile,
 /// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
-@property(nonatomic, readonly, weak) WWTessellator* tessellator;
+@property (nonatomic, readonly, weak) WWTessellator* tessellator;
 
 /// The GPU resource cache ID for this tile's Cartesian coordinates VBO.
 @property (nonatomic) NSString* cacheKey;
@@ -73,43 +73,6 @@
                               row:(int)row
                            column:(int)column
                       tessellator:(WWTessellator*)tessellator;
-
-/// @name Rendering Operations (Not typically called by applications.)
-
-/**
-* Prepare this tile for rendering.
-*
-* @param dc The current draw context
-*/
-- (void) beginRendering:(WWDrawContext*)dc;
-
-/**
-* Restore state modified during rendering.
-*
-* @param dc The current draw context.
-*/
-- (void) endRendering:(WWDrawContext*)dc;
-
-/**
-* Draw the tile.
-*
-* @param dc The current draw context.
-*/
-- (void) render:(WWDrawContext*)dc;
-
-/**
-* Draw a wireframe representation of the tile that displays the tile's tessellation triangles.
-*
-* @param dc The current draw context.
-*/
-- (void) renderWireframe:(WWDrawContext*)dc;
-
-/**
-* Draw an outline representation of the tile that displays the tile's top, bottom, left and right edges on the surface.
-*
-* @param dc The current draw context.
-*/
-- (void) renderOutline:(WWDrawContext*)dc;
 
 /// @name Operations on Terrain Tiles
 

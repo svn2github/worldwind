@@ -54,16 +54,6 @@
     [self->tiles removeAllObjects];
 }
 
-- (void) beginRendering:(WWDrawContext*)dc
-{
-    [_tessellator beginRendering:dc];
-}
-
-- (void) endRendering:(WWDrawContext*)dc
-{
-    [_tessellator endRendering:dc];
-}
-
 - (BOOL) surfacePoint:(double)latitude
             longitude:(double)longitude
                offset:(double)offset

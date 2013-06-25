@@ -608,20 +608,20 @@
     [self cacheSharedGeometryVBOs:dc];
 
     // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
-    // bound, and therefore must look up the location of attributes rather by conventional name.
-    vertexPointLocation = (GLuint) [program attributeLocation:@"vertexPoint"];
-    mvpMatrixLocation = (GLuint) [program uniformLocation:@"mvpMatrix"];
-    glEnableVertexAttribArray(vertexPointLocation);
+    // bound, and therefore must look up the location of attributes by name.
+    vertexPointLocation = [program attributeLocation:@"vertexPoint"];
+    vertexTexCoordLocation = [program attributeLocation:@"vertexTexCoord"];
+    mvpMatrixLocation = [program uniformLocation:@"mvpMatrix"];
+    glEnableVertexAttribArray((GLuint) vertexPointLocation);
 
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
 
-    if (![dc pickingMode])
+    if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
     {
-        vertexTexCoordLocation = (GLuint) [program attributeLocation:@"vertexTexCoord"];
         NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
         glVertexAttribPointer((GLuint) vertexTexCoordLocation, 2, GL_FLOAT, false, 0, 0);
-        glEnableVertexAttribArray(vertexTexCoordLocation);
+        glEnableVertexAttribArray((GLuint) vertexTexCoordLocation);
     }
 
     NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
@@ -639,11 +639,11 @@
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Restore the global OpenGL vertex attribute array state.
-    glDisableVertexAttribArray(vertexPointLocation);
+    glDisableVertexAttribArray((GLuint) vertexPointLocation);
 
-    if (![dc pickingMode])
+    if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
     {
-        glDisableVertexAttribArray(vertexTexCoordLocation);
+        glDisableVertexAttribArray((GLuint) vertexTexCoordLocation);
     }
 }
 
@@ -661,7 +661,7 @@
 
     WWMatrix* mvp = [[WWMatrix alloc] initWithMultiply:[[dc navigatorState] modelviewProjection]
                                                matrixB:[tile transformationMatrix]];
-    [WWGpuProgram loadUniformMatrix:mvp location:mvpMatrixLocation];
+    [WWGpuProgram loadUniformMatrix:mvp location:(GLuint) mvpMatrixLocation];
 
     GLuint vboId;
     WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
@@ -714,7 +714,7 @@
     glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, 0);
 }
 
-- (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) renderWireframe:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     if (dc == nil)
     {
@@ -813,7 +813,7 @@
     // Draw each terrain tile in a unique color. The fact that the colors are sequential is used below to determine
     // which tile is under the pick point.
 
-    [tiles beginRendering:dc];
+    [self beginRendering:dc];
     @try
     {
         for (NSUInteger i = 0; i < [tiles count]; i++)
@@ -828,22 +828,22 @@
             // TODO: Cull tiles against the pick frustum.
 
             WWTerrainTile* tile = [tiles objectAtIndex:i];
-            [tile beginRendering:dc];
+            [self beginRendering:dc tile:tile];
 
             @try
             {
                 [program loadPickColor:colorInt];
-                [tile render:dc]; // render the tile
+                [self render:dc tile:tile]; // render the tile
             }
             @finally
             {
-                [tile endRendering:dc];
+                [self endRendering:dc tile:tile];
             }
         }
     }
     @finally
     {
-        [tiles endRendering:dc];
+        [self endRendering:dc];
     }
 
     // Assign the max color code to the color used to draw the last tile.

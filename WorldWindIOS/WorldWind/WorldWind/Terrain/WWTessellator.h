@@ -6,7 +6,6 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <OpenGLES/ES2/gl.h>
 #import "WorldWind/Util/WWTileFactory.h"
 
 @class WWGlobe;
@@ -38,9 +37,9 @@
     double* tileElevations;
     WWMatrix* lastMVP;
 
-    GLuint vertexPointLocation;
-    GLuint vertexTexCoordLocation;
-    GLuint mvpMatrixLocation;
+    int vertexPointLocation;
+    int vertexTexCoordLocation;
+    int mvpMatrixLocation;
 }
 
 /// @name Tessellator Attributes
@@ -72,6 +71,69 @@
 * @exception NSInvalidArgumentException If the draw context is nil.
 */
 - (WWTerrainTileList*) tessellate:(WWDrawContext*)dc;
+
+/// @name Rendering Tessellator Tiles
+
+/**
+* Establishes OpenGL state used while drawing tiles of this tessellator.
+*
+* @param dc The current draw context.
+*/
+- (void) beginRendering:(WWDrawContext*)dc;
+
+/**
+* Resets OpenGL state established during beginRendering.
+*
+* @param dc The current draw context.
+*/
+- (void) endRendering:(WWDrawContext*)dc;
+
+/**
+* Establishes OpenGL state used while drawing a specified tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to establish state for.
+*/
+- (void) beginRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Resets OpenGL state used while drawing a tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to reset state for.
+*/
+- (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Draws a specified tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to draw.
+*/
+- (void) render:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Draws a wireframe representation of a specified tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to draw.
+*/
+- (void) renderWireframe:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Draws an outline representation of a specified tile.
+*
+* @param dc The current draw context.
+* @param tile The tile to draw.
+*/
+- (void) renderOutline:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
+
+/**
+* Performs a pick on the currently visible terrain.
+*
+* @param dc The current draw context.
+*/
+- (void) pick:(WWDrawContext*)dc;
 
 /// @name Creating Tessellator Tiles
 
@@ -196,66 +258,5 @@
 - (short*) buildWireframeIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut;
 
 - (short*) buildOutlineIndices:(int)tileWidth tileHeight:(int)tileHeight numIndicesOut:(int*)numIndicesOut;
-
-/**
-* Establishes OpenGL state used while drawing tiles of this tessellator.
-*
-* @param dc The current draw context.
-*/
-- (void) beginRendering:(WWDrawContext*)dc;
-
-/**
-* Resets OpenGL state established during beginRendering.
-*
-* @param dc The current draw context.
-*/
-- (void) endRendering:(WWDrawContext*)dc;
-
-/**
-* Establishes OpenGL state used while drawing a specified tile.
-*
-* @param dc The current draw context.
-* @param tile The tile to establish state for.
-*/
-- (void) beginRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
-* Resets OpenGL state used while drawing a tile.
-*
-* @param dc The current draw context.
-* @param tile The tile to reset state for.
-*/
-- (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
-* Draws a specified tile.
-*
-* @param dc The current draw context.
-* @param tile The tile to draw.
-*/
-- (void) render:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
-* Draws a wireframe representation of a specified tile.
-*
-* @param dc The current draw context.
-* @param tile The tile to draw.
-*/
-- (void) renderWireFrame:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
-* Draws an outline representation of a specified tile.
-*
-* @param dc The current draw context.
-* @param tile The tile to draw.
-*/
-- (void) renderOutline:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
-
-/**
-* Performs a pick on the currently visible terrain.
-*
-* @param dc The current draw context.
-*/
-- (void) pick:(WWDrawContext*)dc;
 
 @end
