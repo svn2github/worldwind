@@ -16,8 +16,8 @@
 
 - (WWEarthElevationModel*) init
 {
-    NSString* layerName = @"mergedAsterElevations";
-    NSString* serviceAddress = @"http://data.worldwind.arc.nasa.gov/elev";
+    NSString* layerName = @"continents,NASA_SRTM30_900m_Tiled,USGS-NED";
+    NSString* serviceAddress = @"http://worldwind26.arc.nasa.gov/wms";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"EarthElevation"];
