@@ -189,7 +189,17 @@
         if (layer != nil)
         {
             [drawContext setCurrentLayer:layer];
-            [layer render:drawContext];
+            @try
+            {
+                [layer render:drawContext];
+            }
+            @catch (NSException* exception)
+            {
+                NSString* layerName = [layer displayName];
+                NSString* msg = [NSString stringWithFormat:@"rendering layer %@", layerName != nil ? layerName : @""];
+                WWLogE(msg, exception);
+                // Keep going. Render the rest of the layers.
+            }
         }
     }
 
