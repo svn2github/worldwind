@@ -9,9 +9,9 @@
 
 @class WWDrawContext;
 @class WWLine;
+@class WWPosition;
 @class WWTerrainTileList;
 @class WWTessellator;
-@class WWPosition;
 @class WWSector;
 @class WWVec4;
 @protocol WWElevationModel;
@@ -88,65 +88,45 @@
                       outputPoint:(WWVec4*)result;
 
 /**
-* Compute a Cartesian point from a specified position and relative to a Cartesian offset.
-*
-* This method is typically used to compute points on the globe relative to a local reference point,
-* such as the center of a terrain tile.
-*
-* See this class' Overview section for a description of the Cartesian coordinate system used.
-*
-* @param latitude The position's latitude.
-* @param longitude The position's longitude.
-* @param altitude The position's altitude.
-* @param offset The X, Y and Z Cartesian coordinates to subtract from the computed coordinates. This makes the
-* returned coordinates relative to the specified offset. This parameter may be nil,
-* in which case the offset is assumed to be 0 in all three dimensions.
-* @param result A three-element float array in which to store the Cartesian result.
-*
-* @exception NSInvalidArgumentException If the specified result instance is nil.
-*/
-- (void) computePointFromPosition:(double)latitude
-                        longitude:(double)longitude
-                         altitude:(double)altitude
-                           offset:(WWVec4*)offset
-                      outputArray:(float [])result;
-
-/**
 * Computes a grid of Cartesian points within a specified sector and relative to a specified Cartesian offset.
 *
 * This method is used to compute a collection of points within a sector. It is used by tessellators to efficiently
 * generate a tile's interior points. The number of points to generate is indicated by the numLat and numLon
 * parameters, which specify respectively the number of points to generate in the latitudinal and longitudinal
-* directions.
+* directions. In addition to the specified numLat and numLon points, this method generates an additional row and column
+* of points along the sector's outer edges. These border points have the same latitude and longitude as the points on
+* the sector's outer edges, but use the constant borderElevation instead of values from the array of elevations.
 *
-* For each implied position within the sector, an elevation value may be specified via an array of elevations. The
-* calculation at each position incorporates the associated elevation. If elevations are not specified,
-* a constant elevation must be specified. That constant elevation is applied to all computed points.
+* For each implied position within the sector, an elevation value is specified via an array of elevations. The
+* calculation at each position incorporates the associated elevation. The array of elevations need not supply elevations
+* for the border points, which use the constant borderElevation.
 *
 * @param sector The sector over which to generate the points.
 * @param numLat The number of points to generate latitudinally.
 * @param numLon The number of points to generate longitudinally.
-* @param metersElevation If not nil, specifies an array of elevations to incorporate in the point calculations. There
- * must be one elevation value in the array for each generated point, so there must be numLat x numLon elements in
- * the array.
- * @param constantElevation If metersElevation is nil, specifies a pointer to an elevation value that is applied
- * uniformly across the grid of points generated.
-* @param offset The X, Y and Z Cartesian coordinates to subtract from the computed coordinates. This makes the
-* returned coordinates relative to the specified offset. This parameter may be nil,
-* in which case the offset is assumed to be 0 in all three dimensions.
-* @param result An array to hold the computed coordinates. It must be at least of size numLat x numLon x 3 floats.
+* @param metersElevation An array of elevations to incorporate in the point calculations. There must be one elevation
+* value in the array for each generated point - ignoring border points - so there must be numLat x numLon elements in
+* the array.
+* @param borderElevation The constant elevation assigned to border points.
+* @param offset The X, Y and Z Cartesian coordinates to subtract from the computed coordinates. This makes the computed
+* coordinates relative to the specified offset.
+* @param result An array to hold the computed coordinates. It must be at least of size
+* ((numLat + 2) x (numLon + 2) x stride) floats.
 * The positions are returned in row major order, beginning with the row of minimum latitude.
+* @param stride The number of floats between successive points in the output array. Specifying a stride of 3 indicates
+* that the points are tightly packed in the output array.
 *
-* @exception NSInvalidArgumentException If the sector is nil, result is nil, numLat or numLon are less than or equal
-* to 0, or both metersElevation and constantElevation are nil.
+* @exception NSInvalidArgumentException If any argument is nil, or if numLat or numLon are less than or equal to zero,
+* or if stride is less than 3.
 */
 - (void) computePointsFromPositions:(WWSector*)sector
                              numLat:(int)numLat
                              numLon:(int)numLon
-                    metersElevation:(double [])metersElevation
-                  constantElevation:(double*)constantElevation
+                    metersElevation:(double[])metersElevation
+                    borderElevation:(double)borderElevation
                              offset:(WWVec4*)offset
-                        outputArray:(float [])result;
+                        outputArray:(float[])result
+                       outputStride:(int)stride;
 
 /**
 * Computes a position from a specified Cartesian point.

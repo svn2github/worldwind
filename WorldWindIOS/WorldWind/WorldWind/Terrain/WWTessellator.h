@@ -8,17 +8,17 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Util/WWTileFactory.h"
 
-@class WWGlobe;
-@class WWSector;
-@class WWTerrainTile;
-@class WWTerrainTileList;
-@class WWTerrainSharedGeometry;
 @class WWDrawContext;
-@class WWVec4;
+@class WWGlobe;
 @class WWLevelSet;
+@class WWMatrix;
 @class WWMemoryCache;
 @class WWPickedObject;
-@class WWMatrix;
+@class WWSector;
+@class WWTerrainSharedGeometry;
+@class WWTerrainTile;
+@class WWTerrainTileList;
+@class WWVec4;
 
 /**
 * Provides tessellation of a globe. Applications typically do not interact with a tessellator. Tessellators are
@@ -217,15 +217,6 @@
 - (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 /**
-* Computes the Cartesian reference center point for a specified tile.
-*
-* @param dc The current draw context.
-* @param tile The tile whose reference center to compute.
-* @param result The WWVec4 instance in which to store the result.
-*/
-- (void) referenceCenterForTile:(WWDrawContext*)dc tile:(WWTerrainTile*)tile outputPoint:(WWVec4*)result;
-
-/**
 * Creates the Cartesian vertices for a specified tile.
 *
 * @param dc The current draw context.
@@ -234,15 +225,6 @@
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile;
 
 // The following methods are intentionally not documented.
-
-- (void) buildTileRowVertices:(WWGlobe*)globe
-                    rowSector:(WWSector*)rowSector
-               numRowVertices:(int)numRowVertices
-                   elevations:(double [])elevations
-            constantElevation:(double*)constantElevation
-                 minElevation:(double)minElevation
-                    refCenter:(WWVec4*)refCenter
-                       points:(float [])points;
 
 /**
 * Creates geometry and other information shared by all tiles.
