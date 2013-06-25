@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLocation;
-@class WWGlobe;
 @class WWBoundingBox;
 @class WWBoundingSphere;
+@class WWGlobe;
+@class WWLocation;
 
 /**
 * Represents a geographic region defined by a rectangle in degrees latitude and longitude. Sectors are used extensively
@@ -47,6 +47,20 @@
 - (double) deltaLon;
 
 /**
+* Computes the center of this sector's latitudinal span.
+*
+* @return The center of this sector's latitudinal span, in degrees.
+*/
+- (double) centroidLat;
+
+/**
+* Computes the center of this sector's longitudinal span.
+*
+* @return The center of this sector's longitudinal span, in degrees.
+*/
+- (double) centroidLon;
+
+/**
 * Returns this sector's minimum latitude in radians.
 *
 * @return This sector's minimum latitude in radians.
@@ -73,16 +87,6 @@
 * @return This sector's maximum longitude in radians.
 */
 - (double) maxLongitudeRadians;
-
-/**
-* Computes and returns the center of the sector in latitude and longitude.
-*
-* @param result The location in which to store the computed centroid location. May not be nil. Upon return,
-* the specified location instance contains this sector's centroid.
-*
-* @exception NSInvalidArgumentException if the result parameter is nil.
-*/
-- (void) centroidLocation:(WWLocation*)result;
 
 /// @name Initializing Sectors
 

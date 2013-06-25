@@ -6,12 +6,12 @@
  */
 
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWSector
 
@@ -104,17 +104,6 @@
     return [[[self class] alloc] initWithDegreesMinLatitude:_minLatitude maxLatitude:_maxLatitude minLongitude:_minLongitude maxLongitude:_maxLongitude];
 }
 
-- (void) centroidLocation:(WWLocation* __unsafe_unretained)result
-{
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
-    result.latitude = 0.5 * (_minLatitude + _maxLatitude);
-    result.longitude = 0.5 * (_minLongitude + _maxLongitude);
-}
-
 - (double) deltaLat
 {
     return _maxLatitude - _minLatitude;
@@ -123,6 +112,16 @@
 - (double) deltaLon
 {
     return _maxLongitude - _minLongitude;
+}
+
+- (double) centroidLat
+{
+    return 0.5 * (_minLatitude + _maxLatitude);
+}
+
+- (double) centroidLon
+{
+    return 0.5 * (_minLongitude + _maxLongitude);
 }
 
 - (double) minLatitudeRadians

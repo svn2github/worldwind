@@ -6,17 +6,17 @@
  */
 
 #import "WorldWind/Util/WWTile.h"
-#import "WorldWind/Util/WWLevel.h"
-#import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Util/WWTileFactory.h"
-#import "WorldWind/Render/WWDrawContext.h"
-#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWMemoryCache.h"
+#import "WorldWind/Util/WWTileFactory.h"
 #import "WorldWind/Util/WWTileList.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWTile
 
@@ -286,11 +286,11 @@
 
     double p0 = [_sector minLatitude];
     double p2 = [_sector maxLatitude];
-    double p1 = 0.5 * (p0 + p2);
+    double p1 = [_sector centroidLat];
 
     double t0 = [_sector minLongitude];
     double t2 = [_sector maxLongitude];
-    double t1 = 0.5 * (t0 + t2);
+    double t1 = [_sector centroidLon];
 
     int subRow = 2 * _row;
     int subCol = 2 * _column;
