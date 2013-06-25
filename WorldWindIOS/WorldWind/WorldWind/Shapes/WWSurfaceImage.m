@@ -12,6 +12,8 @@
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/WorldWind.h"
+#import "WorldWind/Util/WWResourceLoader.h"
 
 @implementation WWSurfaceImage
 
@@ -31,6 +33,7 @@
 
     _imagePath = imagePath;
     _sector = sector;
+    _opacity = 1;
     _displayName = @"Surface Image";
 
     return self;
@@ -38,21 +41,13 @@
 
 - (BOOL) bind:(WWDrawContext*)dc
 {
-    WWTexture* texture = [[dc gpuResourceCache] textureForKey:_imagePath];
+    WWTexture* texture = [[WorldWind resourceLoader] textureForImagePath:_imagePath cache:[dc gpuResourceCache]];
     if (texture != nil)
     {
         return [texture bind:dc];
     }
 
-    texture = [[WWTexture alloc] initWithImagePath:_imagePath cache:[dc gpuResourceCache] object:self];
-    BOOL yn = [texture bind:dc];
-
-    if (yn)
-    {
-        [[dc gpuResourceCache] putTexture:texture forKey:_imagePath];
-    }
-
-    return yn;
+    return NO;
 }
 
 - (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
