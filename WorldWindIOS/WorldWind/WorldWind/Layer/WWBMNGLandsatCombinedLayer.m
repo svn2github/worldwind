@@ -47,10 +47,14 @@
 
 - (NSString*) layersParameter:(WWTile*)tile
 {
-    if (tile == nil || [[tile sector] deltaLat] / [tile tileHeight] > 0.009) // 0.009 degrees/pixel
+    if (tile == nil || [[tile sector] deltaLat] / [tile tileHeight] > 0.009) // levels 0-4; Blue Marble
+    {
         return [super layersParameter:tile];
-
-    return @"esat";
+    }
+    else // levels 5-10; Blue Marble + Landsat
+    {
+        return [[super layersParameter:tile] stringByAppendingString:@",esat"];
+    }
 }
 
 @end
