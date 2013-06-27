@@ -22,7 +22,6 @@
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWBMNGLayer.h"
 #import "WorldWind/Layer/WWDAFIFLayer.h"
-#import "WorldWind/Layer/WWI3LandsatLayer.h"
 #import "WorldWind/Layer/WWBingLayer.h"
 #import "WorldWind/Layer/WWOpenStreetMapLayer.h"
 #import "WorldWind/Shapes/WWPath.h"
@@ -148,7 +147,7 @@
 //    layer = [[WWShowTessellationLayer alloc] init];
 //    [layers addLayer:layer];
 
-    layer = [[CrashDataLayer alloc] initWithURL:@"http://worldwindserver.net/crashes.kml"];
+    layer = [[CrashDataLayer alloc] initWithURL:@"http://worldwind.arc.nasa.gov/mobile/crashes.kml"];
     [layer setEnabled:NO];
     [layers addLayer:layer];
 
@@ -176,7 +175,7 @@
 
 - (void) makeFlightPathsLayer
 {
-    NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/PassageWays.json"];
+    NSURL* url = [[NSURL alloc] initWithString:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
