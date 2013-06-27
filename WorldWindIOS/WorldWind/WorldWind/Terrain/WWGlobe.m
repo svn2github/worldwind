@@ -24,7 +24,6 @@
     _equatorialRadius = 6378137.0;
     _polarRadius = 6356752.3;
     _es = 0.00669437999013;
-    _minElevation = 0;
     _tessellator = [[WWTessellator alloc] initWithGlobe:self];
     _elevationModel = [[WWEarthElevationModel alloc] init];
 
@@ -451,6 +450,11 @@
                                targetResolution:targetResolution
                            verticalExaggeration:verticalExaggeration
                                          result:result];
+}
+
+- (double) minElevation
+{
+    return [_elevationModel minElevation];
 }
 
 - (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result

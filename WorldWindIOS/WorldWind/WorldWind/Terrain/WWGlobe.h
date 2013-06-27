@@ -39,9 +39,6 @@
 // The square of the globe's eccentricity.
 @property(readonly, nonatomic) double es;
 
-/// The globe's minimum elevation, which is typically negative.
-@property(readonly, nonatomic) double minElevation;
-
 /// The WWTessellator used to generate the globe's terrain geometry.
 @property(readonly, nonatomic) WWTessellator* tessellator;
 
@@ -265,6 +262,13 @@
               targetResolution:(double)targetResolution
           verticalExaggeration:(double)verticalExaggeration
                         result:(double[])result;
+
+/**
+* Returns the globe's minimum elevation, which is typically negative.
+*
+* @return The globe's minimum elevation, in model coordinates.
+*/
+- (double) minElevation;
 
 /**
 * Returns the minimum and maximum elevations for a specified sector.
