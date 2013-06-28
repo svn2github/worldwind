@@ -156,7 +156,12 @@ typedef enum
     // position's and set its altitude to a constant offset above the surface.
     [[marker position] setLocation:position altitude:MARKER_VERTICAL_OFFSET];
     [marker setAltitudeMode:WW_ALTITUDE_MODE_RELATIVE_TO_GROUND];
-    [_view drawView];
+
+    // Avoid redundant drawView calls while the navigator is animating.
+    if (state != TrackingControllerStateAnimating)
+    {
+        [_view drawView];
+    }
 }
 
 - (void) animateNavigatorToPosition:(WWPosition*)position
