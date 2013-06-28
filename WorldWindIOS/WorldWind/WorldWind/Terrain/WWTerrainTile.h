@@ -50,7 +50,7 @@
 ///
 /// This is used to invalidate the
 /// terrain geometry when the globe's elevations change.
-@property(nonatomic) NSDate* timestamp;
+@property (nonatomic) NSTimeInterval timestamp;
 
 /// @name Initializing Terrain Tiles
 

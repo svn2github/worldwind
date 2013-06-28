@@ -82,9 +82,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    NSDate* lastElevationsChange = [[dc globe] elevationTimestamp];
+    NSTimeInterval lastElevationsChange = [[[dc globe] elevationTimestamp] timeIntervalSinceReferenceDate];
     if ([currentTiles count] > 0
-            && elevationTimestamp != nil && [elevationTimestamp isEqualToDate:lastElevationsChange]
+            && elevationTimestamp == lastElevationsChange
             && lastMVP != nil && [[[dc navigatorState] modelviewProjection] isEqual:lastMVP])
     {
         return currentTiles;
@@ -93,7 +93,7 @@
 
     [self->currentTiles removeAllTiles];
     self->currentCoverage = nil;
-    self->elevationTimestamp = lastElevationsChange; // Store the elevation timestamp to prevent it from changing during tessellation.
+    elevationTimestamp = lastElevationsChange; // Store the elevation timestamp to prevent it from changing during tessellation.
 
     if ([self->topLevelTiles count] == 0)
     {
@@ -190,8 +190,7 @@
 
 - (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    NSDate* timestamp = [tile timestamp];
-    return timestamp == nil || [timestamp compare:self->elevationTimestamp] == NSOrderedAscending;
+    return [tile timestamp] != elevationTimestamp;
 }
 
 - (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -203,7 +202,7 @@
     // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
     // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
     // creating redundant NSDate objects.
-    [tile setTimestamp:self->elevationTimestamp];
+    [tile setTimestamp:elevationTimestamp];
 }
 
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -482,14 +481,14 @@
     return indices;
 }
 
-- (void) beginRendering:(WWDrawContext*)dc
+- (void) beginRendering:(WWDrawContext* __unsafe_unretained)dc
 {
     if (dc == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    WWGpuProgram* program = [dc currentProgram]; // use the current program; the caller configures other program state
+    WWGpuProgram* __unsafe_unretained program = [dc currentProgram]; // use the current program; the caller configures other program state
     if (program == nil)
     {
         WWLog(@"Current program is nil");
@@ -505,21 +504,21 @@
     mvpMatrixLocation = [program uniformLocation:@"mvpMatrix"];
     glEnableVertexAttribArray((GLuint) vertexPointLocation);
 
-    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
+    WWGpuResourceCache* __unsafe_unretained gpuResourceCache = [dc gpuResourceCache];
 
     if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
     {
-        NSNumber* texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+        NSNumber* __unsafe_unretained texCoordVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint) [texCoordVboId intValue]);
         glVertexAttribPointer((GLuint) vertexTexCoordLocation, 2, GL_FLOAT, false, 0, 0);
         glEnableVertexAttribArray((GLuint) vertexTexCoordLocation);
     }
 
-    NSNumber* indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    NSNumber* __unsafe_unretained indicesVboId = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) [indicesVboId intValue]);
 }
 
-- (void) endRendering:(WWDrawContext*)dc
+- (void) endRendering:(WWDrawContext* __unsafe_unretained)dc
 {
     if (dc == nil)
     {
@@ -538,7 +537,7 @@
     }
 }
 
-- (void) beginRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) beginRendering:(WWDrawContext* __unsafe_unretained)dc tile:(WWTerrainTile* __unsafe_unretained)tile
 {
     if (dc == nil)
     {
@@ -555,8 +554,8 @@
     [WWGpuProgram loadUniformMatrix:mvp location:(GLuint) mvpMatrixLocation];
 
     GLuint vboId;
-    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
-    NSNumber* vbo = (NSNumber*) [gpuResourceCache resourceForKey:[tile cacheKey]];
+    WWGpuResourceCache* __unsafe_unretained gpuResourceCache = [dc gpuResourceCache];
+    NSNumber* __unsafe_unretained vbo = (NSNumber*) [gpuResourceCache resourceForKey:[tile cacheKey]];
     if (vbo == nil)
     {
         GLsizei size = [tile numPoints] * 3 * sizeof(float);
@@ -577,20 +576,11 @@
     glVertexAttribPointer((GLuint) vertexPointLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-- (void) endRendering:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) endRendering:(WWDrawContext* __unsafe_unretained)dc tile:(WWTerrainTile* __unsafe_unretained)tile
 {
-    if (dc == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
-    }
-
-    if (tile == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
-    }
 }
 
-- (void) render:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
+- (void) render:(WWDrawContext* __unsafe_unretained)dc tile:(WWTerrainTile* __unsafe_unretained)tile
 {
     if (dc == nil)
     {
@@ -602,7 +592,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Terrain tile is nil")
     }
 
-    glDrawElements(GL_TRIANGLE_STRIP, _sharedGeometry.numIndices, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, [_sharedGeometry numIndices], GL_UNSIGNED_SHORT, 0);
 }
 
 - (void) renderWireframe:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -647,11 +637,11 @@
     glDrawElements(GL_LINE_LOOP, _sharedGeometry.numOutlineIndices, GL_UNSIGNED_SHORT, _sharedGeometry.outlineIndices);
 }
 
-- (void) cacheSharedGeometryVBOs:(WWDrawContext*)dc
+- (void) cacheSharedGeometryVBOs:(WWDrawContext* __unsafe_unretained)dc
 {
-    WWGpuResourceCache* gpuResourceCache = [dc gpuResourceCache];
+    WWGpuResourceCache* __unsafe_unretained gpuResourceCache = [dc gpuResourceCache];
 
-    NSNumber* texCoordVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
+    NSNumber* __unsafe_unretained texCoordVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry texCoordVboCacheKey]];
     if (texCoordVbo == nil)
     {
         GLuint texCoordVboId;
@@ -666,7 +656,7 @@
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    NSNumber* indicesVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
+    NSNumber* __unsafe_unretained indicesVbo = (NSNumber*) [gpuResourceCache resourceForKey:[_sharedGeometry indicesVboCacheKey]];
     if (indicesVbo == nil)
     {
         GLuint indicesVboId;

@@ -33,7 +33,7 @@
     double detailHintOrigin;
 
     WWMemoryCache* tileCache;
-    NSDate* elevationTimestamp;
+    NSTimeInterval elevationTimestamp;
     double* tileElevations;
     WWMatrix* lastMVP;
 

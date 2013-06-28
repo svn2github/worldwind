@@ -59,11 +59,11 @@
     {
         if ([surfaceTile bind:dc])
         {
-            WWSector* surfaceTileSector = [surfaceTile sector];
+            WWSector* __unsafe_unretained surfaceTileSector = [surfaceTile sector];
 
             for (NSUInteger i = 0; i < [terrainTiles count]; i++)
             {
-                WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
+                WWTerrainTile* __unsafe_unretained terrainTile = [terrainTiles objectAtIndex:i];
                 if ([[terrainTile sector] intersects:surfaceTileSector])
                 {
                     [tess beginRendering:dc tile:terrainTile];
@@ -116,12 +116,12 @@
     {
         for (NSUInteger i = 0; i < [terrainTiles count]; i++)
         {
-            WWTerrainTile* terrainTile = [terrainTiles objectAtIndex:i];
-            WWSector* terrainTileSector = [terrainTile sector];
+            WWTerrainTile* __unsafe_unretained terrainTile = [terrainTiles objectAtIndex:i];
+            WWSector* __unsafe_unretained terrainTileSector = [terrainTile sector];
             [tess beginRendering:dc tile:terrainTile];
             @try
             {
-                for (id <WWSurfaceTile> surfaceTile in surfaceTiles)
+                for (id <WWSurfaceTile> __unsafe_unretained surfaceTile in surfaceTiles)
                 {
                     if ([[surfaceTile sector] intersects:terrainTileSector] && [surfaceTile bind:dc])
                     {
@@ -145,29 +145,29 @@
     }
 }
 
-- (void) beginRendering:(WWDrawContext*)dc opacity:(float)opacity
+- (void) beginRendering:(WWDrawContext* __unsafe_unretained)dc opacity:(float)opacity
 {
     [dc bindProgramForKey:[WWSurfaceTileRendererProgram programKey] class:[WWSurfaceTileRendererProgram class]];
 
-    WWSurfaceTileRendererProgram* program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
+    WWSurfaceTileRendererProgram* __unsafe_unretained program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
     [program loadTextureUnit:GL_TEXTURE0];
     [program loadOpacity:opacity];
 }
 
-- (void) endRendering:(WWDrawContext*)dc
+- (void) endRendering:(WWDrawContext* __unsafe_unretained)dc
 {
     [dc bindProgram:nil];
 }
 
-- (void) applyTileState:(WWDrawContext*)dc terrainTile:(WWTerrainTile*)terrainTile surfaceTile:(id <WWSurfaceTile>)surfaceTile
+- (void) applyTileState:(WWDrawContext* __unsafe_unretained)dc terrainTile:(WWTerrainTile* __unsafe_unretained)terrainTile surfaceTile:(id <WWSurfaceTile> __unsafe_unretained)surfaceTile
 {
-    WWSurfaceTileRendererProgram* program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
+    WWSurfaceTileRendererProgram* __unsafe_unretained program = (WWSurfaceTileRendererProgram*) [dc currentProgram];
 
-    WWSector* terrainSector = [terrainTile sector];
+    WWSector* __unsafe_unretained terrainSector = [terrainTile sector];
     double terrainDeltaLon = RADIANS([terrainSector deltaLon]);
     double terrainDeltaLat = RADIANS([terrainSector deltaLat]);
 
-    WWSector* surfaceSector = [surfaceTile sector];
+    WWSector* __unsafe_unretained surfaceSector = [surfaceTile sector];
     double surfaceDeltaLon = RADIANS([surfaceSector deltaLon]);
     double surfaceDeltaLat = RADIANS([surfaceSector deltaLat]);
 

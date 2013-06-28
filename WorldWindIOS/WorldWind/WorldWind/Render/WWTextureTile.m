@@ -41,9 +41,9 @@
     return 8 + [_imagePath length] + [super sizeInBytes];
 }
 
-- (BOOL) bind:(WWDrawContext*)dc
+- (BOOL) bind:(WWDrawContext* __unsafe_unretained)dc
 {
-    WWTexture* texture = [[dc gpuResourceCache] textureForKey:_imagePath];
+    WWTexture* __unsafe_unretained texture = [[dc gpuResourceCache] textureForKey:_imagePath];
     if (texture != nil)
     {
         return [texture bind:dc];
@@ -57,16 +57,16 @@
     return NO;
 }
 
-- (void) applyInternalTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
+- (void) applyInternalTransform:(WWDrawContext* __unsafe_unretained)dc matrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (_fallbackTile != nil && [[dc gpuResourceCache] textureForKey:_imagePath] == nil)
     {
         // Must apply a texture transform to map the tile's sector into its fallback's image.
-        [self applyFallbackTransform:dc matrix:matrix];
+        [self applyFallbackTransform:matrix];
     }
 }
 
-- (void) applyFallbackTransform:(WWDrawContext*)dc matrix:(WWMatrix*)matrix
+- (void) applyFallbackTransform:(WWMatrix* __unsafe_unretained)matrix
 {
     int deltaLevel = [[self level] levelNumber] - [[_fallbackTile level] levelNumber];
     if (deltaLevel <= 0)
@@ -86,7 +86,7 @@
     // matrix.multiply(trans);
     // matrix.multiply(scale);
 
-    [matrix multiply: sxy  m01:0 m02:0 m03:tx
+    [matrix multiply:sxy m01:0 m02:0 m03:tx
                  m10:0 m11:sxy m12:0 m13:ty
                  m20:0 m21:0 m22:1 m23:0
                  m30:0 m31:0 m32:0 m33:1];

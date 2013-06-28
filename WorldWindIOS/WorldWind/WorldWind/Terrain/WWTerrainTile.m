@@ -56,7 +56,7 @@
             + (4 + 128) // transformation matrix
             + (4) // numPoints
             + (4 + (tileHeight + 3) * (tileWidth + 3) * 3 * 4) // points
-            + 4; // timestamp pointer
+            + 4; // timestamp
 
     return size + [super sizeInBytes];
 }

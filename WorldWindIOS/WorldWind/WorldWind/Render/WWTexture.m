@@ -98,7 +98,7 @@
     }
 }
 
-- (BOOL) bind:(WWDrawContext*)dc
+- (BOOL) bind:(WWDrawContext* __unsafe_unretained)dc
 {
     if (_textureID != 0)
     {
