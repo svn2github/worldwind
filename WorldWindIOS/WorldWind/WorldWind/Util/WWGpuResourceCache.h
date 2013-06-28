@@ -19,38 +19,38 @@
 * resource caches.
 */
 @interface WWGpuResourceCacheEntry : NSObject <WWCacheable>
-
-/// The type of GPU resource. One of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
-@property(readonly) NSString* resourceType;
-
-/// The actual resource.
-@property(readonly) id resource;
-
-/// The size of the resource.
-@property long resourceSize;
+{
+@public
+    // The actual resource.
+    id resource;
+    // The type of GPU resource. One of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
+    NSString* resourceType;
+    // The size of the resource.
+    long resourceSize;
+}
 
 /**
 * Initialize the entry with a specified resource.
 *
 * Note: The resource size must be set separately.
 *
-* @param resource The resource ID.
-* @param resourceType The resource type, one of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
+* @param object The resource object.
+* @param type The resource type, one of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
 *
 * @return The initialized resource cache entry.
 */
-- (WWGpuResourceCacheEntry*) initWithResource:(id)resource resourceType:(NSString*)resourceType;
+- (WWGpuResourceCacheEntry*) initWithResource:(id)object resourceType:(NSString*)type;
 
 /**
 * Initialize the entry with a specified resource.
 *
-* @param resource The resource ID.
-* @param resourceType The resource type, one of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
+* @param object The resource object.
+* @param type The resource type, one of WW_GPU_PROGRAM, WW_GPU_TEXTURE or WW_GPU_VBO.
 * @param size The resource size, in bytes.
 *
 * @return The initialized resource cache entry.
 */
-- (WWGpuResourceCacheEntry*) initWithResource:(id)resource resourceType:(NSString*)resourceType size:(long)size;
+- (WWGpuResourceCacheEntry*) initWithResource:(id)object resourceType:(NSString*)type size:(long)size;
 
 @end
 

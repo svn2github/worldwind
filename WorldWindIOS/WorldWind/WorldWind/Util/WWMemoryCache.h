@@ -14,29 +14,28 @@
 * Provides a class for memory cache entries. Used internally only by WWMemoryCache.
 */
 @interface WWMemoryCacheEntry : NSObject
-
-/// The entry's cache key.
-@property(readonly) id <NSCopying> key;
-
-/// The entry's value.
-@property(readonly) id value;
-
-/// The entry's size in bytes.
-@property(readonly) long size;
-
-/// The time the entry was last used.
-@property NSTimeInterval lastUsed;
+{
+@public
+    // The entry's cache key.
+    id <NSCopying> key;
+    // The entry's value.
+    id value;
+    // The entry's size in bytes.
+    long size;
+    // The cache counter value when this entry was last used.
+    uint64_t lastUsed;
+}
 
 /**
 * Initializes the memory cache entry.
 *
-* @param key The entry's cache key.
-* @param value The entry's value.
-* @param size The size of the entry's value.
+* @param entryKey The entry's cache key.
+* @param entryValue The entry's value.
+* @param entrySize The size of the entry's value.
 *
 * @return The initialized entry.
 */
-- (WWMemoryCacheEntry*) initWithKey:(id <NSCopying>)key value:(id)value size:(long)size;
+- (WWMemoryCacheEntry*) initWithKey:(id <NSCopying>)entryKey value:(id)entryValue size:(long)entrySize;
 
 - (NSComparisonResult) compareTo:(WWMemoryCacheEntry*)other;
 
@@ -48,9 +47,16 @@
 @interface WWMemoryCache : NSObject <NSCacheDelegate>
 {
 @protected
+    // Dictionary of cache entries. Each entry's lastUsed ivar is used to indicate the least recently used entry.
     NSMutableDictionary* entries;
+    // List of cache listeners notified when a cache entry is removed.
     NSMutableArray* listeners;
-    NSObject* lock;
+    // POSIX mutex lock for synchronizing critical sections of cache methods. Faster than NSLock and @synchronized.
+    pthread_mutex_t mutex;
+    // Cache counter used to indicate the least recently used entry. Incremented each time an entry is accessed and
+    // assigned to the associated entry's lastUsed ivar. Overflows after 500,000 years when the cache is accessed
+    // 1,000,000 times per second.
+    uint64_t entryUsedCounter;
 }
 
 /// @name Memory Cache Attributes
