@@ -22,8 +22,8 @@
 /// The layer in question.
 @property(nonatomic, readonly) id layer;
 
-/// The WMS layer name.
-@property(nonatomic, readonly) NSString* layerName;
+/// The WMS layer names.
+@property(nonatomic, readonly) NSArray* layerNames;
 
 /// The WMS service address.
 @property(nonatomic, readonly) NSString* serviceAddress;
@@ -35,11 +35,11 @@
 * by adding this instance to an operation queue.
 *
 * @param layer The layer whose expiration is of interest.
-* @param layerName The WMS layer name of the layer of interest.
+* @param layerNames The WMS layer names of the layers of interest.
 * @param serviceAddress The WMS server's address.
 */
 - (WWWMSLayerExpirationRetriever*) initWithLayer:(id)layer
-                                     layerName:(NSString*)layerName
-                                serviceAddress:(NSString*)serviceAddress;
+                                      layerNames:(NSArray*)layerNames
+                                  serviceAddress:(NSString*)serviceAddress;
 
 @end

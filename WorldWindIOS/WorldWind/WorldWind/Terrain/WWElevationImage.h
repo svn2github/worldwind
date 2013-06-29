@@ -41,6 +41,10 @@
 /// The memory cache to add this elevation data to when its image file is read.
 @property(nonatomic, readonly) WWMemoryCache* memoryCache;
 
+/// The date and time of the tile's elevations file in the file cache when the elevations were last loaded into a
+// texture. Indicates when the elevations were last downloaded.
+@property (nonatomic, readonly) NSDate* fileModificationDate;
+
 /// @name Initializing an Elevation Image
 
 /**

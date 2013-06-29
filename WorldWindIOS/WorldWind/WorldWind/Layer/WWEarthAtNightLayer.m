@@ -35,9 +35,10 @@
                                                                        wmsVersion:@"1.3.0"];
     [self setUrlBuilder:urlBuilder];
 
+    NSArray* layerNames = [[NSArray alloc] initWithObjects:layerName, nil];
     WWWMSLayerExpirationRetriever* expirationChecker =
             [[WWWMSLayerExpirationRetriever alloc] initWithLayer:self
-                                                       layerName:layerName
+                                                      layerNames:layerNames
                                                   serviceAddress:serviceAddress];
     [[WorldWind loadQueue] addOperation:expirationChecker];
 

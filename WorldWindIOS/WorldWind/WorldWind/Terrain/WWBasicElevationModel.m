@@ -383,7 +383,7 @@
 
     if ([self isTileImageInMemory:tile])
     {
-        [currentTiles addObject:tile];
+        [self addToCurrentTiles:tile];
     }
     else
     {
@@ -416,7 +416,7 @@
 
         if ([self isTileImageInMemory:tile])
         {
-            [currentTiles addObject:tile]; // Have an ancestor tile with an in-memory image.
+            [self addToCurrentTiles:tile]; // Have an ancestor tile with an in-memory image.
             return;
         }
 
@@ -427,12 +427,47 @@
     // No ancestor tiles have an in-memory image. Retrieve the ancestor tile corresponding for the first level, and
     // add it. We add the necessary tiles to provide coverage over the requested sector in order to accurately return
     // whether or not this elevation model has data for the entire sector.
-    [currentTiles addObject:tile];
+    [self addToCurrentTiles:tile];
 
     if (retrieveTiles)
     {
         [self loadOrRetrieveTileImage:tile];
     }
+}
+
+- (void) addToCurrentTiles:(WWElevationTile*)tile
+{
+    [currentTiles addObject:tile];
+
+    // If the tile's elevations have expired, cause it to be re-retrieved. Note that the current,
+    // expired elevations are still used until the updated ones arrive.
+    if (_expiration != nil && [self isTileImageExpired:tile])
+    {
+        [self loadOrRetrieveTileImage:tile];
+    }
+}
+
+- (BOOL)isTileImageExpired:(WWElevationTile*)tile
+{
+    if (_expiration == nil || [_expiration timeIntervalSinceNow] > 0)
+    {
+        return NO; // no expiration time or it's in the future
+    }
+
+    return [[[tile image] fileModificationDate] timeIntervalSinceDate:_expiration] < 0;
+}
+
+- (BOOL) isTileImageOnDiskExpired:(WWElevationTile*)tile
+{
+    if (_expiration != nil)
+    {
+        // Determine whether the disk image has expired.
+        NSDictionary* fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[tile imagePath] error:nil];
+        NSDate* fileDate = [fileAttrs objectForKey:NSFileModificationDate];
+        return [fileDate timeIntervalSinceDate:_expiration] < 0;
+    }
+
+    return NO;
 }
 
 - (WWElevationTile*) tileForLevelNumber:(int)levelNumber row:(int)row column:(int)column cache:(WWMemoryCache*)cache
@@ -470,6 +505,15 @@
 {
     if ([self isTileImageOnDisk:tile])
     {
+        if ([self isTileImageOnDiskExpired:tile])
+        {
+            [self retrieveTileImage:tile]; // Existing image file is out of date, so initiate retrieval of an up-to-date one.
+
+            if ([self isTileImageInMemory:tile])
+            {
+                return; // Out-of-date tile is in memory so don't load the old image file again.
+            }
+        }
         [self loadTileImage:tile];
     }
     else
@@ -517,7 +561,7 @@
         // retrievals initiated when a retrieval completes between the time this thread checks for the file on disk and
         // checks the currentRetrievals list.
 
-        if ([self isTileImageOnDisk:tile])
+        if ([self isTileImageOnDisk:tile] && ![self isTileImageOnDiskExpired:tile])
         {
             return WW_LOCAL;
         }

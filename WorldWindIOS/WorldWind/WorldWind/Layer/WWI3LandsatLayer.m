@@ -36,10 +36,11 @@
     [self setUrlBuilder:urlBuilder];
     [self setMaxActiveAltitude:300e3];
 
+    NSArray* layerNames = [[NSArray alloc] initWithObjects:layerName, nil];
     WWWMSLayerExpirationRetriever* expirationChecker =
             [[WWWMSLayerExpirationRetriever alloc] initWithLayer:self
-                                                     layerName:layerName
-                                                serviceAddress:serviceAddress];
+                                                      layerNames:layerNames
+                                                  serviceAddress:serviceAddress];
     [[WorldWind loadQueue] addOperation:expirationChecker];
 
     return self;

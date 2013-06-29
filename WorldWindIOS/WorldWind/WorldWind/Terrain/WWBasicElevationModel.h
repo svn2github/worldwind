@@ -82,6 +82,9 @@
 /// minAndMaxElevationsForSector:result:.
 @property (nonatomic) double maxElevation;
 
+/// Indicates when this model's data tiles should be considered invalid and re-retrieved from the associated server.
+@property (nonatomic) NSDate* expiration;
+
 /// @name Initializing Elevation Models
 
 /**

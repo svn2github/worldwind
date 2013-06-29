@@ -15,7 +15,7 @@
 @implementation WWWMSLayerExpirationRetriever
 
 - (WWWMSLayerExpirationRetriever*) initWithLayer:(id)layer
-                                       layerName:(NSString*)layerName
+                                      layerNames:(NSArray*)layerNames
                                   serviceAddress:(NSString*)serviceAddress
 {
     if (layer == nil)
@@ -23,9 +23,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer is nil")
     }
 
-    if (layerName == nil)
+    if (layerNames == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer name is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer names is nil")
     }
 
     if (serviceAddress == nil)
@@ -36,7 +36,7 @@
     self = [super init];
 
     _layer = layer;
-    _layerName = layerName;
+    _layerNames = layerNames;
     _serviceAddress = serviceAddress;
 
     return self;
@@ -58,21 +58,44 @@
 {
     if (capabilities != nil)
     {
-        NSDictionary* layerCaps = [capabilities namedLayer:_layerName];
+        NSDate* layerLastUpdateTime = [self determineLastUpdateDate:capabilities];
+        if (layerLastUpdateTime != nil)
+        {
+            // Note that the "layer" may be a tiled image layer or an elevation model.
+            [_layer setExpiration:layerLastUpdateTime];
+
+            // Request a redraw so the layer can updated itself.
+            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        }
+    }
+}
+
+- (NSDate*) determineLastUpdateDate:(id)capabilities
+{
+    NSDate* date = nil;
+
+    for (NSString* layerName in _layerNames)
+    {
+        NSDictionary* layerCaps = [capabilities namedLayer:layerName];
         if (layerCaps != nil)
         {
             NSDate* layerLastUpdateTime = [WWWMSCapabilities layerLastUpdateTime:layerCaps];
             if (layerLastUpdateTime != nil)
             {
-                // Note that the "layer" may be a tiled image layer or an elevation model.
-                [_layer setExpiration:layerLastUpdateTime];
-
-                // Request a redraw so the layer can updated itself.
-                NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-                [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+                if (date == nil)
+                {
+                    date = layerLastUpdateTime;
+                }
+                else
+                {
+                    date = [date laterDate:layerLastUpdateTime];
+                }
             }
         }
     }
+
+    return date;
 }
 
 @end

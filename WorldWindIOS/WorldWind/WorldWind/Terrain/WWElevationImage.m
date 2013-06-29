@@ -281,6 +281,9 @@
 - (void) loadImage
 {
     imageData = [[NSData alloc] initWithContentsOfFile:_filePath];
+
+    NSDictionary* fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:_filePath error:nil];
+    _fileModificationDate = [fileAttributes objectForKey:NSFileModificationDate];
 }
 
 @end
