@@ -6,9 +6,9 @@
  */
 
 #import "FrameStatisticsController.h"
-#import "WorldWindView.h"
-#import "WorldWindConstants.h"
-#import "WWSceneController.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WorldWindConstants.h"
 
 #define CONTROLS_SECTION (-1) // not currently used
 #define FRAME_SECTION (0)
@@ -57,6 +57,7 @@
     else
         return nil;
 }
+
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     static NSString* cellID = @"cellForItemDisplay";
@@ -89,7 +90,7 @@
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellID];
         }
 
-        WWSceneController* sc = [_wwv sceneController];
+        WWFrameStatistics* frameStats = [_wwv frameStatistics];
         NSString* name = nil;
         NSString* value = nil;
 
@@ -97,12 +98,12 @@
         {
             case 0:
                 name = @"Avg Time";
-                value = [[NSString alloc] initWithFormat:@"%d ms", (int) (1000 * [sc frameTimeAverage])];
+                value = [[NSString alloc] initWithFormat:@"%d ms", (int) (1000 * [frameStats frameTimeAverage])];
                 break;
 
             case 1:
                 name = @"Rate";
-                value = [[NSString alloc] initWithFormat:@"%d Hz", (int) [sc frameRateAverage]];
+                value = [[NSString alloc] initWithFormat:@"%d Hz", (int) [frameStats frameRateAverage]];
                 break;
 
             default:
@@ -121,7 +122,7 @@
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellID];
         }
 
-        WWSceneController* sc = [_wwv sceneController];
+        WWFrameStatistics* frameStats = [_wwv frameStatistics];
         NSString* name = nil;
         NSString* value = nil;
 
@@ -129,17 +130,17 @@
         {
             case 0:
                 name = @"Image";
-                value = [[NSString alloc] initWithFormat:@"%d", [sc numImageTiles]];
+                value = [[NSString alloc] initWithFormat:@"%d", [frameStats imageTileCount]];
                 break;
 
             case 1:
                 name = @"Terrain";
-                value = [[NSString alloc] initWithFormat:@"%d", [sc numElevationTiles]];
+                value = [[NSString alloc] initWithFormat:@"%d", [frameStats terrainTileCount]];
                 break;
 
             case 2:
                 name = @"Rendered";
-                value = [[NSString alloc] initWithFormat:@"%d", [sc numRenderedTiles]];
+                value = [[NSString alloc] initWithFormat:@"%d", [frameStats renderedTileCount]];
                 break;
 
             default:

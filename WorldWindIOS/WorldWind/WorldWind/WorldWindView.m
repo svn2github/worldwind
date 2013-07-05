@@ -7,10 +7,11 @@
 
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/Navigate/WWLookAtNavigator.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WorldWindView
 {
@@ -78,6 +79,7 @@
 
         _sceneController = [[WWSceneController alloc] init];
         _navigator = [[WWLookAtNavigator alloc] initWithView:self];
+        _frameStatistics = [[WWFrameStatistics alloc] init];
 
         // Indicate that iOS should maintain the WorldWindView's proportions when its size changes. This prevents the
         // scene from distorting when WorldWindView is rotated in response to a device orientation change. Without
@@ -136,6 +138,8 @@
 
 - (void) drawView
 {
+    [_frameStatistics beginFrame];
+
     @synchronized (self->redrawRequestLock)
     {
         [self setRedrawRequested:NO];
@@ -148,18 +152,23 @@
     // OpenGL viewport. We use the viewport instead of the bounds because the viewport contains the actual render buffer
     // dimension, whereas the bounds contain this view's dimension in screen points. When a WorldWindView is configured
     // for a retina display, the bounds do not represent the actual OpenGL render buffer resolution.
+    [self.sceneController setFrameStatistics:_frameStatistics];
     [self.sceneController setNavigatorState:[[self navigator] currentState]];
     [self.sceneController render:self.viewport];
 
     // Requests that Core Animation display the renderbuffer currently bound to GL_RENDERBUFFER. This assumes that the
     // color renderbuffer is currently bound.
+    NSTimeInterval beginTime = [NSDate timeIntervalSinceReferenceDate];
     [self.context presentRenderbuffer:GL_RENDERBUFFER];
+    [_frameStatistics setDisplayRenderbufferTime:[NSDate timeIntervalSinceReferenceDate] - beginTime];
 
     if (_drawContinuously)
     {
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
         [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
     }
+
+    [_frameStatistics endFrame];
 }
 
 - (WWPickedObjectList*) pick:(CGPoint)pickPoint

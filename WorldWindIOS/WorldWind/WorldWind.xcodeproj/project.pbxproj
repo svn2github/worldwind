@@ -199,6 +199,7 @@
 		CC8CF11A6FDFD05C06E27FEF /* WWPointPlacemarkAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAA9D70EA3EB7B912854 /* WWPointPlacemarkAttributes.m */; };
 		CC8CF1DC410C2407ACF32D39 /* WWTileKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */; };
 		CC8CF26EA05AFC8A913C72CC /* WWLine.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5DAF750A3F415928ECA /* WWLine.m */; };
+		CC8CF2CE5D811272FB790AC0 /* WWFrameStatistics.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */; };
 		CC8CF2EE8E5A08B1123176B1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */; };
 		CC8CF2F412B8DB39F5A60120 /* WWZeroElevationModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF3D8B4D8C32BEED780E6 /* WWZeroElevationModel.h */; };
 		CC8CF356057F68E8E2E539DB /* WWFirstPersonNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF92F1ACB74005B86DA9B /* WWFirstPersonNavigator.h */; };
@@ -211,6 +212,7 @@
 		CC8CF5ABE16E4806E44CEB63 /* WWEarthElevationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFACBED8843206FD801C8 /* WWEarthElevationModel.m */; };
 		CC8CF5AE663CF8D85ACE2CB9 /* WWBasicNavigatorState.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */; };
 		CC8CF6375A098A256F29B363 /* WWNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */; };
+		CC8CF65E7ACDED57AF58907E /* WWFrameStatistics.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFEFF4F705256C4323966 /* WWFrameStatistics.h */; };
 		CC8CF6602C357C83980CF6FF /* WWBulkRetrieverDataSource.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF9E00A792C5A2E9CBA7C /* WWBulkRetrieverDataSource.h */; };
 		CC8CF69DB9D57A45EC100D86 /* WWPointPlacemarkAttributes.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF62C314380EC4B91F491 /* WWPointPlacemarkAttributes.h */; };
 		CC8CF6A9BC4FA2A46CCF142F /* WWMath.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFB028A4DEB1340F1D0AF /* WWMath.h */; };
@@ -344,6 +346,7 @@
 				CC8CF766AA611E3CADD3CBF7 /* WWBasicProgram.h in CopyFiles */,
 				CC8CFAA5DD3FC9E8BA9BDD61 /* WWBasicTextureProgram.h in CopyFiles */,
 				CC8CFB27ABD25DCDDEE1E8AC /* WWSurfaceTileRendererProgram.h in CopyFiles */,
+				CC8CF65E7ACDED57AF58907E /* WWFrameStatistics.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,8 +561,10 @@
 		CC8CFE8071FABB0AC0F3A856 /* WWEarthElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWEarthElevationModel.h; sourceTree = "<group>"; };
 		CC8CFE8FB5834A95EC50AF64 /* WWResourceLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWResourceLoader.m; sourceTree = "<group>"; };
 		CC8CFEA541CCE024B38C0DEC /* WWDAFIFLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWDAFIFLayer.h; sourceTree = "<group>"; };
+		CC8CFEFF4F705256C4323966 /* WWFrameStatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWFrameStatistics.h; sourceTree = "<group>"; };
 		CC8CFF1CC1B22282FDE20451 /* WWLookAtNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLookAtNavigator.h; sourceTree = "<group>"; };
 		CC8CFF959A1EF5768F701391 /* WWFirstPersonNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWFirstPersonNavigator.m; sourceTree = "<group>"; };
+		CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWFrameStatistics.m; sourceTree = "<group>"; };
 		CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -672,6 +677,8 @@
 				CC8CF9E00A792C5A2E9CBA7C /* WWBulkRetrieverDataSource.h */,
 				CC8CFABC7B7BE5F87FBC2022 /* WWSize.h */,
 				CC8CF803ECDEA0FDA984E2B8 /* WWSize.m */,
+				CC8CFEFF4F705256C4323966 /* WWFrameStatistics.h */,
+				CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1133,6 +1140,7 @@
 				CC8CF8BEFC3CA03A86CD44F9 /* WWBasicProgram.m in Sources */,
 				CC8CFE52F78D04F6B50B857E /* WWBasicTextureProgram.m in Sources */,
 				CC8CF4C868F900B101F1A759 /* WWSurfaceTileRendererProgram.m in Sources */,
+				CC8CF2CE5D811272FB790AC0 /* WWFrameStatistics.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

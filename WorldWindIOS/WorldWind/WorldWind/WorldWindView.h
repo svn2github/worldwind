@@ -6,14 +6,13 @@
  */
 
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
-#import <OpenGLES/ES2/gl.h>
 #import "WorldWind/Util/WWDisposable.h"
 
-@class WWSceneController;
-@protocol WWNavigator;
+@class WWFrameStatistics;
 @class WWPickedObjectList;
+@class WWSceneController;
 @class WWVec4;
+@protocol WWNavigator;
 
 /**
 * Provides a view with a World Wind virtual globe. This is the top-level World Wind object and the fundamental object
@@ -41,7 +40,6 @@
 * to the default notification center. See the implementation of WorldWindView.requestRedraw for an example of how to
 * form and send the notification. The benefit of the notification approach is that the application object requesting
 * the redraw need not have a reference to the WorldWindView object.
-*
 */
 @interface WorldWindView : UIView <WWDisposable>
 
@@ -76,6 +74,10 @@
 
 /// The view's OpenGL context. Applications typically do not need to be aware of this object.
 @property(nonatomic, readonly) EAGLContext* context;
+
+/// The view's frame statistics associated with the most recent frame. Frame statistics provides measurements indicating
+/// the view's current and average rendering performance.
+@property(nonatomic, readonly) WWFrameStatistics* frameStatistics;
 
 /// A flag indicating that a redraw has been requested. Applications typically do not need to be aware of this object.
 @property BOOL redrawRequested;

@@ -210,30 +210,16 @@
 /// @name Operations on Tiles
 
 /**
-* Updates this tile's reference points to reflect current state. TODO: Remove this method; it currently does nothing.
-*
-* This tile's reference points are the Cartesian points corresponding to this tile's corner and center points. These
-* must be up-to-date for certain operations such as computing this tile's extent or whether it should be subdivided.
-*
-* @param globe The globe used to compute this tile's reference points.
-* @param verticalExaggeration The current vertical exaggeration.
-*
-* @exception NSInvalidArgumentException If the globe is nil.
-*/
-- (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
-
-/**
-* Updates this tile's extent (bounding volume) to contain this tile's sector on the current globe, including
-* any associated elevations.
+* Updates this tile's extent (bounding volume) and reference points according to this tile's sector on the current
+* globe.
 *
 * This tile's extent is invalid and must be recomputed whenever the globe's elevations or the vertical exaggeration
 * changes. Therefore updateExtent must be called once per frame before the extent is used. updateExtent intelligently
 * determines when it is necessary to recompute the extent, and does nothing if the elevations or the vertical
 * exaggeration have not changed since the last call.
 *
-* @param globe The globe used to compute this tile's extent.
-* @param verticalExaggeration The vertical exaggeration to use when computing the extent.
+* @param dc The draw context used to update this tile's extent and reference points.
 */
-- (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration;
+- (void) update:(WWDrawContext*)dc;
 
 @end

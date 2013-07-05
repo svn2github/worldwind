@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
+#import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWUtil.h"
@@ -112,6 +114,7 @@
     }
 
     [self loadGL];
+    [[dc frameStatistics] incrementTextureLoadCount:1];
 
     return _textureID != 0;
 }

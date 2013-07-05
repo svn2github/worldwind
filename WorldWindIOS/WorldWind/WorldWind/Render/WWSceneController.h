@@ -9,13 +9,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES2/gl.h>
 
-@class WWGlobe;
-@class WWLayerList;
 @class WWDrawContext;
+@class WWFrameStatistics;
+@class WWGlobe;
 @class WWGpuResourceCache;
-@protocol WWNavigatorState;
-@class WWVec4;
+@class WWLayerList;
 @class WWPickedObjectList;
+@class WWVec4;
+@protocol WWNavigatorState;
 
 /**
 * Directs the rendering of the globe and associated layers. The scene controller causes the globe's terrain to be
@@ -27,10 +28,6 @@
 {
 @protected
     WWDrawContext* drawContext;
-    int frameCount;
-    NSTimeInterval frameTime;
-    NSTimeInterval frameTimeBase;
-    NSTimeInterval frameTimeCumulative;
 }
 
 /// @name Scene Controller Attributes
@@ -43,27 +40,8 @@
 @property(nonatomic) id <WWNavigatorState> navigatorState;
 /// The GPU resource cache in which to hold and manage all OpenGL resources.
 @property(readonly, nonatomic) WWGpuResourceCache* gpuResourceCache;
-
-/// The minimum frame time over the most recent two seconds.
-@property(nonatomic, readonly) NSTimeInterval frameTimeMin;
-
-/// The average frame time over the most recent two seconds.
-@property(nonatomic, readonly) NSTimeInterval frameTimeAverage;
-
-/// The maximum frame time over the most recent two seconds.
-@property(nonatomic, readonly) NSTimeInterval frameTimeMax;
-
-/// The average frame rate over the most recent two seconds.
-@property(nonatomic, readonly) NSTimeInterval frameRateAverage;
-
-/// The number of elevation tiles in the most recent frame.
-@property (nonatomic, readonly) int numElevationTiles;
-
-/// The number of WWTiledImageLayer tiles in the most recent frame.
-@property (nonatomic, readonly) int numImageTiles;
-
-/// The number of rendered tiles in the most recent frame.
-@property (nonatomic, readonly) int numRenderedTiles;
+/// The frame statistics associated with the most recent frame.
+@property(nonatomic) WWFrameStatistics* frameStatistics;
 
 /// @name Initializing a Scene Controller
 

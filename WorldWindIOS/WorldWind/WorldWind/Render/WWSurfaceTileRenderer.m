@@ -15,8 +15,9 @@
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
 #import "WorldWind/Terrain/WWTessellator.h"
-#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWSurfaceTileRenderer
@@ -85,7 +86,7 @@
     {
         [tess endRendering:dc];
         [self endRendering:dc];
-        [dc setNumRenderedTiles:[dc numRenderedTiles] + tileCount];
+        [[dc frameStatistics] incrementRenderedTileCount:tileCount];
     }
 }
 
@@ -141,7 +142,7 @@
     {
         [tess endRendering:dc];
         [self endRendering:dc];
-        [dc setNumRenderedTiles:[dc numRenderedTiles] + tileCount];
+        [[dc frameStatistics] incrementRenderedTileCount:tileCount];
     }
 }
 

@@ -6,17 +6,18 @@
  */
 
 #import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Terrain/WWGLobe.h"
-#import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWLayer.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
 #import "WorldWind/Render/WWDrawContext.h"
+#import "WorldWind/Render/WWOrderedRenderable.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/Terrain/WWTessellator.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Render/WWOrderedRenderable.h"
-#import "WorldWind/Terrain/WWTessellator.h"
-#import "WorldWind/Pick/WWPickedObjectList.h"
-#import "WorldWind/Pick/WWPickedObject.h"
 
 @implementation WWSceneController
 
@@ -79,6 +80,7 @@
     [self->drawContext setGlobe:[self globe]];
     [self->drawContext setNavigatorState:_navigatorState];
     [self->drawContext setVerticalExaggeration:1.0];
+    [self->drawContext setFrameStatistics:_frameStatistics];
     [self->drawContext update];
 }
 
@@ -106,8 +108,6 @@
 
 - (void) beginFrame:(CGRect)viewport
 {
-    [self beginStatistics];
-
     glViewport((int) viewport.origin.x, (int) viewport.origin.y, (int) viewport.size.width, (int) viewport.size.height);
 
     if ([drawContext pickingMode])
@@ -134,8 +134,6 @@
     glBlendFunc(GL_ONE, GL_ZERO);
     glDepthFunc(GL_LESS);
     glClearColor(0, 0, 0, 1);
-
-    [self endStatistics];
 }
 
 - (void) clearFrame
@@ -152,6 +150,8 @@
 
 - (void) createTerrain
 {
+    NSTimeInterval beginTime = [NSDate timeIntervalSinceReferenceDate];
+
     WWTerrainTileList* surfaceGeometry = [_globe tessellate:self->drawContext];
 
     // If there's no surface geometry, just log a warning and keep going. Some layers may have meaning without it.
@@ -162,7 +162,9 @@
 
     [self->drawContext setSurfaceGeometry:surfaceGeometry];
     [self->drawContext setVisibleSector:surfaceGeometry.sector];
-    [self->drawContext setNumElevationTiles:[surfaceGeometry count]];
+
+    [_frameStatistics setTessellationTime:[NSDate timeIntervalSinceReferenceDate] - beginTime];
+    [_frameStatistics setTerrainTileCount:[surfaceGeometry count]];
 }
 
 - (void) doDraw
@@ -182,6 +184,8 @@
 
 - (void) drawLayers
 {
+    NSTimeInterval beginTime = [NSDate timeIntervalSinceReferenceDate];
+
     int nLayers = _layers.count;
     for (NSUInteger i = 0; i < nLayers; i++)
     {
@@ -203,11 +207,13 @@
         }
     }
 
-    [drawContext setCurrentLayer:nil];
+    [_frameStatistics setLayerRenderingTime:[NSDate timeIntervalSinceReferenceDate] - beginTime];
 }
 
 - (void) drawOrderedRenderables
 {
+    NSTimeInterval beginTime = [NSDate timeIntervalSinceReferenceDate];
+
     // Sort the ordered renderable list to prepare it for
     [drawContext sortOrderedRenderables];
 
@@ -232,6 +238,8 @@
     }
 
     [drawContext setOrderedRenderingMode:NO];
+
+    [_frameStatistics setOrderedRenderingTime:[NSDate timeIntervalSinceReferenceDate] - beginTime];
 }
 
 - (void) resolveTopPick
@@ -260,50 +268,6 @@
             }
         }
     }
-}
-
-- (void) beginStatistics
-{
-    ++frameCount;
-    frameTime = [NSDate timeIntervalSinceReferenceDate];
-}
-
-- (void) endStatistics
-{
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    frameTime = now - frameTime;
-    frameTimeCumulative += frameTime;
-
-    if (frameTime < _frameTimeMin)
-        _frameTimeMin = frameTime;
-    if (frameTime > _frameTimeMax)
-            _frameTimeMax = frameTime;
-
-    if (now - frameTimeBase > 2)
-    {
-        _frameRateAverage = frameCount / (now - frameTimeBase);
-        _frameTimeAverage = frameTimeCumulative / frameCount;
-        frameTimeBase = now;
-        frameCount = 0;
-        frameTimeCumulative = 0;
-        _frameTimeMin = DBL_MAX;
-        _frameTimeMax = -DBL_MAX;
-    }
-}
-
-- (int) numImageTiles
-{
-    return [drawContext numImageTiles];
-}
-
-- (int) numElevationTiles
-{
-    return [drawContext numElevationTiles];
-}
-
-- (int) numRenderedTiles
-{
-    return [drawContext numRenderedTiles];
 }
 
 @end

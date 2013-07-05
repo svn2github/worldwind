@@ -6,9 +6,9 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @class WorldWindView;
-
 
 @interface FrameStatisticsController : UITableViewController
 {

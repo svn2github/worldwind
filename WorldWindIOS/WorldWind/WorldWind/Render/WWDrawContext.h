@@ -9,25 +9,26 @@
 #import <CoreGraphics/CGGeometry.h>
 #import <OpenGLES/ES2/gl.h>
 
+@class WWFrameStatistics;
 @class WWGlobe;
-@class WWLayerList;
-@class WWTerrainTileList;
-@class WWSector;
 @class WWGpuProgram;
-@class WWSurfaceTileRenderer;
 @class WWGpuResourceCache;
-@class WWPosition;
+@class WWLayer;
+@class WWLayerList;
 @class WWMatrix;
-@protocol WWNavigatorState;
+@class WWPickedObject;
+@class WWPickedObjectList;
+@class WWPosition;
+@class WWSector;
+@class WWSurfaceTileRenderer;
+@class WWTerrainTile;
+@class WWTerrainTileList;
+@class WWVec4;
 @protocol WWExtent;
+@protocol WWNavigatorState;
 @protocol WWOrderedRenderable;
 @protocol WWOutlinedShape;
 @protocol WWTerrain;
-@class WWVec4;
-@class WWPickedObject;
-@class WWPickedObjectList;
-@class WWTerrainTile;
-@class WWLayer;
 
 /**
 * Provides current state during rendering. The current draw context is passed to most rendering methods in order to
@@ -109,14 +110,8 @@
 /// The current layer being rendered.
 @property (nonatomic) WWLayer* currentLayer;
 
-/// The number of elevation tiles in the most recent frame.
-@property (nonatomic) int numElevationTiles;
-
-/// The number of WWTiledImageLayer tiles in the most recent frame.
-@property (nonatomic) int numImageTiles;
-
-/// The number of rendered tiles in the most recent frame.
-@property (nonatomic) int numRenderedTiles;
+/// The frame statistics associated with the most recent frame.
+@property (nonatomic) WWFrameStatistics* frameStatistics;
 
 /// @name Initializing a Draw Context
 

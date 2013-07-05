@@ -12,6 +12,7 @@
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Util/WWTileFactory.h"
@@ -365,19 +366,17 @@
     return cellSize > sqrt(minDistance) * pow(10, -detailFactor);
 }
 
-- (void) updateReferencePoints:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
+- (void) update:(WWDrawContext*)dc;
 {
-    // TODO: Remove this method; it currently does nothing.
-}
-
-- (void) updateExtent:(WWGlobe*)globe verticalExaggeration:(double)verticalExaggeration
-{
-    if (globe == nil)
+    if (dc == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
+    WWGlobe* globe = [dc globe];
     NSDate* elevationTimestamp = [globe elevationTimestamp];
+    double verticalExaggeration = [dc verticalExaggeration];
+
     if (extentTimestamp == nil || [extentTimestamp compare:elevationTimestamp] == NSOrderedAscending
             || extentVerticalExaggeration != verticalExaggeration)
     {
@@ -419,6 +418,7 @@
         // creating redundant NSDate objects.
         extentTimestamp = elevationTimestamp;
         extentVerticalExaggeration = verticalExaggeration;
+        [[dc frameStatistics] incrementTileUpdateCount:1];
     }
 }
 

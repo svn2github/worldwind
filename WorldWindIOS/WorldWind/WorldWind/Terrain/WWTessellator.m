@@ -21,6 +21,7 @@
 #import "WorldWind/Terrain/WWTerrainSharedGeometry.h"
 #import "WorldWind/Terrain/WWTerrainTile.h"
 #import "WorldWind/Terrain/WWTerrainTileList.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWLevelSet.h"
@@ -102,8 +103,7 @@
 
     for (WWTerrainTile* tile in self->topLevelTiles)
     {
-        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+        [tile update:dc];
 
         if ([self isTileVisible:dc tile:tile])
         {
@@ -148,8 +148,7 @@
 
     for (WWTerrainTile* child in subTiles)
     {
-        [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-        [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+        [child update:dc];
 
         if ([[self->levels sector] intersects:[child sector]] && [self isTileVisible:dc tile:child])
         {
@@ -566,6 +565,7 @@
                          resourceType:WW_GPU_VBO
                                  size:size
                                forKey:[tile cacheKey]];
+        [[dc frameStatistics] incrementVboLoadCount:1];
     }
     else
     {
@@ -653,6 +653,7 @@
                          resourceType:WW_GPU_VBO
                                  size:[_sharedGeometry numTexCoords] * 2 * sizeof(float)
                                forKey:[_sharedGeometry texCoordVboCacheKey]];
+        [[dc frameStatistics] incrementVboLoadCount:1];
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
@@ -668,6 +669,7 @@
                          resourceType:WW_GPU_VBO
                                  size:[_sharedGeometry numIndices] * sizeof(short)
                                forKey:[_sharedGeometry indicesVboCacheKey]];
+        [[dc frameStatistics] incrementVboLoadCount:1];
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }

@@ -18,6 +18,7 @@
 #import "WorldWind/Render/WWTextureTile.h"
 #import "WorldWind/Util/WWAbsentResourceList.h"
 #import "WorldWind/Util/WWBulkRetriever.h"
+#import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWLevel.h"
 #import "WorldWind/Util/WWLevelSet.h"
@@ -247,8 +248,8 @@
 
     if ([currentTiles count] > 0)
     {
-        [dc setNumImageTiles:[dc numImageTiles] + [currentTiles count]];
         [[dc surfaceTileRenderer] renderTiles:dc surfaceTiles:currentTiles opacity:[self opacity]];
+        [[dc frameStatistics] incrementImageTileCount:[currentTiles count]];
     }
 }
 
@@ -279,8 +280,7 @@
 
     for (WWTextureTile* tile in topLevelTiles)
     {
-        [tile updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-        [tile updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+        [tile update:dc];
 
         currentAncestorTile = nil;
 
@@ -313,8 +313,7 @@
         NSArray* subTiles = [tile subdivide:nextLevel cache:tileCache tileFactory:self];
         for (WWTile* child in subTiles)
         {
-            [child updateReferencePoints:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
-            [child updateExtent:[dc globe] verticalExaggeration:[dc verticalExaggeration]];
+            [child update:dc];
 
             if ([[levels sector] intersects:[child sector]]
                     && [self isTileVisible:dc tile:(WWTextureTile*) child])
@@ -439,7 +438,6 @@
     {
         [self retrieveTileImage:tile];
     }
-
 }
 
 - (void) loadTileImage:(WWDrawContext*)dc tile:(WWTextureTile*)tile
