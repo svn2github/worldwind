@@ -12,6 +12,7 @@
 #import "AnyGestureRecognizer.h"
 #import "PathFollower.h"
 #import "CrashDataLayer.h"
+#import "CompassLayer.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWLocation.h"
@@ -139,6 +140,9 @@
     layer = [[WWEarthAtNightLayer alloc] init];
     [layer setOpacity:0.75];
     [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[CompassLayer alloc] init];
     [layers addLayer:layer];
 
     [self makeTrackingController];

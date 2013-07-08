@@ -59,6 +59,12 @@
 /// The navigator's frustum in model coordinates.
 @property (nonatomic, readonly) WWFrustum* frustumInModelCoordinates;
 
+/// The number of degrees of heading clockwise relative to north.
+@property (nonatomic, readonly) double heading;
+
+/// The number of degrees the globe is tilted relative to its surface being parallel to the screen.
+@property (nonatomic, readonly) double tilt;
+
 /// @name Initializing Navigator State
 
 /**
@@ -67,6 +73,8 @@
 * @param modelviewMatrix The navigator's modelview matrix.
 * @param projectionMatrix The navigator's projection matrix.
 * @param view The World Wind view associated with the navigator. This view defines the navigator's viewport.
+* @param heading The number of degrees clockwise from north to which the view is directed.
+* @param tilt The number of degrees the globe is tilted relative to its surface being parallel to the screen.
 *
 * @return The initialized instance.
 *
@@ -74,6 +82,8 @@
 */
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
-                                        view:(WorldWindView*)view;
+                                        view:(WorldWindView*)view
+                                     heading:(double)heading
+                                        tilt:(double)tilt;
 
 @end

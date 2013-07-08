@@ -246,4 +246,19 @@
 */
 - (double) pixelSizeAtDistance:(double)distance;
 
+/**
+* Indicates the number of degrees clockwise from north to which the view is directed.
+*
+* @return The number of degrees of heading clockwise relative to north.
+*/
+- (double) heading;
+
+/**
+* The number of degrees the globe is tilted relative to its surface being parallel to the screen. Values are
+* typically in the range 0 to 90 but may vary from that depending on the navigator in use.
+*
+* @return The number of degrees of tilt.
+*/
+- (double) tilt;
+
 @end

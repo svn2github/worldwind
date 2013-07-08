@@ -124,6 +124,11 @@
     [mvpMatrix multiplyMatrix:[dc screenProjection]];
     [mvpMatrix multiplyByTranslation:vo.x - io.x y:vo.y - io.y z:0];
     [mvpMatrix multiplyByScale:is.width y:is.height z:1];
+
+    [mvpMatrix multiplyByTranslation:0.5 y:0.5 z:0.5];
+    [mvpMatrix multiplyByRotationAxis:1 y:0 z:0 angleDegrees:_imageTilt];
+    [mvpMatrix multiplyByRotationAxis:0 y:0 z:1 angleDegrees:_imageRotation];
+    [mvpMatrix multiplyByTranslation:-0.5 y:-0.5 z:0];
 }
 
 - (void) assembleActiveTexture:(WWDrawContext*)dc
@@ -144,7 +149,10 @@
 
     @try
     {
-        [self doDrawOrderedRenderable:dc];
+        // Draw the screen image quad only if there is a texture available or, in order to support KML, no image path
+        // was specified so the user wants a solid color screen overlay.
+        if (texture != nil || _imagePath == nil)
+            [self doDrawOrderedRenderable:dc];
     }
     @finally
     {

@@ -58,6 +58,13 @@
 /// The size in which to draw the image.
 @property (nonatomic) WWSize* imageSize;
 
+
+/// The number of degrees to rotate the image about its center counterclockwise.
+@property (nonatomic) double imageRotation;
+
+/// The number of degrees to tilt the top of the image into the screen.
+@property (nonatomic) double imageTilt;
+
 /// The object to return as this shape's picked-object parent when this shape is picked.
 @property (nonatomic) id pickDelegate;
 

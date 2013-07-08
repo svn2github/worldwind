@@ -34,6 +34,7 @@
 		1BF9A2C0316413875D9C87B4 /* LocationArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */; };
 		1BF9A3140F5F397AAA155F5D /* LocationArrowWithLine@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ACFE62D5FF843B414122 /* LocationArrowWithLine@2x.png */; };
 		1BF9A3808E7422E619393F4F /* LayerList.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF7CA370D26918C6F6C2 /* LayerList.png */; };
+		1BF9A3FA608166273CC38FD0 /* CompassLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A6DC110D3C4E1B10D422 /* CompassLayer.m */; };
 		1BF9A4B7FC05EAA0A17C18B7 /* LocationArrowWithLine.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */; };
 		1BF9A4D3DD8852CE0212B32B /* METARDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A05A1858153A6800537D /* METARDataViewController.m */; };
 		1BF9A54C4E58461263B7308F /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */; };
@@ -56,6 +57,7 @@
 		1BF9ACDFB5114A1409060406 /* 05-plus.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7DDCF1150BE8DC39CB4 /* 05-plus.png */; };
 		1BF9AD0880D26B6D6F5BD587 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A883A9B7EC2E84177CA1 /* WebViewController.m */; };
 		1BF9AE4238EBFC5BB68AFD33 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4AEA039503D44E9A622 /* ImageLayerDetailController.m */; };
+		1BF9AECE6139EF331304E399 /* notched-compass.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1275AB326922EBBE19B /* notched-compass.png */; };
 		1BF9AF344D1D325BDD5FFF06 /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A42586E74D80551AFE5D /* 401-globe@2x.png */; };
 		1BF9AFC1758FD5C46F500C11 /* FrameStatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */; };
 		CC8CF2F9C5BBEDDCD4B6B2EE /* 12-eye@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFEB25C541BB31BFC44EC /* 12-eye@2x.png */; };
@@ -104,6 +106,7 @@
 		1BF9A05A1858153A6800537D /* METARDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARDataViewController.m; sourceTree = "<group>"; };
 		1BF9A0B890751E69BEF0FCD2 /* 01-refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh@2x.png"; sourceTree = "<group>"; };
 		1BF9A0F045D17989445FC7AC /* CrashDataLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashDataLayer.m; sourceTree = "<group>"; };
+		1BF9A1275AB326922EBBE19B /* notched-compass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "notched-compass.png"; sourceTree = "<group>"; };
 		1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWhite.png; sourceTree = "<group>"; };
 		1BF9A20092F812AEB8748191 /* WMSServerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerDetailController.h; sourceTree = "<group>"; };
 		1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = placemark_circle.png; sourceTree = "<group>"; };
@@ -114,6 +117,7 @@
 		1BF9A6256E1642A6427E09E8 /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
 		1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWithLine.png; sourceTree = "<group>"; };
 		1BF9A6D3C61508551E33096C /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
+		1BF9A6DC110D3C4E1B10D422 /* CompassLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CompassLayer.m; sourceTree = "<group>"; };
 		1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameStatisticsController.m; sourceTree = "<group>"; };
 		1BF9A733BBE27F55CE4009C9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9A79D694F26A43270F9D0 /* WMSServerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerListController.h; sourceTree = "<group>"; };
@@ -135,6 +139,7 @@
 		1BF9AB2921F75FC223A80E69 /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AB46598B62B56880FCFA /* ImageLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AB496C1FFD7B422C2517 /* LocationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrow@2x.png"; sourceTree = "<group>"; };
+		1BF9AC983F234E1690B36371 /* CompassLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompassLayer.h; sourceTree = "<group>"; };
 		1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashDataViewController.m; sourceTree = "<group>"; };
 		1BF9ACFE62D5FF843B414122 /* LocationArrowWithLine@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LocationArrowWithLine@2x.png"; sourceTree = "<group>"; };
 		1BF9AD514AAFF11ABADB45A5 /* TextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewController.m; sourceTree = "<group>"; };
@@ -269,6 +274,8 @@
 				CC8CF74B640D7FE573F97C3E /* BulkRetrieverController.m */,
 				1BF9A72418F74D2029B777D2 /* FrameStatisticsController.m */,
 				1BF9AED496831506CFBA44B6 /* FrameStatisticsController.h */,
+				1BF9A6DC110D3C4E1B10D422 /* CompassLayer.m */,
+				1BF9AC983F234E1690B36371 /* CompassLayer.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -311,6 +318,7 @@
 				CC8CF925AD92D7E6B6A7B605 /* 265-download@2x.png */,
 				CC8CF5EEA389022B9C529C1B /* 433-x.png */,
 				CC8CF63C7E6A3363FF1483D4 /* 433-x@2x.png */,
+				1BF9A1275AB326922EBBE19B /* notched-compass.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -402,6 +410,7 @@
 				0B6B6A8E1772717C0099EC33 /* AppIconPhone@2x.png in Resources */,
 				0B6B6A90177271840099EC33 /* AppIconPad.png in Resources */,
 				0B6B6A92177271890099EC33 /* AppIconPad@2x.png in Resources */,
+				1BF9AECE6139EF331304E399 /* notched-compass.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -434,6 +443,7 @@
 				1BF9A4D3DD8852CE0212B32B /* METARDataViewController.m in Sources */,
 				CC8CFA42FE2EA85F20F51660 /* BulkRetrieverController.m in Sources */,
 				1BF9AFC1758FD5C46F500C11 /* FrameStatisticsController.m in Sources */,
+				1BF9A3FA608166273CC38FD0 /* CompassLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

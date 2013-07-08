@@ -19,6 +19,8 @@
 - (WWBasicNavigatorState*) initWithModelview:(WWMatrix*)modelviewMatrix
                                   projection:(WWMatrix*)projectionMatrix
                                         view:(WorldWindView*)view
+                                     heading:(double)heading
+                                        tilt:(double)tilt
 {
     if (modelviewMatrix == nil)
     {
@@ -43,6 +45,8 @@
     _modelviewProjection = [[WWMatrix alloc] initWithMultiply:projectionMatrix matrixB:modelviewMatrix];
     _viewport = [view viewport];
     viewBounds = [view bounds];
+    _heading = heading;
+    _tilt = tilt;
 
     // Compute the eye point and forward ray in model coordinates.
     _eyePoint = [_modelview extractEyePoint];
