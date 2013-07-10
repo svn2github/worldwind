@@ -32,10 +32,10 @@
     self = [super initWithSector:sector level:level row:row column:column];
 
     _tessellator = tessellator;
-    _cacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
     _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
     _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     _points = 0;
+    _geometryVboCacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
 
     return self;
 }

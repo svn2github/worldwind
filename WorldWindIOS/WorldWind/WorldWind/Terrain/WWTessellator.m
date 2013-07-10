@@ -189,19 +189,14 @@
 
 - (BOOL) mustRegenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
-    return [tile timestamp] != elevationTimestamp;
+    return [tile geometryTimestamp] != elevationTimestamp;
 }
 
 - (void) regenerateTileGeometry:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
 {
     [self buildTileVertices:dc tile:tile];
     [self buildSharedGeometry:tile];
-    [[dc gpuResourceCache] removeResourceForKey:[tile cacheKey]]; // remove out of date VBOs from the GPU resource cache
-
-    // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
-    // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
-    // creating redundant NSDate objects.
-    [tile setTimestamp:elevationTimestamp];
+    [tile setGeometryTimestamp:elevationTimestamp];
 }
 
 - (void) buildTileVertices:(WWDrawContext*)dc tile:(WWTerrainTile*)tile
@@ -552,24 +547,33 @@
                                                matrixB:[tile transformationMatrix]];
     [WWGpuProgram loadUniformMatrix:mvp location:(GLuint) mvpMatrixLocation];
 
-    GLuint vboId;
     WWGpuResourceCache* __unsafe_unretained gpuResourceCache = [dc gpuResourceCache];
-    NSNumber* __unsafe_unretained vbo = (NSNumber*) [gpuResourceCache resourceForKey:[tile cacheKey]];
+    NSNumber* __unsafe_unretained vbo = (NSNumber*) [gpuResourceCache resourceForKey:[tile geometryVboCacheKey]];
     if (vbo == nil)
     {
         GLsizei size = [tile numPoints] * 3 * sizeof(float);
+        GLuint vboId;
         glGenBuffers(1, &vboId);
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferData(GL_ARRAY_BUFFER, size, [tile points], GL_STATIC_DRAW);
         [gpuResourceCache putResource:[[NSNumber alloc] initWithInt:vboId]
                          resourceType:WW_GPU_VBO
                                  size:size
-                               forKey:[tile cacheKey]];
+                               forKey:[tile geometryVboCacheKey]];
+        [tile setGeometryVboTimestamp:[tile geometryTimestamp]];
         [[dc frameStatistics] incrementVboLoadCount:1];
+    }
+    else if ([tile geometryVboTimestamp] != [tile geometryTimestamp])
+    {
+        GLsizei size = [tile numPoints] * 3 * sizeof(float);
+        GLuint vboId = (GLuint) [vbo intValue];
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, size, [tile points]);
+        [tile setGeometryVboTimestamp:[tile geometryTimestamp]];
     }
     else
     {
-        vboId = (GLuint) [vbo intValue];
+        GLuint vboId = (GLuint) [vbo intValue];
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
     }
 

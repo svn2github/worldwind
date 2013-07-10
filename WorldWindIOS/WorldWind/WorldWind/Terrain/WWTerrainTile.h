@@ -28,9 +28,6 @@
 /// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
 @property (nonatomic, readonly, weak) WWTessellator* tessellator;
 
-/// The GPU resource cache ID for this tile's Cartesian coordinates VBO.
-@property (nonatomic) NSString* cacheKey;
-
 /// The origin point that the terrain tile's model coordinate points are relative to.
 @property (nonatomic) WWVec4* referenceCenter;
 
@@ -48,9 +45,16 @@
 
 /// Indicates the date and time at which this tile's terrain geometry was computed.
 ///
-/// This is used to invalidate the
-/// terrain geometry when the globe's elevations change.
-@property (nonatomic) NSTimeInterval timestamp;
+/// This is used to invalidate the terrain geometry when the globe's elevations change.
+@property (nonatomic) NSTimeInterval geometryTimestamp;
+
+/// Indicates the date and time at which this tile's terrain geometry vbo was loaded.
+///
+/// This is used to invalidate the terrain vbo when the globe's elevations change.
+@property (nonatomic) NSTimeInterval geometryVboTimestamp;
+
+/// The GPU resource cache ID for this tile's Cartesian coordinates VBO.
+@property (nonatomic) NSString* geometryVboCacheKey;
 
 /// @name Initializing Terrain Tiles
 
