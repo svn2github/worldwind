@@ -27,6 +27,8 @@
     _tessellator = [[WWTessellator alloc] initWithGlobe:self];
     _elevationModel = [[WWEarthElevationModel alloc] init];
 
+    tmpPos = [[WWPosition alloc] initWithZeroPosition];
+
     return self;
 }
 
@@ -48,7 +50,7 @@
 - (void) computePointFromPosition:(double)latitude
                         longitude:(double)longitude
                          altitude:(double)altitude
-                      outputPoint:(WWVec4*)result
+                      outputPoint:(WWVec4* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -62,17 +64,19 @@
 
     double rpm = _equatorialRadius / sqrt(1.0 - _es * sinLat * sinLat);
 
-    result.x = (rpm + altitude) * cosLat * sinLon;
-    result.y = (rpm * (1.0 - _es) + altitude) * sinLat;
-    result.z = (rpm + altitude) * cosLat * cosLon;
+    double x = (rpm + altitude) * cosLat * sinLon;
+    double y = (rpm * (1.0 - _es) + altitude) * sinLat;
+    double z = (rpm + altitude) * cosLat * cosLon;
+
+    [result set:x y:y z:z];
 }
 
-- (void) computePointsFromPositions:(WWSector*)sector
+- (void) computePointsFromPositions:(WWSector* __unsafe_unretained)sector
                              numLat:(int)numLat
                              numLon:(int)numLon
                     metersElevation:(double[])metersElevation
                     borderElevation:(double)borderElevation
-                             offset:(WWVec4*)offset
+                             offset:(WWVec4* __unsafe_unretained)offset
                         outputArray:(float[])result
                        outputStride:(int)stride
 {
@@ -173,7 +177,7 @@
 - (void) computePositionFromPoint:(double)x
                                 y:(double)y
                                 z:(double)z
-                   outputPosition:(WWPosition*)result
+                   outputPosition:(WWPosition* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -281,7 +285,7 @@
     [result setDegreesLatitude:DEGREES(phi) longitude:DEGREES(lambda) altitude:h];
 }
 
-- (void) surfaceNormalAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result;
+- (void) surfaceNormalAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -304,7 +308,7 @@
     [result normalize3];
 }
 
-- (void) surfaceNormalAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result
+- (void) surfaceNormalAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -322,7 +326,7 @@
     [result normalize3];
 }
 
-- (void) northTangentAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4*)result
+- (void) northTangentAtLatitude:(double)latitude longitude:(double)longitude result:(WWVec4* __unsafe_unretained)result
 {
     if (result == nil)
     {
@@ -355,16 +359,15 @@
     [result normalize3];
 }
 
-- (void) northTangentAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4*)result;
+- (void) northTangentAtPoint:(double)x y:(double)y z:(double)z result:(WWVec4* __unsafe_unretained)result;
 {
     if (result == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
     }
 
-    WWPosition* pos = [[WWPosition alloc] initWithZeroPosition];
-    [self computePositionFromPoint:x y:y z:z outputPosition:pos];
-    [self northTangentAtLatitude:[pos latitude] longitude:[pos longitude] result:result];
+    [self computePositionFromPoint:x y:y z:z outputPosition:tmpPos];
+    [self northTangentAtLatitude:[tmpPos latitude] longitude:[tmpPos longitude] result:result];
 }
 
 - (BOOL) intersectWithRay:(WWLine*)ray result:(WWVec4*)result
@@ -412,7 +415,7 @@
     }
 }
 
-- (NSDate*) elevationTimestamp
+- (NSDate*) elevationTimestamp // TODO: Replace this NSDate pointer with an NSTimeInterval
 {
     return [_elevationModel timestamp];
 }

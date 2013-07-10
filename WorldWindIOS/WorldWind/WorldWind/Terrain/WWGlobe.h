@@ -27,6 +27,10 @@
 * axis. The origin of the coordinate system lies at the center of the globe.
 */
 @interface WWGlobe : NSObject
+{
+@protected
+    WWPosition* tmpPos;
+}
 
 /// @name Globe Attributes
 
