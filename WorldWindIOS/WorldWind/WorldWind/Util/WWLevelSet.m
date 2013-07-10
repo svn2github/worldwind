@@ -146,27 +146,6 @@
     return lastLevel;
 }
 
-- (WWLevel*) levelForTileDelta:(double)deltaLatDegrees
-{
-    // TODO: Replace this loop with a computation.
-    WWLevel* lastLevel = [levels lastObject];
-
-    if ([[lastLevel tileDelta] latitude] >= deltaLatDegrees)
-    {
-        return lastLevel; // Can't do any better than the last level.
-    }
-
-    for (WWLevel* level in levels)
-    {
-        if ([[level tileDelta] latitude] <= deltaLatDegrees)
-        {
-            return level;
-        }
-    }
-
-    return lastLevel;
-}
-
 - (NSUInteger) tileCountForSector:(WWSector*)sector
 {
     if (sector == nil)

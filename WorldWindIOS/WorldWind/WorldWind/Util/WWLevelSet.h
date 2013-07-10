@@ -115,18 +115,6 @@
 - (WWLevel*) levelForTexelSize:(double)texelSize;
 
 /**
-* Returns the level with a specified geographic tile size.
-*
-* This returns the first level if the specified delta is greater than the level zero delta, and returns the last level
-* if the delta is less than the last level's delta.
-*
-* @param deltaLatDegrees The geographic size of the level's tiles, in degrees latitude.
-*
-* @return The requested level.
-*/
-- (WWLevel*) levelForTileDelta:(double)deltaLatDegrees;
-
-/**
 * Returns The first (lowest resolution) level, level 0, of this level set.
 *
 * @return level 0 of this level set.
