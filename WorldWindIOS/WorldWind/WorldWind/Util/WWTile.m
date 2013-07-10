@@ -7,6 +7,7 @@
 
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -374,11 +375,10 @@
     }
 
     WWGlobe* globe = [dc globe];
-    NSDate* elevationTimestamp = [globe elevationTimestamp];
+    NSTimeInterval elevationTimestamp = [[globe elevationTimestamp] timeIntervalSinceReferenceDate];
     double verticalExaggeration = [dc verticalExaggeration];
 
-    if (extentTimestamp == nil || [extentTimestamp compare:elevationTimestamp] == NSOrderedAscending
-            || extentVerticalExaggeration != verticalExaggeration)
+    if (extentTimestamp != elevationTimestamp || extentVerticalExaggeration != verticalExaggeration)
     {
         // Compute the minimum and maximum elevations for this tile's sector, or use zero if the globe has no elevations
         // in this tile's coverage area. In the latter case the globe does not modify the result parameter.
@@ -393,7 +393,9 @@
             minHeight = maxHeight + 10; // TODO: Determine if this is necessary.
 
         // Compute a bounding box for this tile that contains the terrain surface in the tile's coverage area.
-        _extent = [_sector computeBoundingBox:globe minElevation:minHeight maxElevation:maxHeight];
+        if (_extent == nil)
+            _extent = [[WWBoundingBox alloc] initWithUnitBox];
+        [_extent setToSector:_sector onGlobe:globe minElevation:minHeight maxElevation:maxHeight];
 
         // Compute reference points used to determine when the tile must be subdivided into its four children. These
         // reference points provide a way to estimate distance between the tile and the eye point. We compute reference

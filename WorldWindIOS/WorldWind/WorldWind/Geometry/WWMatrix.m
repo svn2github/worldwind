@@ -20,6 +20,17 @@
 #define NEAR_ZERO_THRESHOLD 1.0e-8
 #define TINY_VALUE 1.0e-20
 
+void swap(double* a, double* b, int* ia, int* ib)
+{
+    double tmp = *a;
+    *a = *b;
+    *b = tmp;
+
+    int itmp = *ia;
+    *ia = *ib;
+    *ib = itmp;
+}
+
 @implementation WWMatrix
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -473,10 +484,10 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil");
     }
 
-    NSArray* axes = [WWMath localCoordinateAxesAtPoint:origin onGlobe:globe];
-    WWVec4* xaxis = [axes objectAtIndex:0];
-    WWVec4* yaxis = [axes objectAtIndex:1];
-    WWVec4* zaxis = [axes objectAtIndex:2];
+    WWVec4* xaxis = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* yaxis = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* zaxis = [[WWVec4 alloc] initWithZeroVector];
+    [WWMath localCoordinateAxesAtPoint:origin onGlobe:globe xaxis:xaxis yaxis:yaxis zaxis:zaxis];
 
     [self multiply:[xaxis x] m01:[yaxis x] m02:[zaxis x] m03:[origin x]
                m10:[xaxis y] m11:[yaxis y] m12:[zaxis y] m13:[origin y]
@@ -586,10 +597,10 @@
     double ez = [eyePoint z];
 
     // Transform the origin to the local coordinate system at the eye point.
-    NSArray* axes = [WWMath localCoordinateAxesAtPoint:eyePoint onGlobe:globe];
-    WWVec4* xaxis = [axes objectAtIndex:0];
-    WWVec4* yaxis = [axes objectAtIndex:1];
-    WWVec4* zaxis = [axes objectAtIndex:2];
+    WWVec4* xaxis = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* yaxis = [[WWVec4 alloc] initWithZeroVector];
+    WWVec4* zaxis = [[WWVec4 alloc] initWithZeroVector];
+    [WWMath localCoordinateAxesAtPoint:eyePoint onGlobe:globe xaxis:xaxis yaxis:yaxis zaxis:zaxis];
     double xx = [xaxis x];
     double xy = [xaxis y];
     double xz = [xaxis z];
@@ -1052,22 +1063,23 @@
 }
 
 + (void) eigensystemFromSymmetricMatrix:(WWMatrix* __unsafe_unretained)matrix
-                      resultEigenvalues:(NSMutableArray* __unsafe_unretained)resultEigenvalues
-                     resultEigenvectors:(NSMutableArray* __unsafe_unretained)resultEigenvectors
+                                   vec1:(WWVec4* __unsafe_unretained)vec1
+                                   vec2:(WWVec4* __unsafe_unretained)vec2
+                                   vec3:(WWVec4* __unsafe_unretained)vec3
 {
     if (matrix == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil");
-    }
-
-    if (resultEigenvalues == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result eigenvalues array is nil");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
     }
 
     if (matrix->m[1] != matrix->m[4] || matrix->m[2] != matrix->m[8] || matrix->m[6] != matrix->m[9])
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is not symmetric");
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is not symmetric")
+    }
+
+    if (vec1 == nil || vec2 == nil || vec3 == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result vector is nil")
     }
 
     // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, listing 14.6.
@@ -1173,13 +1185,25 @@
         }
     }
 
-    [resultEigenvalues addObject:[NSNumber numberWithDouble:m11]];
-    [resultEigenvalues addObject:[NSNumber numberWithDouble:m22]];
-    [resultEigenvalues addObject:[NSNumber numberWithDouble:m33]];
+    int i1 = 0;
+    int i2 = 1;
+    int i3 = 2;
 
-    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][0] y:r[1][0] z:r[2][0]]];
-    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][1] y:r[1][1] z:r[2][1]]];
-    [resultEigenvectors addObject:[[WWVec4 alloc] initWithCoordinates:r[0][2] y:r[1][2] z:r[2][2]]];
+    if (m11 < m22) {swap(&m11, &m22, &i1, &i2);}
+    if (m22 < m33) {swap(&m22, &m33, &i2, &i3);}
+    if (m11 < m22) {swap(&m11, &m22, &i1, &i2);}
+
+    [vec1 set:r[0][i1] y:r[1][i1] z:r[2][i1]];
+    [vec2 set:r[0][i2] y:r[1][i2] z:r[2][i2]];
+    [vec3 set:r[0][i3] y:r[1][i3] z:r[2][i3]];
+
+    [vec1 normalize3];
+    [vec2 normalize3];
+    [vec3 normalize3];
+
+    [vec1 multiplyByScalar3:m11];
+    [vec2 multiplyByScalar3:m22];
+    [vec3 multiplyByScalar3:m33];
 }
 
 - (void) offsetProjectionDepth:(double)depthOffset

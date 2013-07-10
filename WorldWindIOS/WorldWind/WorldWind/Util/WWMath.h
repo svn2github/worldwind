@@ -187,33 +187,48 @@
 /// @name Computing Information About Shapes
 
 /**
-* Computes the principal axes of a specified list of points.
+* Computes the principal axes of a specified list of points, placing the resultant axes in the specified _axisi_
+* arguments.
+*
+* Upon returning the specified _axisi_ arguments contain three orthogonal axes identifying the principal axes. axis1
+* corresponds to the longest axes, axis2 corresponds to the intermediate length axis, and axis3 corresponds to the
+* shortest axis. Each axis has unit length.
 *
 * @param points The list of points.
+* @param axis1 Contains the longest axis after this method returns.
+* @param axis2 Contains the intermetiate length axis after this method returns.
+* @param axis3 Contains the shortest axis after this method returns.
 *
-* @return An array containing three WWVec4 instances identifying the principal axes. The first vector in the array
-* corresponds to the longest axis. The third vector in the array corresponds to the shortest axis. The second vector
-* in the array correspond to the intermediate length axis.
-*
-* @exception NSInvalidArgumentException If the list of points is nil or empty.
+* @exception NSInvalidArgumentException If the list of points is nil or empty, or if any axis is nil.
 */
-+ (NSArray*) principalAxesFromPoints:(NSArray*)points;
++ (void) principalAxesFromPoints:(NSArray*)points
+                           axis1:(WWVec4*)axis1
+                           axis2:(WWVec4*)axis2
+                           axis3:(WWVec4*)axis3;
 
 /**
-* Computes the axes of a local coordinate system on the specified globe.
+* Computes the axes of a local coordinate system on the specified globe, placing the resultant axes in the specified
+* _axis_ arguments.
 *
-* The local coordinate system is defined such that the z axis maps to the globe's surface normal at the point, the y
-* axis maps to the north pointing tangent, and the x axis maps to the east pointing tangent.
+* Upon returning the specified _axis_ arguments contain three orthogonal axes identifying the x- y- and z-axes. Each
+* axis has unit length.
+*
+* The local coordinate system is defined such that the z-axis maps to the globe's surface normal at the point, the
+* y-axis maps to the north pointing tangent, and the x-axis maps to the east pointing tangent.
 *
 * @param point The local coordinate system origin, in model coordinates.
 * @param globe The globe the coordinate system is relative to.
+* @param xaxis Contains the x-axis after this method returns.
+* @param yaxis Contains the y-axis after this method returns.
+* @param zaxis Contains the z-axis after this method returns.
 *
-* @return An array containing three WWVec4 instances identifying the coordinate system axes. The WWVec4 axes appear in
-* the array in the order: x-axis, y-axis, z-axis.
-*
-* @exception NSInvalidArgumentException If either argument is nil.
+* @exception NSInvalidArgumentException If any argument is nil.
 */
-+ (NSArray*) localCoordinateAxesAtPoint:(WWVec4*)point onGlobe:(WWGlobe*)globe;
++ (void) localCoordinateAxesAtPoint:(WWVec4*)point
+                            onGlobe:(WWGlobe*)globe
+                              xaxis:(WWVec4*)xaxis
+                              yaxis:(WWVec4*)yaxis
+                              zaxis:(WWVec4*)zaxis;
 
 /**
 * Computes the rectangle bounding a unit quad transformed by the specified matrix.

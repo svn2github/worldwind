@@ -8,9 +8,10 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Geometry/WWExtent.h"
 
-@class WWVec4;
-@class WWPlane;
 @class WWFrustum;
+@class WWGlobe;
+@class WWSector;
+@class WWVec4;
 
 /**
 * Provides box geometry for use as a bounding volume.
@@ -41,29 +42,8 @@
 /// The S axis, the box's mid-length axis.
 @property(nonatomic, readonly) WWVec4* s;
 
-// The T axis, the box's shortest axis.
+/// The T axis, the box's shortest axis.
 @property(nonatomic, readonly) WWVec4* t;
-
-/// The unit length R axis.
-@property(nonatomic, readonly) WWVec4* ru;
-
-/// The unit length S axis.
-@property(nonatomic, readonly) WWVec4* su;
-
-/// The unit length T axis.
-@property(nonatomic, readonly) WWVec4* tu;
-
-/// The length in meters of the box's longest axis.
-@property(nonatomic, readonly) double rLength;
-
-/// The length in meters of the box's mid-length axis.
-@property(nonatomic, readonly) double sLength;
-
-/// The length in meters of the box's shortest axis.
-@property(nonatomic, readonly) double tLength;
-
-/// The six planes that bound the box.
-@property(nonatomic, readonly) NSArray* planes;
 
 /// This bounding box's radius.
 @property (nonatomic, readonly) double radius;
@@ -71,15 +51,39 @@
 /// @name Initializing Bounding Boxes
 
 /**
-* Initializes this bounding box such that it contains a specified list of points.
+* Initializes this bounding box to the unit box.
+*
+* The unit box has its r- s- and t-axes aligned with the x- y- and z-axes, respectively, and has its length, width and
+* height set to 1.
+*
+* @return The bounding box initialized to the unit box.
+*/
+- (WWBoundingBox*) initWithUnitBox;
+
+/**
+* Sets this bounding box such that it contains a specified list of points.
 *
 * @param points The points to contain.
 *
-* @return The bounding box initialized to contain the specified points.
-*
 * @exception NSInvalidArgumentException If the list of points is nil or empty.
 */
-- (WWBoundingBox*) initWithPoints:(NSArray*)points;
+- (void) setToPoints:(NSArray*)points;
+
+/**
+* Sets this bounding box such that it contains the terrain geometry of a specified sector on a specified globe with min
+* and max elevation.
+*
+* @param sector The sector to contain.
+* @param globe The globe defining the terrain geometry of the specified sector.
+* @param minElevation The globe's minimum elevation within the specified sector.
+* @param maxElevation The globe's maximum elevation within the specified sector.
+*
+* @exception NSInvalidArgumentException If any argument is nil.
+*/
+- (void) setToSector:(WWSector*)sector
+             onGlobe:(WWGlobe*)globe
+        minElevation:(double)minElevation
+        maxElevation:(double)maxElevation;
 
 /// @name Operations on Bounding Boxes
 

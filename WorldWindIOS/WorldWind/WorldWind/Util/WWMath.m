@@ -140,50 +140,39 @@
 //-- Computing Information About Shapes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-void swap(double* a, double* b)
-{
-    double tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
-+ (NSArray*) principalAxesFromPoints:(NSArray* __unsafe_unretained)points
++ (void) principalAxesFromPoints:(NSArray* __unsafe_unretained)points
+                           axis1:(WWVec4* __unsafe_unretained)axis1
+                           axis2:(WWVec4* __unsafe_unretained)axis2
+                           axis3:(WWVec4* __unsafe_unretained)axis3
 {
     if (points == nil || [points count] == 0)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or empty")
     }
 
+    if (axis1 == nil || axis2 == nil || axis3 == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result axis is nil");
+    }
+
     // Compute the covariance matrix.
     WWMatrix* covariance = [[WWMatrix alloc] initWithCovarianceOfPoints:points];
 
-    // Compute the eigenvectors and eigenvalues of the covariance matrix. Since the covariance matrix is symmetric by
-    // definition, we can safely use the "symmetric" method below.
-    NSMutableArray* eigenvalues = [[NSMutableArray alloc] initWithCapacity:3];
-    NSMutableArray* eigenvectors = [[NSMutableArray alloc] initWithCapacity:3];
-    [WWMatrix eigensystemFromSymmetricMatrix:covariance
-                           resultEigenvalues:eigenvalues
-                          resultEigenvectors:eigenvectors];
+    // Compute the eigenvectors the covariance matrix. Since the covariance matrix is symmetric by definition, we can
+    // safely use the "symmetric" method below.
+    [WWMatrix eigensystemFromSymmetricMatrix:covariance vec1:axis1 vec2:axis2 vec3:axis3];
 
-    // Normalize the eigenvectors.
-    [eigenvectors makeObjectsPerformSelector:@selector(normalize3)];
-
-    // Sort the normalized eigenvectors in order of decreasing eigenvalue. This has the effect of returning three
-    // normalized orthogonal vectors defining a coordinate system, with the vectors sorted from the most prominent axis
-    // to the lease prominent axis. The algorithm below is an unrolled bubble sort. Since the list of eigenvectors
-    // contains exactly three elements it takes at most three swaps to sort the list.
-    double e0 = [[eigenvalues objectAtIndex:0] doubleValue];
-    double e1 = [[eigenvalues objectAtIndex:1] doubleValue];
-    double e2 = [[eigenvalues objectAtIndex:2] doubleValue];
-
-    if (e0 < e1) {[eigenvectors exchangeObjectAtIndex:0 withObjectAtIndex:1]; swap(&e0, &e1);}
-    if (e1 < e2) {[eigenvectors exchangeObjectAtIndex:1 withObjectAtIndex:2]; swap(&e1, &e2);}
-    if (e0 < e1) {[eigenvectors exchangeObjectAtIndex:0 withObjectAtIndex:1]; swap(&e0, &e1);}
-
-    return eigenvectors;
+    // Normalize the eigenvectors, which are already sorted in order from most prominent to least prominent.
+    [axis1 normalize3];
+    [axis2 normalize3];
+    [axis3 normalize3];
 }
 
-+ (NSArray*) localCoordinateAxesAtPoint:(WWVec4* __unsafe_unretained)point onGlobe:(WWGlobe* __unsafe_unretained)globe
++ (void) localCoordinateAxesAtPoint:(WWVec4* __unsafe_unretained)point
+                            onGlobe:(WWGlobe* __unsafe_unretained)globe
+                              xaxis:(WWVec4* __unsafe_unretained)xaxis
+                              yaxis:(WWVec4* __unsafe_unretained)yaxis
+                              zaxis:(WWVec4* __unsafe_unretained)zaxis
 {
     if (point == nil)
     {
@@ -195,22 +184,24 @@ void swap(double* a, double* b)
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
+    if (xaxis == nil || yaxis == nil || zaxis == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result axis is nil");
+    }
+
     double x = [point x];
     double y = [point y];
     double z = [point z];
 
     // Compute the z axis from the surface normal in model coordinates. This axis is used to determine the other two
     // axes, and is the only constant in the computations below.
-    WWVec4* zaxis = [[WWVec4 alloc] initWithZeroVector];
     [globe surfaceNormalAtPoint:x y:y z:z result:zaxis];
 
     // Compute the y axis from the north pointing tangent in model coordinates. This axis is known to be orthogonal to
     // the z axis, and is therefore used to compute the x axis.
-    WWVec4* yaxis = [[WWVec4 alloc] initWithZeroVector];
     [globe northTangentAtPoint:x y:y z:z result:yaxis];
 
     // Compute the x axis as the cross product of the y and z axes. This ensures that the x and z axes are orthogonal.
-    WWVec4* xaxis = [[WWVec4 alloc] initWithZeroVector];
     [xaxis set:yaxis];
     [xaxis cross3:zaxis];
     [xaxis normalize3];
@@ -221,8 +212,6 @@ void swap(double* a, double* b)
     [yaxis set:zaxis];
     [yaxis cross3:xaxis];
     [yaxis normalize3];
-
-    return [[NSArray alloc] initWithObjects:xaxis, yaxis, zaxis, nil];
 }
 
 + (CGRect) boundingRectForUnitQuad:(WWMatrix* __unsafe_unretained)transformMatrix

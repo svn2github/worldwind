@@ -31,7 +31,7 @@
     // Cache key used to retrieve the tile's children from a memory cache.
     NSString* tileKey;
     // Values used to invalidate the tile's extent when the elevations or the vertical exaggeration changes.
-    NSDate* extentTimestamp;
+    NSTimeInterval extentTimestamp;
     double extentVerticalExaggeration;
 }
 

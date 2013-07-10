@@ -580,17 +580,19 @@
 - (void) invertTransformMatrix:(WWMatrix*)matrix;
 
 /**
-* Computes the eigensystem of a specified matrix.
+* Computes the eigensystem of a specified matrix, placing the resultant eigenvectors in the specified _veci_ arguments.
+*
+* Upon returning the specified _veci_ arguments contain the eigenvectors of the specified matrix, sorted from the most
+* prominent vector to the least prominent vector. Each eigenvector has length equal to its corresponding eigenvalue.
 *
 * @param matrix The matrix to consider.
-* @param resultEigenvalues An array in which to return the three eigenvalues.
-* @param resultEigenvectors An array in which to return the three eigenvectors.
+* @param vec1 Contains the most prominent eigenvector after this method returns.
+* @param vec2 Contains the second most prominent eigenvector after this method returns.
+* @param vec3 Contains the least prominent eigenvector after this method returns.
 *
 * @exception NSInvalidArgumentException if any argument is nil.
 */
-+ (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix
-                      resultEigenvalues:(NSMutableArray*)resultEigenvalues
-                     resultEigenvectors:(NSMutableArray*)resultEigenvectors;
++ (void) eigensystemFromSymmetricMatrix:(WWMatrix*)matrix vec1:(WWVec4*)vec1 vec2:(WWVec4*)vec2 vec3:(WWVec4*)vec3;
 
 /// @name Methods for Internal Use
 

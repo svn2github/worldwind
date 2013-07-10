@@ -208,7 +208,8 @@
 
     // Create the extent from the Cartesian points. Those points are relative to this path's reference point, so
     // translate the computed extent to the reference point.
-    WWBoundingBox* box = [[WWBoundingBox alloc] initWithPoints:tessellationPoints];
+    WWBoundingBox* box = [[WWBoundingBox alloc] initWithUnitBox];
+    [box setToPoints:tessellationPoints];
     [box translate:referencePoint];
     [self setExtent:box];
 }

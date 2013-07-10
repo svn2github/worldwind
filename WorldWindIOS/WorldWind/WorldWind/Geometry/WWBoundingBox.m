@@ -6,110 +6,287 @@
  */
 
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWPlane.h"
-#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Geometry/WWFrustum.h"
+#import "WorldWind/Geometry/WWPlane.h"
+#import "Worldwind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WWLog.h"
+
+void adjustExtremes(WWVec4* __unsafe_unretained r, double* rExtremes,
+        WWVec4* __unsafe_unretained s, double* sExtremes,
+        WWVec4* __unsafe_unretained t, double* tExtremes,
+        WWVec4* __unsafe_unretained p)
+{
+    double pdr = [p dot3:r];
+    if (rExtremes[0] > pdr)
+        rExtremes[0] = pdr;
+    if (rExtremes[1] < pdr)
+        rExtremes[1] = pdr;
+
+    double pds = [p dot3:s];
+    if (sExtremes[0] > pds)
+        sExtremes[0] = pds;
+    if (sExtremes[1] < pds)
+        sExtremes[1] = pds;
+
+    double pdt = [p dot3:t];
+    if (tExtremes[0] > pdt)
+        tExtremes[0] = pdt;
+    if (tExtremes[1] < pdt)
+        tExtremes[1] = pdt;
+}
+
+void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
+        WWVec4* __unsafe_unretained b, double* bExtremes,
+        WWVec4* __unsafe_unretained tmp)
+{
+    [tmp set:a];
+    [a set:b];
+    [b set:tmp];
+
+    double tmp0 = aExtremes[0];
+    double tmp1 = aExtremes[1];
+    aExtremes[0] = bExtremes[0];
+    aExtremes[1] = bExtremes[1];
+    bExtremes[0] = tmp0;
+    bExtremes[1] = tmp1;
+}
 
 @implementation WWBoundingBox
 
-- (WWBoundingBox*) initWithPoints:(NSArray* __unsafe_unretained)points
+- (WWBoundingBox*) initWithUnitBox;
 {
-    if (points == nil || [points count] == 0)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or zero length")
-    }
-
     self = [super init];
 
     tmp1 = [[WWVec4 alloc] initWithZeroVector];
     tmp2 = [[WWVec4 alloc] initWithZeroVector];
     tmp3 = [[WWVec4 alloc] initWithZeroVector];
 
-    NSArray* unitAxes = [WWMath principalAxesFromPoints:points];
-    _ru = [unitAxes objectAtIndex:0];
-    _su = [unitAxes objectAtIndex:1];
-    _tu = [unitAxes objectAtIndex:2];
+    _center = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:0];
+    _bottomCenter = [[WWVec4 alloc] initWithCoordinates:-0.5 y:0 z:0];
+    _topCenter = [[WWVec4 alloc] initWithCoordinates:0.5 y:0 z:0];
+    _r = [[WWVec4 alloc] initWithCoordinates:1 y:0 z:0];
+    _s = [[WWVec4 alloc] initWithCoordinates:0 y:1 z:0];
+    _t = [[WWVec4 alloc] initWithCoordinates:0 y:0 z:1];
+    _radius = sqrt(3); // sqrt(1*1 + 1*1 + 1*1)
+
+    return self;
+}
+
+- (void) setToPoints:(NSArray* __unsafe_unretained)points
+{
+    if (points == nil || [points count] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Points is nil or zero length")
+    }
+
+    [WWMath principalAxesFromPoints:points axis1:_r axis2:_s axis3:_t];
 
     // Find the extremes along each axis.
-    double minDotR = DBL_MAX;
-    double maxDotR = -minDotR;
-    double minDotS = DBL_MAX;
-    double maxDotS = -minDotS;
-    double minDotT = DBL_MAX;
-    double maxDotT = -minDotT;
+    double rMin = +DBL_MAX;
+    double rMax = -DBL_MAX;
+    double sMin = +DBL_MAX;
+    double sMax = -DBL_MAX;
+    double tMin = +DBL_MAX;
+    double tMax = -DBL_MAX;
 
     for (WWVec4* __unsafe_unretained p in points) // no need to check for nil; NSArray does not permit nil elements
     {
-        double pdr = [p dot3:_ru];
-        if (pdr < minDotR)
-            minDotR = pdr;
-        if (pdr > maxDotR)
-            maxDotR = pdr;
+        double pdr = [p dot3:_r];
+        if (rMin > pdr)
+            rMin = pdr;
+        if (rMax < pdr)
+            rMax = pdr;
 
-        double pds = [p dot3:_su];
-        if (pds < minDotS)
-            minDotS = pds;
-        if (pds > maxDotS)
-            maxDotS = pds;
+        double pds = [p dot3:_s];
+        if (sMin > pds)
+            sMin = pds;
+        if (sMax < pds)
+            sMax = pds;
 
-        double pdt = [p dot3:_tu];
-        if (pdt < minDotT)
-            minDotT = pdt;
-        if (pdt > maxDotT)
-            maxDotT = pdt;
+        double pdt = [p dot3:_t];
+        if (tMin > pdt)
+            tMin = pdt;
+        if (tMax < pdt)
+            tMax = pdt;
     }
 
-    if (maxDotR == minDotR)
-        maxDotR = minDotR + 1;
-    if (maxDotS == minDotS)
-        maxDotS = minDotS + 1;
-    if (maxDotT == minDotT)
-        maxDotT = minDotT + 1;
+    if (rMax == rMin)
+        rMax = rMin + 1;
+    if (sMax == sMin)
+        sMax = sMin + 1;
+    if (tMax == tMin)
+        tMax = tMin + 1;
 
-    _r = [[WWVec4 alloc] initWithVector:_ru];
-    [_r multiplyByScalar3:(maxDotR - minDotR)];
+    double rLen = rMax - rMin;
+    double sLen = sMax - sMin;
+    double tLen = tMax - tMin;
+    double rSum = rMax + rMin;
+    double sSum = sMax + sMin;
+    double tSum = tMax + tMin;
 
-    _s = [[WWVec4 alloc] initWithVector:_su];
-    [_s multiplyByScalar3:(maxDotS - minDotS)];
+    double rx_2 = 0.5 * [_r x] * rLen;
+    double ry_2 = 0.5 * [_r y] * rLen;
+    double rz_2 = 0.5 * [_r z] * rLen;
+    double cx = 0.5 * ([_r x] * rSum + [_s x] * sSum + [_t x] * tSum);
+    double cy = 0.5 * ([_r y] * rSum + [_s y] * sSum + [_t y] * tSum);
+    double cz = 0.5 * ([_r z] * rSum + [_s z] * sSum + [_t z] * tSum);
+    [_center set:cx y:cy z:cz];
+    [_topCenter set:cx + rx_2 y:cy + ry_2 z:cz + rz_2];
+    [_bottomCenter set:cx - rx_2 y:cy - ry_2 z:cz - rz_2];
 
-    _t = [[WWVec4 alloc] initWithVector:_tu];
-    [_t multiplyByScalar3:(maxDotT - minDotT)];
+    [_r multiplyByScalar3:rLen];
+    [_s multiplyByScalar3:sLen];
+    [_t multiplyByScalar3:tLen];
+    _radius = 0.5 * sqrt(rLen * rLen + sLen * sLen + tLen * tLen);
+}
 
-    _rLength = [_r length3];
-    _sLength = [_s length3];
-    _tLength = [_t length3];
+- (void) setToSector:(WWSector* __unsafe_unretained)sector
+             onGlobe:(WWGlobe* __unsafe_unretained)globe
+        minElevation:(double)minElevation
+        maxElevation:(double)maxElevation
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
 
-    _radius = 0.5 * sqrt(_rLength * _rLength + _sLength * _sLength + _tLength * _tLength);
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
 
-    WWVec4* ruh = [[WWVec4 alloc] initWithVector:_ru];
-    WWVec4* suh = [[WWVec4 alloc] initWithVector:_su];
-    WWVec4* tuh = [[WWVec4 alloc] initWithVector:_tu];
-    [ruh multiplyByScalar3:0.5 * (maxDotR + minDotR)];
-    [suh multiplyByScalar3:0.5 * (maxDotS + minDotS)];
-    [tuh multiplyByScalar3:0.5 * (maxDotT + minDotT)];
-    _center = [[WWVec4 alloc] initWithVector:ruh];
-    [_center add3:suh];
-    [_center add3:tuh];
+    double minLat = [sector minLatitude];
+    double maxLat = [sector maxLatitude];
+    double minLon = [sector minLongitude];
+    double maxLon = [sector maxLongitude];
+    double cenLat = [sector centroidLat];
+    double cenLon = [sector centroidLon];
 
-    WWVec4* rHalf = [[WWVec4 alloc] initWithVector:_r];
-    [rHalf multiplyByScalar3:0.5];
-    _topCenter = [[WWVec4 alloc] initWithVector:_center];
-    [_topCenter add3:rHalf];
-    _bottomCenter = [[WWVec4 alloc] initWithVector:_center];
-    [_bottomCenter subtract3:rHalf];
+    // Compute the centroid point with the maximum elevation. This point is used to compute the local coordinate axes
+    // at the sector's centroid, and to capture the maximum vertical dimension below.
+    WWVec4* __unsafe_unretained p = tmp1;
+    [globe computePointFromPosition:cenLat longitude:cenLon altitude:maxElevation outputPoint:p];
 
-    NSMutableArray* thePlanes = [[NSMutableArray alloc] initWithCapacity:6];
-    _planes = thePlanes;
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-[_ru x] y:-[_ru y] z:-[_ru z] distance:+minDotR]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+[_ru x] y:+[_ru y] z:+[_ru z] distance:-maxDotR]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-[_su x] y:-[_su y] z:-[_su z] distance:+minDotS]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+[_su x] y:+[_su y] z:+[_su z] distance:-maxDotS]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:-[_tu x] y:-[_tu y] z:-[_tu z] distance:+minDotT]];
-    [thePlanes addObject:[[WWPlane alloc] initWithCoordinates:+[_tu x] y:+[_tu y] z:+[_tu z] distance:-maxDotT]];
+    // Compute the local coordinate axes. Since we know this box is bounding a geographic sector, we use the local
+    // coordinate axes at its centroid as the box axes. Using these axes results in a box that has +-10% the volume of
+    // a box with axes derived from a principal component analysis.
+    [WWMath localCoordinateAxesAtPoint:p onGlobe:globe xaxis:_r yaxis:_s zaxis:_t];
 
-    return self;
+    // Find the extremes along each axis.
+    double rExtremes[2] = {+DBL_MAX, -DBL_MAX};
+    double sExtremes[2] = {+DBL_MAX, -DBL_MAX};
+    double tExtremes[2] = {+DBL_MAX, -DBL_MAX};
+
+    // A point at the centroid captures the maximum vertical dimension.
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Bottom-left corner with min elevation.
+    [globe computePointFromPosition:minLat longitude:minLon altitude:minElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Bottom-left corner with max elevation.
+    [globe computePointFromPosition:minLat longitude:minLon altitude:maxElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Bottom-right corner with min elevation.
+    [globe computePointFromPosition:minLat longitude:maxLon altitude:minElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Bottom-right corner with max elevation.
+    [globe computePointFromPosition:minLat longitude:maxLon altitude:maxElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Top-right corner with min elevation.
+    [globe computePointFromPosition:maxLat longitude:maxLon altitude:minElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Top-right corner with max elevation.
+    [globe computePointFromPosition:maxLat longitude:maxLon altitude:maxElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Top-left corner with min elevation.
+    [globe computePointFromPosition:maxLat longitude:minLon altitude:minElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    // Top-left corner with max elevation.
+    [globe computePointFromPosition:maxLat longitude:minLon altitude:maxElevation outputPoint:p];
+    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+
+    if (minLat < 0 && maxLat > 0)
+    {
+        // If the sector spans the equator then the curvature of all four edges needs to be considered. The extreme points
+        // along the top and bottom edges are located at their mid-points and the extreme points along the left and right
+        // edges are on the equator. Add points with the longitude of the sector's centroid but with the sector's min and
+        // max latitude, and add points with the sector's min and max longitude but with latitude at the equator. See
+        // WWJINT-225.
+        [globe computePointFromPosition:minLat longitude:cenLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        [globe computePointFromPosition:maxLat longitude:cenLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        [globe computePointFromPosition:0 longitude:minLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        [globe computePointFromPosition:0 longitude:maxLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    }
+    else if (minLat < 0)
+    {
+        // If the sector is located entirely in the southern hemisphere, then the curvature of its top edge needs to be
+        // considered. The extreme point along the top edge is located at its mid-point. Add a point with the longitude
+        // of the sector's centroid but with the sector's max latitude. See WWJINT-225.
+        [globe computePointFromPosition:maxLat longitude:cenLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    }
+    else
+    {
+        // If the sector is located entirely within the northern hemisphere then the curvature of its bottom edge needs to
+        // be considered. The extreme point along the bottom edge is located at its mid-point. Add a point with the
+        // longitude of the sector's centroid but with the sector's min latitude. See WWJINT-225.
+        [globe computePointFromPosition:minLat longitude:cenLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    }
+
+    if (maxLon - minLon > 180)  // Need to compute more points to ensure the box encompasses the full sector.
+    {
+        // Centroid latitude, longitude midway between min longitude and centroid longitude.
+        double lon = 0.5 * (minLon + cenLon);
+        [globe computePointFromPosition:cenLat longitude:lon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        // Centroid latitude, longitude midway between centroid longitude and max longitude.
+        lon = 0.5 * (maxLon + cenLon);
+        [globe computePointFromPosition:cenLat longitude:lon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        // Centroid latitude, longitude at min longitude.
+        [globe computePointFromPosition:cenLat longitude:minLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        // Centroid latitude, longitude at max longitude.
+        [globe computePointFromPosition:cenLat longitude:maxLon altitude:maxElevation outputPoint:p];
+        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    }
+
+    // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume
+    // that the axes are defined in this way.
+
+    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {swap(_r, rExtremes, _s, sExtremes, tmp1);}
+    if (sExtremes[1] - sExtremes[0] < tExtremes[1] - tExtremes[0]) {swap(_s, sExtremes, _t, tExtremes, tmp1);}
+    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {swap(_r, rExtremes, _s, sExtremes, tmp1);}
+
+    // Compute the box properties from its unit axes and the extremes along each axis.
+    double rLen = rExtremes[1] - rExtremes[0];
+    double sLen = sExtremes[1] - sExtremes[0];
+    double tLen = tExtremes[1] - tExtremes[0];
+    double rSum = rExtremes[1] + rExtremes[0];
+    double sSum = sExtremes[1] + sExtremes[0];
+    double tSum = tExtremes[1] + tExtremes[0];
+
+    double cx = 0.5 * ([_r x] * rSum + [_s x] * sSum + [_t x] * tSum);
+    double cy = 0.5 * ([_r y] * rSum + [_s y] * sSum + [_t y] * tSum);
+    double cz = 0.5 * ([_r z] * rSum + [_s z] * sSum + [_t z] * tSum);
+    double rx_2 = 0.5 * [_r x] * rLen;
+    double ry_2 = 0.5 * [_r y] * rLen;
+    double rz_2 = 0.5 * [_r z] * rLen;
+    [_center set:cx y:cy z:cz];
+    [_topCenter set:cx + rx_2 y:cy + ry_2 z:cz + rz_2];
+    [_bottomCenter set:cx - rx_2 y:cy - ry_2 z:cz - rz_2];
+
+    [_r multiplyByScalar3:rLen];
+    [_s multiplyByScalar3:sLen];
+    [_t multiplyByScalar3:tLen];
+    _radius = 0.5 * sqrt(rLen * rLen + sLen * sLen + tLen * tLen);
 }
 
 - (double) distanceTo:(WWVec4* __unsafe_unretained)point
@@ -255,11 +432,6 @@
     [_bottomCenter add3:translation];
     [_topCenter add3:translation];
     [_center add3:translation];
-
-    for (WWPlane* plane __unsafe_unretained in _planes)
-    {
-        [plane translate:translation];
-    }
 }
 
 @end

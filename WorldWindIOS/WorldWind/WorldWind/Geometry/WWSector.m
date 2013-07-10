@@ -386,7 +386,10 @@
     NSMutableArray* extremePoints = [[NSMutableArray alloc] init];
     [self computeExtremePoints:globe minElevation:minElevation maxElevation:maxElevation result:extremePoints];
 
-    return [[WWBoundingBox alloc] initWithPoints:extremePoints];
+    WWBoundingBox* box = [[WWBoundingBox alloc] initWithUnitBox];
+    [box setToPoints:extremePoints];
+
+    return box;
 }
 
 @end
