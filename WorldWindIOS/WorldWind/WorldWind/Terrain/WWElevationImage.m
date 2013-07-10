@@ -83,12 +83,17 @@
     return LERP(LERP(x0y0, x1y0, xf), LERP(x0y1, x1y1, xf), yf);
 }
 
-- (void) elevationsForSector:(WWSector*)sector
+- (void) elevationsForSector:(WWSector* __unsafe_unretained)sector
                       numLat:(int)numLat
                       numLon:(int)numLon
         verticalExaggeration:(double)verticalExaggeration
                       result:(double[])result
 {
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil");
+    }
+
     if (numLat <= 0 || numLon <= 0)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Num lat or num lon is not positive")
@@ -176,60 +181,85 @@
     }
 }
 
-- (void) minAndMaxElevationsForSector:(WWSector*)sector result:(double[])result
+- (void) minAndMaxElevationsForSector:(WWSector* __unsafe_unretained)sector result:(double[])result
 {
-    double maxLatSelf = [_sector maxLatitude];
-    double minLonSelf = [_sector minLongitude];
-    double deltaLatSelf = [_sector deltaLat];
-    double deltaLonSelf = [_sector deltaLon];
-
-    double minLatOther = [sector minLatitude];
-    double maxLatOther = [sector maxLatitude];
-    double minLonOther = [sector minLongitude];
-    double maxLonOther = [sector maxLongitude];
-
-    // Image coordinates of the specified sector, given an image origin in the top-left corner. We take the floor and
-    // ceiling of the min and max coordinates, respectively, in order to capture all pixels that would contribute to
-    // elevations computed for the specified sector in a call to elevationsForSector.
-    int minY = (int) floor((_imageHeight - 1) * (maxLatSelf - maxLatOther) / deltaLatSelf);
-    int maxY = (int) ceil((_imageHeight - 1) * (maxLatSelf - minLatOther) / deltaLatSelf);
-    int minX = (int) floor((_imageWidth - 1) * (minLonOther - minLonSelf) / deltaLonSelf);
-    int maxX = (int) ceil((_imageWidth - 1) * (maxLonOther - minLonSelf) / deltaLonSelf);
-    minY = CLAMP(0, _imageHeight - 1, minY);
-    maxY = CLAMP(0, _imageHeight - 1, maxY);
-    minX = CLAMP(0, _imageWidth - 1, minX);
-    maxX = CLAMP(0, _imageWidth - 1, maxX);
-
-    const short* pixels = [imageData bytes];
-    short min = SHRT_MAX;
-    short max = SHRT_MIN;
-
-    for (int y = minY; y <= maxY; y++)
+    if (sector == nil)
     {
-        for (int x = minX; x <= maxX; x++)
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil");
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    if ([sector contains:_sector]) // The specified sector completely contains this image; return the image min and max.
+    {
+        if (result[0] > _minElevation)
         {
-            short p = pixels[x + y * _imageWidth];
+            result[0] = _minElevation;
+        }
 
-            if (min > p)
-            {
-                min = p;
-            }
-
-            if (max < p)
-            {
-                max = p;
-            }
+        if (result[1] < _maxElevation)
+        {
+            result[1] = _maxElevation;
         }
     }
-
-    if (result[0] > min)
+    else // The specified sector intersects a portion of this image; compute the min and max from intersecting pixels.
     {
-        result[0] = min;
-    }
+        double maxLatSelf = [_sector maxLatitude];
+        double minLonSelf = [_sector minLongitude];
+        double deltaLatSelf = [_sector deltaLat];
+        double deltaLonSelf = [_sector deltaLon];
 
-    if (result[1] < max)
-    {
-        result[1] = max;
+        double minLatOther = [sector minLatitude];
+        double maxLatOther = [sector maxLatitude];
+        double minLonOther = [sector minLongitude];
+        double maxLonOther = [sector maxLongitude];
+
+        // Image coordinates of the specified sector, given an image origin in the top-left corner. We take the floor and
+        // ceiling of the min and max coordinates, respectively, in order to capture all pixels that would contribute to
+        // elevations computed for the specified sector in a call to elevationsForSector.
+        int minY = (int) floor((_imageHeight - 1) * (maxLatSelf - maxLatOther) / deltaLatSelf);
+        int maxY = (int) ceil((_imageHeight - 1) * (maxLatSelf - minLatOther) / deltaLatSelf);
+        int minX = (int) floor((_imageWidth - 1) * (minLonOther - minLonSelf) / deltaLonSelf);
+        int maxX = (int) ceil((_imageWidth - 1) * (maxLonOther - minLonSelf) / deltaLonSelf);
+        minY = CLAMP(0, _imageHeight - 1, minY);
+        maxY = CLAMP(0, _imageHeight - 1, maxY);
+        minX = CLAMP(0, _imageWidth - 1, minX);
+        maxX = CLAMP(0, _imageWidth - 1, maxX);
+
+        const short* pixels = [imageData bytes];
+        short min = SHRT_MAX;
+        short max = SHRT_MIN;
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                short p = pixels[x + y * _imageWidth];
+
+                if (min > p)
+                {
+                    min = p;
+                }
+
+                if (max < p)
+                {
+                    max = p;
+                }
+            }
+        }
+
+        if (result[0] > min)
+        {
+            result[0] = min;
+        }
+
+        if (result[1] < max)
+        {
+            result[1] = max;
+        }
     }
 }
 
@@ -284,6 +314,40 @@
 
     NSDictionary* fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:_filePath error:nil];
     _fileModificationDate = [fileAttributes objectForKey:NSFileModificationDate];
+
+    [self findMinAndMaxElevation];
+}
+
+- (void) findMinAndMaxElevation
+{
+    if (imageData != nil && [imageData length] > 0)
+    {
+        _minElevation = +DBL_MAX;
+        _maxElevation = -DBL_MAX;
+
+        const short* pixels = [imageData bytes];
+        int pixelCount = _imageWidth * _imageHeight;
+
+        for (int i = 0; i < pixelCount; i++)
+        {
+            short p = pixels[i];
+
+            if (_minElevation > p)
+            {
+                _minElevation = p;
+            }
+
+            if (_maxElevation < p)
+            {
+                _maxElevation = p;
+            }
+        }
+    }
+    else
+    {
+        _minElevation = 0;
+        _maxElevation = 0;
+    }
 }
 
 @end

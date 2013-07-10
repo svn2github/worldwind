@@ -82,7 +82,7 @@
 * @param delta The level's latitudinal tile delta in degrees.
 * @param latitude The tile's minimum latitude.
 *
-* @return the row number of the specified tile.
+* @return The row number of the specified tile.
 *
 * @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified latitude
 * is not within the range -90, 90.
@@ -95,12 +95,38 @@
 * @param delta The level's longitudinal tile delta in degrees.
 * @param longitude The tile's minimum longitude.
 *
-* @return the column number of the specified tile.
+* @return The column number of the specified tile.
 *
 * @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified longitude
 * is not within the range --180, 180.
 */
 + (int) computeColumn:(double)delta longitude:(double)longitude;
+
+/**
+* Computes the last row number for a tile within a level given its maximum latitude.
+*
+* @param delta The level's latitudinal tile delta in degrees.
+* @param maxLatitude The tile's maximum latitude.
+*
+* @return The last row number of the specified tile.
+*
+* @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified maxLatitude
+* is not within the range -90, 90.
+*/
++ (int) computeLastRow:(double)delta maxLatitude:(double)maxLatitude;
+
+/**
+* Computes the last column number for a tile within a level given its maximum longitude.
+*
+* @param delta The level's longitudinal tile delta in degrees.
+* @param maxLongitude The tile's maximum longitude.
+*
+* @return The last column number of the specified tile.
+*
+* @exception NSInvalidArgumentException If the specified delta is less than or equal to 0 or the specified maxLongitude
+* is not within the range --180, 180.
+*/
++ (int) computeLastColumn:(double)delta maxLongitude:(double)maxLongitude;
 
 /**
 * Computes a sector spanned by a tile with the specified level, row, and column.

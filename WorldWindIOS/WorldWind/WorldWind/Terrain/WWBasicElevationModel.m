@@ -141,7 +141,7 @@
                         numLon:(int)numLon
               targetResolution:(double)targetResolution
           verticalExaggeration:(double)verticalExaggeration
-                        result:(double [])result
+                        result:(double[])result
 {
     if (sector == nil)
     {
@@ -212,7 +212,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
     }
 
-    WWLevel* level = [levels levelForTileDelta:[sector deltaLat] * 4];
+    WWLevel* level = [levels levelForTexelSize:RADIANS([sector deltaLat]) / 64];
     [self assembleTilesForLevel:level sector:sector retrieveTiles:NO];
 
     if ([currentTiles count] == 0)
@@ -224,15 +224,21 @@
     // of expanding the extremes with each subsequent tile as needed. If we initialized this array with zeros then the
     // output extreme elevations would always contain zero, even when the range of the image's extreme elevations in the
     // sector does not contain zero.
-    result[0] = +DBL_MAX;
-    result[1] = -DBL_MAX;
+    double min = +DBL_MAX;
+    double max = -DBL_MAX;
 
     for (WWElevationTile* tile in currentTiles) // No need to sort.
     {
         WWElevationImage* image = [tile image];
         if (image != nil)
         {
-            [image minAndMaxElevationsForSector:sector result:result];
+            double imageMin = [image minElevation];
+            if (min > imageMin)
+                min = imageMin;
+
+            double imageMax = [image maxElevation];
+            if (max < imageMax)
+                max = imageMax;
         }
         else
         {
@@ -241,6 +247,9 @@
             return; // At least one tile image is not in memory; return the model's extreme elevations.
         }
     }
+
+    result[0] = min;
+    result[1] = max;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -364,9 +373,9 @@
     double deltaLon = [[level tileDelta] longitude];
 
     int firstRow = [WWTile computeRow:deltaLat latitude:[currentSector minLatitude]];
-    int lastRow = [WWTile computeRow:deltaLat latitude:[currentSector maxLatitude]];
+    int lastRow = [WWTile computeLastRow:deltaLat maxLatitude:[currentSector maxLatitude]];
     int firstCol = [WWTile computeColumn:deltaLon longitude:[currentSector minLongitude]];
-    int lastCol = [WWTile computeColumn:deltaLon longitude:[currentSector maxLongitude]];
+    int lastCol = [WWTile computeLastColumn:deltaLon maxLongitude:[currentSector maxLongitude]];
 
     for (int row = firstRow; row <= lastRow; row++)
     {
@@ -447,7 +456,7 @@
     }
 }
 
-- (BOOL)isTileImageExpired:(WWElevationTile*)tile
+- (BOOL) isTileImageExpired:(WWElevationTile*)tile
 {
     if (_expiration == nil || [_expiration timeIntervalSinceNow] > 0)
     {

@@ -171,6 +171,18 @@
 - (BOOL) intersects:(WWSector*)sector;
 
 /**
+* Indicates whether this sector contains a specified sector.
+*
+* This sector contains the specified sector when this sector's min and max latitude and longitude are greater than or
+* equal to that of the specified sector.
+*
+* @param sector The sector to test containment with. May be nil, in which case this method returns NO.
+*
+* @return YES if this sector contains the specified sector, otherwise NO.
+*/
+- (BOOL) contains:(WWSector*)sector;
+
+/**
 * Indicates whether this sector contains a specified geographic location.
 *
 * @param latitude The latitude to test.

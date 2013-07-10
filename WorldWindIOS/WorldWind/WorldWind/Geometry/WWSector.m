@@ -174,8 +174,21 @@
         && _maxLatitude >= sector->_minLatitude;
 }
 
+- (BOOL) contains:(WWSector* __unsafe_unretained)sector
+{
+    if (sector == nil)
+        return NO;
+
+    // Assumes normalized angles: [-180, 180], [-90, 90].
+    return _minLatitude <= sector->_minLatitude
+        && _maxLatitude >= sector->_maxLatitude
+        && _minLongitude <= sector->_minLongitude
+        && _maxLongitude >= sector->_maxLongitude;
+}
+
 - (BOOL) contains:(double)latitude longitude:(double)longitude
 {
+    // Assumes normalized angles: [-180, 180], [-90, 90].
     return _minLatitude <= latitude
         && _maxLatitude >= latitude
         && _minLongitude <= longitude

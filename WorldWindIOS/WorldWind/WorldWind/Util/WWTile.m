@@ -119,7 +119,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
-    int row = (int) ((latitude + 90) / delta);
+    int row = (int) ((latitude + 90) / delta); // implicitly computes the floor of (minLat + 90) / delta.
     // If latitude is at the end of the grid, subtract 1 from the computed row to return the last row.
     if (latitude == 90)
     {
@@ -142,17 +142,57 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
-    double gridLongitude = longitude + 180;
-    if (gridLongitude < 0)
-    {
-        gridLongitude = 360 + gridLongitude;
-    }
-
-    int col = (int) (gridLongitude / delta);
+    int col = (int) ((longitude + 180) / delta); // implicitly computes the floor of (longitude + 180) / delta.
     // If longitude is at the end of the grid, subtract 1 from the computed column to return the last column.
     if (longitude == 180)
     {
         col -= 1;
+    }
+
+    return col;
+}
+
++ (int) computeLastRow:(double)delta maxLatitude:(double)maxLatitude
+{
+    if (delta <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile delta is less than or equal to 0")
+    }
+
+    if (maxLatitude < -90 || maxLatitude > 90)
+    {
+        NSString* msg = [NSString stringWithFormat:@"Max latitude %f is out of range", maxLatitude];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    int row = (int) ceil((maxLatitude + 90) / delta - 1);
+    // If max latitude is in the first row, set the max row to 0.
+    if (maxLatitude + 90 < delta)
+    {
+        row = 0;
+    }
+
+    return row;
+}
+
++ (int) computeLastColumn:(double)delta maxLongitude:(double)maxLongitude
+{
+    if (delta <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Tile delta is less than or equal to 0")
+    }
+
+    if (maxLongitude < -180 || maxLongitude > 180)
+    {
+        NSString* msg = [NSString stringWithFormat:@"Max longitude %f is out of range", maxLongitude];
+        WWLOG_AND_THROW(NSInvalidArgumentException, msg)
+    }
+
+    int col = (int) ceil((maxLongitude + 180) / delta - 1);
+    // If max longitude is in the first column, set the max column to 0.
+    if (maxLongitude + 180 < delta)
+    {
+        col = 0;
     }
 
     return col;
