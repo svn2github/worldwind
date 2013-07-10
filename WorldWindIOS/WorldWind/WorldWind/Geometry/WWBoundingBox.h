@@ -70,11 +70,18 @@
 - (void) setToPoints:(NSArray*)points;
 
 /**
-* Sets this bounding box such that it contains the terrain geometry of a specified sector on a specified globe with min
-* and max elevation.
+* Sets this bounding box such that it contains a specified sector on a specified globe with min and max elevation.
+*
+* - To create a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
+* elevations.
+* - To create a bounding box that contains the terrain surface in this sector, specify the actual minimum and maximum
+* elevation values associated with this sector, multiplied by the scene's vertical exaggeration. These values can be
+* determined by calling [WWGlobe minAndMaxElevationsForSector:result:] and [WWDrawContext verticalExaggeration]. The
+* returned bounding box must be recomputed whenever the globe's elevations or the vertical exaggeration changes. The
+* method [WWGlobe elevationTimestamp] can be used to determine when the elevations change.
 *
 * @param sector The sector to contain.
-* @param globe The globe defining the terrain geometry of the specified sector.
+* @param globe The globe defining the surface and terrain geometry of the specified sector.
 * @param minElevation The globe's minimum elevation within the specified sector.
 * @param maxElevation The globe's maximum elevation within the specified sector.
 *
