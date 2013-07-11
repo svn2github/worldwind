@@ -63,7 +63,7 @@
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
     _timeout = 20; // seconds
-    _timestamp = [NSDate date];
+    _timestamp = [NSDate timeIntervalSinceReferenceDate];
 
     coverageSector = sector;
     currentSector = [[WWSector alloc] initWithDegreesMinLatitude:0 maxLatitude:0 minLongitude:0 maxLongitude:0];
@@ -619,7 +619,7 @@
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
-            _timestamp = [NSDate date];
+            [self setTimestamp:[NSDate timeIntervalSinceReferenceDate]];
             [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
         }
     }
@@ -675,7 +675,7 @@
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
-            _timestamp = [NSDate date];
+            [self setTimestamp:[NSDate timeIntervalSinceReferenceDate]];
             [absentResources unmarkResourceAbsent:imagePath];
             [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
         }

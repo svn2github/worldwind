@@ -83,7 +83,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    NSTimeInterval lastElevationsChange = [[[dc globe] elevationTimestamp] timeIntervalSinceReferenceDate];
+    NSTimeInterval lastElevationsChange = [[dc globe] elevationTimestamp];
     if ([currentTiles count] > 0
             && elevationTimestamp == lastElevationsChange
             && lastMVP != nil && [[[dc navigatorState] modelviewProjection] isEqual:lastMVP])

@@ -415,7 +415,7 @@
     }
 }
 
-- (NSDate*) elevationTimestamp // TODO: Replace this NSDate pointer with an NSTimeInterval
+- (NSTimeInterval) elevationTimestamp
 {
     return [_elevationModel timestamp];
 }

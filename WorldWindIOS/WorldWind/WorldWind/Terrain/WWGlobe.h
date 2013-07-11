@@ -215,11 +215,13 @@
 /**
 * Indicates the date and time at which any elevations associated with the globe last changed.
 *
-* This can be used to invalidate cached computations based on the globe's elevations.
+* The returned NSTimeInterval indicates the time since the reference date that the elevations last changed. See
+* `NSDate timeIntervalSinceReferenceDate` for more information. This can be used to invalidate cached computations based
+* on the globe's elevations.
 *
-* @return The globe's elevation timestamp as an NSDate.
+* @return The globe's elevation timestamp as an NSTimeInterval since the reference date.
 */
-- (NSDate*) elevationTimestamp;
+- (NSTimeInterval) elevationTimestamp;
 
 /**
 * Return the elevation at a specified location.

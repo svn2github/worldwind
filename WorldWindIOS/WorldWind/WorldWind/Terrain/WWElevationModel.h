@@ -31,23 +31,36 @@
 /// Indicates the elevation model's display name.
 @property (nonatomic) NSString* displayName;
 
-/// Indicates the date and time at which the elevation model last changed.
-///
-/// This property is used to invalidate cached computations based on the elevation model's values. This property is
-/// typically accessed from multiple threads, and is therefore declared atomic.
-@property (atomic, readonly) NSDate* timestamp;
+/**
+* Indicates the elevation model's minimum elevation for all values in the model.
+*
+* The minimum and maximum elevation values for a specific geographic area can be determined by calling
+* minAndMaxElevationsForSector:result:.
+*
+* @return The elevation model's minimum elevation value.
+*/
+- (double) minElevation;
 
-/// Indicates the elevation model's minimum elevation for all values in the model.
-///
-/// The minimum and maximum elevation values for a specific geographic area can be determined by calling
-/// minAndMaxElevationsForSector:result:.
-@property (nonatomic) double minElevation;
+/**
+* Indicates the elevation model's maximum elevation for all values in the model.
+*
+* The minimum and maximum elevation values for a specific geographic area can be determined by calling
+* minAndMaxElevationsForSector:result:.
+*
+* @return The elevation model's maximum elevation value.
+*/
+- (double) maxElevation;
 
-/// Indicates the elevation model's maximum elevation for all values in the model.
-///
-/// The minimum and maximum elevation values for a specific geographic area can be determined by calling
-/// minAndMaxElevationsForSector:result:.
-@property (nonatomic) double maxElevation;
+/**
+ * Indicates the date and time at which the elevation model last changed.
+ *
+ * This indicates the time since the reference date that the elevations last changed. See
+ * `NSDate timeIntervalSinceReferenceDate` for more information. This property is used to invalidate cached computations
+ * based on the elevation model's values.
+ *
+ * @return The elevation model's timestamp as an NSTimeInterval since the reference date.
+ */
+ - (NSTimeInterval) timestamp;
 
 /// @name Retrieving Elevations
 

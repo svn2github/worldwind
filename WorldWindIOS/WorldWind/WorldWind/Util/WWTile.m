@@ -400,7 +400,7 @@
     }
 
     WWGlobe* __unsafe_unretained globe = [dc globe];
-    NSTimeInterval elevationTimestamp = [[globe elevationTimestamp] timeIntervalSinceReferenceDate];
+    NSTimeInterval elevationTimestamp = [globe elevationTimestamp];
     double verticalExaggeration = [dc verticalExaggeration];
 
     if (extentTimestamp != elevationTimestamp || extentVerticalExaggeration != verticalExaggeration)
