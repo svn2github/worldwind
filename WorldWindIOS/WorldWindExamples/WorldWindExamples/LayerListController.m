@@ -85,6 +85,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
     [[[_wwv sceneController] layers] moveLayerAtRow:[sourceIndexPath row] toRow:[destinationIndexPath row]];
+    [self requestRedraw];
 }
 
 - (void) tableView:(UITableView*)tableView
