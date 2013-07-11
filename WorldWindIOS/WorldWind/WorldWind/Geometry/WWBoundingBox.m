@@ -14,7 +14,7 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
-void adjustExtremes(WWVec4* __unsafe_unretained r, double* rExtremes,
+void WWBoundingBoxAdjustExtremes(WWVec4* __unsafe_unretained r, double* rExtremes,
         WWVec4* __unsafe_unretained s, double* sExtremes,
         WWVec4* __unsafe_unretained t, double* tExtremes,
         WWVec4* __unsafe_unretained p)
@@ -38,7 +38,7 @@ void adjustExtremes(WWVec4* __unsafe_unretained r, double* rExtremes,
         tExtremes[1] = pdt;
 }
 
-void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
+void WWBoundingBoxSwapAxes(WWVec4* __unsafe_unretained a, double* aExtremes,
         WWVec4* __unsafe_unretained b, double* bExtremes,
         WWVec4* __unsafe_unretained tmp)
 {
@@ -181,31 +181,31 @@ void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
     double tExtremes[2] = {+DBL_MAX, -DBL_MAX};
 
     // A point at the centroid captures the maximum vertical dimension.
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Bottom-left corner with min elevation.
     [globe computePointFromPosition:minLat longitude:minLon altitude:minElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Bottom-left corner with max elevation.
     [globe computePointFromPosition:minLat longitude:minLon altitude:maxElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Bottom-right corner with min elevation.
     [globe computePointFromPosition:minLat longitude:maxLon altitude:minElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Bottom-right corner with max elevation.
     [globe computePointFromPosition:minLat longitude:maxLon altitude:maxElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Top-right corner with min elevation.
     [globe computePointFromPosition:maxLat longitude:maxLon altitude:minElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Top-right corner with max elevation.
     [globe computePointFromPosition:maxLat longitude:maxLon altitude:maxElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Top-left corner with min elevation.
     [globe computePointFromPosition:maxLat longitude:minLon altitude:minElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     // Top-left corner with max elevation.
     [globe computePointFromPosition:maxLat longitude:minLon altitude:maxElevation outputPoint:p];
-    adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+    WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
 
     if (minLat < 0 && maxLat > 0)
     {
@@ -215,13 +215,13 @@ void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
         // max latitude, and add points with the sector's min and max longitude but with latitude at the equator. See
         // WWJINT-225.
         [globe computePointFromPosition:minLat longitude:cenLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         [globe computePointFromPosition:maxLat longitude:cenLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         [globe computePointFromPosition:0 longitude:minLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         [globe computePointFromPosition:0 longitude:maxLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     }
     else if (minLat < 0)
     {
@@ -229,7 +229,7 @@ void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
         // considered. The extreme point along the top edge is located at its mid-point. Add a point with the longitude
         // of the sector's centroid but with the sector's max latitude. See WWJINT-225.
         [globe computePointFromPosition:maxLat longitude:cenLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     }
     else
     {
@@ -237,7 +237,7 @@ void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
         // be considered. The extreme point along the bottom edge is located at its mid-point. Add a point with the
         // longitude of the sector's centroid but with the sector's min latitude. See WWJINT-225.
         [globe computePointFromPosition:minLat longitude:cenLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     }
 
     if (maxLon - minLon > 180)  // Need to compute more points to ensure the box encompasses the full sector.
@@ -245,25 +245,25 @@ void swap(WWVec4* __unsafe_unretained a, double* aExtremes,
         // Centroid latitude, longitude midway between min longitude and centroid longitude.
         double lon = 0.5 * (minLon + cenLon);
         [globe computePointFromPosition:cenLat longitude:lon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         // Centroid latitude, longitude midway between centroid longitude and max longitude.
         lon = 0.5 * (maxLon + cenLon);
         [globe computePointFromPosition:cenLat longitude:lon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         // Centroid latitude, longitude at min longitude.
         [globe computePointFromPosition:cenLat longitude:minLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
         // Centroid latitude, longitude at max longitude.
         [globe computePointFromPosition:cenLat longitude:maxLon altitude:maxElevation outputPoint:p];
-        adjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
+        WWBoundingBoxAdjustExtremes(_r, rExtremes, _s, sExtremes, _t, tExtremes, p);
     }
 
     // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume
     // that the axes are defined in this way.
 
-    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {swap(_r, rExtremes, _s, sExtremes, tmp1);}
-    if (sExtremes[1] - sExtremes[0] < tExtremes[1] - tExtremes[0]) {swap(_s, sExtremes, _t, tExtremes, tmp1);}
-    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {swap(_r, rExtremes, _s, sExtremes, tmp1);}
+    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {WWBoundingBoxSwapAxes(_r, rExtremes, _s, sExtremes, tmp1);}
+    if (sExtremes[1] - sExtremes[0] < tExtremes[1] - tExtremes[0]) {WWBoundingBoxSwapAxes(_s, sExtremes, _t, tExtremes, tmp1);}
+    if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {WWBoundingBoxSwapAxes(_r, rExtremes, _s, sExtremes, tmp1);}
 
     // Compute the box properties from its unit axes and the extremes along each axis.
     double rLen = rExtremes[1] - rExtremes[0];

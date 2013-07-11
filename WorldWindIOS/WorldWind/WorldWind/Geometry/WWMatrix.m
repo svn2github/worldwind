@@ -20,7 +20,7 @@
 #define NEAR_ZERO_THRESHOLD 1.0e-8
 #define TINY_VALUE 1.0e-20
 
-void swap(double* a, double* b, int* ia, int* ib)
+void WWMatrixSwapEigenvalues(double* a, double* b, int* ia, int* ib)
 {
     double tmp = *a;
     *a = *b;
@@ -1189,9 +1189,9 @@ void swap(double* a, double* b, int* ia, int* ib)
     int i2 = 1;
     int i3 = 2;
 
-    if (m11 < m22) {swap(&m11, &m22, &i1, &i2);}
-    if (m22 < m33) {swap(&m22, &m33, &i2, &i3);}
-    if (m11 < m22) {swap(&m11, &m22, &i1, &i2);}
+    if (m11 < m22) {WWMatrixSwapEigenvalues(&m11, &m22, &i1, &i2);}
+    if (m22 < m33) {WWMatrixSwapEigenvalues(&m22, &m33, &i2, &i3);}
+    if (m11 < m22) {WWMatrixSwapEigenvalues(&m11, &m22, &i1, &i2);}
 
     [vec1 set:r[0][i1] y:r[1][i1] z:r[2][i1]];
     [vec2 set:r[0][i2] y:r[1][i2] z:r[2][i2]];
