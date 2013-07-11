@@ -95,9 +95,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
         [[[_wwv sceneController] layers] removeLayerAtRow:[indexPath row]];
-
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
-                         withRowAnimation:UITableViewRowAnimationFade];
+        [self requestRedraw];
     }
 }
 
