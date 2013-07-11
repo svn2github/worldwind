@@ -28,9 +28,6 @@
 /// thereby creating a cycle. A strong reference to the tessellator is always held by the Globe.
 @property (nonatomic, readonly, weak) WWTessellator* tessellator;
 
-/// The origin point that the terrain tile's model coordinate points are relative to.
-@property (nonatomic) WWVec4* referenceCenter;
-
 /// The transform matrix that maps tile local coordinate to model coordinates.
 @property (nonatomic) WWMatrix* transformationMatrix;
 

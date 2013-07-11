@@ -6,10 +6,7 @@
  */
 
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
@@ -237,34 +234,6 @@
         _minLongitude = sector->_minLongitude;
     if (_maxLongitude < sector->_maxLongitude)
         _maxLongitude = sector->_maxLongitude;
-}
-
-- (void) computeReferencePoints:(WWGlobe* __unsafe_unretained)globe elevation:(double)elevation result:(NSMutableArray* __unsafe_unretained)result
-{
-    if (globe == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
-    }
-
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output array is nil")
-    }
-
-    double centerLat = 0.5 * (_minLatitude + _maxLatitude);
-    double centerLon = 0.5 * (_minLongitude + _maxLongitude);
-
-    WWVec4* swPoint = [result objectAtIndex:0];
-    WWVec4* sePoint = [result objectAtIndex:1];
-    WWVec4* nePoint = [result objectAtIndex:2];
-    WWVec4* nwPoint = [result objectAtIndex:3];
-    WWVec4* centerPoint = [result objectAtIndex:4];
-
-    [globe computePointFromPosition:_minLatitude longitude:_minLongitude altitude:elevation outputPoint:swPoint];
-    [globe computePointFromPosition:_minLatitude longitude:_maxLongitude altitude:elevation outputPoint:sePoint];
-    [globe computePointFromPosition:_maxLatitude longitude:_maxLongitude altitude:elevation outputPoint:nePoint];
-    [globe computePointFromPosition:_maxLatitude longitude:_minLongitude altitude:elevation outputPoint:nwPoint];
-    [globe computePointFromPosition:centerLat longitude:centerLon altitude:elevation outputPoint:centerPoint];
 }
 
 @end

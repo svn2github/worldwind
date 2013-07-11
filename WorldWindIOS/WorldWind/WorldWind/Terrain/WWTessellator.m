@@ -207,8 +207,7 @@
     // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
     // center here and establish a translation transform that is used later to move the tile coordinates into place
     // relative to the globe.
-    WWVec4* refCenter = [tile referenceCenter];
-    [refCenter set:[[tile referencePoints] objectAtIndex:4]]; // Use the tile's centroid point with the min elevation.
+    WWVec4* refCenter = [tile referencePoint];
     [[tile transformationMatrix] setTranslation:[refCenter x] y:[refCenter y] z:[refCenter z]];
 
     // The number of vertices in each dimension is 1 more than the number of cells.
@@ -780,7 +779,7 @@
     // Transform the ray to model coordinates so that we don't have to add the reference center to all the triangle
     // vertices. The pick is therefore done in model coordinates rather than world coordinates. The result, if any, is
     // transformed to world coordinates below.
-    WWVec4* refCenter = [tile referenceCenter];
+    WWVec4* refCenter = [tile referencePoint];
     [[ray origin] subtract3:refCenter];
 
     // Check all triangles for intersection with the pick ray.

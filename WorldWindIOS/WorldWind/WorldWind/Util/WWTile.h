@@ -14,6 +14,7 @@
 @class WWLevel;
 @class WWMemoryCache;
 @class WWSector;
+@class WWVec4;
 @protocol WWExtent;
 @protocol WWTileFactory;
 
@@ -30,6 +31,10 @@
     double texelSize;
     // Cache key used to retrieve the tile's children from a memory cache.
     NSString* tileKey;
+    // Values used to update the tile's extent and determine when the tile needs to subdivide.
+    double minHeight;
+    double maxHeight;
+    WWVec4* nearestPoint;
     // Values used to invalidate the tile's extent when the elevations or the vertical exaggeration changes.
     NSTimeInterval extentTimestamp;
     double extentVerticalExaggeration;
@@ -49,11 +54,11 @@
 /// The tile's column in the associated level.
 @property(nonatomic, readonly) int column;
 
-/// Cartesian coordinates of the tile's corners, center and potentially other key locations on the tile.
-@property(nonatomic, readonly) NSMutableArray* referencePoints;
-
 /// The tile's Cartesian bounding box.
 @property(nonatomic, readonly) WWBoundingBox* extent;
+
+/// The tile's local origin point. Any model coordinate points created for the tile should be relative to this point.
+@property(nonatomic, readonly) WWVec4* referencePoint;
 
 /**
 * Indicates the width in pixels or cells of this tile's resource.

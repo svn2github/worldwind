@@ -9,12 +9,14 @@
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/Util/WWLevel.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWMemoryCache.h"
 #import "WorldWind/Util/WWTileFactory.h"
 #import "WorldWind/Util/WWTileList.h"
@@ -58,6 +60,7 @@
     tileHeight = [level tileHeight];
     texelSize = [level texelSize];
     tileKey = [NSString stringWithFormat:@"%d,%d,%d", [level levelNumber], _row, _column];
+    nearestPoint = [[WWVec4 alloc] initWithZeroVector];
 
     return self;
 }
@@ -84,9 +87,12 @@
     + (4 + 32) // sector
     + (4) // level pointer (the level is common to the layer or tessellator so not included here
     + (8) // row and column
-    + (8) // resolution
-    + (4 + 5 * 32) // reference points
-    + (4 + 676); // bounding box
+    + (8) // texel size
+    + (4 + 32) // reference point
+    + (4 + 676) // bounding box
+    + 8 // min and max height
+    + (4 + 32) // nearest point
+    + 8; // extent timestamp and vertical exaggeration
 
     return size;
 }
@@ -359,42 +365,21 @@
     return children;
 }
 
-- (BOOL) mustSubdivide:(WWDrawContext*)dc detailFactor:(double)detailFactor
+- (BOOL) mustSubdivide:(WWDrawContext* __unsafe_unretained)dc detailFactor:(double)detailFactor
 {
-    WWVec4* eyePoint = [[dc navigatorState] eyePoint];
+    WWGlobe* __unsafe_unretained globe = [dc globe];
+    WWPosition* __unsafe_unretained eyePos = [dc eyePosition];
 
-    double d1 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:0]];
-    double d2 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:1]];
-    double d3 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:2]];
-    double d4 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:3]];
-    double d5 = [eyePoint distanceSquared3:[_referencePoints objectAtIndex:4]];
+    // Compute the point on the tile that is nearest to the eye point. Use the minimum elevation because it provides a
+    // reasonable estimate for distance, and the eye point always gets closer to the point as it moves closer to the
+    // terrain surface.
+    double nearestLat = WWCLAMP([eyePos latitude], [_sector minLatitude], [_sector maxLatitude]);
+    double nearestLon = WWCLAMP([eyePos longitude], [_sector minLongitude], [_sector maxLongitude]);
+    [globe computePointFromPosition:nearestLat longitude:nearestLon altitude:minHeight outputPoint:nearestPoint];
 
-    // Find the minimum distance. Compute the cell height at the corresponding point. Cell height is radius * radian
-    // texel size.
-
-    double minDistance = d1;
-    double cellSize = [[_referencePoints objectAtIndex:0] length3] * texelSize;
-
-    if (d2 < minDistance)
-    {
-        minDistance = d2;
-        cellSize = [[_referencePoints objectAtIndex:1] length3] * texelSize;
-    }
-    if (d3 < minDistance)
-    {
-        minDistance = d3;
-        cellSize = [[_referencePoints objectAtIndex:2] length3] * texelSize;
-    }
-    if (d4 < minDistance)
-    {
-        minDistance = d4;
-        cellSize = [[_referencePoints objectAtIndex:3] length3] * texelSize;
-    }
-    if (d5 < minDistance)
-    {
-        minDistance = d5;
-        cellSize = [[_referencePoints objectAtIndex:4] length3] * texelSize;
-    }
+    // Compute the cell size and distance to the nearest point on the tile. Cell size is radius * radian texel size.
+    double cellSize = MAX([globe equatorialRadius], [globe polarRadius]) * texelSize;
+    double distance = [nearestPoint distanceTo3:[[dc navigatorState] eyePoint]];
 
     // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye distance.
     // The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the cell height
@@ -404,17 +389,17 @@
     // Note: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is window-
     // size dependent and results in selecting an excessive number of tiles when the window is large.
 
-    return cellSize > sqrt(minDistance) * pow(10, -detailFactor);
+    return cellSize > distance * pow(10, -detailFactor);
 }
 
-- (void) update:(WWDrawContext*)dc;
+- (void) update:(WWDrawContext* __unsafe_unretained)dc;
 {
     if (dc == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Draw context is nil")
     }
 
-    WWGlobe* globe = [dc globe];
+    WWGlobe* __unsafe_unretained globe = [dc globe];
     NSTimeInterval elevationTimestamp = [[globe elevationTimestamp] timeIntervalSinceReferenceDate];
     double verticalExaggeration = [dc verticalExaggeration];
 
@@ -426,9 +411,9 @@
         [globe minAndMaxElevationsForSector:_sector result:extremes];
 
         // Multiply the minimum and maximum elevations by the scene's vertical exaggeration. This ensures that the
-        // elevations to build the terrain are contained by this tile's extent.
-        double minHeight = extremes[0] * verticalExaggeration;
-        double maxHeight = extremes[1] * verticalExaggeration;
+        // elevations to used build the terrain are contained by this tile's extent.
+        minHeight = extremes[0] * verticalExaggeration;
+        maxHeight = extremes[1] * verticalExaggeration;
         if (minHeight == maxHeight)
             minHeight = maxHeight + 10; // TODO: Determine if this is necessary.
 
@@ -437,27 +422,14 @@
             _extent = [[WWBoundingBox alloc] initWithUnitBox];
         [_extent setToSector:_sector onGlobe:globe minElevation:minHeight maxElevation:maxHeight];
 
-        // Compute reference points used to determine when the tile must be subdivided into its four children. These
-        // reference points provide a way to estimate distance between the tile and the eye point. We compute reference
-        // points the at the tile's four corners and its center, all at the minimum elevation in the tile's coverage
-        // area. We use the minimum elevation because it provides a reasonable estimate for distance, and the eye point
-        // always gets closer to the reference points as it moves closer to the terrain surface.
-        // TODO: Try replacing reference points with a single point under the eye or the nearest boundary point.
-        if (_referencePoints == nil)
-        {
-            _referencePoints = [[NSMutableArray alloc] initWithCapacity:5];
-            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-            [_referencePoints addObject:[[WWVec4 alloc] initWithZeroVector]];
-        }
+        // Compute the reference point used as a local coordinate origin for the tile.
+        if (_referencePoint == nil)
+            _referencePoint = [[WWVec4 alloc] initWithZeroVector];
+        [globe computePointFromPosition:[_sector centroidLat] longitude:[_sector centroidLon] altitude:minHeight
+                            outputPoint:_referencePoint];
 
-        [_sector computeReferencePoints:globe elevation:minHeight result:_referencePoints];
-
-        // Set the geometry timestamp to the globe's elevation timestamp on which the geometry is based. This ensures that
-        // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames, and avoids
-        // creating redundant NSDate objects.
+        // Set the geometry extent to the globe's elevation timestamp on which the geometry is based. This ensures that
+        // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames.
         extentTimestamp = elevationTimestamp;
         extentVerticalExaggeration = verticalExaggeration;
         [[dc frameStatistics] incrementTileUpdateCount:1];

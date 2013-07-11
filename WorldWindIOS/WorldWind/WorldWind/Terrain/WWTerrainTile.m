@@ -32,7 +32,6 @@
     self = [super initWithSector:sector level:level row:row column:column];
 
     _tessellator = tessellator;
-    _referenceCenter = [[WWVec4 alloc] initWithZeroVector];
     _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     _points = 0;
     _geometryVboCacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
@@ -51,12 +50,11 @@
 - (long) sizeInBytes
 {
     long size = 4 // tessellator pointer
-            + 10 // cache key (approx)
-            + (4 + 32) // reference center
             + (4 + 128) // transformation matrix
             + (4) // numPoints
             + (4 + (tileHeight + 3) * (tileWidth + 3) * 3 * 4) // points
-            + 4; // timestamp
+            + 8 // timestamps
+            + 10; // cache key (approx)
 
     return size + [super sizeInBytes];
 }
@@ -131,7 +129,7 @@
         [result set:x y:y z:z];
     }
 
-    [result add3:_referenceCenter];
+    [result add3:[self referencePoint]];
 
     // Apply the offset.
     if (offset != 0)

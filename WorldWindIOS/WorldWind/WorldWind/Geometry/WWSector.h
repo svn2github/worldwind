@@ -214,20 +214,4 @@
 */
 - (void) union:(WWSector*)sector;
 
-/// @name Other Information About Sectors
-
-/**
-* Compute the model coordinate points of this sector's four corners and its center at the specified elevation.
-*
-* The elevation must have already been multiplied by the desired vertical exaggeration, if any.
-*
-* @param globe The globe used to compute the model coordinates of the reference points.
-* @param elevation The elevation associated with the reference points.
-* @param result A mutable array of points. The array and its points may not be nil. The points in the
-* array are computed in the following order: southwest, southeast, northeast, northwest, center.
-*
-* @exception NSInvalidArgumentException if the globe or output array are nil.
-*/
-- (void) computeReferencePoints:(WWGlobe*)globe elevation:(double)elevation result:(NSMutableArray*)result;
-
 @end
