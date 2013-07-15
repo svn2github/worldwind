@@ -72,7 +72,17 @@
     controlSection = isNamedLayer ? 1 : -1;
     layerSection = hasLayers ? (isNamedLayer ? 2 : 1) : -1;
 
+    doneButton = [[UIBarButtonItem alloc] initWithTitle:@"Servers"
+                                                  style:UIBarButtonItemStylePlain
+                                                 target:self action:@selector(handleReturnButtonTap)];
+    [[self navigationItem] setRightBarButtonItem:doneButton];
+
     return self;
+}
+
+- (void) handleReturnButtonTap
+{
+    [[self navigationController] popToRootViewControllerAnimated:NO];
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView

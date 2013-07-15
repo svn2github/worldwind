@@ -22,6 +22,7 @@
     int controlSection;
     int dataSection;
     int layerSection;
+    UIBarButtonItem* doneButton;
 }
 
 /// @name WMS Server Detail Controller Attributes
