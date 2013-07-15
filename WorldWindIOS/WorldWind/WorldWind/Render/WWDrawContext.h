@@ -40,6 +40,7 @@
     NSMutableArray* orderedRenderables; // ordered renderable queue
     NSString* unitQuadKey; // cache key for the unit quadrilateral VBO
     unsigned int uniquePickNumber; // incrementing pick number for pick color
+    GLuint pickTextureID; // 1x1 texture holding a pick color // TODO: Determine how to free this when DC disposed
 }
 
 /// @name Draw Context Attributes
@@ -234,6 +235,18 @@
 * @return A packed RGBA 32-bit unsigned integer identifying the frame buffer color at the pick point.
 */
 - (unsigned int) readPickColor:(CGPoint)pickPoint;
+
+/**
+* Sets the pick texture to a new unique pick color and returns that pick color.
+*
+* @return The pick color used by the pick texture.
+*/
+- (unsigned int) bindPickTexture;
+
+/**
+* Restores default GL_TEXTURE2D state.
+*/
+- (void) unbindPickTexture;
 
 /**
 * Adds an object to this instance's picked object list.

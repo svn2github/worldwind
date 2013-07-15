@@ -44,6 +44,7 @@
 
     orderedRenderables = [[NSMutableArray alloc] init];
     unitQuadKey = [WWUtil generateUUID];
+    pickTextureID = 0;
 
     return self;
 }
@@ -290,6 +291,37 @@
     {
         [_objectsAtPickPoint add:pickedObject];
     }
+}
+
+- (unsigned int) bindPickTexture
+{
+    unsigned int pc = [self uniquePickColor];
+    // Reverse the byte order. unsigned int is little-endian.
+    GLubyte texel[] = {(GLubyte)(pc >> 24) & 0xff, (GLubyte)(pc >> 16) & 0xff, (GLubyte)(pc >> 8) & 0xff, 255};
+
+    if (pickTextureID == 0)
+    {
+        glGenTextures(1, &pickTextureID);
+        glBindTexture(GL_TEXTURE_2D, pickTextureID);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, texel);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, pickTextureID);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, texel);
+    }
+
+    return pc;
+}
+
+- (void) unbindPickTexture
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 - (void) bindProgram:(WWGpuProgram*)program

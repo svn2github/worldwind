@@ -11,11 +11,16 @@
 
 @class WWDrawContext;
 @class WWTexture;
+@class WWPickSupport;
+@class WWLayer;
 
 /**
 * Provides a surface image shape. A surface image renders an image onto the globe's terrain.
 */
 @interface WWSurfaceImage : NSObject <WWSurfaceTile, WWRenderable>
+{
+    WWPickSupport* pickSupport;
+}
 
 /// @name Surface Image Attributes
 
