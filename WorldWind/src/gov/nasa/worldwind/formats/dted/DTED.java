@@ -148,7 +148,8 @@ public class DTED
 
         int recordSize = REC_HEADER_SIZE + height * Short.SIZE / Byte.SIZE + REC_CHKSUM_SIZE;
 
-        double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
+        double min = +Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
         double nodata = (double) DTED_NODATA_VALUE;
 
         ByteBuffer bb = ByteBuffer.allocate(recordSize).order(ByteOrder.BIG_ENDIAN);
@@ -349,8 +350,7 @@ public class DTED
         // and each file always contains 1" x 1" degrees tile
         // also, we should account 1 pixel overlap and half pixel shift
 
-        Sector sector = Sector.fromDegrees(lat.degrees - pixelHeight / 2d, lat.degrees + 1d + pixelHeight / 2d,
-            lon.degrees - pixelWidth / 2d, lon.degrees + 1d + pixelWidth / 2d);
+        Sector sector = Sector.fromDegrees(lat.degrees, lat.degrees + 1d, lon.degrees, lon.degrees + 1d);
         metadata.setValue(AVKey.SECTOR, sector);
 
         // WW uses Upper Left corner as an Origin, let's calculate a new origin
