@@ -36,6 +36,8 @@ public class DTED
     protected static final long DTED_DATA_OFFSET = DTED_ACC_OFFSET + (long) DTED_ACC_SIZE;
 
     protected static final int DTED_NODATA_VALUE = -32767;
+    protected static final int DTED_MIN_VALUE = -12000;
+    protected static final int DTED_MAX_VALUE = 9000;
 
     protected DTED()
     {
@@ -150,7 +152,6 @@ public class DTED
 
         double min = +Double.MAX_VALUE;
         double max = -Double.MAX_VALUE;
-        double nodata = (double) DTED_NODATA_VALUE;
 
         ByteBuffer bb = ByteBuffer.allocate(recordSize).order(ByteOrder.BIG_ENDIAN);
         for (int x = 0; x < width; x++)
@@ -169,13 +170,20 @@ public class DTED
             for (int i = 0; i < height; i++)
             {
                 double elev = (double) data.get(i + 4); // skip 4 shorts of header
-                if (elev != nodata)
+                int y = height - i - 1;
+
+                if (elev != DTED_NODATA_VALUE && elev >= DTED_MIN_VALUE && elev <= DTED_MAX_VALUE)
                 {
+                    raster.setDoubleAtPosition(y, x, elev);
                     min = (elev < min) ? elev : min;
                     max = (elev > max) ? elev : max;
                 }
-                int y = height - i - 1;
-                raster.setDoubleAtPosition(y, x, elev);
+                else
+                {
+                    // Interpret null DTED values and values outside the practical range of [-12000,+9000] as missing
+                    // data. See MIL-PRF-89020B sections 3.11.2 and 3.11.3.
+                    raster.setDoubleAtPosition(y, x, DTED_NODATA_VALUE);
+                }
             }
 
             short hi = data.get(height + REC_CHKSUM_SIZE);
