@@ -98,6 +98,16 @@ New features and improvements in World Wind Java SDK 2.0.0
 
     4) When running, specify the JVM argument -Djogamp.gluegen.UseTempJarCache=false
 
+
+New features and improvements in World Wind Java SDK 1.5.1 - July 24, 2013
+------------------------------------------------------------
+
+- Repaired an issue where the DTED file reader incorrectly added a 1/2 pixel border to the DTED bounding box.
+- Repaired an issue where the WWJ data importer's BIL writer output BIL world files with an incorrect pixel size.
+- Modified the DTED file reader to interpret values outside the practical range of [-12000,+9000] as missing values.
+  See MIL-PRF-89020B sections 3.11.2 and 3.11.3 for more information on why this change is valid for DTED files.
+
+
 New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.
