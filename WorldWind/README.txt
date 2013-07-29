@@ -79,6 +79,8 @@ New features and improvements in World Wind Java SDK 2.0.0
   initial one.
 - Added a method to the Terrain interface that identifies the input positions' altitude reference and converts the
   altitudes to relative-to-ground, which is what the intersection methods expect.
+- Fixed WWJ-302, that caused flashing of continuously updating KML ground overlays.
+- Fixed WWJ-371, where some portions of Collada shapes were not pickable.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
