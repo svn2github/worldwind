@@ -48,6 +48,7 @@ public class KMLParserContext extends BasicXMLEventParserContext
             "href",
             "httpQuery",
             "key",
+            "labelColor",
             "linkDescription",
             "linkName",
             "listItemType",

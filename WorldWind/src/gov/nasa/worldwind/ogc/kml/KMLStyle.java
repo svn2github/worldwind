@@ -60,6 +60,30 @@ public class KMLStyle extends KMLAbstractStyleSelector
     }
 
     /**
+     * {@inheritDoc} Overridden to handle deprecated {@code labelColor} field. The {@code labelColor} field is
+     * deprecated, and has been replaced by {@code LabelStyle}. If {@code labelColor} is set this method will apply the
+     * color to the {@code LabelStyle}, creating a new {@code LabelStyle} if necessary.
+     */
+    @Override
+    public void setField(String keyName, Object value)
+    {
+        if ("labelColor".equals(keyName))
+        {
+            KMLLabelStyle labelStyle = this.getLabelStyle();
+            if (labelStyle == null)
+            {
+                labelStyle = new KMLLabelStyle(this.getNamespaceURI());
+                this.setField(KMLConstants.LABEL_STYLE_FIELD, labelStyle);
+            }
+            labelStyle.setField("color", value);
+        }
+        else
+        {
+            super.setField(keyName, value);
+        }
+    }
+
+    /**
      * Adds the sub-style fields of a specified sub-style to this one's fields if they don't already exist.
      *
      * @param subStyle the sub-style to merge with this one.

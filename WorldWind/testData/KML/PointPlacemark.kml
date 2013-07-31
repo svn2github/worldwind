@@ -34,5 +34,17 @@
                 <coordinates>-90,45,0</coordinates>
             </Point>
         </Placemark>
+
+        <Placemark>
+            <name>Placemark with red label</name>
+            <description>This placemark uses the deprecated labelColor tag.</description>
+            <Style>
+                <labelColor>FF0000FF</labelColor>
+            </Style>
+
+            <Point>
+                <coordinates>-80,45,0</coordinates>
+            </Point>
+        </Placemark>
     </Document>
 </kml>
