@@ -669,7 +669,10 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
      * <p/>
      * If {@code linkBase} refers to a local KML or KMZ file and {@code linkRef} is non-null, the return value is the
      * element identified by {@code linkRef}. If {@code linkRef} is null, the return value is a parsed {@link KMLRoot}
-     * for the KML file identified by {@code linkBase}. Otherwise, {@code linkBase} is returned.
+     * for the KML file identified by {@code linkBase}.
+     * <p/>
+     * If {@code linkBase} refers a local file that is not a KML or KMZ file then {@code linkBase} is returned. If
+     * {@code linkBase} cannot be resolved to a local file then null is returned.
      *
      * @param linkBase the address of the document containing the requested element.
      * @param linkRef  the element's identifier.
@@ -690,9 +693,11 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
         try
         {
             File file = new File(linkBase);
+            if (!file.exists())
+                return null;
 
             // Determine whether the file is a KML or KMZ. If it's not just return the original address.
-            if (!file.exists() || !WWIO.isContentType(file, KMLConstants.KML_MIME_TYPE, KMLConstants.KMZ_MIME_TYPE))
+            if (!WWIO.isContentType(file, KMLConstants.KML_MIME_TYPE, KMLConstants.KMZ_MIME_TYPE))
                 return linkBase;
 
             // Attempt to open and parse the KML/Z file, trying both namespace aware and namespace unaware stream
