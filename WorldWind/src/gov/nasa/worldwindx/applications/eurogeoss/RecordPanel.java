@@ -239,7 +239,7 @@ public class RecordPanel extends JPanel implements ActionListener
                 WorldWind.getSessionCache().put(onlineResource.getLinkage(), caps);
             }
 
-            if (WWUtil.isEmpty(onlineResource.getName())) // OnlineResource does not name a layer; add all WMS layers
+            if (WWUtil.isEmpty(onlineResource.getName())) // OnlineResource does not name a layer; add all WMS layers.
             {
                 for (WMSLayerCapabilities layerCaps : caps.getNamedLayers())
                 {
@@ -249,28 +249,15 @@ public class RecordPanel extends JPanel implements ActionListener
                 String msg = "Online resource has no name " + onlineResource + ", using all layers";
                 Logging.logger().warning(msg);
             }
-            else // OnlineResource names one layer; attempt to identify that layer in the WMS capabilities doc
+            else // OnlineResource names one layer; attempt to identify that layer in the WMS capabilities doc.
             {
-                // Try using the online resource name as a layer name.
+                // Try using the online resource name as a layer name. If the online resource name does not indicate a
+                // layer name, attempt to find a layer who's name or title matches a portion of the online resource
+                // name, or vice versa.
                 WMSLayerCapabilities layerCaps = caps.getLayerByName(onlineResource.getName());
-
-                // Try using the online resource name as a layer title.
                 if (layerCaps == null)
                 {
-                    layerCaps = this.getLayerByTitle(caps, onlineResource.getName());
-                }
-
-                // Try parsing the online resource name as either a layer name or a layer title of the format
-                // "keyword:layerName" or "keyword:layerTitle", respectively.
-                if (layerCaps == null && onlineResource.getName().contains(":"))
-                {
-                    String name = onlineResource.getName().split(":")[1];
-                    layerCaps = caps.getLayerByName(name);
-
-                    if (layerCaps == null)
-                    {
-                        layerCaps = this.getLayerByTitle(caps, name);
-                    }
+                    layerCaps = this.findLayerMatchingName(caps, onlineResource.getName());
                 }
 
                 if (layerCaps == null)
@@ -304,15 +291,21 @@ public class RecordPanel extends JPanel implements ActionListener
         params.setValue(AVKey.RETRIEVAL_QUEUE_STALE_REQUEST_LIMIT, 60000);
 
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
-        return (Layer) factory.createFromConfigSource(caps, params);
+        Layer layer = (Layer) factory.createFromConfigSource(caps, params);
+        layer.setOpacity(0.8);
+
+        return layer;
     }
 
-    protected WMSLayerCapabilities getLayerByTitle(WMSCapabilities caps, String title)
+    protected WMSLayerCapabilities findLayerMatchingName(WMSCapabilities caps, String name)
     {
         for (WMSLayerCapabilities layer : caps.getNamedLayers())
         {
-            if (layer.getTitle().equals(title))
+            if (layer.getName().contains(name) || name.contains(layer.getName())
+                || layer.getTitle().contains(name) || name.contains(layer.getTitle()))
+            {
                 return layer;
+            }
         }
 
         return null;
