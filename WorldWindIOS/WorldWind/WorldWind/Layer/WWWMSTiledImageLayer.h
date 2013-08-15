@@ -10,6 +10,7 @@
 
 @class WWScreenImage;
 @class WWWMSCapabilities;
+@class WWWMSDimension;
 
 /**
 * Provides a Tiled Image Layer that can be easily configured from a WMS capabilities document.
@@ -17,20 +18,42 @@
 * See WWWMSCapabilities for more information about WMS capabilities documents and their representation in World Wind.
 */
 @interface WWWMSTiledImageLayer : WWTiledImageLayer
-{
-    NSString* cachePath;
-    WWScreenImage* legendOverlay;
-}
 
 /// @name WMS Tiled Image Layer Attributes
+
+/**
+* Specifies the WMS dimension associated with this layer.
+*
+* @param dimension The WMS dimension associated with this layer.
+*/
+- (void)setDimension:(WWWMSDimension*)dimension;
+
+/**
+* Returns the WMS dimension associated with this layer.
+*
+* @return The WMS dimension associated with this layer.
+*/
+- (WWWMSDimension*)dimension;
+
+/**
+* Specifies the WMS dimension string associated with this layer.
+*
+* @param The WMS dimension string associated with this layer.
+*/
+- (void)setDimensionString:(NSString*)dimensionString;
+
+/**
+* Returns the WMS dimension string associated with this layer.
+*
+* @return The WMS dimension string associated with this layer.
+*/
+- (NSString*)dimensionString;
 
 /// The WMS server capabilities specified at initialization.
 @property(nonatomic, readonly) WWWMSCapabilities* serverCapabilities;
 
 /// The WMS layer capabilities specified at initialization.
 @property(nonatomic, readonly) NSDictionary* layerCapabilities;
-
-@property (nonatomic) BOOL legendEnabled;
 
 /// @name Initializing WMS Tiled Image Layer
 

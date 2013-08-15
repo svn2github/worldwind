@@ -68,7 +68,7 @@
 @property (nonatomic, readonly) NSString* retrievalImageFormat;
 
 /// The file system path to the local directory holding this instance's cached imagery.
-@property (nonatomic, readonly) NSString* cachePath;
+@property (nonatomic) NSString* cachePath;
 
 /// A class implementing the WWUrlBuilder protocol for creating the URL identifying a specific image tile. For WMS tiled
 /// image layers the specified instance generates an HTTP URL for the WMS protocol. This property must be specified

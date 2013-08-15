@@ -15,6 +15,8 @@
 #import "WorldWind/WWLog.h"
 #import "WebViewController.h"
 #import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Util/WWWMSDimension.h"
+#import "WorldWind/Layer/WWWMSDimensionedLayer.h"
 
 @implementation WMSLayerDetailController
 
@@ -339,8 +341,20 @@
     {
         if ([layerSwitch isOn])
         {
-            WWWMSTiledImageLayer* layer = [[WWWMSTiledImageLayer alloc] initWithWMSCapabilities:_serverCapabilities
-                                                                              layerCapabilities:_layerCapabilities];
+            WWLayer* layer;
+            if ([WWWMSCapabilities layerDimension:_layerCapabilities] == nil)
+            {
+                layer = [[WWWMSTiledImageLayer alloc] initWithWMSCapabilities:_serverCapabilities
+                                                            layerCapabilities:_layerCapabilities];
+            }
+            else
+            {
+                layer = [[WWWMSDimensionedLayer alloc] initWithWMSCapabilities:_serverCapabilities
+                                                            layerCapabilities:_layerCapabilities];
+                WWLayer* subLayer = [[((WWWMSDimensionedLayer*) layer) renderables] objectAtIndex:0];
+                [subLayer setEnabled:YES];
+            }
+
             if (layer == nil)
                 return;
 

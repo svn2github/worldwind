@@ -184,7 +184,6 @@
     int field = 0;
     int timeZoneSense = 0;
     NSDateComponents* dateComponents = [[NSDateComponents alloc] init];
-    [dateComponents setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 
     NSArray* dateTokens = [self tokenizeDateString:dateString];
     for (NSString* token in dateTokens)
@@ -268,6 +267,7 @@
     }
 
     NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    [calendar setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 
     return [calendar dateFromComponents:dateComponents];
 }
@@ -434,14 +434,13 @@
 + (NSDate*) addPeriod:(Period*)period toDate:(NSDate*)date
 {
     NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    [calendar setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     NSDateComponents* dateComponents = [[NSDateComponents alloc] init];
-    [dateComponents setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 
     [dateComponents setYear:[period years]];
     [dateComponents setMonth:[period months]];
-    // NSCalendar incorporates daylight savings time when adding date components and a number of days is specified, so
-    // specify days as 24 hours instead, as below.
-    [dateComponents setHour:[period hours] + 24 * [period days]];
+    [dateComponents setDay:[period days]];
+    [dateComponents setHour:[period hours]];
     [dateComponents setMinute:[period minutes]];
     [dateComponents setSecond:[period seconds]];
 
@@ -607,18 +606,40 @@
 //
 //- (void) testParsing
 //{
+//    NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+//    [calendar setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//    NSDateComponents* dateComponents = [[NSDateComponents alloc] init];
+//    [dateComponents setCalendar:calendar];
+//
+//    [dateComponents setYear:2000];
+//    [dateComponents setMonth:3];
+//    [dateComponents setDay:1];
+//    NSDate* date1 = [calendar dateFromComponents:dateComponents];
+//
+//    [dateComponents setYear:0];
+//    [dateComponents setMonth:1];
+//    [dateComponents setDay:0];
+//
+//    NSDate* date2 = [calendar dateByAddingComponents:dateComponents toDate:date1 options:0];
+//
+//    NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+//    [formatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//    [formatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
+//    NSString* dateString = [formatter stringFromDate:date2];
+//
 //    NSArray* testExtents = [[NSArray alloc] initWithObjects:
-//            @"2005",
-//            @"2005-03-28T18:23:30.120Z",
-//            @"2005-03-28T18:23:30-0200",
-//            @"2005-03-31/2005-04-04/P1D",
+////            @"2000-03-01/2013-06-01/P1M",
+////            @"2005",
+////            @"2005-03-28T18:23:30.120Z",
+////            @"2005-03-28T18:23:30-0200",
+////            @"2005-03-31/2005-04-04/P1D",
 //            @"2005-03-28,2005-03-30,2005-03-31/2005-04-30/P1D",
-//            @"2005-03-28/2005-04-15/P2D",
-//            @"2005-03-28/2005-04-15/P1DT3H",
-//            @"2005-03-28/2005-04-15/P22M",
-//            @"2005-03-28/2005-04-15/P1DT12H32S",
-//            @"2005-03-28/2005-04-15/PT6H",
-//            @"2005-03-28T12:15:03+02/2005-04-15T04-08/PT1H",
+////            @"2005-03-28/2005-04-15/P2D",
+////            @"2005-03-28/2005-04-15/P1DT3H",
+////            @"2005-03-28/2005-04-15/P22M",
+////            @"2005-03-28/2005-04-15/P1DT12H32S",
+////            @"2005-03-28/2005-04-15/PT6H",
+////            @"2005-03-28T12:15:03+02/2005-04-15T04-08/PT1H",
 //            nil];
 //
 //    for (NSString* dimensionString in testExtents)

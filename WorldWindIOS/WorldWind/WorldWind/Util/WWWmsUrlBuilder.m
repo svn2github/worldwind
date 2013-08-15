@@ -11,6 +11,7 @@
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Util/WWWMSDimension.h"
 
 @implementation WWWMSUrlBuilder
 
@@ -170,6 +171,11 @@
     sb = [sb stringByAppendingFormat:@"&width=%d", [tile tileWidth]];
     sb = [sb stringByAppendingFormat:@"&height=%d", [tile tileHeight]];
 
+    if (_dimension != nil && _dimensionString != nil)
+    {
+        sb = [sb stringByAppendingFormat:@"&%@", [self dimensionParameter]];
+    }
+
     WWSector* s = [tile sector];
     if (!isWMS13OrGreater || [_crs caseInsensitiveCompare:@"crs=CRS:84"] == NSOrderedSame)
     {
@@ -195,6 +201,17 @@
 - (NSString*) stylesParameter:(WWTile* )tile
 {
     return _styleNames;
+}
+
+- (NSString*) dimensionParameter
+{
+    if ([[_dimension name] isEqualToString:@"time"])
+        return [NSString stringWithFormat:@"&time=%@", _dimensionString];
+
+    if ([[_dimension name] isEqualToString:@"elevation"])
+        return [NSString stringWithFormat:@"&elevation=%@", _dimensionString];
+
+    return [NSString stringWithFormat:@"&dim_%@=%@", [_dimension name], _dimensionString];
 }
 
 + (NSString*) fixGetMapString:(NSString*)gms

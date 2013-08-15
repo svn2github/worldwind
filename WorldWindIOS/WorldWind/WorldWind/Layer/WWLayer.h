@@ -10,12 +10,16 @@
 #import "WorldWind/Util/WWDisposable.h"
 
 @class WWDrawContext;
+@class WWScreenImage;
 
 /**
 * Provides the base instance for a layer. This class is meant to be subclassed and provides no independent
 * functionality of its own.
 */
 @interface WWLayer : NSObject <WWRenderable, WWDisposable>
+{
+    WWScreenImage* legendOverlay;
+}
 
 /// @name Attributes
 
@@ -49,6 +53,9 @@
 /// Provides a dictionary for the application to associate arbitrary data with the layer. World Wind makes no
 /// explicit use of this property or its contents, which are entirely application dependent.
 @property(nonatomic, readonly) NSMutableDictionary* userTags;
+
+/// Indicates whether the layer's legend, if any, is displayed.
+@property (nonatomic) BOOL legendEnabled;
 
 /// @name Initializing Layers
 

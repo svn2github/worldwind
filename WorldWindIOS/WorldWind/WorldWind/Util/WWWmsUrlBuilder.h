@@ -9,6 +9,7 @@
 #import "WorldWind/Util/WWUrlBuilder.h"
 
 @class WWWMSCapabilities;
+@class WWWMSDimension;
 
 /**
 * Provides a WWUrlBuilder implementation for forming WMS URLs.
@@ -33,6 +34,12 @@
 
 /// The WMS version to include in the URL, e.g. _1.3.0_
 @property(nonatomic, readonly) NSString* wmsVersion;
+
+/// The WMS dimension associated with this builder's layer.
+@property (nonatomic) WWWMSDimension* dimension;
+
+/// The WMS dimension string associated with this builder's layer.
+@property (nonatomic) NSString* dimensionString;
 
 /// The reference system parameter, e.g. _&crs=CRS:84_, to include in the URL. This parameter is determined from the
 // WMS version during initialization.

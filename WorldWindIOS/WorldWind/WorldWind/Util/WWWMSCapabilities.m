@@ -13,6 +13,8 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/Util/WWWMSDimension.h"
+#import "WorldWind/Util/WWWMSTimeDimension.h"
 
 @implementation WWWMSCapabilities
 
@@ -860,6 +862,57 @@
         return nil;
 
     return [legendUrls objectAtIndex:0];
+}
+
++ (WWWMSDimension*) layerDimension:(NSDictionary*)layerCaps
+{
+    // TODO: Dimensions can be inherited from parent layers.
+
+    if (layerCaps == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer capabilities is nil")
+    }
+
+    NSArray* wmsDimensionArray = [layerCaps objectForKey:@"dimension"];
+    if (wmsDimensionArray == nil)
+        return nil;
+
+    NSDictionary* wmsDimension = [wmsDimensionArray objectAtIndex:0];
+
+    NSString* dimensionName = [wmsDimension objectForKey:@"name"];
+    if (dimensionName == nil)
+        return nil;
+
+    NSString* dimensionString = [wmsDimension objectForKey:@"characters"];
+
+    WWWMSDimension* dimension;
+    if ([dimensionName caseInsensitiveCompare:@"time"] == NSOrderedSame)
+    {
+        dimension = [[WWWMSTimeDimension alloc] initWithDimensionString:dimensionString];
+    }
+    else
+    {
+        return nil; // TODO: Other dimension types
+    }
+
+    [dimension setName:[wmsDimension objectForKey:@"name"]];
+    [dimension setUnits:[wmsDimension objectForKey:@"units"]];
+    [dimension setUnitsSymbol:[wmsDimension objectForKey:@"unitSymbol"]];
+    [dimension setDefaultValue:[wmsDimension objectForKey:@"default"]];
+
+    NSString* bVal = [wmsDimension objectForKey:@"multipleValues"];
+    if (bVal != nil && ([bVal isEqualToString:@"1"] || [bVal isEqualToString:@"true"]))
+        [dimension setMultipleValues:YES];
+
+    bVal = [wmsDimension objectForKey:@"nearestValue"];
+    if (bVal != nil && ([bVal isEqualToString:@"1"] || [bVal isEqualToString:@"true"]))
+        [dimension setMultipleValues:YES];
+
+    bVal = [wmsDimension objectForKey:@"current"];
+    if (bVal != nil && ([bVal isEqualToString:@"1"] || [bVal isEqualToString:@"true"]))
+        [dimension setMultipleValues:YES];
+
+    return dimension;
 }
 
 + (NSArray*) layerStyles:(NSDictionary*)layerCaps

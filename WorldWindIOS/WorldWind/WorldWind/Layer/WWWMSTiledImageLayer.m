@@ -18,6 +18,7 @@
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/Util/WWWMSDimension.h"
 
 @implementation WWWMSTiledImageLayer
 
@@ -60,7 +61,7 @@
     NSString* layerCacheDir = [WWUtil makeValidFilePath:getMapURL];
     layerCacheDir = [layerCacheDir stringByAppendingPathComponent:layerName];
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
+    NSString* cachePath = [cacheDir stringByAppendingPathComponent:layerCacheDir];
 
     NSString* imageFormat = [self determineImageFormat:serverCapabilities layerCaps:layerCapabilities];
     if (imageFormat == nil)
@@ -82,6 +83,28 @@
     [self setUrlBuilder:urlBuilder];
 
     return self;
+}
+
+- (void) setDimension:(WWWMSDimension*)dimension
+{
+    [(WWWMSUrlBuilder*)[self urlBuilder] setDimension:dimension];
+}
+
+- (WWWMSDimension*) dimension
+{
+    return [(WWWMSUrlBuilder*)[self urlBuilder] dimension];
+}
+
+- (void) setDimensionString:(NSString*)dimensionString
+{
+    [(WWWMSUrlBuilder*)[self urlBuilder] setDimensionString:dimensionString];
+
+    [self setCachePath:[[self cachePath] stringByAppendingPathComponent:dimensionString]];
+}
+
+- (NSString*) dimensionString
+{
+    return [(WWWMSUrlBuilder*)[self urlBuilder] dimensionString];
 }
 
 - (NSString*) determineImageFormat:(WWWMSCapabilities*)serverCaps layerCaps:(NSDictionary*)layerCaps
@@ -123,14 +146,14 @@
         [self setupLegend];
     }
 
-    _legendEnabled = legendEnabled;
+    [super setLegendEnabled:legendEnabled];
 }
 
 - (void) doRender:(WWDrawContext*)dc
 {
     [super doRender:dc];
 
-    if (_legendEnabled)
+    if ([self legendEnabled])
     {
         [self renderLegend:dc];
     }
@@ -165,7 +188,7 @@
 
 - (void) handleLegendRetrieval:(WWRetriever*)retriever
 {
-    NSString* filePath = [cachePath stringByAppendingPathComponent:@"Legend"];
+    NSString* filePath = [[self cachePath] stringByAppendingPathComponent:@"Legend"];
 
     if ([retriever status] != WW_SUCCEEDED
             || [retriever retrievedData] == nil || [[retriever retrievedData] length] == 0)
@@ -188,7 +211,7 @@
 
         // Cache it if so.
         NSError* error = nil;
-        [[NSFileManager defaultManager] createDirectoryAtPath:cachePath
+        [[NSFileManager defaultManager] createDirectoryAtPath:[self cachePath]
                                   withIntermediateDirectories:YES attributes:nil error:&error];
         if (error != nil)
         {

@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class WWSector;
+@class WWWMSDimension;
 
 /**
 * Holds the contents of a parsed WMS Capabilities document and provides accessors to commonly used element contents.
@@ -350,6 +351,17 @@
 * @exception NSInvalidArgumentException If the specified layer capabilities is nil.
 */
 + (NSNumber*) layerMaxScaleDenominator:(NSDictionary*)layerCaps;
+
+/**
+* Returns the WMS dimensions associated with a layer.
+*
+* @param layerCaps The layer capabilities.
+*
+* @return The associated dimensions, or nil if the layer has no associated dimensions.
+*
+* @exception NSInvalidArgumentException If the specified layer capabilities is nil.
+*/
++ (WWWMSDimension*) layerDimension:(NSDictionary*)layerCaps;
 
 /**
 * Returns the LegendURL element of the first style element for a specified layer.
