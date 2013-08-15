@@ -6,16 +6,16 @@
   -->
 
 <!-- $Id$ -->
-<jnlp codebase="http://worldwindserver.net/java/eurogeoss/"
+<jnlp codebase="http://worldwindserver.net/java/2.0.0/demos/"
       href="EuroGeossApp.jnlp">
 
     <!--
-        Provides a description of the World Wind Search and Rescue prototype application.
+        Provides a description of the World Wind EuroGEOSS client application.
     -->
     <information>
         <title>World Wind EuroGEOSS Client</title>
         <vendor>NASA</vendor>
-        <homepage href="http://goworldwind.org/"/>
+        <homepage href="http://goworldwind.org/demos/"/>
         <offline-allowed/>
     </information>
 
@@ -28,17 +28,15 @@
     </security>
 
     <!--
-        Specifies the resources required by the World Wind Search and Rescue prototype:
+        Specifies the resources required by the World Wind EuroGEOSS client:
         * Java Runtime Environment version 1.6 or newer, with a maximum heap size of at least 512 MB. The World Wind SDK
           requires at least 512 MB of heap space. This heap size must be specified in the application's Web Start file.
-        * World Wind extensions JAR file. This unique version of worldwindx.jar contains the compiled EuroGeossApp code.
-        * World Wind core Java Web Start component. This downloads and adds the World Wind SDK core JAR file and its
-        dependencies to the class path at runtime.
+        * World Wind extensions Java Web Start component. This downloads and adds the World Wind SDK extensions JAR file
+          and its dependencies to the class path at runtime.
     -->
     <resources>
         <java version="1.6+" max-heap-size="512m"/>
-        <jar href="worldwindx.jar"/>
-        <extension name="worldwind" href="http://worldwind.arc.nasa.gov/java/2.0.0/webstart/worldwind.jnlp"/>
+        <extension name="worldwindx" href="http://worldwind.arc.nasa.gov/java/2.0.0/webstart/worldwindx.jnlp"/>
     </resources>
 
     <!--
