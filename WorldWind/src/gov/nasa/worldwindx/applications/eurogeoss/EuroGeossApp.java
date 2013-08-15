@@ -87,7 +87,7 @@ public class EuroGeossApp
             // Put the pieces together.
             JTabbedPane tabbedPane = new JTabbedPane();
             tabbedPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
-            tabbedPane.add("EuroGEOCatalog", this.catalogPanel);
+            tabbedPane.add("EuroGEOSS Catalog", this.catalogPanel);
             tabbedPane.add("Layers", this.layerManagerPanel);
             this.getContentPane().setLayout(new BorderLayout(0, 0)); // hgap, vgap
             this.getContentPane().add(this.wwjPanel, BorderLayout.CENTER);
