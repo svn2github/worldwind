@@ -5,12 +5,14 @@
  @version $Id$
  */
 
+#import <UIKit/UIKit.h>
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Util/WWWMSDimension.h"
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 #import "WorldWind/Layer/WWWMSTiledImageLayer.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWWMSDimensionedLayer
 
@@ -44,5 +46,43 @@
     }
 
     return self;
+}
+
+- (NSUInteger) layerCount
+{
+    return [[self renderables] count];
+}
+
+- (void) setEnabledLayerNumber:(int)layerNumber
+{
+    if (layerNumber >= [[self renderables] count])
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer number exceeds number of layers.")
+    }
+
+    if (enabledLayerNumber >= 0)
+        [[[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber] setEnabled:NO];
+
+    enabledLayerNumber = layerNumber;
+
+    if (enabledLayerNumber >= 0)
+        [[[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber] setEnabled:YES];
+
+}
+
+- (WWWMSTiledImageLayer*) enabledLayer
+{
+    if (enabledLayerNumber >= 0)
+        return [[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber];
+
+    return nil;
+}
+
+- (void) setEnabled:(BOOL)enabled
+{
+    [super setEnabled:enabled];
+
+    NSNotification* notification = [NSNotification notificationWithName:WW_WMS_DIMENSION_LAYER_ENABLE object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 @end

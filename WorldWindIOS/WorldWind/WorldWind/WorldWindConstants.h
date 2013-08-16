@@ -49,6 +49,7 @@ extern NSString* const WW_TEXTURE_RGBA_5551;
 extern NSString* const WW_TEXTURE_RGBA_8888;
 extern NSString* const WW_TILT;
 extern NSString* const WW_URL;
+extern NSString* const WW_WMS_DIMENSION_LAYER_ENABLE;
 
 @interface WorldWindConstants : NSObject
 

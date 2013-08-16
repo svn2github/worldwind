@@ -46,6 +46,8 @@
 #import "FrameStatisticsController.h"
 #import "WorldWind/Layer/WWBMNGLandsatCombinedLayer.h"
 #import "WorldWind.h"
+#import "DimensionedLayerController.h"
+#import "WorldWind/Layer/WWWMSDimensionedLayer.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -79,6 +81,7 @@
     UITapGestureRecognizer* tapGestureRecognizer;
     UITapGestureRecognizer* tripleTapGestureRecognizer;
     id selectedPath;
+    DimensionedLayerController* dimensionedLayerController;
 }
 
 - (id) init
@@ -168,6 +171,11 @@
     [tripleTapGestureRecognizer setNumberOfTapsRequired:3];
     [tripleTapGestureRecognizer setNumberOfTouchesRequired:2];
     [_wwv addGestureRecognizer:tripleTapGestureRecognizer];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleDimensionedLayerNotification:)
+                                                 name:WW_WMS_DIMENSION_LAYER_ENABLE
+                                               object:nil];
 }
 
 - (void) makeTrackingController
@@ -724,6 +732,35 @@
     {
         [bulkRetrieverController setSector:nil];
         [bulkRetrieverButton setEnabled:NO];
+    }
+}
+
+- (void) handleDimensionedLayerNotification:(NSNotification*)notification
+{
+    WWWMSDimensionedLayer* layer = [notification object];
+    if ([layer enabled])
+    {
+        if (dimensionedLayerController == nil)
+        {
+            CGRect viewFrame = [self.view frame];
+
+            CGRect frame;
+            frame.size.width = 400;
+            frame.size.height = 100;
+            frame.origin.x = 0.5 * (viewFrame.size.width - frame.size.width);
+            frame.origin.y = viewFrame.size.height - frame.size.height;
+
+            dimensionedLayerController = [[DimensionedLayerController alloc] initWithLayer:layer frame:frame];
+            [dimensionedLayerController setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin];
+            [dimensionedLayerController setTag:106];
+        }
+
+        if ([self.view viewWithTag:106] == nil)
+            [[self view] addSubview:dimensionedLayerController];
+    }
+    else
+    {
+        [dimensionedLayerController removeFromSuperview];
     }
 }
 

@@ -47,6 +47,7 @@ NSString* const WW_TEXTURE_RGBA_5551 = @"gov.nasa.worldwind.Texture5551";
 NSString* const WW_TEXTURE_RGBA_8888 = @"gov.nasa.worldwind.Texture8888";
 NSString* const WW_TILT = @"gov.nasa.worldwind.Tilt";
 NSString* const WW_URL = @"gov.nasa.worldwind.URL";
+NSString* const WW_WMS_DIMENSION_LAYER_ENABLE = @"gov.nasa.worldwind.WMSDimensionLayerEnable";
 
 @implementation WorldWindConstants
 

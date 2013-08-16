@@ -38,6 +38,7 @@
 		1BF9A4B7FC05EAA0A17C18B7 /* LocationArrowWithLine.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A627E3200F91E57DB55B /* LocationArrowWithLine.png */; };
 		1BF9A4D3DD8852CE0212B32B /* METARDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A05A1858153A6800537D /* METARDataViewController.m */; };
 		1BF9A54C4E58461263B7308F /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A7D1C4278F9DEE4FEAC5 /* RenderableLayerDetailController.m */; };
+		1BF9A565CB92F044B2428F4F /* DimensionedLayerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AACCFD47775EED0A0FD5 /* DimensionedLayerController.m */; };
 		1BF9A5A868AB1E0EFEA8FD70 /* CrashDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ACD480332BBFA1F8148E /* CrashDataViewController.m */; };
 		1BF9A5B5A929248F1D2032CA /* WMSServerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8D51F69D01809241BB6 /* WMSServerDetailController.m */; };
 		1BF9A7618580612796F17CAD /* weather32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5C7DA04FDC61BD6955 /* weather32x32.png */; };
@@ -107,6 +108,7 @@
 		1BF9A0B890751E69BEF0FCD2 /* 01-refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh@2x.png"; sourceTree = "<group>"; };
 		1BF9A0F045D17989445FC7AC /* CrashDataLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashDataLayer.m; sourceTree = "<group>"; };
 		1BF9A1275AB326922EBBE19B /* notched-compass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "notched-compass.png"; sourceTree = "<group>"; };
+		1BF9A129F5857D6C79E73FB0 /* DimensionedLayerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DimensionedLayerController.h; sourceTree = "<group>"; };
 		1BF9A1ADB4428DD6D44D465F /* LocationArrowWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrowWhite.png; sourceTree = "<group>"; };
 		1BF9A20092F812AEB8748191 /* WMSServerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMSServerDetailController.h; sourceTree = "<group>"; };
 		1BF9A29C4B173C1DF842B3E2 /* placemark_circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = placemark_circle.png; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		1BF9AA200F75C073152E5028 /* WMSLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WMSLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9AA3FE811C2CC7278B79E /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
 		1BF9AABCB01FFA0F4CD1C565 /* METARDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = METARDataViewController.h; sourceTree = "<group>"; };
+		1BF9AACCFD47775EED0A0FD5 /* DimensionedLayerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DimensionedLayerController.m; sourceTree = "<group>"; };
 		1BF9AACF3638955AF051E92A /* 05-plus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "05-plus@2x.png"; sourceTree = "<group>"; };
 		1BF9AB1691F5F503DA190C9D /* LocationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LocationArrow.png; sourceTree = "<group>"; };
 		1BF9AB2921F75FC223A80E69 /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
@@ -276,6 +279,8 @@
 				1BF9AED496831506CFBA44B6 /* FrameStatisticsController.h */,
 				1BF9A6DC110D3C4E1B10D422 /* CompassLayer.m */,
 				1BF9AC983F234E1690B36371 /* CompassLayer.h */,
+				1BF9AACCFD47775EED0A0FD5 /* DimensionedLayerController.m */,
+				1BF9A129F5857D6C79E73FB0 /* DimensionedLayerController.h */,
 			);
 			path = WorldWindExamples;
 			sourceTree = "<group>";
@@ -444,6 +449,7 @@
 				CC8CFA42FE2EA85F20F51660 /* BulkRetrieverController.m in Sources */,
 				1BF9AFC1758FD5C46F500C11 /* FrameStatisticsController.m in Sources */,
 				1BF9A3FA608166273CC38FD0 /* CompassLayer.m in Sources */,
+				1BF9A565CB92F044B2428F4F /* DimensionedLayerController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

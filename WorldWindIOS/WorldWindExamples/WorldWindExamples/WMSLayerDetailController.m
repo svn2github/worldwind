@@ -351,8 +351,7 @@
             {
                 layer = [[WWWMSDimensionedLayer alloc] initWithWMSCapabilities:_serverCapabilities
                                                             layerCapabilities:_layerCapabilities];
-                WWLayer* subLayer = [[((WWWMSDimensionedLayer*) layer) renderables] objectAtIndex:0];
-                [subLayer setEnabled:YES];
+                [((WWWMSDimensionedLayer*) layer) setEnabledLayerNumber:0];
             }
 
             if (layer == nil)
@@ -370,6 +369,7 @@
             WWLayer* layer = [self findLayerByLayerID];
             if (layer != nil)
             {
+                [layer setEnabled:NO];
                 [[[_wwv sceneController] layers] removeLayer:layer];
             }
         }
