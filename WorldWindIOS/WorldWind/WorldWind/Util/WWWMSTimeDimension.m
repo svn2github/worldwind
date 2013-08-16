@@ -321,7 +321,15 @@
     [formatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     [formatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"]; // milliseconds not supported in iOS
 
-    return [formatter stringFromDate:date];
+    NSString* s = [formatter stringFromDate:date];
+
+    NSRange emptyTimeString = [s rangeOfString:@"T00:00:00+0000"];
+    if (emptyTimeString.location != NSNotFound)
+    {
+        s = [s substringToIndex:emptyTimeString.location];
+    }
+
+    return s;
 }
 @end
 
