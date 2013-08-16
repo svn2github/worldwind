@@ -757,6 +757,8 @@
 
         if ([self.view viewWithTag:106] == nil)
             [[self view] addSubview:dimensionedLayerController];
+
+        [dimensionedLayerController setWmsLayer:layer];
     }
     else
     {

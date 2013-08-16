@@ -60,20 +60,20 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Layer number exceeds number of layers.")
     }
 
-    if (enabledLayerNumber >= 0)
-        [[[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber] setEnabled:NO];
+    if (_enabledLayerNumber >= 0)
+        [[[self renderables] objectAtIndex:(NSUInteger)_enabledLayerNumber] setEnabled:NO];
 
-    enabledLayerNumber = layerNumber;
+    _enabledLayerNumber = layerNumber;
 
-    if (enabledLayerNumber >= 0)
-        [[[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber] setEnabled:YES];
+    if (_enabledLayerNumber >= 0)
+        [[[self renderables] objectAtIndex:(NSUInteger)_enabledLayerNumber] setEnabled:YES];
 
 }
 
 - (WWWMSTiledImageLayer*) enabledLayer
 {
-    if (enabledLayerNumber >= 0)
-        return [[self renderables] objectAtIndex:(NSUInteger)enabledLayerNumber];
+    if (_enabledLayerNumber >= 0)
+        return [[self renderables] objectAtIndex:(NSUInteger)_enabledLayerNumber];
 
     return nil;
 }

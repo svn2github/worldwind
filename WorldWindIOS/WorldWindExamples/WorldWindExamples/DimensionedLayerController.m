@@ -16,21 +16,32 @@
 {
     self = [super initWithFrame:frame];
 
-    _wmsLayer = layer;
-
-    [self setMinimumValue:0];
-    [self setMaximumValue:[layer layerCount] - 1];
-
     [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
 
-    [self adjustLabel];
+    [self setWmsLayer:layer];
 
     return self;
 }
 
+- (void) setWmsLayer:(WWWMSDimensionedLayer*)wmsLayer
+{
+    _wmsLayer = wmsLayer;
+
+    [self setMinimumValue:0];
+    [self setMaximumValue:[_wmsLayer layerCount] - 1];
+
+    int enabledLayerNumber = [_wmsLayer enabledLayerNumber];
+    if (enabledLayerNumber >= 0)
+        [self setValue:enabledLayerNumber];
+    else
+        [self setValue:0];
+
+    [self adjustLabel];
+}
+
 - (void) sliderValueChanged:(UISlider*)slider
 {
-    NSUInteger value = (NSUInteger)[slider value];
+    NSUInteger value = (NSUInteger) [slider value];
     [_wmsLayer setEnabledLayerNumber:value];
     [self adjustLabel];
 
@@ -40,7 +51,7 @@
 
 - (void) adjustLabel
 {
-    NSUInteger value = (NSUInteger)[self value];
+    NSUInteger value = (NSUInteger) [self value];
 
     CGRect sliderFrame = [self frame];
     CGRect labelFrame;
@@ -60,7 +71,11 @@
     }
 
     [dimensionLabel setFrame:labelFrame];
-    [dimensionLabel setText:[[_wmsLayer enabledLayer] displayName]];
+    int enabledLayerNumber = [_wmsLayer enabledLayerNumber];
+    if (enabledLayerNumber >= 0)
+        [dimensionLabel setText:[[_wmsLayer enabledLayer] displayName]];
+    else
+        [dimensionLabel setText:@""];
 }
 
 @end

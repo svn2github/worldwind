@@ -12,15 +12,12 @@
 @class WWWMSTiledImageLayer;
 
 @interface WWWMSDimensionedLayer : WWRenderableLayer
-{
-    int enabledLayerNumber;
-}
+
+@property (nonatomic) int enabledLayerNumber;
 
 - (WWWMSDimensionedLayer*) initWithWMSCapabilities:(WWWMSCapabilities*)serverCaps layerCapabilities:(NSDictionary*)layerCaps;
 
 - (NSUInteger) layerCount;
-
-- (void) setEnabledLayerNumber:(int)layerNumber;
 
 - (WWWMSTiledImageLayer*) enabledLayer;
 
