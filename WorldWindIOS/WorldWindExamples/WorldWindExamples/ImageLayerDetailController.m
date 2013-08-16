@@ -71,6 +71,7 @@
             [slider setTag:sliderTag];
             [slider addTarget:self action:@selector(opacityValueChanged:) forControlEvents:UIControlEventValueChanged];
             [cell setAccessoryView:slider];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
         }
 
         // Initialize slider to the layer's current value.
