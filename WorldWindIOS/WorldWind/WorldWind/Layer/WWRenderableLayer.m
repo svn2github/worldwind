@@ -68,7 +68,7 @@
     // and implement the renderables to composite it with their own opacity.
     for (id renderable in [self renderables])
     {
-        if ([renderable isMemberOfClass:[WWTiledImageLayer class]])
+        if ([renderable isKindOfClass:[WWTiledImageLayer class]])
         {
             [((WWTiledImageLayer*) renderable) setOpacity:opacity];
         }
