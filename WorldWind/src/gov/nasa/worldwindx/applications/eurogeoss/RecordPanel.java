@@ -292,7 +292,7 @@ public class RecordPanel extends JPanel implements ActionListener
 
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
         Layer layer = (Layer) factory.createFromConfigSource(caps, params);
-        layer.setOpacity(0.8);
+        layer.setOpacity(0.6);
 
         return layer;
     }
