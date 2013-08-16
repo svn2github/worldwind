@@ -13,6 +13,9 @@
 * Provides a controller to scroll through the dimensions of a WMS dimensioned layer.
 */
 @interface DimensionedLayerController : UISlider
+{
+    UILabel* dimensionLabel;
+}
 
 @property (nonatomic) WWWMSDimensionedLayer* wmsLayer;
 

@@ -6,8 +6,9 @@
  */
 
 #import "DimensionedLayerController.h"
-#import "WWWMSDimensionedLayer.h"
-#import "WorldWindConstants.h"
+#import "WorldWind/Layer/WWWMSDimensionedLayer.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
 
 @implementation DimensionedLayerController
 
@@ -22,6 +23,8 @@
 
     [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
 
+    [self adjustLabel];
+
     return self;
 }
 
@@ -29,9 +32,35 @@
 {
     NSUInteger value = (NSUInteger)[slider value];
     [_wmsLayer setEnabledLayerNumber:value];
+    [self adjustLabel];
 
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+}
+
+- (void) adjustLabel
+{
+    NSUInteger value = (NSUInteger)[self value];
+
+    CGRect sliderFrame = [self frame];
+    CGRect labelFrame;
+    labelFrame.size.width = 400;
+    labelFrame.size.height = 40;
+    labelFrame.origin.x = sliderFrame.size.width * value / [_wmsLayer layerCount];
+    labelFrame.origin.x -= 0.5 * labelFrame.size.width;
+    labelFrame.origin.y = 0;
+
+    if (dimensionLabel == nil)
+    {
+        dimensionLabel = [[UILabel alloc] initWithFrame:labelFrame];
+        [dimensionLabel setBackgroundColor:[UIColor clearColor]];
+        [dimensionLabel setTextColor:[UIColor whiteColor]];
+        [dimensionLabel setTextAlignment:NSTextAlignmentCenter];
+        [self addSubview:dimensionLabel];
+    }
+
+    [dimensionLabel setFrame:labelFrame];
+    [dimensionLabel setText:[[_wmsLayer enabledLayer] displayName]];
 }
 
 @end
