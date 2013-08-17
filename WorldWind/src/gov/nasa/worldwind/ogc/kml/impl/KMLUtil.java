@@ -266,4 +266,57 @@ public class KMLUtil
 
         return new Position(latitude, longitude, height);
     }
+
+    /**
+     * Rotate the corners of a sector around a normal vector through the sector centroid.
+     *
+     * @param globe    Globe to use to compute rotated positions.
+     * @param sector   Sector to rotate.
+     * @param rotation Rotation angle. Positive angles produce counterclockwise rotation.
+     *
+     * @return List of rotated corners.
+     */
+    protected static java.util.List<LatLon> rotateSector(Globe globe, Sector sector, Angle rotation)
+    {
+        if (globe == null)
+        {
+            String message = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (sector == null)
+        {
+            String message = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (rotation == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        LatLon[] corners = sector.getCorners();
+        java.util.List<LatLon> transformedCorners = new ArrayList<LatLon>(corners.length);
+
+        // Using the four corners of the sector to compute the rotation axis avoids problems with dateline
+        // spanning polygons.
+        Vec4[] verts = sector.computeCornerPoints(globe, 1);
+        Vec4 normalVec = verts[2].subtract3(verts[0]).cross3(verts[3].subtract3(verts[1])).normalize3();
+        Matrix rotationMatrix = Matrix.fromAxisAngle(rotation, normalVec);
+
+        Vec4 centerPoint = sector.computeCenterPoint(globe, 1);
+
+        // Rotate each point around the surface normal, and convert back to geographic
+        for (Vec4 point : verts)
+        {
+            point = point.subtract3(centerPoint).transformBy3(rotationMatrix).add3(centerPoint);
+            LatLon ll = globe.computePositionFromPoint(point);
+
+            transformedCorners.add(ll);
+        }
+
+        return transformedCorners;
+    }
 }

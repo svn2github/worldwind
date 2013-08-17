@@ -4,7 +4,7 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
 
-         <!-- Overlay image from KML interactive sampler. Places photo of volcano in Sicily. -->
+        <!-- Overlay image from KML interactive sampler. Places photo of volcano in Sicily. -->
         <GroundOverlay>
             <name>Large-scale overlay on terrain</name>
             <visibility>1</visibility>
@@ -21,9 +21,9 @@
             </LatLonBox>
         </GroundOverlay>
 
-         <!-- Example from OGC KML spec. Places Google logo on Treasure Island in San Francisco. -->
+        <!-- Example from OGC KML spec. Places Google logo on Treasure Island in San Francisco. -->
         <GroundOverlay>
-            <name>GroundOverlay.kml</name>
+            <name>Rotated overlay</name>
             <color>7fffffff</color>
             <drawOrder>1</drawOrder>
             <Icon>
@@ -47,6 +47,7 @@
                 <south>36</south>
                 <east>-119</east>
                 <west>-120</west>
+                <rotation>45</rotation>
             </LatLonBox>
         </GroundOverlay>
 
