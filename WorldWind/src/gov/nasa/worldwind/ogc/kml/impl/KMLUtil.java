@@ -276,7 +276,7 @@ public class KMLUtil
      *
      * @return List of rotated corners.
      */
-    protected static java.util.List<LatLon> rotateSector(Globe globe, Sector sector, Angle rotation)
+    public static java.util.List<LatLon> rotateSector(Globe globe, Sector sector, Angle rotation)
     {
         if (globe == null)
         {
