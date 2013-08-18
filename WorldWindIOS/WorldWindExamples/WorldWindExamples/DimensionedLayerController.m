@@ -59,7 +59,7 @@
     labelFrame.size.height = 40;
     labelFrame.origin.x = sliderFrame.size.width * value / [_wmsLayer layerCount];
     labelFrame.origin.x -= 0.5 * labelFrame.size.width;
-    labelFrame.origin.y = 0;
+    labelFrame.origin.y = -20;
 
     if (dimensionLabel == nil)
     {

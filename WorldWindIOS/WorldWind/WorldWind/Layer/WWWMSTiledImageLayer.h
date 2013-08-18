@@ -21,6 +21,8 @@
 
 /// @name WMS Tiled Image Layer Attributes
 
+@property WWScreenImage* legendOverlay;
+
 /**
 * Specifies the WMS dimension associated with this layer.
 *

@@ -17,9 +17,6 @@
 * functionality of its own.
 */
 @interface WWLayer : NSObject <WWRenderable, WWDisposable>
-{
-    WWScreenImage* legendOverlay;
-}
 
 /// @name Attributes
 

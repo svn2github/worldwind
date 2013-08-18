@@ -141,7 +141,7 @@
 
 - (void) setLegendEnabled:(BOOL)legendEnabled
 {
-    if (legendEnabled && legendOverlay == nil)
+    if (legendEnabled && _legendOverlay == nil)
     {
         [self setupLegend];
     }
@@ -161,9 +161,9 @@
 
 - (void) renderLegend:(WWDrawContext*)dc
 {
-    if (legendOverlay != nil)
+    if (_legendOverlay != nil)
     {
-        [legendOverlay render:dc];
+        [_legendOverlay render:dc];
     }
 }
 
@@ -230,10 +230,10 @@
 
     // Create the screen overlay for the legend image. Place the legend's bottom-right corner 40 pixels to the left and
     // above the screen's bottom right corner.
-    WWOffset* screenOffset = [[WWOffset alloc] initWithX:40 y:40 xUnits:WW_INSET_PIXELS yUnits:WW_PIXELS];
+    WWOffset* screenOffset = [[WWOffset alloc] initWithX:40 y:80 xUnits:WW_INSET_PIXELS yUnits:WW_PIXELS];
     WWOffset* imageOffset = [[WWOffset alloc] initWithFractionX:1 y:0];
-    legendOverlay = [[WWScreenImage alloc] initWithScreenOffset:screenOffset imagePath:filePath];
-    [legendOverlay setImageOffset:imageOffset];
+    _legendOverlay = [[WWScreenImage alloc] initWithScreenOffset:screenOffset imagePath:filePath];
+    [_legendOverlay setImageOffset:imageOffset];
 
     // Cause the WorldWindView to draw itself.
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];

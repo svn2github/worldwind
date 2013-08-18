@@ -746,7 +746,7 @@
 
             CGRect frame;
             frame.size.width = 600;
-            frame.size.height = 100;
+            frame.size.height = 50;
             frame.origin.x = 0.5 * (viewFrame.size.width - frame.size.width);
             frame.origin.y = viewFrame.size.height - frame.size.height;
 
