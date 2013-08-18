@@ -28,9 +28,9 @@
     _wmsLayer = wmsLayer;
 
     [self setMinimumValue:0];
-    [self setMaximumValue:[_wmsLayer layerCount] - 1];
+    [self setMaximumValue:[_wmsLayer dimensionCount] - 1];
 
-    int enabledLayerNumber = [_wmsLayer enabledLayerNumber];
+    int enabledLayerNumber = [_wmsLayer enabledDimensionNumber];
     if (enabledLayerNumber >= 0)
         [self setValue:enabledLayerNumber];
     else
@@ -42,7 +42,7 @@
 - (void) sliderValueChanged:(UISlider*)slider
 {
     NSUInteger value = (NSUInteger) [slider value];
-    [_wmsLayer setEnabledLayerNumber:value];
+    [_wmsLayer setEnabledDimensionNumber:value];
     [self adjustLabel];
 
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
@@ -57,7 +57,7 @@
     CGRect labelFrame;
     labelFrame.size.width = 400;
     labelFrame.size.height = 40;
-    labelFrame.origin.x = sliderFrame.size.width * value / [_wmsLayer layerCount];
+    labelFrame.origin.x = sliderFrame.size.width * value / [_wmsLayer dimensionCount];
     labelFrame.origin.x -= 0.5 * labelFrame.size.width;
     labelFrame.origin.y = -20;
 
@@ -71,7 +71,7 @@
     }
 
     [dimensionLabel setFrame:labelFrame];
-    int enabledLayerNumber = [_wmsLayer enabledLayerNumber];
+    int enabledLayerNumber = [_wmsLayer enabledDimensionNumber];
     if (enabledLayerNumber >= 0)
         [dimensionLabel setText:[[_wmsLayer enabledLayer] displayName]];
     else

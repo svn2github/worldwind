@@ -51,9 +51,6 @@
 /// explicit use of this property or its contents, which are entirely application dependent.
 @property(nonatomic, readonly) NSMutableDictionary* userTags;
 
-/// Indicates whether the layer's legend, if any, is displayed.
-@property (nonatomic) BOOL legendEnabled;
-
 /// @name Initializing Layers
 
 /**

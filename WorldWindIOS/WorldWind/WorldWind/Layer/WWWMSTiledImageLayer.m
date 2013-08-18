@@ -146,7 +146,7 @@
         [self setupLegend];
     }
 
-    [super setLegendEnabled:legendEnabled];
+    _legendEnabled = legendEnabled;
 }
 
 - (void) doRender:(WWDrawContext*)dc

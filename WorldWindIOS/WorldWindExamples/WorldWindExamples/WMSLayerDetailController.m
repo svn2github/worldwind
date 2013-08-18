@@ -346,12 +346,16 @@
             {
                 layer = [[WWWMSTiledImageLayer alloc] initWithWMSCapabilities:_serverCapabilities
                                                             layerCapabilities:_layerCapabilities];
+                if (hasLegend)
+                    [(WWWMSTiledImageLayer*)layer setLegendEnabled:YES];
             }
             else
             {
                 layer = [[WWWMSDimensionedLayer alloc] initWithWMSCapabilities:_serverCapabilities
                                                             layerCapabilities:_layerCapabilities];
-                [((WWWMSDimensionedLayer*) layer) setEnabledLayerNumber:0];
+                [((WWWMSDimensionedLayer*) layer) setEnabledDimensionNumber:0];
+                if (hasLegend)
+                    [(WWWMSDimensionedLayer*)layer setLegendEnabled:YES];
             }
 
             if (layer == nil)
@@ -359,8 +363,6 @@
 
             [[layer userTags] setObject:layerID forKey:@"layerid"];
             [layer setEnabled:YES];
-            if (hasLegend)
-                [layer setLegendEnabled:YES];
 
             [[[_wwv sceneController] layers] addLayer:layer];
         }

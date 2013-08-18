@@ -23,6 +23,9 @@
 
 @property WWScreenImage* legendOverlay;
 
+/// Indicates whether the layer's legend, if any, is displayed.
+@property (nonatomic) BOOL legendEnabled;
+
 /**
 * Specifies the WMS dimension associated with this layer.
 *
