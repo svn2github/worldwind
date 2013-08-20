@@ -48,6 +48,8 @@
 #import "WorldWind.h"
 #import "DimensionedLayerController.h"
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
+#import "WorldWind/Shapes/WWScreenImage.h"
+#import "WorldWind/Util/WWOffset.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -82,6 +84,10 @@
     UITapGestureRecognizer* tripleTapGestureRecognizer;
     id selectedPath;
     DimensionedLayerController* dimensionedLayerController;
+    UIPanGestureRecognizer* previousPanGestureRecognizer;
+    UIPanGestureRecognizer* screenImageDragPanGestureRecognizer;
+    CGPoint previousPanDelta;
+    WWScreenImage* currentScreenImage;
 }
 
 - (id) init
@@ -176,6 +182,9 @@
                                              selector:@selector(handleDimensionedLayerNotification:)
                                                  name:WW_WMS_DIMENSION_LAYER_ENABLE
                                                object:nil];
+
+    screenImageDragPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector
+    (handleScreenImageDragGesture:)];
 }
 
 - (void) makeTrackingController
@@ -601,6 +610,32 @@
         {
             [self setSelectedPath:nil];
         }
+
+        if ([[topObject userObject] isKindOfClass:[WWScreenImage class]])
+        {
+            if (previousPanGestureRecognizer != nil)
+            {
+                [_wwv removeGestureRecognizer:screenImageDragPanGestureRecognizer];
+                [_wwv addGestureRecognizer:previousPanGestureRecognizer];
+                previousPanGestureRecognizer = nil;
+                currentScreenImage = nil;
+            }
+            else
+            {
+                for (UIGestureRecognizer* gr in [_wwv gestureRecognizers])
+                {
+                    if ([gr isMemberOfClass:[UIPanGestureRecognizer class]])
+                    {
+                        previousPanGestureRecognizer = (UIPanGestureRecognizer*) gr;
+                        [_wwv removeGestureRecognizer:gr];
+                        break;
+                    }
+                }
+
+                [_wwv addGestureRecognizer:screenImageDragPanGestureRecognizer];
+                currentScreenImage = (WWScreenImage*) [topObject userObject];
+            }
+        }
     }
 }
 
@@ -764,6 +799,56 @@
     {
         [dimensionedLayerController removeFromSuperview];
     }
+}
+
+- (void) handleScreenImageDragGesture:(UIPanGestureRecognizer*)recognizer
+{
+    BOOL moveIt = NO;
+    CGPoint overallDragDelta = [recognizer translationInView:_wwv];
+    CGPoint callbackDragDelta;
+
+    UIGestureRecognizerState state = [recognizer state];
+
+    if (state == UIGestureRecognizerStateBegan)
+    {
+        moveIt = YES;
+        callbackDragDelta.x = overallDragDelta.x;
+        callbackDragDelta.y = overallDragDelta.y;
+        previousPanDelta.x = 0;
+        previousPanDelta.y = 0;
+    }
+    else if (state == UIGestureRecognizerStateChanged)
+    {
+        moveIt = YES;
+        callbackDragDelta.x = overallDragDelta.x - previousPanDelta.x;
+        callbackDragDelta.y = overallDragDelta.y - previousPanDelta.y;
+        previousPanDelta.x = overallDragDelta.x;
+        previousPanDelta.y = overallDragDelta.y;
+    }
+
+    if (moveIt)
+    {
+        WWOffset* currentOffset = [currentScreenImage screenOffset];
+        WWOffset* newOffset = [[WWOffset alloc] initWithX:0 y:0 xUnits:[currentOffset xUnits] yUnits:[currentOffset
+                yUnits]];
+        if ([[currentOffset xUnits] isEqualToString:WW_PIXELS])
+            [newOffset setX:[currentOffset x] + callbackDragDelta.x];
+        else if ([[currentOffset xUnits] isEqualToString:WW_INSET_PIXELS])
+            [newOffset setX:[currentOffset x] + -callbackDragDelta.x];
+        else if ([[currentOffset xUnits] isEqualToString:WW_FRACTION])
+            [newOffset setX:[currentOffset x] + callbackDragDelta.x / [_wwv frame].size.width];
+
+        if ([[currentOffset yUnits] isEqualToString:WW_PIXELS])
+            [newOffset setY:[currentOffset y] - callbackDragDelta.y];
+        else if ([[currentOffset yUnits] isEqualToString:WW_INSET_PIXELS])
+            [newOffset setY:[currentOffset y] + callbackDragDelta.y];
+        else if ([[currentOffset yUnits] isEqualToString:WW_FRACTION])
+            [newOffset setY:[currentOffset y] - callbackDragDelta.y / [_wwv frame].size.height];
+
+        [currentScreenImage setScreenOffset:newOffset];
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 @end
