@@ -88,6 +88,7 @@
     UIPanGestureRecognizer* screenImageDragPanGestureRecognizer;
     CGPoint previousPanDelta;
     WWScreenImage* currentScreenImage;
+    WWColor* currentScreenImageColor;
 }
 
 - (id) init
@@ -618,6 +619,7 @@
                 [_wwv removeGestureRecognizer:screenImageDragPanGestureRecognizer];
                 [_wwv addGestureRecognizer:previousPanGestureRecognizer];
                 previousPanGestureRecognizer = nil;
+                [currentScreenImage setImageColor:currentScreenImageColor];
                 currentScreenImage = nil;
             }
             else
@@ -634,6 +636,8 @@
 
                 [_wwv addGestureRecognizer:screenImageDragPanGestureRecognizer];
                 currentScreenImage = (WWScreenImage*) [topObject userObject];
+                currentScreenImageColor = [currentScreenImage imageColor];
+                [currentScreenImage setImageColor:[[WWColor alloc] initWithR:1 g:1 b:0 a:1]];
             }
         }
     }
