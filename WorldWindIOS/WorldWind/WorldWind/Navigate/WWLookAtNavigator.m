@@ -39,6 +39,7 @@
     pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
     rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
     verticalPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleVerticalPanFrom:)];
+    panPinchRotationGestureRecognizers = [NSArray arrayWithObjects:panGestureRecognizer, pinchGestureRecognizer, rotationGestureRecognizer, nil];
 
     // Gesture recognizers maintain a weak reference to their delegate.
     [panGestureRecognizer setDelegate:self];
@@ -491,10 +492,6 @@
 
 - (void) handleVerticalPanFrom:(UIPanGestureRecognizer*)recognizer
 {
-    // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
-    // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
-    // after the view itself is de-allocated.
-
     UIGestureRecognizerState state = [recognizer state];
 
     if (state == UIGestureRecognizerStateBegan)
@@ -523,57 +520,76 @@
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer
 {
-    if (recognizer == panGestureRecognizer)
-    {
-        return otherRecognizer == pinchGestureRecognizer || otherRecognizer == rotationGestureRecognizer;
-    }
-    else if (recognizer == pinchGestureRecognizer)
-    {
-        return otherRecognizer == panGestureRecognizer || otherRecognizer == rotationGestureRecognizer;
-    }
-    else if (recognizer == rotationGestureRecognizer)
-    {
-        return otherRecognizer == panGestureRecognizer || otherRecognizer == pinchGestureRecognizer;
-    }
-    else
-    {
-        return NO;
-    }
+    // Determine whether the two gesture recognizers should simultaneously recognizer their gestures. This navigator's
+    // pan pinch and rotation gesture recognizers are intended to execute simultaneously, yet be mutually exclusive of
+    // all other gestures. We implement the methods of UIGestureRecognizerDelegate to ensure that only the appropriate
+    // gesture recognizers execute simultaneously.
+
+    return [panPinchRotationGestureRecognizers containsObject:recognizer]
+        && [panPinchRotationGestureRecognizers containsObject:otherRecognizer];
 }
 
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer
 {
-    // Note: the view property is a weak reference, so it may have been de-allocated. In this case the contents of the
-    // CG structures below will be undefined. However, the view's gesture recognizers will not be sent any messages
-    // after the view itself is de-allocated.
+    // Determine whether the two pan gesture recognizers should recognizer their gestures. These gestures are intended
+    // to be mutually exclusive, yet verticalPanGestureRecognizer is essentially a subset of panGestureRecognizer. We
+    // implement the methods of UIGestureRecognizerDelegate to ensure that the appropriate pan gesture recognizer begins
+    // regardless of which gets the first opportunity to recognize a gesture.
 
-    // Determine whether the vertical pan gesture recognizer should recognizer its gesture. This gesture recognizer is
-    // a UIPanGestureRecognizer configured with two or more touches. In order to limit its recognition to a vertical pan
-    // gesture, we place additional limitations on its recognition in this delegate.
-    if (recognizer == verticalPanGestureRecognizer)
+    if (recognizer == panGestureRecognizer)
     {
-        UIPanGestureRecognizer* pgr = (UIPanGestureRecognizer*) recognizer;
-        UIView* view = [recognizer view];
+        UIGestureRecognizerState pinchState = [pinchGestureRecognizer state];
+        UIGestureRecognizerState rotationState = [rotationGestureRecognizer state];
 
-        CGPoint translation = [pgr translationInView:view];
-        if (fabs(translation.x) > fabs(translation.y))
+        // Begin the standard pan gesture when either the of the pinch or rotation gestures have been recognized, which
+        // implicitly prevents the vertical pan gesture from being recognized. If either of these gestures have
+        // transitioned to a recognized state then the vertical pan gesture will be prevented from recognizing by this
+        // navigator's implementation of [gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:].
+        if (pinchState == UIGestureRecognizerStateBegan || pinchState == UIGestureRecognizerStateChanged
+            || rotationState == UIGestureRecognizerStateBegan || rotationState == UIGestureRecognizerStateChanged)
         {
-            return NO; // Do not recognize the gesture; the pan is horizontal.
+            return YES;
         }
 
-        NSUInteger numTouches = [pgr numberOfTouches];
-        if (numTouches < 2)
-        {
-            return NO; // Do not recognize the gesture; not enough touches.
-        }
+        // Otherwise, begin the standard pan gesture only when the gesture does not meet the necessary criteria for a
+        // vertical pan gesture.
+        return ![self gestureRecognizerIsVerticalPan:panGestureRecognizer];
+    }
+    else if (recognizer == verticalPanGestureRecognizer)
+    {
+        // Begin the vertical pan gesture only when the gesture meets the necessary criteria. This assumes that none of
+        // the standard pan, pinch or rotation gestures have been recognized. This navigator's implementation of
+        // [gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:] prevents the vertical pan from
+        // exiting the possible state.
+        return [self gestureRecognizerIsVerticalPan:verticalPanGestureRecognizer];
+    }
+    else
+    {
+        return YES; // Return the default (YES) for all other gesture recognizers.
+    }
+}
 
-        CGPoint touch1 = [pgr locationOfTouch:0 inView:view];
-        CGPoint touch2 = [pgr locationOfTouch:1 inView:view];
-        double slope = (touch2.y - touch1.y) / (touch2.x - touch1.x);
-        if (fabs(slope) > 1)
-        {
-            return NO; // Do not recognize the gesture; touches do not represent two fingers placed horizontally.
-        }
+- (BOOL) gestureRecognizerIsVerticalPan:(UIPanGestureRecognizer*)recognizer
+{
+    NSUInteger numTouches = [recognizer numberOfTouches];
+    if (numTouches < 2)
+    {
+        return NO; // Do not recognize the gesture; not enough touches.
+    }
+
+    UIView* view = [recognizer view];
+    CGPoint translation = [recognizer translationInView:view];
+    if (fabs(translation.x) > fabs(translation.y))
+    {
+        return NO; // Do not recognize the gesture; the pan is horizontal.
+    }
+
+    CGPoint touch1 = [recognizer locationOfTouch:0 inView:view];
+    CGPoint touch2 = [recognizer locationOfTouch:1 inView:view];
+    double slope = (touch2.y - touch1.y) / (touch2.x - touch1.x);
+    if (fabs(slope) > 1)
+    {
+        return NO; // Do not recognize the gesture; touches do not represent two fingers placed horizontally.
     }
 
     return YES;

@@ -18,6 +18,7 @@
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
     UIPanGestureRecognizer* verticalPanGestureRecognizer;
+    NSArray* panPinchRotationGestureRecognizers;
     CGPoint lastPanTranslation;
     double gestureBeginRange;
     double gestureBeginHeading;
@@ -68,5 +69,7 @@
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer;
 
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer;
+
+- (BOOL) gestureRecognizerIsVerticalPan:(UIPanGestureRecognizer*)recognizer;
 
 @end

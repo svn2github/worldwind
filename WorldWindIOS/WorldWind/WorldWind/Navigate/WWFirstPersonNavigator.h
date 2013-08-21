@@ -19,6 +19,7 @@
     UIPinchGestureRecognizer* pinchGestureRecognizer;
     UIRotationGestureRecognizer* rotationGestureRecognizer;
     UIPanGestureRecognizer* twoFingerPanGestureRecognizer;
+    NSArray* pinchRotationGestureRecognizers;
     CGPoint lastPanTranslation;
     double gestureBeginHeading;
     double gestureBeginTilt;

@@ -40,6 +40,7 @@
     pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchFrom:)];
     rotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotationFrom:)];
     twoFingerPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleTwoFingerPanFrom:)];
+    pinchRotationGestureRecognizers = [NSArray arrayWithObjects:pinchGestureRecognizer, rotationGestureRecognizer, nil];
 
     // Gesture recognizers maintain a weak reference to their delegate.
     [panGestureRecognizer setDelegate:self];
@@ -566,18 +567,13 @@
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer*)recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherRecognizer
 {
-    if (recognizer == pinchGestureRecognizer)
-    {
-        return otherRecognizer == rotationGestureRecognizer;
-    }
-    else if (recognizer == rotationGestureRecognizer)
-    {
-        return otherRecognizer == pinchGestureRecognizer;
-    }
-    else
-    {
-        return NO;
-    }
+    // Determine whether the two gesture recognizers should simultaneously recognizer their gestures. This navigator's
+    // pinch and rotation gesture recognizers are intended to execute simultaneously, yet be mutually exclusive of all
+    // other gestures. We implement the methods of UIGestureRecognizerDelegate to ensure that only the appropriate
+    // gesture recognizers execute simultaneously.
+
+    return [pinchRotationGestureRecognizers containsObject:recognizer]
+        && [pinchRotationGestureRecognizers containsObject:otherRecognizer];
 }
 
 - (BOOL) gestureRecognizerShouldBegin:(UIGestureRecognizer*)recognizer
