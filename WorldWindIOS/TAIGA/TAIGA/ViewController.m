@@ -6,7 +6,6 @@
  */
 
 #import "ViewController.h"
-
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
 #import "WWLayerList.h"
@@ -91,27 +90,30 @@
     [screen1TopToolbar setBarStyle:UIBarStyleBlack];
     [screen1TopToolbar setTranslucent:NO];
 
-    CGSize size = CGSizeMake(80, TOOLBAR_HEIGHT);
-    screen1TopButton1 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 1" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
+    CGSize size = CGSizeMake(100, TOOLBAR_HEIGHT);
+
+    screen1TopButton1 = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
+                                                         style:UIBarButtonItemStylePlain
+                                                        target:nil
+                                                        action:nil];
+
     screen1TopButton2 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 2" size:size target:self action:@selector
+            initWithImageName:@"122-stats" text:@"Flight Paths" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
     screen1TopButton3 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 3" size:size target:self action:@selector
+            initWithImageName:@"25-weather" text:@"Weather" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
     screen1TopButton4 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 4" size:size target:self action:@selector
+            initWithImageName:@"385-mountain" text:@"Terrain" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
     screen1TopButton5 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 5" size:size target:self action:@selector
+            initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
     screen1TopButton6 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 6" size:size target:self action:@selector
+            initWithImageName:@"42-photos" text:@"Quick Views" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
     screen1TopButton7 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Button 7" size:size target:self action:@selector
+            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
 
 
