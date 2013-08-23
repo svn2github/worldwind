@@ -5,7 +5,7 @@
  @version $Id: AppDelegate.m 1170 2013-02-11 19:05:20Z tgaskins $
  */
 
-#import "ViewController.h"
+#import "MainScreenViewController.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
 #import "WWLayerList.h"
@@ -15,11 +15,11 @@
 
 #define TOOLBAR_HEIGHT 80
 
-@interface ViewController ()
+@interface MainScreenViewController ()
 
 @end
 
-@implementation ViewController
+@implementation MainScreenViewController
 {
     UIToolbar* screen1TopToolbar;
     UIBarButtonItem* screen1TopButton1;

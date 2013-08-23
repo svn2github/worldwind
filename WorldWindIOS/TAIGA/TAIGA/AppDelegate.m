@@ -13,7 +13,7 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    ViewController* viewController = [[ViewController alloc] init];
+    MainScreenViewController* viewController = [[MainScreenViewController alloc] init];
 
     UINavigationController* navigationController =
             [[UINavigationController alloc] initWithRootViewController:viewController];
