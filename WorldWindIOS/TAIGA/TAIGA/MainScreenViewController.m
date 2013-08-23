@@ -6,29 +6,26 @@
  */
 
 #import "MainScreenViewController.h"
-#import "WorldWind/WorldWind.h"
-#import "WorldWind/WorldWindView.h"
+#import "WorldWind.h"
+#import "WorldWindView.h"
 #import "WWLayerList.h"
 #import "WWSceneController.h"
 #import "WWBMNGLandsatCombinedLayer.h"
 #import "ButtonWithImageAndText.h"
 
-#define TOOLBAR_HEIGHT 80
-
-@interface MainScreenViewController ()
-
-@end
+#define TOOLBAR_HEIGHT (80)
+#define TOP_BUTTON_WIDTH (100)
 
 @implementation MainScreenViewController
 {
-    UIToolbar* screen1TopToolbar;
-    UIBarButtonItem* screen1TopButton1;
-    UIBarButtonItem* screen1TopButton2;
-    UIBarButtonItem* screen1TopButton3;
-    UIBarButtonItem* screen1TopButton4;
-    UIBarButtonItem* screen1TopButton5;
-    UIBarButtonItem* screen1TopButton6;
-    UIBarButtonItem* screen1TopButton7;
+    UIToolbar* topToolBar;
+    UIBarButtonItem* connectivityButton;
+    UIBarButtonItem* flightPathsButton;
+    UIBarButtonItem* weatherButton;
+    UIBarButtonItem* terrainButton;
+    UIBarButtonItem* splitViewButton;
+    UIBarButtonItem* quickViewsButton;
+    UIBarButtonItem* moreButton;
 }
 
 - (id) init
@@ -84,35 +81,35 @@
 
 - (void) createScreen1TopToolbar
 {
-    screen1TopToolbar = [[UIToolbar alloc] init];
-    screen1TopToolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, TOOLBAR_HEIGHT);
-    [screen1TopToolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    [screen1TopToolbar setBarStyle:UIBarStyleBlack];
-    [screen1TopToolbar setTranslucent:NO];
+    topToolBar = [[UIToolbar alloc] init];
+    topToolBar.frame = CGRectMake(0, 0, self.view.frame.size.width, TOOLBAR_HEIGHT);
+    [topToolBar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [topToolBar setBarStyle:UIBarStyleBlack];
+    [topToolBar setTranslucent:NO];
 
-    CGSize size = CGSizeMake(100, TOOLBAR_HEIGHT);
+    CGSize size = CGSizeMake(TOP_BUTTON_WIDTH, TOOLBAR_HEIGHT);
 
-    screen1TopButton1 = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
-                                                         style:UIBarButtonItemStylePlain
-                                                        target:nil
-                                                        action:nil];
+    connectivityButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
+                                                          style:UIBarButtonItemStylePlain
+                                                         target:nil
+                                                         action:nil];
 
-    screen1TopButton2 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Flight Paths" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    screen1TopButton3 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    weatherButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"25-weather" text:@"Weather" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    screen1TopButton4 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    terrainButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"385-mountain" text:@"Terrain" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    screen1TopButton5 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    screen1TopButton6 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"42-photos" text:@"Quick Views" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    screen1TopButton7 = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
 
@@ -120,23 +117,23 @@
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
-    [screen1TopToolbar setItems:[NSArray arrayWithObjects:
-            screen1TopButton1,
+    [topToolBar setItems:[NSArray arrayWithObjects:
+            connectivityButton,
             flexibleSpace,
-            screen1TopButton2,
+            flightPathsButton,
             flexibleSpace,
-            screen1TopButton3,
+            weatherButton,
             flexibleSpace,
-            screen1TopButton4,
+            terrainButton,
             flexibleSpace,
-            screen1TopButton5,
+            splitViewButton,
             flexibleSpace,
-            screen1TopButton6,
+            quickViewsButton,
             flexibleSpace,
-            screen1TopButton7,
+            moreButton,
             nil]];
 
-    [self.view addSubview:screen1TopToolbar];
+    [self.view addSubview:topToolBar];
 }
 
 - (void) handleScreen1ButtonTap
