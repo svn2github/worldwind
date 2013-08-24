@@ -25,7 +25,7 @@
     UIBarButtonItem* terrainButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
-    UIBarButtonItem* moreButton;
+//    UIBarButtonItem* moreButton;
 }
 
 - (id) init
@@ -59,7 +59,7 @@
 
 - (void) viewWillAppear:(BOOL)animated
 {
-    [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
+//    [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
 }
 
 - (void) createWorldWindView
@@ -109,9 +109,9 @@
     quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"42-photos" text:@"Quick Views" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
+//    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+//            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
+//            (handleScreen1ButtonTap)]];
 
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
@@ -129,8 +129,8 @@
             splitViewButton,
             flexibleSpace,
             quickViewsButton,
-            flexibleSpace,
-            moreButton,
+//            flexibleSpace,
+//            moreButton,
             nil]];
 
     [self.view addSubview:topToolBar];

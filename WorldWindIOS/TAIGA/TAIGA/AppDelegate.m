@@ -13,13 +13,15 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    MainScreenViewController* viewController = [[MainScreenViewController alloc] init];
+    MainScreenViewController* mainScreenViewController = [[MainScreenViewController alloc] init];
+    [mainScreenViewController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Moving Map"
+                                                                          image:[UIImage imageNamed:@"25-weather"]
+                                                                            tag:1]];
 
-    UINavigationController* navigationController =
-            [[UINavigationController alloc] initWithRootViewController:viewController];
-    [[navigationController navigationBar] setBarStyle:UIBarStyleBlack];
+    UITabBarController* tabBarController = [[UITabBarController alloc] init];
+    [tabBarController setViewControllers:[NSArray arrayWithObjects:mainScreenViewController, nil]];
 
-    self.window.rootViewController = navigationController;
+    [self.window setRootViewController:tabBarController];
 
     [self.window makeKeyAndVisible];
     return YES;
