@@ -6,7 +6,6 @@
  */
 
 #import <UIKit/UIKit.h>
-#import "MainScreenViewController.h"
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 

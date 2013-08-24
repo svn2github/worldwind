@@ -6,6 +6,11 @@
  */
 
 #import "AppDelegate.h"
+#import "MainScreenViewController.h"
+#import "RoutePlanningScreenController.h"
+#import "WeatherScreenController.h"
+#import "ChartsScreenController.h"
+#import "SettingsScreenController.h"
 
 @implementation AppDelegate
 
@@ -13,13 +18,39 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    MainScreenViewController* mainScreenViewController = [[MainScreenViewController alloc] init];
-    [mainScreenViewController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Moving Map"
-                                                                          image:[UIImage imageNamed:@"25-weather"]
-                                                                            tag:1]];
+    MainScreenViewController* movingMapScreenController = [[MainScreenViewController alloc] init];
+    [movingMapScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Moving Map"
+                                                                           image:[UIImage imageNamed:@"103-map"]
+                                                                             tag:1]];
+
+    RoutePlanningScreenController* routePlanningScreenController = [[RoutePlanningScreenController alloc] init];
+    [routePlanningScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Route Planning"
+                                                                               image:[UIImage imageNamed:@"314-move-point"]
+                                                                                 tag:2]];
+
+    WeatherScreenController* weatherScreenController = [[WeatherScreenController alloc] init];
+    [weatherScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Weather"
+                                                                         image:[UIImage imageNamed:@"25-weather"]
+                                                                           tag:3]];
+
+    ChartsScreenController* chartsScreenController = [[ChartsScreenController alloc] init];
+    [chartsScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Charts"
+                                                                        image:[UIImage imageNamed:@"38-airplane"]
+                                                                          tag:3]];
+
+    SettingsScreenController* settingsScreenController = [[SettingsScreenController alloc] init];
+    [settingsScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Settings"
+                                                                        image:[UIImage imageNamed:@"19-gear"]
+                                                                          tag:3]];
 
     UITabBarController* tabBarController = [[UITabBarController alloc] init];
-    [tabBarController setViewControllers:[NSArray arrayWithObjects:mainScreenViewController, nil]];
+    [tabBarController setViewControllers:[NSArray arrayWithObjects:
+            movingMapScreenController,
+            routePlanningScreenController,
+            weatherScreenController,
+            chartsScreenController,
+            settingsScreenController,
+            nil]];
 
     [self.window setRootViewController:tabBarController];
 
