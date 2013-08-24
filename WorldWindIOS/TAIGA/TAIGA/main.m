@@ -6,8 +6,6 @@
 //  Copyright (c) 2013 NASA World Wind. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
 #import "AppDelegate.h"
 
 int main(int argc, char *argv[])
