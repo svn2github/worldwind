@@ -12,6 +12,8 @@
 #import "WWSceneController.h"
 #import "WWBMNGLandsatCombinedLayer.h"
 #import "ButtonWithImageAndText.h"
+#import "FlightPathsLayer.h"
+#import "LayerListController.h"
 
 #define TOOLBAR_HEIGHT (80)
 #define TOP_BUTTON_WIDTH (100)
@@ -21,11 +23,16 @@
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
     UIBarButtonItem* flightPathsButton;
-    UIBarButtonItem* weatherButton;
+    UIBarButtonItem* overlaysButton;
     UIBarButtonItem* terrainButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
-//    UIBarButtonItem* moreButton;
+    UIBarButtonItem* moreButton;
+
+    LayerListController* layerListController;
+    UIPopoverController* layerListPopoverController;
+
+    FlightPathsLayer* flightPathsLayer;
 }
 
 - (id) init
@@ -55,6 +62,13 @@
 
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [layers addLayer:layer];
+
+    flightPathsLayer = [[FlightPathsLayer alloc]
+            initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
+    [flightPathsLayer setEnabled:NO];
+    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
+
+    layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
 }
 
 - (void) viewWillAppear:(BOOL)animated
@@ -96,10 +110,10 @@
 
     flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Flight Paths" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
-    weatherButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"25-weather" text:@"Weather" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
+            (handleFlightPathsButton)]];
+    overlaysButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"328-layers2" text:@"Overlays" size:size target:self action:@selector
+            (handleOverlaysButton)]];
     terrainButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"385-mountain" text:@"Terrain" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
@@ -109,9 +123,9 @@
     quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"42-photos" text:@"Quick Views" size:size target:self action:@selector
             (handleScreen1ButtonTap)]];
-//    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-//            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
-//            (handleScreen1ButtonTap)]];
+    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
+            (handleScreen1ButtonTap)]];
 
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
@@ -122,15 +136,15 @@
             flexibleSpace,
             flightPathsButton,
             flexibleSpace,
-            weatherButton,
+            overlaysButton,
             flexibleSpace,
             terrainButton,
             flexibleSpace,
             splitViewButton,
             flexibleSpace,
             quickViewsButton,
-//            flexibleSpace,
-//            moreButton,
+            flexibleSpace,
+            moreButton,
             nil]];
 
     [self.view addSubview:topToolBar];
@@ -139,6 +153,26 @@
 - (void) handleScreen1ButtonTap
 {
     NSLog(@"BUTTON TAPPED");
+}
+
+- (void) handleFlightPathsButton
+{
+    [flightPathsLayer setEnabled:![flightPathsLayer enabled]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_LAYER_LIST_CHANGED object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+}
+
+- (void) handleOverlaysButton
+{
+    if (layerListPopoverController == nil)
+    {
+        UINavigationController* navController = [[UINavigationController alloc]
+                initWithRootViewController:layerListController];
+        layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+    }
+
+    [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
+                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 @end
