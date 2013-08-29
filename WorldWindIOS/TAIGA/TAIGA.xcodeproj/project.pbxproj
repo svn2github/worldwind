@@ -16,7 +16,7 @@
 		0BCBC61D17C68E6D00709B37 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC61C17C68E6D00709B37 /* Default.png */; };
 		0BCBC61F17C68E6D00709B37 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC61E17C68E6D00709B37 /* Default@2x.png */; };
 		0BCBC62117C68E6D00709B37 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC62017C68E6D00709B37 /* Default-568h@2x.png */; };
-		0BCBC62417C68E6D00709B37 /* MainScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC62317C68E6D00709B37 /* MainScreenViewController.m */; };
+		0BCBC62417C68E6D00709B37 /* MovingMapScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC62317C68E6D00709B37 /* MovingMapScreenViewController.m */; };
 		0BCBC62717C68E6D00709B37 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC62517C68E6D00709B37 /* ViewController.xib */; };
 		0BCBC70917C68EF200709B37 /* WWPVRTCImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC63117C68EF200709B37 /* WWPVRTCImage.m */; };
 		0BCBC70A17C68EF200709B37 /* WWBoundingBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC63417C68EF200709B37 /* WWBoundingBox.m */; };
@@ -167,8 +167,8 @@
 		0BCBC61C17C68E6D00709B37 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		0BCBC61E17C68E6D00709B37 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		0BCBC62017C68E6D00709B37 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		0BCBC62217C68E6D00709B37 /* MainScreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainScreenViewController.h; sourceTree = "<group>"; };
-		0BCBC62317C68E6D00709B37 /* MainScreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainScreenViewController.m; sourceTree = "<group>"; };
+		0BCBC62217C68E6D00709B37 /* MovingMapScreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MovingMapScreenViewController.h; sourceTree = "<group>"; };
+		0BCBC62317C68E6D00709B37 /* MovingMapScreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MovingMapScreenViewController.m; sourceTree = "<group>"; };
 		0BCBC62617C68E6D00709B37 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController.xib; sourceTree = "<group>"; };
 		0BCBC63017C68EF200709B37 /* WWPVRTCImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPVRTCImage.h; sourceTree = "<group>"; };
 		0BCBC63117C68EF200709B37 /* WWPVRTCImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPVRTCImage.m; sourceTree = "<group>"; };
@@ -487,8 +487,8 @@
 			children = (
 				0BCBC61917C68E6D00709B37 /* AppDelegate.h */,
 				0BCBC61A17C68E6D00709B37 /* AppDelegate.m */,
-				0BCBC62217C68E6D00709B37 /* MainScreenViewController.h */,
-				0BCBC62317C68E6D00709B37 /* MainScreenViewController.m */,
+				0BCBC62217C68E6D00709B37 /* MovingMapScreenViewController.h */,
+				0BCBC62317C68E6D00709B37 /* MovingMapScreenViewController.m */,
 				0BCBC62517C68E6D00709B37 /* ViewController.xib */,
 				0BCBC61117C68E6D00709B37 /* Supporting Files */,
 				1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */,
@@ -953,7 +953,7 @@
 			files = (
 				0BCBC61717C68E6D00709B37 /* main.m in Sources */,
 				0BCBC61B17C68E6D00709B37 /* AppDelegate.m in Sources */,
-				0BCBC62417C68E6D00709B37 /* MainScreenViewController.m in Sources */,
+				0BCBC62417C68E6D00709B37 /* MovingMapScreenViewController.m in Sources */,
 				0BCBC70917C68EF200709B37 /* WWPVRTCImage.m in Sources */,
 				0BCBC70A17C68EF200709B37 /* WWBoundingBox.m in Sources */,
 				0BCBC70B17C68EF200709B37 /* WWBoundingSphere.m in Sources */,

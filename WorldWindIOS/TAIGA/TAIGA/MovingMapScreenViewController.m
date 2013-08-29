@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "MainScreenViewController.h"
+#import "MovingMapScreenViewController.h"
 #import "WorldWind.h"
 #import "WorldWindView.h"
 #import "WWLayerList.h"
@@ -18,7 +18,7 @@
 #define TOOLBAR_HEIGHT (80)
 #define TOP_BUTTON_WIDTH (100)
 
-@implementation MainScreenViewController
+@implementation MovingMapScreenViewController
 {
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;

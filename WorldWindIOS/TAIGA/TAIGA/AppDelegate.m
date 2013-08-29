@@ -6,7 +6,7 @@
  */
 
 #import "AppDelegate.h"
-#import "MainScreenViewController.h"
+#import "MovingMapScreenViewController.h"
 #import "RoutePlanningScreenController.h"
 #import "WeatherScreenController.h"
 #import "ChartsScreenController.h"
@@ -18,7 +18,7 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    MainScreenViewController* movingMapScreenController = [[MainScreenViewController alloc] init];
+    MovingMapScreenViewController* movingMapScreenController = [[MovingMapScreenViewController alloc] init];
     [movingMapScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Moving Map"
                                                                            image:[UIImage imageNamed:@"103-map"]
                                                                              tag:1]];
