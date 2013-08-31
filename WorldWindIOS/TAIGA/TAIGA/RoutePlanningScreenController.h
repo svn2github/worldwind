@@ -9,4 +9,6 @@
 
 @interface RoutePlanningScreenController : UIViewController
 
+- (RoutePlanningScreenController*) initWithFrame:(CGRect)frame;
+
 @end

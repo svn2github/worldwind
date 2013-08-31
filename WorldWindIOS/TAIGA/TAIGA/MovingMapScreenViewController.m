@@ -11,23 +11,20 @@
 #import "WWLayerList.h"
 #import "WWSceneController.h"
 #import "WWBMNGLandsatCombinedLayer.h"
-#import "ButtonWithImageAndText.h"
 #import "FlightPathsLayer.h"
 #import "LayerListController.h"
-
-#define TOOLBAR_HEIGHT (80)
-#define TOP_BUTTON_WIDTH (100)
+#import "AppConstants.h"
 
 @implementation MovingMapScreenViewController
 {
+    CGRect myFrame;
+
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
     UIBarButtonItem* flightPathsButton;
     UIBarButtonItem* overlaysButton;
-    UIBarButtonItem* terrainButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
-    UIBarButtonItem* moreButton;
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
@@ -35,26 +32,30 @@
     FlightPathsLayer* flightPathsLayer;
 }
 
-- (id) init
+- (id) initWithFrame:(CGRect)frame
 {
     self = [super initWithNibName:nil bundle:nil];
+
+    myFrame = frame;
 
     return self;
 }
 
 - (void) loadView
 {
-    self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+    self.view = [[UIView alloc] initWithFrame:myFrame];
+    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.autoresizesSubviews = YES;
 
     [self createWorldWindView];
-    [self createScreen1TopToolbar];
+    [self createTopToolbar];
 }
 
 
 - (void) viewDidLoad
 {
     [super viewDidLoad];
+    [self.view setBackgroundColor:[UIColor cyanColor]];
 
     WWLog(@"View Did Load. World Wind iOS Version %@", WW_VERSION);
 
@@ -79,8 +80,8 @@
 - (void) createWorldWindView
 {
     CGFloat wwvWidth = self.view.bounds.size.width;
-    CGFloat wwvHeight = self.view.bounds.size.height - TOOLBAR_HEIGHT;
-    CGFloat wwvOriginY = self.view.bounds.origin.y + TOOLBAR_HEIGHT;
+    CGFloat wwvHeight = self.view.bounds.size.height - TAIGA_TOOLBAR_HEIGHT;
+    CGFloat wwvOriginY = self.view.bounds.origin.y + TAIGA_TOOLBAR_HEIGHT;
 
     _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, wwvOriginY, wwvWidth, wwvHeight)];
     if (_wwv == nil)
@@ -93,58 +94,56 @@
     [self.view addSubview:_wwv];
 }
 
-- (void) createScreen1TopToolbar
+- (void) createTopToolbar
 {
     topToolBar = [[UIToolbar alloc] init];
-    topToolBar.frame = CGRectMake(0, 0, self.view.frame.size.width, TOOLBAR_HEIGHT);
+    topToolBar.frame = CGRectMake(0, 0, self.view.frame.size.width, TAIGA_TOOLBAR_HEIGHT);
     [topToolBar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [topToolBar setBarStyle:UIBarStyleBlack];
     [topToolBar setTranslucent:NO];
 
-    CGSize size = CGSizeMake(TOP_BUTTON_WIDTH, TOOLBAR_HEIGHT);
+    NSDictionary* textAttrs = [[NSDictionary alloc] initWithObjectsAndKeys:
+            [UIFont boldSystemFontOfSize:18], UITextAttributeFont, nil];
 
     connectivityButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
                                                          action:nil];
 
-    flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"122-stats" text:@"Flight Paths" size:size target:self action:@selector
-            (handleFlightPathsButton)]];
-    overlaysButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"328-layers2" text:@"Overlays" size:size target:self action:@selector
-            (handleOverlaysButton)]];
-    terrainButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"385-mountain" text:@"Terrain" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
-    splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
-    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"42-photos" text:@"Quick Views" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
-    moreButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"09-chat-2" text:@"More" size:size target:self action:@selector
-            (handleScreen1ButtonTap)]];
+    flightPathsButton = [[UIBarButtonItem alloc] initWithTitle:@"Flight Paths" style:UIBarButtonItemStylePlain
+                                                        target:self
+                                                        action:@selector(handleFlightPathsButton)];
+    [flightPathsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
 
+    overlaysButton = [[UIBarButtonItem alloc] initWithTitle:@"Overlays" style:UIBarButtonItemStylePlain
+                                                     target:self
+                                                     action:@selector(handleOverlaysButton)];
+    [overlaysButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+
+    splitViewButton = [[UIBarButtonItem alloc] initWithTitle:@"Split View" style:UIBarButtonItemStylePlain
+                                                      target:self
+                                                      action:@selector(handleScreen1ButtonTap)];
+    [splitViewButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+
+    quickViewsButton = [[UIBarButtonItem alloc] initWithTitle:@"Quick Views" style:UIBarButtonItemStylePlain
+                                                       target:self
+                                                       action:@selector(handleScreen1ButtonTap)];
+    [quickViewsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     [topToolBar setItems:[NSArray arrayWithObjects:
-            connectivityButton,
             flexibleSpace,
             flightPathsButton,
             flexibleSpace,
             overlaysButton,
             flexibleSpace,
-            terrainButton,
-            flexibleSpace,
             splitViewButton,
             flexibleSpace,
             quickViewsButton,
             flexibleSpace,
-            moreButton,
+            connectivityButton,
             nil]];
 
     [self.view addSubview:topToolBar];

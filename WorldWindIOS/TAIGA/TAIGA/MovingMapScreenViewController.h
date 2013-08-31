@@ -13,4 +13,6 @@
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 
+- (MovingMapScreenViewController*) initWithFrame:(CGRect)frame;
+
 @end

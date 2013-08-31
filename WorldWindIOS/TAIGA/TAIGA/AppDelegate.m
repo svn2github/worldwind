@@ -11,6 +11,9 @@
 #import "WeatherScreenController.h"
 #import "ChartsScreenController.h"
 #import "SettingsScreenController.h"
+#import "MainScreenController.h"
+
+#define TOOLBAR_HEIGHT (80)
 
 @implementation AppDelegate
 
@@ -18,41 +21,9 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    MovingMapScreenViewController* movingMapScreenController = [[MovingMapScreenViewController alloc] init];
-    [movingMapScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Moving Map"
-                                                                           image:[UIImage imageNamed:@"103-map"]
-                                                                             tag:1]];
+    MainScreenController* mainScreenController = [[MainScreenController alloc] init];
 
-    RoutePlanningScreenController* routePlanningScreenController = [[RoutePlanningScreenController alloc] init];
-    [routePlanningScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Route Planning"
-                                                                               image:[UIImage imageNamed:@"314-move-point"]
-                                                                                 tag:2]];
-
-    WeatherScreenController* weatherScreenController = [[WeatherScreenController alloc] init];
-    [weatherScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Weather"
-                                                                         image:[UIImage imageNamed:@"25-weather"]
-                                                                           tag:3]];
-
-    ChartsScreenController* chartsScreenController = [[ChartsScreenController alloc] init];
-    [chartsScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Charts"
-                                                                        image:[UIImage imageNamed:@"38-airplane"]
-                                                                          tag:3]];
-
-    SettingsScreenController* settingsScreenController = [[SettingsScreenController alloc] init];
-    [settingsScreenController setTabBarItem:[[UITabBarItem alloc] initWithTitle:@"Settings"
-                                                                        image:[UIImage imageNamed:@"19-gear"]
-                                                                          tag:3]];
-
-    UITabBarController* tabBarController = [[UITabBarController alloc] init];
-    [tabBarController setViewControllers:[NSArray arrayWithObjects:
-            movingMapScreenController,
-            routePlanningScreenController,
-            weatherScreenController,
-            chartsScreenController,
-            settingsScreenController,
-            nil]];
-
-    [self.window setRootViewController:tabBarController];
+    [self.window setRootViewController:mainScreenController];
 
     [self.window makeKeyAndVisible];
     return YES;

@@ -8,4 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @interface SettingsScreenController : UIViewController
+
+- (SettingsScreenController*) initWithFrame:(CGRect)frame;
+
 @end

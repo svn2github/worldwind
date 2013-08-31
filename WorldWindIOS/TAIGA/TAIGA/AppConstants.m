@@ -5,10 +5,11 @@
  @version $Id$
  */
 
-#import <Foundation/Foundation.h>
+#import "AppConstants.h"
 
-@interface ChartsScreenController : UIViewController
 
-- (ChartsScreenController*) initWithFrame:(CGRect)frame;
+@implementation AppConstants
+{
 
+}
 @end

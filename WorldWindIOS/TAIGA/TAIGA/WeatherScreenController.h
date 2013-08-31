@@ -11,4 +11,6 @@
 
 @interface WeatherScreenController : UIViewController <UIGestureRecognizerDelegate>
 
+- (WeatherScreenController*) initWithFrame:(CGRect)frame;
+
 @end

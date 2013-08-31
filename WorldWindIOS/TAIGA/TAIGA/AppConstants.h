@@ -7,8 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ChartsScreenController : UIViewController
+#define TAIGA_TOOLBAR_HEIGHT (80)
 
-- (ChartsScreenController*) initWithFrame:(CGRect)frame;
-
+@interface AppConstants : NSObject
 @end

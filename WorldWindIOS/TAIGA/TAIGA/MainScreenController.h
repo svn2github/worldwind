@@ -7,8 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ChartsScreenController : UIViewController
 
-- (ChartsScreenController*) initWithFrame:(CGRect)frame;
+@interface MainScreenController : UIViewController
 
 @end
