@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "MovingMapScreenViewController.h"
+#import "MovingMapViewController.h"
 #import "WorldWind.h"
 #import "WorldWindView.h"
 #import "WWLayerList.h"
@@ -15,7 +15,7 @@
 #import "LayerListController.h"
 #import "AppConstants.h"
 
-@implementation MovingMapScreenViewController
+@implementation MovingMapViewController
 {
     CGRect myFrame;
 

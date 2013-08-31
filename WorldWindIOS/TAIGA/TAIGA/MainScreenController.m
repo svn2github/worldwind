@@ -6,7 +6,7 @@
  */
 
 #import "MainScreenController.h"
-#import "MovingMapScreenViewController.h"
+#import "MovingMapViewController.h"
 #import "RoutePlanningScreenController.h"
 #import "AppConstants.h"
 #import "WeatherScreenController.h"
@@ -24,7 +24,7 @@
     UIBarButtonItem* chartsButton;
     UIBarButtonItem* settingsButton;
 
-    MovingMapScreenViewController* movingMapScreenController;
+    MovingMapViewController* movingMapScreenController;
     RoutePlanningScreenController* routePlanningScreenController;
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
@@ -49,7 +49,7 @@
     frame.origin.x = 0;
     frame.size.height -= TAIGA_TOOLBAR_HEIGHT;
 
-    movingMapScreenController = [[MovingMapScreenViewController alloc] initWithFrame:frame];
+    movingMapScreenController = [[MovingMapViewController alloc] initWithFrame:frame];
     [[movingMapScreenController view] setTag:VIEW_TAG];
 
     routePlanningScreenController = [[RoutePlanningScreenController alloc] initWithFrame:frame];

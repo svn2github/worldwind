@@ -9,10 +9,10 @@
 
 @class WorldWindView;
 
-@interface MovingMapScreenViewController : UIViewController <UIGestureRecognizerDelegate>
+@interface MovingMapViewController : UIViewController <UIGestureRecognizerDelegate>
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 
-- (MovingMapScreenViewController*) initWithFrame:(CGRect)frame;
+- (MovingMapViewController*) initWithFrame:(CGRect)frame;
 
 @end
