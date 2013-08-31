@@ -29,11 +29,19 @@
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
+
+    NSDictionary* normalTextColor;
+    NSDictionary* highlightTextColor;
 }
 
 - (id) init
 {
     self = [super initWithNibName:nil bundle:nil];
+
+    normalTextColor = [[NSDictionary alloc] initWithObjectsAndKeys:
+            [UIColor whiteColor], UITextAttributeTextColor, nil];
+    highlightTextColor = [[NSDictionary alloc] initWithObjectsAndKeys:
+            [UIColor cyanColor], UITextAttributeTextColor, nil];
 
     return self;
 }
@@ -65,6 +73,7 @@
     [[settingsScreenController view] setTag:VIEW_TAG];
 
     [self.view addSubview:[movingMapScreenController view]];
+    [movingMapButton setTitleTextAttributes:highlightTextColor forState:UIControlStateNormal];
 }
 
 
@@ -132,30 +141,30 @@
 
 - (void) handleMovingMap
 {
-    [self swapScreenController:movingMapScreenController];
+    [self swapScreenController:movingMapScreenController button:movingMapButton];
 }
 
 - (void) handleRoutePlanning
 {
-    [self swapScreenController:routePlanningScreenController];
+    [self swapScreenController:routePlanningScreenController button:routePlanningButton];
 }
 
 - (void) handleWeather
 {
-    [self swapScreenController:weatherScreenController];
+    [self swapScreenController:weatherScreenController button:weatherButton];
 }
 
 - (void) handleCharts
 {
-    [self swapScreenController:chartsScreenController];
+    [self swapScreenController:chartsScreenController button:chartsButton];
 }
 
 - (void) handleSettings
 {
-    [self swapScreenController:settingsScreenController];
+    [self swapScreenController:settingsScreenController button:settingsButton];
 }
 
-- (void) swapScreenController:(UIViewController*)screenController
+- (void) swapScreenController:(UIViewController*)screenController button:(UIBarButtonItem*)button
 {
     CGRect frame = [[screenController view] frame];
 
@@ -171,5 +180,13 @@
 
     [[screenController view] setFrame:frame];
     [self.view addSubview:[screenController view]];
+
+    [movingMapButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+    [routePlanningButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+    [weatherButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+    [chartsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+    [settingsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+
+    [button setTitleTextAttributes:highlightTextColor forState:UIControlStateNormal];
 }
 @end
