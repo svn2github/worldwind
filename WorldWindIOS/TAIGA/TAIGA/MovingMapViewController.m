@@ -55,7 +55,6 @@
 - (void) viewDidLoad
 {
     [super viewDidLoad];
-    [self.view setBackgroundColor:[UIColor cyanColor]];
 
     WWLog(@"View Did Load. World Wind iOS Version %@", WW_VERSION);
 
