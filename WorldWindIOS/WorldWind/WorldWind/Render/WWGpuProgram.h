@@ -148,6 +148,14 @@
 */
 + (void) loadUniformPickColor:(unsigned int)color location:(GLuint)location;
 
+/**
+* Loads the specified float value to a specified uniform location.
+*
+* @param value The value to pass to the shaders.
+* @param location The uniform location to pass the value to.
+*/
++ (void) loadUniformFloat:(float)value location:(GLuint)location;
+
 /// @name Supporting Methods
 
 /**

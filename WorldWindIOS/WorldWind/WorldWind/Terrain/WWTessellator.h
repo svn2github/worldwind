@@ -39,6 +39,7 @@
 
     int vertexPointLocation;
     int vertexTexCoordLocation;
+    int vertexElevationLocation;
     int mvpMatrixLocation;
 }
 
@@ -54,6 +55,9 @@
 
 /// The current detail hint.
 @property(nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
+
+/// Indicates whether the tessellator passes elevations to the shader program.
+@property(nonatomic) BOOL elevationShadingEnabled;
 
 /// @name Initializing Tessellators
 

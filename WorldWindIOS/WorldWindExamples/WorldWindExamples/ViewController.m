@@ -50,6 +50,7 @@
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
 #import "WorldWind/Shapes/WWScreenImage.h"
 #import "WorldWind/Util/WWOffset.h"
+#import "WWElevationShadingLayer.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -149,6 +150,10 @@
 
     layer = [[WWEarthAtNightLayer alloc] init];
     [layer setOpacity:0.75];
+    [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[WWElevationShadingLayer alloc] init];
     [layer setEnabled:NO];
     [layers addLayer:layer];
 

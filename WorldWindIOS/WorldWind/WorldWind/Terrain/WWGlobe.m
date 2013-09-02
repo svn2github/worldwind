@@ -79,6 +79,7 @@
                              offset:(WWVec4* __unsafe_unretained)offset
                         outputArray:(float[])result
                        outputStride:(int)stride
+                   outputElevations:(float[])resultElevations
 {
     if (sector == nil)
     {
@@ -165,6 +166,7 @@
         {
             double elev = (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1)
                     ? borderElevation : metersElevation[elevOffset++];
+            resultElevations[vertexOffset / stride] = (float) elev;
 
             result[vertexOffset] = (float) ((rpm + elev) * cosLat * sinLon[i] - offsetX);
             result[vertexOffset + 1] = (float) ((rpm * (1.0 - _es) + elev) * sinLat - offsetY);

@@ -116,6 +116,8 @@
 * The positions are returned in row major order, beginning with the row of minimum latitude.
 * @param stride The number of floats between successive points in the output array. Specifying a stride of 3 indicates
 * that the points are tightly packed in the output array.
+* @param resultElevations An array to hold the elevation for each computed point. This elevation has vertical
+* exaggeration applied.
 *
 * @exception NSInvalidArgumentException If any argument is nil, or if numLat or numLon are less than or equal to zero,
 * or if stride is less than 3.
@@ -127,7 +129,8 @@
                     borderElevation:(double)borderElevation
                              offset:(WWVec4*)offset
                         outputArray:(float[])result
-                       outputStride:(int)stride;
+                       outputStride:(int)stride
+                   outputElevations:(float[])resultElevations;
 
 /**
 * Computes a position from a specified Cartesian point.

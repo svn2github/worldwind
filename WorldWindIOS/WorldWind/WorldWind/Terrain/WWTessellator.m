@@ -223,11 +223,11 @@
     }
     memset(tileElevations, 0, (size_t) (numLatVertices * numLonVertices * sizeof(double)));
     [_globe elevationsForSector:sector
-                           numLat:numLatVertices
-                           numLon:numLonVertices
-                 targetResolution:[tile texelSize]
-             verticalExaggeration:ve
-                           result:tileElevations];
+                         numLat:numLatVertices
+                         numLon:numLonVertices
+               targetResolution:[tile texelSize]
+           verticalExaggeration:ve
+                         result:tileElevations];
 
     // Allocate space for the Cartesian vertices.
     float* points = [tile points];
@@ -239,6 +239,13 @@
         [tile setPoints:points];
     }
 
+    float* elevations = [tile elevations];
+    if (!elevations)
+    {
+        elevations = malloc((size_t) [tile numPoints] * sizeof(float));
+        [tile setElevations:elevations];
+    }
+
     // The min elevation is used to determine the necessary depth of the tile skirts.
     double borderElevation = [_globe minElevation] * ve;
     [_globe computePointsFromPositions:sector
@@ -248,7 +255,18 @@
                        borderElevation:borderElevation
                                 offset:refCenter
                            outputArray:points
-                          outputStride:vertexStride];
+                          outputStride:vertexStride
+                      outputElevations:elevations];
+
+    if (ve != 1.0)
+    {
+        // Need to back out vertical exaggeration from the elevations computed above.
+        int numPoints = [tile numPoints];
+        for (int i = 0; i < numPoints; i++)
+        {
+            elevations[i] /= ve;
+        }
+    }
 }
 
 - (void) buildSharedGeometry:(WWTerrainTile*)tile
@@ -494,8 +512,12 @@
     // bound, and therefore must look up the location of attributes by name.
     vertexPointLocation = [program attributeLocation:@"vertexPoint"];
     vertexTexCoordLocation = [program attributeLocation:@"vertexTexCoord"];
+    vertexElevationLocation = [program attributeLocation:@"vertexElevation"];
     mvpMatrixLocation = [program uniformLocation:@"mvpMatrix"];
     glEnableVertexAttribArray((GLuint) vertexPointLocation);
+
+    if (_elevationShadingEnabled && vertexElevationLocation >= 0)
+        glEnableVertexAttribArray((GLuint) vertexElevationLocation);
 
     WWGpuResourceCache* __unsafe_unretained gpuResourceCache = [dc gpuResourceCache];
 
@@ -523,6 +545,8 @@
 
     // Restore the global OpenGL vertex attribute array state.
     glDisableVertexAttribArray((GLuint) vertexPointLocation);
+    if (_elevationShadingEnabled && vertexElevationLocation >= 0)
+        glDisableVertexAttribArray((GLuint) vertexElevationLocation);
 
     if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
     {
@@ -577,6 +601,11 @@
     }
 
     glVertexAttribPointer((GLuint) vertexPointLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    if (_elevationShadingEnabled && vertexElevationLocation >= 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glVertexAttribPointer((GLuint) vertexElevationLocation, 1, GL_FLOAT, GL_FALSE, 0, [tile elevations]);
+    }
 }
 
 - (void) endRendering:(WWDrawContext* __unsafe_unretained)dc tile:(WWTerrainTile* __unsafe_unretained)tile
@@ -797,16 +826,16 @@
         float* p2 = &points[3 * indices[i + 2]];
 
         found = [WWMath computeTriangleIntersection:ray
-                                              vax:p0[0]
-                                              vay:p0[1]
-                                              vaz:p0[2]
-                                              vbx:p1[0]
-                                              vby:p1[1]
-                                              vbz:p1[2]
-                                              vcx:p2[0]
-                                              vcy:p2[1]
-                                              vcz:p2[2]
-                                           result:pickedPoint];
+                                                vax:p0[0]
+                                                vay:p0[1]
+                                                vaz:p0[2]
+                                                vbx:p1[0]
+                                                vby:p1[1]
+                                                vbz:p1[2]
+                                                vcx:p2[0]
+                                                vcy:p2[1]
+                                                vcz:p2[2]
+                                             result:pickedPoint];
         if (found)
         {
             [pickedPoint add3:refCenter]; // transform the picked point from model coordinates to world coordinates

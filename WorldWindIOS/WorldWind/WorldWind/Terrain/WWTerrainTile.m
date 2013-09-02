@@ -34,6 +34,7 @@
     _tessellator = tessellator;
     _transformationMatrix = [[WWMatrix alloc] initWithIdentity];
     _points = 0;
+    _elevations = 0;
     _geometryVboCacheKey = [[NSString alloc] initWithFormat:@"%d.%d.%d", [level levelNumber], row, column];
 
     return self;
@@ -45,6 +46,9 @@
     {
         free(_points);
     }
+
+    if (_elevations)
+        free(_elevations);
 }
 
 - (long) sizeInBytes

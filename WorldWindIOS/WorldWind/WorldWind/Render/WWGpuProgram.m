@@ -215,4 +215,9 @@
     glUniform4f(location, r, g, b, a);
 }
 
++ (void) loadUniformFloat:(float)value location:(GLuint)location
+{
+    glUniform1f(location, value);
+}
+
 @end

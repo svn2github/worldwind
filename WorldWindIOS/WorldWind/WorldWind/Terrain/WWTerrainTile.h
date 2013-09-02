@@ -40,6 +40,9 @@
 /// the terrain tile and is released when the tile is deallocated.
 @property (nonatomic) float* points;
 
+/// The elevations corresponding to the tile's Cartesian points.
+@property (nonatomic) float* elevations;
+
 /// Indicates the date and time at which this tile's terrain geometry was computed.
 ///
 /// This is used to invalidate the terrain geometry when the globe's elevations change.
