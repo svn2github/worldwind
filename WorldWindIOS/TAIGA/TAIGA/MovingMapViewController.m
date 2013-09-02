@@ -14,6 +14,7 @@
 #import "FlightPathsLayer.h"
 #import "LayerListController.h"
 #import "AppConstants.h"
+#import "WWElevationShadingLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -61,6 +62,9 @@
     WWLayerList* layers = [[_wwv sceneController] layers];
 
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
+    [layers addLayer:layer];
+
+    layer = [[WWElevationShadingLayer alloc] init];
     [layers addLayer:layer];
 
     flightPathsLayer = [[FlightPathsLayer alloc]
