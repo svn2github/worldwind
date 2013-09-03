@@ -22,10 +22,11 @@
 #define DEFAULT_TILT 0
 #define DEFAULT_ROLL 0
 #define DEFAULT_NEAR_DISTANCE 1
-#define DEFAULT_FAR_DISTANCE 1000000000
+#define DEFAULT_FAR_DISTANCE 10000000
 #define DISPLAY_LINK_FRAME_INTERVAL 3
-#define MIN_NEAR_DISTANCE 10
+#define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 1000
+#define TARGET_FAR_RESOLUTION 10.0
 
 @implementation WWAbstractNavigator
 
@@ -99,19 +100,26 @@
     WWPosition* eyePos = [[WWPosition alloc] init];
     [globe computePositionFromPoint:[eyePoint x] y:[eyePoint y] z:[eyePoint z] outputPosition:eyePos];
 
-    // Compute the current near and far clip distances based on the current eye elevation relative to the globe. This
-    // must be done after computing the modelview matrix, since the modelview matrix defines the eye position.
-    // Additionally, this must get an elevation from the globe since the terrain depends on the eye point.
-    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
-    double distanceToSurface = [eyePos altitude] - globeElevation;
-    _nearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
-    if (_nearDistance < MIN_NEAR_DISTANCE)
-        _nearDistance = MIN_NEAR_DISTANCE;
-
+    // Compute the far clip distance based on the current eye altitude. This must be done after computing the modelview
+    // matrix and before computing the near clip distance. The far clip distance depends on the modelview matrix, and
+    // the near clip distance depends on the far clip distance.
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
     _farDistance = [WWMath horizonDistanceForGlobeRadius:globeRadius eyeAltitude:[eyePos altitude]];
     if (_farDistance < MIN_FAR_DISTANCE)
         _farDistance = MIN_FAR_DISTANCE;
+
+    // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance. This
+    // computed distance is limited such that it does not intersect the terrain when possible and is never less than
+    // one.
+    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
+    double distanceToSurface = [eyePos altitude] - globeElevation;
+    double maxNearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
+    GLint viewDepthBits = [_view depthBits];
+    _nearDistance = [WWMath perspectiveNearDistanceForFarDistance:_farDistance farResolution:TARGET_FAR_RESOLUTION depthBits:viewDepthBits];
+    if (_nearDistance > maxNearDistance) // Avoid intersecting the terrain with the near clip plane.
+        _nearDistance = maxNearDistance;
+    if (_nearDistance < MIN_NEAR_DISTANCE) // The near clip distance must be at least one.
+        _nearDistance = MIN_NEAR_DISTANCE;
 
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
     // viewport. We use the WorldWindView's OpenGL viewport instead of the view's bounds because the viewport contains

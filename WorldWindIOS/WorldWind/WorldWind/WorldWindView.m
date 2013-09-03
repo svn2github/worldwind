@@ -210,6 +210,7 @@
     // color renderbuffer and the depth renderbuffer must have the same dimensions.
     glBindRenderbuffer(GL_RENDERBUFFER, self->_depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei) width, (GLsizei) height);
+    glGetIntegerv(GL_DEPTH_BITS, &_depthBits);
 
     // Allocate storage for the picking render buffers.
     glBindRenderbuffer(GL_RENDERBUFFER, _pickingColorBuffer);

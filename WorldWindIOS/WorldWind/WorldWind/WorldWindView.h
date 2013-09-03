@@ -63,6 +63,10 @@
 /// The view's OpenGL depth buffer. Applications typically do not need to be aware of this object.
 @property(nonatomic, readonly) GLuint depthBuffer;
 
+/// The number of bitplanes in the view's OpenGL depth buffer. Applications typically do not need to be aware of this
+/// value.
+@property(nonatomic, readonly) GLint depthBits;
+
 /// The view's OpenGL picking frame buffer. Applications typically do not need to be aware of this object.
 @property(nonatomic, readonly) GLuint pickingFrameBuffer;
 
@@ -83,7 +87,7 @@
 @property BOOL redrawRequested;
 
 /// Specifies whether the view should redraw itself continuously. This is used only for diagnostics and performance
-// statistic gathering and should not be used by the application.
+/// statistic gathering and should not be used by the application.
 @property(nonatomic) BOOL drawContinuously;
 
 /// @name Redrawing World Wind Views

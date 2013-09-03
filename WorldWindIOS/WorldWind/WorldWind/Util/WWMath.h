@@ -334,7 +334,8 @@
 *
 * @return The frustum rectangle coordinates, in model coordinates.
 *
-* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the distance
+* is negative.
 */
 + (CGRect) perspectiveFrustumRect:(CGRect)viewport atDistance:(double)distance;
 
@@ -355,7 +356,8 @@
 *
 * @return The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
 *
-* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the distance
+* is negative.
 */
 + (double) perspectivePixelSize:(CGRect)viewport atDistance:(double)distance;
 
@@ -417,8 +419,30 @@
 *
 * @return The maximum near clip distance, in model coordinates.
 *
-* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero.
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if the distance
+* is negative.
 */
 + (double) perspectiveNearDistance:(CGRect)viewport forObjectAtDistance:(double)distance;
 
+/**
+* Computes the near clip distance that corresponds to a specified far clip distance and resolution at the far clip
+* plane.
+*
+* This computes a near clip distance appropriate for use in [WWMath perspectiveFrustumRect:atDistance:] and
+* [WWMatrix setToPerspectiveProjection:nearDistance:farDistance:]. This returns zero if either the distance or the
+* resolution are zero.
+*
+* @param distance The far clip distance, in model coordinates.
+* @param resolution The depth resolution at the far clip plane, in model coordinates.
+* @param depthBits The number of bitplanes in the depth buffer. This is typically 16, 24, or 32 for OpenGL ES depth
+* buffers.
+*
+* @return The near clip distance, in model coordinates.
+*
+* @exception NSInvalidArgumentException If either the distance or the resolution are negative, or if the depthBits is
+* less than one.
+*/
++ (double) perspectiveNearDistanceForFarDistance:(double)distance
+                                   farResolution:(double)resolution
+                                       depthBits:(int)depthBits;
 @end

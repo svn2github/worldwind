@@ -287,7 +287,7 @@
     return (radius > 0 && altitude > 0) ? sqrt(altitude * (2 * radius + altitude)) : 0;
 }
 
-+ (CGRect) perspectiveFrustumRect:(CGRect)viewport atDistance:(double)near
++ (CGRect) perspectiveFrustumRect:(CGRect)viewport atDistance:(double)distance
 {
     CGFloat viewportWidth = CGRectGetWidth(viewport);
     CGFloat viewportHeight = CGRectGetHeight(viewport);
@@ -302,6 +302,11 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
+    if (distance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is negative")
+    }
+
     // Compute a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
     // height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
 
@@ -309,15 +314,15 @@
 
     if (viewportWidth < viewportHeight)
     {
-        width = (CGFloat) near;
-        height = (CGFloat) near * viewportHeight / viewportWidth;
+        width = (CGFloat) distance;
+        height = (CGFloat) distance * viewportHeight / viewportWidth;
         x = -width / 2;
         y = -height / 2;
     }
     else
     {
-        width = (CGFloat) near * viewportWidth / viewportHeight;
-        height = (CGFloat) near;
+        width = (CGFloat) distance * viewportWidth / viewportHeight;
+        height = (CGFloat) distance;
         x = -width / 2;
         y = -height / 2;
     }
@@ -335,6 +340,11 @@
     if (CGRectGetHeight(viewport) == 0)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
+
+    if (distance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is negative")
     }
 
     // Compute the dimensions of a rectangle in model coordinates carved out of the frustum at the given distance along
@@ -432,6 +442,11 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
+    if (distance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is negative")
+    }
+
     // Compute the maximum near clip distance that avoids clipping an object at the specified distance from the eye.
     // Since the furthest points on the near clip rectangle are the four corners, we compute a near distance that puts
     // any one of these corners exactly at the given distance. The distance to one of the four corners can be expressed
@@ -454,6 +469,35 @@
             ? (viewportHeight / viewportWidth) : (viewportWidth / viewportHeight);
 
     return 2 * distance / sqrt(aspect * aspect + 5);
+}
+
++ (double) perspectiveNearDistanceForFarDistance:(double)distance
+                                   farResolution:(double)resolution
+                                       depthBits:(int)depthBits
+{
+    if (distance < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Distance is negative")
+    }
+
+    if (resolution < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Resolution is negative")
+    }
+
+    if (depthBits < 1)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Depth bits is less than one")
+    }
+
+    if (distance == 0 || resolution == 0)
+    {
+        return 0;
+    }
+
+    double maxDepthValue = (1L << depthBits) - 1L;
+
+    return distance / (maxDepthValue / (1 - resolution / distance) - maxDepthValue + 1);
 }
 
 + (BOOL) computeTriangleIntersection:(WWLine* __unsafe_unretained)line
