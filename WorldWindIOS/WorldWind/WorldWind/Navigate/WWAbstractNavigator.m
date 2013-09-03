@@ -111,13 +111,17 @@
     // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance. This
     // computed distance is limited such that it does not intersect the terrain when possible and is never less than
     // one.
-    double globeElevation = [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
-    double distanceToSurface = [eyePos altitude] - globeElevation;
-    double maxNearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
     GLint viewDepthBits = [_view depthBits];
     _nearDistance = [WWMath perspectiveNearDistanceForFarDistance:_farDistance farResolution:TARGET_FAR_RESOLUTION depthBits:viewDepthBits];
-    if (_nearDistance > maxNearDistance) // Avoid intersecting the terrain with the near clip plane.
-        _nearDistance = maxNearDistance;
+
+    double distanceToSurface = [eyePos altitude] - [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
+    if (distanceToSurface > 0) // The eye is above the terrain; avoid intersecting the terrain with the near clip plane.
+    {
+        double maxNearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
+        if (_nearDistance > maxNearDistance)
+            _nearDistance = maxNearDistance;
+    }
+
     if (_nearDistance < MIN_NEAR_DISTANCE) // The near clip distance must be at least one.
         _nearDistance = MIN_NEAR_DISTANCE;
 
