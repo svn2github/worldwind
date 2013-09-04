@@ -18,4 +18,6 @@
 /// The elevation threshold above which to display red shading. The default is 3000 meters.
 @property (nonatomic) float redThreshold;
 
+- (WWElevationShadingLayer*) init;
+
 @end

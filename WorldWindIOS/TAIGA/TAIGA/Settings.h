@@ -7,8 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SettingsScreenController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+@interface Settings : NSObject
 
-- (SettingsScreenController*) initWithFrame:(CGRect)frame;
++ (void) setFloat:(NSString*)name value:(float)value;
++ (float) getFloat:(NSString*)name defaultValue:(float)defaultValue;
++ (float) getFloat:(NSString*)name;
 
 @end

@@ -15,6 +15,7 @@
 #import "LayerListController.h"
 #import "AppConstants.h"
 #import "WWElevationShadingLayer.h"
+#import "Settings.h"
 
 @implementation MovingMapViewController
 {
@@ -31,6 +32,7 @@
     UIPopoverController* layerListPopoverController;
 
     FlightPathsLayer* flightPathsLayer;
+    WWElevationShadingLayer* elevationShadingLayer;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -64,8 +66,12 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [layers addLayer:layer];
 
-    layer = [[WWElevationShadingLayer alloc] init];
-    [layers addLayer:layer];
+    elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
+    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW defaultValue:2000.0];
+    [elevationShadingLayer setYellowThreshold:threshold];
+    threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
+    [elevationShadingLayer setRedThreshold:threshold];
+    [layers addLayer:elevationShadingLayer];
 
     flightPathsLayer = [[FlightPathsLayer alloc]
             initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
@@ -73,11 +79,30 @@
     [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleSettingChanged:)
+                                                 name:TAIGA_SETTING_CHANGED
+                                               object:nil];
 }
 
 - (void) viewWillAppear:(BOOL)animated
 {
 //    [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
+}
+
+- (void) handleSettingChanged:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW])
+    {
+        float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW];
+        [elevationShadingLayer setYellowThreshold:threshold];
+    }
+    else if ([[notification name] isEqualToString:TAIGA_SHADED_ELEVATION_THRESHOLD_RED])
+    {
+        float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED];
+        [elevationShadingLayer setRedThreshold:threshold];
+    }
 }
 
 - (void) createWorldWindView
