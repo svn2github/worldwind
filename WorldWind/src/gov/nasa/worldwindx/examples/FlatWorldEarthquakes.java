@@ -464,9 +464,17 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.latestEq = null;
                 for (int i = 0; i < nodes.getLength(); i++)
                 {
-                    Node entry = nodes.item(i);
-                    Earthquake eq = new Earthquake(entry);
-                    addEarthquake(layer, eq);
+                    try
+                    {
+                        Node entry = nodes.item(i);
+                        Earthquake eq = new Earthquake(entry);
+                        addEarthquake(layer, eq);
+                    }
+                    catch (Exception e)
+                    {
+                        String message = Logging.getMessage("generic.CannotParse", e);
+                        Logging.logger().severe(message);
+                    }
                 }
             }
         }
