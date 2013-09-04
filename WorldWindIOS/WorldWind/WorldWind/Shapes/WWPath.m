@@ -21,6 +21,7 @@
 #import "WorldWind/WWLog.h"
 
 #define PICK_LINE_WIDTH 16.0
+#define SURFACE_PATH_DEPTH_OFFSET -0.001
 
 // TODO: Draw pole positions as vertical lines.
 // TODO: Don't redraw each frame.
@@ -238,7 +239,7 @@
         // Modify the standard modelview-projection matrix by applying a depth offset to the perspective matrix.
         // This pulls the path towards the eye just a bit to ensure it shows over the terrain.
         WWMatrix* mvp = [[WWMatrix alloc] initWithMatrix:[[dc navigatorState] projection]];
-        [mvp offsetProjectionDepth:-0.01];
+        [mvp offsetProjectionDepth:SURFACE_PATH_DEPTH_OFFSET];
         [mvp multiplyMatrix:[[dc navigatorState] modelview]];
         [mvp multiplyMatrix:transformationMatrix];
         [(WWBasicProgram*) [dc currentProgram] loadModelviewProjection:mvp];
