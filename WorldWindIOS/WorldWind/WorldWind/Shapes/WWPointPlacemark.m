@@ -18,14 +18,12 @@
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/Shaders/WWBasicTextureProgram.h"
 #import "WorldWind/Terrain/WWTerrain.h"
-#import "WorldWind/Util/WWColor.h"
-#import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWResourceLoader.h"
 #import "WorldWind/WorldWind.h"
 
-#define DEFAULT_DEPTH_OFFSET -0.01
+#define DEFAULT_DEPTH_OFFSET -0.003
 
 // Temporary objects shared by all point placemarks and used during rendering.
 static WWVec4* point;
