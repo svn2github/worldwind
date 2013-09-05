@@ -26,10 +26,6 @@ import java.util.logging.Level;
  */
 public class RecordPanel extends JPanel implements ActionListener
 {
-    protected static final int STATUS_NO_ONLINE_RESOURCES = 0x1;
-    protected static final int STATUS_INVALID_LAYER_NAME = 0x1 << 1;
-    protected static final int STATUS_EXCEPTION_CREATING_LAYER = 0x1 << 2;
-
     protected Record record;
     protected WorldWindow wwd;
     protected List<Layer> layerList;
@@ -43,7 +39,11 @@ public class RecordPanel extends JPanel implements ActionListener
         RecordPanel.class.getResource("/gov/nasa/worldwindx/applications/eurogeoss/images/activity-indicator-16.gif"));
     protected static final ImageIcon errorIcon = new ImageIcon(
         RecordPanel.class.getResource("/gov/nasa/worldwindx/applications/eurogeoss/images/error.gif"));
-    protected static final int MAX_WIDTH = 340;
+    protected static final int PANEL_PREFERRED_HEIGHT = 25;
+    protected static final int COMBO_BOX_PREFERRED_WIDTH = 350;
+    protected static final int STATUS_NO_ONLINE_RESOURCES = 0x1;
+    protected static final int STATUS_INVALID_LAYER_NAME = 0x1 << 1;
+    protected static final int STATUS_EXCEPTION_CREATING_LAYER = 0x1 << 2;
 
     public RecordPanel(Record record, WorldWindow wwd)
     {
@@ -64,7 +64,6 @@ public class RecordPanel extends JPanel implements ActionListener
         this.record = record;
         this.wwd = wwd;
 
-        this.setPreferredSize(new Dimension(0, 25));
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.assembleLayers();
         this.layoutComponents();
@@ -82,7 +81,6 @@ public class RecordPanel extends JPanel implements ActionListener
             JLabel label = new JLabel(title, activityIcon, SwingConstants.LEFT);
             label.setToolTipText(toolTipText);
             label.setPreferredSize(new JCheckBox(title).getPreferredSize());
-            this.limitComponentWidth(label, MAX_WIDTH);
             this.add(label);
         }
         else if (this.layerList.size() == 0) // either no layers or no valid layers
@@ -90,7 +88,6 @@ public class RecordPanel extends JPanel implements ActionListener
             JLabel label = new JLabel(title, errorIcon, SwingConstants.LEFT);
             label.setToolTipText(toolTipText);
             label.setPreferredSize(new JCheckBox(title).getPreferredSize());
-            this.limitComponentWidth(label, MAX_WIDTH);
             this.add(label);
         }
         else if (this.layerList.size() == 1) // one or more valid layers
@@ -99,7 +96,6 @@ public class RecordPanel extends JPanel implements ActionListener
             this.layerCheckBox = new JCheckBox(title);
             this.layerCheckBox.setToolTipText(toolTipText);
             this.layerCheckBox.addActionListener(this);
-            this.limitComponentWidth(this.layerCheckBox, MAX_WIDTH);
             this.add(this.layerCheckBox);
         }
         else // more than one valid layer
@@ -108,13 +104,15 @@ public class RecordPanel extends JPanel implements ActionListener
             this.layerCheckBox = new JCheckBox();
             this.layerCheckBox.addActionListener(this);
             this.layerComboBox = new JComboBox(this.layerList.toArray());
+            this.layerComboBox.setPreferredSize(new Dimension(COMBO_BOX_PREFERRED_WIDTH, this.layerComboBox.getPreferredSize().height));
+            this.layerComboBox.setMaximumSize(new Dimension(COMBO_BOX_PREFERRED_WIDTH, Integer.MAX_VALUE));
             this.layerComboBox.setToolTipText(toolTipText);
             this.layerComboBox.addActionListener(this);
-            this.limitComponentWidth(this.layerComboBox, MAX_WIDTH - this.layerCheckBox.getPreferredSize().width);
             this.add(this.layerCheckBox);
             this.add(this.layerComboBox);
         }
 
+        this.setPreferredSize(new Dimension(this.getPreferredSize().width, PANEL_PREFERRED_HEIGHT));
         this.validate();
     }
 
@@ -152,13 +150,6 @@ public class RecordPanel extends JPanel implements ActionListener
         sb.append("</html>");
 
         return sb.toString();
-    }
-
-    protected void limitComponentWidth(Component c, int maxWidth)
-    {
-        int preferredHeight = c.getPreferredSize().height;
-        c.setPreferredSize(new Dimension(maxWidth, preferredHeight));
-        c.setMaximumSize(new Dimension(maxWidth, preferredHeight));
     }
 
     @Override
