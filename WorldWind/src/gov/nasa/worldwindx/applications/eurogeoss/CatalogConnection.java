@@ -17,6 +17,8 @@ import java.net.*;
 public class CatalogConnection
 {
     protected String serviceUrl;
+    protected int connectTimeout = 10000;
+    protected int readTimeout = 10000;
 
     public CatalogConnection(String serviceUrl)
     {
@@ -35,6 +37,26 @@ public class CatalogConnection
         return this.serviceUrl;
     }
 
+    public int getConnectTimeout()
+    {
+        return this.connectTimeout;
+    }
+
+    public void setConnectTimeout(int timeout)
+    {
+        this.connectTimeout = timeout;
+    }
+
+    public int getReadTimeout()
+    {
+        return this.readTimeout;
+    }
+
+    public void setReadTimeout(int timeout)
+    {
+        this.readTimeout = timeout;
+    }
+
     public GetRecordsResponse getRecords(GetRecordsRequest request) throws IOException
     {
         if (request == null)
@@ -45,15 +67,20 @@ public class CatalogConnection
         }
 
         URL url = WWIO.makeURL(this.serviceUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
+        conn.setConnectTimeout(this.getConnectTimeout());
+        conn.setReadTimeout(this.getReadTimeout());
 
         OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
         writer.write(request.toXMLString());
         writer.close();
+
+        if (Thread.interrupted())
+            return null;
 
         if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
