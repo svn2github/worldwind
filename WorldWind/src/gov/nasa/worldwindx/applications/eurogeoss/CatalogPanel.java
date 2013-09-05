@@ -11,7 +11,6 @@ import gov.nasa.worldwind.util.Logging;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
@@ -169,7 +168,7 @@ public class CatalogPanel extends JPanel implements ActionListener
             this.recordsPanel.removeAll();
         }
 
-        if (response.getRecords() != null)
+        if (response.getRecords().size() > 0)
         {
             for (Record record : response.getRecords())
             {
@@ -217,7 +216,7 @@ public class CatalogPanel extends JPanel implements ActionListener
                     }
                 });
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 Logging.logger().log(Level.SEVERE, "Unable to search catalog " + serviceUrl, e);
 

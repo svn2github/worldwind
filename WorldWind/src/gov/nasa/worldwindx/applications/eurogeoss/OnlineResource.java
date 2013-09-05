@@ -5,6 +5,11 @@
  */
 package gov.nasa.worldwindx.applications.eurogeoss;
 
+import gov.nasa.worldwind.util.WWXML;
+
+import javax.xml.stream.*;
+import javax.xml.stream.events.*;
+
 /**
  * @author dcollins
  * @version $Id$
@@ -17,6 +22,11 @@ public class OnlineResource
 
     public OnlineResource()
     {
+    }
+
+    public OnlineResource(XMLEventReader reader) throws XMLStreamException
+    {
+        this.parseElement(reader);
     }
 
     public String getLinkage()
@@ -47,6 +57,60 @@ public class OnlineResource
     public void setProtocol(String protocol)
     {
         this.protocol = protocol;
+    }
+
+    public boolean isWMSOnlineResource()
+    {
+        return this.protocol != null && this.protocol.startsWith("urn:ogc:serviceType:WebMapService:");
+    }
+
+    protected void parseElement(XMLEventReader reader) throws XMLStreamException
+    {
+        int depth = 0;
+
+        while (reader.hasNext())
+        {
+            XMLEvent nextEvent = reader.peek();
+
+            if (nextEvent.isStartElement())
+            {
+                StartElement startElement = nextEvent.asStartElement();
+                String localName = startElement.getName().getLocalPart();
+                ++depth;
+
+                if (localName.equals("name"))
+                {
+                    this.name = WWXML.readCharacters(reader).trim();
+                }
+                else if (localName.equals("linkage"))
+                {
+                    this.linkage = WWXML.readCharacters(reader).trim();
+                }
+                else if (localName.equals("protocol"))
+                {
+                    this.protocol = WWXML.readCharacters(reader).trim();
+                }
+                else
+                {
+                    reader.nextEvent(); // consume the event
+                }
+            }
+            else if (nextEvent.isEndElement())
+            {
+                if (--depth > 0)
+                {
+                    reader.nextEvent(); // consume the event
+                }
+                else
+                {
+                    break; // stop parsing at the end element corresponding to the root start element
+                }
+            }
+            else
+            {
+                reader.nextEvent(); // consume the event
+            }
+        }
     }
 
     @Override

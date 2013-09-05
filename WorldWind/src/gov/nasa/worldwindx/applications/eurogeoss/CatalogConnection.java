@@ -7,6 +7,7 @@ package gov.nasa.worldwindx.applications.eurogeoss;
 
 import gov.nasa.worldwind.util.*;
 
+import javax.xml.stream.*;
 import java.io.*;
 import java.net.*;
 
@@ -57,7 +58,7 @@ public class CatalogConnection
         this.readTimeout = timeout;
     }
 
-    public GetRecordsResponse getRecords(GetRecordsRequest request) throws IOException
+    public GetRecordsResponse getRecords(GetRecordsRequest request) throws IOException, XMLStreamException
     {
         if (request == null)
         {
@@ -66,30 +67,66 @@ public class CatalogConnection
             throw new IllegalArgumentException(msg);
         }
 
-        URL url = WWIO.makeURL(this.serviceUrl);
+        HttpURLConnection conn = null;
+        GetRecordsResponse response = null;
 
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setDoOutput(true);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
-        conn.setConnectTimeout(this.getConnectTimeout());
-        conn.setReadTimeout(this.getReadTimeout());
+        try
+        {
+            URL url = new URL(this.serviceUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(this.getConnectTimeout());
+            conn.setReadTimeout(this.getReadTimeout());
+            response = this.sendGetRecordsRequest(request, conn);
+        }
+        finally
+        {
+            if (conn != null)
+                conn.disconnect();
+        }
 
-        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+        return response;
+    }
+
+    protected GetRecordsResponse sendGetRecordsRequest(GetRecordsRequest request, HttpURLConnection connection)
+        throws IOException, XMLStreamException
+    {
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
+
+        OutputStream out = connection.getOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(new BufferedOutputStream(out), "UTF-8");
         writer.write(request.toXMLString());
         writer.close();
 
         if (Thread.interrupted())
+        {
             return null;
-
-        if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
-        {
-            return new GetRecordsResponse(conn.getInputStream());
         }
-        else
+
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
         {
-            String msg = Logging.getMessage("HTTP.ResponseCode", conn.getResponseCode(), this.serviceUrl);
+            String msg = Logging.getMessage("HTTP.ResponseCode", connection.getResponseCode(), connection.getURL());
             throw new IOException(msg);
+        }
+
+        InputStream in = connection.getInputStream();
+        return this.parseResponse(in);
+    }
+
+    protected GetRecordsResponse parseResponse(InputStream in) throws XMLStreamException
+    {
+        XMLEventReader reader = null;
+
+        try
+        {
+            reader = WWXML.openEventReaderStream(new BufferedInputStream(in));
+            return new GetRecordsResponse(reader);
+        }
+        finally
+        {
+            if (reader != null)
+                reader.close();
         }
     }
 }
