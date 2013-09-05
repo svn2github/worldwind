@@ -611,6 +611,74 @@ public class WWXML
     }
 
     /**
+     * Returns a string containing the text from all character nodes under the current element appended into a single
+     * continuous string. After this method returns the specified eventReader is positioned at the end element
+     * of the eventReader's current element.
+     *
+     * This returns the empty string if there are no character nodes under the current element, or if the element contains
+     * only whitespace.
+     *
+     * @param eventReader the stream to poll for XML events.
+     *
+     * @return A string containing the text from character nodes under the current element.
+     *
+     * @throws IllegalArgumentException if the event reader is null.
+     */
+    public static String readCharacters(XMLEventReader eventReader)
+    {
+        if (eventReader == null)
+        {
+            String message = Logging.getMessage("nullValue.EventReaderIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        try
+        {
+            int depth = 0;
+            while (eventReader.hasNext())
+            {
+                XMLEvent nextEvent = eventReader.peek();
+                if (nextEvent.isStartElement())
+                {
+                    ++depth;
+                    eventReader.nextEvent(); // consume the event
+                }
+                else if (nextEvent.isEndElement())
+                {
+                    if (--depth > 0)
+                    {
+                        eventReader.nextEvent(); // consume the event
+                    }
+                    else
+                    {
+                        break; // stop parsing at the end element that corresponds to the root start element
+                    }
+                }
+                else if (nextEvent.isCharacters())
+                {
+                    Characters characters = eventReader.nextEvent().asCharacters(); // consume the event
+                    if (!characters.isWhiteSpace())
+                        sb.append(characters.getData());
+                }
+                else
+                {
+                    eventReader.nextEvent(); // consume the event
+                }
+            }
+        }
+        catch (XMLStreamException e)
+        {
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseXml", eventReader);
+            Logging.logger().finest(message);
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Shortcut method to create an {@link XPath}.
      *
      * @return a new XPath.
