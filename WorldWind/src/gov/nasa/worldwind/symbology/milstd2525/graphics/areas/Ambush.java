@@ -457,7 +457,16 @@ public class Ambush extends AbstractMilStd2525TacticalGraphic
         // Compute the start and sweep angles for the arc
         arcData.startAngle = LatLon.greatCircleAzimuth(arcData.center, this.position2);
         Angle endAngle = LatLon.greatCircleAzimuth(arcData.center, this.position3);
-        arcData.arcAngle = endAngle.subtract(arcData.startAngle);
+
+        // Compute the angle between the start and end points. Note that we cannot use Angle.angularDistance because
+        // we need a signed distance here.
+        double diffDegrees = endAngle.subtract(arcData.startAngle).degrees;
+        if (diffDegrees < -180)
+            diffDegrees += 360;
+        else if (diffDegrees > 180)
+            diffDegrees -= 360;
+
+        arcData.arcAngle = Angle.fromDegrees(diffDegrees);
 
         // Find the midpoint of the arc
         double globeRadius = globe.getRadiusAt(arcData.center.getLatitude(), arcData.center.getLongitude());
@@ -480,7 +489,7 @@ public class Ambush extends AbstractMilStd2525TacticalGraphic
     {
         Globe globe = dc.getGlobe();
 
-        Angle da = arcData.arcAngle.divide(intervals);
+        Angle da = arcData.arcAngle.divide(this.intervals);
         double globeRadius = globe.getRadiusAt(arcData.center.getLatitude(), arcData.center.getLongitude());
         double radiusRadians = arcData.radius / globeRadius;
 
