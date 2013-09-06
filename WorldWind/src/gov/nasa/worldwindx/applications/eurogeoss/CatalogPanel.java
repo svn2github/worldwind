@@ -90,7 +90,7 @@ public class CatalogPanel extends JPanel implements ActionListener
         this.recordsScrollPanel.add(BorderLayout.CENTER, this.morePanel);
         this.morePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         this.morePanel.add(this.moreButton);
-        this.setPreferredSize(new Dimension(450, 0));
+        this.setPreferredSize(new Dimension(500, 0));
         this.setBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9)); // top, left, bottom, right
         this.setLayout(new BorderLayout(0, 20)); // hgap, vgap
         this.add(BorderLayout.NORTH, this.searchPanel);

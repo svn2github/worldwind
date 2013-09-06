@@ -29,7 +29,10 @@ public class EuroGeossApp
 {
     // Most of this code was taken from ApplicationTemplate.
 
-    protected static final String SERVICE_URL = "http://23.21.170.207/geodab-dswg/services/cswisogeo";
+    protected static final String EUROGEOSS_SERVICE_TITLE = "EuroGEOSS Catalog";
+    protected static final String EUROGEOSS_SERVICE_URL = "http://23.21.170.207/geodab-dswg/services/cswisogeo";
+    protected static final String NEO_SERVICE_TITLE = "NASA Earth Observations (NEO) WMS";
+    protected static final String NEO_SERVICE_URL = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
 
     public static class AppPanel extends JPanel
     {
@@ -43,7 +46,7 @@ public class EuroGeossApp
             super(new BorderLayout());
 
             this.wwd = new WorldWindowGLCanvas();
-            ((Component) this.wwd).setPreferredSize(new Dimension(1000, 600));
+            ((Component) this.wwd).setPreferredSize(new Dimension(1200, 800));
 
             // Create the default model as described in the current worldwind properties.
             Model m = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
@@ -67,6 +70,7 @@ public class EuroGeossApp
     public static class AppFrame extends JFrame
     {
         protected AppPanel wwjPanel;
+        protected JTabbedPane tabbedPane;
         protected CatalogPanel catalogPanel;
         protected LayerAndElevationManagerPanel layerManagerPanel;
 
@@ -81,17 +85,18 @@ public class EuroGeossApp
         {
             // Create the WorldWindow.
             this.wwjPanel = new AppPanel();
-            this.catalogPanel = new CatalogPanel(SERVICE_URL, getWwd());
+            this.tabbedPane = new JTabbedPane();
+            this.catalogPanel = new CatalogPanel(EUROGEOSS_SERVICE_URL, getWwd());
             this.layerManagerPanel = new LayerAndElevationManagerPanel(getWwd());
 
-            // Put the pieces together.
-            JTabbedPane tabbedPane = new JTabbedPane();
-            tabbedPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
-            tabbedPane.add("EuroGEOSS Catalog", this.catalogPanel);
-            tabbedPane.add("Layers", this.layerManagerPanel);
+            this.tabbedPane = new JTabbedPane();
+            this.tabbedPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
+            this.tabbedPane.add(EUROGEOSS_SERVICE_TITLE, this.catalogPanel);
+            this.addWMSLayersTab(NEO_SERVICE_TITLE, NEO_SERVICE_URL);
+            this.tabbedPane.add("Layers", this.layerManagerPanel);
             this.getContentPane().setLayout(new BorderLayout(0, 0)); // hgap, vgap
+            this.getContentPane().add(this.tabbedPane, BorderLayout.WEST);
             this.getContentPane().add(this.wwjPanel, BorderLayout.CENTER);
-            this.getContentPane().add(tabbedPane, BorderLayout.WEST);
 
             // Create and install the view controls layer and register a controller for it with the World Window.
             ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
@@ -113,6 +118,19 @@ public class EuroGeossApp
             // Center the application on the screen.
             WWUtil.alignComponent(null, this, AVKey.CENTER);
             this.setResizable(true);
+        }
+
+        protected void addWMSLayersTab(String title, String serviceUrl)
+        {
+            try
+            {
+                WMSLayersPanel panel = new WMSLayersPanel(getWwd(), serviceUrl, new Dimension(500, 0));
+                this.tabbedPane.add(title, panel);
+            }
+            catch (Exception e)
+            {
+                Logging.logger().log(java.util.logging.Level.SEVERE, "Unable to add WMS server " + serviceUrl, e);
+            }
         }
 
         public WorldWindow getWwd()
@@ -147,7 +165,7 @@ public class EuroGeossApp
         {
             final AppFrame frame = (AppFrame) appFrameClass.newInstance();
             frame.setTitle(appName);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             java.awt.EventQueue.invokeLater(new Runnable()
             {
                 public void run()
