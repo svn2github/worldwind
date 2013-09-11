@@ -34,6 +34,7 @@
 		1BF9A38C2A0589FE27F5C7D5 /* RoutePlanningScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0853455F50918712D78 /* RoutePlanningScreenController.m */; };
 		1BF9A392A0028819DC7D9F9F /* 103-map.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1DCCF03150665477519 /* 103-map.png */; };
 		1BF9A3FDAE1D39FB2D4FDA90 /* 09-chat-2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A9381E06C585F3513450 /* 09-chat-2@2x.png */; };
+		1BF9A48E4D4B855B53D066F3 /* 275-broadcast-noconnection.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */; };
 		1BF9A51A0F9C719B1322CC4F /* 314-move-point@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */; };
 		1BF9A5847595B9B347E632D4 /* Settings.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC9D65EA0C91768F51A5 /* Settings.m */; };
 		1BF9A5C0915C60BB28B24226 /* 25-weather@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */; };
@@ -51,6 +52,7 @@
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
+		1BF9ABEAFA9CF0359316EBB5 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A18CE898B4D59202FEBE /* 275-broadcast-noconnection@2x.png */; };
 		1BF9AC88033EB29A4F8A21EC /* ChartsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */; };
 		1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */; };
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
@@ -58,6 +60,7 @@
 		1BF9AE30EFD4181D61CA3D2F /* 275-broadcast@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */; };
 		1BF9AE68E0B6F7D92E5FB4BD /* 09-chat-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4D424F620707A6CECE0 /* 09-chat-2.png */; };
 		1BF9AE6E63F3F58E65410DE4 /* 38-airplane.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A230DEB50D96296D6835 /* 38-airplane.png */; };
+		1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC6374E2CD340E235AD /* ChartsListController.m */; };
 		1BF9AF0E2106E053989367BE /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */; };
 		1BF9AF209840952651C41FC2 /* 42-photos@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */; };
 		1BF9AF670B8F1C52A7FD8823 /* MainScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8C063EF836D58C35624 /* MainScreenController.m */; };
@@ -97,6 +100,7 @@
 		1BF9A13B40E48DA6A6C91CCB /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9A16000CCA1E884CB5F52 /* 362-2up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up.png"; sourceTree = "<group>"; };
 		1BF9A1891DDA1ECEB84C38BD /* ButtonWithImageAndText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ButtonWithImageAndText.h; sourceTree = "<group>"; };
+		1BF9A18CE898B4D59202FEBE /* 275-broadcast-noconnection@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection@2x.png"; sourceTree = "<group>"; };
 		1BF9A1BE4A4A976034420A05 /* 385-mountain@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "385-mountain@2x.png"; sourceTree = "<group>"; };
 		1BF9A1DCCF03150665477519 /* 103-map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "103-map.png"; sourceTree = "<group>"; };
 		1BF9A1E43E17FB581FD7BD8B /* 385-mountain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "385-mountain.png"; sourceTree = "<group>"; };
@@ -104,6 +108,7 @@
 		1BF9A26634010ECCCA908E7B /* ChartsScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsScreenController.h; sourceTree = "<group>"; };
 		1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A38BEF1C4F903C7FFE32 /* FlightPathsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathsLayer.h; sourceTree = "<group>"; };
+		1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection.png"; sourceTree = "<group>"; };
 		1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather@2x.png"; sourceTree = "<group>"; };
 		1BF9A46DD2EE664E94DFCADD /* 25-weather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather.png"; sourceTree = "<group>"; };
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
@@ -134,12 +139,13 @@
 		1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear@2x.png"; sourceTree = "<group>"; };
 		1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppConstants.m; sourceTree = "<group>"; };
 		1BF9ADC4A4A1BBB857690021 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
+		1BF9ADC6374E2CD340E235AD /* ChartsListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsListController.m; sourceTree = "<group>"; };
 		1BF9ADEEF78D72A8CA597BAA /* MainScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainScreenController.h; sourceTree = "<group>"; };
 		1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast@2x.png"; sourceTree = "<group>"; };
+		1BF9AF1592F0950C392748B9 /* ChartsListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsListController.h; sourceTree = "<group>"; };
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
-		CC8CF8F0AFFFD1724478EDA2 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,7 +180,6 @@
 				0BCBC61017C68E6D00709B37 /* TAIGA */,
 				0BCBC60917C68E6D00709B37 /* Frameworks */,
 				0BCBC60817C68E6D00709B37 /* Products */,
-				CC8CF8F0AFFFD1724478EDA2 /* TAIGADistributionSite.dcproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -229,6 +234,8 @@
 				1BF9A09E964A408B9C257610 /* AppConstants.h */,
 				1BF9AC9D65EA0C91768F51A5 /* Settings.m */,
 				1BF9AC9E709B9A849F48D6DF /* Settings.h */,
+				1BF9AF1592F0950C392748B9 /* ChartsListController.h */,
+				1BF9ADC6374E2CD340E235AD /* ChartsListController.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -269,6 +276,10 @@
 				1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */,
 				1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */,
 				1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */,
+				1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */,
+				1BF9A18CE898B4D59202FEBE /* 275-broadcast-noconnection@2x.png */,
+				1BF9AF16E4BA270C9EFAA579,
+				1BF9A6738EFF2FE1722B208F,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -357,6 +368,9 @@
 				1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */,
 				0BCBC77417CEA40A00709B37 /* alaska-72.png in Resources */,
 				0BCBC77617CEA41600709B37 /* alaska-72@2x.png in Resources */,
+				1BF9A48E4D4B855B53D066F3 /* 275-broadcast-noconnection.png in Resources */,
+				1BF9ABEAFA9CF0359316EBB5 /* 275-broadcast-noconnection@2x.png in Resources */,
+				1BF9ADB07A145FE57CA067BF,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +396,7 @@
 				1BF9AF670B8F1C52A7FD8823 /* MainScreenController.m in Sources */,
 				1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */,
 				1BF9A5847595B9B347E632D4 /* Settings.m in Sources */,
+				1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
