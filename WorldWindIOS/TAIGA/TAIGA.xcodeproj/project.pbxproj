@@ -139,6 +139,7 @@
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
+		CC8CF8F0AFFFD1724478EDA2 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +174,7 @@
 				0BCBC61017C68E6D00709B37 /* TAIGA */,
 				0BCBC60917C68E6D00709B37 /* Frameworks */,
 				0BCBC60817C68E6D00709B37 /* Products */,
+				CC8CF8F0AFFFD1724478EDA2 /* TAIGADistributionSite.dcproj */,
 			);
 			sourceTree = "<group>";
 		};
