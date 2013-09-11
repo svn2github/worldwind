@@ -139,33 +139,6 @@
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
-		CC8CF0491B7827595D9B2525 /* alaska-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "alaska-72@2x.png"; path = "../TAIGADistributionSite.dcproj/project/Images/alaska-72@2x.png"; sourceTree = "<group>"; };
-		CC8CF0995B42320FD03A1609 /* main.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = main.css; path = ../TAIGADistributionSite.dcproj/project/mobile/main.css; sourceTree = "<group>"; };
-		CC8CF1A57943C5F3665B4F9A /* backgroundStripes 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "backgroundStripes 1.png"; path = "../TAIGADistributionSite.dcproj/project/mobile/Images/backgroundStripes 1.png"; sourceTree = "<group>"; };
-		CC8CF249CE129F6E9E9DEC16 /* dcollins.wdgtuser */ = {isa = PBXFileReference; lastKnownFileType = file.wdgtuser; name = dcollins.wdgtuser; path = ../TAIGADistributionSite.dcproj/dcollins.wdgtuser; sourceTree = "<group>"; };
-		CC8CF255B461E9698B00DB54 /* PushButton.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = PushButton.js; path = ../TAIGADistributionSite.dcproj/project/Parts/PushButton.js; sourceTree = "<group>"; };
-		CC8CF2B25F1626B25D0CCE7D /* redirector.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = redirector.js; path = ../TAIGADistributionSite.dcproj/project/Parts/redirector.js; sourceTree = "<group>"; };
-		CC8CF3AE9FE58DA9B0F050D2 /* Picture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Picture.png; path = ../TAIGADistributionSite.dcproj/project/safari/Images/Picture.png; sourceTree = "<group>"; };
-		CC8CF40B20DC8CACD5EEAE52 /* InstallButton_clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = InstallButton_clicked.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/Images/InstallButton_clicked.png; sourceTree = "<group>"; };
-		CC8CF489C618D4941D6DC46C /* projectInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.info; name = projectInfo.plist; path = ../TAIGADistributionSite.dcproj/projectInfo.plist; sourceTree = "<group>"; };
-		CC8CF635B694D0C5266BAC28 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = license.txt; path = ../TAIGADistributionSite.dcproj/project/Parts/license.txt; sourceTree = "<group>"; };
-		CC8CF6B1456B80C79E736533 /* main.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = main.css; path = ../TAIGADistributionSite.dcproj/project/safari/main.css; sourceTree = "<group>"; };
-		CC8CF6BFFA5BD9018101916E /* InstallButton_clicked__mid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = InstallButton_clicked__mid.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/Images/InstallButton_clicked__mid.png; sourceTree = "<group>"; };
-		CC8CF7369DDE870D9916DE39 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = index.html; path = ../TAIGADistributionSite.dcproj/project/mobile/index.html; sourceTree = "<group>"; };
-		CC8CF786F5F84C082EB5AE1D /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = index.html; path = ../TAIGADistributionSite.dcproj/project/index.html; sourceTree = "<group>"; };
-		CC8CF7CB222BD9280393E70B /* setup.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = setup.js; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/setup.js; sourceTree = "<group>"; };
-		CC8CF825BE2DCB2864175F76 /* WebClipIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = WebClipIcon.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Images/WebClipIcon.png; sourceTree = "<group>"; };
-		CC8CF8530ABDD085D08A18E3 /* InstallButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = InstallButton.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/Images/InstallButton.png; sourceTree = "<group>"; };
-		CC8CF8CCC3BF1CED5DF3346E /* parts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = parts.js; path = ../TAIGADistributionSite.dcproj/project/safari/Parts/parts.js; sourceTree = "<group>"; };
-		CC8CF94A9428BC922A7ED524 /* Picture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Picture.png; path = ../TAIGADistributionSite.dcproj/CustomImages/Picture.png; sourceTree = "<group>"; };
-		CC8CFB91D093C002B4D87872 /* setup.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = setup.js; path = ../TAIGADistributionSite.dcproj/project/safari/Parts/setup.js; sourceTree = "<group>"; };
-		CC8CFBED38A8641CA625140E /* parts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = parts.js; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/parts.js; sourceTree = "<group>"; };
-		CC8CFC52C87F56D365577907 /* main.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = main.js; path = ../TAIGADistributionSite.dcproj/project/safari/main.js; sourceTree = "<group>"; };
-		CC8CFD05BD3CA81DFEEE5A1E /* backgroundStripes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = backgroundStripes.png; path = ../TAIGADistributionSite.dcproj/project/Images/backgroundStripes.png; sourceTree = "<group>"; };
-		CC8CFD264558ACA94D63753C /* backgroundStripes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = backgroundStripes.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Images/backgroundStripes.png; sourceTree = "<group>"; };
-		CC8CFDA3CACCCDA69D1A6BA7 /* main.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = main.js; path = ../TAIGADistributionSite.dcproj/project/mobile/main.js; sourceTree = "<group>"; };
-		CC8CFE69980936058FAC8FFD /* InstallButton__mid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = InstallButton__mid.png; path = ../TAIGADistributionSite.dcproj/project/mobile/Parts/Images/InstallButton__mid.png; sourceTree = "<group>"; };
-		CC8CFE91BECC9DA58941B15A /* datasources.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = datasources.js; path = ../TAIGADistributionSite.dcproj/project/Parts/datasources.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,7 +173,6 @@
 				0BCBC61017C68E6D00709B37 /* TAIGA */,
 				0BCBC60917C68E6D00709B37 /* Frameworks */,
 				0BCBC60817C68E6D00709B37 /* Products */,
-				CC8CF7E399455D349D1FEBA5 /* TAIGADistributionSite.dcproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -297,128 +269,6 @@
 				1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		CC8CF0A84F882CD5EDBE5389 /* Parts */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CFE91BECC9DA58941B15A /* datasources.js */,
-				CC8CF635B694D0C5266BAC28 /* license.txt */,
-				CC8CF255B461E9698B00DB54 /* PushButton.js */,
-				CC8CF2B25F1626B25D0CCE7D /* redirector.js */,
-			);
-			name = Parts;
-			sourceTree = "<group>";
-		};
-		CC8CF1425A49B43086FCEEC2 /* Parts */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF8CCC3BF1CED5DF3346E /* parts.js */,
-				CC8CFB91D093C002B4D87872 /* setup.js */,
-			);
-			name = Parts;
-			sourceTree = "<group>";
-		};
-		CC8CF299C43DF5A0FD258587 /* safari */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CFF87B4A80969C19BCD69 /* Images */,
-				CC8CF6B1456B80C79E736533 /* main.css */,
-				CC8CFC52C87F56D365577907 /* main.js */,
-				CC8CF1425A49B43086FCEEC2 /* Parts */,
-			);
-			name = safari;
-			sourceTree = "<group>";
-		};
-		CC8CF4C981D64D4B65B33020 /* CustomImages */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF94A9428BC922A7ED524 /* Picture.png */,
-			);
-			name = CustomImages;
-			sourceTree = "<group>";
-		};
-		CC8CF6B1851E286AEA19C289 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF1A57943C5F3665B4F9A /* backgroundStripes 1.png */,
-				CC8CFD264558ACA94D63753C /* backgroundStripes.png */,
-				CC8CF825BE2DCB2864175F76 /* WebClipIcon.png */,
-			);
-			name = Images;
-			sourceTree = "<group>";
-		};
-		CC8CF794AF05151DAF345969 /* project */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CFE3FCDA5DDF448920752 /* Images */,
-				CC8CF786F5F84C082EB5AE1D /* index.html */,
-				CC8CF9CB16BECA7FE845F7BC /* mobile */,
-				CC8CF0A84F882CD5EDBE5389 /* Parts */,
-				CC8CF299C43DF5A0FD258587 /* safari */,
-			);
-			name = project;
-			sourceTree = "<group>";
-		};
-		CC8CF7E399455D349D1FEBA5 /* TAIGADistributionSite.dcproj */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF4C981D64D4B65B33020 /* CustomImages */,
-				CC8CF249CE129F6E9E9DEC16 /* dcollins.wdgtuser */,
-				CC8CF794AF05151DAF345969 /* project */,
-				CC8CF489C618D4941D6DC46C /* projectInfo.plist */,
-			);
-			name = TAIGADistributionSite.dcproj;
-			sourceTree = "<group>";
-		};
-		CC8CF9CB16BECA7FE845F7BC /* mobile */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF6B1851E286AEA19C289 /* Images */,
-				CC8CF7369DDE870D9916DE39 /* index.html */,
-				CC8CF0995B42320FD03A1609 /* main.css */,
-				CC8CFDA3CACCCDA69D1A6BA7 /* main.js */,
-				CC8CFB771DB35499E1A1350E /* Parts */,
-			);
-			name = mobile;
-			sourceTree = "<group>";
-		};
-		CC8CFB547D3DEE857470A447 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF8530ABDD085D08A18E3 /* InstallButton.png */,
-				CC8CFE69980936058FAC8FFD /* InstallButton__mid.png */,
-				CC8CF40B20DC8CACD5EEAE52 /* InstallButton_clicked.png */,
-				CC8CF6BFFA5BD9018101916E /* InstallButton_clicked__mid.png */,
-			);
-			name = Images;
-			sourceTree = "<group>";
-		};
-		CC8CFB771DB35499E1A1350E /* Parts */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CFB547D3DEE857470A447 /* Images */,
-				CC8CFBED38A8641CA625140E /* parts.js */,
-				CC8CF7CB222BD9280393E70B /* setup.js */,
-			);
-			name = Parts;
-			sourceTree = "<group>";
-		};
-		CC8CFE3FCDA5DDF448920752 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF0491B7827595D9B2525 /* alaska-72@2x.png */,
-				CC8CFD05BD3CA81DFEEE5A1E /* backgroundStripes.png */,
-			);
-			name = Images;
-			sourceTree = "<group>";
-		};
-		CC8CFF87B4A80969C19BCD69 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				CC8CF3AE9FE58DA9B0F050D2 /* Picture.png */,
-			);
-			name = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
