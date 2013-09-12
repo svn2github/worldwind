@@ -8,6 +8,7 @@
 #import "ChartsScreenController.h"
 #import "AppConstants.h"
 #import "ChartsListController.h"
+#import "WWUtil.h"
 
 #define SEARCH_BAR_HEIGHT (80)
 
@@ -55,20 +56,22 @@
     [self addChildViewController:chartsListController];
     [[self view] addSubview:[chartsListController view]];
 
-    chartView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PAJN.png"]];
+    NSString* imagePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"PAJN.pdf"];
+    NSURL* imageURL = [[NSURL alloc] initFileURLWithPath:imagePath];
+
+    chartView = [[UIImageView alloc] initWithImage:[WWUtil convertPDFToUIImage:imageURL]];
     [chartView setFrame:
             CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.65 * myFrame.size.width,
                     myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
     chartView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
     chartView.autoresizesSubviews = YES;
+    [chartView setBackgroundColor:[UIColor whiteColor]];
     [[self view] addSubview:chartView];
 }
 
 - (void) viewDidLoad
 {
     [super viewDidLoad];
-
-//    [self.view setBackgroundColor:[UIColor cyanColor]];
 }
 
 - (void) createTopToolbar
@@ -158,7 +161,6 @@
     frame = CGRectMake([recentViewsButton frame].size.width, SEARCH_BAR_HEIGHT / 2, 0.65 * myFrame.size.width,
             SEARCH_BAR_HEIGHT / 2);
     chartNameLabel = [[UILabel alloc] initWithFrame:frame];
-//    [chartNameLabel setFrame:frame];
     chartNameLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     chartNameLabel.autoresizesSubviews = YES;
     [chartNameLabel setText:@"Chart Name"];

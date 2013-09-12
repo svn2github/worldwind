@@ -5,9 +5,9 @@
  @version $Id$
  */
 
+#import <UIKit/UIKit.h>
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWind.h"
 
 @implementation WWUtil
 
@@ -129,6 +129,33 @@
     filePath = [filePath stringByReplacingOccurrencesOfString:@"*" withString:@"_"];
 
     return filePath;
+}
+
++ (UIImage*) convertPDFToUIImage:(NSURL*)pdfURL
+{
+    if (pdfURL == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"PDF URL is nil")
+    }
+
+    CGPDFDocumentRef pdf = CGPDFDocumentCreateWithURL((__bridge CFURLRef) pdfURL);
+    CGPDFPageRef pdfPage = CGPDFDocumentGetPage(pdf, 1);
+    CGRect rect = CGPDFPageGetBoxRect(pdfPage, kCGPDFCropBox);
+
+    UIGraphicsBeginImageContextWithOptions( rect.size, NO, [ UIScreen mainScreen ].scale );
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextGetCTM( ctx );
+    CGContextScaleCTM( ctx, 1, -1 );
+    CGContextTranslateCTM( ctx, 0, -rect.size.height );
+    CGContextScaleCTM( ctx, 1, 1 );
+    CGContextTranslateCTM( ctx, -rect.origin.x, -rect.origin.y );
+    CGContextDrawPDFPage( ctx, pdfPage );
+    CGPDFDocumentRelease( pdf );
+
+    UIImage* pdfImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return pdfImage;
 }
 
 @end

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class UIImage;
+
 /**
 * Provides a collection of utility methods.
 */
@@ -85,5 +87,7 @@
 * @exception NSInvalidArgumentException If the specified path is nil.
 */
 + (NSString*) makeValidFilePath:(NSString*)path;
+
++ (UIImage*) convertPDFToUIImage:(NSURL*)pdfURL;
 
 @end
