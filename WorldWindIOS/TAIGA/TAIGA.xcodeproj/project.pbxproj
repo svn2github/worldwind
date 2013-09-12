@@ -50,7 +50,6 @@
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
-		1BF9AA99EB2C53BF150DD05F /* PAJN.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AC4DCD229A846F5BE518 /* PAJN.png */; };
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
@@ -135,7 +134,6 @@
 		1BF9ABE01160604D1CCE699B /* SettingsScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsScreenController.h; sourceTree = "<group>"; };
 		1BF9AC1EC3636B201FF789F6 /* WeatherScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherScreenController.h; sourceTree = "<group>"; };
 		1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsScreenController.m; sourceTree = "<group>"; };
-		1BF9AC4DCD229A846F5BE518 /* PAJN.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PAJN.png; sourceTree = "<group>"; };
 		1BF9AC9D65EA0C91768F51A5 /* Settings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Settings.m; sourceTree = "<group>"; };
 		1BF9AC9E709B9A849F48D6DF /* Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Settings.h; sourceTree = "<group>"; };
 		1BF9AD491F9D1C0FDF672483 /* RoutePlanningScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoutePlanningScreenController.h; sourceTree = "<group>"; };
@@ -285,7 +283,6 @@
 				1BF9AF16E4BA270C9EFAA579,
 				1BF9A6738EFF2FE1722B208F,
 				1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */,
-				1BF9AC4DCD229A846F5BE518 /* PAJN.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -378,7 +375,6 @@
 				1BF9ABEAFA9CF0359316EBB5 /* 275-broadcast-noconnection@2x.png in Resources */,
 				1BF9ADB07A145FE57CA067BF,
 				1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */,
-				1BF9AA99EB2C53BF150DD05F /* PAJN.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
