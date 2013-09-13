@@ -121,6 +121,11 @@
     NSString* chartFileName = [chartLine componentsSeparatedByString:@","][0];
     NSString* chartName = [chartLine componentsSeparatedByString:@","][1];
 
+    [self selectChart:chartFileName chartName:chartName];
+}
+
+- (void) selectChart:(NSString*)chartFileName chartName:(NSString*)chartName
+{
     NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/%@", chartsServer, chartFileName]];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
@@ -143,6 +148,16 @@
     }
 
     [parentScreen loadChart:chartPath chartName:[retriever userData]];
+//
+//    for (NSUInteger i = 0; i < [airportCharts count]; i++)
+//    {
+//        if ([[airportCharts objectAtIndex:i] hasPrefix:chartFileName])
+//        {
+//            NSIndexPath* indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+//            [[self tableView] selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
+//            break;
+//        }
+//    }
 }
 
 @end

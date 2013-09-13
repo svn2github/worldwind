@@ -12,6 +12,8 @@
 #import "ChartViewController.h"
 
 #define SEARCH_BAR_HEIGHT (80)
+#define MOST_RECENTLY_USED_CHART_FILE_NAME (@"gov.nasa.worldwind.taiga.mostrecentlyusedchartfilename")
+#define MOST_RECENTLY_USED_CHART_NAME (@"gov.nasa.worldwind.taiga.mostrecentlyusedchartname")
 
 @implementation ChartsScreenController
 {
@@ -62,6 +64,11 @@
     chartViewController = [[ChartViewController alloc] initWithFrame:viewFrame];
     [self addChildViewController:chartViewController];
     [[self view] addSubview:[chartViewController view]];
+}
+
+- (void) viewDidLoad
+{
+    [self loadMostRecentlyUsedChart];
 }
 
 - (void) createTopToolbar
@@ -170,12 +177,29 @@
 {
     if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
     {
-        [[chartViewController imageView] setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc] initFileURLWithPath:chartPath]]];
+        if (chartName == nil)
+            chartName = @"";
 
-        if (chartName != nil)
-        {
-            [chartNameLabel setText:chartName];
-        }
+        [[chartViewController imageView] setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc] initFileURLWithPath:chartPath]]];
+        [chartNameLabel setText:chartName];
+
+        // Update the most recently used chart property.
+        [[NSUserDefaults standardUserDefaults] setObject:[chartPath lastPathComponent] forKey:MOST_RECENTLY_USED_CHART_FILE_NAME];
+        [[NSUserDefaults standardUserDefaults] setObject:chartName forKey:MOST_RECENTLY_USED_CHART_NAME];
+        [[NSUserDefaults standardUserDefaults] synchronize];
     }
 }
+
+
+- (void) loadMostRecentlyUsedChart
+{
+    NSString* chartFileName = [[NSUserDefaults standardUserDefaults] objectForKey:MOST_RECENTLY_USED_CHART_FILE_NAME];
+    if (chartFileName == nil)
+        return;
+
+    NSString* chartName = [[NSUserDefaults standardUserDefaults] objectForKey:MOST_RECENTLY_USED_CHART_NAME];
+
+    [chartsListController selectChart:chartFileName chartName:chartName];
+}
+
 @end

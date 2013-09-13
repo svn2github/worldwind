@@ -12,5 +12,6 @@
 @interface ChartsListController : UITableViewController
 
 - (ChartsListController*)initWithParent:(ChartsScreenController*)parent;
+- (void) selectChart:(NSString*)chartFileName chartName:(NSString*)chartName;
 
 @end
