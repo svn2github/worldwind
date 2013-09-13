@@ -7,10 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ChartsScreenController : UIViewController
 
-- (ChartsScreenController*) initWithFrame:(CGRect)frame;
+@interface ChartViewController : UIViewController <UIScrollViewDelegate>
 
-- (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName;
+@property (nonatomic, readonly) UIImageView* imageView;
+
+- (ChartViewController*) initWithFrame:(CGRect)frame;
 
 @end

@@ -42,6 +42,7 @@
 		1BF9A664AA0532C0BEB5CA0F /* 328-layers2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */; };
 		1BF9A66D6522A49CF15A8F88 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */; };
 		1BF9A799AFB440530DF25D61 /* ButtonWithImageAndText.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */; };
+		1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B6E08BC5F07990932A /* ChartViewController.m */; };
 		1BF9A84E3E8C533F837D50BD /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC4A4A1BBB857690021 /* LayerListController.m */; };
 		1BF9A8C3C5EB0CCBCDA3D050 /* 362-2up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */; };
 		1BF9A932AE2ADADCFF758F63 /* FlightPathsLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */; };
@@ -97,6 +98,7 @@
 		1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up@2x.png"; sourceTree = "<group>"; };
 		1BF9A09E964A408B9C257610 /* AppConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppConstants.h; sourceTree = "<group>"; };
 		1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats.png"; sourceTree = "<group>"; };
+		1BF9A0B6E08BC5F07990932A /* ChartViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartViewController.m; sourceTree = "<group>"; };
 		1BF9A0FB8724A93430A71C62 /* 103-map@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "103-map@2x.png"; sourceTree = "<group>"; };
 		1BF9A13B40E48DA6A6C91CCB /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9A16000CCA1E884CB5F52 /* 362-2up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up.png"; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 		1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection.png"; sourceTree = "<group>"; };
 		1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather@2x.png"; sourceTree = "<group>"; };
 		1BF9A46DD2EE664E94DFCADD /* 25-weather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather.png"; sourceTree = "<group>"; };
+		1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartViewController.h; sourceTree = "<group>"; };
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A4D424F620707A6CECE0 /* 09-chat-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "09-chat-2.png"; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
@@ -238,6 +241,8 @@
 				1BF9AC9E709B9A849F48D6DF /* Settings.h */,
 				1BF9AF1592F0950C392748B9 /* ChartsListController.h */,
 				1BF9ADC6374E2CD340E235AD /* ChartsListController.m */,
+				1BF9A0B6E08BC5F07990932A /* ChartViewController.m */,
+				1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -401,6 +406,7 @@
 				1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */,
 				1BF9A5847595B9B347E632D4 /* Settings.m in Sources */,
 				1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */,
+				1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

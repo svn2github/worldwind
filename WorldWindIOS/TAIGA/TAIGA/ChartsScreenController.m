@@ -9,6 +9,7 @@
 #import "AppConstants.h"
 #import "ChartsListController.h"
 #import "WWUtil.h"
+#import "ChartViewController.h"
 
 #define SEARCH_BAR_HEIGHT (80)
 
@@ -28,7 +29,7 @@
     ChartsListController* chartsListController;
     UIButton* recentViewsButton;
     UILabel* chartNameLabel;
-    UIImageView* chartView;
+    ChartViewController* chartViewController;
 }
 
 - (ChartsScreenController*) initWithFrame:(CGRect)frame
@@ -38,11 +39,6 @@
     myFrame = frame;
 
     return self;
-}
-
-- (UIView*) viewForZoomingInScrollView:(UIScrollView*)scrollView
-{
-    return chartView;
 }
 
 - (void) loadView
@@ -61,36 +57,11 @@
     [self addChildViewController:chartsListController];
     [[self view] addSubview:[chartsListController view]];
 
-    NSString* imagePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"PAJN.pdf"];
-    NSURL* imageURL = [[NSURL alloc] initFileURLWithPath:imagePath];
-
-//    chartView = [[UIImageView alloc] initWithImage:[WWUtil convertPDFToUIImage:imageURL]];
-    chartView = [[UIImageView alloc] init];
-    [chartView setFrame:
-            CGRectMake(0, 0, 0.65 * myFrame.size.width, myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
-    chartView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
-    chartView.autoresizesSubviews = YES;
-    [chartView setBackgroundColor:[UIColor whiteColor]];
-    [chartView setUserInteractionEnabled:YES];
-
     CGRect scrollFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.65 * myFrame.size.width,
             myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
-    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:scrollFrame];
-    scrollView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
-    scrollView.autoresizesSubviews = YES;
-    [scrollView setMinimumZoomScale:1];
-    [scrollView setMaximumZoomScale:4.0];
-    [scrollView setDelegate:self];
-    [scrollView setContentSize:[chartView frame].size];
-    [scrollView setShowsHorizontalScrollIndicator:NO];
-    [scrollView setShowsVerticalScrollIndicator:NO];
-    [scrollView addSubview:chartView];
-    [[self view] addSubview:scrollView];
-}
-
-- (void) viewDidLoad
-{
-    [super viewDidLoad];
+    chartViewController = [[ChartViewController alloc] initWithFrame:scrollFrame];
+    [self addChildViewController:chartViewController];
+    [[self view] addSubview:[chartViewController view]];
 }
 
 - (void) createTopToolbar
@@ -199,7 +170,7 @@
 {
     if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
     {
-        [chartView setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc] initFileURLWithPath:chartPath]]];
+        [[chartViewController imageView] setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc] initFileURLWithPath:chartPath]]];
 
         if (chartName != nil)
         {
