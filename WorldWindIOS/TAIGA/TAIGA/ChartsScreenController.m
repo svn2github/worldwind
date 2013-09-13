@@ -51,15 +51,15 @@
     [self createSearchBar];
 
     chartsListController = [[ChartsListController alloc] initWithParent:self];
-    [[chartsListController view] setFrame:
-            CGRectMake(0, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.35 * myFrame.size.width,
-                    myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
+    CGRect listFrame = CGRectMake(0, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.35 * myFrame.size.width,
+            myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
+    [[chartsListController view] setFrame:listFrame];
     [self addChildViewController:chartsListController];
     [[self view] addSubview:[chartsListController view]];
 
-    CGRect scrollFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.65 * myFrame.size.width,
-            myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
-    chartViewController = [[ChartViewController alloc] initWithFrame:scrollFrame];
+    CGRect viewFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT,
+            0.65 * myFrame.size.width, myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
+    chartViewController = [[ChartViewController alloc] initWithFrame:viewFrame];
     [self addChildViewController:chartViewController];
     [[self view] addSubview:[chartViewController view]];
 }
