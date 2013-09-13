@@ -40,6 +40,11 @@
     return self;
 }
 
+- (UIView*) viewForZoomingInScrollView:(UIScrollView*)scrollView
+{
+    return chartView;
+}
+
 - (void) loadView
 {
     self.view = [[UIView alloc] initWithFrame:myFrame];
@@ -59,14 +64,28 @@
     NSString* imagePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"PAJN.pdf"];
     NSURL* imageURL = [[NSURL alloc] initFileURLWithPath:imagePath];
 
-    chartView = [[UIImageView alloc] initWithImage:[WWUtil convertPDFToUIImage:imageURL]];
+//    chartView = [[UIImageView alloc] initWithImage:[WWUtil convertPDFToUIImage:imageURL]];
+    chartView = [[UIImageView alloc] init];
     [chartView setFrame:
-            CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.65 * myFrame.size.width,
-                    myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
+            CGRectMake(0, 0, 0.65 * myFrame.size.width, myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
     chartView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
     chartView.autoresizesSubviews = YES;
     [chartView setBackgroundColor:[UIColor whiteColor]];
-    [[self view] addSubview:chartView];
+    [chartView setUserInteractionEnabled:YES];
+
+    CGRect scrollFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.65 * myFrame.size.width,
+            myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
+    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:scrollFrame];
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
+    scrollView.autoresizesSubviews = YES;
+    [scrollView setMinimumZoomScale:1];
+    [scrollView setMaximumZoomScale:4.0];
+    [scrollView setDelegate:self];
+    [scrollView setContentSize:[chartView frame].size];
+    [scrollView setShowsHorizontalScrollIndicator:NO];
+    [scrollView setShowsVerticalScrollIndicator:NO];
+    [scrollView addSubview:chartView];
+    [[self view] addSubview:scrollView];
 }
 
 - (void) viewDidLoad
@@ -163,7 +182,7 @@
     chartNameLabel = [[UILabel alloc] initWithFrame:frame];
     chartNameLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     chartNameLabel.autoresizesSubviews = YES;
-    [chartNameLabel setText:@"Chart Name"];
+    [chartNameLabel setText:nil];
     [chartNameLabel setTextAlignment:NSTextAlignmentCenter];
     [chartNameLabel setFont:[UIFont boldSystemFontOfSize:[[chartNameLabel font] pointSize]]];
     [sbView addSubview:chartNameLabel];
