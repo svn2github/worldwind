@@ -37,6 +37,8 @@
 /// The retrieved data. Available only once the finished block is called.
 @property(nonatomic, readonly) NSMutableData* retrievedData;
 
+@property (nonatomic) id userData;
+
 /// @name Initializing Retrievers
 
 /**

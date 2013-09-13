@@ -49,7 +49,7 @@
     [self createTopToolbar];
     [self createSearchBar];
 
-    chartsListController = [[ChartsListController alloc] init];
+    chartsListController = [[ChartsListController alloc] initWithParent:self];
     [[chartsListController view] setFrame:
             CGRectMake(0, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT, 0.35 * myFrame.size.width,
                     myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT))];
@@ -174,5 +174,18 @@
 - (void) handleButtonTap
 {
     NSLog(@"BUTTON TAPPED");
+}
+
+- (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName
+{
+    if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
+    {
+        [chartView setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc] initFileURLWithPath:chartPath]]];
+
+        if (chartName != nil)
+        {
+            [chartNameLabel setText:chartName];
+        }
+    }
 }
 @end

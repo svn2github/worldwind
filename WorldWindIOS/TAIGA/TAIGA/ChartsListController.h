@@ -7,5 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class ChartsScreenController;
+
 @interface ChartsListController : UITableViewController
+
+- (ChartsListController*)initWithParent:(ChartsScreenController*)parent;
+
 @end

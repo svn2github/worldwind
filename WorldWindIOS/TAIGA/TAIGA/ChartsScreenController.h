@@ -11,4 +11,6 @@
 
 - (ChartsScreenController*) initWithFrame:(CGRect)frame;
 
+- (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName;
+
 @end
