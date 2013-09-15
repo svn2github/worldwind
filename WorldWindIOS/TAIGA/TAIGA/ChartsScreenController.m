@@ -60,7 +60,7 @@
     [[self view] addSubview:[chartsListController view]];
 
     CGRect viewFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT,
-            0.65 * myFrame.size.width, myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
+            0.66 * myFrame.size.width, myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT + SEARCH_BAR_HEIGHT));
     chartViewController = [[ChartViewController alloc] initWithFrame:viewFrame];
     [self addChildViewController:chartViewController];
     [[self view] addSubview:[chartViewController view]];
