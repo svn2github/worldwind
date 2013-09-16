@@ -41,6 +41,7 @@
 		1BF9A5C0915C60BB28B24226 /* 25-weather@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */; };
 		1BF9A664AA0532C0BEB5CA0F /* 328-layers2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */; };
 		1BF9A66D6522A49CF15A8F88 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */; };
+		1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */; };
 		1BF9A799AFB440530DF25D61 /* ButtonWithImageAndText.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */; };
 		1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B6E08BC5F07990932A /* ChartViewController.m */; };
 		1BF9A84E3E8C533F837D50BD /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC4A4A1BBB857690021 /* LayerListController.m */; };
@@ -52,6 +53,7 @@
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
+		1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
 		1BF9ABEAFA9CF0359316EBB5 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A18CE898B4D59202FEBE /* 275-broadcast-noconnection@2x.png */; };
@@ -94,6 +96,7 @@
 		0BCBC77317CEA40A00709B37 /* alaska-72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72.png"; sourceTree = "<group>"; };
 		0BCBC77517CEA41600709B37 /* alaska-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72@2x.png"; sourceTree = "<group>"; };
 		0BCBC77B17D559B000709B37 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
+		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
 		1BF9A0853455F50918712D78 /* RoutePlanningScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RoutePlanningScreenController.m; sourceTree = "<group>"; };
 		1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up@2x.png"; sourceTree = "<group>"; };
 		1BF9A09E964A408B9C257610 /* AppConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppConstants.h; sourceTree = "<group>"; };
@@ -109,6 +112,7 @@
 		1BF9A1E43E17FB581FD7BD8B /* 385-mountain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "385-mountain.png"; sourceTree = "<group>"; };
 		1BF9A230DEB50D96296D6835 /* 38-airplane.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane.png"; sourceTree = "<group>"; };
 		1BF9A26634010ECCCA908E7B /* ChartsScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsScreenController.h; sourceTree = "<group>"; };
+		1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainAltitudeController.h; sourceTree = "<group>"; };
 		1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A38BEF1C4F903C7FFE32 /* FlightPathsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathsLayer.h; sourceTree = "<group>"; };
 		1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection.png"; sourceTree = "<group>"; };
@@ -124,6 +128,7 @@
 		1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast.png"; sourceTree = "<group>"; };
 		1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos@2x.png"; sourceTree = "<group>"; };
 		1BF9A8097DB0B1A43FC6138D /* 42-photos.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos.png"; sourceTree = "<group>"; };
+		1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SliderCellWithReadout.m; sourceTree = "<group>"; };
 		1BF9A8C063EF836D58C35624 /* MainScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainScreenController.m; sourceTree = "<group>"; };
 		1BF9A9381E06C585F3513450 /* 09-chat-2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "09-chat-2@2x.png"; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
@@ -151,6 +156,7 @@
 		1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = PAJN.pdf; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
+		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,6 +249,10 @@
 				1BF9ADC6374E2CD340E235AD /* ChartsListController.m */,
 				1BF9A0B6E08BC5F07990932A /* ChartViewController.m */,
 				1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */,
+				1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */,
+				1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */,
+				1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */,
+				1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -407,6 +417,8 @@
 				1BF9A5847595B9B347E632D4 /* Settings.m in Sources */,
 				1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */,
 				1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */,
+				1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */,
+				1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

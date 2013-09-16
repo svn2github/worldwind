@@ -67,10 +67,11 @@
     [layers addLayer:layer];
 
     elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
-    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW defaultValue:2000.0];
-    [elevationShadingLayer setYellowThreshold:threshold];
-    threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
+    [elevationShadingLayer setDisplayName:@"Terrain Altitude"];
+    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
     [elevationShadingLayer setRedThreshold:threshold];
+    float offset = [Settings getFloat:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
+    [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
     [layers addLayer:elevationShadingLayer];
 
     flightPathsLayer = [[FlightPathsLayer alloc]
@@ -79,30 +80,11 @@
     [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleSettingChanged:)
-                                                 name:TAIGA_SETTING_CHANGED
-                                               object:nil];
 }
 
 - (void) viewWillAppear:(BOOL)animated
 {
 //    [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:YES animated:YES];
-}
-
-- (void) handleSettingChanged:(NSNotification*)notification
-{
-    if ([[notification name] isEqualToString:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW])
-    {
-        float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW];
-        [elevationShadingLayer setYellowThreshold:threshold];
-    }
-    else if ([[notification name] isEqualToString:TAIGA_SHADED_ELEVATION_THRESHOLD_RED])
-    {
-        float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED];
-        [elevationShadingLayer setRedThreshold:threshold];
-    }
 }
 
 - (void) createWorldWindView
@@ -195,6 +177,7 @@
     {
         UINavigationController* navController = [[UINavigationController alloc]
                 initWithRootViewController:layerListController];
+        [navController setDelegate:layerListController];
         layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 

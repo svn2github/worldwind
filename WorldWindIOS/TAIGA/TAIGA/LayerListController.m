@@ -14,7 +14,8 @@
 #import "WWLayerList.h"
 #import "ImageLayerDetailController.h"
 #import "RenderableLayerDetailController.h"
-
+#import "WWElevationShadingLayer.h"
+#import "TerrainAltitudeController.h"
 
 @implementation LayerListController
 
@@ -24,8 +25,8 @@
 
     _wwv = wwv;
 
-    [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
-    [[self navigationItem] setTitle:@"Layers"];
+    [[self navigationItem] setTitle:@"Overlays"];
+    [self setContentSizeForViewInPopover:CGSizeMake(320, 400)];
 
     // Set up to handle layer list changes.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -34,6 +35,12 @@
                                                object:nil];
 
     return self;
+}
+
+- (void) navigationController:(UINavigationController*)navigationController willShowViewController:(UIViewController*)viewController animated:(BOOL)animated
+{
+    // This keeps all the nested popover controllers the same size as this top-level controller.
+    viewController.contentSizeForViewInPopover = navigationController.topViewController.view.frame.size;
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
@@ -76,30 +83,6 @@
     return cell;
 }
 
-- (BOOL) tableView:(UITableView*)tableView canMoveRowAtIndexPath:(NSIndexPath*)indexPath
-{
-    return YES;
-}
-
-- (void) tableView:(UITableView*)tableView
-moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
-       toIndexPath:(NSIndexPath*)destinationIndexPath
-{
-    [[[_wwv sceneController] layers] moveLayerAtRow:[sourceIndexPath row] toRow:[destinationIndexPath row]];
-    [self requestRedraw];
-}
-
-- (void) tableView:(UITableView*)tableView
-commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
- forRowAtIndexPath:(NSIndexPath*)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete)
-    {
-        [[[_wwv sceneController] layers] removeLayerAtRow:[indexPath row]];
-        [self requestRedraw];
-    }
-}
-
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
 {
     // Create and show a detail controller for the tapped layer.
@@ -122,12 +105,18 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
+    else if ([layer isKindOfClass:[WWElevationShadingLayer class]])
+    {
+        TerrainAltitudeController* detailController =
+                [[TerrainAltitudeController alloc] initWithLayer:(WWElevationShadingLayer*) layer];
+
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
 }
 
 - (void) requestRedraw
 {
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleNotification:(NSNotification*)notification
