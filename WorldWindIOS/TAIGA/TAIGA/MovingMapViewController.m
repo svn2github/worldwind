@@ -66,12 +66,7 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [layers addLayer:layer];
 
-    elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
-    [elevationShadingLayer setDisplayName:@"Terrain Altitude"];
-    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
-    [elevationShadingLayer setRedThreshold:threshold];
-    float offset = [Settings getFloat:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
-    [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
+    [self createTerrainAltitudeLayer];
     [layers addLayer:elevationShadingLayer];
 
     flightPathsLayer = [[FlightPathsLayer alloc]
@@ -157,6 +152,24 @@
             nil]];
 
     [self.view addSubview:topToolBar];
+}
+
+- (void) createTerrainAltitudeLayer
+{
+    elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
+    [elevationShadingLayer setDisplayName:@"Terrain Altitude"];
+
+    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
+    [elevationShadingLayer setRedThreshold:threshold];
+    [Settings setFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED value:threshold];
+
+    float offset = [Settings getFloat:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
+    [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
+    [Settings setFloat:TAIGA_SHADED_ELEVATION_OFFSET value:offset];
+
+    float opacity = [Settings getFloat:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
+    [elevationShadingLayer setOpacity:opacity];
+    [Settings setFloat:TAIGA_SHADED_ELEVATION_OPACITY value:opacity];
 }
 
 - (void) handleScreen1ButtonTap

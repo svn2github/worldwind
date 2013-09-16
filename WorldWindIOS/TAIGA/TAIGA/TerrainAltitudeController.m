@@ -81,7 +81,7 @@
 
         // Initialize slider to the layer's current value.
         [[opacityCell slider] setValue:[_layer opacity]];
-        [[opacityCell readout] setText:[[NSString alloc] initWithFormat:@"%d%%", (int) [_layer opacity] * 100]];
+        [[opacityCell readout] setText:[self opacityString]];
     }
     else if ([indexPath section] == 1)
     {
@@ -107,7 +107,9 @@
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
-    [[opacityCell readout] setText:[[NSString alloc] initWithFormat:@"%d%%", (int) ([_layer opacity] * 100)]];
+    [Settings setFloat:TAIGA_SHADED_ELEVATION_OPACITY value:[opacitySlider value]];
+
+    [[opacityCell readout] setText:[self opacityString]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
@@ -120,6 +122,11 @@
     [[warningOffsetCell readout] setText:[self warningOffsetString]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+}
+
+- (NSString*) opacityString
+{
+    return [[NSString alloc] initWithFormat:@"%d%%", (int) ([_layer opacity] * 100)];
 }
 
 - (NSString*) warningOffsetString

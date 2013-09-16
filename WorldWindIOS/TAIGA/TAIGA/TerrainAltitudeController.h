@@ -15,6 +15,4 @@
 
 - (TerrainAltitudeController*) initWithLayer:(WWElevationShadingLayer*)layer;
 
-- (void) opacityValueChanged:(UISlider*)opacitySlider;
-
 @end

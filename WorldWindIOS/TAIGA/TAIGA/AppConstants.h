@@ -11,6 +11,7 @@
 #define TAIGA_TOOLBAR_HEIGHT (80)
 #define TAIGA_SETTING_CHANGED (@"gov.nasa.worldwind.taiga.setting.changed")
 #define TAIGA_SHADED_ELEVATION_OFFSET (@"gov.nasa.worldwind.taiga.shadedelevation.offset")
+#define TAIGA_SHADED_ELEVATION_OPACITY (@"gov.nasa.worldwind.taiga.shadedelevation.opacity")
 #define TAIGA_SHADED_ELEVATION_THRESHOLD_RED (@"gov.nasa.worldwind.taiga.shadedelevation.threshold.red")
 
 @interface AppConstants : NSObject
