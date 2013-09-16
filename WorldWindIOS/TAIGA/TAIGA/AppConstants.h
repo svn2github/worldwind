@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
 #define TAIGA_METERS_TO_FEET (3.28084)
 #define TAIGA_TOOLBAR_HEIGHT (80)
 #define TAIGA_SETTING_CHANGED (@"gov.nasa.worldwind.taiga.setting.changed")

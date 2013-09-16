@@ -16,6 +16,7 @@
 #import "RenderableLayerDetailController.h"
 #import "WWElevationShadingLayer.h"
 #import "TerrainAltitudeController.h"
+#import "AppConstants.h"
 
 @implementation LayerListController
 
@@ -50,14 +51,14 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [[[_wwv sceneController] layers] count];
+    return [[self nonHiddenLayers] count];
 }
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     // Set the selected layer's visibility.
 
-    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
+    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
     [layer setEnabled:[layer enabled] ? NO : YES];
     [[self tableView] reloadData];
     [self requestRedraw];
@@ -76,7 +77,7 @@
         [cell setShowsReorderControl:YES];
     }
 
-    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
+    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
     [[cell imageView] setHidden:![layer enabled]];
 
@@ -87,7 +88,7 @@
 {
     // Create and show a detail controller for the tapped layer.
 
-    WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
+    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
 
     if ([layer isKindOfClass:[WWTiledImageLayer class]])
     {
@@ -112,6 +113,23 @@
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
+}
+
+- (NSArray*) nonHiddenLayers
+{
+    NSMutableArray* nonHiddenLayers = [[NSMutableArray alloc] init];
+
+    WWLayerList* layers = [[_wwv sceneController] layers];
+    for (NSUInteger i = 0; i < [layers count]; i++)
+    {
+        WWLayer* layer = [layers layerAtIndex:i];
+        if ([[layer userTags] objectForKey:TAIGA_HIDDEN_LAYER] == nil)
+        {
+            [nonHiddenLayers addObject:layer];
+        }
+    }
+
+    return nonHiddenLayers;
 }
 
 - (void) requestRedraw

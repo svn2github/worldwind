@@ -64,6 +64,7 @@
     WWLayerList* layers = [[_wwv sceneController] layers];
 
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
+    [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
 
     [self createTerrainAltitudeLayer];
