@@ -53,7 +53,9 @@
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
 		1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
+		1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
+		1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */; };
 		1BF9AC88033EB29A4F8A21EC /* ChartsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */; };
 		1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */; };
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
@@ -121,8 +123,10 @@
 		1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast.png"; sourceTree = "<group>"; };
 		1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos@2x.png"; sourceTree = "<group>"; };
+		1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection.png"; sourceTree = "<group>"; };
 		1BF9A8097DB0B1A43FC6138D /* 42-photos.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos.png"; sourceTree = "<group>"; };
 		1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SliderCellWithReadout.m; sourceTree = "<group>"; };
+		1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection@2x.png"; sourceTree = "<group>"; };
 		1BF9A8C063EF836D58C35624 /* MainScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainScreenController.m; sourceTree = "<group>"; };
 		1BF9A9381E06C585F3513450 /* 09-chat-2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "09-chat-2@2x.png"; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
@@ -289,6 +293,8 @@
 				1BF9AF16E4BA270C9EFAA579,
 				1BF9A6738EFF2FE1722B208F,
 				1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */,
+				1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */,
+				1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -379,6 +385,8 @@
 				0BCBC77617CEA41600709B37 /* alaska-72@2x.png in Resources */,
 				1BF9ADB07A145FE57CA067BF,
 				1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */,
+				1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */,
+				1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
