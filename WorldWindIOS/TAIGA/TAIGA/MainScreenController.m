@@ -7,7 +7,6 @@
 
 #import "MainScreenController.h"
 #import "MovingMapViewController.h"
-#import "RoutePlanningScreenController.h"
 #import "AppConstants.h"
 #import "WeatherScreenController.h"
 #import "ChartsScreenController.h"
@@ -19,13 +18,11 @@
 {
     UIToolbar* modeBar;
     UIBarButtonItem* movingMapButton;
-    UIBarButtonItem* routePlanningButton;
     UIBarButtonItem* weatherButton;
     UIBarButtonItem* chartsButton;
     UIBarButtonItem* settingsButton;
 
     MovingMapViewController* movingMapScreenController;
-    RoutePlanningScreenController* routePlanningScreenController;
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
@@ -59,9 +56,6 @@
 
     movingMapScreenController = [[MovingMapViewController alloc] initWithFrame:frame];
     [[movingMapScreenController view] setTag:VIEW_TAG];
-
-    routePlanningScreenController = [[RoutePlanningScreenController alloc] initWithFrame:frame];
-    [[routePlanningScreenController view] setTag:VIEW_TAG];
 
     weatherScreenController = [[WeatherScreenController alloc] initWithFrame:frame];
     [[weatherScreenController view] setTag:VIEW_TAG];
@@ -98,11 +92,6 @@
                                                       action:@selector(handleMovingMap)];
     [movingMapButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
 
-    routePlanningButton = [[UIBarButtonItem alloc] initWithTitle:@"Route Planning" style:UIBarButtonItemStylePlain
-                                                          target:self
-                                                          action:@selector(handleRoutePlanning)];
-    [routePlanningButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
-
     weatherButton = [[UIBarButtonItem alloc] initWithTitle:@"Weather" style:UIBarButtonItemStylePlain
                                                     target:self
                                                     action:@selector(handleWeather)];
@@ -125,8 +114,6 @@
             flexibleSpace,
             movingMapButton,
             flexibleSpace,
-            routePlanningButton,
-            flexibleSpace,
             weatherButton,
             flexibleSpace,
             chartsButton,
@@ -142,11 +129,6 @@
 - (void) handleMovingMap
 {
     [self swapScreenController:movingMapScreenController button:movingMapButton];
-}
-
-- (void) handleRoutePlanning
-{
-    [self swapScreenController:routePlanningScreenController button:routePlanningButton];
 }
 
 - (void) handleWeather
@@ -182,7 +164,6 @@
     [self.view addSubview:[screenController view]];
 
     [movingMapButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
-    [routePlanningButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
     [weatherButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
     [chartsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
     [settingsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];

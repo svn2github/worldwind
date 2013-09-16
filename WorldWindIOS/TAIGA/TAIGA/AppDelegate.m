@@ -7,7 +7,6 @@
 
 #import "AppDelegate.h"
 #import "MovingMapViewController.h"
-#import "RoutePlanningScreenController.h"
 #import "WeatherScreenController.h"
 #import "ChartsScreenController.h"
 #import "SettingsScreenController.h"

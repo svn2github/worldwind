@@ -32,7 +32,6 @@
 		1BF9A26AD257973E046A6B38 /* 38-airplane@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */; };
 		1BF9A34B20040F58C34F6FAF /* 385-mountain.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1E43E17FB581FD7BD8B /* 385-mountain.png */; };
 		1BF9A34DCBB623B215C775E2 /* 103-map@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0FB8724A93430A71C62 /* 103-map@2x.png */; };
-		1BF9A38C2A0589FE27F5C7D5 /* RoutePlanningScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0853455F50918712D78 /* RoutePlanningScreenController.m */; };
 		1BF9A392A0028819DC7D9F9F /* 103-map.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1DCCF03150665477519 /* 103-map.png */; };
 		1BF9A3FDAE1D39FB2D4FDA90 /* 09-chat-2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A9381E06C585F3513450 /* 09-chat-2@2x.png */; };
 		1BF9A48E4D4B855B53D066F3 /* 275-broadcast-noconnection.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A394356CA96E2BB7AC75 /* 275-broadcast-noconnection.png */; };
@@ -97,7 +96,6 @@
 		0BCBC77517CEA41600709B37 /* alaska-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72@2x.png"; sourceTree = "<group>"; };
 		0BCBC77B17D559B000709B37 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
 		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
-		1BF9A0853455F50918712D78 /* RoutePlanningScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RoutePlanningScreenController.m; sourceTree = "<group>"; };
 		1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up@2x.png"; sourceTree = "<group>"; };
 		1BF9A09E964A408B9C257610 /* AppConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppConstants.h; sourceTree = "<group>"; };
 		1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats.png"; sourceTree = "<group>"; };
@@ -144,7 +142,6 @@
 		1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsScreenController.m; sourceTree = "<group>"; };
 		1BF9AC9D65EA0C91768F51A5 /* Settings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Settings.m; sourceTree = "<group>"; };
 		1BF9AC9E709B9A849F48D6DF /* Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Settings.h; sourceTree = "<group>"; };
-		1BF9AD491F9D1C0FDF672483 /* RoutePlanningScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoutePlanningScreenController.h; sourceTree = "<group>"; };
 		1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear@2x.png"; sourceTree = "<group>"; };
 		1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppConstants.m; sourceTree = "<group>"; };
 		1BF9ADC4A4A1BBB857690021 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
@@ -223,8 +220,6 @@
 				0BCBC61117C68E6D00709B37 /* Supporting Files */,
 				1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */,
 				1BF9A1891DDA1ECEB84C38BD /* ButtonWithImageAndText.h */,
-				1BF9A0853455F50918712D78 /* RoutePlanningScreenController.m */,
-				1BF9AD491F9D1C0FDF672483 /* RoutePlanningScreenController.h */,
 				1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */,
 				1BF9AC1EC3636B201FF789F6 /* WeatherScreenController.h */,
 				1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */,
@@ -404,7 +399,6 @@
 				0BCBC61B17C68E6D00709B37 /* AppDelegate.m in Sources */,
 				0BCBC62417C68E6D00709B37 /* MovingMapViewController.m in Sources */,
 				1BF9A799AFB440530DF25D61 /* ButtonWithImageAndText.m in Sources */,
-				1BF9A38C2A0589FE27F5C7D5 /* RoutePlanningScreenController.m in Sources */,
 				1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */,
 				1BF9AC88033EB29A4F8A21EC /* ChartsScreenController.m in Sources */,
 				1BF9A0EA6022308AF1532A87 /* SettingsScreenController.m in Sources */,

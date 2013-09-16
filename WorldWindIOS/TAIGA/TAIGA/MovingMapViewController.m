@@ -27,6 +27,7 @@
     UIBarButtonItem* overlaysButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
+    UIBarButtonItem* routePlanningButton;
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
@@ -128,13 +129,18 @@
 
     splitViewButton = [[UIBarButtonItem alloc] initWithTitle:@"Split View" style:UIBarButtonItemStylePlain
                                                       target:self
-                                                      action:@selector(handleScreen1ButtonTap)];
+                                                      action:@selector(handleButtonTap)];
     [splitViewButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
 
     quickViewsButton = [[UIBarButtonItem alloc] initWithTitle:@"Quick Views" style:UIBarButtonItemStylePlain
                                                        target:self
-                                                       action:@selector(handleScreen1ButtonTap)];
+                                                       action:@selector(handleButtonTap)];
     [quickViewsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+
+    routePlanningButton = [[UIBarButtonItem alloc] initWithTitle:@"RoutePlanning" style:UIBarButtonItemStylePlain
+                                                          target:self
+                                                          action:@selector(handleButtonTap)];
+    [routePlanningButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -148,6 +154,8 @@
             splitViewButton,
             flexibleSpace,
             quickViewsButton,
+            flexibleSpace,
+            routePlanningButton,
             flexibleSpace,
             connectivityButton,
             nil]];
@@ -173,7 +181,7 @@
     [Settings setFloat:TAIGA_SHADED_ELEVATION_OPACITY value:opacity];
 }
 
-- (void) handleScreen1ButtonTap
+- (void) handleButtonTap
 {
     NSLog(@"BUTTON TAPPED");
 }
