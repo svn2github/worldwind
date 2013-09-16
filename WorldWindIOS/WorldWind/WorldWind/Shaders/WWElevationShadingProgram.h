@@ -18,6 +18,7 @@
 @protected
     GLuint yellowThresholdLocation;
     GLuint redThresholdLocation;
+    GLuint opacityLocation;
 }
 
 /// @name Attributes
@@ -27,6 +28,9 @@
 
 /// The elevation in meters above which to display yellow shading until the red threshold is reached.
 - (void) loadYellowThreshold:(float)yellowThreshold;
+
+/// The opacity of the shading, in the range 0 to 1.
+- (void) loadOpacity:(float)opacity;
 
 /**
 * Returns a unique string appropriate for identifying a shared instance of WWElevationShadingProgram in a WWGpuResourceCache.

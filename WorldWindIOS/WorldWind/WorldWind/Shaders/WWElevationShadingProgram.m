@@ -20,6 +20,7 @@
 
     yellowThresholdLocation = (GLuint) [self uniformLocation:@"yellowThreshold"];
     redThresholdLocation = (GLuint) [self uniformLocation:@"redThreshold"];
+    opacityLocation = (GLuint) [self uniformLocation:@"opacity"];
 
     return self;
 }
@@ -43,6 +44,11 @@
 - (void) loadRedThreshold:(float)redThreshold
 {
     [WWGpuProgram loadUniformFloat:redThreshold location:redThresholdLocation];
+}
+
+- (void) loadOpacity:(float)opacity
+{
+    [WWGpuProgram loadUniformFloat:opacity location:opacityLocation];
 }
 
 @end

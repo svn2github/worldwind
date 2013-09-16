@@ -12,20 +12,21 @@ precision mediump float;
 
 uniform float yellowThreshold;
 uniform float redThreshold;
+uniform float opacity;
 
 varying mediump float elevation;
 
 void main()
 {
-  const vec4 yellow = vec4(1, 1, 0, 1) * 0.3;
-  const vec4 red = vec4(1, 0, 0, 1) * 0.3;
+  const vec4 yellow = vec4(1, 1, 0, 1);
+  const vec4 red = vec4(1, 0, 0, 1);
   const vec4 transparent = vec4(0, 0, 0, 0);
 
     if (elevation < yellowThreshold)
         gl_FragColor = transparent;
     else if (elevation < redThreshold)
-        gl_FragColor = yellow;
+        gl_FragColor = yellow * opacity;
     else
-        gl_FragColor = red;
+        gl_FragColor = red * opacity;
 }
 );

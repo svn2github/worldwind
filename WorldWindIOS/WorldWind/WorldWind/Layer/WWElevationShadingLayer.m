@@ -47,6 +47,7 @@
         WWElevationShadingProgram* program = (WWElevationShadingProgram*) [dc currentProgram];
         [program loadYellowThreshold:_yellowThreshold];
         [program loadRedThreshold:_redThreshold];
+        [program loadOpacity: [self opacity]];
 
         [tess setElevationShadingEnabled:YES];
         [tess beginRendering:dc];
