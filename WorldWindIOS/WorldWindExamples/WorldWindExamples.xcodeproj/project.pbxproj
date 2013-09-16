@@ -157,6 +157,7 @@
 		1BF9AF7CA370D26918C6F6C2 /* LayerList.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LayerList.png; sourceTree = "<group>"; };
 		CC8CF249E01F7C0375359BBD /* TrackingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingController.h; sourceTree = "<group>"; };
 		CC8CF367AC10A6D009DC52FF /* NavigatorSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigatorSettingsController.h; sourceTree = "<group>"; };
+		CC8CF52B2E44F29383161B78 /* WorldWindExamplesSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WorldWindExamplesSite.dcproj; sourceTree = "<group>"; };
 		CC8CF5EEA389022B9C529C1B /* 433-x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x.png"; sourceTree = "<group>"; };
 		CC8CF63C7E6A3363FF1483D4 /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
 		CC8CF74B640D7FE573F97C3E /* BulkRetrieverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BulkRetrieverController.m; sourceTree = "<group>"; };
@@ -206,6 +207,7 @@
 				0B98140E165FFA4900193E50 /* WorldWindExamples */,
 				0B981407165FFA4900193E50 /* Frameworks */,
 				0B981405165FFA4900193E50 /* Products */,
+				CC8CF52B2E44F29383161B78 /* WorldWindExamplesSite.dcproj */,
 			);
 			sourceTree = "<group>";
 		};
