@@ -6,7 +6,6 @@
  */
 
 #import "SettingsScreenController.h"
-#import "Settings.h"
 #import "AppConstants.h"
 
 @implementation SettingsScreenController
@@ -52,7 +51,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 0;
+    return 1;
 }
 
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
@@ -62,39 +61,23 @@
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    return nil;
-}
+    static NSString* cellIdentifier = @"cell";
 
-- (UITableViewCell*)cellForElevationThresholdSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
-{
-    return nil;
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+    }
 
-//    static NSString* cellID = @"ElevationShadingThresholdCell";
-//
-//    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellID];
-//    if (cell == nil)
-//    {
-//        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:cellID];
-//        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-//    }
-//
-//    if ([indexPath row] == 0)
-//    {
-//        [[cell textLabel] setText:@"Yellow"];
-//        float value = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_YELLOW defaultValue:2000];
-//        [[cell detailTextLabel] setText:[NSString stringWithFormat:@"%d meters", (int) value]];
-//    }
-//    else if ([indexPath row] == 1)
-//    {
-//        [[cell textLabel] setText:@"Red"];
-//        float value = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000];
-//        [[cell detailTextLabel] setText:[NSString stringWithFormat:@"%d meters", (int) value]];
-//    }
-//
-//    return cell;
+    [[cell textLabel] setText:@"Version"];
+    [[cell detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%@, %@", TAIGA_VERSION, TAIGA_VERSION_DATE]];
+
+    return cell;
 }
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
 }
+
 @end
