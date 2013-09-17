@@ -26,6 +26,8 @@
 #import "METARDataViewController.h"
 #import "WWPickedObject.h"
 #import "WWPickedObjectList.h"
+#import "PIREPLayer.h"
+#import "PIREPDataViewController.h"
 
 @implementation MovingMapViewController
 {
@@ -45,11 +47,14 @@
     FlightPathsLayer* flightPathsLayer;
     WWElevationShadingLayer* elevationShadingLayer;
     METARLayer* metarLayer;
+    PIREPLayer* pirepLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
 
     METARDataViewController* metarDataViewController;
     UIPopoverController* metarDataPopoverController;
+    PIREPDataViewController* pirepDataViewController;
+    UIPopoverController* pirepDataPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -59,6 +64,7 @@
     myFrame = frame;
 
     metarDataViewController = [[METARDataViewController alloc] init];
+    pirepDataViewController = [[PIREPDataViewController alloc] init];
 
     return self;
 }
@@ -97,6 +103,10 @@
     metarLayer = [[METARLayer alloc] init];
     [metarLayer setEnabled:NO];
     [[[_wwv sceneController] layers] addLayer:metarLayer];
+
+    pirepLayer = [[PIREPLayer alloc] init];
+    [pirepLayer setEnabled:NO];
+    [[[_wwv sceneController] layers] addLayer:pirepLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
 
@@ -146,35 +156,35 @@
     flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"38-airplane" text:@"Flight Paths" size:size target:self action:@selector
             (handleFlightPathsButton)]];
-    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [flightPathsButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [flightPathsButton customView]) setFontSize:15];
 
     overlaysButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"328-layers2" text:@"Overlays" size:size target:self action:@selector
             (handleOverlaysButton)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [overlaysButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [overlaysButton customView]) setFontSize:15];
 
     splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
             (handleButtonTap)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
 
     quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"309-thumbtack" text:@"Quick Views" size:size target:self action:@selector
             (handleButtonTap)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
     routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
             (handleButtonTap)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setFontSize:15];
 
@@ -259,6 +269,8 @@
             {
                 if ([[[topObject parentLayer] displayName] isEqualToString:@"METAR Weather"])
                     [self showMETARData:pm];
+                else if ([[[topObject parentLayer] displayName] isEqualToString:@"PIREPS"])
+                    [self showPIREPData:pm];
             }
         }
     }
@@ -287,18 +299,39 @@
     [[metarDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
                                                atScrollPosition:UITableViewScrollPositionTop animated:YES];
 
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    {
-        if (metarDataPopoverController == nil)
-            metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
-        [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    }
-    else
-    {
-        [((UINavigationController*) [self parentViewController]) pushViewController:metarDataViewController animated:YES];
-        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
-    }
+    if (metarDataPopoverController == nil)
+        metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
+    [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) showPIREPData:(WWPointPlacemark*)pm
+{
+    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
+    // that screen position.
+
+    WWPosition* pmPos = [pm position];
+    WWVec4* pmPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
+                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
+    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
+
+    // Give the controller the placemark's dictionary.
+    [pirepDataViewController setEntries:[pm userObject]];
+
+    // Ensure that the first line of the data is at the top of the data table.
+    [[pirepDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                               atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    if (pirepDataPopoverController == nil)
+        pirepDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:pirepDataViewController];
+    [pirepDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 @end
