@@ -45,7 +45,7 @@
 - (void) highlight:(BOOL)highlight
 {
     if (highlight)
-        [self setBackgroundColor:[UIColor darkGrayColor]];
+        [self setBackgroundColor:[[UIColor alloc] initWithRed:1. green:1. blue:1. alpha:0.2]];
     else
         [self setBackgroundColor:[UIColor clearColor]];
 }
