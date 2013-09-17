@@ -81,6 +81,7 @@
 		1BF9AF9B7C541E46121A0C3B /* 387-bookmarks.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A28AB0C7648B0EFE9529 /* 387-bookmarks.png */; };
 		1BF9AFBE3807391CB8085CA9 /* 314-move-point.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAFDE565B336A0D805BC /* 314-move-point.png */; };
 		1BF9AFF6ABD87609B3D91383 /* 19-gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */; };
+		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -182,7 +183,9 @@
 		1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARDataViewController.m; sourceTree = "<group>"; };
 		1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
+		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
+		CC8CFECC51A637D34D3DF693 /* OpenWeatherMapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenWeatherMapLayer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -286,6 +289,8 @@
 				1BF9AA2DBCA408C8F57AE545 /* PIREPLayer.h */,
 				1BF9AC548E1B6A8C5890C137 /* PIREPDataViewController.m */,
 				1BF9A2AD71E8799F45361258 /* PIREPDataViewController.h */,
+				CC8CFECC51A637D34D3DF693 /* OpenWeatherMapLayer.h */,
+				CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -471,6 +476,7 @@
 				1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */,
 				1BF9AF5AA03657A43015F7DF /* PIREPLayer.m in Sources */,
 				1BF9AD329CC41CAE7BD123D7 /* PIREPDataViewController.m in Sources */,
+				CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

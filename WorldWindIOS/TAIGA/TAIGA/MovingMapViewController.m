@@ -28,6 +28,7 @@
 #import "WWPickedObjectList.h"
 #import "PIREPLayer.h"
 #import "PIREPDataViewController.h"
+#import "OpenWeatherMapLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -44,8 +45,13 @@
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
 
-    FlightPathsLayer* flightPathsLayer;
+    OpenWeatherMapLayer* precipitationLayer;
+    OpenWeatherMapLayer* cloudsLayer;
+    OpenWeatherMapLayer* temperatureLayer;
+    OpenWeatherMapLayer* snowLayer;
+    OpenWeatherMapLayer* windLayer;
     WWElevationShadingLayer* elevationShadingLayer;
+    FlightPathsLayer* flightPathsLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
 
@@ -91,6 +97,31 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
+
+    precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
+    [precipitationLayer setEnabled:NO];
+    [precipitationLayer setOpacity:0.4];
+    [[[_wwv sceneController] layers] addLayer:precipitationLayer];
+
+    cloudsLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"clouds" displayName:@"Clouds"];
+    [cloudsLayer setEnabled:NO];
+    [cloudsLayer setOpacity:0.4];
+    [[[_wwv sceneController] layers] addLayer:cloudsLayer];
+
+    temperatureLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"temp" displayName:@"Temperature"];
+    [temperatureLayer setEnabled:NO];
+    [temperatureLayer setOpacity:0.4];
+    [[[_wwv sceneController] layers] addLayer:temperatureLayer];
+
+    snowLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"snow" displayName:@"Snow"];
+    [snowLayer setEnabled:NO];
+    [snowLayer setOpacity:0.4];
+    [[[_wwv sceneController] layers] addLayer:snowLayer];
+
+    windLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"wind" displayName:@"Wind"];
+    [windLayer setEnabled:NO];
+    [windLayer setOpacity:0.4];
+    [[[_wwv sceneController] layers] addLayer:windLayer];
 
     [self createTerrainAltitudeLayer];
     [layers addLayer:elevationShadingLayer];
