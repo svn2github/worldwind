@@ -53,9 +53,11 @@
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
+		1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */; };
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
 		1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
+		1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */; };
 		1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
 		1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */; };
@@ -63,6 +65,7 @@
 		1BF9AC85D4DB40DCD68E6AE5 /* 361-1up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */; };
 		1BF9AC88033EB29A4F8A21EC /* ChartsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */; };
 		1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */; };
+		1BF9AD74A19AED4BB0B7E873 /* weather32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */; };
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
 		1BF9ADF1A80BC00BF04E462B /* 122-stats@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */; };
 		1BF9AE30EFD4181D61CA3D2F /* 275-broadcast@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */; };
@@ -125,6 +128,7 @@
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A58F8364A0EC4B77CF54 /* 387-bookmarks@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "387-bookmarks@2x.png"; sourceTree = "<group>"; };
 		1BF9A591D1865106089F5EFE /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
+		1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats@2x.png"; sourceTree = "<group>"; };
@@ -135,10 +139,12 @@
 		1BF9A8097DB0B1A43FC6138D /* 42-photos.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos.png"; sourceTree = "<group>"; };
 		1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SliderCellWithReadout.m; sourceTree = "<group>"; };
 		1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection@2x.png"; sourceTree = "<group>"; };
+		1BF9A8547F0FFC6887C54F52 /* METARDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = METARDataViewController.h; sourceTree = "<group>"; };
 		1BF9A8C063EF836D58C35624 /* MainScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainScreenController.m; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear.png"; sourceTree = "<group>"; };
 		1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe@2x.png"; sourceTree = "<group>"; };
+		1BF9AA9CB14DE75EA3D2BFB4 /* METARLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = METARLayer.h; sourceTree = "<group>"; };
 		1BF9AAB56C27605407593552 /* ImageLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AAFDE565B336A0D805BC /* 314-move-point.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point.png"; sourceTree = "<group>"; };
 		1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathsLayer.m; sourceTree = "<group>"; };
@@ -165,6 +171,8 @@
 		1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = PAJN.pdf; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
+		1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARDataViewController.m; sourceTree = "<group>"; };
+		1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -262,6 +270,10 @@
 				1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */,
 				1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */,
 				1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */,
+				1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */,
+				1BF9AA9CB14DE75EA3D2BFB4 /* METARLayer.h */,
+				1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */,
+				1BF9A8547F0FFC6887C54F52 /* METARDataViewController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -313,6 +325,7 @@
 				1BF9ACFA76BAB92CC2669038 /* 01-refresh@2x.png */,
 				1BF9A28AB0C7648B0EFE9529 /* 387-bookmarks.png */,
 				1BF9A58F8364A0EC4B77CF54 /* 387-bookmarks@2x.png */,
+				1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -411,6 +424,7 @@
 				1BF9AC0151DE9AD201FD941D /* 01-refresh@2x.png in Resources */,
 				1BF9AF9B7C541E46121A0C3B /* 387-bookmarks.png in Resources */,
 				1BF9A4D6B72EE9D6D2BD4C64 /* 387-bookmarks@2x.png in Resources */,
+				1BF9AD74A19AED4BB0B7E873 /* weather32x32.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +453,8 @@
 				1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */,
 				1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */,
 				1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */,
+				1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */,
+				1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

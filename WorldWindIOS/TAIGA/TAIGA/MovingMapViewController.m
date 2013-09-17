@@ -17,6 +17,15 @@
 #import "WWElevationShadingLayer.h"
 #import "Settings.h"
 #import "ButtonWithImageAndText.h"
+#import "METARLayer.h"
+#import "WWPointPlacemark.h"
+#import "WWNavigatorState.h"
+#import "WWPosition.h"
+#import "WWGlobe.h"
+#import "WWVec4.h"
+#import "METARDataViewController.h"
+#import "WWPickedObject.h"
+#import "WWPickedObjectList.h"
 
 @implementation MovingMapViewController
 {
@@ -35,6 +44,12 @@
 
     FlightPathsLayer* flightPathsLayer;
     WWElevationShadingLayer* elevationShadingLayer;
+    METARLayer* metarLayer;
+
+    UITapGestureRecognizer* tapGestureRecognizer;
+
+    METARDataViewController* metarDataViewController;
+    UIPopoverController* metarDataPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -42,6 +57,8 @@
     self = [super initWithNibName:nil bundle:nil];
 
     myFrame = frame;
+
+    metarDataViewController = [[METARDataViewController alloc] init];
 
     return self;
 }
@@ -77,7 +94,16 @@
     [flightPathsLayer setEnabled:NO];
     [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
+    metarLayer = [[METARLayer alloc] init];
+    [metarLayer setEnabled:NO];
+    [[[_wwv sceneController] layers] addLayer:metarLayer];
+
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
+
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+    [tapGestureRecognizer setNumberOfTapsRequired:1];
+    [tapGestureRecognizer setNumberOfTouchesRequired:1];
+    [_wwv addGestureRecognizer:tapGestureRecognizer];
 }
 
 - (void) viewWillAppear:(BOOL)animated
@@ -215,6 +241,64 @@
 
     [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) handleTap:(UITapGestureRecognizer*)recognizer
+{
+    if ([recognizer state] == UIGestureRecognizerStateEnded)
+    {
+        CGPoint tapPoint = [recognizer locationInView:_wwv];
+        WWPickedObjectList* pickedObjects = [_wwv pick:tapPoint];
+
+        WWPickedObject* topObject = [pickedObjects topPickedObject];
+
+        if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
+        {
+            WWPointPlacemark* pm = (WWPointPlacemark*) [topObject userObject];
+            if ([pm userObject] != nil)
+            {
+                if ([[[topObject parentLayer] displayName] isEqualToString:@"METAR Weather"])
+                    [self showMETARData:pm];
+            }
+        }
+    }
+}
+
+- (void) showMETARData:(WWPointPlacemark*)pm
+{
+    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
+    // that screen position.
+
+    WWPosition* pmPos = [pm position];
+    WWVec4* pmPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
+                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
+    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
+
+    // Give the controller the placemark's dictionary.
+    [metarDataViewController setEntries:[pm userObject]];
+
+    // Ensure that the first line of the data is at the top of the data table.
+    [[metarDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                               atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (metarDataPopoverController == nil)
+            metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
+        [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
+                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+    else
+    {
+        [((UINavigationController*) [self parentViewController]) pushViewController:metarDataViewController animated:YES];
+        [((UINavigationController*) [self parentViewController]) setNavigationBarHidden:NO animated:YES];
+    }
 }
 
 @end
