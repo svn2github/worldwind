@@ -16,6 +16,7 @@
 #import "AppConstants.h"
 #import "WWElevationShadingLayer.h"
 #import "Settings.h"
+#import "ButtonWithImageAndText.h"
 
 @implementation MovingMapViewController
 {
@@ -109,38 +110,47 @@
     [topToolBar setBarStyle:UIBarStyleBlack];
     [topToolBar setTranslucent:NO];
 
-    NSDictionary* textAttrs = [[NSDictionary alloc] initWithObjectsAndKeys:
-            [UIFont boldSystemFontOfSize:18], UITextAttributeFont, nil];
+    CGSize size = CGSizeMake(140, TAIGA_TOOLBAR_HEIGHT);
 
     connectivityButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
                                                          action:nil];
 
-    flightPathsButton = [[UIBarButtonItem alloc] initWithTitle:@"Flight Paths" style:UIBarButtonItemStylePlain
-                                                        target:self
-                                                        action:@selector(handleFlightPathsButton)];
-    [flightPathsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"38-airplane" text:@"Flight Paths" size:size target:self action:@selector
+            (handleFlightPathsButton)]];
+    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [flightPathsButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [flightPathsButton customView]) setFontSize:15];
 
-    overlaysButton = [[UIBarButtonItem alloc] initWithTitle:@"Overlays" style:UIBarButtonItemStylePlain
-                                                     target:self
-                                                     action:@selector(handleOverlaysButton)];
-    [overlaysButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    overlaysButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"328-layers2" text:@"Overlays" size:size target:self action:@selector
+            (handleOverlaysButton)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [overlaysButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [overlaysButton customView]) setFontSize:15];
 
-    splitViewButton = [[UIBarButtonItem alloc] initWithTitle:@"Split View" style:UIBarButtonItemStylePlain
-                                                      target:self
-                                                      action:@selector(handleButtonTap)];
-    [splitViewButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
+            (handleButtonTap)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
 
-    quickViewsButton = [[UIBarButtonItem alloc] initWithTitle:@"Quick Views" style:UIBarButtonItemStylePlain
-                                                       target:self
-                                                       action:@selector(handleButtonTap)];
-    [quickViewsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"309-thumbtack" text:@"Quick Views" size:size target:self action:@selector
+            (handleButtonTap)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
-    routePlanningButton = [[UIBarButtonItem alloc] initWithTitle:@"RoutePlanning" style:UIBarButtonItemStylePlain
-                                                          target:self
-                                                          action:@selector(handleButtonTap)];
-    [routePlanningButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
+            (handleButtonTap)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [routePlanningButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [routePlanningButton customView]) setFontSize:15];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];

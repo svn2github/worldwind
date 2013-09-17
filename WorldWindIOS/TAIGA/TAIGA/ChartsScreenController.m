@@ -10,6 +10,7 @@
 #import "ChartsListController.h"
 #import "WWUtil.h"
 #import "ChartViewController.h"
+#import "ButtonWithImageAndText.h"
 
 #define SEARCH_BAR_HEIGHT (80)
 #define MOST_RECENTLY_USED_CHART_FILE_NAME (@"gov.nasa.worldwind.taiga.mostrecentlyusedchartfilename")
@@ -21,11 +22,8 @@
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
-    UIBarButtonItem* button1;
-    UIBarButtonItem* button2;
-    UIBarButtonItem* button3;
-    UIBarButtonItem* button4;
-    UIBarButtonItem* button5;
+    UIBarButtonItem* refreshButton;
+    UIBarButtonItem* bookmarksButton;
 
     UISearchBar* searchBar;
     ChartsListController* chartsListController;
@@ -79,53 +77,35 @@
     [topToolBar setBarStyle:UIBarStyleBlack];
     [topToolBar setTranslucent:NO];
 
-    NSDictionary* textAttrs = [[NSDictionary alloc] initWithObjectsAndKeys:
-            [UIFont boldSystemFontOfSize:18], UITextAttributeFont, nil];
+    CGSize size = CGSizeMake(140, TAIGA_TOOLBAR_HEIGHT);
 
     connectivityButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
                                                          action:nil];
 
-    button1 = [[UIBarButtonItem alloc] initWithTitle:@"Download" style:UIBarButtonItemStylePlain
-                                              target:self
-                                              action:@selector(handleButtonTap)];
-    [button1 setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    refreshButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"01-refresh" text:@"Refresh" size:size target:self action:@selector
+            (handleButtonTap)]];
+    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    [((ButtonWithImageAndText*) [refreshButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [refreshButton customView]) setFontSize:15];
 
-    button2 = [[UIBarButtonItem alloc] initWithTitle:@"Refresh" style:UIBarButtonItemStylePlain
-                                              target:self
-                                              action:@selector(handleButtonTap)];
-    [button2 setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
-
-    button3 = [[UIBarButtonItem alloc] initWithTitle:@"Bookmarks" style:UIBarButtonItemStylePlain
-                                              target:self
-                                              action:@selector(handleButtonTap)];
-    [button3 setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
-
-    button4 = [[UIBarButtonItem alloc] initWithTitle:@"Pen" style:UIBarButtonItemStylePlain
-                                              target:self
-                                              action:@selector(handleButtonTap)];
-    [button4 setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
-
-    button5 = [[UIBarButtonItem alloc] initWithTitle:@"Clear Drawing" style:UIBarButtonItemStylePlain
-                                              target:self
-                                              action:@selector(handleButtonTap)];
-    [button5 setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    bookmarksButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"387-bookmarks" text:@"Bookmarks" size:size target:self action:@selector
+            (handleButtonTap)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    [((ButtonWithImageAndText*) [bookmarksButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [bookmarksButton customView]) setFontSize:15];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     [topToolBar setItems:[NSArray arrayWithObjects:
             flexibleSpace,
-            button1,
+            refreshButton,
             flexibleSpace,
-            button2,
-            flexibleSpace,
-            button3,
-            flexibleSpace,
-            button4,
-            flexibleSpace,
-            button5,
+            bookmarksButton,
             flexibleSpace,
             connectivityButton,
             nil]];
