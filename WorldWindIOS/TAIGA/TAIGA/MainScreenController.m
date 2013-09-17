@@ -11,6 +11,7 @@
 #import "WeatherScreenController.h"
 #import "ChartsScreenController.h"
 #import "SettingsScreenController.h"
+#import "ButtonWithImageAndText.h"
 
 #define VIEW_TAG (100)
 
@@ -26,19 +27,11 @@
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
-
-    NSDictionary* normalTextColor;
-    NSDictionary* highlightTextColor;
 }
 
 - (id) init
 {
     self = [super initWithNibName:nil bundle:nil];
-
-    normalTextColor = [[NSDictionary alloc] initWithObjectsAndKeys:
-            [UIColor whiteColor], UITextAttributeTextColor, nil];
-    highlightTextColor = [[NSDictionary alloc] initWithObjectsAndKeys:
-            [UIColor cyanColor], UITextAttributeTextColor, nil];
 
     return self;
 }
@@ -67,7 +60,7 @@
     [[settingsScreenController view] setTag:VIEW_TAG];
 
     [self.view addSubview:[movingMapScreenController view]];
-    [movingMapButton setTitleTextAttributes:highlightTextColor forState:UIControlStateNormal];
+    [((ButtonWithImageAndText*) [movingMapButton customView]) highlight:YES];
 }
 
 
@@ -84,28 +77,29 @@
     [modeBar setBarStyle:UIBarStyleBlack];
     [modeBar setTranslucent:NO];
 
-    NSDictionary* textAttrs = [[NSDictionary alloc] initWithObjectsAndKeys:
-            [UIFont boldSystemFontOfSize:18], UITextAttributeFont, nil];
+    CGSize size = CGSizeMake(130, TAIGA_TOOLBAR_HEIGHT);
 
-    movingMapButton = [[UIBarButtonItem alloc] initWithTitle:@"Moving Map" style:UIBarButtonItemStylePlain
-                                                      target:self
-                                                      action:@selector(handleMovingMap)];
-    [movingMapButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    movingMapButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"401-globe" text:@"Moving Map" size:size target:self action:@selector
+            (handleMovingMap)]];
+    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [movingMapButton customView]) setTextColor:color];
 
-    weatherButton = [[UIBarButtonItem alloc] initWithTitle:@"Weather" style:UIBarButtonItemStylePlain
-                                                    target:self
-                                                    action:@selector(handleWeather)];
-    [weatherButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    weatherButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"25-weather" text:@"Weather" size:size target:self action:@selector
+            (handleWeather)]];
+     color = [[UIColor alloc] initWithRed:1.0 green:208./255. blue:237./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [weatherButton customView]) setTextColor:color];
 
-    chartsButton = [[UIBarButtonItem alloc] initWithTitle:@"Charts" style:UIBarButtonItemStylePlain
-                                                   target:self
-                                                   action:@selector(handleCharts)];
-    [chartsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    chartsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"361-1up" text:@"Charts" size:size target:self action:@selector
+            (handleCharts)]];
+    color = [[UIColor alloc] initWithRed:182./255. green:255./255. blue:190./255. alpha:1.0];
+    [((ButtonWithImageAndText*) [chartsButton customView]) setTextColor:color];
 
-    settingsButton = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain
-                                                     target:self
-                                                     action:@selector(handleSettings)];
-    [settingsButton setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    settingsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"19-gear" text:@"Settings" size:size target:self action:@selector
+            (handleSettings)]];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -163,11 +157,11 @@
     [[screenController view] setFrame:frame];
     [self.view addSubview:[screenController view]];
 
-    [movingMapButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
-    [weatherButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
-    [chartsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
-    [settingsButton setTitleTextAttributes:normalTextColor forState:UIControlStateNormal];
+    [((ButtonWithImageAndText*) [movingMapButton customView]) highlight:NO];
+    [((ButtonWithImageAndText*) [weatherButton customView]) highlight:NO];
+    [((ButtonWithImageAndText*) [chartsButton customView]) highlight:NO];
+    [((ButtonWithImageAndText*) [settingsButton customView]) highlight:NO];
 
-    [button setTitleTextAttributes:highlightTextColor forState:UIControlStateNormal];
+    [((ButtonWithImageAndText*) [button customView]) highlight:YES];
 }
 @end

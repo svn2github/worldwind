@@ -10,7 +10,12 @@
 
 @interface ButtonWithImageAndText : UIButton
 
+@property (nonatomic) int fontSize;
+@property (nonatomic) UIColor* textColor;
+
 - (ButtonWithImageAndText*) initWithImageName:(NSString*)imageName text:(NSString*)text size:(CGSize)size target:(id)
         target action:(SEL)action;
+
+- (void) highlight:(BOOL)highlight;
 
 @end

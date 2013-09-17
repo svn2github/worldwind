@@ -29,6 +29,7 @@
 		1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */; };
 		1BF9A0EA6022308AF1532A87 /* SettingsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */; };
 		1BF9A127144D649B258E44DA /* 362-2up.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A16000CCA1E884CB5F52 /* 362-2up.png */; };
+		1BF9A1A3DF1D3E6D018CD3E2 /* 401-globe.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A591D1865106089F5EFE /* 401-globe.png */; };
 		1BF9A26AD257973E046A6B38 /* 38-airplane@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */; };
 		1BF9A34B20040F58C34F6FAF /* 385-mountain.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1E43E17FB581FD7BD8B /* 385-mountain.png */; };
 		1BF9A34DCBB623B215C775E2 /* 103-map@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0FB8724A93430A71C62 /* 103-map@2x.png */; };
@@ -39,6 +40,7 @@
 		1BF9A5C0915C60BB28B24226 /* 25-weather@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */; };
 		1BF9A664AA0532C0BEB5CA0F /* 328-layers2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */; };
 		1BF9A66D6522A49CF15A8F88 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */; };
+		1BF9A6DA06568D6114C20892 /* 361-1up.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3F10314E2E43C3F237C /* 361-1up.png */; };
 		1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */; };
 		1BF9A799AFB440530DF25D61 /* ButtonWithImageAndText.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */; };
 		1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B6E08BC5F07990932A /* ChartViewController.m */; };
@@ -56,6 +58,7 @@
 		1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
 		1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */; };
+		1BF9AC85D4DB40DCD68E6AE5 /* 361-1up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */; };
 		1BF9AC88033EB29A4F8A21EC /* ChartsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */; };
 		1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */; };
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
@@ -63,6 +66,7 @@
 		1BF9AE30EFD4181D61CA3D2F /* 275-broadcast@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */; };
 		1BF9AE68E0B6F7D92E5FB4BD /* 09-chat-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4D424F620707A6CECE0 /* 09-chat-2.png */; };
 		1BF9AE6E63F3F58E65410DE4 /* 38-airplane.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A230DEB50D96296D6835 /* 38-airplane.png */; };
+		1BF9AE924F7D3B5C39F75D8C /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */; };
 		1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC6374E2CD340E235AD /* ChartsListController.m */; };
 		1BF9AF0E2106E053989367BE /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */; };
 		1BF9AF209840952651C41FC2 /* 42-photos@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */; };
@@ -112,11 +116,13 @@
 		1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainAltitudeController.h; sourceTree = "<group>"; };
 		1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A38BEF1C4F903C7FFE32 /* FlightPathsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathsLayer.h; sourceTree = "<group>"; };
+		1BF9A3F10314E2E43C3F237C /* 361-1up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up.png"; sourceTree = "<group>"; };
 		1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather@2x.png"; sourceTree = "<group>"; };
 		1BF9A46DD2EE664E94DFCADD /* 25-weather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather.png"; sourceTree = "<group>"; };
 		1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartViewController.h; sourceTree = "<group>"; };
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A4D424F620707A6CECE0 /* 09-chat-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "09-chat-2.png"; sourceTree = "<group>"; };
+		1BF9A591D1865106089F5EFE /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats@2x.png"; sourceTree = "<group>"; };
@@ -131,6 +137,7 @@
 		1BF9A9381E06C585F3513450 /* 09-chat-2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "09-chat-2@2x.png"; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear.png"; sourceTree = "<group>"; };
+		1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe@2x.png"; sourceTree = "<group>"; };
 		1BF9AAB56C27605407593552 /* ImageLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9AAFDE565B336A0D805BC /* 314-move-point.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point.png"; sourceTree = "<group>"; };
 		1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathsLayer.m; sourceTree = "<group>"; };
@@ -142,6 +149,7 @@
 		1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsScreenController.m; sourceTree = "<group>"; };
 		1BF9AC9D65EA0C91768F51A5 /* Settings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Settings.m; sourceTree = "<group>"; };
 		1BF9AC9E709B9A849F48D6DF /* Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Settings.h; sourceTree = "<group>"; };
+		1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up@2x.png"; sourceTree = "<group>"; };
 		1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear@2x.png"; sourceTree = "<group>"; };
 		1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppConstants.m; sourceTree = "<group>"; };
 		1BF9ADC4A4A1BBB857690021 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
@@ -295,6 +303,10 @@
 				1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */,
 				1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */,
 				1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */,
+				1BF9A591D1865106089F5EFE /* 401-globe.png */,
+				1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */,
+				1BF9A3F10314E2E43C3F237C /* 361-1up.png */,
+				1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -387,6 +399,10 @@
 				1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */,
 				1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */,
 				1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */,
+				1BF9A1A3DF1D3E6D018CD3E2 /* 401-globe.png in Resources */,
+				1BF9AE924F7D3B5C39F75D8C /* 401-globe@2x.png in Resources */,
+				1BF9A6DA06568D6114C20892 /* 361-1up.png in Resources */,
+				1BF9AC85D4DB40DCD68E6AE5 /* 361-1up@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
