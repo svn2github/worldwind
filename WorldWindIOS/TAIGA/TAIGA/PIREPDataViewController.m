@@ -45,6 +45,7 @@
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     static NSString* cellIdentifier = @"cell";
+    NSString* entry;
 
     @try
     {
@@ -53,27 +54,31 @@
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
             [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            [[cell detailTextLabel] setText:@""];
         }
 
         switch ([indexPath row])
         {
             case 0:
                 [[cell textLabel] setText:@"Observed"];
-                [[cell detailTextLabel] setText:[_entries objectForKey:@"observation_time"]];
+                entry = [_entries objectForKey:@"observation_time"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
 
             case 1:
                 [[cell textLabel] setText:@"Recieved"];
-                [[cell detailTextLabel] setText:[_entries objectForKey:@"receipt_time"]];
+                entry = [_entries objectForKey:@"receipt_time"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
 
             case 2:
-            {
                 [[cell textLabel] setText:@"Aircraft"];
-                NSString* entry = [_entries objectForKey:@"aircraft_ref"];
-                [[cell detailTextLabel] setText:entry != nil ? entry : @""];
+                entry = [_entries objectForKey:@"aircraft_ref"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
-            }
 //
 //            case 2:
 //            {
@@ -87,32 +92,35 @@
 //            }
 
             case 3:
-            {
                 [[cell textLabel] setText:@"Altitude"];
-                NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"altitude_ft_msl"]];
-                [detail appendString:@" ft MSL"];
-                [[cell detailTextLabel] setText:detail];
+                entry = [_entries objectForKey:@"altitude_ft_msl"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
                 break;
-            }
 
             case 4:
                 [[cell textLabel] setText:@"Latitude"];
-                [[cell detailTextLabel] setText:[_entries objectForKey:@"latitude"]];
+                entry = [_entries objectForKey:@"latitude"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
 
             case 5:
                 [[cell textLabel] setText:@"Longitude"];
-                [[cell detailTextLabel] setText:[_entries objectForKey:@"longitude"]];
+                entry = [_entries objectForKey:@"longitude"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
 
             case 6:
                 [[cell textLabel] setText:@"Type"];
-                [[cell detailTextLabel] setText:[_entries objectForKey:@"report_type"]];
+                entry = [_entries objectForKey:@"report_type"];
+                if (entry != nil)
+                    [[cell detailTextLabel] setText:entry];
                 break;
 
             default:
                 [[cell textLabel] setText:@""];
-                [[cell detailTextLabel] setText:@""];
                 break;
         }
 

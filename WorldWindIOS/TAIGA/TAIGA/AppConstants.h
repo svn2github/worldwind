@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define TAIGA_VERSION (@"0.4")
+#define TAIGA_VERSION (@"0.5")
 #define TAIGA_VERSION_DATE (@"9/17/13")
 
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
