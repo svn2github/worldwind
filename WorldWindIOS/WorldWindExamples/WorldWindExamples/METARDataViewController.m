@@ -21,6 +21,12 @@
     return self;
 }
 
+- (void) setEntries:(NSDictionary*)entries
+{
+    _entries = entries;
+    [[self tableView] reloadData];
+}
+
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
     return [_entries objectForKey:@"sky_conditions"] != nil ? 2 : 1;
