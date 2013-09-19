@@ -25,7 +25,6 @@ import javax.swing.border.*;
 import javax.xml.parsers.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.*;
@@ -488,16 +487,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
         }
 
         private AnnotationAttributes eqAttributes;
-        private BufferedImage eqIcons[] =
-            {
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.RED),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.ORANGE),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.YELLOW),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.GREEN),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLUE),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.GRAY),
-                PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLACK),
-            };
         private Color eqColors[] =
             {
                 Color.RED,
@@ -538,7 +527,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 else
                     this.latestEq = ea;
             }
-            ea.getAttributes().setImageSource(eqIcons[Math.min(days, eqIcons.length - 1)]);
             ea.getAttributes().setTextColor(eqColors[Math.min(days, eqColors.length - 1)]);
             ea.getAttributes().setScale(earthquake.magnitude / 10);
             layer.addRenderable(ea);
@@ -594,10 +582,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             public String title;
             public String summary;
             public Position position;
-            public double elevation;
             public Date date;
             public double magnitude;
-            public String link;
 
             public Earthquake(Node entry)
             {
@@ -614,15 +600,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                     String[] coord = pointString.split(" ");
                     this.position = Position.fromDegrees(Double.parseDouble(coord[0]), Double.parseDouble(coord[1]), 0);
                 }
-                node = findChildByName(entry, "georss:elev");
-                if (node != null)
-                    this.elevation = Double.parseDouble(node.getTextContent());
                 node = findChildByName(entry, "summary");
                 if (node != null)
                     this.summary = node.getTextContent();
-                node = findChildByName(entry, "link");
-                if (node != null)
-                    this.link = node.getAttributes().getNamedItem("href").getTextContent();
                 node = findChildByName(entry, "updated");
                 if (node != null)
                 {
