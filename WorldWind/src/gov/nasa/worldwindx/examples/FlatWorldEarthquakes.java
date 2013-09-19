@@ -10,7 +10,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
@@ -27,7 +27,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
-import java.net.*;
+import java.net.URL;
 import java.nio.*;
 import java.text.*;
 import java.util.*;
@@ -62,13 +62,13 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             // Change atmosphere SkyGradientLayer for SkyColorLayer
             // and set worldmap and compass max active altitude
             LayerList layers = this.getWwd().getModel().getLayers();
-            for(int i = 0; i < layers.size(); i++)
+            for (int i = 0; i < layers.size(); i++)
             {
-                if(layers.get(i) instanceof SkyGradientLayer)
+                if (layers.get(i) instanceof SkyGradientLayer)
                     layers.set(i, new SkyColorLayer());
-                else if(layers.get(i) instanceof WorldMapLayer)
+                else if (layers.get(i) instanceof WorldMapLayer)
                     (layers.get(i)).setMaxActiveAltitude(20e6);
-                else if(layers.get(i) instanceof CompassLayer)
+                else if (layers.get(i) instanceof CompassLayer)
                     (layers.get(i)).setMaxActiveAltitude(20e6);
             }
 
@@ -89,21 +89,25 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             controls.add(makeEarthquakesPanel());
             // Add flat world projection control panel
             controls.add(new FlatWorldPanel(this.getWwd()));
-            this.getLayerPanel().add(controls,  BorderLayout.SOUTH);
+            this.getLayerPanel().add(controls, BorderLayout.SOUTH);
 
             // Add select listener for earthquake picking
-            this.getWwd().addSelectListener(new SelectListener(){
-                public void selected(SelectEvent event){
+            this.getWwd().addSelectListener(new SelectListener()
+            {
+                public void selected(SelectEvent event)
+                {
                     if (event.getEventAction().equals(SelectEvent.ROLLOVER))
                         highlight(event.getTopObject());
-                }});
+                }
+            });
 
             // Add click-and-go select listener for earthquakes
             this.getWwd().addSelectListener(new ClickAndGoSelectListener(
-                    this.getWwd(), EqAnnotation.class, 1000e3));
+                this.getWwd(), EqAnnotation.class, 1000e3));
 
             // Add updater timer
-            this.updater = new Timer(1000, new ActionListener() {
+            this.updater = new Timer(1000, new ActionListener()
+            {
                 public void actionPerformed(ActionEvent event)
                 {
                     if (lastUpdaterEvent == null)
@@ -122,8 +126,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                     {
                         // Display remaining time in button text
                         long remain = delay - elapsed;
-                        int min = (int)Math.floor((double)remain / javax.management.timer.Timer.ONE_MINUTE);
-                        int sec = (int)((remain - min * javax.management.timer.Timer.ONE_MINUTE) / javax.management.timer.Timer.ONE_SECOND);
+                        int min = (int) Math.floor((double) remain / javax.management.timer.Timer.ONE_MINUTE);
+                        int sec = (int) ((remain - min * javax.management.timer.Timer.ONE_MINUTE)
+                            / javax.management.timer.Timer.ONE_SECOND);
                         downloadButton.setText(String.format("Update (in %1$02d:%2$02d)", min, sec));
                     }
                 }
@@ -150,7 +155,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             {
                 this.mouseEq = (EqAnnotation) o;
                 this.mouseEq.getAttributes().setHighlighted(true);
-                this.tooltipAnnotation.setText("<p><b>" + this.mouseEq.earthquake.title + "</b></p>" + composeElapsedString(this.mouseEq) + "<br />" + this.mouseEq.earthquake.summary);
+                this.tooltipAnnotation.setText(
+                    "<p><b>" + this.mouseEq.earthquake.title + "</b></p>" + composeElapsedString(this.mouseEq)
+                        + "<br />" + this.mouseEq.earthquake.summary);
                 this.tooltipAnnotation.setPosition(this.mouseEq.earthquake.position);
                 this.tooltipAnnotation.getAttributes().setVisible(true);
                 this.getWwd().redraw();
@@ -176,7 +183,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             this.latestLabel.setText("");
             if (ea != null)
             {
-                String htmlText = "<html>" + composeElapsedString(ea) + "<p><b>" + ea.earthquake.title + "</b></p>" + ea.earthquake.summary + "</html>";
+                String htmlText = "<html>" + composeElapsedString(ea) + "<p><b>" + ea.earthquake.title + "</b></p>"
+                    + ea.earthquake.summary + "</html>";
                 htmlText = htmlText.replaceAll("(?i)<img\\s?.*?>", "\n");  // Remove <img> tags
                 this.latestLabel.setText(htmlText);
             }
@@ -194,14 +202,16 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 long hours = elapsed / javax.management.timer.Timer.ONE_HOUR;
                 elapsed -= hours * javax.management.timer.Timer.ONE_HOUR;
                 long minutes = elapsed / javax.management.timer.Timer.ONE_MINUTE;
-                if(days > 0)
+                if (days > 0)
                 {
-                    s = days + (days > 1 ? " days" : " day") + (hours > 0 ? " and " + hours + (hours > 1 ? " hours" : " hour") : "");
+                    s = days + (days > 1 ? " days" : " day") + (hours > 0 ? " and " + hours + (hours > 1 ? " hours"
+                        : " hour") : "");
                 }
                 else
                 {
                     if (hours > 0)
-                        s = hours + (hours > 1 ? " hours" : " hour") + (hours < 12 ? " and " + minutes + (minutes > 1 ? " minutes" : " minute") : "");
+                        s = hours + (hours > 1 ? " hours" : " hour") + (hours < 12 ? " and " + minutes + (minutes > 1
+                            ? " minutes" : " minute") : "");
                     else
                         s = minutes + (minutes > 1 ? " minutes" : " minute");
                 }
@@ -228,12 +238,11 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                         Position targetPos = latestEq.earthquake.position;
                         BasicOrbitView view = (BasicOrbitView) getWwd().getView();
                         view.addPanToAnimator(
-                                // The elevation component of 'targetPos' here is not the surface elevation,
-                                // so we ignore it when specifying the view center position.
-                                new Position(targetPos, 0),
-                                Angle.ZERO, Angle.ZERO, 1000e3);
+                            // The elevation component of 'targetPos' here is not the surface elevation,
+                            // so we ignore it when specifying the view center position.
+                            new Position(targetPos, 0),
+                            Angle.ZERO, Angle.ZERO, 1000e3);
                     }
-
                 }
             });
             zoomPanel.add(btZoom);
@@ -257,7 +266,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                         // so we ignore it when specifying the view center position.
                         new Position(targetPos, 0),
                         Angle.ZERO, Angle.ZERO, elevation);
-
                 }
             });
             viewPanel.add(btReset);
@@ -291,7 +299,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             JPanel magnitudePanel = new JPanel(new GridLayout(0, 2, 0, 0));
             magnitudePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
             magnitudePanel.add(new JLabel("Min Magnitude:"));
-            magnitudeCombo = new JComboBox(new String[] {"2.5", "3", "4", "5", "6", "7" });
+            magnitudeCombo = new JComboBox(new String[] {"2.5", "3", "4", "5", "6", "7"});
             magnitudeCombo.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent event)
@@ -344,7 +352,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
         private void startEarthquakeDownload()
         {
-            new Thread(new Runnable() {
+            new Thread(new Runnable()
+            {
                 public void run()
                 {
                     downloadEarthquakes();
@@ -362,7 +371,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             // Reset updater last event date
             lastUpdaterEvent = new Date();
             // Download and parse
-            RenderableLayer newLayer = (RenderableLayer)buildEarthquakeLayer();
+            RenderableLayer newLayer = (RenderableLayer) buildEarthquakeLayer();
             // Update layer list and status
             if (newLayer.getRenderables().iterator().hasNext())
             {
@@ -426,7 +435,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 Document doc = docBuilder.parse(file);
 
                 parseDoc(layer, doc);
-
             }
             catch (ParserConfigurationException e)
             {
@@ -481,7 +489,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
         private AnnotationAttributes eqAttributes;
         private BufferedImage eqIcons[] =
-        {
+            {
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.RED),
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.ORANGE),
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.YELLOW),
@@ -489,9 +497,9 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLUE),
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.GRAY),
                 PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, .8f, Color.BLACK),
-        };
+            };
         private Color eqColors[] =
-        {
+            {
                 Color.RED,
                 Color.ORANGE,
                 Color.YELLOW,
@@ -499,7 +507,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 Color.BLUE,
                 Color.GRAY,
                 Color.BLACK,
-        };
+            };
 
         private void addEarthquake(RenderableLayer layer, Earthquake earthquake)
         {
@@ -516,7 +524,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             }
             EqAnnotation ea = new EqAnnotation(earthquake, eqAttributes);
             int days = 6;
-            if (earthquake.date != null) {
+            if (earthquake.date != null)
+            {
                 // Compute days since
                 Date now = new Date();
                 days = (int) ((now.getTime() - earthquake.date.getTime()) / javax.management.timer.Timer.ONE_DAY);
@@ -560,7 +569,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             {
                 if (r instanceof EqAnnotation)
                 {
-                    EqAnnotation ea = (EqAnnotation)r;
+                    EqAnnotation ea = (EqAnnotation) r;
                     ea.getAttributes().setVisible(ea.earthquake.magnitude >= minMagnitude);
                     if (ea.getAttributes().isVisible())
                     {
@@ -592,8 +601,8 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
             public Earthquake(Node entry)
             {
-                Node node =  findChildByName(entry, "title");
-                if(node != null)
+                Node node = findChildByName(entry, "title");
+                if (node != null)
                 {
                     this.title = node.getTextContent();
                     this.magnitude = Double.parseDouble(title.split(",")[0].substring(2));
@@ -635,9 +644,10 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
         private class EqAnnotation extends GlobeAnnotation
         {
             public Earthquake earthquake;
+
             public EqAnnotation(Earthquake earthquake, AnnotationAttributes defaults)
             {
-                super ("", earthquake.position, defaults);
+                super("", earthquake.position, defaults);
                 this.earthquake = earthquake;
             }
 
@@ -652,6 +662,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
 
             // Override annotation drawing for a simple circle
             private DoubleBuffer shapeBuffer;
+
             protected void doDraw(DrawContext dc, int width, int height, double opacity, Position pickPosition)
             {
                 // Draw colored circle around screen point - use annotation's text color
@@ -667,7 +678,7 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 if (this.shapeBuffer == null)
                     this.shapeBuffer = FrameFactory.createShapeBuffer(AVKey.SHAPE_ELLIPSE, size, size, 0, null);
                 GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-                gl.glTranslated(-size/2, -size/2, 0);
+                gl.glTranslated(-size / 2, -size / 2, 0);
                 FrameFactory.drawBuffer(dc, GL.GL_TRIANGLE_FAN, this.shapeBuffer);
             }
         }
@@ -686,11 +697,12 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.annotation = ea;
                 this.initialScale = this.annotation.getAttributes().getScale();
                 this.initialOpacity = this.annotation.getAttributes().getOpacity();
-                this.timer = new Timer(delay, new ActionListener() {
+                this.timer = new Timer(delay, new ActionListener()
+                {
                     public void actionPerformed(ActionEvent event)
                     {
-                        annotation.getAttributes().setScale(initialScale * (1f + 7f * ((float)step / (float)steps)));
-                        annotation.getAttributes().setOpacity(initialOpacity * (1f - ((float)step / (float)steps)));
+                        annotation.getAttributes().setScale(initialScale * (1f + 7f * ((float) step / (float) steps)));
+                        annotation.getAttributes().setOpacity(initialOpacity * (1f - ((float) step / (float) steps)));
                         step = step == steps ? 0 : step + 1;
                         getWwd().redraw();
                     }
@@ -711,8 +723,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 timer.start();
             }
         }
-
-
     } // End AppFrame
 
     // --- Main -------------------------------------------------------------------------
