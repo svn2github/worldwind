@@ -131,7 +131,8 @@
 {
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://www.aviationweather"
-            ".gov/adds/dataserver_current/httpparam?dataSource=aircraftreports&requestType=retrieve&format=xml&minLat=50&minLon=-180&maxLat=80&maxLon=-110&hoursBeforeNow=3";
+            ".gov/adds/dataserver_current/httpparam?dataSource=aircraftreports&requestType=retrieve&format=xml&minLat"
+            "=52&minLon=-170&maxLat=72&maxLon=-130&hoursBeforeNow=3&minAltitudeFt=0&maxAltitudeFt=15000";
     PIREPLayerRetriever* retriever = [[PIREPLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
 }
