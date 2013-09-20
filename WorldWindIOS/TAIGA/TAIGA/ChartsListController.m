@@ -17,6 +17,7 @@
     NSString* chartsServer;
     NSString* airportsCachePath;
     NSArray* airportCharts;
+    UIRefreshControl* refreshControl;
 }
 
 - (ChartsListController*) initWithParent:(ChartsScreenController*)parent
@@ -36,12 +37,16 @@
     [[NSFileManager defaultManager] createDirectoryAtPath:airportsCachePath
                               withIntermediateDirectories:YES attributes:nil error:&error];
 
-    [self loadData];
+    refreshControl = [[UIRefreshControl alloc] init];
+    [refreshControl addTarget:self action:@selector(handleRefresh) forControlEvents:UIControlEventValueChanged];
+    [self setRefreshControl:refreshControl];
+
+    [self loadChartsTOC];
 
     return self;
 }
 
-- (void) loadData
+- (void) loadChartsTOC
 {
     NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/TOC.txt", chartsServer]];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
@@ -51,6 +56,12 @@
                                                 }];
     [retriever performRetrieval];
 
+}
+
+- (void) handleRefresh
+{
+    [refreshControl beginRefreshing];
+    [self loadChartsTOC];
 }
 
 - (void) makeAirportChartsTOC:(WWRetriever*)retriever
@@ -70,6 +81,7 @@
     if (error != nil || tocString == nil)
     {
         WWLog("@Unable to find airport charts table of contents (%@)", error != nil ? [error description] : @"");
+        [refreshControl endRefreshing];
         return;
     }
 
@@ -87,6 +99,8 @@
 
         return [nameA compare:nameB];
     }];
+
+    [refreshControl endRefreshing];
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
