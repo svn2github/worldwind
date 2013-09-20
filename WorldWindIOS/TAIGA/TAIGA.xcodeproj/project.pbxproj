@@ -25,6 +25,7 @@
 		0BCBC77417CEA40A00709B37 /* alaska-72.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC77317CEA40A00709B37 /* alaska-72.png */; };
 		0BCBC77617CEA41600709B37 /* alaska-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BCBC77517CEA41600709B37 /* alaska-72@2x.png */; };
 		0BCBC77C17D559B000709B37 /* libWorldWind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC77B17D559B000709B37 /* libWorldWind.a */; };
+		1BF9A051EB31657B295B49E0 /* AppUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A6ED39263DD099FCBDBB /* AppUpdateController.m */; };
 		1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */; };
 		1BF9A0EA6022308AF1532A87 /* SettingsScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */; };
 		1BF9A127144D649B258E44DA /* 362-2up.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A16000CCA1E884CB5F52 /* 362-2up.png */; };
@@ -47,11 +48,13 @@
 		1BF9A799AFB440530DF25D61 /* ButtonWithImageAndText.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB53F3DED2F596E93D06 /* ButtonWithImageAndText.m */; };
 		1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B6E08BC5F07990932A /* ChartViewController.m */; };
 		1BF9A84E3E8C533F837D50BD /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC4A4A1BBB857690021 /* LayerListController.m */; };
+		1BF9A8B8719AA0C4643CD3F7 /* taigaversion.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAC6022550E9089A90D7 /* taigaversion.txt */; };
 		1BF9A8C3C5EB0CCBCDA3D050 /* 362-2up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */; };
 		1BF9A932AE2ADADCFF758F63 /* FlightPathsLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */; };
 		1BF9A98BDAED599CF626968F /* 25-weather.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A46DD2EE664E94DFCADD /* 25-weather.png */; };
 		1BF9A9D7FE17BA65363F9781 /* 19-gear.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */; };
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
+		1BF9AA6B9B93F9AF9645E4BC /* TAIGA.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0978809BD2E03DC1F7D /* TAIGA.m */; };
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
 		1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */; };
@@ -110,6 +113,7 @@
 		0BCBC77B17D559B000709B37 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
 		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
 		1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up@2x.png"; sourceTree = "<group>"; };
+		1BF9A0978809BD2E03DC1F7D /* TAIGA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAIGA.m; sourceTree = "<group>"; };
 		1BF9A09E964A408B9C257610 /* AppConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppConstants.h; sourceTree = "<group>"; };
 		1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats.png"; sourceTree = "<group>"; };
 		1BF9A0B6E08BC5F07990932A /* ChartViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartViewController.m; sourceTree = "<group>"; };
@@ -131,12 +135,15 @@
 		1BF9A46DD2EE664E94DFCADD /* 25-weather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather.png"; sourceTree = "<group>"; };
 		1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartViewController.h; sourceTree = "<group>"; };
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
+		1BF9A56534F8DA54C20C1831 /* TAIGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAIGA.h; sourceTree = "<group>"; };
 		1BF9A58F8364A0EC4B77CF54 /* 387-bookmarks@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "387-bookmarks@2x.png"; sourceTree = "<group>"; };
 		1BF9A591D1865106089F5EFE /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
 		1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
+		1BF9A5C3F478E682E9F71C42 /* AppUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppUpdateController.h; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A5E6C8DE07E25805376A /* Letter-P-blue-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Letter-P-blue-icon.png"; sourceTree = "<group>"; };
+		1BF9A6ED39263DD099FCBDBB /* AppUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppUpdateController.m; sourceTree = "<group>"; };
 		1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats@2x.png"; sourceTree = "<group>"; };
 		1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderableLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast.png"; sourceTree = "<group>"; };
@@ -153,6 +160,7 @@
 		1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe@2x.png"; sourceTree = "<group>"; };
 		1BF9AA9CB14DE75EA3D2BFB4 /* METARLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = METARLayer.h; sourceTree = "<group>"; };
 		1BF9AAB56C27605407593552 /* ImageLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageLayerDetailController.h; sourceTree = "<group>"; };
+		1BF9AAC6022550E9089A90D7 /* taigaversion.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = taigaversion.txt; sourceTree = SOURCE_ROOT; };
 		1BF9AAD0347D3D745E7E6B55 /* PIREPLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PIREPLayer.m; sourceTree = "<group>"; };
 		1BF9AAFDE565B336A0D805BC /* 314-move-point.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point.png"; sourceTree = "<group>"; };
 		1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathsLayer.m; sourceTree = "<group>"; };
@@ -291,6 +299,11 @@
 				1BF9A2AD71E8799F45361258 /* PIREPDataViewController.h */,
 				CC8CFECC51A637D34D3DF693 /* OpenWeatherMapLayer.h */,
 				CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */,
+				1BF9A0978809BD2E03DC1F7D /* TAIGA.m */,
+				1BF9A56534F8DA54C20C1831 /* TAIGA.h */,
+				1BF9A6ED39263DD099FCBDBB /* AppUpdateController.m */,
+				1BF9A5C3F478E682E9F71C42 /* AppUpdateController.h */,
+				1BF9AAC6022550E9089A90D7 /* taigaversion.txt */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -444,6 +457,7 @@
 				1BF9A4D6B72EE9D6D2BD4C64 /* 387-bookmarks@2x.png in Resources */,
 				1BF9AD74A19AED4BB0B7E873 /* weather32x32.png in Resources */,
 				1BF9A1C776672C2DB74E7EA1 /* Letter-P-blue-icon.png in Resources */,
+				1BF9A8B8719AA0C4643CD3F7 /* taigaversion.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -477,6 +491,8 @@
 				1BF9AF5AA03657A43015F7DF /* PIREPLayer.m in Sources */,
 				1BF9AD329CC41CAE7BD123D7 /* PIREPDataViewController.m in Sources */,
 				CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */,
+				1BF9AA6B9B93F9AF9645E4BC /* TAIGA.m in Sources */,
+				1BF9A051EB31657B295B49E0 /* AppUpdateController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

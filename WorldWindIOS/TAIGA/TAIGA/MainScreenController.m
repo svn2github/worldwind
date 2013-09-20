@@ -12,6 +12,8 @@
 #import "ChartsScreenController.h"
 #import "SettingsScreenController.h"
 #import "ButtonWithImageAndText.h"
+#import "TAIGA.h"
+#import "AppUpdateController.h"
 
 #define VIEW_TAG (100)
 
@@ -67,6 +69,8 @@
 - (void) viewDidLoad
 {
     [super viewDidLoad];
+
+    [[TAIGA appUpdateController] checkForUpdate:YES];
 }
 
 - (void) createToolbar
