@@ -32,6 +32,7 @@
     _imageView.autoresizesSubviews = YES;
     _imageView.backgroundColor = [UIColor whiteColor];
     _imageView.userInteractionEnabled = YES;
+    _imageView.contentMode = UIViewContentModeScaleAspectFit;
 
     UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, myFrame.size.width, myFrame.size.height)];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
