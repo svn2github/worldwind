@@ -29,6 +29,7 @@
 #import "PIREPLayer.h"
 #import "PIREPDataViewController.h"
 #import "OpenWeatherMapLayer.h"
+#import "WWNavigator.h"
 
 @implementation MovingMapViewController
 {
@@ -164,6 +165,9 @@
         NSLog(@"Unable to create a WorldWindView");
         return;
     }
+
+    WWPosition* position = [[WWPosition alloc] initWithDegreesLatitude:65 longitude:-150 altitude:50e3];
+    [[_wwv navigator] setToRegionWithCenter:position radius:800e3];
 
     //[_wwv setContentScaleFactor:[[UIScreen mainScreen] scale]]; // enable retina resolution
     [self.view addSubview:_wwv];
