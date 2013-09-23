@@ -534,6 +534,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/../WorldWind\"/**";
 				WRAPPER_EXTENSION = app;
@@ -551,6 +552,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/../WorldWind\"/**";
 				WRAPPER_EXTENSION = app;

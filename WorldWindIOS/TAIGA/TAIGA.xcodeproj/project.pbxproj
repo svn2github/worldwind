@@ -340,8 +340,6 @@
 				1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */,
 				1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */,
 				1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */,
-				1BF9AF16E4BA270C9EFAA579,
-				1BF9A6738EFF2FE1722B208F,
 				1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */,
 				1BF9A7A810EB11DB10D8780E /* 275-broadcast-noconnection.png */,
 				1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */,
@@ -441,7 +439,6 @@
 				1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */,
 				0BCBC77417CEA40A00709B37 /* alaska-72.png in Resources */,
 				0BCBC77617CEA41600709B37 /* alaska-72@2x.png in Resources */,
-				1BF9ADB07A145FE57CA067BF,
 				1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */,
 				1BF9ABFD294A9F311FB9E3C0 /* 275-broadcast-noconnection.png in Resources */,
 				1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */,
@@ -587,7 +584,9 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos7.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -603,7 +602,9 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos7.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

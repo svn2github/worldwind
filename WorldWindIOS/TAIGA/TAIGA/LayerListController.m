@@ -73,7 +73,7 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
-        [cell setAccessoryType:UITableViewCellAccessoryDetailDisclosureButton];
+        [cell setAccessoryType: UITableViewCellAccessoryDetailButton];
         [cell setShowsReorderControl:YES];
     }
 
