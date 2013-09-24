@@ -187,6 +187,7 @@
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
                                                          action:nil];
+    [connectivityButton setTintColor:[UIColor whiteColor]];
 
     flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"38-airplane" text:@"Flight Paths" size:size target:self action:@selector

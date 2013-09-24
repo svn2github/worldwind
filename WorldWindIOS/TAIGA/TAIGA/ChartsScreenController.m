@@ -83,6 +83,7 @@
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
                                                          action:nil];
+    [connectivityButton setTintColor:[UIColor whiteColor]];
 
     refreshButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"01-refresh" text:@"Refresh" size:size target:self action:@selector
