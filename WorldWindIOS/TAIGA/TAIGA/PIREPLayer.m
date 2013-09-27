@@ -99,20 +99,22 @@
 
 @implementation PIREPLayer
 {
-    NSMutableDictionary* currentPlacemark;
+    NSMutableDictionary* currentPlacemarkDict;
+    NSDictionary* currentAttributesDict;
     NSString* currentName;
     NSMutableString* currentString;
-    NSString* iconFilePath;
     NSMutableArray* placemarks;
 }
+
+// The schema for AircraftReport is here: http://weather.aero/schema/aircraftreport1_0.xsd
+// The attribute strings used below are taken from http://weather
+// .aero/tools/dataservices/textdataserver/dataproducts/view/product/aircraftreports/section/fields
 
 - (PIREPLayer*) init
 {
     self = [super init];
 
     [self setDisplayName:@"PIREPS"];
-
-    iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"PIREP_ICONS_Generic.png"];
 
     return self;
 }
@@ -146,12 +148,13 @@
 {
     if ([elementName isEqualToString:@"AircraftReport"])
     {
-        currentPlacemark = [[NSMutableDictionary alloc] init];
+        currentPlacemarkDict = [[NSMutableDictionary alloc] init];
     }
     else
     {
         currentName = elementName;
         currentString = [[NSMutableString alloc] init];
+        currentAttributesDict = attributeDict;
     }
 }
 
@@ -160,15 +163,28 @@
     if ([elementName isEqualToString:@"AircraftReport"])
     {
         [self addCurrentPlacemark];
-        currentPlacemark = nil;
+        currentPlacemarkDict = nil;
+    }
+    else if ([currentName isEqualToString:@"sky_condition"]
+            || [currentName isEqualToString:@"turbulence_condition"]
+            || [currentName isEqualToString:@"icing_condition"])
+    {
+        NSMutableArray* attrsArray = [currentPlacemarkDict objectForKey:currentName];
+        if (attrsArray == nil)
+        {
+            attrsArray = [[NSMutableArray alloc] init];
+            [currentPlacemarkDict setObject:attrsArray forKey:currentName];
+        }
+        [attrsArray addObject:currentAttributesDict];
     }
     else if (currentName != nil && currentString != nil)
     {
-        [currentPlacemark setObject:currentString forKey:currentName];
+        [currentPlacemarkDict setObject:currentString forKey:currentName];
     }
 
     currentName = nil;
     currentString = nil;
+    currentAttributesDict = nil;
 }
 
 - (void) parser:(NSXMLParser*)parser foundCharacters:(NSString*)string
@@ -209,16 +225,16 @@
     WWPosition* position = [self parseCoordinates];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
     [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [pointPlacemark setUserObject:currentPlacemark];
+    [pointPlacemark setUserObject:currentPlacemarkDict];
 
-    NSString* name = [currentPlacemark objectForKey:@"observation_time"];
+    NSString* name = [currentPlacemarkDict objectForKey:@"observation_time"];
     if (name != nil)
     {
         [pointPlacemark setDisplayName:name];
     }
 
     WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
-    [attrs setImagePath:iconFilePath];
+    [attrs setImagePath:[self determineIconFilePath:currentPlacemarkDict]];
     [pointPlacemark setAttributes:attrs];
 
     if (placemarks == nil)
@@ -230,13 +246,118 @@
 
 - (WWPosition*) parseCoordinates
 {
-    NSString* latString = [currentPlacemark objectForKey:@"latitude"];
-    NSString* lonString = [currentPlacemark objectForKey:@"longitude"];
+    NSString* latString = [currentPlacemarkDict objectForKey:@"latitude"];
+    NSString* lonString = [currentPlacemarkDict objectForKey:@"longitude"];
 
     double lat = [latString doubleValue];
     double lon = [lonString doubleValue];
 
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
+}
+
+- (NSString*)determineIconFilePath:(NSDictionary*)placemarkDict
+{
+    // The strings used below are taken from http://weather.aero/tools/dataservices/textdataserver/dataproducts/view/product/aircraftreports/section/fields
+
+    NSString* iconFile = @"PIREP_ICONS_Generic.png";
+    NSString* genericIconPath = [[[NSBundle mainBundle] resourcePath]
+            stringByAppendingPathComponent:iconFile];
+
+    NSDictionary* skyCondition = [placemarkDict objectForKey:@"sky_condition"];
+    NSDictionary* turbulenceCondition = [placemarkDict objectForKey:@"turbulence_condition"];
+    NSDictionary* icingCondition = [placemarkDict objectForKey:@"icing_condition"];
+
+    if (skyCondition != nil && turbulenceCondition == nil && icingCondition == nil)
+    {
+        NSArray* attrsArray = [placemarkDict objectForKey:@"sky_condition"];
+        if (attrsArray == nil || [attrsArray count] != 1)
+            return genericIconPath;
+
+        NSString* condition = [[attrsArray objectAtIndex:0] objectForKey:@"sky_cover"];
+        if (condition != nil)
+        {
+            if ([condition isEqualToString:@"UNKN"])
+                iconFile = @"PIREP_ICONS_0015_Layer-17.png";
+            else if ([condition isEqualToString:@"CLEAR"])
+                iconFile = @"PIREP_ICONS_0016_Layer-18.png";
+            else if ([condition isEqualToString:@"FEW"])
+                iconFile = @"PIREP_ICONS_0017_Layer-19.png";
+            else if ([condition isEqualToString:@"SCT"])
+                iconFile = @"PIREP_ICONS_0018_Layer-20.png";
+            else if ([condition isEqualToString:@"BKN"])
+                iconFile = @"PIREP_ICONS_0019_Layer-21.png";
+            else if ([condition isEqualToString:@"OVC"])
+                iconFile = @"PIREP_ICONS_0020_Layer-22.png";
+            else if ([condition isEqualToString:@"IMC"])
+                iconFile = @"PIREP_ICONS_0021_Layer-23.png";
+            // Missing icons for VMC, VFR, SKC, CAVOC, OVX, IFR
+        }
+    }
+    else if (turbulenceCondition != nil && skyCondition == nil && icingCondition != nil)
+    {
+        NSArray* attrsArray = [placemarkDict objectForKey:@"turbulence_condition"];
+        if (attrsArray == nil || [attrsArray count] != 1)
+            return genericIconPath;
+
+        NSString* condition = [[attrsArray objectAtIndex:0] objectForKey:@"turbulence_intensity"];
+        if (condition != nil)
+        {
+            if ([condition isEqualToString:@"NEG"])
+                iconFile = @"PIREP_ICONS_0000_Layer-2.png";
+            else if ([condition isEqualToString:@"SMTH-LGT"])
+                iconFile = @"PIREP_ICONS_0008_Layer-10.png";
+            else if ([condition isEqualToString:@"LGT"])
+                iconFile = @"PIREP_ICONS_0009_Layer-11.png";
+            else if ([condition isEqualToString:@"LGT-MOD"])
+                iconFile = @"PIREP_ICONS_0010_Layer-12.png";
+            else if ([condition isEqualToString:@"MOD"])
+                iconFile = @"PIREP_ICONS_0011_Layer-13.png";
+            else if ([condition isEqualToString:@"MOD-SEV"])
+                iconFile = @"PIREP_ICONS_0012_Layer-14.png";
+            else if ([condition isEqualToString:@"SEV"])
+                iconFile = @"PIREP_ICONS_0013_Layer-15.png";
+            else if ([condition isEqualToString:@"SEV-EXTM"])
+                iconFile = @"PIREP_ICONS_0014_Layer-16.png";
+            else if ([condition isEqualToString:@"EXTM"])
+                iconFile = @"PIREP_ICONS_0014_Layer-16.png"; // duplicates SEV-EXTM because correct icon undefined
+        }
+    }
+    else if (icingCondition != nil && skyCondition == nil && turbulenceCondition == nil)
+    {
+        NSArray* attrsArray = [placemarkDict objectForKey:@"icing_condition"];
+        if (attrsArray == nil || [attrsArray count] != 1)
+            return genericIconPath;
+
+        NSString* condition = [[attrsArray objectAtIndex:0] objectForKey:@"icing_intensity"];
+        if (condition != nil)
+        {
+            if ([condition isEqualToString:@"NEG"])
+                iconFile = @"PIREP_ICONS_0000_Layer-2.png";
+            else if ([condition isEqualToString:@"TRC"])
+                iconFile = @"PIREP_ICONS_0001_Layer-3.png";
+            else if ([condition isEqualToString:@"TRC-LGT"])
+                iconFile = @"PIREP_ICONS_0002_Layer-4.png";
+            else if ([condition isEqualToString:@"LGT"])
+                iconFile = @"PIREP_ICONS_0003_Layer-5.png";
+            else if ([condition isEqualToString:@"LGT-MOD"])
+                iconFile = @"PIREP_ICONS_0004_Layer-6.png";
+            else if ([condition isEqualToString:@"MOD"])
+                iconFile = @"PIREP_ICONS_0005_Layer-7.png";
+            else if ([condition isEqualToString:@"MOD-SEV"])
+                iconFile = @"PIREP_ICONS_0006_Layer-8.png";
+            else if ([condition isEqualToString:@"HVY"]) // duplicates EXTM because correct icon undefined
+                iconFile = @"PIREP_ICONS_0007_Layer-9.png";
+            else if ([condition isEqualToString:@"EXTM"])
+                iconFile = @"PIREP_ICONS_0007_Layer-9.png";
+            // Missing icons for NEGClr, HVY
+        }
+    }
+    else
+    {
+        return genericIconPath;
+    }
+
+    return [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:iconFile];
 }
 
 @end
