@@ -66,7 +66,7 @@
                                       withIntermediateDirectories:YES attributes:nil error:&error];
             if (error != nil)
             {
-                WWLog("@Error \"%@\" creating METAR cache directory %@", [error description], cachePath);
+                WWLog("@Error \"%@\" creating PIREP cache directory %@", [error description], cachePath);
             }
             else
             {
@@ -112,7 +112,7 @@
 
     [self setDisplayName:@"PIREPS"];
 
-    iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Letter-P-blue-icon.png"];
+    iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"PIREP_ICONS_Generic.png"];
 
     return self;
 }
