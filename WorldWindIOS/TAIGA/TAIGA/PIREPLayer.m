@@ -333,6 +333,8 @@
         {
             if ([condition isEqualToString:@"NEG"])
                 iconFile = @"PIREP_ICONS_0000_Layer-2.png";
+            if ([condition isEqualToString:@"NEGClr"])
+                iconFile = @"PIREP_ICONS_0000_Layer-2.png";
             else if ([condition isEqualToString:@"TRC"])
                 iconFile = @"PIREP_ICONS_0001_Layer-3.png";
             else if ([condition isEqualToString:@"TRC-LGT"])
@@ -349,7 +351,7 @@
                 iconFile = @"PIREP_ICONS_0007_Layer-9.png";
             else if ([condition isEqualToString:@"EXTM"])
                 iconFile = @"PIREP_ICONS_0007_Layer-9.png";
-            // Missing icons for NEGClr, HVY
+            // Missing icons for HVY
         }
     }
     else
