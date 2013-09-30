@@ -43,11 +43,12 @@
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.view.autoresizesSubviews = YES;
 
-    [self createToolbar];
+    [self createModeBar];
 
     CGRect frame = [self.view frame];
     frame.origin.x = 0;
-    frame.size.height -= TAIGA_TOOLBAR_HEIGHT;
+    frame.origin.y = 20;
+    frame.size.height -= TAIGA_TOOLBAR_HEIGHT + 20;
 
     movingMapScreenController = [[MovingMapViewController alloc] initWithFrame:frame];
     [[movingMapScreenController view] setTag:VIEW_TAG];
@@ -70,10 +71,17 @@
 {
     [super viewDidLoad];
 
+    [self setNeedsStatusBarAppearanceUpdate];
+
     [[TAIGA appUpdateController] checkForUpdate:YES];
 }
 
-- (void) createToolbar
+- (UIStatusBarStyle) preferredStatusBarStyle
+{
+    return UIStatusBarStyleLightContent;
+}
+
+- (void) createModeBar
 {
     modeBar = [[UIToolbar alloc] init];
     modeBar.frame = CGRectMake(0, self.view.frame.size.height - TAIGA_TOOLBAR_HEIGHT, self.view.frame.size.width, TAIGA_TOOLBAR_HEIGHT);

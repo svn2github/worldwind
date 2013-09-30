@@ -166,7 +166,8 @@
 {
     CGFloat wwvWidth = self.view.bounds.size.width;
     CGFloat wwvHeight = self.view.bounds.size.height - TAIGA_TOOLBAR_HEIGHT;
-    CGFloat wwvOriginY = self.view.bounds.origin.y + TAIGA_TOOLBAR_HEIGHT;
+//    CGFloat wwvOriginY = self.view.bounds.origin.y + TAIGA_TOOLBAR_HEIGHT;
+    CGFloat wwvOriginY = TAIGA_TOOLBAR_HEIGHT;
 
     _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, wwvOriginY, wwvWidth, wwvHeight)];
     if (_wwv == nil)

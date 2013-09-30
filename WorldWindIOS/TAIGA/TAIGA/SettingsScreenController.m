@@ -25,10 +25,11 @@
 - (void) loadView
 {
     self.view = [[UIView alloc] initWithFrame:myFrame];
-    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.view.autoresizesSubviews = YES;
 
-    UITableView* tableView = [[UITableView alloc] initWithFrame:myFrame style:UITableViewStyleGrouped];
+    CGRect tableFrame = CGRectMake(0, 0, myFrame.size.width, myFrame.size.height);
+    UITableView* tableView = [[UITableView alloc] initWithFrame:tableFrame style:UITableViewStyleGrouped];
     tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     tableView.delegate = self;
     tableView.dataSource = self;
