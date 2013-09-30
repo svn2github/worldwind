@@ -9,8 +9,8 @@
 
 @interface Settings : NSObject
 
-+ (void) setFloat:(NSString*)name value:(float)value;
-+ (float) getFloat:(NSString*)name defaultValue:(float)defaultValue;
-+ (float) getFloat:(NSString*)name;
++ (void) setFloat:(float)value forName:(NSString*)name;
++ (float) getFloatForName:(NSString*)name defaultValue:(float)defaultValue;
++ (float) getFloatForName:(NSString*)name;
 
 @end

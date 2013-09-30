@@ -90,7 +90,7 @@
     NSString* settingName = [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity",
                                                              [_layer displayName]];
 
-    [Settings setFloat:settingName value:[_layer opacity]];
+    [Settings setFloat:[_layer opacity] forName:settingName];
 
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];

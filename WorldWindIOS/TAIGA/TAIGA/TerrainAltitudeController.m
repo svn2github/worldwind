@@ -107,7 +107,7 @@
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
-    [Settings setFloat:TAIGA_SHADED_ELEVATION_OPACITY value:[opacitySlider value]];
+    [Settings setFloat:[opacitySlider value] forName:TAIGA_SHADED_ELEVATION_OPACITY];
 
     [[opacityCell readout] setText:[self opacityString]];
 
@@ -118,7 +118,7 @@
 {
     float offsetInMeters = [slider value] * MAX_WARNING_OFFSET_IN_FEET / TAIGA_METERS_TO_FEET;
     [_layer setYellowThreshold:[_layer redThreshold] - offsetInMeters];
-    [Settings setFloat:TAIGA_SHADED_ELEVATION_OFFSET value:offsetInMeters];
+    [Settings setFloat:offsetInMeters forName:TAIGA_SHADED_ELEVATION_OFFSET];
     [[warningOffsetCell readout] setText:[self warningOffsetString]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];

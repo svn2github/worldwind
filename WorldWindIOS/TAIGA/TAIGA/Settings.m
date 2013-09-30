@@ -10,7 +10,7 @@
 
 @implementation Settings
 
-+ (void) setFloat:(NSString*)name value:(float)value
++ (void) setFloat:(float)value forName:(NSString*)name
 {
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithFloat:value] forKey:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -18,7 +18,7 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SETTING_CHANGED object:name];
 }
 
-+ (float) getFloat:(NSString*)name defaultValue:(float)defaultValue
++ (float) getFloatForName:(NSString*)name defaultValue:(float)defaultValue
 {
     NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
     if (value != nil)
@@ -29,7 +29,7 @@
     return defaultValue;
 }
 
-+ (float) getFloat:(NSString*)name
++ (float) getFloatForName:(NSString*)name
 {
     NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
 

@@ -152,7 +152,7 @@
     {
         NSString* settingName = [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity",
                                                                  [wwLayer displayName]];
-        float opacity = [Settings getFloat:settingName defaultValue:[wwLayer opacity]];
+        float opacity = [Settings getFloatForName:settingName defaultValue:[wwLayer opacity]];
         [wwLayer setOpacity:opacity];
     }
 }
@@ -259,17 +259,17 @@
     elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
     [elevationShadingLayer setDisplayName:@"Terrain Altitude"];
 
-    float threshold = [Settings getFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
+    float threshold = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
     [elevationShadingLayer setRedThreshold:threshold];
-    [Settings setFloat:TAIGA_SHADED_ELEVATION_THRESHOLD_RED value:threshold];
+    [Settings setFloat:threshold forName:TAIGA_SHADED_ELEVATION_THRESHOLD_RED];
 
-    float offset = [Settings getFloat:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
+    float offset = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
     [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
-    [Settings setFloat:TAIGA_SHADED_ELEVATION_OFFSET value:offset];
+    [Settings setFloat:threshold forName:TAIGA_SHADED_ELEVATION_OFFSET];
 
-    float opacity = [Settings getFloat:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
+    float opacity = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
     [elevationShadingLayer setOpacity:opacity];
-    [Settings setFloat:TAIGA_SHADED_ELEVATION_OPACITY value:opacity];
+    [Settings setFloat:opacity forName:TAIGA_SHADED_ELEVATION_OPACITY];
 }
 
 - (void) handleButtonTap
