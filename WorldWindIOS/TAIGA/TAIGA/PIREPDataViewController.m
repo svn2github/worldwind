@@ -100,7 +100,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     [names removeAllObjects];
     [values removeAllObjects];
 
-    for (NSUInteger i = 0; i < [_entries count]; i++)
+    for (NSUInteger i = 0; i < [TAIGA_PIREP_DISPLAY_FIELDS count]; i++)
     {
         NSString* field = [TAIGA_PIREP_DISPLAY_FIELDS objectAtIndex:i];
 

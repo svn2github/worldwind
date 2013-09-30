@@ -162,7 +162,11 @@
 {
     if ([elementName isEqualToString:@"AircraftReport"])
     {
-        [self addCurrentPlacemark];
+        // Filter out report types other than PIREPs.
+        NSString* reportType = [currentPlacemarkDict objectForKey:@"report_type"];
+        if (reportType != nil && [reportType isEqualToString:@"PIREP"])
+            [self addCurrentPlacemark];
+
         currentPlacemarkDict = nil;
     }
     else if ([currentName isEqualToString:@"sky_condition"]
@@ -255,7 +259,7 @@
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
 }
 
-- (NSString*)determineIconFilePath:(NSDictionary*)placemarkDict
+- (NSString*) determineIconFilePath:(NSDictionary*)placemarkDict
 {
     // The strings used below are taken from http://weather.aero/tools/dataservices/textdataserver/dataproducts/view/product/aircraftreports/section/fields
 

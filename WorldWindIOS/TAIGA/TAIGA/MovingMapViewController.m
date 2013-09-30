@@ -265,7 +265,7 @@
 
     float offset = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
     [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
-    [Settings setFloat:threshold forName:TAIGA_SHADED_ELEVATION_OFFSET];
+    [Settings setFloat:offset forName:TAIGA_SHADED_ELEVATION_OFFSET];
 
     float opacity = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
     [elevationShadingLayer setOpacity:opacity];
