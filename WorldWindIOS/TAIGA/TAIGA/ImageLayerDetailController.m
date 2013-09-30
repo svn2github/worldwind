@@ -9,6 +9,7 @@
 #import "ImageLayerDetailController.h"
 #import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "Settings.h"
 
 @implementation ImageLayerDetailController
 
@@ -85,6 +86,11 @@
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
+
+    NSString* settingName = [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity",
+                                                             [_layer displayName]];
+
+    [Settings setFloat:settingName value:[_layer opacity]];
 
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];

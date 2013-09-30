@@ -146,6 +146,15 @@
     [tapGestureRecognizer setNumberOfTapsRequired:1];
     [tapGestureRecognizer setNumberOfTouchesRequired:1];
     [_wwv addGestureRecognizer:tapGestureRecognizer];
+
+    // Set any persisted layer opacity.
+    for (WWLayer* wwLayer in [[[_wwv sceneController] layers] allLayers])
+    {
+        NSString* settingName = [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity",
+                                                                 [wwLayer displayName]];
+        float opacity = [Settings getFloat:settingName defaultValue:[wwLayer opacity]];
+        [wwLayer setOpacity:opacity];
+    }
 }
 
 - (void) viewWillAppear:(BOOL)animated
