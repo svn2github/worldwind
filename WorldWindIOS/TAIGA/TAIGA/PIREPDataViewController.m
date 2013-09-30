@@ -80,7 +80,6 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     static NSString* cellIdentifier = @"cell";
-    NSString* entry;
 
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil)
