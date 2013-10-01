@@ -15,7 +15,7 @@
     self = [super init];
 
     CGSize size = CGSizeMake(320, 320);
-    [self setContentSizeForViewInPopover:size];
+    [self setPreferredContentSize:size];
 
     return self;
 }

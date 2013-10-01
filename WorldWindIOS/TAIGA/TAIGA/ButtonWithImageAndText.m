@@ -19,7 +19,9 @@
     [self setTitle:text forState:UIControlStateNormal];
     [self.titleLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:18]];
     [self.titleLabel setShadowOffset:CGSizeMake(0, -1)];
-    CGFloat txtMargin = 0.5 * (self.frame.size.width - [text sizeWithFont:[[self titleLabel] font]].width);
+    NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
+    [attrDict setObject:[[self titleLabel] font] forKey:NSFontAttributeName];
+    CGFloat txtMargin = 0.5 * (self.frame.size.width - [text sizeWithAttributes:attrDict].width);
     [self setTitleEdgeInsets:UIEdgeInsetsMake(0, -txtMargin, -30, 0)];
 
     UIImage* img = [UIImage imageNamed:imageName];

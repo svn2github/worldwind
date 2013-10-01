@@ -27,7 +27,7 @@
     _wwv = wwv;
 
     [[self navigationItem] setTitle:@"Overlays"];
-    [self setContentSizeForViewInPopover:CGSizeMake(320, 400)];
+    [self setPreferredContentSize:CGSizeMake(320, 400)];
 
     // Set up to handle layer list changes.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -41,7 +41,7 @@
 - (void) navigationController:(UINavigationController*)navigationController willShowViewController:(UIViewController*)viewController animated:(BOOL)animated
 {
     // This keeps all the nested popover controllers the same size as this top-level controller.
-    viewController.contentSizeForViewInPopover = navigationController.topViewController.view.frame.size;
+    viewController.preferredContentSize = navigationController.topViewController.view.frame.size;
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView

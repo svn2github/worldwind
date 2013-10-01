@@ -20,7 +20,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     CGSize size = CGSizeMake(320, 380);
-    [self setContentSizeForViewInPopover:size];
+    [self setPreferredContentSize:size];
 
     if (TAIGA_PIREP_DISPLAY_FIELDS == nil)
         [self initializeDisplayFieldsArray];
