@@ -10,7 +10,7 @@
 
 @interface METARLayer : WWRenderableLayer <NSXMLParserDelegate>
 {
-    NSMutableDictionary* currentPlacemark;
+    NSMutableDictionary* currentPlacemarkDict;
     NSString* currentName;
     NSMutableString* currentString;
     NSString* iconFilePath;

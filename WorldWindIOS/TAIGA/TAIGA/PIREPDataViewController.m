@@ -31,6 +31,9 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     return self;
 }
 
+// See http://adds.rap.ucar.edu/tools/dataservices/textdataserver/dataproducts/view/product/aircraftreports/section/fields
+// for AircraftReport field descriptions.
+
 - (void) initializeDisplayFieldsArray
 {
     // This array defines the order in which PIREPs are displayed within the table.

@@ -8,6 +8,9 @@
 #import "METARDataViewController.h"
 #import "WWLog.h"
 
+// See http://weather.aero/tools/dataservices/textdataserver/dataproducts/view/product/metars/section/fields for
+// METAR field descriptions.
+
 @implementation METARDataViewController
 
 - (METARDataViewController*) init
@@ -67,8 +70,13 @@
             NSArray* skyConditions = [_entries objectForKey:@"sky_conditions"];
             if (skyConditions != nil && [skyConditions count] > 0)
             {
+                NSDictionary* conditionDict = [skyConditions objectAtIndex:(NSUInteger)[indexPath row]];
+                NSMutableString* cover = [[NSMutableString alloc] initWithString:[conditionDict objectForKey:@"sky_cover"]];
+                NSString* cloud_bases = [conditionDict objectForKey:@"cloud_base_ft_agl"];
+                if (cloud_bases != nil)
+                    [cover appendFormat:@" @ %@ meters AGL", cloud_bases];
                 [[cell textLabel] setText:nil];
-                [[cell detailTextLabel] setText:[skyConditions objectAtIndex:(NSUInteger)[indexPath row]]];
+                [[cell detailTextLabel] setText:cover];
                 return cell;
             }
             else
@@ -128,6 +136,24 @@
 
             case 6:
             {
+                [[cell textLabel] setText:@"Wind Speed"];
+                NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"wind_speed_kt"]];
+                [detail appendString:@" kt"];
+                [[cell detailTextLabel] setText:detail];
+                break;
+            }
+
+            case 7:
+            {
+                [[cell textLabel] setText:@"Wind Dir"];
+                NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"wind_dir_degrees"]];
+                [detail appendString:@" degrees"];
+                [[cell detailTextLabel] setText:detail];
+                break;
+            }
+
+            case 8:
+            {
                 [[cell textLabel] setText:@"Elevation"];
                 NSMutableString* detail = [[NSMutableString alloc] initWithString:[_entries objectForKey:@"elevation_m"]];
                 [detail appendString:@" meters"];
@@ -135,22 +161,22 @@
                 break;
             }
 
-            case 7:
+            case 9:
                 [[cell textLabel] setText:@"Latitude"];
                 [[cell detailTextLabel] setText:[_entries objectForKey:@"latitude"]];
                 break;
 
-            case 8:
+            case 10:
                 [[cell textLabel] setText:@"Longitude"];
                 [[cell detailTextLabel] setText:[_entries objectForKey:@"longitude"]];
                 break;
 
-            case 9:
+            case 11:
                 [[cell textLabel] setText:@"Category"];
                 [[cell detailTextLabel] setText:[_entries objectForKey:@"flight_category"]];
                 break;
 
-            case 10:
+            case 12:
                 [[cell textLabel] setText:@"Type"];
                 [[cell detailTextLabel] setText:[_entries objectForKey:@"metar_type"]];
                 break;

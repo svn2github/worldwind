@@ -139,7 +139,7 @@
 {
     if ([elementName isEqualToString:@"METAR"])
     {
-        currentPlacemark = [[NSMutableDictionary alloc] init];
+        currentPlacemarkDict = [[NSMutableDictionary alloc] init];
     }
     else if ([elementName isEqualToString:@"sky_condition"])
     {
@@ -150,11 +150,11 @@
         if (cloud_bases != nil)
             [cover appendFormat:@" @ %@ meters AGL", cloud_bases];
 
-        NSMutableArray* skyCovers = [currentPlacemark objectForKey:@"sky_conditions"];
+        NSMutableArray* skyCovers = [currentPlacemarkDict objectForKey:@"sky_conditions"];
         if (skyCovers == nil)
         {
             skyCovers = [[NSMutableArray alloc] initWithCapacity:1];
-            [currentPlacemark setObject:skyCovers forKey:@"sky_conditions"];
+            [currentPlacemarkDict setObject:skyCovers forKey:@"sky_conditions"];
         }
 
         [skyCovers addObject:cover];
@@ -171,11 +171,11 @@
     if ([elementName isEqualToString:@"METAR"])
     {
         [self addCurrentPlacemark];
-        currentPlacemark = nil;
+        currentPlacemarkDict = nil;
     }
     else if (currentName != nil && currentString != nil)
     {
-        [currentPlacemark setObject:currentString forKey:currentName];
+        [currentPlacemarkDict setObject:currentString forKey:currentName];
     }
 
     currentName = nil;
@@ -220,9 +220,9 @@
     WWPosition* position = [self parseCoordinates];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
     [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [pointPlacemark setUserObject:currentPlacemark];
+    [pointPlacemark setUserObject:currentPlacemarkDict];
 
-    NSString* name = [currentPlacemark objectForKey:@"station_id"];
+    NSString* name = [currentPlacemarkDict objectForKey:@"station_id"];
     if (name != nil)
     {
         [pointPlacemark setDisplayName:name];
@@ -241,8 +241,8 @@
 
 - (WWPosition*) parseCoordinates
 {
-    NSString* latString = [currentPlacemark objectForKey:@"latitude"];
-    NSString* lonString = [currentPlacemark objectForKey:@"longitude"];
+    NSString* latString = [currentPlacemarkDict objectForKey:@"latitude"];
+    NSString* lonString = [currentPlacemarkDict objectForKey:@"longitude"];
 
     double lat = [latString doubleValue];
     double lon = [lonString doubleValue];

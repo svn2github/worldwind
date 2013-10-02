@@ -13,6 +13,7 @@
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
 #import "WorldWind/WorldWind.h"
+#import "MetarIconGenerator.h"
 
 @interface METARLayerRetriever : NSOperation
 @end
@@ -99,10 +100,9 @@
 
 @implementation METARLayer
 {
-    NSMutableDictionary* currentPlacemark;
+    NSMutableDictionary* currentPlacemarkDict;
     NSString* currentName;
     NSMutableString* currentString;
-    NSString* iconFilePath;
     NSMutableArray* placemarks;
 }
 
@@ -111,8 +111,6 @@
     self = [super init];
 
     [self setDisplayName:@"METAR Weather"];
-
-    iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
 
     return self;
 }
@@ -130,7 +128,8 @@
 - (void) refreshData
 {
     // Retrieve the data on a separate thread because it takes a while to download and parse.
-    NSString* urlString = @"http://weather.aero/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&stationString=PA*&hoursBeforeNow=1";
+    NSString* urlString = @"http://weather.aero/dataserver_current/httpparam?dataSource=metars&requestType=retrieve"
+            "&format=xml&stationString=PA*&hoursBeforeNow=1&mostRecentForEachStation=postfilter";
     METARLayerRetriever* retriever = [[METARLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
 }
@@ -144,25 +143,31 @@
 {
     if ([elementName isEqualToString:@"METAR"])
     {
-        currentPlacemark = [[NSMutableDictionary alloc] init];
+        currentPlacemarkDict = [[NSMutableDictionary alloc] init];
     }
     else if ([elementName isEqualToString:@"sky_condition"])
     {
-        // There can be multiple sky_condition elements, so capture them in an array.
+        // There can be multiple sky_condition elements, so capture them in an array of dictionaries.
+        NSMutableDictionary* conditionDict = [[NSMutableDictionary alloc] init];
 
-        NSMutableString* cover = [[NSMutableString alloc] initWithString:[attributeDict objectForKey:@"sky_cover"]];
-        NSString* cloud_bases = [attributeDict objectForKey:@"cloud_base_ft_agl"];
-        if (cloud_bases != nil)
-            [cover appendFormat:@" @ %@ meters AGL", cloud_bases];
+        NSString* cover = [attributeDict objectForKey:@"sky_cover"];
+        if (cover != nil)
+            [conditionDict setObject:cover forKey:@"sky_cover"];
+        else
+            return;
 
-        NSMutableArray* skyCovers = [currentPlacemark objectForKey:@"sky_conditions"];
+        NSString* cloudBase = [attributeDict objectForKey:@"cloud_base_ft_agl"];
+        if (cloudBase != nil)
+            [conditionDict setObject:cloudBase forKey:@"cloud_base_ft_agl"];
+
+        NSMutableArray* skyCovers = [currentPlacemarkDict objectForKey:@"sky_conditions"];
         if (skyCovers == nil)
         {
             skyCovers = [[NSMutableArray alloc] initWithCapacity:1];
-            [currentPlacemark setObject:skyCovers forKey:@"sky_conditions"];
+            [currentPlacemarkDict setObject:skyCovers forKey:@"sky_conditions"];
         }
 
-        [skyCovers addObject:cover];
+        [skyCovers addObject:conditionDict];
     }
     else
     {
@@ -176,11 +181,11 @@
     if ([elementName isEqualToString:@"METAR"])
     {
         [self addCurrentPlacemark];
-        currentPlacemark = nil;
+        currentPlacemarkDict = nil;
     }
     else if (currentName != nil && currentString != nil)
     {
-        [currentPlacemark setObject:currentString forKey:currentName];
+        [currentPlacemarkDict setObject:currentString forKey:currentName];
     }
 
     currentName = nil;
@@ -225,16 +230,21 @@
     WWPosition* position = [self parseCoordinates];
     WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
     [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [pointPlacemark setUserObject:currentPlacemark];
+    [pointPlacemark setUserObject:currentPlacemarkDict];
 
-    NSString* name = [currentPlacemark objectForKey:@"station_id"];
+    NSString* name = [currentPlacemarkDict objectForKey:@"station_id"];
     if (name != nil)
     {
         [pointPlacemark setDisplayName:name];
     }
 
+    NSString* iconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict];
+    if (iconFilePath == nil) // in case something goes wrong
+        iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
+
     WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
     [attrs setImagePath:iconFilePath];
+    [attrs setImageScale:0.5];
     [pointPlacemark setAttributes:attrs];
 
     if (placemarks == nil)
@@ -246,8 +256,8 @@
 
 - (WWPosition*) parseCoordinates
 {
-    NSString* latString = [currentPlacemark objectForKey:@"latitude"];
-    NSString* lonString = [currentPlacemark objectForKey:@"longitude"];
+    NSString* latString = [currentPlacemarkDict objectForKey:@"latitude"];
+    NSString* lonString = [currentPlacemarkDict objectForKey:@"longitude"];
 
     double lat = [latString doubleValue];
     double lon = [lonString doubleValue];
