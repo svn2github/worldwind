@@ -15,28 +15,12 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     NSMutableArray* values;
 }
 
-- (PIREPDataViewController*) init
++ (void) initialize
 {
-    self = [super initWithStyle:UITableViewStyleGrouped];
-
-    CGSize size = CGSizeMake(320, 380);
-    [self setPreferredContentSize:size];
-
-    if (TAIGA_PIREP_DISPLAY_FIELDS == nil)
-        [self initializeDisplayFieldsArray];
-
-    names = [[NSMutableArray alloc] init];
-    values = [[NSMutableArray alloc] init];
-
-    return self;
-}
-
 // See http://adds.rap.ucar.edu/tools/dataservices/textdataserver/dataproducts/view/product/aircraftreports/section/fields
 // for AircraftReport field descriptions.
 
-- (void) initializeDisplayFieldsArray
-{
-    // This array defines the order in which PIREPs are displayed within the table.
+    // The order here determines the order in which the fields are displayed in the table.
     TAIGA_PIREP_DISPLAY_FIELDS = [NSArray arrayWithObjects:
             @"receipt_time",
             @"observation_time",
@@ -57,6 +41,20 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
             nil
     ];
 }
+
+- (PIREPDataViewController*) init
+{
+    self = [super initWithStyle:UITableViewStyleGrouped];
+
+    CGSize size = CGSizeMake(320, 380);
+    [self setPreferredContentSize:size];
+
+    names = [[NSMutableArray alloc] init];
+    values = [[NSMutableArray alloc] init];
+
+    return self;
+}
+
 
 - (void) setEntries:(NSDictionary*)entries
 {
