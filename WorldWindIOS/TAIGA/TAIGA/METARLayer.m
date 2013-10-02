@@ -103,7 +103,6 @@
     NSMutableDictionary* currentPlacemarkDict;
     NSString* currentName;
     NSMutableString* currentString;
-    NSMutableArray* placemarks;
 }
 
 - (METARLayer*) init
@@ -200,31 +199,6 @@
     }
 }
 
-- (void) parserDidEndDocument:(NSXMLParser*)parser
-{
-    [self performSelectorOnMainThread:@selector(addPlacemarksOnMainThread:)
-                           withObject:nil
-                        waitUntilDone:NO];
-}
-
-- (void) addPlacemarksOnMainThread:(id)object
-{
-    @try
-    {
-        [self addRenderables:placemarks];
-
-        placemarks = nil; // placemark list is needed only during parsing
-
-        // Redraw in case the layer was enabled before all the placemarks were loaded.
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
-    }
-    @catch (NSException* exception)
-    {
-        WWLogE(@"Adding METAR data to layer", exception);
-    }
-}
-
 - (void) addCurrentPlacemark
 {
     WWPosition* position = [self parseCoordinates];
@@ -247,11 +221,14 @@
     [attrs setImageScale:0.5];
     [pointPlacemark setAttributes:attrs];
 
-    if (placemarks == nil)
-    {
-        placemarks = [[NSMutableArray alloc] init];
-    }
-    [placemarks addObject:pointPlacemark];
+    [self performSelectorOnMainThread:@selector(addPlacemarkOnMainThread:) withObject:pointPlacemark waitUntilDone:NO];
+}
+
+- (void) addPlacemarkOnMainThread:(WWPointPlacemark*)placemark
+{
+    [self addRenderable:placemark];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (WWPosition*) parseCoordinates
