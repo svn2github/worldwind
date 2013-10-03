@@ -226,7 +226,7 @@ static UIColor* pinkColor;
 {
     NSString* flightCategory = [metarDict objectForKey:@"flight_category"];
     if (flightCategory == nil)
-        return [UIColor redColor]; // TODO: Is this the correct default?
+        return [UIColor redColor]; // should not occur because all possible values are accounted for below
 
     if ([flightCategory isEqualToString:@"VFR"])
         return [UIColor blueColor];
@@ -237,7 +237,7 @@ static UIColor* pinkColor;
     else if ([flightCategory isEqualToString:@"LIFR"])
         return pinkColor;
 
-    return [UIColor redColor]; // TODO: Is this the correct default?
+    return [UIColor redColor]; // should not occur because all possible values are accounted for above
 }
 
 + (UIImage*) createWindBarbImage:(NSDictionary*)metarDict
