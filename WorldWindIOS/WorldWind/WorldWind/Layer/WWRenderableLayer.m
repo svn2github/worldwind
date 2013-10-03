@@ -60,6 +60,11 @@
     [_renderables removeObject:renderable];
 }
 
+- (void) removeAllRenderables
+{
+    [_renderables removeAllObjects];
+}
+
 - (void) setOpacity:(float)opacity
 {
     [super setOpacity:opacity];

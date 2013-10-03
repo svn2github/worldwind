@@ -17,7 +17,7 @@
 /// @name Attributes
 
 /// The associated layer.
-@property (readonly, nonatomic, weak) WWRenderableLayer* layer;
+@property(readonly, nonatomic, weak) WWRenderableLayer* layer;
 
 /**
 * Initialize this instance for a specified layer.
@@ -26,7 +26,7 @@
 *
 * @exception NSInvalidArgumentException If the specified layer is nil.
 */
-- (RenderableLayerDetailController*) initWithLayer:(WWRenderableLayer*)layer;
+- (RenderableLayerDetailController*) initWithLayer:(WWRenderableLayer*)layer refreshButtonEnabled:(BOOL)refreshButtonEnabled;
 
 /**
 * Called by the opacity slider when the user changes the opacity.

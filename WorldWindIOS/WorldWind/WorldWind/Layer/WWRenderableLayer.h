@@ -62,4 +62,9 @@
 */
 - (void) removeRenderable:(id <WWRenderable>)renderable;
 
+/**
+* Removes all renderables from this layer.
+*/
+- (void) removeAllRenderables;
+
 @end

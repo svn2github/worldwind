@@ -111,6 +111,11 @@
 
     [self setDisplayName:@"METAR Weather"];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:WW_REFRESH
+                                               object:self];
+
     return self;
 }
 
@@ -118,7 +123,8 @@
 {
     if (enabled)
     {
-        [self refreshData];
+        if ([[self renderables] count] == 0)
+            [self refreshData];
     }
 
     [super setEnabled:enabled];
@@ -126,11 +132,21 @@
 
 - (void) refreshData
 {
+    [self removeAllRenderables];
+
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://weather.aero/dataserver_current/httpparam?dataSource=metars&requestType=retrieve"
             "&format=xml&stationString=PA*&hoursBeforeNow=1&mostRecentForEachStation=postfilter";
     METARLayerRetriever* retriever = [[METARLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
+}
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    {
+        [self refreshData];
+    }
 }
 
 - (void) parser:(NSXMLParser*)parser parseErrorOccurred:(NSError*)parseError
@@ -197,6 +213,11 @@
     {
         [currentString appendString:string];
     }
+}
+
+- (void) parserDidEndDocument:(NSXMLParser*)parser
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH_COMPLETE object:self];
 }
 
 - (void) addCurrentPlacemark

@@ -17,6 +17,8 @@
 #import "WWElevationShadingLayer.h"
 #import "TerrainAltitudeController.h"
 #import "AppConstants.h"
+#import "METARLayer.h"
+#import "PIREPLayer.h"
 
 @implementation LayerListController
 
@@ -100,8 +102,10 @@
     }
     else if ([layer isKindOfClass:[WWRenderableLayer class]])
     {
+        BOOL showRefreshButton = [layer isKindOfClass:[METARLayer class]] || [layer isKindOfClass:[PIREPLayer class]];
         RenderableLayerDetailController* detailController =
-                [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer];
+                [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer
+                                                  refreshButtonEnabled:showRefreshButton];
         [detailController setTitle:[layer displayName]];
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];

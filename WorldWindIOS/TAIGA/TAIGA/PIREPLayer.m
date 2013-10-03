@@ -116,6 +116,11 @@
 
     [self setDisplayName:@"PIREPS"];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:WW_REFRESH
+                                               object:self];
+
     return self;
 }
 
@@ -123,7 +128,8 @@
 {
     if (enabled)
     {
-        [self refreshData];
+        if ([[self renderables] count] == 0)
+            [self refreshData];
     }
 
     [super setEnabled:enabled];
@@ -131,12 +137,22 @@
 
 - (void) refreshData
 {
+    [self removeAllRenderables];
+
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://www.aviationweather"
             ".gov/adds/dataserver_current/httpparam?dataSource=aircraftreports&requestType=retrieve&format=xml&minLat"
             "=52&minLon=-170&maxLat=72&maxLon=-130&hoursBeforeNow=3&minAltitudeFt=0&maxAltitudeFt=15000";
     PIREPLayerRetriever* retriever = [[PIREPLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
+}
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    {
+        [self refreshData];
+    }
 }
 
 - (void) parser:(NSXMLParser*)parser parseErrorOccurred:(NSError*)parseError
@@ -213,6 +229,8 @@
         [self addRenderables:placemarks];
 
         placemarks = nil; // placemark list is needed only during parsing
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH_COMPLETE object:self];
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
         NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];

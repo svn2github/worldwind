@@ -11,8 +11,11 @@
 #import "RenderableLayerDetailController.h"
 
 @implementation RenderableLayerDetailController
+{
+    UIBarButtonItem* refreshButton;
+}
 
-- (RenderableLayerDetailController*) initWithLayer:(WWRenderableLayer*)layer
+- (RenderableLayerDetailController*) initWithLayer:(WWRenderableLayer*)layer refreshButtonEnabled:(BOOL)refreshButtonEnabled
 {
     if (layer == nil)
     {
@@ -22,6 +25,19 @@
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     _layer = layer;
+
+    if (refreshButtonEnabled)
+    {
+        refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"01-refresh"]
+                                                         style:UIBarButtonItemStylePlain
+                                                        target:self action:@selector(handleRefreshButtonTap)];
+        [[self navigationItem] setRightBarButtonItem:refreshButton];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleRefreshNotification:)
+                                                     name:WW_REFRESH_COMPLETE
+                                                   object:_layer];
+    }
 
     return self;
 }
@@ -63,23 +79,27 @@
 
     if ([indexPath section] == 0)
     {
-        static NSString* layerControlCellIdentifier = @"LayerControlCellIdentifier";
+        static NSString* layerControlOpacityCellIdentifier = @"LayerControlOpacityCellIdentifier";
         static NSInteger sliderTag = 1;
 
-        cell = [tableView dequeueReusableCellWithIdentifier:layerControlCellIdentifier];
-        if (cell == nil)
+        if ([indexPath row] == 0)
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:layerControlCellIdentifier];
-            [[cell textLabel] setText:@"Opacity"];
-            UISlider* slider = [[UISlider alloc] init];
-            [slider setTag:sliderTag];
-            [slider addTarget:self action:@selector(opacityValueChanged:) forControlEvents:UIControlEventValueChanged];
-            [cell setAccessoryView:slider];
-        }
+            cell = [tableView dequeueReusableCellWithIdentifier:layerControlOpacityCellIdentifier];
+            if (cell == nil)
+            {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:layerControlOpacityCellIdentifier];
+                [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+                [[cell textLabel] setText:@"Opacity"];
+                UISlider* slider = [[UISlider alloc] init];
+                [slider setTag:sliderTag];
+                [slider addTarget:self action:@selector(opacityValueChanged:) forControlEvents:UIControlEventValueChanged];
+                [cell setAccessoryView:slider];
+            }
 
-        // Initialize slider to the layer's current value.
-        UISlider* slider = (UISlider*) [[cell accessoryView] viewWithTag:sliderTag];
-        [slider setValue:[_layer opacity]];
+            // Initialize slider to the layer's current value.
+            UISlider* slider = (UISlider*) [[cell accessoryView] viewWithTag:sliderTag];
+            [slider setValue:[_layer opacity]];
+        }
     }
     else if ([indexPath section] == 1)
     {
@@ -103,7 +123,11 @@
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    if ([indexPath section] == 1) // the list of renderables
+    if ([indexPath section] == 0)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:_layer];
+    }
+    else if ([indexPath section] == 1) // the list of renderables
     {
         // Set the selected renderables's visibility.
         id <WWRenderable> renderable = [[_layer renderables] objectAtIndex:(NSUInteger) [indexPath row]];
@@ -119,9 +143,22 @@
     [self requestRedraw];
 }
 
+- (void) handleRefreshButtonTap
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH object:_layer];
+}
+
 - (void) requestRedraw
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+}
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_REFRESH_COMPLETE] && [notification object] == _layer)
+    {
+        [[self tableView] reloadData];
+    }
 }
 
 @end
