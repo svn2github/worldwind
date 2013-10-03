@@ -22,6 +22,7 @@
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWResourceLoader.h"
 #import "WorldWind/WorldWind.h"
+#import "WWLayer.h"
 
 #define DEFAULT_DEPTH_OFFSET -0.003
 
@@ -99,7 +100,7 @@ static WWTexture* currentTexture;
 
         if ([dc pickingMode])
         {
-            [pickSupport resolvePick:dc layer:pickLayer];
+            [pickSupport resolvePick:dc layer:layer];
         }
     }
     else
@@ -139,10 +140,7 @@ static WWTexture* currentTexture;
         return;
     }
 
-    if ([dc pickingMode])
-    {
-        pickLayer = [dc currentLayer];
-    }
+    layer = [dc currentLayer];
 
     [dc addOrderedRenderable:self];
 }
@@ -273,6 +271,7 @@ static WWTexture* currentTexture;
     else
     {
         [program loadColor:[activeAttributes imageColor]];
+        [program loadOpacity:[layer opacity]];
 
         if (currentTexture != activeTexture) // avoid unnecessary texture state changes
         {

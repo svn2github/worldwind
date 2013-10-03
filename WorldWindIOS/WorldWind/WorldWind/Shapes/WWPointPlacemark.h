@@ -36,7 +36,7 @@
     WWMatrix* texCoordMatrix;
     CGRect imageBounds;
     // Picking attributes.
-    WWLayer* pickLayer;
+    WWLayer* layer;
 }
 
 /// @name Point Placemark Attributes

@@ -52,6 +52,7 @@
     GLuint textureEnabledLocation;
     GLuint textureUnitLocation;
     GLuint textureMatrixLocation;
+    GLuint opacityLocation;
 }
 
 /// @name GPU Program Attributes
@@ -181,5 +182,7 @@
 * @exception NSInvalidArgumentException If the matrix is nil.
 */
 - (void) loadTextureMatrix:(WWMatrix*)matrix;
+
+- (void) loadOpacity:(float)opacity;
 
 @end

@@ -32,7 +32,7 @@
     WWTexture* texture;
     // Picking attributes.
     WWPickSupport* pickSupport;
-    WWLayer* pickLayer;
+    WWLayer* layer;
 }
 
 /// @name Attributes

@@ -26,6 +26,7 @@
     textureEnabledLocation = (GLuint) [self uniformLocation:@"enableTexture"];
     textureUnitLocation = (GLuint) [self uniformLocation:@"textureSampler"];
     textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
+    opacityLocation = (GLuint) [self uniformLocation:@"opacity"];
 
     return self;
 }
@@ -94,6 +95,11 @@
     }
 
     [WWGpuProgram loadUniformMatrix:matrix location:textureMatrixLocation];
+}
+
+- (void) loadOpacity:(float)opacity
+{
+    [WWGpuProgram loadUniformFloat:opacity location:opacityLocation];
 }
 
 @end

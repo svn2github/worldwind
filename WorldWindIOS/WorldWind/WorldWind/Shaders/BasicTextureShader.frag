@@ -12,6 +12,8 @@ All Rights Reserved.
 
 precision mediump float;
 
+uniform float opacity;
+
 /*
  * Input uniform vec4 defining the current color. The texture color is multiplied by this color.
  */
@@ -41,6 +43,6 @@ void main()
     vec4 textureColor = texture2D(textureSampler, texCoord) * color;
 
     /* Select either the uniform color or the texture and uniform color. Avoid branching by mixing on the enable flag. */
-    gl_FragColor = mix(color, textureColor, float(enableTexture));
+    gl_FragColor = mix(color, textureColor, float(enableTexture)) * opacity;
 }
 );

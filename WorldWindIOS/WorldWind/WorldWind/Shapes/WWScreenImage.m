@@ -73,7 +73,7 @@
 
         if ([dc pickingMode])
         {
-            [pickSupport resolvePick:dc layer:pickLayer];
+            [pickSupport resolvePick:dc layer:layer];
         }
     }
     else
@@ -90,10 +90,7 @@
 {
     [self doMakeOrderedRenderable:dc];
 
-    if ([dc pickingMode])
-    {
-        pickLayer = [dc currentLayer];
-    }
+    layer = [dc currentLayer];
 
     [dc addOrderedRenderable:self];
 }
@@ -178,6 +175,7 @@
     {
         BOOL textureBound = [texture bind:dc]; // returns NO if activeTexture is nil
         [program loadColor:_imageColor];
+        [program loadOpacity:[layer opacity]];
         [program loadTextureEnabled:textureBound];
         [program loadTextureUnit:GL_TEXTURE0];
     }
