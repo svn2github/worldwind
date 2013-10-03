@@ -10,8 +10,6 @@
 
 #define IMAGE_SIZE (128)
 
-// TODO: Show Altimeter and Visibility.
-
 // See http://aviationweather.gov/adds/metars/description/page_no/2 for METAR graphic layout
 // See http://weather.aero/assets/a3e10540/docs/symbols.pdf for METAR icon mapping from WX string
 
@@ -19,9 +17,12 @@
 
 static NSMutableDictionary* skyCoverImageNames;
 static NSMutableDictionary* weatherImageNames;
+static UIColor* pinkColor;
 
 + (void) initialize
 {
+    pinkColor = [UIColor colorWithRed:1.0 green:0.5 blue:1.0 alpha:1.0];
+
     skyCoverImageNames = [[NSMutableDictionary alloc] init];
     [skyCoverImageNames setObject:@"CC_SKC_128.png" forKey:@"SKC"];
     [skyCoverImageNames setObject:@"CC_CLR_128.png" forKey:@"CLR"];
@@ -87,6 +88,7 @@ static NSMutableDictionary* weatherImageNames;
     CGRect rectAltimeter = CGRectMake(87, 45, size.width, size.height);
     CGRect rectTemp = CGRectMake(47, 25, size.width, size.height);
     CGRect rectDew = CGRectMake(47, 85, size.width, size.height);
+    CGRect rectVisibility = CGRectMake(17, 57, size.width, size.height);
 
     UIImage* skyCoverImage = [MetarIconGenerator createSkyCoverImage:metarDict];
     UIImage* barbImage = [MetarIconGenerator createWindBarbImage:metarDict];
@@ -146,6 +148,13 @@ static NSMutableDictionary* weatherImageNames;
     {
         [tempFontAttrs setObject:[UIColor greenColor] forKey:NSForegroundColorAttributeName];
         [dewPoint drawInRect:rectDew withAttributes:tempFontAttrs];
+    }
+
+    NSString* visibility = [metarDict objectForKey:@"visibility_statute_mi"];
+    if (visibility != nil)
+    {
+        [tempFontAttrs setObject:pinkColor forKey:NSForegroundColorAttributeName];
+        [visibility drawInRect:rectVisibility withAttributes:tempFontAttrs];
     }
 
     UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
@@ -226,7 +235,7 @@ static NSMutableDictionary* weatherImageNames;
     else if ([flightCategory isEqualToString:@"IFR |"])
         return [UIColor redColor];
     else if ([flightCategory isEqualToString:@"LIFR"])
-        return [UIColor colorWithRed:1.0 green:0.0 blue:1.0 alpha:1.0]; // pink
+        return pinkColor;
 
     return [UIColor redColor]; // TODO: Is this the correct default?
 }
