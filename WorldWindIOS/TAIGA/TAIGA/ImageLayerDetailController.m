@@ -24,6 +24,11 @@
 
     _layer = layer;
 
+    UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"01-refresh"]
+                                                                      style:UIBarButtonItemStylePlain
+                                                                     target:self action:@selector(handleRefreshButtonTap)];
+    [[self navigationItem] setRightBarButtonItem:refreshButton];
+
     return self;
 }
 
@@ -95,4 +100,11 @@
     NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
     [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
+
+- (void) handleRefreshButtonTap
+{
+    [_layer setExpiration:[[NSDate alloc] initWithTimeIntervalSinceNow:-1]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:_layer];
+}
+
 @end

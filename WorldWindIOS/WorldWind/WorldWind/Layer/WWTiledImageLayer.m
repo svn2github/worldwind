@@ -237,6 +237,9 @@
     if ([dc surfaceGeometry] == nil)
         return;
 
+    if (_expiration != nil && [_expiration timeIntervalSinceNow] <= 0)
+        _currentTilesInvalid = YES;
+
     // See if we can reuse the previous set of tiles. We can if the modelview-projection matrix, which governs the
     // frustum, is the same as when we last generated the set.
     if ([self currentTilesInvalid] || lasTtMVP == nil || ![[[dc navigatorState] modelviewProjection] isEqual:lasTtMVP])
