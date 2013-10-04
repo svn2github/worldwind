@@ -19,6 +19,7 @@
 #import "AppConstants.h"
 #import "METARLayer.h"
 #import "PIREPLayer.h"
+#import "Settings.h"
 
 @implementation LayerListController
 
@@ -62,6 +63,8 @@
 
     WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
     [layer setEnabled:[layer enabled] ? NO : YES];
+    [Settings setBool:[layer enabled] forName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [layer displayName]]];
     [[self tableView] reloadData];
     [self requestRedraw];
 }

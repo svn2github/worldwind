@@ -51,7 +51,7 @@
     OpenWeatherMapLayer* temperatureLayer;
     OpenWeatherMapLayer* snowLayer;
     OpenWeatherMapLayer* windLayer;
-    WWElevationShadingLayer* elevationShadingLayer;
+    WWElevationShadingLayer* terrainAltitudeLayer;
     FlightPathsLayer* flightPathsLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
@@ -100,44 +100,54 @@
     [layers addLayer:layer];
 
     precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
-    [precipitationLayer setEnabled:NO];
+    [precipitationLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [precipitationLayer displayName]] defaultValue:NO]];
     [precipitationLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:precipitationLayer];
 
     cloudsLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"clouds" displayName:@"Clouds"];
-    [cloudsLayer setEnabled:NO];
+    [cloudsLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [cloudsLayer displayName]] defaultValue:NO]];
     [cloudsLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:cloudsLayer];
 
     temperatureLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"temp" displayName:@"Temperature"];
-    [temperatureLayer setEnabled:NO];
+    [temperatureLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [temperatureLayer displayName]] defaultValue:NO]];
     [temperatureLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:temperatureLayer];
 
     snowLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"snow" displayName:@"Snow"];
-    [snowLayer setEnabled:NO];
+    [snowLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [snowLayer displayName]] defaultValue:NO]];
     [snowLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:snowLayer];
 
     windLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"wind" displayName:@"Wind"];
-    [windLayer setEnabled:NO];
+    [windLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [windLayer displayName]] defaultValue:NO]];
     [windLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:windLayer];
 
     [self createTerrainAltitudeLayer];
-    [layers addLayer:elevationShadingLayer];
+    [terrainAltitudeLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [terrainAltitudeLayer displayName]] defaultValue:NO]];
+    [layers addLayer:terrainAltitudeLayer];
 
     flightPathsLayer = [[FlightPathsLayer alloc]
             initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
-    [flightPathsLayer setEnabled:NO];
+    [flightPathsLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     metarLayer = [[METARLayer alloc] init];
-    [metarLayer setEnabled:NO];
+    [metarLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [metarLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:metarLayer];
 
     pirepLayer = [[PIREPLayer alloc] init];
-    [pirepLayer setEnabled:NO];
+    [pirepLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [pirepLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:pirepLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
@@ -257,19 +267,19 @@
 
 - (void) createTerrainAltitudeLayer
 {
-    elevationShadingLayer = [[WWElevationShadingLayer alloc] init];
-    [elevationShadingLayer setDisplayName:@"Terrain Altitude"];
+    terrainAltitudeLayer = [[WWElevationShadingLayer alloc] init];
+    [terrainAltitudeLayer setDisplayName:@"Terrain Altitude"];
 
     float threshold = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
-    [elevationShadingLayer setRedThreshold:threshold];
+    [terrainAltitudeLayer setRedThreshold:threshold];
     [Settings setFloat:threshold forName:TAIGA_SHADED_ELEVATION_THRESHOLD_RED];
 
     float offset = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OFFSET defaultValue:304.8]; // 1000 feet
-    [elevationShadingLayer setYellowThreshold:[elevationShadingLayer redThreshold] - offset];
+    [terrainAltitudeLayer setYellowThreshold:[terrainAltitudeLayer redThreshold] - offset];
     [Settings setFloat:offset forName:TAIGA_SHADED_ELEVATION_OFFSET];
 
     float opacity = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
-    [elevationShadingLayer setOpacity:opacity];
+    [terrainAltitudeLayer setOpacity:opacity];
     [Settings setFloat:opacity forName:TAIGA_SHADED_ELEVATION_OPACITY];
 }
 

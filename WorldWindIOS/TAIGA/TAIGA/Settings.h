@@ -13,4 +13,8 @@
 + (float) getFloatForName:(NSString*)name defaultValue:(float)defaultValue;
 + (float) getFloatForName:(NSString*)name;
 
++ (void) setBool:(BOOL)value forName:(NSString*)name;
++ (BOOL) getBoolForName:(NSString*)name defaultValue:(BOOL)defaultValue;
++ (BOOL) getBoolForName:(NSString*)name;
+
 @end
