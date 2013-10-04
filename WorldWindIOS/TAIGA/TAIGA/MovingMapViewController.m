@@ -30,6 +30,7 @@
 #import "PIREPDataViewController.h"
 #import "OpenWeatherMapLayer.h"
 #import "WWNavigator.h"
+#import "FAAChartsAlaskaLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -46,6 +47,7 @@
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
 
+    FAAChartsAlaskaLayer* faaChartsLayer;
     OpenWeatherMapLayer* precipitationLayer;
     OpenWeatherMapLayer* cloudsLayer;
     OpenWeatherMapLayer* temperatureLayer;
@@ -98,6 +100,11 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
+
+    faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
+    [faaChartsLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
+    [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
 
     precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
     [precipitationLayer setEnabled:[Settings getBoolForName:

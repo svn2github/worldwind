@@ -9,6 +9,7 @@
 #import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "RenderableLayerDetailController.h"
+#import "Settings.h"
 
 @implementation RenderableLayerDetailController
 {
@@ -132,6 +133,8 @@
         // Set the selected renderables's visibility.
         id <WWRenderable> renderable = [[_layer renderables] objectAtIndex:(NSUInteger) [indexPath row]];
         [renderable setEnabled:[renderable enabled] ? NO : YES];
+        [Settings setBool:[renderable enabled] forName:
+                [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.renderable.enabled.%@", [renderable displayName]]];
         [[self tableView] reloadData];
         [self requestRedraw];
     }
