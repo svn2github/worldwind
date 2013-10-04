@@ -320,7 +320,7 @@ public abstract class RigidShape extends AbstractShape
         this.faceCount = faces;
     }
 
-    abstract int getSubdivisions();
+    public abstract int getSubdivisions();
 
     /**
      * Returns the pair of texture coordinate offsets corresponding to the shape face and texture coordinate specified
