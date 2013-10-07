@@ -14,6 +14,10 @@
 #import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
 #import "WorldWind/WorldWind.h"
 #import "MetarIconGenerator.h"
+#import "WWDrawContext.h"
+#import "WWNavigatorState.h"
+#import "WWVec4.h"
+#import "WWGlobe.h"
 
 @interface METARLayerRetriever : NSOperation
 @end
@@ -261,6 +265,37 @@
     double lon = [lonString doubleValue];
 
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
+}
+
+#define MIN_SCALE (0.2)
+#define MAX_SCALE (1.0)
+#define MIN_DIST (100e3)
+#define MAX_DIST (500e3)
+
+- (void) doRender:(WWDrawContext*)dc
+{
+    WWVec4* eyePoint = [[dc navigatorState] eyePoint];
+
+    for (WWPointPlacemark* placemark in [self renderables])
+    {
+        WWPosition* pos = [placemark position];
+        WWVec4* placemarkPoint = [[WWVec4 alloc] init];
+        [[dc globe] computePointFromPosition:[pos latitude] longitude:[pos longitude]
+                                                             altitude:[pos altitude] outputPoint:placemarkPoint];
+        double d = [placemarkPoint distanceTo3:eyePoint];
+
+        double scale;
+        if (d >= MAX_DIST)
+            scale = MIN_SCALE;
+        else if (d <= MIN_DIST)
+            scale = MAX_SCALE;
+        else
+            scale = MIN_SCALE + (MAX_SCALE - MIN_SCALE) * ((MAX_DIST - d) / (MAX_DIST - MIN_DIST));
+
+        [[placemark attributes] setImageScale:scale];
+
+        [placemark render:dc];
+    }
 }
 
 @end
