@@ -31,6 +31,7 @@
 #import "OpenWeatherMapLayer.h"
 #import "WWNavigator.h"
 #import "FAAChartsAlaskaLayer.h"
+#import "CompassLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -57,6 +58,7 @@
     FlightPathsLayer* flightPathsLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
+    CompassLayer* compassLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
 
@@ -156,6 +158,12 @@
     [pirepLayer setEnabled:[Settings getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [pirepLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:pirepLayer];
+
+    compassLayer = [[CompassLayer alloc] init];
+    [[compassLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [compassLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [compassLayer displayName]] defaultValue:YES]];
+    [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
 

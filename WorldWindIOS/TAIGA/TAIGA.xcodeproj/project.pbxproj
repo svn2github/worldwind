@@ -82,6 +82,7 @@
 		1BF9A7AA3D0BDDC02E0C6D4E /* PIREP_ICONS_0021_Layer-23.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFA213F2D1EDCB0EDB27 /* PIREP_ICONS_0021_Layer-23.png */; };
 		1BF9A7B7D2F546C37EC3DC65 /* WX_RA_PLUS_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A9BDB8AECE5417A1271E /* WX_RA_PLUS_128.png */; };
 		1BF9A7E97943C6F8AF9D679C /* WX_TS_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC15E4E8774D480494D /* WX_TS_128.png */; };
+		1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A3318561DC7F3CF47984 /* CompassLayer.m */; };
 		1BF9A8214D9BCAE464A554E5 /* PIREP_ICONS_0016_Layer-18.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A79B01717C642E9E20A6 /* PIREP_ICONS_0016_Layer-18.png */; };
 		1BF9A82225758C6466017B7D /* CC_OVX_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A39A9A0664502184C902 /* CC_OVX_128.png */; };
 		1BF9A83AEE369E9828BDB317 /* WB_60kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AC08D6C6D3A8299FB355 /* WB_60kt_128.png */; };
@@ -151,6 +152,7 @@
 		1BF9AF670B8F1C52A7FD8823 /* MainScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8C063EF836D58C35624 /* MainScreenController.m */; };
 		1BF9AF9B7C541E46121A0C3B /* 387-bookmarks.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A28AB0C7648B0EFE9529 /* 387-bookmarks.png */; };
 		1BF9AFBE3807391CB8085CA9 /* 314-move-point.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAFDE565B336A0D805BC /* 314-move-point.png */; };
+		1BF9AFC293E02D3E756BEF0D /* notched-compass.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1E5E84D850365CD6B01 /* notched-compass.png */; };
 		1BF9AFF6ABD87609B3D91383 /* 19-gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */; };
 		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
 /* End PBXBuildFile section */
@@ -198,6 +200,7 @@
 		1BF9A192D844009817401049 /* PIREP_ICONS_0017_Layer-19.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0017_Layer-19.png"; sourceTree = "<group>"; };
 		1BF9A193D00A9DFAD6FEE8BF /* WB_30kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_30kt_128.png; sourceTree = "<group>"; };
 		1BF9A1DCCF03150665477519 /* 103-map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "103-map.png"; sourceTree = "<group>"; };
+		1BF9A1E5E84D850365CD6B01 /* notched-compass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "notched-compass.png"; sourceTree = "<group>"; };
 		1BF9A1F1A04A68346925CD83 /* WX_SN_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A1F2EEE24D578EA7129E /* WB_85kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_85kt_128.png; sourceTree = "<group>"; };
 		1BF9A230DEB50D96296D6835 /* 38-airplane.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane.png"; sourceTree = "<group>"; };
@@ -213,6 +216,7 @@
 		1BF9A2DEF39DF69593B3065F /* WX_RA_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A2EC323E14E28B23EB9E /* PIREP_ICONS_0020_Layer-22.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0020_Layer-22.png"; sourceTree = "<group>"; };
 		1BF9A2ED832C796AFBF72D61 /* WX_SA_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SA_128.png; sourceTree = "<group>"; };
+		1BF9A3318561DC7F3CF47984 /* CompassLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CompassLayer.m; sourceTree = "<group>"; };
 		1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
 		1BF9A38BEF1C4F903C7FFE32 /* FlightPathsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathsLayer.h; sourceTree = "<group>"; };
 		1BF9A39A9A0664502184C902 /* CC_OVX_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_OVX_128.png; sourceTree = "<group>"; };
@@ -317,6 +321,7 @@
 		1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast@2x.png"; sourceTree = "<group>"; };
 		1BF9AE7E266D3CDDF03C5FCF /* PIREP_ICONS_0011_Layer-13.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0011_Layer-13.png"; sourceTree = "<group>"; };
 		1BF9AEB3F325C744DF040CF9 /* PIREP_ICONS_0002_Layer-4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0002_Layer-4.png"; sourceTree = "<group>"; };
+		1BF9AEFDB195674DB617FC66 /* CompassLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompassLayer.h; sourceTree = "<group>"; };
 		1BF9AF1592F0950C392748B9 /* ChartsListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsListController.h; sourceTree = "<group>"; };
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
 		1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = PAJN.pdf; sourceTree = "<group>"; };
@@ -446,6 +451,8 @@
 				1BF9A44285FDD4AEB9C24014 /* MetarIconGenerator.h */,
 				1BF9A9CEC9CECC0D70A019DA /* FAAChartsAlaskaLayer.h */,
 				1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */,
+				1BF9A3318561DC7F3CF47984 /* CompassLayer.m */,
+				1BF9AEFDB195674DB617FC66 /* CompassLayer.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -563,6 +570,7 @@
 				1BF9ABCB8122ED354045DC81 /* WX_RA_128.png */,
 				1BF9A2DEF39DF69593B3065F /* WX_RA_MIN_128.png */,
 				1BF9A63FF712D639C84EECD3 /* WX_FG_128.png */,
+				1BF9A1E5E84D850365CD6B01 /* notched-compass.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -729,6 +737,7 @@
 				1BF9A5CFE6106D19F7C91DBC /* WX_RA_128.png in Resources */,
 				1BF9ACACED859484DAAB1F6B /* WX_RA_MIN_128.png in Resources */,
 				1BF9A1B4A6C4D9F90E4E38FB /* WX_FG_128.png in Resources */,
+				1BF9AFC293E02D3E756BEF0D /* notched-compass.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -766,6 +775,7 @@
 				1BF9A051EB31657B295B49E0 /* AppUpdateController.m in Sources */,
 				1BF9A5DABFB53DF12FFD6979 /* MetarIconGenerator.m in Sources */,
 				1BF9A886CAE2D1EDD1EC108A /* FAAChartsAlaskaLayer.m in Sources */,
+				1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
