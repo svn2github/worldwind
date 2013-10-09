@@ -10,6 +10,6 @@
 
 @interface MetarIconGenerator : NSObject
 
-+ (NSString*) createIconFile:(NSDictionary*)metarDict;
++ (NSString*) createIconFile:(NSDictionary*)metarDict full:(BOOL)full;
 
 @end

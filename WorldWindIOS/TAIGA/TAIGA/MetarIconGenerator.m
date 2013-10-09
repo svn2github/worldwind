@@ -26,7 +26,7 @@ static UIColor* pinkColor;
     skyCoverImageNames = [[NSMutableDictionary alloc] init];
     [skyCoverImageNames setObject:@"CC_SKC_128.png" forKey:@"SKC"];
     [skyCoverImageNames setObject:@"CC_CLR_128.png" forKey:@"CLR"];
-    [skyCoverImageNames setObject:@"CC_MIS_128.png" forKey:@"CAVOK"]; // TODO: Is this the correct image?
+    [skyCoverImageNames setObject:@"CC_CLR_128.png" forKey:@"CAVOK"]; // TODO: Is this the correct image?
     [skyCoverImageNames setObject:@"CC_FEW_128.png" forKey:@"FEW"];
     [skyCoverImageNames setObject:@"CC_SCT_128.png" forKey:@"SCT"];
     [skyCoverImageNames setObject:@"CC_BKN_128.png" forKey:@"BKN"];
@@ -53,7 +53,7 @@ static UIColor* pinkColor;
     [weatherImageNames setObject:@"WX_TS_128.png" forKey:@"TS"];
 }
 
-+ (NSString*) createIconFile:(NSDictionary*)metarDict
++ (NSString*) createIconFile:(NSDictionary*)metarDict full:(BOOL)full
 {
     NSString* fileName = [[NSProcessInfo processInfo] globallyUniqueString];
     NSString* fileDir = NSTemporaryDirectory();
@@ -70,12 +70,37 @@ static UIColor* pinkColor;
         return nil;
     }
 
-//    UIImage* image = [UIImage imageNamed:@"weather32x32.png"];
-    UIImage* image = [MetarIconGenerator createCompositeImage:metarDict];
+    UIImage* image;
+    if (full == YES)
+        image = [MetarIconGenerator createCompositeImage:metarDict];
+    else
+        image = [MetarIconGenerator createPartialImage:metarDict];
+
     NSData* imageData = UIImagePNGRepresentation(image);
     [imageData writeToFile:filePath atomically:YES];
 
     return filePath;
+}
+
++ (UIImage*) createPartialImage:(NSDictionary*)metarDict
+{
+    CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
+
+    CGRect rect = CGRectMake(13, 0, size.width, size.height);
+
+    UIImage* skyCoverImage = [MetarIconGenerator createSkyCoverImage:metarDict];
+
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+
+    if (skyCoverImage != nil)
+    {
+        [skyCoverImage drawInRect:rect];
+    }
+
+    UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return image;
 }
 
 + (UIImage*) createCompositeImage:(NSDictionary*)metarDict
@@ -84,8 +109,8 @@ static UIColor* pinkColor;
 
     CGRect rectWeather = CGRectMake(-13, 0, size.width, size.height);
     CGRect rectBarb = CGRectMake(13, 0, size.width, size.height);
-    CGRect rectAirport = CGRectMake(87, 65, size.width, size.height);
-    CGRect rectAltimeter = CGRectMake(87, 45, size.width, size.height);
+    CGRect rectAirport = CGRectMake(89, 65, size.width, size.height);
+    CGRect rectAltimeter = CGRectMake(89, 45, size.width, size.height);
     CGRect rectTemp = CGRectMake(47, 25, size.width, size.height);
     CGRect rectDew = CGRectMake(47, 85, size.width, size.height);
     CGRect rectVisibility = CGRectMake(17, 57, size.width, size.height);
@@ -95,11 +120,6 @@ static UIColor* pinkColor;
     UIImage* weatherImage = [MetarIconGenerator createWeatherImage:metarDict];
 
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
-
-//    CGContextRef context = UIGraphicsGetCurrentContext();
-//    UIColor* backgroundColor = [[UIColor alloc] initWithRed:0.0 green:0.0 blue:0.0 alpha:0.1];
-//    CGContextSetFillColorWithColor(context, [backgroundColor CGColor]);
-//    CGContextFillRect(context, (CGRect) {{0, 0}, size});
 
     if (skyCoverImage != nil)
     {
@@ -165,20 +185,40 @@ static UIColor* pinkColor;
 
 + (UIImage*) createSkyCoverImage:(NSDictionary*)metarDict
 {
+    NSString* imageFileName;
     NSArray* skyConditions = [metarDict objectForKey:@"sky_conditions"];
-    if (skyConditions == nil || [skyConditions count] == 0)
-        return nil;
+    if (skyConditions != nil && [skyConditions count] != 0)
+    {
+        NSDictionary* conditionDict = [skyConditions objectAtIndex:0]; // TODO: What if multiple sky conditions?
+        NSString* cover = [conditionDict objectForKey:@"sky_cover"];
+        if (cover == nil)
+        {
+            imageFileName = @"CC_MIS_128.png";
+        }
+        else
+        {
+            imageFileName = [skyCoverImageNames objectForKey:cover];
+            if (imageFileName == nil)
+                imageFileName = @"CC_MIS_128.png";
+        }
 
-    NSDictionary* conditionDict = [skyConditions objectAtIndex:0]; // TODO: What if multiple sky conditions?
-    NSString* cover = [[NSString alloc] initWithString:[conditionDict objectForKey:@"sky_cover"]];
-    if (cover == nil)
-        return nil;
+    }
+    else
+    {
+        imageFileName = @"CC_MIS_128.png";
+    }
 
-    NSString* imageFileName = [skyCoverImageNames objectForKey:cover];
-    if (imageFileName == nil)
-        return nil;
 
     UIImage* image = [UIImage imageNamed:imageFileName];
+
+    // It's not clear why, but images for SCT, BKN and MIS are drawn rotated when they're drawn, so compensate for
+    // that here. TODO: Figure out why this is the case and eliminate this step.
+    if ([imageFileName isEqualToString:@"CC_SCT_128.png"])
+        image = [MetarIconGenerator rotateImage:image angle:90];
+    else if ([imageFileName isEqualToString:@"CC_BKN_128.png"])
+        image = [MetarIconGenerator rotateImage:image angle:-90];
+    else if ([imageFileName isEqualToString:@"CC_MIS_128.png"])
+        image = [MetarIconGenerator rotateImage:image angle:180];
 
     CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
@@ -226,12 +266,12 @@ static UIColor* pinkColor;
 {
     NSString* flightCategory = [metarDict objectForKey:@"flight_category"];
     if (flightCategory == nil)
-        return [UIColor redColor]; // should not occur because all possible values are accounted for below
+        return [UIColor whiteColor];
 
     if ([flightCategory isEqualToString:@"VFR"])
-        return [UIColor blueColor];
-    else if ([flightCategory isEqualToString:@"MVFR"])
         return [UIColor greenColor];
+    else if ([flightCategory isEqualToString:@"MVFR"])
+        return [UIColor blueColor];
     else if ([flightCategory isEqualToString:@"IFR |"])
         return [UIColor redColor];
     else if ([flightCategory isEqualToString:@"LIFR"])

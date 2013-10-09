@@ -237,13 +237,18 @@
         [pointPlacemark setDisplayName:name];
     }
 
-    NSString* iconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict];
+    NSString* iconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict full:NO];
     if (iconFilePath == nil) // in case something goes wrong
         iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
+    [currentPlacemarkDict setObject:iconFilePath forKey:@"IconFilePath.partial"];
+
+    NSString* fullIconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict full:YES];
+    if (fullIconFilePath == nil) // in case something goes wrong
+        fullIconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
+    [currentPlacemarkDict setObject:fullIconFilePath forKey:@"IconFilePath.full"];
 
     WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
     [attrs setImagePath:iconFilePath];
-    [attrs setImageScale:0.5];
     [pointPlacemark setAttributes:attrs];
 
     [self performSelectorOnMainThread:@selector(addPlacemarkOnMainThread:) withObject:pointPlacemark waitUntilDone:NO];
@@ -293,6 +298,28 @@
             scale = MIN_SCALE + (MAX_SCALE - MIN_SCALE) * ((MAX_DIST - d) / (MAX_DIST - MIN_DIST));
 
         [[placemark attributes] setImageScale:scale];
+
+        NSString* iconFilePath;
+        if (d >= MAX_DIST)
+        {
+            iconFilePath = [[placemark userObject] objectForKey:@"IconFilePath.partial"];
+        }
+        else
+        {
+            iconFilePath = [[placemark userObject] objectForKey:@"IconFilePath.full"];
+            if (iconFilePath == nil)
+            {
+                NSLog(@"MAKING ICON");
+                iconFilePath = [MetarIconGenerator createIconFile:[placemark userObject] full:YES];
+                [[placemark userObject] setObject:iconFilePath forKey:@"IconFilePath.full"];
+            }
+        }
+
+        WWPointPlacemarkAttributes* attrs = [placemark attributes];
+        if (![[attrs imagePath] isEqualToString:iconFilePath])
+        {
+            [attrs setImagePath:iconFilePath];
+        }
 
         [placemark render:dc];
     }

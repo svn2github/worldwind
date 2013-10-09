@@ -44,6 +44,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
             @"three_hr_pressure_tendency_mb",
             @"latitude",
             @"longitude",
+            @"altim_in_hg",
             @"altitude_ft_msl",
             @"metar_type",
             @"elevation_m",
