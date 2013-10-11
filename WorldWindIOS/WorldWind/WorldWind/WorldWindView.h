@@ -13,6 +13,7 @@
 @class WWSceneController;
 @class WWVec4;
 @protocol WWNavigator;
+@protocol WorldWindViewDelegate;
 
 /**
 * Provides a view with a World Wind virtual globe. This is the top-level World Wind object and the fundamental object
@@ -131,5 +132,21 @@
 * @param notification The notification to respond to.
 */
 - (void) handleNotification:(NSNotification*)notification;
+
+/// @name Interposing in View Operations
+
+/**
+* Adds a delegate to this view's list of delegates called at key points in the view's lifecycle.
+*
+* @param delegate The delegate to call at lifecycle points.
+*/
+- (void) addDelegate:(id <WorldWindViewDelegate>)delegate;
+
+/**
+* Removes previously added delegates.
+*
+* @param delegate The delegate to remove.
+*/
+- (void) removeDelegate:(id <WorldWindViewDelegate>)delegate;
 
 @end
