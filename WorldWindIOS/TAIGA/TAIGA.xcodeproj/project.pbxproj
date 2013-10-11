@@ -100,6 +100,7 @@
 		1BF9A9D87EFDEBAE923B0A60 /* PIREP_ICONS_0003_Layer-5.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3C7CD276C3C6FC0C700 /* PIREP_ICONS_0003_Layer-5.png */; };
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
 		1BF9AA1E322E542699D0E5ED /* WB_25kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7AE487804CB52BF23BF /* WB_25kt_128.png */; };
+		1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */; };
 		1BF9AA61A0FCB8A4D63C02F1 /* PIREP_ICONS_0007_Layer-9.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A2528858BA48B80D79FD /* PIREP_ICONS_0007_Layer-9.png */; };
 		1BF9AA6B9B93F9AF9645E4BC /* TAIGA.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0978809BD2E03DC1F7D /* TAIGA.m */; };
 		1BF9AA710F20CB924FDAAE99 /* PIREP_ICONS_0000_Layer-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A6372291DD219E89CDFD /* PIREP_ICONS_0000_Layer-2.png */; };
@@ -207,6 +208,7 @@
 		1BF9A2528858BA48B80D79FD /* PIREP_ICONS_0007_Layer-9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0007_Layer-9.png"; sourceTree = "<group>"; };
 		1BF9A25DDF84DF1C8FB77312 /* PIREP_ICONS_0001_Layer-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0001_Layer-3.png"; sourceTree = "<group>"; };
 		1BF9A26634010ECCCA908E7B /* ChartsScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsScreenController.h; sourceTree = "<group>"; };
+		1BF9A28A3665C920E4AB3271 /* ScaleBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaleBarView.h; sourceTree = "<group>"; };
 		1BF9A28AB0C7648B0EFE9529 /* 387-bookmarks.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "387-bookmarks.png"; sourceTree = "<group>"; };
 		1BF9A29F3541632387EE0C21 /* CC_SKC_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_SKC_128.png; sourceTree = "<group>"; };
 		1BF9A2A84FE083FC39A4CD3B /* PIREP_ICONS_0005_Layer-7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0005_Layer-7.png"; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9A9E8D5D414A14E7BD282 /* PIREP_ICONS_0008_Layer-10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0008_Layer-10.png"; sourceTree = "<group>"; };
 		1BF9A9F42B1255C2B7E2AA34 /* WX_DU_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DU_128.png; sourceTree = "<group>"; };
+		1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaleBarView.m; sourceTree = "<group>"; };
 		1BF9AA14493BA4DD4FD7BA5F /* PIREP_ICONS_Generic.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PIREP_ICONS_Generic.png; sourceTree = "<group>"; };
 		1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear.png"; sourceTree = "<group>"; };
 		1BF9AA2DBCA408C8F57AE545 /* PIREPLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PIREPLayer.h; sourceTree = "<group>"; };
@@ -453,6 +456,8 @@
 				1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */,
 				1BF9A3318561DC7F3CF47984 /* CompassLayer.m */,
 				1BF9AEFDB195674DB617FC66 /* CompassLayer.h */,
+				1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */,
+				1BF9A28A3665C920E4AB3271 /* ScaleBarView.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -776,6 +781,7 @@
 				1BF9A5DABFB53DF12FFD6979 /* MetarIconGenerator.m in Sources */,
 				1BF9A886CAE2D1EDD1EC108A /* FAAChartsAlaskaLayer.m in Sources */,
 				1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */,
+				1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

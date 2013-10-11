@@ -32,6 +32,7 @@
 #import "WWNavigator.h"
 #import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
+#import "ScaleBarView.h"
 
 @implementation MovingMapViewController
 {
@@ -44,6 +45,7 @@
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
+    ScaleBarView* scaleBarView;
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
@@ -88,6 +90,12 @@
 
     [self createWorldWindView];
     [self createTopToolbar];
+
+    float x = myFrame.size.width - 220;
+    float y = myFrame.size.height - 70;
+    scaleBarView = [[ScaleBarView alloc] initWithFrame:CGRectMake(x, y, 200, 50) worldWindView:_wwv];
+    scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+    [self.view addSubview:scaleBarView];
 }
 
 
