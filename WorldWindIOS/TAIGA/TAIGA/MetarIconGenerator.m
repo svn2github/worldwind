@@ -211,15 +211,6 @@ static UIColor* pinkColor;
 
     UIImage* image = [UIImage imageNamed:imageFileName];
 
-    // It's not clear why, but images for SCT, BKN and MIS are drawn rotated when they're drawn, so compensate for
-    // that here. TODO: Figure out why this is the case and eliminate this step.
-    if ([imageFileName isEqualToString:@"CC_SCT_128.png"])
-        image = [MetarIconGenerator rotateImage:image angle:90];
-    else if ([imageFileName isEqualToString:@"CC_BKN_128.png"])
-        image = [MetarIconGenerator rotateImage:image angle:-90];
-    else if ([imageFileName isEqualToString:@"CC_MIS_128.png"])
-        image = [MetarIconGenerator rotateImage:image angle:180];
-
     CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
 
@@ -227,6 +218,11 @@ static UIColor* pinkColor;
     CGContextRef context = UIGraphicsGetCurrentContext();
     [image drawInRect:rect blendMode:kCGBlendModeNormal alpha:0.0];
     [[self getConditionColor:metarDict] set];
+
+    // Since we're mixing UIKit and Core Graphics drawing, we need to flip the coordinate system for CG.
+    CGContextTranslateCTM(context, 0.0, IMAGE_SIZE);
+    CGContextScaleCTM(context, 1.0, -1.0);
+
     CGContextClipToMask(context, rect, [image CGImage]);
     CGContextFillRect(context, rect);
     image = UIGraphicsGetImageFromCurrentImageContext();
@@ -254,6 +250,11 @@ static UIColor* pinkColor;
     CGContextRef context = UIGraphicsGetCurrentContext();
     [image drawInRect:rect blendMode:kCGBlendModeNormal alpha:0.0];
     [[self getConditionColor:metarDict] set];
+
+    // Since we're mixing UIKit and Core Graphics drawing, we need to flip the coordinate system for CG.
+    CGContextTranslateCTM(context, 0.0, IMAGE_SIZE);
+    CGContextScaleCTM(context, 1.0, -1.0);
+
     CGContextClipToMask(context, rect, [image CGImage]);
     CGContextFillRect(context, rect);
     image = UIGraphicsGetImageFromCurrentImageContext();
