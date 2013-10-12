@@ -49,6 +49,8 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     CGSize size = CGSizeMake(320, 380);
     [self setPreferredContentSize:size];
 
+    [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+
     names = [[NSMutableArray alloc] init];
     values = [[NSMutableArray alloc] init];
 

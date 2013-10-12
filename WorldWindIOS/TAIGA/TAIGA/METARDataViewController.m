@@ -59,6 +59,8 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
     CGSize size = CGSizeMake(320, 320);
     [self setPreferredContentSize:size];
 
+    [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+
     names = [[NSMutableArray alloc] init];
     values = [[NSMutableArray alloc] init];
 
