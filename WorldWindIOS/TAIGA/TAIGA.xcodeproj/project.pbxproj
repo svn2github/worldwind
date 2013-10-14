@@ -38,6 +38,7 @@
 		1BF9A1A3DF1D3E6D018CD3E2 /* 401-globe.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A591D1865106089F5EFE /* 401-globe.png */; };
 		1BF9A1B4A6C4D9F90E4E38FB /* WX_FG_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A63FF712D639C84EECD3 /* WX_FG_128.png */; };
 		1BF9A257796BAEB2D9BCA586 /* CC_MIS_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFAFEEE9E5C4844403F8 /* CC_MIS_128.png */; };
+		1BF9A266647113D91F20BDE9 /* TerrainProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5DC263F523CA577775 /* TerrainProfileView.m */; };
 		1BF9A26AD257973E046A6B38 /* 38-airplane@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */; };
 		1BF9A2D6BE652A777A71A33C /* WX_DU_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A9F42B1255C2B7E2AA34 /* WX_DU_128.png */; };
 		1BF9A2DFFB0F14AD9ABA308A /* WB_95kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A2AAB0EEDA4071617237 /* WB_95kt_128.png */; };
@@ -233,6 +234,7 @@
 		1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartViewController.h; sourceTree = "<group>"; };
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A51E0EE853DDBE7A3752 /* WB_15kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_15kt_128.png; sourceTree = "<group>"; };
+		1BF9A543A5F665E7A3D28E28 /* TerrainProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileView.h; sourceTree = "<group>"; };
 		1BF9A54EC5F423EACBC91D76 /* WX_BR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_BR_128.png; sourceTree = "<group>"; };
 		1BF9A56534F8DA54C20C1831 /* TAIGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAIGA.h; sourceTree = "<group>"; };
 		1BF9A585164F35CC333652FF /* WX_DZ_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DZ_PLUS_128.png; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
 		1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = PAJN.pdf; sourceTree = "<group>"; };
 		1BF9AF5DA2126401970FECA9 /* WB_20kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_20kt_128.png; sourceTree = "<group>"; };
+		1BF9AF5DC263F523CA577775 /* TerrainProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainProfileView.m; sourceTree = "<group>"; };
 		1BF9AF77EA63393651AA1C97 /* 38-airplane@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane@2x.png"; sourceTree = "<group>"; };
 		1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes.png"; sourceTree = "<group>"; };
 		1BF9AFA213F2D1EDCB0EDB27 /* PIREP_ICONS_0021_Layer-23.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0021_Layer-23.png"; sourceTree = "<group>"; };
@@ -458,6 +461,8 @@
 				1BF9AEFDB195674DB617FC66 /* CompassLayer.h */,
 				1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */,
 				1BF9A28A3665C920E4AB3271 /* ScaleBarView.h */,
+				1BF9AF5DC263F523CA577775 /* TerrainProfileView.m */,
+				1BF9A543A5F665E7A3D28E28 /* TerrainProfileView.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -782,6 +787,7 @@
 				1BF9A886CAE2D1EDD1EC108A /* FAAChartsAlaskaLayer.m in Sources */,
 				1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */,
 				1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */,
+				1BF9A266647113D91F20BDE9 /* TerrainProfileView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
