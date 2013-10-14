@@ -32,6 +32,8 @@
     scaleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
     [scaleLabel setTextColor:[UIColor whiteColor]];
     [scaleLabel setTextAlignment:NSTextAlignmentCenter];
+    [scaleLabel setShadowColor:[UIColor blackColor]];
+    [scaleLabel setShadowOffset:CGSizeMake(1, 1)];
     [self addSubview:scaleLabel];
 
     [self setBackgroundColor:[UIColor clearColor]];
@@ -50,6 +52,7 @@
     [[UIColor clearColor] set];
     CGContextFillRect(context, rect);
 
+    // Determine the pixel size at the screen's center.
     CGSize wwvSize = [wwv frame].size;
     id <WWNavigatorState> navState = [[wwv sceneController] navigatorState];
     WWLine* ray = [navState rayFromScreenPoint:CGPointMake(wwvSize.width / 2, wwvSize.height / 2)];
@@ -59,6 +62,7 @@
     double d = [[navState eyePoint] distanceTo3:modelPoint];
     double pixelSize = [navState pixelSizeAtDistance:d];
 
+    // Compute the distance across the scale bar view for the computed pixel size.
     CGRect frame = [self frame];
     float width = frame.size.width;
     double scaleDistance = pixelSize * width * 3.280839895; // in feet
@@ -69,6 +73,7 @@
         unitLabel = scaleDistance >= 2 ? @"miles" : @"mile";
     }
 
+    // Round the display value down such that the first digit is either 1, 2 or 5.
     int pot = (int) floor(log10(scaleDistance));
     NSString* s = [[NSString alloc] initWithFormat:@"%f", scaleDistance];
     int digit = [[s substringToIndex:1] integerValue];
@@ -80,10 +85,19 @@
     width *= truncatedScaleDistance / scaleDistance;
 
     CGContextSetLineWidth(context, 2);
+    float margin = 1 + (frame.size.width - width) / 2; // balance the margin between left and right edges
+
+    // Draw the scale bar's shadow.
+    [[UIColor blackColor] set];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, margin + 1, frame.size.height - 11);
+    CGContextAddLineToPoint(context, margin + 1, frame.size.height - 1);
+    CGContextAddLineToPoint(context, frame.size.width - margin + 1, frame.size.height - 1);
+    CGContextAddLineToPoint(context, frame.size.width - margin + 1, frame.size.height - 11);
+    CGContextStrokePath(context);
+
+    // Draw the scale bar.
     [[UIColor whiteColor] set];
-
-    float margin = 1 + (frame.size.width - width) / 2;
-
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, margin, frame.size.height - 12);
     CGContextAddLineToPoint(context, margin, frame.size.height - 2);
@@ -91,6 +105,7 @@
     CGContextAddLineToPoint(context, frame.size.width - margin, frame.size.height - 12);
     CGContextStrokePath(context);
 
+    // Draw the label.
     NSString* displayString = [[NSString alloc] initWithFormat:@"%.0f %@", truncatedScaleDistance, unitLabel];
     [scaleLabel setText:displayString];
 }
