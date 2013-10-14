@@ -14,6 +14,7 @@
     float* ys;
     UILabel* minLabel;
     UILabel* maxLabel;
+    UILabel* crosshairLabel;
 }
 
 static float const alpha = 0.5;
@@ -36,12 +37,23 @@ static float const colorComponents[] = {
     minLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, frame.size.height - 22, frame.size.width, 30)];
     [minLabel setTextColor:[UIColor whiteColor]];
     [minLabel setTextAlignment:NSTextAlignmentCenter];
+    [minLabel setShadowColor:[UIColor blackColor]];
+    [minLabel setShadowOffset:CGSizeMake(1, 1)];
     [self addSubview:minLabel];
 
     maxLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
     [maxLabel setTextColor:[UIColor whiteColor]];
     [maxLabel setTextAlignment:NSTextAlignmentLeft];
+    [maxLabel setShadowColor:[UIColor blackColor]];
+    [maxLabel setShadowOffset:CGSizeMake(1, 1)];
     [self addSubview:maxLabel];
+
+    crosshairLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    [crosshairLabel setTextColor:[UIColor whiteColor]];
+    [crosshairLabel setTextAlignment:NSTextAlignmentLeft];
+    [crosshairLabel setShadowColor:[UIColor blackColor]];
+    [crosshairLabel setShadowOffset:CGSizeMake(1, 1)];
+    [self addSubview:crosshairLabel];
 
     return self;
 }
@@ -65,6 +77,13 @@ static float const colorComponents[] = {
 - (void) setWarningAltitude:(float)warningAltitude
 {
     _warningAltitude = warningAltitude;
+
+    [self setNeedsDisplay];
+}
+
+- (void) setAircraftLocation:(CGPoint)aircraftLocation
+{
+    _aircraftLocation = aircraftLocation;
 
     [self setNeedsDisplay];
 }
@@ -125,15 +144,46 @@ static float const colorComponents[] = {
     CGGradientRef myGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), colorComponents, locations, 6);
     CGContextDrawLinearGradient(context, myGradient, CGPointMake(0, 0), CGPointMake(0, frame.size.height), 0);
 
-    NSString* displayString = [[NSString alloc] initWithFormat:@"%.0f ft", yMin];
+    NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
+    [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
+
+    NSString* numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:yMin]];
+    NSString* displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
     [minLabel setText:displayString];
 
-    displayString = [[NSString alloc] initWithFormat:@"%.0f ft", yMax];
+    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:yMax]];
+    displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
     NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
     [attrDict setObject:[maxLabel font] forKey:NSFontAttributeName];
     CGSize stringSize = [displayString sizeWithAttributes:attrDict];
     float maxLabelX = frame.size.width * (xAtYMax - xMin) / dx - 0.5 * stringSize.width;
     [maxLabel setFrame:CGRectMake(maxLabelX, 0, stringSize.width, stringSize.height)];
     [maxLabel setText:displayString];
+
+    float crosshairSize = 10;
+    float x = frame.size.width * (_aircraftLocation.x - xMin) / dx;
+    float y = frame.size.height * (1 - (_aircraftLocation.y - yMin) / dy);
+
+    [[UIColor blackColor] set];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, x - crosshairSize + 1, y + 1);
+    CGContextAddLineToPoint(context, x + crosshairSize + 1, y + 1);
+    CGContextMoveToPoint(context, x + 1, y - crosshairSize + 1);
+    CGContextAddLineToPoint(context, x + 1, y + crosshairSize + 1);
+    CGContextStrokePath(context);
+
+    [[UIColor whiteColor] set];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, x - crosshairSize, y);
+    CGContextAddLineToPoint(context, x + crosshairSize, y);
+    CGContextMoveToPoint(context, x, y - crosshairSize);
+    CGContextAddLineToPoint(context, x, y + crosshairSize);
+    CGContextStrokePath(context);
+
+    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:_aircraftLocation.y]];
+    displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
+    stringSize = [displayString sizeWithAttributes:attrDict];
+    [crosshairLabel setFrame:CGRectMake(x + 12, y - 0.75 * stringSize.height, 200, 30)];
+    [crosshairLabel setText:displayString];
 }
 @end

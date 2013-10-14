@@ -14,6 +14,7 @@
 
 @property (nonatomic) float warningAltitude;
 @property (nonatomic) float dangerAltitude;
+@property (nonatomic) CGPoint aircraftLocation;
 
 - (TerrainProfileView*) initWithFrame:(CGRect)frame;
 
