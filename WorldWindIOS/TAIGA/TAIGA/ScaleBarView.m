@@ -37,6 +37,7 @@
     [self addSubview:scaleLabel];
 
     [self setBackgroundColor:[UIColor clearColor]];
+    [self setUserInteractionEnabled:NO];
 
     return self;
 }
