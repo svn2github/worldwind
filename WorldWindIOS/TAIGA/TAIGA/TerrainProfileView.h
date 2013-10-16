@@ -10,14 +10,17 @@
 
 @class WorldWindView;
 
-@interface TerrainProfileView : UIView
+@interface TerrainProfileView : UIView <WorldWindViewDelegate>
 
-@property (nonatomic) float warningAltitude;
-@property (nonatomic) float dangerAltitude;
-@property (nonatomic) CGPoint aircraftLocation;
+@property (nonatomic) WorldWindView* wwv;
+@property (nonatomic, readonly) float warningAltitude;
+@property (nonatomic, readonly) float dangerAltitude;
+//@property (nonatomic) CGPoint aircraftLocation;
+@property (nonatomic) NSArray* path;
+@property (nonatomic) float opacity;
 
-- (TerrainProfileView*) initWithFrame:(CGRect)frame;
+- (TerrainProfileView*) initWithFrame:(CGRect)frame worldWindView:(WorldWindView*)worldWindView;
 
-- (void) setValues:(int)count xValues:(float*)xValues yValues:(float*)yValues;
+- (void) setWarningAltitude:(float)warningAltitude dangerAltitude:(float)dangerAltitude;
 
 @end
