@@ -241,11 +241,11 @@
     if (iconFilePath == nil) // in case something goes wrong
         iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
     [currentPlacemarkDict setObject:iconFilePath forKey:@"IconFilePath.partial"];
-
-    NSString* fullIconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict full:YES];
-    if (fullIconFilePath == nil) // in case something goes wrong
-        fullIconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
-    [currentPlacemarkDict setObject:fullIconFilePath forKey:@"IconFilePath.full"];
+//
+//    NSString* fullIconFilePath = [MetarIconGenerator createIconFile:currentPlacemarkDict full:YES];
+//    if (fullIconFilePath == nil) // in case something goes wrong
+//        fullIconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"weather32x32.png"];
+//    [currentPlacemarkDict setObject:fullIconFilePath forKey:@"IconFilePath.full"];
 
     WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
     [attrs setImagePath:iconFilePath];
@@ -309,7 +309,6 @@
             iconFilePath = [[placemark userObject] objectForKey:@"IconFilePath.full"];
             if (iconFilePath == nil)
             {
-                NSLog(@"MAKING ICON");
                 iconFilePath = [MetarIconGenerator createIconFile:[placemark userObject] full:YES];
                 [[placemark userObject] setObject:iconFilePath forKey:@"IconFilePath.full"];
             }
