@@ -1388,18 +1388,6 @@ public class AirspaceBuilder extends ApplicationTemplate
             if (dir == null)
                 return;
 
-            if (dir.exists())
-            {
-                try
-                {
-                    WWIO.deleteDirectory(dir);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-
             if (!dir.exists())
             {
                 //noinspection ResultOfMethodCallIgnored

@@ -976,7 +976,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
                 openFileButton.setAlignmentX(JComponent.LEFT_ALIGNMENT);
                 openFileButton.addActionListener(controller);
 
-                JLabel spacingLabel = new JLabel(" ");
                 JLabel textureLabel = new JLabel("Shape texture:");
                 this.textureBox = new JTextField(18);
                 this.textureBox.setActionCommand(EDIT_TEXTURE);
@@ -1561,18 +1560,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
             final File dir = this.fileChooser.getSelectedFile();
             if (dir == null)
                 return;
-
-            if (dir.exists())
-            {
-                try
-                {
-                    WWIO.deleteDirectory(dir);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
 
             if (!dir.exists())
             {
