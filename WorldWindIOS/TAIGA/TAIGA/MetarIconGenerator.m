@@ -241,26 +241,7 @@ static UIColor* pinkColor;
     if (imageFileName == nil)
         return nil;
 
-    UIImage* image = [UIImage imageNamed:imageFileName];
-
-    CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
-    CGRect rect = CGRectMake(0, 0, size.width, size.height);
-
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    [image drawInRect:rect blendMode:kCGBlendModeNormal alpha:0.0];
-    [[self getConditionColor:metarDict] set];
-
-    // Since we're mixing UIKit and Core Graphics drawing, we need to flip the coordinate system for CG.
-    CGContextTranslateCTM(context, 0.0, IMAGE_SIZE);
-    CGContextScaleCTM(context, 1.0, -1.0);
-
-    CGContextClipToMask(context, rect, [image CGImage]);
-    CGContextFillRect(context, rect);
-    image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    return image;
+    return [UIImage imageNamed:imageFileName];
 }
 
 + (UIColor*) getConditionColor:(NSDictionary*)metarDict
@@ -292,6 +273,9 @@ static UIColor* pinkColor;
         return nil;
 
     int windSpeed = [windSpeedString integerValue];
+    if (windSpeed == 0)
+        return nil;
+
     int windDir = [windDirectionString integerValue];
 
     windSpeed = (windSpeed + 4) / 5 * 5;
