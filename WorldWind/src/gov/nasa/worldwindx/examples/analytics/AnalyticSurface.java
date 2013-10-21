@@ -1233,13 +1233,15 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         public void drawInterior(DrawContext dc)
         {
-            dc.getGL().glDrawElements(GL.GL_TRIANGLE_STRIP, this.interiorIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.interiorIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
                 this.interiorIndexBuffer);
         }
 
         public void drawOutline(DrawContext dc)
         {
-            dc.getGL().glDrawElements(GL.GL_LINE_LOOP, this.outlineIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
+            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+            gl.glDrawElements(GL.GL_LINE_LOOP, this.outlineIndexBuffer.remaining(), GL.GL_UNSIGNED_INT,
                 this.outlineIndexBuffer);
         }
     }

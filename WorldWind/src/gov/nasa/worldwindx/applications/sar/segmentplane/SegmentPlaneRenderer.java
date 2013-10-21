@@ -671,24 +671,25 @@ public class SegmentPlaneRenderer
 
     protected void drawPlaneFillElements(DrawContext dc, RenderInfo renderInfo)
     {
-        dc.getGL().glEnable(GL.GL_POLYGON_OFFSET_FILL);
-        dc.getGL().glPolygonOffset(1f, 1f);
-
-        dc.getGL().glDrawElements(GL.GL_TRIANGLE_STRIP, renderInfo.planeFillIndexCount, GL.GL_UNSIGNED_INT,
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+        gl.glPolygonOffset(1f, 1f);
+        gl.glDrawElements(GL.GL_TRIANGLE_STRIP, renderInfo.planeFillIndexCount, GL.GL_UNSIGNED_INT,
             renderInfo.planeFillIndices);
-
-        dc.getGL().glDisable(GL.GL_POLYGON_OFFSET_FILL);
+        gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
     }
 
     protected void drawPlaneOutlineElements(DrawContext dc, RenderInfo renderInfo)
     {
-        dc.getGL().glDrawElements(GL.GL_LINES, renderInfo.planeOutlineIndexCount, GL.GL_UNSIGNED_INT,
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glDrawElements(GL.GL_LINES, renderInfo.planeOutlineIndexCount, GL.GL_UNSIGNED_INT,
             renderInfo.planeOutlineIndices);
     }
 
     protected void drawPlaneGridElements(DrawContext dc, RenderInfo renderInfo)
     {
-        dc.getGL().glDrawElements(GL.GL_LINES, renderInfo.planeGridIndexCount, GL.GL_UNSIGNED_INT,
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glDrawElements(GL.GL_LINES, renderInfo.planeGridIndexCount, GL.GL_UNSIGNED_INT,
             renderInfo.planeGridIndices);
     }
 
