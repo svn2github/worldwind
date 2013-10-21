@@ -7,7 +7,7 @@
 
 <!-- $Id$ -->
 <jnlp codebase="http://worldwind.arc.nasa.gov/java/2.0.0/webstart/"
-      href="jogl-all.jnlp" version="v2.0-rc11">
+      href="jogl-all.jnlp" version="v2.1.0">
 
     <!--
         Provides a description of the JOGL library.
@@ -16,7 +16,7 @@
         <title>Java(tm) Binding to the OpenGL(r) API</title>
         <vendor>JogAmp Community</vendor>
         <homepage href="http://jogamp.org/"/>
-        <description>Java Binding to the OpenGL API - 2.0.0</description>
+        <description>Java Binding to the OpenGL API - 2.1.0</description>
         <description kind="short">Java programming language binding for the OpenGL 3D graphics API</description>
         <offline-allowed/>
     </information>
