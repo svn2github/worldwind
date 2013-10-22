@@ -272,7 +272,7 @@
     return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
 }
 
-#define MIN_SCALE (0.2)
+#define MIN_SCALE (0.3)
 #define MAX_SCALE (1.0)
 #define MIN_DIST (100e3)
 #define MAX_DIST (500e3)
