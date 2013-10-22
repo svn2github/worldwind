@@ -57,6 +57,12 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     return self;
 }
 
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    [[self tableView] flashScrollIndicators];
+}
 
 - (void) setEntries:(NSDictionary*)entries
 {
@@ -78,6 +84,11 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
 {
     return [[_entries objectForKey:@"raw_text"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+- (CGFloat) tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    return 28;
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath

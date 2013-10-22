@@ -67,6 +67,13 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
     return self;
 }
 
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    [[self tableView] flashScrollIndicators];
+}
+
 - (void) setEntries:(NSDictionary*)entries
 {
     _entries = entries;
@@ -98,6 +105,11 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
         return [[_entries objectForKey:@"raw_text"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     else
         return @"Sky Conditions";
+}
+
+- (CGFloat) tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    return 28;
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
