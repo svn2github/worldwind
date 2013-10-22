@@ -19,24 +19,29 @@
     [self setTitle:text forState:UIControlStateNormal];
     [self.titleLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:18]];
     [self.titleLabel setShadowOffset:CGSizeMake(0, -1)];
-    NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
-    [attrDict setObject:[[self titleLabel] font] forKey:NSFontAttributeName];
-    CGFloat txtMargin = 0.5 * (self.frame.size.width - [text sizeWithAttributes:attrDict].width);
-    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, -txtMargin, -30, 0)];
 
-    UIImage* img = [UIImage imageNamed:imageName];
-    CGFloat imgMargin = 0.5 * (self.frame.size.width - [img size].width);
-    [self setImageEdgeInsets:UIEdgeInsetsMake(-20, imgMargin, 20, 0)];
-    [self setImage:img forState:UIControlStateNormal];
+    [self setImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
+
+    [self centerAlignImageAndTextForButton:self];
 
     [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
 
     return self;
 }
 
+- (void)centerAlignImageAndTextForButton:(UIButton*)button
+{
+    CGFloat spacing = 5;
+    CGSize imageSize = button.imageView.frame.size;
+    button.titleEdgeInsets = UIEdgeInsetsMake(0, -imageSize.width, -(imageSize.height + spacing), 0);
+    CGSize titleSize = button.titleLabel.frame.size;
+    button.imageEdgeInsets = UIEdgeInsetsMake(-(titleSize.height + spacing), 0, 0, -titleSize.width);
+}
+
 - (void) setFontSize:(int)fontSize
 {
     [self.titleLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:fontSize]];
+    [self centerAlignImageAndTextForButton:self];
 }
 
 - (void) setTextColor:(UIColor*)textColor

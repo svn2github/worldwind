@@ -92,7 +92,7 @@
     CGSize size = CGSizeMake(130, TAIGA_TOOLBAR_HEIGHT);
 
     movingMapButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"401-globe" text:@"Moving Map" size:size target:self action:@selector
+            initWithImageName:@"401-globe" text:@"Map" size:size target:self action:@selector
             (handleMovingMap)]];
     UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242./255. blue:183./255. alpha:1.0];
     [((ButtonWithImageAndText*) [movingMapButton customView]) setTextColor:color];
