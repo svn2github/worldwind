@@ -292,6 +292,7 @@
          contents of the GDAL JAR file, which are currently not under source control. -->
     <target name="gdal.jarfile.pack">
         <property name="gdal.jarfile.dir" location="gdal-jar"/>
+        <delete file="gdal.jar"/>
         <jar destfile="gdal.jar" basedir="${gdal.jarfile.dir}">
             <manifest>
                 <attribute name="Permissions" value="all-permissions"/>
@@ -311,6 +312,7 @@
          modify the contents of the VPF Symbols JAR file, which are currently not under source control. -->
     <target name="vpf.jarfile.pack">
         <property name="vpf.jarfile.dir" location="vpf-symbols-jar"/>
+        <delete file="vpf-symbols.jar"/>
         <jar destfile="vpf-symbols.jar" basedir="${vpf.jarfile.dir}">
             <manifest>
                 <attribute name="Permissions" value="all-permissions"/>
