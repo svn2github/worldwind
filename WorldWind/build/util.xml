@@ -280,6 +280,44 @@
              manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-amd64/META-INF/MANIFEST.MF"/>
     </target>
 
+    <!-- Extracts the contents of the GDAL Jar file to the folder 'gdal-jar'. This target is used to modify the contents
+         of the GDAL JAR file, which are currently not under source control. -->
+    <target name="gdal.jarfile.unpack">
+        <property name="gdal.jarfile.dir" location="gdal-jar"/>
+        <mkdir dir="${gdal.jarfile.dir}"/>
+        <unzip src="gdal.jar" dest="${gdal.jarfile.dir}"/>
+    </target>
+
+    <!-- Creates the GDAL Jar file from the contents of the folder 'gdal-jar'. This target is used to modify the
+         contents of the GDAL JAR file, which are currently not under source control. -->
+    <target name="gdal.jarfile.pack">
+        <property name="gdal.jarfile.dir" location="gdal-jar"/>
+        <jar destfile="gdal.jar" basedir="${gdal.jarfile.dir}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Extracts the contents of the VPF Symbols Jar file to the folder 'vpf-symbols-jar'. This target is used to
+         modify the contents of the VPF Symbols JAR file, which are currently not under source control. -->
+    <target name="vpf.jarfile.unpack">
+        <property name="vpf.jarfile.dir" location="vpf-symbols-jar"/>
+        <mkdir dir="${vpf.jarfile.dir}"/>
+        <unzip src="vpf-symbols.jar" dest="${vpf.jarfile.dir}"/>
+    </target>
+
+    <!-- Creates the VPF Symbols Jar file from the contents of the folder 'vpf-symbols-jar'. This target is used to
+         modify the contents of the VPF Symbols JAR file, which are currently not under source control. -->
+    <target name="vpf.jarfile.pack">
+        <property name="vpf.jarfile.dir" location="vpf-symbols-jar"/>
+        <jar destfile="vpf-symbols.jar" basedir="${vpf.jarfile.dir}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
+        </jar>
+    </target>
+
     <!-- Builds the WebView native library for the current platform. The native libraries are placed in the World Wind
          project root folder and overwrite any existing files of the same name.
 
