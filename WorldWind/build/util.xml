@@ -214,6 +214,72 @@
         </jar>
     </target>
 
+    <!-- Extracts the JOGL and GlueGen Jar files to the folder 'jogl-jarfiles'. Each Jar file is extracted to a folder
+         matching the filename without its suffix. This target is used to modify JOGL and GlueGen Jar file manifests in
+         order to deploy these files from the World Wind Java Web Start site. -->
+    <target name="jogl.jarfiles.unpack">
+        <property name="jogl.jarfiles.dir" location="jogl-jarfiles"/>
+        <mkdir dir="${jogl.jarfiles.dir}"/>
+        <unzip src="jogl-all.jar" dest="${jogl.jarfiles.dir}/jogl-all"/>
+        <unzip src="jogl-all-natives-macosx-universal.jar"
+               dest="${jogl.jarfiles.dir}/jogl-all-natives-macosx-universal"/>
+        <unzip src="jogl-all-natives-windows-i586.jar" dest="${jogl.jarfiles.dir}/jogl-all-natives-windows-i586"/>
+        <unzip src="jogl-all-natives-windows-amd64.jar" dest="${jogl.jarfiles.dir}/jogl-all-natives-windows-amd64"/>
+        <unzip src="jogl-all-natives-linux-i586.jar" dest="${jogl.jarfiles.dir}/jogl-all-natives-linux-i586"/>
+        <unzip src="jogl-all-natives-linux-amd64.jar" dest="${jogl.jarfiles.dir}/jogl-all-natives-linux-amd64"/>
+        <unzip src="gluegen-rt.jar" dest="${jogl.jarfiles.dir}/gluegen-rt"/>
+        <unzip src="gluegen-rt-natives-macosx-universal.jar"
+               dest="${jogl.jarfiles.dir}/gluegen-rt-natives-macosx-universal"/>
+        <unzip src="gluegen-rt-natives-windows-i586.jar" dest="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-i586"/>
+        <unzip src="gluegen-rt-natives-windows-amd64.jar" dest="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-amd64"/>
+        <unzip src="gluegen-rt-natives-linux-i586.jar" dest="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-i586"/>
+        <unzip src="gluegen-rt-natives-linux-amd64.jar" dest="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-amd64"/>
+    </target>
+
+    <!-- Creates JOGL and GlueGen Jar files from the contents of the 'jogl-jarfiles' folder. Each Jar file is created
+         from the contents of a folder corresponding to the Jar file's name without its suffix. This target is used to
+         modify JOGL and GlueGen Jar file manifests in order to deploy these files from the World Wind Java Web Start
+         site. -->
+    <target name="jogl.jarfiles.pack">
+        <property name="jogl.jarfiles.dir" location="jogl-jarfiles"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all.jar" basedir="${jogl.jarfiles.dir}/jogl-all" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all.jar" basedir="${jogl.jarfiles.dir}/jogl-all" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all-natives-macosx-universal.jar"
+             basedir="${jogl.jarfiles.dir}/jogl-all-natives-macosx-universal" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all-natives-macosx-universal/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all-natives-windows-i586.jar"
+             basedir="${jogl.jarfiles.dir}/jogl-all-natives-windows-i586" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all-natives-windows-i586/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all-natives-windows-amd64.jar"
+             basedir="${jogl.jarfiles.dir}/jogl-all-natives-windows-amd64" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all-natives-windows-amd64/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all-natives-linux-i586.jar"
+             basedir="${jogl.jarfiles.dir}/jogl-all-natives-linux-i586" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all-natives-linux-i586/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/jogl-all-natives-linux-amd64.jar"
+             basedir="${jogl.jarfiles.dir}/jogl-all-natives-linux-amd64" filesonly="true"
+             manifest="${jogl.jarfiles.dir}/jogl-all-natives-linux-amd64/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt.jar" basedir="${jogl.jarfiles.dir}/gluegen-rt"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt-natives-macosx-universal.jar"
+             basedir="${jogl.jarfiles.dir}/gluegen-rt-natives-macosx-universal"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-macosx-universal/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-i586.jar"
+             basedir="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-i586"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-i586/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-amd64.jar"
+             basedir="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-amd64"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-windows-amd64/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-i586.jar"
+             basedir="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-i586"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-i586/META-INF/MANIFEST.MF"/>
+        <jar destfile="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-amd64.jar"
+             basedir="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-amd64"
+             manifest="${jogl.jarfiles.dir}/gluegen-rt-natives-linux-amd64/META-INF/MANIFEST.MF"/>
+    </target>
+
     <!-- Builds the WebView native library for the current platform. The native libraries are placed in the World Wind
          project root folder and overwrite any existing files of the same name.
 
