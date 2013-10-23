@@ -109,7 +109,13 @@
     <target name="worldwind.jarfile" depends="compile"
             description="Builds the World Wind core JAR file 'worldwind.jar'.">
         <jar jarfile="${basedir}/${worldwind.jarfile}">
+            <!-- Add the World Wind extensions Jar file's dependencies to the class path, and specify the Permissions
+                 attribute. The Permissions attribute is ignored for locally launched applications, but is required for
+                 signed Web Start Applications and Applets starting in Java 7 update 45. This property must match the
+                 setting specified in the JNLP file or Applet used to launch the application. See
+                 http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/manifest.html#permissions -->
             <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
                 <attribute name="Class-Path" value="jogl-all.jar gluegen-rt.jar gdal.jar"/>
             </manifest>
             <!-- Include the World Wind core package gov.nasa.worldwind, as well as the 3rd party packages
@@ -143,7 +149,13 @@
     <target name="worldwind.extensions.jarfile" depends="compile"
             description="Builds the World Wind extensions JAR file 'worldwindx.jar'.">
         <jar jarfile="${basedir}/${worldwind.extensions.jarfile}">
+            <!-- Add the World Wind extensions Jar file's dependencies to the class path, and specify the Permissions
+                 attribute. The Permissions attribute is ignored for locally launched applications, but is required for
+                 signed Web Start Applications and Applets starting in Java 7 update 45. This property must match the
+                 setting specified in the JNLP file or Applet used to launch the application. See
+                 http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/manifest.html#permissions -->
             <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
                 <attribute name="Class-Path" value="${worldwind.jarfile}"/>
                 <attribute name="Main-Class" value="${worldwind.extensions.jarfile.mainclass}"/>
             </manifest>

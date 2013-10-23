@@ -36,14 +36,24 @@
                 <type type="file"/>
             </fileset>
         </copy>
-        <!-- Create the WebView native library JAR files in the Web Start directory. -->
+        <!-- Create the WebView native library JAR files in the Web Start directory. The Permissions attribute is
+             ignored for locally launched applications, but is required for signed Web Start Applications and Applets
+             starting in Java 7 update 45. This property must match the setting specified in the JNLP file or Applet
+             used to launch the application. See
+             http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/manifest.html#permissions-->
         <jar jarfile="${webstart.dir}/${webview.macosx.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${basedir}">
                 <include name="libwebview.jnilib"/>
                 <type type="file"/>
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${webview.windows.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${basedir}">
                 <include name="WebView32.dll"/>
                 <include name="WebView64.dll"/>
@@ -81,14 +91,23 @@
         <!-- Copy the World Wind GDAL JAR file to the Web Start directory. -->
         <copy file="${basedir}/${gdal.jarfile}" todir="${webstart.dir}"/>
         <!-- Create the World Wind GDAL data JAR file and the World Wind GDAL native library JAR files in the Web Start
-             directory. -->
+             directory. The Permissions attribute is ignored for locally launched applications, but is required for
+             signed Web Start Applications and Applets starting in Java 7 update 45. This property must match the
+             setting specified in the JNLP file or Applet used to launch the application. See
+             http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/manifest.html#permissions -->
         <jar jarfile="${webstart.dir}/${gdal.data.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}/data">
                 <include name="**"/>
                 <type type="file"/>
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${gdal.macosx.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}">
                 <include name="GDAL_License.txt"/>
                 <include name="LizardTech_DSDK_License.txt"/>
@@ -99,6 +118,9 @@
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${gdal.win32.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}">
                 <include name="GDAL_License.txt"/>
                 <include name="LizardTech_DSDK_License.txt"/>
@@ -111,6 +133,9 @@
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${gdal.win64.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}">
                 <include name="GDAL_License.txt"/>
                 <include name="LizardTech_DSDK_License.txt"/>
@@ -123,6 +148,9 @@
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${gdal.linux32.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}">
                 <include name="GDAL_License.txt"/>
                 <include name="LizardTech_DSDK_License.txt"/>
@@ -133,6 +161,9 @@
             </fileset>
         </jar>
         <jar jarfile="${webstart.dir}/${gdal.linux64.jarfile}">
+            <manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
             <fileset dir="${gdal.dir}">
                 <include name="GDAL_License.txt"/>
                 <include name="LizardTech_DSDK_License.txt"/>
