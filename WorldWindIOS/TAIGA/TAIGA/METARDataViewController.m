@@ -60,6 +60,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
     [self setPreferredContentSize:size];
 
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    self.tableView.contentInset = UIEdgeInsetsMake(-26, 0, 0, 0); // eliminate empty space at top of table
 
     names = [[NSMutableArray alloc] init];
     values = [[NSMutableArray alloc] init];
