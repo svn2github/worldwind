@@ -33,6 +33,7 @@
 #import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
+#import "FlightPathListController.h"
 
 @implementation MovingMapViewController
 {
@@ -49,6 +50,8 @@
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
+    FlightPathListController * flightPathController;
+    UIPopoverController* flightPathPopoverController;
 
     FAAChartsAlaskaLayer* faaChartsLayer;
     OpenWeatherMapLayer* precipitationLayer;
@@ -57,7 +60,7 @@
     OpenWeatherMapLayer* snowLayer;
     OpenWeatherMapLayer* windLayer;
     WWElevationShadingLayer* terrainAltitudeLayer;
-    FlightPathsLayer* flightPathsLayer;
+    //FlightPathsLayer* flightPathsLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
     CompassLayer* compassLayer;
@@ -151,11 +154,11 @@
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [terrainAltitudeLayer displayName]] defaultValue:NO]];
     [layers addLayer:terrainAltitudeLayer];
 
-    flightPathsLayer = [[FlightPathsLayer alloc]
-            initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
-    [flightPathsLayer setEnabled:[Settings getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
-    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
+    //flightPathsLayer = [[FlightPathsLayer alloc]
+    //        initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
+    //[flightPathsLayer setEnabled:[Settings getBoolForName:
+    //        [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
+    //[[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     metarLayer = [[METARLayer alloc] init];
     [metarLayer setEnabled:[Settings getBoolForName:
@@ -174,6 +177,7 @@
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
+    flightPathController = [[FlightPathListController alloc] init];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];
@@ -313,9 +317,16 @@
 
 - (void) handleFlightPathsButton
 {
-    [flightPathsLayer setEnabled:![flightPathsLayer enabled]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_LAYER_LIST_CHANGED object:self];
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    if (flightPathPopoverController == nil)
+    {
+        UINavigationController* navController = [[UINavigationController alloc]
+                initWithRootViewController:flightPathController];
+        [navController setDelegate:flightPathController];
+        flightPathPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+    }
+
+    [flightPathPopoverController presentPopoverFromBarButtonItem:flightPathsButton
+                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleOverlaysButton
