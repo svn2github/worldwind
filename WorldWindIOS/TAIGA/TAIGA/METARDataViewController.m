@@ -135,7 +135,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 NSMutableString* cover = [[NSMutableString alloc] initWithString:[conditionDict objectForKey:@"sky_cover"]];
                 NSString* cloud_bases = [conditionDict objectForKey:@"cloud_base_ft_agl"];
                 if (cloud_bases != nil)
-                    [cover appendFormat:@" @ %@ meters AGL", cloud_bases];
+                    [cover appendFormat:@" @ %@ ft AGL", cloud_bases];
                 [[cell textLabel] setText:nil];
                 [[cell detailTextLabel] setText:cover];
                 return cell;
