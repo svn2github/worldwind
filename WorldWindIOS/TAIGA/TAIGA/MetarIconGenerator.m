@@ -17,7 +17,7 @@
 
 static NSMutableDictionary* skyCoverImageNames;
 static NSMutableDictionary* weatherImageNames;
-static NSMutableDictionary* images;
+//static NSMutableDictionary* images;
 static UIColor* pinkColor;
 
 + (void) initialize
@@ -52,8 +52,6 @@ static UIColor* pinkColor;
     [weatherImageNames setObject:@"WX_SN_PLUS_128.png" forKey:@"+SN"];
     [weatherImageNames setObject:@"WX_SS_PLUS_128.png" forKey:@"+SS"];
     [weatherImageNames setObject:@"WX_TS_128.png" forKey:@"TS"];
-
-    images = [[NSMutableDictionary alloc] init];
 }
 
 + (NSString*) createIconFile:(NSDictionary*)metarDict full:(BOOL)full
@@ -211,20 +209,7 @@ static UIColor* pinkColor;
         imageFileName = @"CC_MIS_128.png";
     }
 
-    NSString* flightCategory = [metarDict objectForKey:@"flight_category"];
-    if (flightCategory == nil)
-        flightCategory = @"";
-    NSString* imageFileKey = [[NSString alloc] initWithFormat:@"%@.%@", imageFileName, flightCategory];
-
-    UIImage* image = nil;
-    @synchronized (images)
-    {
-        image = [images objectForKey:imageFileKey];
-    }
-    if (image != nil)
-        return image;
-
-    image = [UIImage imageNamed:imageFileName];
+    UIImage* image = [UIImage imageNamed:imageFileName];
 
     CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
@@ -243,11 +228,6 @@ static UIColor* pinkColor;
     image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
-    @synchronized (images)
-    {
-        [images setObject:image forKey:imageFileKey];
-    }
-
     return image;
 }
 
@@ -262,15 +242,7 @@ static UIColor* pinkColor;
         return nil;
 
     UIImage* image = nil;
-    @synchronized (images)
-    {
-        image = [images objectForKey:imageFileName];
-        if (image == nil)
-        {
-            image = [UIImage imageNamed:imageFileName];
-            [images setObject:image forKey:imageFileName];
-        }
-    }
+    image = [UIImage imageNamed:imageFileName];
 
     return image;
 }
@@ -318,15 +290,7 @@ static UIColor* pinkColor;
     NSString* windBarbIconName = [[NSString alloc] initWithFormat:@"WB_%dkt_128.png", windSpeed];
 
     UIImage* barbImage = nil;
-    @synchronized (images)
-    {
-        barbImage = [images objectForKey:windBarbIconName];
-        if (barbImage == nil)
-        {
-            barbImage = [UIImage imageNamed:windBarbIconName];
-            [images setObject:barbImage forKey:windBarbIconName];
-        }
-    }
+    barbImage = [UIImage imageNamed:windBarbIconName];
 
     CGSize size = CGSizeMake(IMAGE_SIZE, IMAGE_SIZE);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
