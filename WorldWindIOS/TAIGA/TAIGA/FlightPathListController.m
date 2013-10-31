@@ -10,17 +10,18 @@
 #import "FlightPath.h"
 #import "Waypoint.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
-#define TAIGA_FLIGHT_PATH_KEYS (@"gov.nasa.worldwind.taiga.flightpathkeys")
-#define TAIGA_DAFIF_AIRPORTS_URL (@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT")
-#define TAIGA_DAFIF_AIRPORTS (@"gov.nasa.worldwind.taiga.dafif.airports")
-
 @implementation FlightPathListController
 
-- (FlightPathListController*) init
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing FlightPathListController --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (FlightPathListController*) initWithLayer:(WWRenderableLayer*)layer
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -32,7 +33,7 @@
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
-    flightPaths = [[NSMutableArray alloc] init];
+    _layer = layer;
     waypointDatabase = [[NSMutableArray alloc] init];
     [self populateWaypointDatabase];
 
@@ -52,6 +53,177 @@
     viewController.preferredContentSize = navigationController.topViewController.view.frame.size;
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Flight Path Model --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (NSUInteger) flightPathCount
+{
+    return [[_layer renderables] count];
+}
+
+- (FlightPath*) flightPathAtIndex:(NSUInteger)index
+{
+    return [[_layer renderables] objectAtIndex:index];
+}
+
+- (UIViewController*) flightPathDetailControllerAtIndex:(NSUInteger)index
+{
+    FlightPath* flightPath = [self flightPathAtIndex:index];
+    return [[FlightPathDetailController alloc] initWithFlightPath:flightPath waypointDatabase:waypointDatabase];
+}
+
+- (void) addFlightPathAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
+{
+    FlightPath* flightPath = [[FlightPath alloc] init];
+    [flightPath setDisplayName:displayName];
+    [flightPath setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight path.
+    [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during initialization.
+    [[_layer renderables] insertObject:flightPath atIndex:index];
+
+    [self saveFlightPathState:flightPath];
+    [self saveFlightPathListState];
+    [self requestRedraw];
+}
+
+- (void) removeFlightPathAtIndex:(NSUInteger)index
+{
+    FlightPath* flightPath = [[_layer renderables] objectAtIndex:index];
+    [flightPath setDelegate:nil];
+    [_layer removeRenderable:flightPath];
+
+    [self removeFlightPathState:flightPath];
+    [self saveFlightPathListState];
+    [self requestRedraw];
+}
+
+- (void) moveFlightPathFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
+{
+    NSMutableArray* flightPaths = [_layer renderables];
+    FlightPath* path = [flightPaths objectAtIndex:fromIndex];
+    [flightPaths removeObjectAtIndex:fromIndex];
+    [flightPaths insertObject:path atIndex:toIndex];
+
+    [self saveFlightPathListState];
+    [self requestRedraw];
+}
+
+- (void) flightPathDidChange:(FlightPath*)flightPath
+{
+    [self saveFlightPathState:flightPath];
+    [self requestRedraw];
+}
+
+- (void) flightPath:(FlightPath*)flightPath didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
+{
+    [self saveFlightPathState:flightPath];
+    [self requestRedraw];
+}
+
+- (void) flightPath:(FlightPath*)flightPath didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
+{
+    [self saveFlightPathState:flightPath];
+    [self requestRedraw];
+}
+
+- (void) flightPath:(FlightPath*)flightPath didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
+{
+    [self saveFlightPathState:flightPath];
+    [self requestRedraw];
+}
+
+- (void) saveFlightPathState:(FlightPath*)flightPath
+{
+    NSMutableArray* waypointKeys = [NSMutableArray arrayWithCapacity:[flightPath waypointCount]];
+    for (NSUInteger i = 0; i < [flightPath waypointCount]; i++)
+    {
+        Waypoint* waypoint = [flightPath waypointAtIndex:i];
+        [waypointKeys addObject:[waypoint key]];
+    }
+
+    id key = [flightPath userObject];
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    [userState setObject:[flightPath displayName] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
+    [userState setBool:[flightPath enabled] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
+    [userState setObject:waypointKeys forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", key]];
+    [userState synchronize];
+}
+
+- (void) removeFlightPathState:(FlightPath*)flightPath
+{
+    id key = [flightPath userObject];
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
+    [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
+    [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", key]];
+    [userState synchronize];
+}
+
+- (void) saveFlightPathListState
+{
+    NSMutableArray* flightPaths = [_layer renderables];
+    NSMutableArray* flightPathKeys = [NSMutableArray arrayWithCapacity:[flightPaths count]];
+    for (FlightPath* flightPath in flightPaths)
+    {
+        [flightPathKeys addObject:[flightPath userObject]];
+    }
+
+    [[NSUserDefaults standardUserDefaults] setObject:flightPathKeys forKey:@"gov.nasa.worldwind.taiga.flightpathkeys"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void) restoreAllFlightPathState
+{
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    NSMutableArray* waypoints = [[NSMutableArray alloc] initWithCapacity:8];
+
+    NSArray* flightPathKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightpathkeys"];
+    for (NSString* fpKey in flightPathKeys)
+    {
+        [waypoints removeAllObjects];
+        NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", fpKey]];
+        for (NSString* wpKey in waypointKeys)
+        {
+            NSUInteger keyIndex = [waypointDatabase indexOfObjectPassingTest:^(id obj, NSUInteger idx, BOOL* stop)
+            {
+                return [wpKey isEqual:[obj key]];
+            }];
+
+            if (keyIndex != NSNotFound)
+            {
+                [waypoints addObject:[waypointDatabase objectAtIndex:keyIndex]];
+            }
+            else
+            {
+                WWLog(@"Unrecognized waypoint key %@", wpKey);
+            }
+        }
+
+        NSString* displayName = [userState stringForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", fpKey]];
+        BOOL enabled = [userState boolForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", fpKey]];
+
+        FlightPath* flightPath = [[FlightPath alloc] initWithWaypoints:waypoints];
+        [flightPath setDisplayName:displayName];
+        [flightPath setEnabled:enabled];
+        [flightPath setUserObject:fpKey]; // Assign the flight path its state key.
+        [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during restore.
+        [_layer addRenderable:flightPath];
+    }
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- WorldWindView Interface --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) requestRedraw
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Flight Path Table --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
     return 1;
@@ -59,7 +231,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [flightPaths count];
+    return [self flightPathCount];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -74,7 +246,7 @@
         [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
     }
 
-    FlightPath* path = [flightPaths objectAtIndex:(NSUInteger) [indexPath row]];
+    FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[path displayName]];
     [[cell imageView] setHidden:![path enabled]];
 
@@ -84,7 +256,7 @@
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     // Set the flight path's visibility. Modify the model before the modifying the view.
-    FlightPath* path = [flightPaths objectAtIndex:(NSUInteger) [indexPath row]];
+    FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
     [path setEnabled:![path enabled]];
 
     // Make the view match the change in the model, using UIKit animations to display the change.
@@ -94,9 +266,8 @@
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
 {
-    FlightPath* path = [flightPaths objectAtIndex:(NSUInteger) [indexPath row]];
-    UIViewController* pathController = [self viewControllerForFlightPath:path];
-    [[self navigationController] pushViewController:pathController animated:YES];
+    UIViewController* detailController = [self flightPathDetailControllerAtIndex:(NSUInteger) [indexPath row]];
+    [[self navigationController] pushViewController:detailController animated:YES];
 }
 
 - (BOOL) tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)indexPath
@@ -116,10 +287,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
         // Modify the model before the modifying the view.
-        FlightPath* path = [flightPaths objectAtIndex:(NSUInteger) [indexPath row]];
-        [flightPaths removeObject:path];
-        [self saveFlightPathList];
-        [path removeState];
+        [self removeFlightPathAtIndex:(NSUInteger) [indexPath row]];
         // Make the view match the change in the model, using UIKit animations to display the change.
         [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                          withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -130,11 +298,13 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
-    FlightPath* path = [flightPaths objectAtIndex:(NSUInteger) [sourceIndexPath row]];
-    [flightPaths removeObjectAtIndex:(NSUInteger) [sourceIndexPath row]];
-    [flightPaths insertObject:path atIndex:(NSUInteger) [destinationIndexPath row]];
-    [self saveFlightPathList];
+    // Modify the model. The view has already been updated by the UITableView.
+    [self moveFlightPathFromIndex:(NSUInteger) [sourceIndexPath row] toIndex:(NSUInteger) [destinationIndexPath row]];
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Creating New Flight Paths --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) handleAddButtonTap
 {
@@ -152,11 +322,9 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     if (buttonIndex == 1) // Ok button tapped (ignore Cancel button tapped)
     {
         // Modify the model before the modifying the view.
-        FlightPath* path = [[FlightPath alloc] init];
-        [path setDisplayName:[[alertView textFieldAtIndex:0] text]]; // Path name text field
-        NSUInteger index = [flightPaths count]; // Append to end of flight paths list.
-        [flightPaths insertObject:path atIndex:index];
-        [self saveFlightPathList];
+        NSUInteger index = (NSUInteger) [self flightPathCount]; // Append to the end of the table.
+        NSString* displayName = [[alertView textFieldAtIndex:0] text]; // Path name text field
+        [self addFlightPathAtIndex:index withDisplayName:displayName];
 
         // Make the view match the change in the model. The index path's row indicates the row index that has been
         // inserted. Suppress row animations since we pushing a new view controller below.
@@ -168,33 +336,35 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 
         // Show the flight path detail controller in its edit state. Suppress animations when transitioning to the edit
         // state since we're pushing a new view controller.
-        UIViewController* pathController = [self viewControllerForFlightPath:path];
-        [pathController setEditing:YES animated:NO];
-        [[self navigationController] pushViewController:pathController animated:YES];
+        UIViewController* detailController = [self flightPathDetailControllerAtIndex:index];
+        [detailController setEditing:YES animated:NO];
+        [[self navigationController] pushViewController:detailController animated:YES];
     }
 }
 
-- (UIViewController*) viewControllerForFlightPath:(FlightPath*)path
-{
-    return [[FlightPathDetailController alloc] initWithFlightPath:path waypointDatabase:waypointDatabase];
-}
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Waypoint Database --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+// TODO: Move waypoint database into a separate class.
 
 - (void) populateWaypointDatabase
 {
-    NSURL* url = [NSURL URLWithString:TAIGA_DAFIF_AIRPORTS_URL];
+    NSURL* url = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
                                                     [self finishRetrievingDAFIFFile:myRetriever];
                                                     [self didPopulateWaypointsDatabase];
                                                 }];
-    [retriever setUserData:TAIGA_DAFIF_AIRPORTS];
     [retriever performRetrieval];
 }
 
 - (void) didPopulateWaypointsDatabase
 {
-    [self restoreFlightPathList];
+    [self restoreAllFlightPathState];
+    [[self tableView] reloadData];
+    [self requestRedraw];
 }
 
 - (void) finishRetrievingDAFIFFile:(WWRetriever*)retriever
@@ -206,7 +376,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     {
         // If the retrieval was successful, cache the retrieved TOC and parse its contents directly from the retriever.
         [[retriever retrievedData] writeToFile:cachePath atomically:YES];
-        [self parseDAFIFTable:[retriever retrievedData] encoding:NSWindowsCP1252StringEncoding dafifType:[retriever userData]];
+        [self parseDAFIFTable:[retriever retrievedData] encoding:NSWindowsCP1252StringEncoding];
     }
     else
     {
@@ -214,7 +384,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
         NSData* data = [NSData dataWithContentsOfFile:cachePath];
         if (data != nil)
         {
-            [self parseDAFIFTable:data encoding:NSWindowsCP1252StringEncoding dafifType:[retriever userData]];
+            [self parseDAFIFTable:data encoding:NSWindowsCP1252StringEncoding];
         }
         else
         {
@@ -223,7 +393,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     }
 }
 
-- (void) parseDAFIFTable:(NSData*)data encoding:(NSStringEncoding)encoding dafifType:(id)type
+- (void) parseDAFIFTable:(NSData*)data encoding:(NSStringEncoding)encoding
 {
     NSString* string = [[NSString alloc] initWithData:data encoding:encoding];
     NSMutableArray* fieldNames = [[NSMutableArray alloc] initWithCapacity:8];
@@ -249,60 +419,29 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
         }
     }];
 
-    [self parseDAFIFTableRows:tableRows dafifType:type];
+    [self parseDAFIFTableRows:tableRows];
 }
 
-- (void) parseDAFIFTableRows:(NSArray*)tableRows dafifType:(id)type
+- (void) parseDAFIFTableRows:(NSArray*)tableRows
 {
-    if ([type isEqual:TAIGA_DAFIF_AIRPORTS])
+    for (NSDictionary* row in tableRows)
     {
-        for (NSDictionary* row in tableRows)
-        {
-            NSString* key = [row objectForKey:@"ARPT_IDENT"];
-            double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
-            double lonDegrees = [[row objectForKey:@"WGS_DLON"] doubleValue];
-            WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
+        NSString* key = [row objectForKey:@"ARPT_IDENT"];
+        double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
+        double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
+        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
 
-            Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location];
-            [waypoint setProperties:row];
-            [waypoint setDisplayName:[row objectForKey:@"FAA_HOST_ID"]];
-            [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
-            [waypointDatabase addObject:waypoint];
-        }
-    }
-    else
-    {
-        WWLog(@"Unrecognized DAFIF table type");
+        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location];
+        [waypoint setProperties:row];
+        [waypoint setDisplayName:[row objectForKey:@"FAA_HOST_ID"]];
+        [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
+        [waypointDatabase addObject:waypoint];
     }
 
     [waypointDatabase sortUsingComparator:^(id obj1, id obj2)
     {
         return [[obj1 displayName] compare:[obj2 displayName]];
     }];
-}
-
-- (void) saveFlightPathList
-{
-    NSMutableArray* flightPathKeys = [NSMutableArray arrayWithCapacity:[flightPaths count]];
-
-    for (FlightPath* path in flightPaths)
-    {
-        [flightPathKeys addObject:[path stateKey]];
-    }
-
-    [[NSUserDefaults standardUserDefaults] setObject:flightPathKeys forKey:TAIGA_FLIGHT_PATH_KEYS];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (void) restoreFlightPathList
-{
-    NSArray* flightPathKeys = [[NSUserDefaults standardUserDefaults] objectForKey:TAIGA_FLIGHT_PATH_KEYS];
-
-    for (NSString* key in flightPathKeys)
-    {
-        FlightPath* path = [[FlightPath alloc] initWithStateKey:key waypointDatabase:waypointDatabase];
-        [flightPaths addObject:path];
-    }
 }
 
 @end

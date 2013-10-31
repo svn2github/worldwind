@@ -13,6 +13,10 @@
 
 @implementation FlightPathDetailController
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing FlightPathDetailController --//
+//--------------------------------------------------------------------------------------------------------------------//
+
 - (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointDatabase:(NSArray*)waypointDatabase
 {
     self = [super initWithNibName:nil bundle:nil];
@@ -26,6 +30,10 @@
 
     return self;
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- View Layout --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) loadView
 {
@@ -112,6 +120,10 @@
 
     [flightPathTable setEditing:editing animated:animated];
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Flight Path Waypoint Table and Waypoint Search Table --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
@@ -218,6 +230,10 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
                                  toIndex:(NSUInteger) [destinationIndexPath row]];
     }
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Waypoint Search Bar --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)searchText
 {

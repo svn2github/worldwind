@@ -6,14 +6,15 @@
  */
 
 #import "FlightPath.h"
+#import "FlightPathDelegate.h"
 #import "Waypoint.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Render/WWDrawContext.h"
+#import "Worldwind/Shapes/WWPath.h"
+#import "WorldWind/Shapes/WWShapeAttributes.h"
+#import "WorldWind/Util/WWColor.h"
+#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
-
-#define STATE_KEY(key, propertyName) ([NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.%@", (key), (propertyName)])
-#define PROPERTY_DISPLAY_NAME @"displayName"
-#define PROPERTY_ENABLED @"enabled"
-#define PROPERTY_WAYPOINT_KEYS @"waypointKeys"
 
 @implementation FlightPath
 
@@ -21,61 +22,61 @@
 {
     self = [super init];
 
-    _stateKey = [[NSProcessInfo processInfo] globallyUniqueString];
     _displayName = @"Flight Path";
     _enabled = YES;
-    waypoints = [[NSMutableArray alloc] init];
 
-    [[NSUserDefaults standardUserDefaults] setObject:_displayName forKey:STATE_KEY(_stateKey, PROPERTY_DISPLAY_NAME)];
-    [[NSUserDefaults standardUserDefaults] setBool:_enabled forKey:STATE_KEY(_stateKey, PROPERTY_ENABLED)];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    waypoints = [[NSMutableArray alloc] initWithCapacity:8];
+    waypointPositions = [[NSMutableArray alloc] initWithCapacity:8];
+    [self initPathWithPositions:waypointPositions];
 
     return self;
 }
 
-- (FlightPath*) initWithStateKey:(NSString*)stateKey waypointDatabase:(NSArray*)waypointDatabase
+- (FlightPath*) initWithWaypoints:(NSArray*)waypointArray
 {
-    if (stateKey == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"State key is nil")
-    }
-
-    if (waypointDatabase == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint database is nil")
-    }
-
     self = [super init];
 
-    _stateKey = stateKey;
-    _displayName = [[NSUserDefaults standardUserDefaults] stringForKey:STATE_KEY(_stateKey, PROPERTY_DISPLAY_NAME)];
-    _enabled = [[NSUserDefaults standardUserDefaults] boolForKey:STATE_KEY(_stateKey, PROPERTY_ENABLED)];
-    waypoints = [[NSMutableArray alloc] init];
+    _displayName = @"Flight Path";
+    _enabled = YES;
 
-    [self restoreWaypoints:waypointDatabase];
+    waypoints = [[NSMutableArray alloc] initWithArray:waypointArray];
+    waypointPositions = [[NSMutableArray alloc] initWithCapacity:[waypointArray count]];
+    for (Waypoint* waypoint in waypoints)
+    {
+        WWPosition* pos = [self positionForWaypoint:waypoint];
+        [waypointPositions addObject:pos];
+    }
+    [self initPathWithPositions:waypointPositions];
 
     return self;
 }
 
-- (void) removeState
+- (void) initPathWithPositions:(NSArray*)positions
 {
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:STATE_KEY(_stateKey, PROPERTY_DISPLAY_NAME)];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:STATE_KEY(_stateKey, PROPERTY_ENABLED)];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:STATE_KEY(_stateKey, PROPERTY_WAYPOINT_KEYS)];
+    path = [[WWPath alloc] initWithPositions:positions];
+    [path setPathType:WW_RHUMB];
+
+    WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
+    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+    [attrs setOutlineWidth:5.0];
+    [path setAttributes:attrs];
+}
+
+- (WWPosition*) positionForWaypoint:(Waypoint*)waypoint
+{
+    return [[WWPosition alloc] initWithLocation:[waypoint location] altitude:5000];
 }
 
 - (void) setDisplayName:(NSString*)displayName
 {
     _displayName = displayName;
-    [[NSUserDefaults standardUserDefaults] setObject:_displayName forKey:STATE_KEY(_stateKey, PROPERTY_DISPLAY_NAME)];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self didChange];
 }
 
 - (void) setEnabled:(BOOL)enabled
 {
     _enabled = enabled;
-    [[NSUserDefaults standardUserDefaults] setBool:_enabled forKey:STATE_KEY(_stateKey, PROPERTY_ENABLED)];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self didChange];
 }
 
 - (void) render:(WWDrawContext*)dc
@@ -85,7 +86,7 @@
         return;
     }
 
-    // TODO: Render flight path waypoints.
+    [path render:dc];
 }
 
 - (NSUInteger) waypointCount
@@ -111,8 +112,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
     }
 
-    [waypoints addObject:waypoint];
-    [self saveWaypoints];
+    NSUInteger index = [waypoints count];
+    [waypoints insertObject:waypoint atIndex:index];
+    [self didInsertWaypoint:waypoint atIndex:index];
 }
 
 - (void) insertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
@@ -129,7 +131,7 @@
     }
 
     [waypoints insertObject:waypoint atIndex:index];
-    [self saveWaypoints];
+    [self didInsertWaypoint:waypoint atIndex:index];
 }
 
 - (void) removeWaypoint:(Waypoint*)waypoint
@@ -139,8 +141,12 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
     }
 
-    [waypoints removeObject:waypoint];
-    [self saveWaypoints];
+    NSUInteger index = [waypoints indexOfObject:waypoint];
+    if (index != NSNotFound)
+    {
+        [waypoints removeObjectAtIndex:index];
+        [self didRemoveWaypoint:waypoint atIndex:index];
+    }
 }
 
 - (void) removeWaypointAtIndex:(NSUInteger)index
@@ -151,8 +157,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
+    Waypoint* waypoint = [waypoints objectAtIndex:index];
     [waypoints removeObjectAtIndex:index];
-    [self saveWaypoints];
+    [self didRemoveWaypoint:waypoint atIndex:index];
 }
 
 - (void) moveWaypointAtIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
@@ -172,43 +179,39 @@
     Waypoint* waypoint = [waypoints objectAtIndex:fromIndex];
     [waypoints removeObjectAtIndex:fromIndex];
     [waypoints insertObject:waypoint atIndex:toIndex];
-    [self saveWaypoints];
+    [self didMoveWaypoint:waypoint fromIndex:fromIndex toIndex:toIndex];
 }
 
-- (void) saveWaypoints
+- (void) didChange
 {
-    NSMutableArray* waypointKeys = [NSMutableArray arrayWithCapacity:[waypoints count]];
-
-    for (Waypoint* waypoint in waypoints)
-    {
-        [waypointKeys addObject:[waypoint key]];
-    }
-
-    [[NSUserDefaults standardUserDefaults] setObject:waypointKeys forKey:STATE_KEY(_stateKey, PROPERTY_WAYPOINT_KEYS)];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [_delegate flightPathDidChange:self];
 }
 
-- (void) restoreWaypoints:(NSArray*)waypointDatabase
+- (void) didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
 {
-    NSArray* waypointKeys = [[NSUserDefaults standardUserDefaults] arrayForKey:STATE_KEY(_stateKey, PROPERTY_WAYPOINT_KEYS)];
+    WWPosition* pos = [self positionForWaypoint:waypoint];
+    [waypointPositions insertObject:pos atIndex:index];
+    [path setPositions:waypointPositions];
 
-    for (NSString* key in waypointKeys)
-    {
-        NSUInteger keyIndex = [waypointDatabase indexOfObjectPassingTest:^(id obj, NSUInteger idx, BOOL* stop)
-        {
-            return [key isEqual:[obj key]];
-        }];
+    [_delegate flightPath:self didInsertWaypoint:waypoint atIndex:index];
+}
 
-        if (keyIndex != NSNotFound)
-        {
-            Waypoint* waypoint = [waypointDatabase objectAtIndex:keyIndex];
-            [waypoints addObject:waypoint];
-        }
-        else
-        {
-            WWLog(@"Unrecognized waypoint key %@", key);
-        }
-    }
+- (void) didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
+{
+    [waypointPositions removeObjectAtIndex:index];
+    [path setPositions:waypointPositions];
+
+    [_delegate flightPath:self didRemoveWaypoint:waypoint atIndex:index];
+}
+
+- (void) didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
+{
+    WWPosition* pos = [waypointPositions objectAtIndex:fromIndex];
+    [waypointPositions removeObjectAtIndex:fromIndex];
+    [waypointPositions insertObject:pos atIndex:toIndex];
+    [path setPositions:waypointPositions];
+
+    [_delegate flightPath:self didMoveWaypoint:waypoint fromIndex:fromIndex toIndex:toIndex];
 }
 
 @end

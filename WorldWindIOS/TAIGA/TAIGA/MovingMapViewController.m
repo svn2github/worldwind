@@ -9,9 +9,9 @@
 #import "WorldWind.h"
 #import "WorldWindView.h"
 #import "WWLayerList.h"
+#import "WWRenderableLayer.h"
 #import "WWSceneController.h"
 #import "WWBMNGLandsatCombinedLayer.h"
-#import "FlightPathsLayer.h"
 #import "LayerListController.h"
 #import "AppConstants.h"
 #import "WWElevationShadingLayer.h"
@@ -53,6 +53,7 @@
     FlightPathListController * flightPathController;
     UIPopoverController* flightPathPopoverController;
 
+    WWRenderableLayer* flightPathsLayer;
     FAAChartsAlaskaLayer* faaChartsLayer;
     OpenWeatherMapLayer* precipitationLayer;
     OpenWeatherMapLayer* cloudsLayer;
@@ -60,7 +61,6 @@
     OpenWeatherMapLayer* snowLayer;
     OpenWeatherMapLayer* windLayer;
     WWElevationShadingLayer* terrainAltitudeLayer;
-    //FlightPathsLayer* flightPathsLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
     CompassLayer* compassLayer;
@@ -114,6 +114,11 @@
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
 
+    flightPathsLayer = [[WWRenderableLayer alloc] init];
+    [flightPathsLayer setDisplayName:@"Flight Paths"];
+    [[flightPathsLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
+
     faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
     [faaChartsLayer setEnabled:[Settings getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
@@ -154,12 +159,6 @@
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [terrainAltitudeLayer displayName]] defaultValue:NO]];
     [layers addLayer:terrainAltitudeLayer];
 
-    //flightPathsLayer = [[FlightPathsLayer alloc]
-    //        initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
-    //[flightPathsLayer setEnabled:[Settings getBoolForName:
-    //        [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
-    //[[[_wwv sceneController] layers] addLayer:flightPathsLayer];
-
     metarLayer = [[METARLayer alloc] init];
     [metarLayer setEnabled:[Settings getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [metarLayer displayName]] defaultValue:NO]];
@@ -177,7 +176,7 @@
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    flightPathController = [[FlightPathListController alloc] init];
+    flightPathController = [[FlightPathListController alloc] initWithLayer:flightPathsLayer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];

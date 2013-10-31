@@ -9,15 +9,17 @@
 #import "WorldWind/Render/WWRenderable.h"
 
 @class Waypoint;
-@class WWDrawContext;
+@class WWPath;
+@class WWShapeAttributes;
+@protocol FlightPathDelegate;
 
 @interface FlightPath : NSObject <WWRenderable>
 {
 @protected
     NSMutableArray* waypoints;
+    NSMutableArray* waypointPositions;
+    WWPath* path;
 }
-
-@property (nonatomic, readonly) NSString* stateKey;
 
 /// Indicates this flight path's display name.
 @property (nonatomic) NSString* displayName;
@@ -25,13 +27,14 @@
 /// Indicates whether this flight path should be displayed.
 @property (nonatomic) BOOL enabled;
 
+@property (nonatomic) id<FlightPathDelegate> delegate;
+
+/// A field for application-specific use, typically used to associate application data with the shape.
+@property (nonatomic) id userObject;
+
 - (FlightPath*) init;
 
-- (FlightPath*) initWithStateKey:(NSString*)stateKey waypointDatabase:(NSArray*)waypointDatabase;
-
-- (void) removeState;
-
-- (void) render:(WWDrawContext*)dc;
+- (FlightPath*) initWithWaypoints:(NSArray*)waypointArray;
 
 - (NSUInteger) waypointCount;
 
