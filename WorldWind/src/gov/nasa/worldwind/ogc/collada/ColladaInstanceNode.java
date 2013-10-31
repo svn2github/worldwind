@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
 
@@ -25,6 +26,13 @@ public class ColladaInstanceNode extends ColladaAbstractInstance<ColladaNode> im
     public ColladaInstanceNode(String ns)
     {
         super(ns);
+    }
+
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        ColladaNode instance = this.get();
+
+        return instance != null ? instance.getLocalExtent(tc) : null;
     }
 
     /** {@inheritDoc} Renders the target of the instance pointer, if the target can be resolved. */

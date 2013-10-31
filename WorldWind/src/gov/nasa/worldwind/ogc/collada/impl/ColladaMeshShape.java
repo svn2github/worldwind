@@ -757,6 +757,43 @@ public class ColladaMeshShape extends AbstractGeneralShape
         return Box.computeBoundingBox(extrema);
     }
 
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        if (tc == null)
+        {
+            String message = Logging.getMessage("nullValue.TraversalContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        int size = this.shapeCount * this.vertsPerShape * ColladaAbstractGeometry.COORDS_PER_VERTEX;
+        FloatBuffer vertexBuffer = WWBufferUtil.newFloatBuffer(size, true);
+
+        for (Geometry geometry : this.geometries)
+        {
+            geometry.colladaGeometry.getVertices(vertexBuffer);
+        }
+
+        // Compute a bounding box around the vertices in this shape.
+        vertexBuffer.rewind();
+        Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(vertexBuffer),
+            ColladaAbstractGeometry.COORDS_PER_VERTEX);
+
+        // Compute the corners of the bounding box and transform with the active transform matrix.
+        List<Vec4> extrema = new ArrayList<Vec4>();
+        Vec4[] corners = box.getCorners();
+        for (Vec4 corner : corners)
+        {
+            extrema.add(corner.transformBy4(tc.peekMatrix()));
+        }
+
+        if (extrema.isEmpty())
+            return null;
+
+        // Compute the bounding box around the transformed corners.
+        return Box.computeBoundingBox(extrema);
+    }
+
     /**
      * Create the shape's vertex coordinates. The coordinates are stored in {@link #coordBuffer}.
      *

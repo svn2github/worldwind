@@ -6,8 +6,10 @@
 
 package gov.nasa.worldwind.ogc.collada;
 
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.ogc.collada.impl.*;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.util.Logging;
 
 import java.util.*;
 
@@ -54,6 +56,27 @@ public class ColladaVisualScene extends ColladaAbstractObject implements Collada
         {
             super.setField(keyName, value);
         }
+    }
+
+    @Override
+    public Box getLocalExtent(ColladaTraversalContext tc)
+    {
+        if (tc == null)
+        {
+            String message = Logging.getMessage("nullValue.TraversalContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        ArrayList<Box> extents = new ArrayList<Box>();
+        for (ColladaNode node : this.getNodes())
+        {
+            Box extent = node.getLocalExtent(tc);
+            if (extent != null)
+                extents.add(extent);
+        }
+
+        return extents.isEmpty() ? null : Box.union(extents);
     }
 
     /** {@inheritDoc} Renders all nodes in this scene. */

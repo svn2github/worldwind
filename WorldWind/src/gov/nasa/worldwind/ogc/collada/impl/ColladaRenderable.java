@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.collada.impl;
 
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.render.DrawContext;
 
 /**
@@ -16,6 +17,15 @@ import gov.nasa.worldwind.render.DrawContext;
  */
 public interface ColladaRenderable
 {
+    /**
+     * Returns this renderable's model coordinate extent.
+     *
+     * @param tc The traversal context to use when determining the extent.
+     * @return The model coordinate extent.
+     *
+     * @throws IllegalArgumentException if either the traversal context is null.
+     */
+    Box getLocalExtent(ColladaTraversalContext tc);
 
     /**
      * Pre-Render this element.
