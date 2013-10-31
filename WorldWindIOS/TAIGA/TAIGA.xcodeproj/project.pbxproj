@@ -344,6 +344,7 @@
 		1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
+		CC8CF0212848A21D0F75F70D /* FlightPathDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathDelegate.h; sourceTree = "<group>"; };
 		CC8CF0A0D05965E79B4A21BD /* FlightPathListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathListController.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPath.m; sourceTree = "<group>"; };
 		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
@@ -483,6 +484,7 @@
 				CC8CFE0F0B4B6CFB377B9003 /* FlightPathDetailController.m */,
 				CC8CF698F1109BBE57E61250 /* FlightPathListController.h */,
 				CC8CF0A0D05965E79B4A21BD /* FlightPathListController.m */,
+				CC8CF0212848A21D0F75F70D /* FlightPathDelegate.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
