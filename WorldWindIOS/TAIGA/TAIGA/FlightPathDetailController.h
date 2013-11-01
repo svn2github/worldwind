@@ -8,22 +8,22 @@
 #import <Foundation/Foundation.h>
 
 @class FlightPath;
+@class WaypointFile;
+@class WaypointChooserControl;
 
 @interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 {
 @protected
     UITableView* flightPathTable;
-    UISearchBar* waypointSearchBar;
-    UITableView* waypointTable;
+    WaypointChooserControl * waypointChooser;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
-    NSArray* filteredWaypoints;
 }
 
 @property (nonatomic, readonly, weak) FlightPath* flightPath;
 
-@property (nonatomic, readonly, weak) NSArray* waypointDatabase;
+@property (nonatomic, readonly, weak) WaypointFile* waypointFile;
 
-- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointDatabase:(NSArray*)waypointDatabase;
+- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointFile:(WaypointFile*)waypointFile;
 
 @end

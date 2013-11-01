@@ -8,6 +8,7 @@
 #import "FlightPathDetailController.h"
 #import "FlightPath.h"
 #import "Waypoint.h"
+#import "WaypointChooserControl.h"
 
 #define EDIT_ANIMATION_DURATION 0.3
 
@@ -17,7 +18,7 @@
 //-- Initializing FlightPathDetailController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointDatabase:(NSArray*)waypointDatabase
+- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointFile:(WaypointFile*)waypointFile
 {
     self = [super initWithNibName:nil bundle:nil];
 
@@ -25,8 +26,7 @@
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
 
     _flightPath = flightPath;
-    _waypointDatabase = waypointDatabase;
-    filteredWaypoints = waypointDatabase;
+    _waypointFile = waypointFile;
 
     return self;
 }
@@ -47,17 +47,9 @@
     [flightPathTable setAllowsSelection:NO];
     [view addSubview:flightPathTable];
 
-    waypointSearchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-    [waypointSearchBar setPlaceholder:@"Search or enter an FAA code"];
-    [waypointSearchBar setDelegate:self];
-    [view addSubview:waypointSearchBar];
-
-    waypointTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 1, 1) style:UITableViewStylePlain];
-    [waypointTable setDataSource:self];
-    [waypointTable setDelegate:self];
-    [flightPathTable setAllowsSelection:NO];
-    [waypointTable setEditing:YES];
-    [view addSubview:waypointTable];
+    waypointChooser = [[WaypointChooserControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
+    [waypointChooser setDataSource:_waypointFile];
+    [view addSubview:waypointChooser];
 
     [self layout];
 }
@@ -65,24 +57,20 @@
 - (void) layout
 {
     UIView* view = [self view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightPathTable, waypointSearchBar, waypointTable);
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightPathTable, waypointChooser);
 
     // Disable automatic translation of autoresizing mask into constraints. We're using explicit layout constraints
     // below.
     [flightPathTable setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [waypointSearchBar setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [waypointTable setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [waypointChooser setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[flightPathTable]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointSearchBar]|"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointChooser]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointTable]|"
-                                                                 options:0 metrics:nil views:viewsDictionary]];
-
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(==view)]-[waypointSearchBar(44)]-[waypointTable(>=132)]"
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(==view)]-[waypointChooser(>=176)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(<=264)]-[waypointSearchBar(44)]-[waypointTable(>=132)]|"
+    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(<=264)]-[waypointChooser(>=176)]|"
                                                                  options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:normalConstraints];
 }
@@ -122,7 +110,7 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Flight Path Waypoint Table and Waypoint Search Table --//
+//-- UITableViewDataSource and UITableViewDelegate --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
@@ -132,14 +120,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (tableView == flightPathTable)
-    {
-        return [_flightPath waypointCount];
-    }
-    else // waypointTable
-    {
-        return [filteredWaypoints count];
-    }
+    return [_flightPath waypointCount];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -151,16 +132,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
 
-    Waypoint* waypoint;
-    if (tableView == flightPathTable)
-    {
-        waypoint = [_flightPath waypointAtIndex:(NSUInteger) [indexPath row]];
-    }
-    else // waypointTable
-    {
-        waypoint = [filteredWaypoints objectAtIndex:(NSUInteger) [indexPath row]];
-    }
-
+    Waypoint* waypoint = [_flightPath waypointAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[waypoint displayName]];
     [[cell detailTextLabel] setText:[waypoint displayNameLong]];
 
@@ -169,96 +141,53 @@
 
 - (UITableViewCellEditingStyle) tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (tableView == flightPathTable)
-    {
-        return UITableViewCellEditingStyleDelete;
-    }
-    else // waypointTable
-    {
-        return UITableViewCellEditingStyleInsert;
-    }
+    return UITableViewCellEditingStyleDelete;
 }
 
 - (BOOL) tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    return YES; // All rows of flight path table and waypoints table are editable.
+    return YES;
 }
 
 - (BOOL) tableView:(UITableView*)tableView canMoveRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    return tableView == flightPathTable; // Only flight path table rows can be moved.
+    return YES;
 }
 
 - (void) tableView:(UITableView*)tableView
 commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
  forRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    if (tableView == flightPathTable && editingStyle == UITableViewCellEditingStyleDelete)
-    {
-        // Modify the model before the modifying the view.
-        [_flightPath removeWaypointAtIndex:(NSUInteger) [indexPath row]];
+    // Modify the model before the modifying the view.
+    [_flightPath removeWaypointAtIndex:(NSUInteger) [indexPath row]];
 
-        // Make the flight path table view match the change in the model, using UIKit animations to display the change.
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
-                         withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-    else if (tableView == waypointTable && editingStyle == UITableViewCellEditingStyleInsert)
-    {
-        // Modify the model before the modifying the view. Get the waypoint to insert from the waypoint table, then
-        // append it to the flight path model.
-        Waypoint* waypoint = [filteredWaypoints objectAtIndex:(NSUInteger) [indexPath row]];
-        NSUInteger index = [_flightPath waypointCount];
-        [_flightPath insertWaypoint:waypoint atIndex:index];
-
-        // Make the flight path table view match the change in the model, using UIKit animations to display the change.
-        // The index path's row indicates the row index that has been inserted.
-        NSIndexPath* insertIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        [flightPathTable insertRowsAtIndexPaths:[NSArray arrayWithObject:insertIndexPath]
-                               withRowAnimation:UITableViewRowAnimationFade];
-        [flightPathTable scrollToRowAtIndexPath:insertIndexPath atScrollPosition:UITableViewScrollPositionNone
-                                       animated:YES];
-    }
+    // Make the flight path table view match the change in the model, using UIKit animations to display the change.
+    [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                     withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void) tableView:(UITableView*)tableView
 moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
-    if (tableView == flightPathTable)
-    {
-        [_flightPath moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
-                                 toIndex:(NSUInteger) [destinationIndexPath row]];
-    }
+    [_flightPath moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
+                             toIndex:(NSUInteger) [destinationIndexPath row]];
 }
 
-//--------------------------------------------------------------------------------------------------------------------//
-//-- Waypoint Search Bar --//
-//--------------------------------------------------------------------------------------------------------------------//
-
-- (void) searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)searchText
+- (void) didChooseWaypoint:(Waypoint*)waypoint
 {
-    [self filterWaypointsForSearchText:[searchBar text]];
-}
+    // Modify the model before the modifying the view. Get the waypoint to insert from the waypoint table, then
+    // append it to the flight path model.
+    NSUInteger index = [_flightPath waypointCount];
+    [_flightPath insertWaypoint:waypoint atIndex:index];
 
-- (void) searchBarSearchButtonClicked:(UISearchBar*)searchBar
-{
-    [self filterWaypointsForSearchText:[searchBar text]];
-}
-
-- (void) filterWaypointsForSearchText:(NSString*)searchText
-{
-    if ([searchText length] == 0)
-    {
-        filteredWaypoints = _waypointDatabase;
-    }
-    else
-    {
-        NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ OR displayNameLong LIKE[cd] %@", wildSearchText, wildSearchText];
-        filteredWaypoints = [_waypointDatabase filteredArrayUsingPredicate:predicate];
-    }
-
-    [waypointTable reloadData];
+    // Make the flight path table view match the change in the model, using UIKit animations to display the change.
+    // The index path's row indicates the row index that has been inserted.
+    NSIndexPath* insertIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    [flightPathTable insertRowsAtIndexPaths:[NSArray arrayWithObject:insertIndexPath]
+                           withRowAnimation:UITableViewRowAnimationFade];
+    [flightPathTable scrollToRowAtIndexPath:insertIndexPath atScrollPosition:UITableViewScrollPositionNone
+                                   animated:YES];
 }
 
 @end

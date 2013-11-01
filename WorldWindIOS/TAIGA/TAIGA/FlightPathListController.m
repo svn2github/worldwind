@@ -9,9 +9,8 @@
 #import "FlightPathDetailController.h"
 #import "FlightPath.h"
 #import "Waypoint.h"
-#import "WorldWind/Geometry/WWLocation.h"
+#import "WaypointFile.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
-#import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
@@ -34,15 +33,22 @@
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
     _layer = layer;
-    waypointDatabase = [[NSMutableArray alloc] init];
-    [self populateWaypointDatabase];
+
+    NSURL* airportsUrl = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
+    waypointFile = [[WaypointFile alloc] init];
+    [waypointFile loadDAFIFAirports:airportsUrl finishedBlock:^
+    {
+        [self didLoadWaypoints];
+    }];
 
     return self;
 }
 
-- (void) viewDidLoad
+- (void) didLoadWaypoints
 {
-    [super viewDidLoad];
+    [self restoreAllFlightPathState];
+    [[self tableView] reloadData];
+    [self requestRedraw];
 }
 
 - (void) navigationController:(UINavigationController*)navigationController
@@ -70,7 +76,7 @@
 - (UIViewController*) flightPathDetailControllerAtIndex:(NSUInteger)index
 {
     FlightPath* flightPath = [self flightPathAtIndex:index];
-    return [[FlightPathDetailController alloc] initWithFlightPath:flightPath waypointDatabase:waypointDatabase];
+    return [[FlightPathDetailController alloc] initWithFlightPath:flightPath waypointFile:waypointFile];
 }
 
 - (void) addFlightPathAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
@@ -184,14 +190,10 @@
         NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", fpKey]];
         for (NSString* wpKey in waypointKeys)
         {
-            NSUInteger keyIndex = [waypointDatabase indexOfObjectPassingTest:^(id obj, NSUInteger idx, BOOL* stop)
+            Waypoint* waypoint = [waypointFile waypointForKey:wpKey];
+            if (waypoint != nil)
             {
-                return [wpKey isEqual:[obj key]];
-            }];
-
-            if (keyIndex != NSNotFound)
-            {
-                [waypoints addObject:[waypointDatabase objectAtIndex:keyIndex]];
+                [waypoints addObject:waypoint];
             }
             else
             {
@@ -212,16 +214,7 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- WorldWindView Interface --//
-//--------------------------------------------------------------------------------------------------------------------//
-
-- (void) requestRedraw
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
-}
-
-//--------------------------------------------------------------------------------------------------------------------//
-//-- Flight Path Table --//
+//-- Flight Path List Table --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
@@ -343,105 +336,12 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Waypoint Database --//
+//-- WorldWindView Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-// TODO: Move waypoint database into a separate class.
-
-- (void) populateWaypointDatabase
+- (void) requestRedraw
 {
-    NSURL* url = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
-                                                finishedBlock:^(WWRetriever* myRetriever)
-                                                {
-                                                    [self finishRetrievingDAFIFFile:myRetriever];
-                                                    [self didPopulateWaypointsDatabase];
-                                                }];
-    [retriever performRetrieval];
-}
-
-- (void) didPopulateWaypointsDatabase
-{
-    [self restoreAllFlightPathState];
-    [[self tableView] reloadData];
-    [self requestRedraw];
-}
-
-- (void) finishRetrievingDAFIFFile:(WWRetriever*)retriever
-{
-    NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:[[retriever url] path]];
-
-    if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
-    {
-        // If the retrieval was successful, cache the retrieved TOC and parse its contents directly from the retriever.
-        [[retriever retrievedData] writeToFile:cachePath atomically:YES];
-        [self parseDAFIFTable:[retriever retrievedData] encoding:NSWindowsCP1252StringEncoding];
-    }
-    else
-    {
-        // Otherwise, attempt to use a previously cached version.
-        NSData* data = [NSData dataWithContentsOfFile:cachePath];
-        if (data != nil)
-        {
-            [self parseDAFIFTable:data encoding:NSWindowsCP1252StringEncoding];
-        }
-        else
-        {
-            WWLog(@"Unable to retrieve or use local cache of DAFIF file %@", [[retriever url] absoluteString]);
-        }
-    }
-}
-
-- (void) parseDAFIFTable:(NSData*)data encoding:(NSStringEncoding)encoding
-{
-    NSString* string = [[NSString alloc] initWithData:data encoding:encoding];
-    NSMutableArray* fieldNames = [[NSMutableArray alloc] initWithCapacity:8];
-    NSMutableArray* tableRows = [[NSMutableArray alloc] initWithCapacity:8];
-
-    [string enumerateLinesUsingBlock:^(NSString* line, BOOL* stop)
-    {
-        NSArray* lineComponents = [line componentsSeparatedByString:@"\t"];
-
-        if ([fieldNames count] == 0) // first line indicates DAFIF table field names
-        {
-            [fieldNames addObjectsFromArray:lineComponents];
-        }
-        else // subsequent lines indicate DAFIF table row values
-        {
-            NSMutableDictionary* rowValues = [[NSMutableDictionary alloc] init];
-            for (NSUInteger i = 0; i < [lineComponents count] && i < [fieldNames count]; i++)
-            {
-                [rowValues setObject:[lineComponents objectAtIndex:i] forKey:[fieldNames objectAtIndex:i]];
-            }
-
-            [tableRows addObject:rowValues];
-        }
-    }];
-
-    [self parseDAFIFTableRows:tableRows];
-}
-
-- (void) parseDAFIFTableRows:(NSArray*)tableRows
-{
-    for (NSDictionary* row in tableRows)
-    {
-        NSString* key = [row objectForKey:@"ARPT_IDENT"];
-        double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
-        double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
-        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
-
-        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location];
-        [waypoint setProperties:row];
-        [waypoint setDisplayName:[row objectForKey:@"FAA_HOST_ID"]];
-        [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
-        [waypointDatabase addObject:waypoint];
-    }
-
-    [waypointDatabase sortUsingComparator:^(id obj1, id obj2)
-    {
-        return [[obj1 displayName] compare:[obj2 displayName]];
-    }];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 @end

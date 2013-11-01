@@ -8,12 +8,13 @@
 #import <Foundation/Foundation.h>
 #import "FlightPathDelegate.h"
 
+@class WaypointFile;
 @class WWRenderableLayer;
 
 @interface FlightPathListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate, FlightPathDelegate>
 {
 @protected
-    NSMutableArray* waypointDatabase;
+    WaypointFile* waypointFile;
 }
 
 @property (nonatomic, readonly) WWRenderableLayer* layer;
