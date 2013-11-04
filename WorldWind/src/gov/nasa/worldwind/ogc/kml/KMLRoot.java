@@ -61,6 +61,8 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
     protected boolean linkControlFetched = false;
     protected KMLNetworkLinkControl networkLinkControl;
 
+    protected AbsentResourceList absentResourceList = new AbsentResourceList();
+
     /**
      * Creates a KML root for an untyped source. The source must be either a {@link File}, a {@link URL}, a {@link
      * InputStream}, or a {@link String} identifying either a file path or a URL. For all types other than
@@ -572,9 +574,19 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
             throw new IllegalArgumentException(message);
         }
 
+        if (absentResourceList.isResourceAbsent(link))
+            return null;
+
         // Store remote files in the World Wind cache by default. This provides backward compatibility with applications
         // depending on resolveReference's behavior prior to the addition of the cacheRemoteFile parameter.
-        return this.resolveReference(link, true);
+        Object o = this.resolveReference(link, true);
+
+        if (o == null)
+            absentResourceList.markResourceAbsent(link);
+        else
+            absentResourceList.unmarkResourceAbsent(link);
+
+        return o;
     }
 
     /**
