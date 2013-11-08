@@ -11,11 +11,12 @@
 @class WaypointFile;
 @class WaypointChooserControl;
 
-@interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
+@interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 {
 @protected
+    NSNumberFormatter* altitudeFormatter;
     UITableView* flightPathTable;
-    WaypointChooserControl * waypointChooser;
+    WaypointChooserControl* waypointFileControl;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
 }

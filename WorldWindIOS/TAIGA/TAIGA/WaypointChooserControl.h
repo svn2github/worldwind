@@ -17,12 +17,14 @@
     UITableView* waypointTable;
 }
 
-@property (nonatomic, readonly) id target;
+@property (nonatomic, readonly, weak) id target;
 
 @property (nonatomic, readonly) SEL action;
 
-@property (nonatomic) WaypointFile* dataSource;
+@property (nonatomic) WaypointFile* waypointFile;
 
 - (WaypointChooserControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action;
+
+- (void) flashScrollIndicators;
 
 @end

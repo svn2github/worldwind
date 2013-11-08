@@ -11,7 +11,7 @@
 #define TAIGA_VERSION_DATE (@"10/15/13")
 
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
-#define TAIGA_METERS_TO_FEET (3.28084)
+#define TAIGA_METERS_TO_FEET (3.28083989501)
 #define TAIGA_TOOLBAR_HEIGHT (80)
 #define TAIGA_SETTING_CHANGED (@"gov.nasa.worldwind.taiga.setting.changed")
 #define TAIGA_SHADED_ELEVATION_OFFSET (@"gov.nasa.worldwind.taiga.shadedelevation.offset")

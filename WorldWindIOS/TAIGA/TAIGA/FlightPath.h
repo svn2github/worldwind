@@ -27,6 +27,10 @@
 /// Indicates whether this flight path should be displayed.
 @property (nonatomic) BOOL enabled;
 
+@property (nonatomic) double altitude;
+
+@property (nonatomic) NSUInteger colorIndex;
+
 @property (nonatomic) id<FlightPathDelegate> delegate;
 
 /// A field for application-specific use, typically used to associate application data with the shape.
@@ -35,6 +39,8 @@
 - (FlightPath*) init;
 
 - (FlightPath*) initWithWaypoints:(NSArray*)waypointArray;
+
++ (NSArray*) flightPathColors;
 
 - (NSUInteger) waypointCount;
 

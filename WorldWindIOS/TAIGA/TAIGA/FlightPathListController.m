@@ -11,6 +11,7 @@
 #import "Waypoint.h"
 #import "WaypointFile.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
@@ -83,9 +84,16 @@
 {
     FlightPath* flightPath = [[FlightPath alloc] init];
     [flightPath setDisplayName:displayName];
+    [flightPath setAltitude:1524]; // 5,000ft
+    [flightPath setColorIndex:flightPathColorIndex];
     [flightPath setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight path.
     [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during initialization.
     [[_layer renderables] insertObject:flightPath atIndex:index];
+
+    if (++flightPathColorIndex >= [[FlightPath flightPathColors] count])
+    {
+        flightPathColorIndex = 0;
+    }
 
     [self saveFlightPathState:flightPath];
     [self saveFlightPathListState];
@@ -116,6 +124,12 @@
 
 - (void) flightPathDidChange:(FlightPath*)flightPath
 {
+    // Refresh the table row corresponding to the flight path that changed.
+    NSInteger index  = [[_layer renderables] indexOfObject:flightPath];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    [[self tableView] reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                            withRowAnimation:UITableViewRowAnimationAutomatic];
+
     [self saveFlightPathState:flightPath];
     [self requestRedraw];
 }
@@ -151,6 +165,8 @@
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     [userState setObject:[flightPath displayName] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
     [userState setBool:[flightPath enabled] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
+    [userState setDouble:[flightPath altitude] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", key]];
+    [userState setInteger:[flightPath colorIndex] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", key]];
     [userState setObject:waypointKeys forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", key]];
     [userState synchronize];
 }
@@ -161,6 +177,8 @@
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
     [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
+    [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", key]];
+    [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", key]];
     [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", key]];
     [userState synchronize];
 }
@@ -174,8 +192,10 @@
         [flightPathKeys addObject:[flightPath userObject]];
     }
 
-    [[NSUserDefaults standardUserDefaults] setObject:flightPathKeys forKey:@"gov.nasa.worldwind.taiga.flightpathkeys"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    [userState setObject:flightPathKeys forKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
+    [userState setInteger:flightPathColorIndex forKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
+    [userState synchronize];
 }
 
 - (void) restoreAllFlightPathState
@@ -183,7 +203,7 @@
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     NSMutableArray* waypoints = [[NSMutableArray alloc] initWithCapacity:8];
 
-    NSArray* flightPathKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightpathkeys"];
+    NSArray* flightPathKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
     for (NSString* fpKey in flightPathKeys)
     {
         [waypoints removeAllObjects];
@@ -203,14 +223,20 @@
 
         NSString* displayName = [userState stringForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", fpKey]];
         BOOL enabled = [userState boolForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", fpKey]];
+        double altitude = [userState doubleForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", fpKey]];
+        NSInteger colorIndex = [userState integerForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", fpKey]];
 
         FlightPath* flightPath = [[FlightPath alloc] initWithWaypoints:waypoints];
         [flightPath setDisplayName:displayName];
         [flightPath setEnabled:enabled];
+        [flightPath setAltitude:altitude];
+        [flightPath setColorIndex:(NSUInteger) colorIndex];
         [flightPath setUserObject:fpKey]; // Assign the flight path its state key.
         [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during restore.
         [_layer addRenderable:flightPath];
     }
+
+    flightPathColorIndex = (NSUInteger) [userState integerForKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -236,18 +262,22 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
-        [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+        [[cell imageView] setImage:[[UIImage imageNamed:@"431-yes.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     }
 
     FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
-    [[cell textLabel] setText:[path displayName]];
+    NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:[path colorIndex]];
     [[cell imageView] setHidden:![path enabled]];
+    [[cell imageView] setTintColor:[[colorAttrs objectForKey:@"color"] uiColor]];
+    [[cell textLabel] setText:[path displayName]];
 
     return cell;
 }
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
     // Set the flight path's visibility. Modify the model before the modifying the view.
     FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
     [path setEnabled:![path enabled]];

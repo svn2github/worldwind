@@ -31,7 +31,7 @@
     waypointTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 1, 1) style:UITableViewStylePlain];
     [waypointTable setDataSource:self];
     [waypointTable setDelegate:self];
-    [waypointTable setAllowsSelection:NO];
+    [waypointTable setAllowsSelectionDuringEditing:YES];
     [waypointTable setEditing:YES];
     [self addSubview:waypointTable];
 
@@ -51,9 +51,9 @@
     return self;
 }
 
-- (void) setDataSource:(WaypointFile*)dataSource
+- (void) setWaypointFile:(WaypointFile*)waypointFile
 {
-    _dataSource = dataSource;
+    _waypointFile = waypointFile;
 
     [self filterWaypoints];
     [waypointTable reloadData];
@@ -64,18 +64,23 @@
     NSString* searchText = [waypointSearchBar text];
     if ([searchText length] == 0)
     {
-        waypoints = [_dataSource waypoints];
+        waypoints = [_waypointFile waypoints];
     }
     else
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        waypoints = [_dataSource waypointsMatchingText:wildSearchText];
+        waypoints = [_waypointFile waypointsMatchingText:wildSearchText];
     }
 
     [waypointTable reloadData];
 }
 
-- (void) didChooseWaypoint:(Waypoint*)waypoint
+- (void) flashScrollIndicators
+{
+    [waypointTable flashScrollIndicators];
+}
+
+- (void) sendActionForWaypoint:(Waypoint*)waypoint
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -142,7 +147,18 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
  forRowAtIndexPath:(NSIndexPath*)indexPath
 {
     Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];
-    [self didChooseWaypoint:waypoint];
+    [self sendActionForWaypoint:waypoint];
+}
+
+- (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    if ([waypoints count] > 0)
+    {
+        Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];
+        [self sendActionForWaypoint:waypoint];
+    }
 }
 
 @end

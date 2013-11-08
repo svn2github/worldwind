@@ -15,6 +15,7 @@
 {
 @protected
     WaypointFile* waypointFile;
+    NSUInteger flightPathColorIndex;
 }
 
 @property (nonatomic, readonly) WWRenderableLayer* layer;

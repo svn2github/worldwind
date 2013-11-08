@@ -24,6 +24,8 @@
 
     _displayName = @"Flight Path";
     _enabled = YES;
+    _altitude = 0;
+    _colorIndex = 0;
 
     waypoints = [[NSMutableArray alloc] initWithCapacity:8];
     waypointPositions = [[NSMutableArray alloc] initWithCapacity:8];
@@ -38,6 +40,8 @@
 
     _displayName = @"Flight Path";
     _enabled = YES;
+    _altitude = 0;
+    _colorIndex = 0;
 
     waypoints = [[NSMutableArray alloc] initWithArray:waypointArray];
     waypointPositions = [[NSMutableArray alloc] initWithCapacity:[waypointArray count]];
@@ -57,14 +61,15 @@
     [path setPathType:WW_RHUMB];
 
     WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
-    [attrs setOutlineColor:[[WWColor alloc] initWithR:1 g:0 b:0 a:1]];
+    NSDictionary* colorAttrs = [[FlightPath flightPathColors] firstObject];
+    [attrs setOutlineColor:[colorAttrs objectForKey:@"color"]];
     [attrs setOutlineWidth:5.0];
     [path setAttributes:attrs];
 }
 
 - (WWPosition*) positionForWaypoint:(Waypoint*)waypoint
 {
-    return [[WWPosition alloc] initWithLocation:[waypoint location] altitude:5000];
+    return [[WWPosition alloc] initWithLocation:[waypoint location] altitude:_altitude];
 }
 
 - (void) setDisplayName:(NSString*)displayName
@@ -77,6 +82,36 @@
 {
     _enabled = enabled;
     [self didChange];
+}
+
+- (void) setAltitude:(double)altitude
+{
+    _altitude = altitude;
+    [self didChangeAltitude];
+}
+
+- (void) setColorIndex:(NSUInteger)colorIndex
+{
+    _colorIndex = colorIndex;
+    [self didChangeColor];
+}
+
++ (NSArray*) flightPathColors
+{
+    static NSArray* colors = nil;
+    if (colors == nil)
+    {
+        colors = @[
+            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.035 b:0.329 a:1.0], @"displayName":@"Red"},
+            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.522 b:0.000 a:1.0], @"displayName":@"Orange"},
+            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.776 b:0.000 a:1.0], @"displayName":@"Yellow"},
+            @{@"color":[[WWColor alloc] initWithR:0.310 g:0.851 b:0.129 a:1.0], @"displayName":@"Green"},
+            @{@"color":[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1.0], @"displayName":@"Blue"},
+            @{@"color":[[WWColor alloc] initWithR:0.757 g:0.325 b:0.863 a:1.0], @"displayName":@"Purple"}
+        ];
+    }
+
+    return colors;
 }
 
 - (void) render:(WWDrawContext*)dc
@@ -184,6 +219,25 @@
 
 - (void) didChange
 {
+    [_delegate flightPathDidChange:self];
+}
+
+- (void) didChangeAltitude
+{
+    for (WWPosition* pos in waypointPositions)
+    {
+        [pos setAltitude:_altitude];
+    }
+    [path setPositions:waypointPositions];
+
+    [_delegate flightPathDidChange:self];
+}
+
+- (void) didChangeColor
+{
+    NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:_colorIndex];
+    [[path attributes] setOutlineColor:[colorAttrs objectForKey:@"color"]];
+
     [_delegate flightPathDidChange:self];
 }
 
