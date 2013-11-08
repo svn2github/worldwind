@@ -9,14 +9,14 @@
 
 @class FlightRoute;
 @class WaypointFile;
-@class WaypointChooserControl;
+@class WaypointFileControl;
 
 @interface FlightRouteDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 {
 @protected
     NSNumberFormatter* altitudeFormatter;
     UITableView* flightRouteTable;
-    WaypointChooserControl* waypointFileControl;
+    WaypointFileControl* waypointFileControl;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
 }

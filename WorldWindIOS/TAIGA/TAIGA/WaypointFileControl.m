@@ -5,17 +5,17 @@
  @version $Id$
  */
 
-#import "WaypointChooserControl.h"
+#import "WaypointFileControl.h"
 #import "WaypointFile.h"
 #import "Waypoint.h"
 
-@implementation WaypointChooserControl
+@implementation WaypointFileControl
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing WaypointTableViews --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WaypointChooserControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action
+- (WaypointFileControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action
 {
     self = [super initWithFrame:frame];
 

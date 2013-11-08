@@ -8,7 +8,7 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointChooserControl.h"
+#import "WaypointFileControl.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
 #import "AppConstants.h"
@@ -71,7 +71,7 @@
     [flightRouteTable setAllowsSelectionDuringEditing:YES];
     [view addSubview:flightRouteTable];
 
-    waypointFileControl = [[WaypointChooserControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
+    waypointFileControl = [[WaypointFileControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
     [waypointFileControl setWaypointFile:_waypointFile];
     [view addSubview:waypointFileControl];
 

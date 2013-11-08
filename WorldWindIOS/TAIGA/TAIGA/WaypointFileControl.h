@@ -9,7 +9,7 @@
 
 @class WaypointFile;
 
-@interface WaypointChooserControl : UIView<UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate>
+@interface WaypointFileControl : UIView<UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate>
 {
 @protected
     NSArray* waypoints;
@@ -23,7 +23,7 @@
 
 @property (nonatomic) WaypointFile* waypointFile;
 
-- (WaypointChooserControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action;
+- (WaypointFileControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action;
 
 - (void) flashScrollIndicators;
 
