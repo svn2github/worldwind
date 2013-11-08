@@ -6,12 +6,11 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "FlightPathDelegate.h"
 
 @class WaypointFile;
 @class WWRenderableLayer;
 
-@interface FlightPathListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate, FlightPathDelegate>
+@interface FlightPathListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
 {
 @protected
     WaypointFile* waypointFile;

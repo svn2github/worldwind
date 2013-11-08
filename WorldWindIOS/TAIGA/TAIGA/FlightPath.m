@@ -6,8 +6,8 @@
  */
 
 #import "FlightPath.h"
-#import "FlightPathDelegate.h"
 #import "Waypoint.h"
+#import "AppConstants.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "Worldwind/Shapes/WWPath.h"
@@ -75,13 +75,13 @@
 - (void) setDisplayName:(NSString*)displayName
 {
     _displayName = displayName;
-    [self didChange];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) setEnabled:(BOOL)enabled
 {
     _enabled = enabled;
-    [self didChange];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) setAltitude:(double)altitude
@@ -217,11 +217,6 @@
     [self didMoveWaypoint:waypoint fromIndex:fromIndex toIndex:toIndex];
 }
 
-- (void) didChange
-{
-    [_delegate flightPathDidChange:self];
-}
-
 - (void) didChangeAltitude
 {
     for (WWPosition* pos in waypointPositions)
@@ -230,7 +225,7 @@
     }
     [path setPositions:waypointPositions];
 
-    [_delegate flightPathDidChange:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) didChangeColor
@@ -238,7 +233,7 @@
     NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:_colorIndex];
     [[path attributes] setOutlineColor:[colorAttrs objectForKey:@"color"]];
 
-    [_delegate flightPathDidChange:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
@@ -247,7 +242,7 @@
     [waypointPositions insertObject:pos atIndex:index];
     [path setPositions:waypointPositions];
 
-    [_delegate flightPath:self didInsertWaypoint:waypoint atIndex:index];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
@@ -255,7 +250,7 @@
     [waypointPositions removeObjectAtIndex:index];
     [path setPositions:waypointPositions];
 
-    [_delegate flightPath:self didRemoveWaypoint:waypoint atIndex:index];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 - (void) didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
@@ -265,7 +260,7 @@
     [waypointPositions insertObject:pos atIndex:toIndex];
     [path setPositions:waypointPositions];
 
-    [_delegate flightPath:self didMoveWaypoint:waypoint fromIndex:fromIndex toIndex:toIndex];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
 }
 
 @end

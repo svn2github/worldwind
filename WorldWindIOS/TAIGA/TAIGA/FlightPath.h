@@ -11,7 +11,6 @@
 @class Waypoint;
 @class WWPath;
 @class WWShapeAttributes;
-@protocol FlightPathDelegate;
 
 @interface FlightPath : NSObject <WWRenderable>
 {
@@ -30,8 +29,6 @@
 @property (nonatomic) double altitude;
 
 @property (nonatomic) NSUInteger colorIndex;
-
-@property (nonatomic) id<FlightPathDelegate> delegate;
 
 /// A field for application-specific use, typically used to associate application data with the shape.
 @property (nonatomic) id userObject;

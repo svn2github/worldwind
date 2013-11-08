@@ -17,6 +17,7 @@
 #define TAIGA_SHADED_ELEVATION_OFFSET (@"gov.nasa.worldwind.taiga.shadedelevation.offset")
 #define TAIGA_SHADED_ELEVATION_OPACITY (@"gov.nasa.worldwind.taiga.shadedelevation.opacity")
 #define TAIGA_SHADED_ELEVATION_THRESHOLD_RED (@"gov.nasa.worldwind.taiga.shadedelevation.threshold.red")
+#define TAIGA_FLIGHT_ROUTE_CHANGED (@"gov.nasa.worldwind.taiga.flightroute.changed")
 
 @interface AppConstants : NSObject
 @end

@@ -14,6 +14,7 @@
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
+#import "AppConstants.h"
 
 @implementation FlightPathListController
 
@@ -42,6 +43,9 @@
         [self didLoadWaypoints];
     }];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
+                                                 name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
+
     return self;
 }
 
@@ -58,6 +62,18 @@
 {
     // This keeps all the nested popover controllers the same size as this top-level controller.
     viewController.preferredContentSize = navigationController.topViewController.view.frame.size;
+}
+
+- (void) handleFlightRouteNotification:(NSNotification*)notification
+{
+    FlightPath* flightPath = [notification object];
+
+    // Ignore notifications for flight paths not in this controller's layer. This avoids saving state or refreshing the
+    // screen for during flight path initialization or restoration.
+    if ([[_layer renderables] containsObject:flightPath])
+    {
+        [self flightPathDidChange:flightPath];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -87,8 +103,7 @@
     [flightPath setAltitude:1524]; // 5,000ft
     [flightPath setColorIndex:flightPathColorIndex];
     [flightPath setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight path.
-    [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during initialization.
-    [[_layer renderables] insertObject:flightPath atIndex:index];
+    [[_layer renderables] insertObject:flightPath atIndex:index]; // Add flight path to layer after initialization to avoid saving state during initialization.
 
     if (++flightPathColorIndex >= [[FlightPath flightPathColors] count])
     {
@@ -103,7 +118,6 @@
 - (void) removeFlightPathAtIndex:(NSUInteger)index
 {
     FlightPath* flightPath = [[_layer renderables] objectAtIndex:index];
-    [flightPath setDelegate:nil];
     [_layer removeRenderable:flightPath];
 
     [self removeFlightPathState:flightPath];
@@ -130,24 +144,6 @@
     [[self tableView] reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
 
-    [self saveFlightPathState:flightPath];
-    [self requestRedraw];
-}
-
-- (void) flightPath:(FlightPath*)flightPath didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
-{
-    [self saveFlightPathState:flightPath];
-    [self requestRedraw];
-}
-
-- (void) flightPath:(FlightPath*)flightPath didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
-{
-    [self saveFlightPathState:flightPath];
-    [self requestRedraw];
-}
-
-- (void) flightPath:(FlightPath*)flightPath didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
-{
     [self saveFlightPathState:flightPath];
     [self requestRedraw];
 }
@@ -232,8 +228,7 @@
         [flightPath setAltitude:altitude];
         [flightPath setColorIndex:(NSUInteger) colorIndex];
         [flightPath setUserObject:fpKey]; // Assign the flight path its state key.
-        [flightPath setDelegate:self]; // Assign delegate after flight path is initialized to avoid saving state during restore.
-        [_layer addRenderable:flightPath];
+        [_layer addRenderable:flightPath];  // Add flight path to layer after initialization to avoid saving state during restore.
     }
 
     flightPathColorIndex = (NSUInteger) [userState integerForKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
@@ -278,13 +273,10 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    // Set the flight path's visibility. Modify the model before the modifying the view.
+    // Set the flight path's visibility. Modify the model before the modifying the view. The view will be updated by
+    // the notification by [FlightPath setEnabled].
     FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
     [path setEnabled:![path enabled]];
-
-    // Make the view match the change in the model, using UIKit animations to display the change.
-    [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
-                     withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
