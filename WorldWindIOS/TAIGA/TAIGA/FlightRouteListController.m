@@ -5,9 +5,9 @@
  @version $Id$
  */
 
-#import "FlightPathListController.h"
-#import "FlightPathDetailController.h"
-#import "FlightPath.h"
+#import "FlightRouteListController.h"
+#import "FlightRouteDetailController.h"
+#import "FlightRoute.h"
 #import "Waypoint.h"
 #import "WaypointFile.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
@@ -16,13 +16,13 @@
 #import "WorldWind/WWLog.h"
 #import "AppConstants.h"
 
-@implementation FlightPathListController
+@implementation FlightRouteListController
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Initializing FlightPathListController --//
+//-- Initializing FlightRouteListController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightPathListController*) initWithLayer:(WWRenderableLayer*)layer
+- (FlightRouteListController*) initWithLayer:(WWRenderableLayer*)layer
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -51,7 +51,7 @@
 
 - (void) didLoadWaypoints
 {
-    [self restoreAllFlightPathState];
+    [self restoreAllFlightRouteState];
     [[self tableView] reloadData];
     [self requestRedraw];
 }
@@ -66,110 +66,110 @@
 
 - (void) handleFlightRouteNotification:(NSNotification*)notification
 {
-    FlightPath* flightPath = [notification object];
+    FlightRoute* flightRoute = [notification object];
 
-    // Ignore notifications for flight paths not in this controller's layer. This avoids saving state or refreshing the
-    // screen for during flight path initialization or restoration.
-    if ([[_layer renderables] containsObject:flightPath])
+    // Ignore notifications for flight routes not in this controller's layer. This avoids saving state or refreshing the
+    // screen for during flight route initialization or restoration.
+    if ([[_layer renderables] containsObject:flightRoute])
     {
-        [self flightPathDidChange:flightPath];
+        [self flightRouteDidChange:flightRoute];
     }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Flight Path Model --//
+//-- Flight Route Model --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (NSUInteger) flightPathCount
+- (NSUInteger) flightRouteCount
 {
     return [[_layer renderables] count];
 }
 
-- (FlightPath*) flightPathAtIndex:(NSUInteger)index
+- (FlightRoute*) flightRouteAtIndex:(NSUInteger)index
 {
     return [[_layer renderables] objectAtIndex:index];
 }
 
-- (UIViewController*) flightPathDetailControllerAtIndex:(NSUInteger)index
+- (UIViewController*) flightRouteDetailControllerAtIndex:(NSUInteger)index
 {
-    FlightPath* flightPath = [self flightPathAtIndex:index];
-    return [[FlightPathDetailController alloc] initWithFlightPath:flightPath waypointFile:waypointFile];
+    FlightRoute* flightRoute = [self flightRouteAtIndex:index];
+    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:waypointFile];
 }
 
-- (void) addFlightPathAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
+- (void) addFlightRouteAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
 {
-    FlightPath* flightPath = [[FlightPath alloc] init];
-    [flightPath setDisplayName:displayName];
-    [flightPath setAltitude:1524]; // 5,000ft
-    [flightPath setColorIndex:flightPathColorIndex];
-    [flightPath setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight path.
-    [[_layer renderables] insertObject:flightPath atIndex:index]; // Add flight path to layer after initialization to avoid saving state during initialization.
+    FlightRoute* flightRoute = [[FlightRoute alloc] init];
+    [flightRoute setDisplayName:displayName];
+    [flightRoute setAltitude:1524]; // 5,000ft
+    [flightRoute setColorIndex:flightRouteColorIndex];
+    [flightRoute setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight route.
+    [[_layer renderables] insertObject:flightRoute atIndex:index]; // Add flight route to layer after initialization to avoid saving state during initialization.
 
-    if (++flightPathColorIndex >= [[FlightPath flightPathColors] count])
+    if (++flightRouteColorIndex >= [[FlightRoute flightRouteColors] count])
     {
-        flightPathColorIndex = 0;
+        flightRouteColorIndex = 0;
     }
 
-    [self saveFlightPathState:flightPath];
-    [self saveFlightPathListState];
+    [self saveFlightRouteState:flightRoute];
+    [self saveFlightRouteListState];
     [self requestRedraw];
 }
 
-- (void) removeFlightPathAtIndex:(NSUInteger)index
+- (void) removeFlightRouteAtIndex:(NSUInteger)index
 {
-    FlightPath* flightPath = [[_layer renderables] objectAtIndex:index];
-    [_layer removeRenderable:flightPath];
+    FlightRoute* flightRoute = [[_layer renderables] objectAtIndex:index];
+    [_layer removeRenderable:flightRoute];
 
-    [self removeFlightPathState:flightPath];
-    [self saveFlightPathListState];
+    [self removeFlightRouteState:flightRoute];
+    [self saveFlightRouteListState];
     [self requestRedraw];
 }
 
-- (void) moveFlightPathFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
+- (void) moveFlightRouteFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
 {
-    NSMutableArray* flightPaths = [_layer renderables];
-    FlightPath* path = [flightPaths objectAtIndex:fromIndex];
-    [flightPaths removeObjectAtIndex:fromIndex];
-    [flightPaths insertObject:path atIndex:toIndex];
+    NSMutableArray* flightRoutes = [_layer renderables];
+    FlightRoute* flightRoute = [flightRoutes objectAtIndex:fromIndex];
+    [flightRoutes removeObjectAtIndex:fromIndex];
+    [flightRoutes insertObject:flightRoute atIndex:toIndex];
 
-    [self saveFlightPathListState];
+    [self saveFlightRouteListState];
     [self requestRedraw];
 }
 
-- (void) flightPathDidChange:(FlightPath*)flightPath
+- (void) flightRouteDidChange:(FlightRoute*)flightRoute
 {
-    // Refresh the table row corresponding to the flight path that changed.
-    NSInteger index  = [[_layer renderables] indexOfObject:flightPath];
+    // Refresh the table row corresponding to the flight route that changed.
+    NSInteger index  = [[_layer renderables] indexOfObject:flightRoute];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
     [[self tableView] reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
 
-    [self saveFlightPathState:flightPath];
+    [self saveFlightRouteState:flightRoute];
     [self requestRedraw];
 }
 
-- (void) saveFlightPathState:(FlightPath*)flightPath
+- (void) saveFlightRouteState:(FlightRoute*)flightRoute
 {
-    NSMutableArray* waypointKeys = [NSMutableArray arrayWithCapacity:[flightPath waypointCount]];
-    for (NSUInteger i = 0; i < [flightPath waypointCount]; i++)
+    NSMutableArray* waypointKeys = [NSMutableArray arrayWithCapacity:[flightRoute waypointCount]];
+    for (NSUInteger i = 0; i < [flightRoute waypointCount]; i++)
     {
-        Waypoint* waypoint = [flightPath waypointAtIndex:i];
+        Waypoint* waypoint = [flightRoute waypointAtIndex:i];
         [waypointKeys addObject:[waypoint key]];
     }
 
-    id key = [flightPath userObject];
+    id key = [flightRoute userObject];
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
-    [userState setObject:[flightPath displayName] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
-    [userState setBool:[flightPath enabled] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
-    [userState setDouble:[flightPath altitude] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", key]];
-    [userState setInteger:[flightPath colorIndex] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", key]];
+    [userState setObject:[flightRoute displayName] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
+    [userState setBool:[flightRoute enabled] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
+    [userState setDouble:[flightRoute altitude] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", key]];
+    [userState setInteger:[flightRoute colorIndex] forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", key]];
     [userState setObject:waypointKeys forKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", key]];
     [userState synchronize];
 }
 
-- (void) removeFlightPathState:(FlightPath*)flightPath
+- (void) removeFlightRouteState:(FlightRoute*)flightRoute
 {
-    id key = [flightPath userObject];
+    id key = [flightRoute userObject];
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", key]];
     [userState removeObjectForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", key]];
@@ -179,31 +179,31 @@
     [userState synchronize];
 }
 
-- (void) saveFlightPathListState
+- (void) saveFlightRouteListState
 {
-    NSMutableArray* flightPaths = [_layer renderables];
-    NSMutableArray* flightPathKeys = [NSMutableArray arrayWithCapacity:[flightPaths count]];
-    for (FlightPath* flightPath in flightPaths)
+    NSMutableArray* flightRoutes = [_layer renderables];
+    NSMutableArray* flightRouteKeys = [NSMutableArray arrayWithCapacity:[flightRoutes count]];
+    for (FlightRoute* flightRoute in flightRoutes)
     {
-        [flightPathKeys addObject:[flightPath userObject]];
+        [flightRouteKeys addObject:[flightRoute userObject]];
     }
 
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
-    [userState setObject:flightPathKeys forKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
-    [userState setInteger:flightPathColorIndex forKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
+    [userState setObject:flightRouteKeys forKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
+    [userState setInteger:flightRouteColorIndex forKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
     [userState synchronize];
 }
 
-- (void) restoreAllFlightPathState
+- (void) restoreAllFlightRouteState
 {
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     NSMutableArray* waypoints = [[NSMutableArray alloc] initWithCapacity:8];
 
-    NSArray* flightPathKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
-    for (NSString* fpKey in flightPathKeys)
+    NSArray* flightRouteKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
+    for (NSString* frKey in flightRouteKeys)
     {
         [waypoints removeAllObjects];
-        NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", fpKey]];
+        NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", frKey]];
         for (NSString* wpKey in waypointKeys)
         {
             Waypoint* waypoint = [waypointFile waypointForKey:wpKey];
@@ -217,25 +217,25 @@
             }
         }
 
-        NSString* displayName = [userState stringForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", fpKey]];
-        BOOL enabled = [userState boolForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", fpKey]];
-        double altitude = [userState doubleForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", fpKey]];
-        NSInteger colorIndex = [userState integerForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", fpKey]];
+        NSString* displayName = [userState stringForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.displayName", frKey]];
+        BOOL enabled = [userState boolForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.enabled", frKey]];
+        double altitude = [userState doubleForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.altitude", frKey]];
+        NSInteger colorIndex = [userState integerForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.colorIndex", frKey]];
 
-        FlightPath* flightPath = [[FlightPath alloc] initWithWaypoints:waypoints];
-        [flightPath setDisplayName:displayName];
-        [flightPath setEnabled:enabled];
-        [flightPath setAltitude:altitude];
-        [flightPath setColorIndex:(NSUInteger) colorIndex];
-        [flightPath setUserObject:fpKey]; // Assign the flight path its state key.
-        [_layer addRenderable:flightPath];  // Add flight path to layer after initialization to avoid saving state during restore.
+        FlightRoute* flightRoute = [[FlightRoute alloc] initWithWaypoints:waypoints];
+        [flightRoute setDisplayName:displayName];
+        [flightRoute setEnabled:enabled];
+        [flightRoute setAltitude:altitude];
+        [flightRoute setColorIndex:(NSUInteger) colorIndex];
+        [flightRoute setUserObject:frKey]; // Assign the flight route its state key.
+        [_layer addRenderable:flightRoute];  // Add flight route to layer after initialization to avoid saving state during restore.
     }
 
-    flightPathColorIndex = (NSUInteger) [userState integerForKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
+    flightRouteColorIndex = (NSUInteger) [userState integerForKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Flight Path List Table --//
+//-- Flight Route List Table --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
@@ -245,7 +245,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [self flightPathCount];
+    return [self flightRouteCount];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -260,11 +260,11 @@
         [[cell imageView] setImage:[[UIImage imageNamed:@"431-yes.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     }
 
-    FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
-    NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:[path colorIndex]];
-    [[cell imageView] setHidden:![path enabled]];
+    FlightRoute* flightRoute = [self flightRouteAtIndex:(NSUInteger) [indexPath row]];
+    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:[flightRoute colorIndex]];
+    [[cell imageView] setHidden:![flightRoute enabled]];
     [[cell imageView] setTintColor:[[colorAttrs objectForKey:@"color"] uiColor]];
-    [[cell textLabel] setText:[path displayName]];
+    [[cell textLabel] setText:[flightRoute displayName]];
 
     return cell;
 }
@@ -273,15 +273,15 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    // Set the flight path's visibility. Modify the model before the modifying the view. The view will be updated by
-    // the notification by [FlightPath setEnabled].
-    FlightPath* path = [self flightPathAtIndex:(NSUInteger) [indexPath row]];
-    [path setEnabled:![path enabled]];
+    // Set the flight route's visibility. Modify the model before the modifying the view. The view will be updated by
+    // the notification by [FlightRoute setEnabled].
+    FlightRoute* flightRoute = [self flightRouteAtIndex:(NSUInteger) [indexPath row]];
+    [flightRoute setEnabled:![flightRoute enabled]];
 }
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
 {
-    UIViewController* detailController = [self flightPathDetailControllerAtIndex:(NSUInteger) [indexPath row]];
+    UIViewController* detailController = [self flightRouteDetailControllerAtIndex:(NSUInteger) [indexPath row]];
     [[self navigationController] pushViewController:detailController animated:YES];
 }
 
@@ -302,7 +302,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
         // Modify the model before the modifying the view.
-        [self removeFlightPathAtIndex:(NSUInteger) [indexPath row]];
+        [self removeFlightRouteAtIndex:(NSUInteger) [indexPath row]];
         // Make the view match the change in the model, using UIKit animations to display the change.
         [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                          withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -314,17 +314,17 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
     // Modify the model. The view has already been updated by the UITableView.
-    [self moveFlightPathFromIndex:(NSUInteger) [sourceIndexPath row] toIndex:(NSUInteger) [destinationIndexPath row]];
+    [self moveFlightRouteFromIndex:(NSUInteger) [sourceIndexPath row] toIndex:(NSUInteger) [destinationIndexPath row]];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Creating New Flight Paths --//
+//-- Creating New Flight Routes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (void) handleAddButtonTap
 {
-    UIAlertView* inputView = [[UIAlertView alloc] initWithTitle:@"New Flight Path"
-                                                        message:@"Enter a name for this path."
+    UIAlertView* inputView = [[UIAlertView alloc] initWithTitle:@"New Flight Route"
+                                                        message:@"Enter a name for this route."
                                                        delegate:self
                                               cancelButtonTitle:@"Cancel"
                                               otherButtonTitles:@"Ok", nil];
@@ -337,9 +337,9 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     if (buttonIndex == 1) // Ok button tapped (ignore Cancel button tapped)
     {
         // Modify the model before the modifying the view.
-        NSUInteger index = (NSUInteger) [self flightPathCount]; // Append to the end of the table.
-        NSString* displayName = [[alertView textFieldAtIndex:0] text]; // Path name text field
-        [self addFlightPathAtIndex:index withDisplayName:displayName];
+        NSUInteger index = (NSUInteger) [self flightRouteCount]; // Append to the end of the table.
+        NSString* displayName = [[alertView textFieldAtIndex:0] text]; // Flight route name text field
+        [self addFlightRouteAtIndex:index withDisplayName:displayName];
 
         // Make the view match the change in the model. The index path's row indicates the row index that has been
         // inserted. Suppress row animations since we pushing a new view controller below.
@@ -349,9 +349,9 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
         [[self tableView] scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone
                                         animated:NO];
 
-        // Show the flight path detail controller in its edit state. Suppress animations when transitioning to the edit
+        // Show the flight route detail controller in its edit state. Suppress animations when transitioning to the edit
         // state since we're pushing a new view controller.
-        UIViewController* detailController = [self flightPathDetailControllerAtIndex:index];
+        UIViewController* detailController = [self flightRouteDetailControllerAtIndex:index];
         [detailController setEditing:YES animated:NO];
         [[self navigationController] pushViewController:detailController animated:YES];
     }

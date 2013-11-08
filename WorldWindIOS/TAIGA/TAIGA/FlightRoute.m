@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "FlightPath.h"
+#import "FlightRoute.h"
 #import "Waypoint.h"
 #import "AppConstants.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -16,13 +16,13 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
-@implementation FlightPath
+@implementation FlightRoute
 
-- (FlightPath*) init
+- (FlightRoute*) init
 {
     self = [super init];
 
-    _displayName = @"Flight Path";
+    _displayName = @"Flight Route";
     _enabled = YES;
     _altitude = 0;
     _colorIndex = 0;
@@ -34,11 +34,11 @@
     return self;
 }
 
-- (FlightPath*) initWithWaypoints:(NSArray*)waypointArray
+- (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray
 {
     self = [super init];
 
-    _displayName = @"Flight Path";
+    _displayName = @"Flight Route";
     _enabled = YES;
     _altitude = 0;
     _colorIndex = 0;
@@ -61,7 +61,7 @@
     [path setPathType:WW_RHUMB];
 
     WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
-    NSDictionary* colorAttrs = [[FlightPath flightPathColors] firstObject];
+    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] firstObject];
     [attrs setOutlineColor:[colorAttrs objectForKey:@"color"]];
     [attrs setOutlineWidth:5.0];
     [path setAttributes:attrs];
@@ -96,7 +96,7 @@
     [self didChangeColor];
 }
 
-+ (NSArray*) flightPathColors
++ (NSArray*) flightRouteColors
 {
     static NSArray* colors = nil;
     if (colors == nil)
@@ -230,7 +230,7 @@
 
 - (void) didChangeColor
 {
-    NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:_colorIndex];
+    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:_colorIndex];
     [[path attributes] setOutlineColor:[colorAttrs objectForKey:@"color"]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];

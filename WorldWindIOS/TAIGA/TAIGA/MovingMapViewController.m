@@ -33,7 +33,7 @@
 #import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
-#import "FlightPathListController.h"
+#import "FlightRouteListController.h"
 
 @implementation MovingMapViewController
 {
@@ -50,7 +50,7 @@
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
-    FlightPathListController * flightRouteController;
+    FlightRouteListController* flightRouteController;
     UIPopoverController* flightRoutePopoverController;
 
     WWRenderableLayer* flightRoutesLayer;
@@ -176,7 +176,7 @@
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    flightRouteController = [[FlightPathListController alloc] initWithLayer:flightRoutesLayer];
+    flightRouteController = [[FlightRouteListController alloc] initWithLayer:flightRoutesLayer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];

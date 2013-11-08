@@ -12,7 +12,7 @@
 @class WWPath;
 @class WWShapeAttributes;
 
-@interface FlightPath : NSObject <WWRenderable>
+@interface FlightRoute : NSObject <WWRenderable>
 {
 @protected
     NSMutableArray* waypoints;
@@ -20,10 +20,10 @@
     WWPath* path;
 }
 
-/// Indicates this flight path's display name.
+/// Indicates this flight route's display name.
 @property (nonatomic) NSString* displayName;
 
-/// Indicates whether this flight path should be displayed.
+/// Indicates whether this flight route should be displayed.
 @property (nonatomic) BOOL enabled;
 
 @property (nonatomic) double altitude;
@@ -33,11 +33,11 @@
 /// A field for application-specific use, typically used to associate application data with the shape.
 @property (nonatomic) id userObject;
 
-- (FlightPath*) init;
+- (FlightRoute*) init;
 
-- (FlightPath*) initWithWaypoints:(NSArray*)waypointArray;
+- (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray;
 
-+ (NSArray*) flightPathColors;
++ (NSArray*) flightRouteColors;
 
 - (NSUInteger) waypointCount;
 

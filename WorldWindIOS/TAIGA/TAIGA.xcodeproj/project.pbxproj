@@ -162,11 +162,11 @@
 		CC8CF6539CCA0C68561935FE /* circle-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */; };
 		CC8CF832A1920118F96D9839 /* circle-small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF77711BB8EB271836CF7 /* circle-small.png */; };
 		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
-		CC8CFC73DD31F04F31AB4160 /* FlightPath.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightPath.m */; };
+		CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */; };
 		CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */; };
 		CC8CFD551E097043A86C1BBE /* WaypointChooserControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCE24F3F3C30BC7C59FE /* WaypointChooserControl.m */; };
-		CC8CFDF90C3253A2AE0A3F9A /* FlightPathDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE0F0B4B6CFB377B9003 /* FlightPathDetailController.m */; };
-		CC8CFF5B1FB3B7ECD5810696 /* FlightPathListController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0A0D05965E79B4A21BD /* FlightPathListController.m */; };
+		CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */; };
+		CC8CFF5B1FB3B7ECD5810696 /* FlightRouteListController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -351,11 +351,11 @@
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
 		CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFile.m; sourceTree = "<group>"; };
-		CC8CF0A0D05965E79B4A21BD /* FlightPathListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathListController.m; sourceTree = "<group>"; };
+		CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteListController.m; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
-		CC8CF4B74DEC92AE987AC72D /* FlightPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPath.m; sourceTree = "<group>"; };
+		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
-		CC8CF698F1109BBE57E61250 /* FlightPathListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathListController.h; sourceTree = "<group>"; };
+		CC8CF698F1109BBE57E61250 /* FlightRouteListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteListController.h; sourceTree = "<group>"; };
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small@2x.png"; sourceTree = "<group>"; };
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
@@ -364,13 +364,13 @@
 		CC8CFC0B49EF23E9FF36D8F6 /* WaypointChooserControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointChooserControl.h; sourceTree = "<group>"; };
 		CC8CFCE24F3F3C30BC7C59FE /* WaypointChooserControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointChooserControl.m; sourceTree = "<group>"; };
 		CC8CFDC5DBCA408191058CCC /* ColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPicker.h; sourceTree = "<group>"; };
-		CC8CFDF0F838D123AA57E0CE /* FlightPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPath.h; sourceTree = "<group>"; };
-		CC8CFE0F0B4B6CFB377B9003 /* FlightPathDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightPathDetailController.m; sourceTree = "<group>"; };
+		CC8CFDF0F838D123AA57E0CE /* FlightRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRoute.h; sourceTree = "<group>"; };
+		CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteDetailController.m; sourceTree = "<group>"; };
 		CC8CFECC51A637D34D3DF693 /* OpenWeatherMapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenWeatherMapLayer.h; sourceTree = "<group>"; };
 		CC8CFF3E5AF50715A46F682B /* ColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorPicker.m; sourceTree = "<group>"; };
 		CC8CFF4B6E357BB5DF3DE5FA /* WaypointFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointFile.h; sourceTree = "<group>"; };
 		CC8CFFE7BD858DAAEC112171 /* Waypoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Waypoint.m; sourceTree = "<group>"; };
-		CC8CFFE970DC31D574B151E6 /* FlightPathDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathDetailController.h; sourceTree = "<group>"; };
+		CC8CFFE970DC31D574B151E6 /* FlightRouteDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteDetailController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -491,14 +491,14 @@
 				1BF9A28A3665C920E4AB3271 /* ScaleBarView.h */,
 				1BF9AF5DC263F523CA577775 /* TerrainProfileView.m */,
 				1BF9A543A5F665E7A3D28E28 /* TerrainProfileView.h */,
-				CC8CFDF0F838D123AA57E0CE /* FlightPath.h */,
-				CC8CF4B74DEC92AE987AC72D /* FlightPath.m */,
+				CC8CFDF0F838D123AA57E0CE /* FlightRoute.h */,
+				CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */,
 				CC8CFBEC62A136CE9A0C5295 /* Waypoint.h */,
 				CC8CFFE7BD858DAAEC112171 /* Waypoint.m */,
-				CC8CFFE970DC31D574B151E6 /* FlightPathDetailController.h */,
-				CC8CFE0F0B4B6CFB377B9003 /* FlightPathDetailController.m */,
-				CC8CF698F1109BBE57E61250 /* FlightPathListController.h */,
-				CC8CF0A0D05965E79B4A21BD /* FlightPathListController.m */,
+				CC8CFFE970DC31D574B151E6 /* FlightRouteDetailController.h */,
+				CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */,
+				CC8CF698F1109BBE57E61250 /* FlightRouteListController.h */,
+				CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */,
 				CC8CFCE24F3F3C30BC7C59FE /* WaypointChooserControl.m */,
 				CC8CFC0B49EF23E9FF36D8F6 /* WaypointChooserControl.h */,
 				CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */,
@@ -836,10 +836,10 @@
 				1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */,
 				1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */,
 				1BF9A266647113D91F20BDE9 /* TerrainProfileView.m in Sources */,
-				CC8CFC73DD31F04F31AB4160 /* FlightPath.m in Sources */,
+				CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */,
 				CC8CF21EB186B45723B50126 /* Waypoint.m in Sources */,
-				CC8CFDF90C3253A2AE0A3F9A /* FlightPathDetailController.m in Sources */,
-				CC8CFF5B1FB3B7ECD5810696 /* FlightPathListController.m in Sources */,
+				CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */,
+				CC8CFF5B1FB3B7ECD5810696 /* FlightRouteListController.m in Sources */,
 				CC8CFD551E097043A86C1BBE /* WaypointChooserControl.m in Sources */,
 				CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */,
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,

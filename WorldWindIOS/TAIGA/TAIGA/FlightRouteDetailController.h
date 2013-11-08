@@ -7,24 +7,24 @@
 
 #import <Foundation/Foundation.h>
 
-@class FlightPath;
+@class FlightRoute;
 @class WaypointFile;
 @class WaypointChooserControl;
 
-@interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
+@interface FlightRouteDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 {
 @protected
     NSNumberFormatter* altitudeFormatter;
-    UITableView* flightPathTable;
+    UITableView* flightRouteTable;
     WaypointChooserControl* waypointFileControl;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
 }
 
-@property (nonatomic, readonly, weak) FlightPath* flightPath;
+@property (nonatomic, readonly, weak) FlightRoute* flightRoute;
 
 @property (nonatomic, readonly, weak) WaypointFile* waypointFile;
 
-- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointFile:(WaypointFile*)waypointFile;
+- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute waypointFile:(WaypointFile*)waypointFile;
 
 @end

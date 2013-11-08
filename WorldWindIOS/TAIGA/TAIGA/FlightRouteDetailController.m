@@ -5,8 +5,8 @@
  @version $Id$
  */
 
-#import "FlightPathDetailController.h"
-#import "FlightPath.h"
+#import "FlightRouteDetailController.h"
+#import "FlightRoute.h"
 #import "Waypoint.h"
 #import "WaypointChooserControl.h"
 #import "AltitudePicker.h"
@@ -20,20 +20,20 @@
 #define ROW_COLOR (0)
 #define ROW_ALTITUDE (1)
 
-@implementation FlightPathDetailController
+@implementation FlightRouteDetailController
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Initializing FlightPathDetailController --//
+//-- Initializing FlightRouteDetailController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightPathDetailController*) initWithFlightPath:(FlightPath*)flightPath waypointFile:(WaypointFile*)waypointFile
+- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute waypointFile:(WaypointFile*)waypointFile
 {
     self = [super initWithNibName:nil bundle:nil];
 
-    [[self navigationItem] setTitle:[flightPath displayName]];
+    [[self navigationItem] setTitle:[flightRoute displayName]];
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
 
-    _flightPath = flightPath;
+    _flightRoute = flightRoute;
     _waypointFile = waypointFile;
     altitudeFormatter = [[NSNumberFormatter alloc] init];
     [altitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -51,7 +51,7 @@
 
 - (void) flashScrollIndicators
 {
-    [flightPathTable flashScrollIndicators];
+    [flightRouteTable flashScrollIndicators];
     [waypointFileControl flashScrollIndicators];
 }
 
@@ -65,11 +65,11 @@
     [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
     [self setView:view];
 
-    flightPathTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 1, 1) style:UITableViewStyleGrouped];
-    [flightPathTable setDataSource:self];
-    [flightPathTable setDelegate:self];
-    [flightPathTable setAllowsSelectionDuringEditing:YES];
-    [view addSubview:flightPathTable];
+    flightRouteTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 1, 1) style:UITableViewStyleGrouped];
+    [flightRouteTable setDataSource:self];
+    [flightRouteTable setDelegate:self];
+    [flightRouteTable setAllowsSelectionDuringEditing:YES];
+    [view addSubview:flightRouteTable];
 
     waypointFileControl = [[WaypointChooserControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
     [waypointFileControl setWaypointFile:_waypointFile];
@@ -81,20 +81,20 @@
 - (void) layout
 {
     UIView* view = [self view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightPathTable, waypointFileControl);
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightRouteTable, waypointFileControl);
 
     // Disable automatic translation of autoresizing mask into constraints. We're using explicit layout constraints
     // below.
-    [flightPathTable setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [flightRouteTable setTranslatesAutoresizingMaskIntoConstraints:NO];
     [waypointFileControl setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[flightPathTable]|"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[flightRouteTable]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointFileControl]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(==view)]-[waypointFileControl(>=160)]"
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)]-[waypointFileControl(>=160)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightPathTable(<=320)]-[waypointFileControl(>=160)]|"
+    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(<=320)]-[waypointFileControl(>=160)]|"
                                                                  options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:normalConstraints];
 }
@@ -134,7 +134,7 @@
     }
 
     // Place the table in editing mode and refresh the properties section, which has custom editing controls.
-    [flightPathTable setEditing:editing animated:animated];
+    [flightRouteTable setEditing:editing animated:animated];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -153,7 +153,7 @@
         case SECTION_PROPERTIES:
             return 2;
         case SECTION_WAYPOINTS:
-            return [_flightPath waypointCount];
+            return [_flightRoute waypointCount];
         default:
             return 0;
     }
@@ -197,14 +197,14 @@
 
     if ([indexPath row] == ROW_COLOR)
     {
-        NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:[_flightPath colorIndex]];
+        NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:[_flightRoute colorIndex]];
         [[cell textLabel] setText:@"Color"];
         [[cell detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
         [[cell detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
     }
     else if ([indexPath row] == ROW_ALTITUDE)
     {
-        double altitude = [_flightPath altitude];
+        double altitude = [_flightRoute altitude];
         [[cell textLabel] setText:@"Altitude"];
         [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
     }
@@ -221,7 +221,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:waypointCellId];
     }
 
-    Waypoint* waypoint = [_flightPath waypointAtIndex:(NSUInteger) [indexPath row]];
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[waypoint displayName]];
     [[cell detailTextLabel] setText:[waypoint displayNameLong]];
 
@@ -236,8 +236,8 @@
     {
         ColorPicker* picker = [[ColorPicker alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
         [picker addTarget:self action:@selector(didPickColor:) forControlEvents:UIControlEventValueChanged];
-        [picker setColorChoices:[FlightPath flightPathColors]];
-        [picker setSelectedColorIndex:[_flightPath colorIndex]];
+        [picker setColorChoices:[FlightRoute flightRouteColors]];
+        [picker setSelectedColorIndex:[_flightRoute colorIndex]];
 
         UIViewController* viewController = [[UIViewController alloc] init];
         [viewController setView:picker];
@@ -251,7 +251,7 @@
         [picker setMinimumAltitude:0];
         [picker setMaximumAltitude:30480]; // 100,000ft maximum
         [picker setAltitudeInterval:152.4]; // 500ft interval
-        [picker setAltitude:[_flightPath altitude]];
+        [picker setAltitude:[_flightRoute altitude]];
         [picker setFormatter:altitudeFormatter];
 
         UIViewController* viewController = [[UIViewController alloc] init];
@@ -310,8 +310,8 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     if ([indexPath section] == SECTION_WAYPOINTS && editingStyle == UITableViewCellEditingStyleDelete)
     {
         // Modify the model before the modifying the view.
-        [_flightPath removeWaypointAtIndex:(NSUInteger) [indexPath row]];
-        // Make the flight path table view match the change in the model, using UIKit animations to display the change.
+        [_flightRoute removeWaypointAtIndex:(NSUInteger) [indexPath row]];
+        // Make the flight route table view match the change in the model, using UIKit animations to display the change.
         NSArray* indexPaths = [NSArray arrayWithObject:indexPath];
         [tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationAutomatic];
     }
@@ -324,40 +324,40 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     if ([sourceIndexPath section] == SECTION_WAYPOINTS
      && [destinationIndexPath section] == SECTION_WAYPOINTS)
     {
-        [_flightPath moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
+        [_flightRoute moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
                                  toIndex:(NSUInteger) [destinationIndexPath row]];
     }
 }
 
 - (void) didPickAltitude:(AltitudePicker*)sender
 {
-    [_flightPath setAltitude:[sender altitude]];
+    [_flightRoute setAltitude:[sender altitude]];
 
     NSArray* indexPath = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:ROW_ALTITUDE inSection:SECTION_PROPERTIES]];
-    [flightPathTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
+    [flightRouteTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void) didPickColor:(ColorPicker*)sender
 {
-    [_flightPath setColorIndex:(NSUInteger) [sender selectedColorIndex]];
+    [_flightRoute setColorIndex:(NSUInteger) [sender selectedColorIndex]];
 
     NSArray* indexPath = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:ROW_COLOR inSection:SECTION_PROPERTIES]];
-    [flightPathTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
+    [flightRouteTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void) didChooseWaypoint:(Waypoint*)waypoint
 {
     // Modify the model before the modifying the view. Get the waypoint to insert from the waypoint table, then
-    // append it to the flight path model.
-    NSUInteger index = [_flightPath waypointCount];
-    [_flightPath insertWaypoint:waypoint atIndex:index];
+    // append it to the flight route model.
+    NSUInteger index = [_flightRoute waypointCount];
+    [_flightRoute insertWaypoint:waypoint atIndex:index];
 
-    // Make the flight path table view match the change in the model, using UIKit animations to display the change.
+    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
     // The index path's row indicates the row index that has been inserted.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
     NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [flightPathTable insertRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationFade];
-    [flightPathTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+    [flightRouteTable insertRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationFade];
+    [flightRouteTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
 @end

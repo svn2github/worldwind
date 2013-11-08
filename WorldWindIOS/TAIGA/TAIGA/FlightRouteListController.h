@@ -10,15 +10,15 @@
 @class WaypointFile;
 @class WWRenderableLayer;
 
-@interface FlightPathListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
+@interface FlightRouteListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
 {
 @protected
     WaypointFile* waypointFile;
-    NSUInteger flightPathColorIndex;
+    NSUInteger flightRouteColorIndex;
 }
 
 @property (nonatomic, readonly) WWRenderableLayer* layer;
 
-- (FlightPathListController*) initWithLayer:(WWRenderableLayer*)layer;
+- (FlightRouteListController*) initWithLayer:(WWRenderableLayer*)layer;
 
 @end
