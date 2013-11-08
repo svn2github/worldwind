@@ -135,8 +135,6 @@
 
     // Place the table in editing mode and refresh the properties section, which has custom editing controls.
     [flightPathTable setEditing:editing animated:animated];
-    [flightPathTable reloadSections:[NSIndexSet indexSetWithIndex:SECTION_PROPERTIES]
-                   withRowAnimation:animated ? UITableViewRowAnimationAutomatic : UITableViewRowAnimationNone];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -189,35 +187,25 @@
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForProperty:(NSIndexPath*)indexPath
 {
-    UITableViewCell* cell = nil;
+    static NSString* propertyCellId = @"propertyCellId";
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:propertyCellId];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:propertyCellId];
+        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    }
 
     if ([indexPath row] == ROW_COLOR)
     {
-        static NSString* colorCellId = @"colorCellId";
-        cell = [tableView dequeueReusableCellWithIdentifier:colorCellId];
-        if (cell == nil)
-        {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:colorCellId];
-            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-            [[cell textLabel] setText:@"Color"];
-        }
-
         NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:[_flightPath colorIndex]];
+        [[cell textLabel] setText:@"Color"];
         [[cell detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
         [[cell detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
     }
     else if ([indexPath row] == ROW_ALTITUDE)
     {
-        static NSString* altitudeCellId = @"altitudeCellId";
-        cell = [tableView dequeueReusableCellWithIdentifier:altitudeCellId];
-        if (cell == nil)
-        {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:altitudeCellId];
-            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-            [[cell textLabel] setText:@"Altitude"];
-        }
-
         double altitude = [_flightPath altitude];
+        [[cell textLabel] setText:@"Altitude"];
         [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
     }
 
