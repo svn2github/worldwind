@@ -14,6 +14,21 @@
 //-- Color Attributes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
+- (GLuint) colorInt
+{
+    GLubyte r = (GLubyte) (255 * _r);
+    GLubyte g = (GLubyte) (255 * _g);
+    GLubyte b = (GLubyte) (255 * _b);
+    GLubyte a = (GLubyte) (255 * _a);
+
+    return r << 24 | g << 16 | b << 8 | a;
+}
+
+- (UIColor*) uiColor
+{
+    return [UIColor colorWithRed:_r green:_g blue:_b alpha:_a];
+}
+
 - (void) premultipliedComponents:(float[])array
 {
     if (!array)
@@ -43,6 +58,41 @@
     return self;
 }
 
+- (WWColor*) initWithColorInt:(GLuint)colorInt
+{
+    self = [super init];
+
+    _r = (0xff & (GLubyte) (colorInt >> 24)) / 255.0;
+    _g = (0xff & (GLubyte) (colorInt >> 16)) / 255.0;
+    _b = (0xff & (GLubyte) (colorInt >> 8)) / 255.0;
+    _a = (0xff & (GLubyte) colorInt) / 255.0;
+
+    return self;
+}
+
+- (WWColor*) initWithUIColor:(UIColor*)uiColor
+{
+    if (uiColor == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"UIColor is nil")
+    }
+
+    self = [super init];
+
+    CGFloat r, g, b, a; // use a local CGFloat to correctly handle differences between CGFloat and float
+    if (![uiColor getRed:&r green:&g blue:&b alpha:&a])
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"UIColor cannot be converted to RGB format")
+    }
+
+    _r = r;
+    _g = g;
+    _b = b;
+    _a = a;
+
+    return self;
+}
+
 - (WWColor*) initWithColor:(WWColor*)color
 {
     if (color == nil)
@@ -59,7 +109,6 @@
 
     return self;
 }
-
 
 - (WWColor*) setToR:(float)r g:(float)g b:(float)b a:(float)a
 {

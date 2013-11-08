@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OpenGLES/ES2/gl.h>
+#import <UIKit/UIKit.h>
 
 /**
 * Represents an RGBA color.
@@ -26,6 +27,20 @@
 
 /// The color's alpha component in the range [0,1].
 @property (nonatomic) float a;
+
+/**
+* Returns a packed 32-bit integer representation of this RGBA color.
+*
+* @return A packed unsigned integer containing the r, g, b and a values, in that order.
+*/
+- (GLuint) colorInt;
+
+/**
+* Returns a UIColor representation of this color.
+*
+* @return A UIColor containing this color's r, g, b and a values.
+*/
+- (UIColor*) uiColor;
 
 /**
 * Stores this color's premultiplied red, green, blue and alpha components in the specified array as 32-bit floating
@@ -55,6 +70,27 @@
 * @return This color initialized to the specified values.
 */
 - (WWColor*) initWithR:(float)r g:(float)g b:(float)b a:(float)a;
+
+/**
+* Initializes this color with the red, green, blue and alpha components in a packed 32-bit integer representation of an
+* RGBA color.
+*
+* @param colorInt A packed unsigned integer containing the r, g, b and a values, in that order.
+*
+* @return This color initialized to the specified colorInt's values.
+*/
+- (WWColor*) initWithColorInt:(GLuint)colorInt;
+
+/**
+* Initializes this color with the red, green, blue and alpha components in the specified UIColor.
+*
+* @param uiColor The UIColor containing the r, g, b and a values.
+*
+* @return This color initialized to the specified UIColor's values.
+*
+* @exception NSInvalidArgumentException If the UIColor is nil or cannot be converted into RGB format.
+*/
+- (WWColor*) initWithUIColor:(UIColor*)uiColor;
 
 /**
 * Initialize this color with a specified color.
