@@ -32,6 +32,7 @@
     [[self navigationItem] setTitle:@"Flight Routes"];
     [[self navigationItem] setLeftBarButtonItem:addButtonItem];
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
+    [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
     _layer = layer;

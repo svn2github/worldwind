@@ -19,6 +19,7 @@
     table = [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
     [table setDataSource:self];
     [table setDelegate:self];
+    [table setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [table setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
     [self addSubview:table];
 
