@@ -41,7 +41,7 @@
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
-    UIBarButtonItem* flightPathsButton;
+    //UIBarButtonItem* flightPathsButton;
     UIBarButtonItem* overlaysButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
@@ -50,10 +50,10 @@
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
-    FlightPathListController * flightPathController;
-    UIPopoverController* flightPathPopoverController;
+    FlightPathListController * flightRouteController;
+    UIPopoverController* flightRoutePopoverController;
 
-    WWRenderableLayer* flightPathsLayer;
+    WWRenderableLayer* flightRoutesLayer;
     FAAChartsAlaskaLayer* faaChartsLayer;
     OpenWeatherMapLayer* precipitationLayer;
     OpenWeatherMapLayer* cloudsLayer;
@@ -114,10 +114,10 @@
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
 
-    flightPathsLayer = [[WWRenderableLayer alloc] init];
-    [flightPathsLayer setDisplayName:@"Flight Paths"];
-    [[flightPathsLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
+    flightRoutesLayer = [[WWRenderableLayer alloc] init];
+    [flightRoutesLayer setDisplayName:@"Flight Routes"];
+    [[flightRoutesLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [[[_wwv sceneController] layers] addLayer:flightRoutesLayer];
 
     faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
     [faaChartsLayer setEnabled:[Settings getBoolForName:
@@ -176,7 +176,7 @@
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    flightPathController = [[FlightPathListController alloc] initWithLayer:flightPathsLayer];
+    flightRouteController = [[FlightPathListController alloc] initWithLayer:flightRoutesLayer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];
@@ -235,17 +235,17 @@
                                                          action:nil];
     [connectivityButton setTintColor:[UIColor whiteColor]];
 
-    flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"38-airplane" text:@"Flight Paths" size:size target:self action:@selector
-            (handleFlightPathsButton)]];
-    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-    [((ButtonWithImageAndText*) [flightPathsButton customView]) setTextColor:color];
-    [((ButtonWithImageAndText*) [flightPathsButton customView]) setFontSize:15];
+    //flightPathsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+    //        initWithImageName:@"38-airplane" text:@"Flight Paths" size:size target:self action:@selector
+    //        (handleFlightPathsButton)]];
+    //UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    //[((ButtonWithImageAndText*) [flightPathsButton customView]) setTextColor:color];
+    //[((ButtonWithImageAndText*) [flightPathsButton customView]) setFontSize:15];
 
     overlaysButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"328-layers2" text:@"Overlays" size:size target:self action:@selector
             (handleOverlaysButton)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [overlaysButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [overlaysButton customView]) setFontSize:15];
 
@@ -265,7 +265,7 @@
 
     routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
-            (handleButtonTap)]];
+            (handleRoutePlanningButton)]];
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setFontSize:15];
@@ -274,8 +274,8 @@
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     [topToolBar setItems:[NSArray arrayWithObjects:
-            flexibleSpace,
-            flightPathsButton,
+            //flexibleSpace,
+            //flightPathsButton,
             flexibleSpace,
             overlaysButton,
             flexibleSpace,
@@ -314,19 +314,12 @@
     NSLog(@"BUTTON TAPPED");
 }
 
-- (void) handleFlightPathsButton
-{
-    if (flightPathPopoverController == nil)
-    {
-        UINavigationController* navController = [[UINavigationController alloc]
-                initWithRootViewController:flightPathController];
-        [navController setDelegate:flightPathController];
-        flightPathPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
-    }
-
-    [flightPathPopoverController presentPopoverFromBarButtonItem:flightPathsButton
-                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-}
+//- (void) handleFlightPathsButton
+//{
+//    [flightPathsLayer setEnabled:![flightPathsLayer enabled]];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:WW_LAYER_LIST_CHANGED object:self];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+//}
 
 - (void) handleOverlaysButton
 {
@@ -340,6 +333,20 @@
 
     [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) handleRoutePlanningButton
+{
+    if (flightRoutePopoverController == nil)
+    {
+        UINavigationController* navController = [[UINavigationController alloc]
+                initWithRootViewController:flightRouteController];
+        [navController setDelegate:flightRouteController];
+        flightRoutePopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+    }
+
+    [flightRoutePopoverController presentPopoverFromBarButtonItem:routePlanningButton
+                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) handleTap:(UITapGestureRecognizer*)recognizer
