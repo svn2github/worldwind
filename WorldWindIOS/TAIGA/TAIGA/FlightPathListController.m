@@ -28,7 +28,7 @@
     UIBarButtonItem* addButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
                                                                                    target:self
                                                                                    action:@selector(handleAddButtonTap)];
-    [[self navigationItem] setTitle:@"Flight Paths"];
+    [[self navigationItem] setTitle:@"Flight Routes"];
     [[self navigationItem] setLeftBarButtonItem:addButtonItem];
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];

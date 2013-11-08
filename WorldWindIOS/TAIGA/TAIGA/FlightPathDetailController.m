@@ -17,10 +17,8 @@
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
 #define SECTION_WAYPOINTS (1)
-#define ROW_TITLE (0)
-#define ROW_COLOR (1)
-#define ROW_ALTITUDE (2)
-#define TAG_TEXT_FIELD (1)
+#define ROW_COLOR (0)
+#define ROW_ALTITUDE (1)
 
 @implementation FlightPathDetailController
 
@@ -32,7 +30,7 @@
 {
     self = [super initWithNibName:nil bundle:nil];
 
-    [[self navigationItem] setTitle:@"Flight Path"];
+    [[self navigationItem] setTitle:[flightPath displayName]];
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
 
     _flightPath = flightPath;
@@ -155,7 +153,7 @@
     switch (section)
     {
         case SECTION_PROPERTIES:
-            return 3;
+            return 2;
         case SECTION_WAYPOINTS:
             return [_flightPath waypointCount];
         default:
@@ -193,48 +191,20 @@
 {
     UITableViewCell* cell = nil;
 
-    if ([indexPath row] == ROW_TITLE)
-    {
-        static NSString* titleCellId = @"titleCellId";
-        cell = [tableView dequeueReusableCellWithIdentifier:titleCellId];
-        UITextField* textField;
-        if (cell == nil)
-        {
-            cell =  [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:titleCellId];
-
-            UIEdgeInsets separatorInsets = [cell separatorInset];
-            UIEdgeInsets insets = UIEdgeInsetsMake(7, separatorInsets.left, 7, separatorInsets.left);
-            CGRect contentFrame = UIEdgeInsetsInsetRect([[cell contentView] bounds], insets);
-            textField = [[UITextField alloc] initWithFrame:contentFrame];
-            [textField setTag:TAG_TEXT_FIELD];
-            [textField setDelegate:self];
-            [textField setPlaceholder:@"Flight Path Name"];
-            [textField setClearButtonMode:UITextFieldViewModeWhileEditing];
-            [textField setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
-            [[cell contentView] addSubview:textField];
-        }
-        else
-        {
-            textField = (UITextField*) [[cell contentView] viewWithTag:TAG_TEXT_FIELD];
-        }
-
-        [textField setText:[_flightPath displayName]];
-        [textField setTextColor:[tableView isEditing] ? [textField tintColor] : [UIColor blackColor]];
-    }
-    else if ([indexPath row] == ROW_COLOR)
+    if ([indexPath row] == ROW_COLOR)
     {
         static NSString* colorCellId = @"colorCellId";
         cell = [tableView dequeueReusableCellWithIdentifier:colorCellId];
         if (cell == nil)
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:colorCellId];
+            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
             [[cell textLabel] setText:@"Color"];
         }
 
         NSDictionary* colorAttrs = [[FlightPath flightPathColors] objectAtIndex:[_flightPath colorIndex]];
         [[cell detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
         [[cell detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
-        [cell setAccessoryType:[tableView isEditing] ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone];
     }
     else if ([indexPath row] == ROW_ALTITUDE)
     {
@@ -243,12 +213,12 @@
         if (cell == nil)
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:altitudeCellId];
+            [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
             [[cell textLabel] setText:@"Altitude"];
         }
 
         double altitude = [_flightPath altitude];
         [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
-        [cell setAccessoryType:[tableView isEditing] ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone];
     }
 
     return cell;
@@ -273,9 +243,6 @@
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-
-    if (![tableView isEditing])
-        return; // disable row selection for editing when the table isn't in editing mode
 
     if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_COLOR)
     {
@@ -372,28 +339,6 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
         [_flightPath moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
                                  toIndex:(NSUInteger) [destinationIndexPath row]];
     }
-}
-
-- (BOOL) textFieldShouldBeginEditing:(UITextField*)textField
-{
-    return [flightPathTable isEditing]; // allow text editing when the table is in editing mode
-}
-
-- (void) textFieldDidBeginEditing:(UITextField*)textField
-{
-    [textField setTextColor:[UIColor blackColor]]; // switch to black text when editing begins
-}
-
-- (void) textFieldDidEndEditing:(UITextField*)textField
-{
-    [textField setTextColor:[textField tintColor]]; // restore tinted text after editing ends
-    [_flightPath setDisplayName:[textField text]];
-}
-
-- (BOOL) textFieldShouldReturn:(UITextField*)textField
-{
-    [textField resignFirstResponder]; // end text field editing
-    return YES;
 }
 
 - (void) didPickAltitude:(AltitudePicker*)sender

@@ -11,7 +11,7 @@
 @class WaypointFile;
 @class WaypointChooserControl;
 
-@interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
+@interface FlightPathDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 {
 @protected
     NSNumberFormatter* altitudeFormatter;
