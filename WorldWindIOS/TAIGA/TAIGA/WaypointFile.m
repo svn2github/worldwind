@@ -80,11 +80,28 @@
     if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
     {
         // If the retrieval was successful, cache the retrieved file and parse its contents directly from the retriever.
-        [[retriever retrievedData] writeToFile:cachePath atomically:YES];
+        NSError* error = nil;
+        [[NSFileManager defaultManager] createDirectoryAtPath:[cachePath stringByDeletingLastPathComponent]
+                                  withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error != nil)
+        {
+            WWLog(@"Unable to create waypoint file cache directory, %@", [error description]);
+        }
+        else
+        {
+            [[retriever retrievedData] writeToFile:cachePath options:NSDataWritingAtomic error:&error];
+            if (error != nil)
+            {
+                WWLog(@"Unable to write waypoint file to cache, %@", [error description]);
+            }
+        }
+
         [self parseData:[retriever retrievedData]];
     }
     else
     {
+        WWLog(@"Unable to retrieve waypoint file %@, falling back to local cache.", [[retriever url] absoluteString]);
+
         // Otherwise, attempt to use a previously cached version.
         NSData* data = [NSData dataWithContentsOfFile:cachePath];
         if (data != nil)
@@ -93,7 +110,7 @@
         }
         else
         {
-            WWLog(@"Unable to retrieve or use local cache of file %@", [[retriever url] absoluteString]);
+            WWLog(@"Unable to read local cache of waypoint file %@", [[retriever url] absoluteString]);
         }
     }
 }
