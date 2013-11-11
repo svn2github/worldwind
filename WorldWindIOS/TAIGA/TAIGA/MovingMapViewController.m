@@ -34,6 +34,7 @@
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
 #import "FlightRouteListController.h"
+#import "FlightPathsLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -64,6 +65,7 @@
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
     CompassLayer* compassLayer;
+    FlightPathsLayer* flightPathsLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
 
@@ -123,6 +125,11 @@
     [faaChartsLayer setEnabled:[Settings getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
+
+    flightPathsLayer = [[FlightPathsLayer alloc] initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
+    [flightPathsLayer setEnabled:[Settings getBoolForName:
+                            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
+    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
     [precipitationLayer setEnabled:[Settings getBoolForName:

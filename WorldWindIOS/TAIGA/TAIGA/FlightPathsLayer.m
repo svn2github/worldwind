@@ -24,6 +24,8 @@
 {
     self = [super init];
 
+    [self setDisplayName:@"Alaska Flight Paths"];
+
     NSURL* url = [[NSURL alloc] initWithString:pathsLocation];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
@@ -39,7 +41,7 @@
 {
     if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
     {
-        WWLog(@"Unable to download flight paths file %@", [[retriever url] absoluteString]);
+        WWLog(@"Unable to download Alaska flight paths file %@", [[retriever url] absoluteString]);
         return;
     }
 
@@ -54,8 +56,6 @@
         WWLog(@"Error %@ reading flight paths file %@", errMsg, [[retriever url] absoluteString]);
         return;
     }
-
-    [self setDisplayName:@"Flight Paths"];
 
     // Path colors derived from http://www.colorcombos.com/color-schemes/95/ColorCombo95.html
     WWShapeAttributes* attrs = [[WWShapeAttributes alloc] init];
