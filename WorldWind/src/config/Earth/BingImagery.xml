@@ -41,9 +41,6 @@
             <LatLon units="degrees" latitude="90" longitude="180"/>
         </NorthEast>
     </Sector>
-    <ForceLevelZeroLoads>true</ForceLevelZeroLoads>
-    <RetainLevelZeroTiles>true</RetainLevelZeroTiles>
-    <UseTransparentTextures>false</UseTransparentTextures>
     <ScreenCredit creditType="ScreenImage">
         <FileName>images/Bing_32x32.png</FileName>
         <Link>http://www.microsoft.com/maps/assets/docs/terms.aspx/</Link>
