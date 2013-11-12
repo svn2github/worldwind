@@ -35,6 +35,7 @@
 #import "ScaleBarView.h"
 #import "FlightRouteListController.h"
 #import "FlightPathsLayer.h"
+#import "PositionReadoutController.h"
 
 @implementation MovingMapViewController
 {
@@ -73,6 +74,8 @@
     UIPopoverController* metarDataPopoverController;
     PIREPDataViewController* pirepDataViewController;
     UIPopoverController* pirepDataPopoverController;
+    PositionReadoutController* positionReadoutViewController;
+    UIPopoverController* positionReadoutPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -83,6 +86,7 @@
 
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
+    positionReadoutViewController = [[PositionReadoutController alloc] init];
 
     return self;
 }
@@ -365,7 +369,11 @@
 
         WWPickedObject* topObject = [pickedObjects topPickedObject];
 
-        if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
+        if (topObject.isTerrain)
+        {
+            [self showPositionReadout:topObject];
+        }
+        else if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
         {
             WWPointPlacemark* pm = (WWPointPlacemark*) [topObject userObject];
             if ([pm userObject] != nil)
@@ -377,6 +385,28 @@
             }
         }
     }
+}
+
+- (void) showPositionReadout:(WWPickedObject*)po
+{
+    WWPosition* position = [po position];
+    WWVec4* cartesianPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[position latitude] longitude:[position longitude]
+                                                    altitude:[position altitude] outputPoint:cartesianPoint];
+    [[[_wwv sceneController] navigatorState] project:cartesianPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
+
+    [positionReadoutViewController setPosition:position];
+
+    if (positionReadoutPopoverController == nil)
+        positionReadoutPopoverController = [[UIPopoverController alloc]
+                initWithContentViewController:positionReadoutViewController];
+    [positionReadoutPopoverController presentPopoverFromRect:rect inView:_wwv
+                                    permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm

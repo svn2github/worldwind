@@ -99,6 +99,7 @@
 		1BF9A98BDAED599CF626968F /* 25-weather.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A46DD2EE664E94DFCADD /* 25-weather.png */; };
 		1BF9A9D7FE17BA65363F9781 /* 19-gear.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */; };
 		1BF9A9D87EFDEBAE923B0A60 /* PIREP_ICONS_0003_Layer-5.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3C7CD276C3C6FC0C700 /* PIREP_ICONS_0003_Layer-5.png */; };
+		1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */; };
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
 		1BF9AA1E322E542699D0E5ED /* WB_25kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7AE487804CB52BF23BF /* WB_25kt_128.png */; };
 		1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */; };
@@ -281,6 +282,7 @@
 		1BF9A9120A0B0543D8D76B33 /* WB_35kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_35kt_128.png; sourceTree = "<group>"; };
 		1BF9A989027E719B196FB35C /* WB_70kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_70kt_128.png; sourceTree = "<group>"; };
 		1BF9A99F6415E09E84C670BB /* MetarIconGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetarIconGenerator.m; sourceTree = "<group>"; };
+		1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionReadoutController.m; sourceTree = "<group>"; };
 		1BF9A9BDB8AECE5417A1271E /* WX_RA_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A9CEC9CECC0D70A019DA /* FAAChartsAlaskaLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAAChartsAlaskaLayer.h; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 		1BF9AC1EC3636B201FF789F6 /* WeatherScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherScreenController.h; sourceTree = "<group>"; };
 		1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsScreenController.m; sourceTree = "<group>"; };
 		1BF9AC453454DC284028FA57 /* WB_65kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_65kt_128.png; sourceTree = "<group>"; };
+		1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PositionReadoutController.h; sourceTree = "<group>"; };
 		1BF9AC548E1B6A8C5890C137 /* PIREPDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PIREPDataViewController.m; sourceTree = "<group>"; };
 		1BF9AC5D90B5FD2F10994DD7 /* PIREP_ICONS_0010_Layer-12.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0010_Layer-12.png"; sourceTree = "<group>"; };
 		1BF9AC62274413AAB34740F4 /* PIREP_ICONS_0006_Layer-8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0006_Layer-8.png"; sourceTree = "<group>"; };
@@ -507,6 +510,8 @@
 				CC8CFDC5DBCA408191058CCC /* ColorPicker.h */,
 				CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */,
 				CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */,
+				1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */,
+				1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -844,6 +849,7 @@
 				CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */,
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,
 				CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */,
+				1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
