@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class WaypointFile;
+@class WorldWindView;
 @class WWRenderableLayer;
 
 @interface FlightRouteListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
@@ -17,8 +18,10 @@
     NSUInteger flightRouteColorIndex;
 }
 
+@property (nonatomic, readonly) WorldWindView* wwv;
+
 @property (nonatomic, readonly) WWRenderableLayer* layer;
 
-- (FlightRouteListController*) initWithLayer:(WWRenderableLayer*)layer;
+- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv layer:(WWRenderableLayer*)layer;
 
 @end

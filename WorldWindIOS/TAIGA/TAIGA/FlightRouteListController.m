@@ -10,11 +10,18 @@
 #import "FlightRoute.h"
 #import "Waypoint.h"
 #import "WaypointFile.h"
+#import "AppConstants.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/Navigate/WWNavigator.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Util/WWMath.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
-#import "AppConstants.h"
 
 @implementation FlightRouteListController
 
@@ -22,7 +29,7 @@
 //-- Initializing FlightRouteListController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteListController*) initWithLayer:(WWRenderableLayer*)layer
+- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv layer:(WWRenderableLayer*)layer
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -35,6 +42,7 @@
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
+    _wwv = wwv;
     _layer = layer;
 
     NSURL* airportsUrl = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
@@ -73,7 +81,7 @@
     // screen for during flight route initialization or restoration.
     if ([[_layer renderables] containsObject:flightRoute])
     {
-        [self flightRouteDidChange:flightRoute];
+        [self flightRouteDidChange:flightRoute notification:notification];
     }
 }
 
@@ -137,7 +145,7 @@
     [self requestRedraw];
 }
 
-- (void) flightRouteDidChange:(FlightRoute*)flightRoute
+- (void) flightRouteDidChange:(FlightRoute*)flightRoute notification:(NSNotification*)notification
 {
     // Refresh the table row corresponding to the flight route that changed.
     NSInteger index  = [[_layer renderables] indexOfObject:flightRoute];
@@ -145,8 +153,17 @@
     [[self tableView] reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
 
+    // Save the flight route's state and request that the WorldWindView to redraw itself. The view must be redrawn even
+    // when the navigator logic below is not invoked in order to display flight route changes that do not result in
+    // changes to the navigator.
     [self saveFlightRouteState:flightRoute];
     [self requestRedraw];
+
+    // Show the the flight route in the WorldWindView when the flight route's waypoint list has changed.
+    if ([[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] != nil)
+    {
+        [self navigateToFlightRoute:flightRoute];
+    }
 }
 
 - (void) saveFlightRouteState:(FlightRoute*)flightRoute
@@ -361,6 +378,43 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 //--------------------------------------------------------------------------------------------------------------------//
 //-- WorldWindView Interface --//
 //--------------------------------------------------------------------------------------------------------------------//
+
+- (void) navigateToFlightRoute:(FlightRoute*)flightRoute
+{
+    WWSector* sector = [flightRoute waypointSector];
+    if (sector == nil)
+        return; // empty flight route; nothing to navigate to
+
+    // Compute the center and radius of a circle that circumscribes the sector bounding the flight path's waypoints. If
+    // the flight route contains only a single unique waypoint we fall use default radius of 100km. This circle
+    // defines the region that will be shown in the left half of the WorldWindView's viewport.
+    WWGlobe* globe = [[_wwv sceneController] globe];
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    WWPosition* center = [[WWPosition alloc] initWithDegreesLatitude:[sector centroidLat] longitude:[sector centroidLon] altitude:0];
+    double radiusDegrees = [sector isEmpty] ? DEGREES(100000 / globeRadius) : [sector circumscribingRadius];
+    double radiusMeters = RADIANS(radiusDegrees) * globeRadius;
+
+    // Compute the scale that we'll apply to the region's radius in order to make it fit in the left half of the
+    // WorldWindView's viewport. The navigator will fit the radius we provide into the smaller of the two viewport
+    // dimensions. When the device is in portrait mode, the radius is fit to the viewport width, so the visible region's
+    // radius must be twice the actual region's radius. When the device is in landscape mode, the radius is fit to the
+    // viewport height, so the visible region's radius must be scaled based on the relative size of the viewport width
+    // and height.
+    id<WWNavigator> navigator = [_wwv navigator];
+    CGRect viewport = [_wwv viewport];
+    CGFloat viewportWidth = CGRectGetWidth(viewport);
+    CGFloat viewportHeight = CGRectGetHeight(viewport);
+    double radiusScale = viewportWidth < viewportHeight ? 2 : (viewportWidth < 2 * viewportHeight ? 2 * viewportHeight / viewportWidth : 1);
+
+    // Navigate to the center and radius of the a region that places the flight route's bounding sector in the left half
+    // of the WorldWindView's viewport. This region has its center at the eastern edge of the flight route relative to
+    // the navigator's current heading, and has its radius scaled such that the flight route fits in half of the
+    // viewport width.
+    WWPosition* lookAtCenter = [[WWPosition alloc] initWithZeroPosition];
+    [WWLocation greatCircleLocation:center azimuth:[navigator heading] + 90 distance:radiusDegrees outputLocation:lookAtCenter];
+    double lookAtRadius = radiusMeters * radiusScale;
+    [navigator animateToRegionWithCenter:lookAtCenter radius:lookAtRadius overDuration:WWNavigatorDurationDefault];
+}
 
 - (void) requestRedraw
 {

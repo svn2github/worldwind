@@ -10,6 +10,7 @@
 
 @class Waypoint;
 @class WWPath;
+@class WWSector;
 @class WWShapeAttributes;
 
 @interface FlightRoute : NSObject <WWRenderable>
@@ -17,6 +18,7 @@
 @protected
     NSMutableArray* waypoints;
     NSMutableArray* waypointPositions;
+    WWSector* waypointSector;
     WWPath* path;
 }
 
@@ -38,6 +40,8 @@
 - (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray;
 
 + (NSArray*) flightRouteColors;
+
+- (WWSector*) waypointSector;
 
 - (NSUInteger) waypointCount;
 

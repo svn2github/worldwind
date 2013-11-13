@@ -187,7 +187,7 @@
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
-    flightRouteController = [[FlightRouteListController alloc] initWithLayer:flightRoutesLayer];
+    flightRouteController = [[FlightRouteListController alloc] initWithWorldWindView:_wwv layer:flightRoutesLayer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [tapGestureRecognizer setNumberOfTapsRequired:1];

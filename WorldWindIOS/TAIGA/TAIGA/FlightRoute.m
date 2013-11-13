@@ -9,6 +9,7 @@
 #import "Waypoint.h"
 #import "AppConstants.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "Worldwind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -29,6 +30,8 @@
 
     waypoints = [[NSMutableArray alloc] initWithCapacity:8];
     waypointPositions = [[NSMutableArray alloc] initWithCapacity:8];
+    waypointSector = nil;
+
     [self initPathWithPositions:waypointPositions];
 
     return self;
@@ -50,6 +53,8 @@
         WWPosition* pos = [self positionForWaypoint:waypoint];
         [waypointPositions addObject:pos];
     }
+    waypointSector = [waypointPositions count] > 0 ? [[WWSector alloc] initWithLocations:waypointPositions] : nil;
+
     [self initPathWithPositions:waypointPositions];
 
     return self;
@@ -122,6 +127,11 @@
     }
 
     [path render:dc];
+}
+
+- (WWSector*) waypointSector
+{
+    return waypointSector;
 }
 
 - (NSUInteger) waypointCount
@@ -242,7 +252,17 @@
     [waypointPositions insertObject:pos atIndex:index];
     [path setPositions:waypointPositions];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+    if (waypointSector == nil)
+    {
+        waypointSector = [[WWSector alloc] initWithLocations:waypointPositions]; // set sector to first waypoint location
+    }
+    else
+    {
+        [waypointSector unionWithLocation:pos]; // union with additional waypoint locations
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
@@ -250,7 +270,17 @@
     [waypointPositions removeObjectAtIndex:index];
     [path setPositions:waypointPositions];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+    if ([waypointPositions count] == 0)
+    {
+        waypointSector = nil; // set sector to nil when waypoint list is empty
+    }
+    else
+    {
+        [waypointSector setToLocations:waypointPositions]; // recompute sector when waypoint is removed
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
@@ -260,7 +290,8 @@
     [waypointPositions insertObject:pos atIndex:toIndex];
     [path setPositions:waypointPositions];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:toIndex]}];
 }
 
 @end
