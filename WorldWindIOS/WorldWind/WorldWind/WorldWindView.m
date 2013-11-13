@@ -53,7 +53,7 @@
         // Allocate storage for the color and depth renderbuffers. This computes the correct and consistent dimensions
         // for the renderbuffers, and assigns the viewport property.
         [self resizeWithLayer:eaglLayer];
-        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+//        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
 
         // Configure the picking framebuffer's color and depth attachments, then validate the framebuffer's status.
         glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);

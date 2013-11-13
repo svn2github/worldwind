@@ -13,18 +13,20 @@
 
 @implementation ChartsListController
 {
-    ChartsScreenController* parentScreen;
+    id parentController;
     NSString* chartsServer;
     NSString* airportsCachePath;
     NSArray* airportCharts;
     UIRefreshControl* refreshControl;
 }
 
-- (ChartsListController*) initWithParent:(ChartsScreenController*)parent
+- (ChartsListController*) initWithParent:(id)parent
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
-    parentScreen = parent;
+    [[self navigationItem] setTitle:@"Charts"];
+
+    parentController = parent;
 
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.autoresizesSubviews = YES;
@@ -100,6 +102,8 @@
         return [nameA compare:nameB];
     }];
 
+    [[self tableView] reloadData];
+
     [refreshControl endRefreshing];
 }
 
@@ -155,13 +159,14 @@
     NSString* chartFileName = [[retriever url] lastPathComponent];
     NSString* chartPath = [airportsCachePath stringByAppendingPathComponent:chartFileName];
 
-    // If the retrieval was successful, cache the retrieved TOC.
+    // If the retrieval was successful, cache the retrieved chart.
     if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
     {
         [[retriever retrievedData] writeToFile:chartPath atomically:YES];
     }
 
-    [parentScreen loadChart:chartPath chartName:[retriever userData]];
+    [parentController loadChart:chartPath chartName:[retriever userData]];
+
 //
 //    for (NSUInteger i = 0; i < [airportCharts count]; i++)
 //    {

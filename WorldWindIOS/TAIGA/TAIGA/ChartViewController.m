@@ -19,11 +19,6 @@
 
     myFrame = frame;
 
-    return self;
-}
-
-- (void) viewDidLoad
-{
     [[self view] setFrame:myFrame];
 
     _imageView = [[UIImageView alloc] init];
@@ -46,6 +41,8 @@
     [scrollView addSubview:_imageView];
 
     [[self view] addSubview:scrollView];
+
+    return self;
 }
 
 - (UIView*) viewForZoomingInScrollView:(UIScrollView*)scrollView

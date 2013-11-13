@@ -36,10 +36,16 @@
 #import "FlightRouteListController.h"
 #import "FlightPathsLayer.h"
 #import "PositionReadoutController.h"
+#import "ChartsListController.h"
+#import "ChartViewController.h"
+#import "WWUtil.h"
 
 @implementation MovingMapViewController
 {
     CGRect myFrame;
+    NSArray* normalConstraints;
+    NSArray* splitViewConstraints;
+    BOOL isSplitView;
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
@@ -49,6 +55,9 @@
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
     ScaleBarView* scaleBarView;
+    ChartsListController* chartsListController;
+    ChartViewController* chartViewController;
+    UINavigationController* chartListNavController;
 
     LayerListController* layerListController;
     UIPopoverController* layerListPopoverController;
@@ -99,14 +108,55 @@
 
     [self createWorldWindView];
     [self createTopToolbar];
+    [self createChartsController];
 
-    float x = myFrame.size.width - 220;
+    float x = 20;//myFrame.size.width - 220;
     float y = myFrame.size.height - 70;
     scaleBarView = [[ScaleBarView alloc] initWithFrame:CGRectMake(x, y, 200, 50) worldWindView:_wwv];
-    scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+    scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:scaleBarView];
+
+    [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+    UIView* view = [self view];
+    UIView* chartView = [chartListNavController view];
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView);
+
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][_wwv(>=400)]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][chartView(>=400)]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(==view)][chartView(==0)]|"
+                                                                options:0 metrics:nil views:viewsDictionary];
+    splitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(>=400)][chartView(==350)]|"
+                                                                   options:0 metrics:nil views:viewsDictionary];
+
+    isSplitView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.splitview.enabled" defaultValue:NO];
+    [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
+    if (isSplitView)
+        [self loadMostRecentlyUsedChart];
 }
 
+- (void) loadMostRecentlyUsedChart
+{
+    NSString* chartFileName = [[NSUserDefaults standardUserDefaults]
+            objectForKey:@"gov.nasa.worldwind.taiga.splitview.chartpath"];
+
+    if (chartFileName == nil || chartFileName.length == 0)
+        return;
+
+    NSString* chartName = [[NSUserDefaults standardUserDefaults]
+            objectForKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
+    if (chartName == nil || chartName.length == 0)
+        return;
+
+    [chartsListController selectChart:chartFileName chartName:chartName];
+}
 
 - (void) viewDidLoad
 {
@@ -126,63 +176,63 @@
     [[[_wwv sceneController] layers] addLayer:flightRoutesLayer];
 
     faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
-    [faaChartsLayer setEnabled:[Settings getBoolForName:
+    [faaChartsLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
 
     flightPathsLayer = [[FlightPathsLayer alloc] initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
-    [flightPathsLayer setEnabled:[Settings getBoolForName:
-                            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
+    [flightPathsLayer setEnabled:[Settings                                                                               getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
 
     precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
-    [precipitationLayer setEnabled:[Settings getBoolForName:
+    [precipitationLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [precipitationLayer displayName]] defaultValue:NO]];
     [precipitationLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:precipitationLayer];
 
     cloudsLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"clouds" displayName:@"Clouds"];
-    [cloudsLayer setEnabled:[Settings getBoolForName:
+    [cloudsLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [cloudsLayer displayName]] defaultValue:NO]];
     [cloudsLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:cloudsLayer];
 
     temperatureLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"temp" displayName:@"Temperature"];
-    [temperatureLayer setEnabled:[Settings getBoolForName:
+    [temperatureLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [temperatureLayer displayName]] defaultValue:NO]];
     [temperatureLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:temperatureLayer];
 
     snowLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"snow" displayName:@"Snow"];
-    [snowLayer setEnabled:[Settings getBoolForName:
+    [snowLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [snowLayer displayName]] defaultValue:NO]];
     [snowLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:snowLayer];
 
     windLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"wind" displayName:@"Wind"];
-    [windLayer setEnabled:[Settings getBoolForName:
+    [windLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [windLayer displayName]] defaultValue:NO]];
     [windLayer setOpacity:0.4];
     [[[_wwv sceneController] layers] addLayer:windLayer];
 
     [self createTerrainAltitudeLayer];
-    [terrainAltitudeLayer setEnabled:[Settings getBoolForName:
+    [terrainAltitudeLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [terrainAltitudeLayer displayName]] defaultValue:NO]];
     [layers addLayer:terrainAltitudeLayer];
 
     metarLayer = [[METARLayer alloc] init];
-    [metarLayer setEnabled:[Settings getBoolForName:
+    [metarLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [metarLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:metarLayer];
 
     pirepLayer = [[PIREPLayer alloc] init];
-    [pirepLayer setEnabled:[Settings getBoolForName:
+    [pirepLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [pirepLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:pirepLayer];
 
     compassLayer = [[CompassLayer alloc] init];
     [[compassLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [compassLayer setEnabled:[Settings getBoolForName:
+    [compassLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [compassLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:compassLayer];
 
@@ -230,6 +280,42 @@
     [self.view addSubview:_wwv];
 }
 
+- (void) createChartsController
+{
+    chartsListController = [[ChartsListController alloc] initWithParent:self];
+    chartListNavController = [[UINavigationController alloc] initWithRootViewController:chartsListController];
+    [self.view addSubview:[chartListNavController view]];
+}
+
+- (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName
+{
+    if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
+    {
+        if (chartName == nil)
+            chartName = @"";
+
+        if (chartViewController == nil)
+            chartViewController = [[ChartViewController alloc] initWithFrame:[[chartsListController view] frame]];
+
+        [[chartViewController imageView] setImage:[WWUtil convertPDFToUIImage:[[NSURL alloc]
+                initFileURLWithPath:chartPath]]];
+        [chartViewController setTitle:chartName];
+
+        [[NSUserDefaults standardUserDefaults] setObject:[chartPath lastPathComponent]
+                                                  forKey:@"gov.nasa.worldwind.taiga.splitview.chartpath"];
+        [[NSUserDefaults standardUserDefaults] setObject:chartName
+                                                  forKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+
+        [self performSelectorOnMainThread:@selector(pushChart) withObject:nil waitUntilDone:NO];
+    }
+}
+
+- (void) pushChart
+{
+    [((UINavigationController*) [chartsListController parentViewController]) pushViewController:chartViewController animated:YES];
+}
+
 - (void) createTopToolbar
 {
     topToolBar = [[UIToolbar alloc] init];
@@ -262,17 +348,17 @@
 
     splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
-            (handleButtonTap)]];
+            (handleSplitViewButton)]];
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
-
-    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"309-thumbtack" text:@"Quick Views" size:size target:self action:@selector
-            (handleButtonTap)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-    [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
-    [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
+//
+//    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+//            initWithImageName:@"309-thumbtack" text:@"Quick Views" size:size target:self action:@selector
+//            (handleButtonTap)]];
+//    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+//    [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
+//    [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
     routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
@@ -291,8 +377,8 @@
             overlaysButton,
             flexibleSpace,
             splitViewButton,
-            flexibleSpace,
-            quickViewsButton,
+//            flexibleSpace,
+//            quickViewsButton,
             flexibleSpace,
             routePlanningButton,
             flexibleSpace,
@@ -342,8 +428,15 @@
         layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 
-    [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
-                                       permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if ([layerListPopoverController isPopoverVisible])
+    {
+        [layerListPopoverController dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
+                                           permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
 }
 
 - (void) handleRoutePlanningButton
@@ -356,8 +449,46 @@
         flightRoutePopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 
-    [flightRoutePopoverController presentPopoverFromBarButtonItem:routePlanningButton
-                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if ([flightRoutePopoverController isPopoverVisible])
+    {
+        [flightRoutePopoverController dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [flightRoutePopoverController presentPopoverFromBarButtonItem:routePlanningButton
+                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+}
+
+- (void) handleSplitViewButton
+{
+    isSplitView = !isSplitView;
+
+    [[self view] layoutIfNeeded]; // Ensure all pending layout operations have completed.
+
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
+                     animations:^
+                     {
+                         [self transitionSplitView];
+                         [[self view] layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+                     }
+                     completion:nil];
+
+    if (!isSplitView)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartpath"];
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
+    }
+    [Settings setBool:isSplitView forName:@"gov.nasa.worldwind.taiga.splitview.enabled"];
+}
+
+- (void) transitionSplitView
+{
+    UIView* view = [self view];
+    [view removeConstraints:isSplitView ? normalConstraints : splitViewConstraints];
+    [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
 }
 
 - (void) handleTap:(UITapGestureRecognizer*)recognizer
