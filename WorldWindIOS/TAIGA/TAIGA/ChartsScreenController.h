@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ChartsScreenController : UIViewController
+@interface ChartsScreenController : UIViewController <UISearchBarDelegate>
 
 - (ChartsScreenController*) initWithFrame:(CGRect)frame;
 

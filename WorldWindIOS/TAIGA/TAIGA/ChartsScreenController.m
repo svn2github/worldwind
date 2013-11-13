@@ -123,6 +123,8 @@
     [sbView setBackgroundColor:[UIColor whiteColor]];
 
     searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, myFrame.size.width, SEARCH_BAR_HEIGHT / 2)];
+    [searchBar setPlaceholder:@"Chart name"];
+    [searchBar setDelegate:self];
     searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     searchBar.autoresizesSubviews = YES;
     [sbView addSubview:searchBar];
@@ -181,6 +183,16 @@
     NSString* chartName = [[NSUserDefaults standardUserDefaults] objectForKey:MOST_RECENTLY_USED_CHART_NAME];
 
     [chartsListController selectChart:chartFileName chartName:chartName];
+}
+
+- (void) searchBar:(UISearchBar*)bar textDidChange:(NSString*)searchText
+{
+    [chartsListController setFilter:searchText];
+}
+
+- (void) searchBarSearchButtonClicked:(UISearchBar*)bar
+{
+    [chartsListController setFilter:[searchBar text]];
 }
 
 @end

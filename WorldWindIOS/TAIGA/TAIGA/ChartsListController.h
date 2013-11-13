@@ -11,6 +11,8 @@
 
 @interface ChartsListController : UITableViewController
 
+@property (nonatomic) NSString* filter;
+
 - (ChartsListController*)initWithParent:(id)parent;
 - (void) selectChart:(NSString*)chartFileName chartName:(NSString*)chartName;
 
