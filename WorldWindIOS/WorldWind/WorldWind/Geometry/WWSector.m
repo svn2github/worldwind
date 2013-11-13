@@ -36,10 +36,7 @@
 
     self = [super init];
 
-    _minLatitude = sector->_minLatitude;
-    _maxLatitude = sector->_maxLatitude;
-    _minLongitude = sector->_minLongitude;
-    _maxLongitude = sector->_maxLongitude;
+    [self set:sector];
 
     return self;
 }
@@ -53,33 +50,7 @@
 
     self = [super init];
 
-    _minLatitude = DBL_MAX;
-    _maxLatitude = -DBL_MAX;
-    _minLongitude = DBL_MAX;
-    _maxLongitude = -DBL_MAX;
-
-    for (WWLocation* __unsafe_unretained location in locations) // no need to check for nil; NSArray does not permit nil elements
-    {
-        double lat = [location latitude];
-        if (_minLatitude > lat)
-        {
-            _minLatitude = lat;
-        }
-        if (_maxLatitude < lat)
-        {
-            _maxLatitude = lat;
-        }
-
-        double lon = [location longitude];
-        if (_minLongitude > lon)
-        {
-            _minLongitude = lon;
-        }
-        if (_maxLongitude < lon)
-        {
-            _maxLongitude = lon;
-        }
-    }
+    [self setToLocations:locations];
 
     return self;
 }
@@ -141,6 +112,21 @@
     return RADIANS(_maxLongitude);
 }
 
+- (double) circumscribingRadius
+{
+    if (_minLatitude == _maxLatitude && _minLongitude == _maxLongitude)
+        return 0;
+
+    double centroidLat = [self centroidLat];
+    WWLocation* left = [[WWLocation alloc] initWithDegreesLatitude:centroidLat longitude:_minLongitude];
+    WWLocation* right = [[WWLocation alloc] initWithDegreesLatitude:centroidLat longitude:_maxLongitude];
+
+    double width_2 = [WWLocation greatCircleDistance:left endLocation:right] / 2;
+    double height_2 = (_maxLatitude - _minLatitude) / 2;
+
+    return sqrt(width_2 * width_2 + height_2 * height_2);
+}
+
 - (void) set:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)
@@ -152,6 +138,42 @@
     _maxLatitude = sector->_maxLatitude;
     _minLongitude = sector->_minLongitude;
     _maxLongitude = sector->_maxLongitude;
+}
+
+- (void) setToLocations:(NSArray* __unsafe_unretained)locations
+{
+    if (locations == nil || [locations count] == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Locations is nil or empty")
+    }
+
+    _minLatitude = DBL_MAX;
+    _maxLatitude = -DBL_MAX;
+    _minLongitude = DBL_MAX;
+    _maxLongitude = -DBL_MAX;
+
+    for (WWLocation* __unsafe_unretained location in locations) // no need to check for nil; NSArray does not permit nil elements
+    {
+        double lat = [location latitude];
+        if (_minLatitude > lat)
+        {
+            _minLatitude = lat;
+        }
+        if (_maxLatitude < lat)
+        {
+            _maxLatitude = lat;
+        }
+
+        double lon = [location longitude];
+        if (_minLongitude > lon)
+        {
+            _minLongitude = lon;
+        }
+        if (_maxLongitude < lon)
+        {
+            _maxLongitude = lon;
+        }
+    }
 }
 
 - (BOOL) isEmpty
@@ -234,6 +256,26 @@
         _minLongitude = sector->_minLongitude;
     if (_maxLongitude < sector->_maxLongitude)
         _maxLongitude = sector->_maxLongitude;
+}
+
+- (void) unionWithLocation:(WWLocation* __unsafe_unretained)location
+{
+    if (location == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
+    }
+
+    // Assumes normalized angles: [-180, 180], [-90, 90].
+    double lat = [location latitude];
+    double lon = [location longitude];
+    if (_minLatitude > lat)
+        _minLatitude = lat;
+    if (_maxLatitude < lat)
+        _maxLatitude = lat;
+    if (_minLongitude > lon)
+        _minLongitude = lon;
+    if (_maxLongitude < lon)
+        _maxLongitude = lon;
 }
 
 @end

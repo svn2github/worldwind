@@ -88,6 +88,19 @@
 */
 - (double) maxLongitudeRadians;
 
+/**
+* Returns the radius in degrees of a circle that circumscribes this sector.
+*
+* A circle centered at this sector's centroid and with the returned radius will circumscribe this sector's four corners
+* in geographic coordinates. Note that if this sector's corners are projected into another coordinate system, such a
+* circle would not circumscribe the projected four corners.
+*
+* The returned radius is zero when this sector's latitudinal span and longitudinal span are zero.
+*
+* @return The radius of a circle that circumscribes this sector, in degrees.
+*/
+- (double) circumscribingRadius;
+
 /// @name Initializing Sectors
 
 /**
@@ -148,6 +161,18 @@
 * @exception NSInvalidArgumentException If the sector is nil.
 */
 - (void) set:(WWSector*)sector;
+
+/**
+* Sets this sector to the geographic bounds of the specified locations.
+*
+* The locations array must contain at least one element. The elements in the array may be of type WWLocation or
+* WWPosition.
+*
+* @param locations The locations to bound.
+*
+* @exception NSInvalidArgumentException If locations is nil or empty.
+*/
+- (void) setToLocations:(NSArray*)locations;
 
 /// @name Intersection and Inclusion Operations
 
@@ -213,5 +238,14 @@
 * @exception NSInvalidArgumentException If the sector is nil.
 */
 - (void) union:(WWSector*)sector;
+
+/**
+* Sets this sector to the union of this sector and a specified location.
+*
+* @param location The location to union with this sector.
+*
+* @exception NSInvalidArgumentException If the location is nil.
+*/
+- (void) unionWithLocation:(WWLocation*)location;
 
 @end
