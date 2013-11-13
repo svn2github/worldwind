@@ -188,11 +188,13 @@
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForProperty:(NSIndexPath*)indexPath
 {
     static NSString* propertyCellId = @"propertyCellId";
+    static UIColor* detailTextColor;
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:propertyCellId];
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:propertyCellId];
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+        detailTextColor = [[cell detailTextLabel] textColor];
     }
 
     if ([indexPath row] == ROW_COLOR)
@@ -207,6 +209,7 @@
         double altitude = [_flightRoute altitude];
         [[cell textLabel] setText:@"Altitude"];
         [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
+        [[cell detailTextLabel] setTextColor:detailTextColor]; // show altitude detail text in the default color
     }
 
     return cell;
