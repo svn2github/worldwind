@@ -22,6 +22,13 @@
     return self;
 }
 
+- (void) setPosition:(WWPosition*)position
+{
+    _position = position;
+
+    [[self tableView] reloadData];
+}
+
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
     return 1;
