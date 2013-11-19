@@ -11,8 +11,9 @@
 #import "Waypoint.h"
 #import "WaypointFile.h"
 #import "AppConstants.h"
+#import "WorldWind/Geometry/WWExtent.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/Navigate/WWNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
@@ -381,18 +382,21 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 
 - (void) navigateToFlightRoute:(FlightRoute*)flightRoute
 {
-    WWSector* sector = [flightRoute waypointSector];
-    if (sector == nil)
+    WWGlobe* globe = [[_wwv sceneController] globe];
+    id<WWExtent> extent = [flightRoute extentOnGlobe:globe];
+
+    if (extent == nil)
         return; // empty flight route; nothing to navigate to
 
-    // Compute the center and radius of a circle that circumscribes the sector bounding the flight path's waypoints. If
-    // the flight route contains only a single unique waypoint we fall use default radius of 100km. This circle
-    // defines the region that will be shown in the left half of the WorldWindView's viewport.
-    WWGlobe* globe = [[_wwv sceneController] globe];
+    // Compute the center and radius of a region that bounds the flight path's waypoints. If the flight route contains
+    // only a single unique waypoint we use default radius of 100km. This sphere defines the region that will be shown
+    // in the left half of the WorldWindView's viewport.
+    WWPosition* center = [[WWPosition alloc] initWithZeroPosition];
+    WWVec4* centerPoint = [extent center];
+    [globe computePositionFromPoint:[centerPoint x] y:[centerPoint y] z:[centerPoint z] outputPosition:center];
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
-    WWPosition* center = [[WWPosition alloc] initWithDegreesLatitude:[sector centroidLat] longitude:[sector centroidLon] altitude:0];
-    double radiusDegrees = [sector isEmpty] ? DEGREES(100000 / globeRadius) : [sector circumscribingRadius];
-    double radiusMeters = RADIANS(radiusDegrees) * globeRadius;
+    double radiusMeters = [extent radius] > 0 ? [extent radius] : 100000;
+    double radiusDegrees = DEGREES(radiusMeters / globeRadius);
 
     // Compute the scale that we'll apply to the region's radius in order to make it fit in the left half of the
     // WorldWindView's viewport. The navigator will fit the radius we provide into the smaller of the two viewport

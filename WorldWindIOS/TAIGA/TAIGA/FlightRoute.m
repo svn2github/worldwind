@@ -8,12 +8,14 @@
 #import "FlightRoute.h"
 #import "Waypoint.h"
 #import "AppConstants.h"
+#import "WorldWind/Geometry/WWBoundingSphere.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Geometry/WWSector.h"
+#import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "Worldwind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Shapes/WWSphere.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
@@ -78,8 +80,6 @@ const float ShapeWidth = 12.0;
     waypointPath = [[WWPath alloc] initWithPositions:waypointPositions];
     [waypointPath setPathType:WW_RHUMB];
     [waypointPath setAttributes:shapeAttrs];
-
-    waypointSector = [waypointPositions count] > 0 ? [[WWSector alloc] initWithLocations:waypointPositions] : nil;
 }
 
 - (id) createShapeForWaypoint:(Waypoint*)waypoint withPosition:(WWPosition*)position width:(double)width
@@ -145,9 +145,26 @@ const float ShapeWidth = 12.0;
     [waypointShapes makeObjectsPerformSelector:@selector(render:) withObject:dc];
 }
 
-- (WWSector*) waypointSector
+- (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 {
-    return waypointSector;
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    if ([waypoints count] == 0)
+        return nil;
+
+    NSMutableArray* waypointPoints = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
+    for (Waypoint* waypoint in waypoints)
+    {
+        WWLocation* location = [waypoint location];
+        WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
+        [globe computePointFromPosition:[location latitude] longitude:[location longitude] altitude:_altitude outputPoint:point];
+        [waypointPoints addObject:point];
+    }
+
+    return [[WWBoundingSphere alloc] initWithPoints:waypointPoints];
 }
 
 - (NSUInteger) waypointCount
@@ -279,15 +296,6 @@ const float ShapeWidth = 12.0;
     [shape setAttributes:shapeAttrs];
     [waypointShapes insertObject:shape atIndex:index];
 
-    if (waypointSector == nil)
-    {
-        waypointSector = [[WWSector alloc] initWithLocations:waypointPositions]; // set sector to first waypoint location
-    }
-    else
-    {
-        [waypointSector unionWithLocation:pos]; // union with additional waypoint locations
-    }
-
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];
 }
@@ -297,15 +305,6 @@ const float ShapeWidth = 12.0;
     [waypointPositions removeObjectAtIndex:index];
     [waypointShapes removeObjectAtIndex:index];
     [waypointPath setPositions:waypointPositions];
-
-    if ([waypointPositions count] == 0)
-    {
-        waypointSector = nil; // set sector to nil when waypoint list is empty
-    }
-    else
-    {
-        [waypointSector setToLocations:waypointPositions]; // recompute sector when waypoint is removed
-    }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];

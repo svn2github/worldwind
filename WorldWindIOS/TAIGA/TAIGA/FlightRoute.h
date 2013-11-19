@@ -9,9 +9,11 @@
 #import "WorldWind/Render/WWRenderable.h"
 
 @class Waypoint;
+@class WWGlobe;
 @class WWPath;
 @class WWSector;
 @class WWShapeAttributes;
+@protocol WWExtent;
 
 @interface FlightRoute : NSObject <WWRenderable>
 {
@@ -20,7 +22,6 @@
     NSMutableArray* waypointPositions;
     NSMutableArray* waypointShapes;
     WWPath* waypointPath;
-    WWSector* waypointSector;
     WWShapeAttributes* shapeAttrs;
 }
 
@@ -43,7 +44,7 @@
 
 + (NSArray*) flightRouteColors;
 
-- (WWSector*) waypointSector;
+- (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 
 - (NSUInteger) waypointCount;
 
