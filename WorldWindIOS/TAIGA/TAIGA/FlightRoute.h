@@ -18,8 +18,10 @@
 @protected
     NSMutableArray* waypoints;
     NSMutableArray* waypointPositions;
+    NSMutableArray* waypointShapes;
+    WWPath* waypointPath;
     WWSector* waypointSector;
-    WWPath* path;
+    WWShapeAttributes* shapeAttrs;
 }
 
 /// Indicates this flight route's display name.
