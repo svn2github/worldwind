@@ -117,6 +117,7 @@
 		1BF9AAF8F305EEDBC91C7C27 /* CC_OVC_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A04EA08370FAEA7CF2AB /* CC_OVC_128.png */; };
 		1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
+		1BF9AB2688A37A6071BDCA6D /* slr_camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A25184505A9B412C771D /* slr_camera.png */; };
 		1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */; };
 		1BF9AB579D2C72B00DD86EC7 /* 275-broadcast-noconnection@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */; };
 		1BF9AB9F794616BFDB34BE1A /* AppConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */; };
@@ -133,6 +134,7 @@
 		1BF9ACBA7702508299E48CA0 /* WeatherScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */; };
 		1BF9ACBCF2201D7D3FC43D80 /* PIREP_ICONS_0001_Layer-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A25DDF84DF1C8FB77312 /* PIREP_ICONS_0001_Layer-3.png */; };
 		1BF9ACCF06E352A2568773B7 /* PIREP_ICONS_0005_Layer-7.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A2A84FE083FC39A4CD3B /* PIREP_ICONS_0005_Layer-7.png */; };
+		1BF9AD0A5453B64A1022B6FB /* WeatherCamLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFCB43CFF8C0595DB2A8 /* WeatherCamLayer.m */; };
 		1BF9AD329CC41CAE7BD123D7 /* PIREPDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AC548E1B6A8C5890C137 /* PIREPDataViewController.m */; };
 		1BF9AD371F4EC111A8300223 /* CC_SCT_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A68DE17AF5C306D4FA39 /* CC_SCT_128.png */; };
 		1BF9AD3B66A0D89D59B4EDBB /* WX_NONE_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8334881DA2A22450231 /* WX_NONE_128.png */; };
@@ -207,6 +209,7 @@
 		1BF9A0A6D0CFD912855D9B5E /* WB_80kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_80kt_128.png; sourceTree = "<group>"; };
 		1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "122-stats.png"; sourceTree = "<group>"; };
 		1BF9A0B6E08BC5F07990932A /* ChartViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartViewController.m; sourceTree = "<group>"; };
+		1BF9A0DA747BE90CADC4BE0E /* WeatherCamLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherCamLayer.h; sourceTree = "<group>"; };
 		1BF9A0FB8724A93430A71C62 /* 103-map@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "103-map@2x.png"; sourceTree = "<group>"; };
 		1BF9A13B40E48DA6A6C91CCB /* RenderableLayerDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderableLayerDetailController.h; sourceTree = "<group>"; };
 		1BF9A16000CCA1E884CB5F52 /* 362-2up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up.png"; sourceTree = "<group>"; };
@@ -219,6 +222,7 @@
 		1BF9A1F1A04A68346925CD83 /* WX_SN_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A1F2EEE24D578EA7129E /* WB_85kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_85kt_128.png; sourceTree = "<group>"; };
 		1BF9A230DEB50D96296D6835 /* 38-airplane.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "38-airplane.png"; sourceTree = "<group>"; };
+		1BF9A25184505A9B412C771D /* slr_camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = slr_camera.png; sourceTree = "<group>"; };
 		1BF9A2528858BA48B80D79FD /* PIREP_ICONS_0007_Layer-9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0007_Layer-9.png"; sourceTree = "<group>"; };
 		1BF9A25DDF84DF1C8FB77312 /* PIREP_ICONS_0001_Layer-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0001_Layer-3.png"; sourceTree = "<group>"; };
 		1BF9A26634010ECCCA908E7B /* ChartsScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsScreenController.h; sourceTree = "<group>"; };
@@ -353,6 +357,7 @@
 		1BF9AFA213F2D1EDCB0EDB27 /* PIREP_ICONS_0021_Layer-23.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0021_Layer-23.png"; sourceTree = "<group>"; };
 		1BF9AFAFEEE9E5C4844403F8 /* CC_MIS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_MIS_128.png; sourceTree = "<group>"; };
 		1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARDataViewController.m; sourceTree = "<group>"; };
+		1BF9AFCB43CFF8C0595DB2A8 /* WeatherCamLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeatherCamLayer.m; sourceTree = "<group>"; };
 		1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
@@ -517,6 +522,8 @@
 				1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */,
 				1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */,
 				1BF9A5CA68CC87A719BAE37A /* ChartsTableController.h */,
+				1BF9AFCB43CFF8C0595DB2A8 /* WeatherCamLayer.m */,
+				1BF9A0DA747BE90CADC4BE0E /* WeatherCamLayer.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -637,6 +644,7 @@
 				1BF9A1E5E84D850365CD6B01 /* notched-compass.png */,
 				CC8CF77711BB8EB271836CF7 /* circle-small.png */,
 				CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */,
+				1BF9A25184505A9B412C771D /* slr_camera.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -806,6 +814,7 @@
 				1BF9AFC293E02D3E756BEF0D /* notched-compass.png in Resources */,
 				CC8CF832A1920118F96D9839 /* circle-small.png in Resources */,
 				CC8CF6539CCA0C68561935FE /* circle-small@2x.png in Resources */,
+				1BF9AB2688A37A6071BDCA6D /* slr_camera.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -856,6 +865,7 @@
 				CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */,
 				1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */,
 				1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */,
+				1BF9AD0A5453B64A1022B6FB /* WeatherCamLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

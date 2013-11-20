@@ -36,10 +36,10 @@
 #import "FlightRouteListController.h"
 #import "FlightPathsLayer.h"
 #import "PositionReadoutController.h"
-#import "ChartsListController.h"
 #import "ChartViewController.h"
 #import "WWUtil.h"
 #import "ChartsTableController.h"
+#import "WeatherCamLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -75,6 +75,7 @@
     WWElevationShadingLayer* terrainAltitudeLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
+    WeatherCamLayer* weatherCamLayer;
     CompassLayer* compassLayer;
     FlightPathsLayer* flightPathsLayer;
 
@@ -230,6 +231,11 @@
     [pirepLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [pirepLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:pirepLayer];
+
+    weatherCamLayer = [[WeatherCamLayer alloc] init];
+    [weatherCamLayer setEnabled:[Settings                                                                               getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [weatherCamLayer displayName]] defaultValue:NO]];
+    [[[_wwv sceneController] layers] addLayer:weatherCamLayer];
 
     compassLayer = [[CompassLayer alloc] init];
     [[compassLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
