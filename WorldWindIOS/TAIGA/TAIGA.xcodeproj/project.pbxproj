@@ -71,6 +71,7 @@
 		1BF9A64449D9D4044839EDB1 /* WB_15kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A51E0EE853DDBE7A3752 /* WB_15kt_128.png */; };
 		1BF9A664AA0532C0BEB5CA0F /* 328-layers2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */; };
 		1BF9A66D6522A49CF15A8F88 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */; };
+		1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */; };
 		1BF9A6DA06568D6114C20892 /* 361-1up.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3F10314E2E43C3F237C /* 361-1up.png */; };
 		1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */; };
 		1BF9A70617ECD4910CB038F8 /* WB_45kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A72EF6BCB6B122EAE4C2 /* WB_45kt_128.png */; };
@@ -197,6 +198,7 @@
 		1BF9A03B5AA46BD30ECAC594 /* WX_SN_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
 		1BF9A04EA08370FAEA7CF2AB /* CC_OVC_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_OVC_128.png; sourceTree = "<group>"; };
+		1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsTableController.m; sourceTree = "<group>"; };
 		1BF9A07D5D5E163F548A2300 /* WX_DZ_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DZ_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "362-2up@2x.png"; sourceTree = "<group>"; };
 		1BF9A0978809BD2E03DC1F7D /* TAIGA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAIGA.m; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 		1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
 		1BF9A5C3F478E682E9F71C42 /* AppUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppUpdateController.h; sourceTree = "<group>"; };
 		1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
+		1BF9A5CA68CC87A719BAE37A /* ChartsTableController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsTableController.h; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A5F865D6E2B5126D4632 /* CC_CLR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_CLR_128.png; sourceTree = "<group>"; };
@@ -512,6 +515,8 @@
 				CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */,
 				1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */,
 				1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */,
+				1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */,
+				1BF9A5CA68CC87A719BAE37A /* ChartsTableController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -850,6 +855,7 @@
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,
 				CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */,
 				1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */,
+				1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

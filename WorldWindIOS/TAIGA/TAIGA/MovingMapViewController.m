@@ -39,6 +39,7 @@
 #import "ChartsListController.h"
 #import "ChartViewController.h"
 #import "WWUtil.h"
+#import "ChartsTableController.h"
 
 @implementation MovingMapViewController
 {
@@ -55,7 +56,7 @@
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
     ScaleBarView* scaleBarView;
-    ChartsListController* chartsListController;
+    ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
     UINavigationController* chartListNavController;
 
@@ -282,7 +283,7 @@
 
 - (void) createChartsController
 {
-    chartsListController = [[ChartsListController alloc] initWithParent:self];
+    chartsListController = [[ChartsTableController alloc] initWithParent:self];
     chartListNavController = [[UINavigationController alloc] initWithRootViewController:chartsListController];
     [self.view addSubview:[chartListNavController view]];
 }
