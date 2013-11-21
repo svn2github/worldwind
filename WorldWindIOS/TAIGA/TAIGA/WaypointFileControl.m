@@ -76,9 +76,23 @@
     [waypointTable reloadData];
 }
 
+- (void) didSelectWaypointForIndex:(NSUInteger)index
+{
+    Waypoint* waypoint = [waypoints objectAtIndex:index];
+    [self sendActionForWaypoint:waypoint];
+
+    [waypointSearchBar setText:nil]; // clear search field after waypoint selection
+    [self filterWaypoints];
+}
+
 - (void) flashScrollIndicators
 {
     [waypointTable flashScrollIndicators];
+}
+
+- (BOOL) resignFirstResponder
+{
+    return [waypointSearchBar resignFirstResponder];
 }
 
 - (void) sendActionForWaypoint:(Waypoint*)waypoint
@@ -100,6 +114,7 @@
 
 - (void) searchBarSearchButtonClicked:(UISearchBar*)searchBar
 {
+    [searchBar resignFirstResponder];
     [self filterWaypoints];
 }
 
@@ -137,7 +152,7 @@
     return YES;
 }
 
-- (UITableViewCellEditingStyle) tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
+- (UITableViewCellEditingStyle) tableView:(UITableView*)tableView editingStyleForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     return UITableViewCellEditingStyleInsert;
 }
@@ -146,19 +161,13 @@
 commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
  forRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];
-    [self sendActionForWaypoint:waypoint];
+    [self didSelectWaypointForIndex:(NSUInteger) [indexPath row]];
 }
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-
-    if ([waypoints count] > 0)
-    {
-        Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];
-        [self sendActionForWaypoint:waypoint];
-    }
+    [self didSelectWaypointForIndex:(NSUInteger) [indexPath row]];
 }
 
 @end

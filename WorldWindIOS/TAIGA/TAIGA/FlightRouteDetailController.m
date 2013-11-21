@@ -136,6 +136,11 @@
 
     // Place the table in editing mode and refresh the properties section, which has custom editing controls.
     [flightRouteTable setEditing:editing animated:animated];
+
+    if (!editing)
+    {
+        [waypointFileControl resignFirstResponder];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
