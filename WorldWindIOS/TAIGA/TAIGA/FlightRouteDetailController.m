@@ -251,8 +251,8 @@
     {
         AltitudePicker* picker = [[AltitudePicker alloc] initWithFrame:CGRectMake(0, 44, 1, 216)];
         [picker addTarget:self action:@selector(didPickAltitude:) forControlEvents:UIControlEventValueChanged];
-        [picker setMinimumAltitude:0];
-        [picker setMaximumAltitude:30480]; // 100,000ft maximum
+        [picker setMinimumAltitude:152.4];
+        [picker setMaximumAltitude:6096]; // 100,000ft maximum
         [picker setAltitudeInterval:152.4]; // 500ft interval
         [picker setAltitude:[_flightRoute altitude]];
         [picker setFormatter:altitudeFormatter];
