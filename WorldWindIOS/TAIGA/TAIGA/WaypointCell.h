@@ -16,8 +16,6 @@
     UIView* displayNameView;
     UILabel* displayNameLabel;
     UILabel* displayNameLongLabel;
-    NSDictionary* waypointTypeToImage;
-    CGFloat maxImageWidth;
 }
 
 - (id) initWithReuseIdentifier:(NSString*)reuseIdentifier;

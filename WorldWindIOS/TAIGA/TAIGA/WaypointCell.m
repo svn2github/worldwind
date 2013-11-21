@@ -9,30 +9,39 @@
 #import "Waypoint.h"
 #import "WorldWind/WWLog.h"
 
+static NSDictionary* WaypointCellImageMap = nil;
+static CGFloat WaypointCellMaxImageWidth = 0;
+const static CGFloat WaypointCellImagePadding = 30;
+
 @implementation WaypointCell
+
++ (void) initialize
+{
+    static BOOL initialized = NO; // protects against erroneous explicit calls to this method
+    if (!initialized)
+    {
+        initialized = YES;
+
+        WaypointCellImageMap = @{
+                [NSNumber numberWithInt:WaypointTypeAirport]: [[UIImage imageNamed:@"38-airplane"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate],
+                [NSNumber numberWithInt:WaypointTypeOther]:[[UIImage imageNamed:@"07-map-marker"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+        };
+
+        for (UIImage* image in [WaypointCellImageMap allValues])
+        {
+            if (WaypointCellMaxImageWidth < [image size].width)
+                WaypointCellMaxImageWidth = [image size].width;
+        }
+    }
+}
 
 - (id) initWithReuseIdentifier:(NSString*)reuseIdentifier
 {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
 
-    [self assembleImages];
     [self layout];
 
     return self;
-}
-
-- (void) assembleImages
-{
-    waypointTypeToImage = @{
-            [NSNumber numberWithInt:WaypointTypeAirport]: [[UIImage imageNamed:@"38-airplane"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate],
-            [NSNumber numberWithInt:WaypointTypeOther]:[[UIImage imageNamed:@"07-map-marker"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-    };
-
-    for (UIImage* image in [waypointTypeToImage allValues])
-    {
-        if (maxImageWidth < [image size].width)
-            maxImageWidth = [image size].width;
-    }
 }
 
 - (void) layout
@@ -79,9 +88,10 @@
     NSDictionary* views = NSDictionaryOfVariableBindings(imageView, imageTopSpace, imageBottomSpace, imageLeftSpace,
     imageRightSpace, displayNameView, displayNameTopSpace, displayNameBottomSpace);
 
-    NSDictionary* metrics = @{@"displayNameInsetLeft":[NSNumber numberWithFloat:maxImageWidth + 30]};
+    CGFloat displayNameInset = WaypointCellMaxImageWidth + WaypointCellImagePadding;
+    NSDictionary* metrics = @{@"displayNameInset":[NSNumber numberWithFloat:displayNameInset]};
 
-    [contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-displayNameInsetLeft-[displayNameView]"
+    [contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-displayNameInset-[displayNameView]"
                                                                         options:0 metrics:metrics views:views]];
     [contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[imageLeftSpace][imageView][imageRightSpace(==imageLeftSpace)][displayNameView]"
                                                                         options:0 metrics:nil views:views]];
@@ -106,7 +116,7 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
     }
 
-    UIImage* waypointImage = [waypointTypeToImage objectForKey:[NSNumber numberWithInt:[waypoint type]]];
+    UIImage* waypointImage = [WaypointCellImageMap objectForKey:[NSNumber numberWithInt:[waypoint type]]];
     if (waypointImage == nil)
     {
         WWLog(@"Unrecognized waypoint type %d", [waypoint type]);
