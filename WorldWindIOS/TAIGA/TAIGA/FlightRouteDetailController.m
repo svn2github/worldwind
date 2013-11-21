@@ -8,6 +8,7 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
+#import "WaypointCell.h"
 #import "WaypointFileControl.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
@@ -218,15 +219,14 @@
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForWaypoint:(NSIndexPath*)indexPath
 {
     static NSString* waypointCellId = @"waypointCellId";
-    UITableViewCell*cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
+    WaypointCell* cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
     if (cell == nil)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:waypointCellId];
+        cell = [[WaypointCell alloc] initWithReuseIdentifier:waypointCellId];
     }
 
     Waypoint* waypoint = [_flightRoute waypointAtIndex:(NSUInteger) [indexPath row]];
-    [[cell textLabel] setText:[waypoint displayName]];
-    [[cell detailTextLabel] setText:[waypoint displayNameLong]];
+    [cell setToWaypoint:waypoint];
 
     return cell;
 }

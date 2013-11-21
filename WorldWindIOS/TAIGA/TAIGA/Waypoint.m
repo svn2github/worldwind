@@ -11,7 +11,7 @@
 
 @implementation Waypoint
 
-- (Waypoint*) initWithKey:(NSString*)key location:(WWLocation*)location
+- (Waypoint*) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type
 {
     if (key == nil)
     {
@@ -27,6 +27,7 @@
 
     _key = key;
     _location = location;
+    _type  = type;
 
     return self;
 }

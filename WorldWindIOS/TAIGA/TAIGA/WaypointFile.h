@@ -14,11 +14,10 @@
 @protected
     NSMutableArray* waypointArray;
     NSMutableDictionary* waypointKeyMap;
+    void (^finished)(WaypointFile* waypointFile);
 }
 
-- (WaypointFile*) init;
-
-- (void) loadDAFIFAirports:(NSURL*)url finishedBlock:(void (^)(void))finishedBlock;
+- (WaypointFile*) initWithWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock;
 
 - (NSArray*) waypoints;
 

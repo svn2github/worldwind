@@ -46,11 +46,13 @@
     _wwv = wwv;
     _layer = layer;
 
-    NSURL* airportsUrl = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
-    waypointFile = [[WaypointFile alloc] init];
-    [waypointFile loadDAFIFAirports:airportsUrl finishedBlock:^
+    NSArray* waypointLocations = [NSArray arrayWithObjects:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT",
+                                                           @"http://worldwindserver.net/taiga/dafif/WPT2_ALASKA.TXT",
+                                                           nil];
+    waypointFile = [[WaypointFile alloc] initWithWaypointLocations:waypointLocations
+                                                     finishedBlock:^(WaypointFile* finishedWaypointFile)
     {
-        [self didLoadWaypoints];
+        [self waypointsDidLoad];
     }];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
@@ -59,7 +61,7 @@
     return self;
 }
 
-- (void) didLoadWaypoints
+- (void) waypointsDidLoad
 {
     [self restoreAllFlightRouteState];
     [[self tableView] reloadData];

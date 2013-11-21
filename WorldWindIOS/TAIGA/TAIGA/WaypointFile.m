@@ -14,34 +14,43 @@
 
 @implementation WaypointFile
 
-- (WaypointFile*) init
+- (WaypointFile*) initWithWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock
 {
+    if (locationArray == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location array is nil")
+    }
+
+    if (finishedBlock == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Finished block is nil")
+    }
+
     self = [super init];
 
     waypointArray = [[NSMutableArray alloc] initWithCapacity:8];
     waypointKeyMap = [[NSMutableDictionary alloc] initWithCapacity:8];
+    finished = finishedBlock;
 
-    return self;
-}
+    const NSUInteger locationsCount = [locationArray count];
+    __block NSUInteger locationsCompleted = 0;
 
-- (void) loadDAFIFAirports:(NSURL*)url finishedBlock:(void (^)(void))finishedBlock
-{
-    if (url == nil)
+    for (NSString* location in locationArray)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL is nil")
+        NSURL* url = [NSURL URLWithString:location];
+        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5.0 finishedBlock:^(WWRetriever* waypointRetriever)
+        {
+            [self waypointRetrieverDidFinish:waypointRetriever];
+
+            if (++locationsCompleted >= locationsCount)
+            {
+                [self waypointLocationsDidFinish];
+            }
+        }];
+        [retriever performRetrieval];
     }
 
-    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5 finishedBlock:^(WWRetriever* myRetriever)
-    {
-        [self finishRetrieving:myRetriever];
-
-        if (finishedBlock != NULL)
-        {
-            finishedBlock();
-        }
-    }];
-
-    [retriever performRetrieval];
+    return self;
 }
 
 - (NSArray*) waypoints
@@ -72,10 +81,21 @@
     return [waypointKeyMap objectForKey:key];
 }
 
-- (void) finishRetrieving:(WWRetriever*)retriever
+- (void) waypointLocationsDidFinish
+{
+    [waypointArray sortUsingComparator:^(id obj1, id obj2)
+    {
+        return [[obj1 displayName] compare:[obj2 displayName]];
+    }];
+
+    finished(self);
+}
+
+- (void) waypointRetrieverDidFinish:(WWRetriever*)retriever
 {
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:[[retriever url] path]];
+    NSString* location = [[retriever url] absoluteString]; // used for message logging
 
     if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
     {
@@ -96,30 +116,30 @@
             }
         }
 
-        [self parseData:[retriever retrievedData]];
+        [self parseWaypointTable:[retriever retrievedData] location:location];
     }
     else
     {
-        WWLog(@"Unable to retrieve waypoint file %@, falling back to local cache.", [[retriever url] absoluteString]);
+        WWLog(@"Unable to retrieve waypoint file %@, falling back to local cache.", location);
 
         // Otherwise, attempt to use a previously cached version.
         NSData* data = [NSData dataWithContentsOfFile:cachePath];
         if (data != nil)
         {
-            [self parseData:data];
+            [self parseWaypointTable:data location:location];
         }
         else
         {
-            WWLog(@"Unable to read local cache of waypoint file %@", [[retriever url] absoluteString]);
+            WWLog(@"Unable to read local cache of waypoint file %@", location);
         }
     }
 }
 
-- (void) parseData:(NSData*)data
+- (void) parseWaypointTable:(NSData*)data location:(NSString*)location
 {
-    NSString* string = [[NSString alloc] initWithData:data encoding:NSWindowsCP1252StringEncoding];
+    NSString* string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSMutableArray* fieldNames = [[NSMutableArray alloc] initWithCapacity:8];
-    NSMutableArray* rows = [[NSMutableArray alloc] initWithCapacity:8];
+    NSMutableArray* tableRows = [[NSMutableArray alloc] initWithCapacity:8];
 
     [string enumerateLinesUsingBlock:^(NSString* line, BOOL* stop)
     {
@@ -137,34 +157,58 @@
                 [rowValues setObject:[lineComponents objectAtIndex:i] forKey:[fieldNames objectAtIndex:i]];
             }
 
-            [rows addObject:rowValues];
+            [tableRows addObject:rowValues];
         }
     }];
 
-    [self parseDAFIFTableRows:rows];
+    if ([[fieldNames firstObject] isEqual:@"ARPT_IDENT"])
+    {
+        [self parseDAFIFAirportTable:tableRows];
+    }
+    else if ([[fieldNames firstObject] isEqual:@"WPT_IDENT"])
+    {
+        [self parseDAFIFWaypointTable:tableRows];
+    }
+    else
+    {
+        WWLog(@"Unrecognized waypoint file %@", location);
+    }
 }
 
-- (void) parseDAFIFTableRows:(NSArray*)rows
+- (void) parseDAFIFAirportTable:(NSArray*)tableRows
 {
-    for (NSDictionary* row in rows)
+    for (NSDictionary* row in tableRows)
     {
         NSString* key = [row objectForKey:@"ARPT_IDENT"];
         double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
         double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
         WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
 
-        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location];
+        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location type:WaypointTypeAirport];
         [waypoint setProperties:row];
         [waypoint setDisplayName:[row objectForKey:@"FAA_HOST_ID"]];
         [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
         [waypointArray addObject:waypoint];
         [waypointKeyMap setValue:waypoint forKey:key];
     }
+}
 
-    [waypointArray sortUsingComparator:^(id obj1, id obj2)
+- (void) parseDAFIFWaypointTable:(NSArray*)tableRows
+{
+    for (NSDictionary* row in tableRows)
     {
-        return [[obj1 displayName] compare:[obj2 displayName]];
-    }];
+        NSString* key = [row objectForKey:@"WPT_IDENT"];
+        double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
+        double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
+        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
+
+        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location type:WaypointTypeOther];
+        [waypoint setProperties:row];
+        [waypoint setDisplayName:[row objectForKey:@"ICAO"]];
+        [waypoint setDisplayNameLong:[row objectForKey:@"DESC"]];
+        [waypointArray addObject:waypoint];
+        [waypointKeyMap setValue:waypoint forKey:key];
+    }
 }
 
 @end

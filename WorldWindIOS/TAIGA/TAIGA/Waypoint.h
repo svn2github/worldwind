@@ -9,11 +9,19 @@
 
 @class WWLocation;
 
+typedef enum
+{
+    WaypointTypeAirport,
+    WaypointTypeOther
+} WaypointType;
+
 @interface Waypoint : NSObject
 
 @property (nonatomic, readonly) NSString* key;
 
 @property (nonatomic, readonly) WWLocation* location;
+
+@property (nonatomic, readonly) WaypointType type;
 
 @property (nonatomic) NSString* displayName;
 
@@ -21,6 +29,6 @@
 
 @property (nonatomic) NSDictionary* properties;
 
-- (Waypoint*) initWithKey:(NSString*)key location:(WWLocation*)location;
+- (Waypoint*) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type;
 
 @end
