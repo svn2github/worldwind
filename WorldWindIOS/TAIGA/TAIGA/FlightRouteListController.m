@@ -24,6 +24,8 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
+static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
+
 @implementation FlightRouteListController
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -419,7 +421,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     WWPosition* lookAtCenter = [[WWPosition alloc] initWithZeroPosition];
     [WWLocation greatCircleLocation:center azimuth:[navigator heading] + 90 distance:radiusDegrees outputLocation:lookAtCenter];
     double lookAtRadius = radiusMeters * radiusScale;
-    [navigator animateToRegionWithCenter:lookAtCenter radius:lookAtRadius overDuration:WWNavigatorDurationDefault];
+    [navigator animateToRegionWithCenter:lookAtCenter radius:lookAtRadius overDuration:FlightRouteNavigatorDuration];
 }
 
 - (void) requestRedraw
