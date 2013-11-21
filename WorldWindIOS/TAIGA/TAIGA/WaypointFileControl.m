@@ -85,6 +85,14 @@
     [self filterWaypoints];
 }
 
+- (void) sendActionForWaypoint:(Waypoint*)waypoint
+{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [_target performSelector:_action withObject:waypoint];
+#pragma clang diagnostic pop
+}
+
 - (void) flashScrollIndicators
 {
     [waypointTable flashScrollIndicators];
@@ -93,14 +101,6 @@
 - (BOOL) resignFirstResponder
 {
     return [waypointSearchBar resignFirstResponder];
-}
-
-- (void) sendActionForWaypoint:(Waypoint*)waypoint
-{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    [_target performSelector:_action withObject:waypoint];
-#pragma clang diagnostic pop
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

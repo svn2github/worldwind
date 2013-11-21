@@ -11,7 +11,7 @@
 
 static NSDictionary* WaypointCellImageMap = nil;
 static CGFloat WaypointCellMaxImageWidth = 0;
-const static CGFloat WaypointCellImagePadding = 30;
+static const CGFloat WaypointCellImagePadding = 30;
 
 @implementation WaypointCell
 
