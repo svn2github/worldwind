@@ -14,14 +14,15 @@
 @interface FlightRouteListController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
 {
 @protected
-    WaypointFile* waypointFile;
     NSUInteger flightRouteColorIndex;
 }
 
+@property (nonatomic, readonly) WaypointFile* waypointFile;
+
 @property (nonatomic, readonly) WorldWindView* wwv;
 
-@property (nonatomic, readonly) WWRenderableLayer* layer;
+@property (nonatomic, readonly) WWRenderableLayer* flightRouteLayer;
 
-- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv layer:(WWRenderableLayer*)layer;
+- (FlightRouteListController*) initWithWaypointFile:(WaypointFile*)waypointFile worldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer;
 
 @end

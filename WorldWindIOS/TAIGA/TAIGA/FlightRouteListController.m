@@ -32,7 +32,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 //-- Initializing FlightRouteListController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv layer:(WWRenderableLayer*)layer
+- (FlightRouteListController*) initWithWaypointFile:(WaypointFile*)waypointFile worldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -45,29 +45,16 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
+    _waypointFile = waypointFile;
     _wwv = wwv;
-    _layer = layer;
+    _flightRouteLayer = flightRouteLayer;
 
-    NSArray* waypointLocations = [NSArray arrayWithObjects:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT",
-                                                           @"http://worldwindserver.net/taiga/dafif/WPT2_ALASKA.TXT",
-                                                           nil];
-    waypointFile = [[WaypointFile alloc] initWithWaypointLocations:waypointLocations
-                                                     finishedBlock:^(WaypointFile* finishedWaypointFile)
-    {
-        [self waypointsDidLoad];
-    }];
+    [self restoreAllFlightRouteState]; // restore state with waypointFile
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
                                                  name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
 
     return self;
-}
-
-- (void) waypointsDidLoad
-{
-    [self restoreAllFlightRouteState];
-    [[self tableView] reloadData];
-    [self requestRedraw];
 }
 
 - (void) navigationController:(UINavigationController*)navigationController
@@ -84,7 +71,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 
     // Ignore notifications for flight routes not in this controller's layer. This avoids saving state or refreshing the
     // screen for during flight route initialization or restoration.
-    if ([[_layer renderables] containsObject:flightRoute])
+    if ([[_flightRouteLayer renderables] containsObject:flightRoute])
     {
         [self flightRouteDidChange:flightRoute notification:notification];
     }
@@ -96,18 +83,18 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 
 - (NSUInteger) flightRouteCount
 {
-    return [[_layer renderables] count];
+    return [[_flightRouteLayer renderables] count];
 }
 
 - (FlightRoute*) flightRouteAtIndex:(NSUInteger)index
 {
-    return [[_layer renderables] objectAtIndex:index];
+    return [[_flightRouteLayer renderables] objectAtIndex:index];
 }
 
 - (UIViewController*) flightRouteDetailControllerAtIndex:(NSUInteger)index
 {
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
-    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:waypointFile];
+    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:_waypointFile];
 }
 
 - (void) addFlightRouteAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
@@ -117,7 +104,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
     [flightRoute setAltitude:1524]; // 5,000ft
     [flightRoute setColorIndex:flightRouteColorIndex];
     [flightRoute setUserObject:[[NSProcessInfo processInfo] globallyUniqueString]]; // Create a state key for the flight route.
-    [[_layer renderables] insertObject:flightRoute atIndex:index]; // Add flight route to layer after initialization to avoid saving state during initialization.
+    [[_flightRouteLayer renderables] insertObject:flightRoute atIndex:index]; // Add flight route to layer after initialization to avoid saving state during initialization.
 
     if (++flightRouteColorIndex >= [[FlightRoute flightRouteColors] count])
     {
@@ -131,8 +118,8 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 
 - (void) removeFlightRouteAtIndex:(NSUInteger)index
 {
-    FlightRoute* flightRoute = [[_layer renderables] objectAtIndex:index];
-    [_layer removeRenderable:flightRoute];
+    FlightRoute* flightRoute = [[_flightRouteLayer renderables] objectAtIndex:index];
+    [_flightRouteLayer removeRenderable:flightRoute];
 
     [self removeFlightRouteState:flightRoute];
     [self saveFlightRouteListState];
@@ -141,7 +128,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 
 - (void) moveFlightRouteFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
 {
-    NSMutableArray* flightRoutes = [_layer renderables];
+    NSMutableArray* flightRoutes = [_flightRouteLayer renderables];
     FlightRoute* flightRoute = [flightRoutes objectAtIndex:fromIndex];
     [flightRoutes removeObjectAtIndex:fromIndex];
     [flightRoutes insertObject:flightRoute atIndex:toIndex];
@@ -153,7 +140,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 - (void) flightRouteDidChange:(FlightRoute*)flightRoute notification:(NSNotification*)notification
 {
     // Refresh the table row corresponding to the flight route that changed.
-    NSInteger index  = [[_layer renderables] indexOfObject:flightRoute];
+    NSInteger index  = [[_flightRouteLayer renderables] indexOfObject:flightRoute];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
     [[self tableView] reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -204,7 +191,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 
 - (void) saveFlightRouteListState
 {
-    NSMutableArray* flightRoutes = [_layer renderables];
+    NSMutableArray* flightRoutes = [_flightRouteLayer renderables];
     NSMutableArray* flightRouteKeys = [NSMutableArray arrayWithCapacity:[flightRoutes count]];
     for (FlightRoute* flightRoute in flightRoutes)
     {
@@ -229,7 +216,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
         NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", frKey]];
         for (NSString* wpKey in waypointKeys)
         {
-            Waypoint* waypoint = [waypointFile waypointForKey:wpKey];
+            Waypoint* waypoint = [_waypointFile waypointForKey:wpKey];
             if (waypoint != nil)
             {
                 [waypoints addObject:waypoint];
@@ -251,7 +238,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
         [flightRoute setAltitude:altitude];
         [flightRoute setColorIndex:(NSUInteger) colorIndex];
         [flightRoute setUserObject:frKey]; // Assign the flight route its state key.
-        [_layer addRenderable:flightRoute];  // Add flight route to layer after initialization to avoid saving state during restore.
+        [_flightRouteLayer addRenderable:flightRoute];  // Add flight route to layer after initialization to avoid saving state during restore.
     }
 
     flightRouteColorIndex = (NSUInteger) [userState integerForKey:@"gov.nasa.worldwind.taiga.flightPathColorIndex"];
