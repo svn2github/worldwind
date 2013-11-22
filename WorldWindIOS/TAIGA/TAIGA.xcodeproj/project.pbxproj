@@ -95,6 +95,7 @@
 		1BF9A8AA78A3A64231B94C91 /* WX_DRDU_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AABCA8893891715B1668 /* WX_DRDU_128.png */; };
 		1BF9A8B8719AA0C4643CD3F7 /* taigaversion.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAC6022550E9089A90D7 /* taigaversion.txt */; };
 		1BF9A8C3C5EB0CCBCDA3D050 /* 362-2up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */; };
+		1BF9A903105B5D5C82FB7EC0 /* WeatherCamViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A566638B05791DCBF73B /* WeatherCamViewController.m */; };
 		1BF9A932AE2ADADCFF758F63 /* FlightPathsLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB4F698EA39910614994 /* FlightPathsLayer.m */; };
 		1BF9A961CD00760191699EE2 /* WB_75kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A79FAC58C99BFD8D515F /* WB_75kt_128.png */; };
 		1BF9A98BDAED599CF626968F /* 25-weather.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A46DD2EE664E94DFCADD /* 25-weather.png */; };
@@ -257,6 +258,7 @@
 		1BF9A543A5F665E7A3D28E28 /* TerrainProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileView.h; sourceTree = "<group>"; };
 		1BF9A54EC5F423EACBC91D76 /* WX_BR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_BR_128.png; sourceTree = "<group>"; };
 		1BF9A56534F8DA54C20C1831 /* TAIGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAIGA.h; sourceTree = "<group>"; };
+		1BF9A566638B05791DCBF73B /* WeatherCamViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeatherCamViewController.m; sourceTree = "<group>"; };
 		1BF9A585164F35CC333652FF /* WX_DZ_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DZ_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A58C5A9203B80728D529 /* WB_50kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_50kt_128.png; sourceTree = "<group>"; };
 		1BF9A58F8364A0EC4B77CF54 /* 387-bookmarks@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "387-bookmarks@2x.png"; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A5F865D6E2B5126D4632 /* CC_CLR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_CLR_128.png; sourceTree = "<group>"; };
+		1BF9A60A34F23F4B58521768 /* WeatherCamViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherCamViewController.h; sourceTree = "<group>"; };
 		1BF9A6372291DD219E89CDFD /* PIREP_ICONS_0000_Layer-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0000_Layer-2.png"; sourceTree = "<group>"; };
 		1BF9A63FF712D639C84EECD3 /* WX_FG_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_FG_128.png; sourceTree = "<group>"; };
 		1BF9A68DE17AF5C306D4FA39 /* CC_SCT_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_SCT_128.png; sourceTree = "<group>"; };
@@ -533,6 +536,8 @@
 				1BF9A0DA747BE90CADC4BE0E /* WeatherCamLayer.h */,
 				CC8CF5CD9CFC96A54162C86B /* WaypointCell.m */,
 				CC8CF91DF9D8B1008D64A35F /* WaypointCell.h */,
+				1BF9A566638B05791DCBF73B /* WeatherCamViewController.m */,
+				1BF9A60A34F23F4B58521768 /* WeatherCamViewController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -880,6 +885,7 @@
 				1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */,
 				1BF9AD0A5453B64A1022B6FB /* WeatherCamLayer.m in Sources */,
 				CC8CF70D854E9184DB89B683 /* WaypointCell.m in Sources */,
+				1BF9A903105B5D5C82FB7EC0 /* WeatherCamViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

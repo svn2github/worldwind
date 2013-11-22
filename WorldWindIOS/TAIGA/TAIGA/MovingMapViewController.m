@@ -40,6 +40,7 @@
 #import "WWUtil.h"
 #import "ChartsTableController.h"
 #import "WeatherCamLayer.h"
+#import "WeatherCamViewController.h"
 
 @implementation MovingMapViewController
 {
@@ -87,6 +88,8 @@
     UIPopoverController* pirepDataPopoverController;
     PositionReadoutController* positionReadoutViewController;
     UIPopoverController* positionReadoutPopoverController;
+    WeatherCamViewController* weatherCamViewController;
+    UIPopoverController* weatherCamPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -98,6 +101,7 @@
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
+    weatherCamViewController = [[WeatherCamViewController alloc] init];
 
     return self;
 }
@@ -520,6 +524,8 @@
                     [self showMETARData:pm];
                 else if ([[[topObject parentLayer] displayName] isEqualToString:@"PIREPS"])
                     [self showPIREPData:pm];
+                else if ([[[topObject parentLayer] displayName] isEqualToString:@"Weather Cams"])
+                    [self showWeatherCam:pm];
             }
         }
     }
@@ -603,6 +609,31 @@
         pirepDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:pirepDataViewController];
     [pirepDataPopoverController presentPopoverFromRect:rect inView:_wwv
                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) showWeatherCam:(WWPointPlacemark*)pm
+{
+    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
+    // that screen position.
+
+    WWPosition* pmPos = [pm position];
+    WWVec4* pmPoint = [[WWVec4 alloc] init];
+    WWVec4* screenPoint = [[WWVec4 alloc] init];
+
+    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
+                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
+    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
+
+    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
+    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
+
+    // Give the controller the placemark's dictionary.
+    [weatherCamViewController setSiteInfo:[pm userObject]];
+
+    if (weatherCamPopoverController == nil)
+        weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
+    [weatherCamPopoverController presentPopoverFromRect:rect inView:_wwv
+                               permittedArrowDirections:0 animated:YES];
 }
 
 @end
