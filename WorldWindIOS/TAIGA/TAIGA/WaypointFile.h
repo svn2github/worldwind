@@ -14,10 +14,11 @@
 @protected
     NSMutableArray* waypointArray;
     NSMutableDictionary* waypointKeyMap;
-    void (^finished)(WaypointFile* waypointFile);
 }
 
-- (WaypointFile*) initWithWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock;
+- (WaypointFile*) init;
+
+- (void) loadWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock;
 
 - (NSArray*) waypoints;
 

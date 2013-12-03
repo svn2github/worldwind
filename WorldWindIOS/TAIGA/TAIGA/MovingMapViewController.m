@@ -108,8 +108,6 @@
     positionReadoutViewController = [[PositionReadoutController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
 
-    [self loadWaypoints];
-
     return self;
 }
 
@@ -153,6 +151,8 @@
     [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
     if (isSplitView)
         [self loadMostRecentlyUsedChart];
+
+    [self loadWaypoints];
 }
 
 - (void) loadMostRecentlyUsedChart
@@ -169,6 +169,42 @@
         return;
 
     [chartsListController selectChart:chartFileName chartName:chartName];
+}
+
+- (void) loadWaypoints
+{
+    NSString* airportsPath = @"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT";
+    NSString* waypointsPath = @"http://worldwindserver.net/taiga/dafif/WPT2_ALASKA.TXT";
+
+    waypointFile = [[WaypointFile alloc] init];
+    [waypointFile loadWaypointLocations:@[airportsPath, waypointsPath]
+                          finishedBlock:^(WaypointFile* retrievedWaypointFile)
+                          {
+                              [self waypointsDidLoad];
+                          }];
+}
+
+- (void) waypointsDidLoad
+{
+    waypointLayer = [[WaypointLayer alloc] initWithWaypointFile:waypointFile];
+    [waypointLayer setDisplayName:@"Airports"];
+    [waypointLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
+    [waypointLayer setOpacity:[Settings getFloatForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity", [waypointLayer displayName]] defaultValue:[waypointLayer opacity]]];
+    [[[_wwv sceneController] layers] insertLayer:waypointLayer atIndex:0];
+
+    flightRouteLayer = [[WWRenderableLayer alloc] init];
+    [flightRouteLayer setDisplayName:@"Flight Routes"];
+    [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [[[_wwv sceneController] layers] insertLayer:flightRouteLayer atIndex:1];
+
+    flightRouteController = [[FlightRouteListController alloc] initWithWaypointFile:waypointFile
+                                                                      worldWindView:_wwv
+                                                                   flightRouteLayer:flightRouteLayer];
+    [routePlanningButton setEnabled:YES];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) viewDidLoad
@@ -290,44 +326,6 @@
 
     //[_wwv setContentScaleFactor:[[UIScreen mainScreen] scale]]; // enable retina resolution
     [self.view addSubview:_wwv];
-}
-
-- (void) loadWaypoints
-{
-    NSArray* waypointLocations = @
-    [
-        @"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT",
-        @"http://worldwindserver.net/taiga/dafif/WPT2_ALASKA.TXT"
-    ];
-
-    waypointFile = [[WaypointFile alloc] initWithWaypointLocations:waypointLocations
-                                                     finishedBlock:^(WaypointFile* retrievedWaypointFile)
-                                                     {
-                                                         [self waypointsDidLoad];
-                                                     }];
-}
-
-- (void) waypointsDidLoad
-{
-    waypointLayer = [[WaypointLayer alloc] initWithWaypointFile:waypointFile];
-    [waypointLayer setDisplayName:@"Airports"];
-    [waypointLayer setEnabled:[Settings getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
-    [waypointLayer setOpacity:[Settings getFloatForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity", [waypointLayer displayName]] defaultValue:[waypointLayer opacity]]];
-    [[[_wwv sceneController] layers] insertLayer:waypointLayer atIndex:0];
-
-    flightRouteLayer = [[WWRenderableLayer alloc] init];
-    [flightRouteLayer setDisplayName:@"Flight Routes"];
-    [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [[[_wwv sceneController] layers] insertLayer:flightRouteLayer atIndex:1];
-
-    flightRouteController = [[FlightRouteListController alloc] initWithWaypointFile:waypointFile
-                                                                      worldWindView:_wwv
-                                                                   flightRouteLayer:flightRouteLayer];
-    [routePlanningButton setEnabled:YES];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) createChartsController

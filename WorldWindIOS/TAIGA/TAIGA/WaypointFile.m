@@ -14,7 +14,17 @@
 
 @implementation WaypointFile
 
-- (WaypointFile*) initWithWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock
+- (WaypointFile*) init
+{
+    self = [super init];
+
+    waypointArray = [[NSMutableArray alloc] initWithCapacity:8];
+    waypointKeyMap = [[NSMutableDictionary alloc] initWithCapacity:8];
+
+    return self;
+}
+
+- (void) loadWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock
 {
     if (locationArray == nil)
     {
@@ -26,12 +36,6 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Finished block is nil")
     }
 
-    self = [super init];
-
-    waypointArray = [[NSMutableArray alloc] initWithCapacity:8];
-    waypointKeyMap = [[NSMutableDictionary alloc] initWithCapacity:8];
-    finished = finishedBlock;
-
     const NSUInteger locationsCount = [locationArray count];
     __block NSUInteger locationsCompleted = 0;
 
@@ -42,15 +46,13 @@
         {
             [self waypointRetrieverDidFinish:waypointRetriever];
 
-            if (++locationsCompleted >= locationsCount)
+            if (++locationsCompleted == locationsCount)
             {
-                [self waypointLocationsDidFinish];
+                [self waypointLocationsDidFinish:finishedBlock];
             }
         }];
         [retriever performRetrieval];
     }
-
-    return self;
 }
 
 - (NSArray*) waypoints
@@ -81,14 +83,14 @@
     return [waypointKeyMap objectForKey:key];
 }
 
-- (void) waypointLocationsDidFinish
+- (void) waypointLocationsDidFinish:(void (^)(WaypointFile*))finishedBlock
 {
     [waypointArray sortUsingComparator:^(id obj1, id obj2)
     {
         return [[obj1 displayName] compare:[obj2 displayName]];
     }];
 
-    finished(self);
+    finishedBlock(self);
 }
 
 - (void) waypointRetrieverDidFinish:(WWRetriever*)retriever
