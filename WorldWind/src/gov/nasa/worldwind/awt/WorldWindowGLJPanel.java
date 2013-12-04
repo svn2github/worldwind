@@ -34,7 +34,10 @@ import java.util.*;
  * This class is capable of supporting stereo devices. To cause a stereo device to be selected and used, specify the
  * Java VM property "gov.nasa.worldwind.stereo.mode=device" prior to creating an instance of this class. A stereo
  * capable {@link SceneController} such as {@link gov.nasa.worldwind.StereoSceneController} must also be specified in
- * the World Wind {@link Configuration}. The default configuration specifies a stereo-capable controller.
+ * the World Wind {@link Configuration}. The default configuration specifies a stereo-capable controller. To prevent
+ * stereo from being used by subsequently opened {@code WorldWindowGLCanvas}es, set the property to a an empty string,
+ * "". If a stereo device cannot be selected and used, this falls back to a non-stereo device that supports World Wind's
+ * minimum requirements.
  * <p/>
  * Under certain conditions, JOGL replaces the <code>GLContext</code> associated with instances of this class. This then
  * necessitates that all resources such as textures that have been stored on the graphic devices must be regenerated for
@@ -51,40 +54,13 @@ import java.util.*;
  */
 public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, PropertyChangeListener
 {
-    /**
-     * Returns a {@link GLCapabilities} identifying default graphics features to request. The capabilities instance
-     * returned requests an OpenGL 1.3 - 2.0 profile, a frame buffer with 8 bits each of red, green, blue and alpha, a
-     * 24-bit depth buffer, double buffering, and if the Java property "gov.nasa.worldwind.stereo.mode" is set to
-     * "device", device-supported stereo.
-     *
-     * @return a new capabilities instance identifying desired graphics features.
-     */
-    protected static GLCapabilities getCaps()
-    {
-        GLCapabilities caps = new GLCapabilities(Configuration.getMaxCompatibleGLProfile());
-
-        caps.setAlphaBits(8);
-        caps.setRedBits(8);
-        caps.setGreenBits(8);
-        caps.setBlueBits(8);
-        caps.setDepthBits(24);
-        caps.setDoubleBuffered(true);
-
-        // Determine whether we should request a stereo canvas
-        String stereo = System.getProperty(AVKey.STEREO_MODE);
-        if ("device".equals(stereo))
-            caps.setStereo(true);
-
-        return caps;
-    }
-
     /** The drawable to which {@link WorldWindow} methods are delegated. */
     protected final WorldWindowGLDrawable wwd; // WorldWindow interface delegates to wwd
 
     /** Constructs a new <code>WorldWindowGLCanvas</code> window on the default graphics device. */
     public WorldWindowGLJPanel()
     {
-        super(getCaps());
+        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser(), null);
 
         try
         {
@@ -110,16 +86,17 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      *
      * @param shareWith a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
      *                  it's assumed that the window will be shared with another, unspecified, <code>WorldWindow</code>
-     *                  that will reference this <code>WorldWindowGLCanvas</code> as its shared window. Specifying
-     *                  null prevents this window's GPU resource cache from being cleared when the window is closed,
-     *                  thereby leaving those resources in tact for the shared windows.
+     *                  that will reference this <code>WorldWindowGLCanvas</code> as its shared window. Specifying null
+     *                  prevents this window's GPU resource cache from being cleared when the window is closed, thereby
+     *                  leaving those resources in tact for the shared windows.
      *
      * @see GLJPanel#GLJPanel(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
      *      javax.media.opengl.GLContext)
      */
     public WorldWindowGLJPanel(WorldWindow shareWith)
     {
-        super(getCaps(), null, shareWith != null ? shareWith.getContext() : null);
+        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser(),
+            shareWith != null ? shareWith.getContext() : null);
 
         try
         {
@@ -147,11 +124,11 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      * <code>WorldWindow</code> and whose capabilities are chosen via a specified {@link GLCapabilities} object and a
      * {@link GLCapabilitiesChooser}.
      *
-     * @param shareWith a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
-     *                  it's assumed that the window will be shared with another, unspecified, <code>WorldWindow</code>
-     *                  that will reference this <code>WorldWindowGLCanvas</code> as its shared window. Specifying
-     *                  null prevents this window's GPU resource cache from being cleared when the window is closed,
-     *                  thereby leaving those resources in tact for the shared windows.
+     * @param shareWith    a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
+     *                     it's assumed that the window will be shared with another, unspecified,
+     *                     <code>WorldWindow</code> that will reference this <code>WorldWindowGLCanvas</code> as its
+     *                     shared window. Specifying null prevents this window's GPU resource cache from being cleared
+     *                     when the window is closed, thereby leaving those resources in tact for the shared windows.
      * @param capabilities a capabilities object indicating the OpenGL rendering context's capabilities. May be null, in
      *                     which case a default set of capabilities is used.
      * @param chooser      a chooser object that customizes the specified capabilities. May be null, in which case a
