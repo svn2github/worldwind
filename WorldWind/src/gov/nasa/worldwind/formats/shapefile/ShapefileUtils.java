@@ -148,7 +148,8 @@ public class ShapefileUtils
 
         for (Map.Entry<String, Object> attr : record.getAttributes().getEntries())
         {
-            if (!attr.getKey().trim().toLowerCase().equals("height"))
+            String hKey = attr.getKey().trim().toLowerCase();
+            if (!(hKey.equals("height") || hKey.equals("hgt")))
                 continue;
 
             Object o = attr.getValue();
