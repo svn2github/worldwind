@@ -15,4 +15,6 @@
 
 - (LayerListController*) initWithWorldWindView:(WorldWindView*)wwv;
 
+- (void) flashScrollIndicator;
+
 @end

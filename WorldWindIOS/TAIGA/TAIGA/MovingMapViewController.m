@@ -485,6 +485,7 @@
     {
         [layerListPopoverController presentPopoverFromBarButtonItem:overlaysButton
                                            permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        [layerListController flashScrollIndicator];
     }
 }
 

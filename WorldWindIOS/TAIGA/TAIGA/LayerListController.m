@@ -41,6 +41,18 @@
     return self;
 }
 
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    [[self tableView] flashScrollIndicators];
+}
+
+- (void) flashScrollIndicator
+{
+    [[self tableView] performSelector:@selector(flashScrollIndicators) withObject:nil afterDelay:0];
+}
+
 - (void) navigationController:(UINavigationController*)navigationController willShowViewController:(UIViewController*)viewController animated:(BOOL)animated
 {
     // This keeps all the nested popover controllers the same size as this top-level controller.
