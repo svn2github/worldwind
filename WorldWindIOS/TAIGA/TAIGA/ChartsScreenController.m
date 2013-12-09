@@ -21,7 +21,6 @@
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
-    UIBarButtonItem* bookmarksButton;
 
     ChartsTableController* chartsListController;
     UILabel* chartNameLabel;
@@ -91,19 +90,10 @@
                                                          action:nil];
     [connectivityButton setTintColor:[UIColor whiteColor]];
 
-    bookmarksButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"387-bookmarks" text:@"Bookmarks" size:size target:self action:@selector
-            (handleButtonTap)]];
-    UIColor* color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-    [((ButtonWithImageAndText*) [bookmarksButton customView]) setTextColor:color];
-    [((ButtonWithImageAndText*) [bookmarksButton customView]) setFontSize:15];
-
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     [topToolBar setItems:[NSArray arrayWithObjects:
-            flexibleSpace,
-            bookmarksButton,
             flexibleSpace,
             connectivityButton,
             nil]];
