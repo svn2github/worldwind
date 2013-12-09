@@ -104,6 +104,7 @@
     NSDictionary* currentAttributesDict;
     NSString* currentName;
     NSMutableString* currentString;
+    NSMutableDictionary* sitesInfo;
     NSMutableArray* placemarks;
     NSString* iconFilePath;
 }
@@ -115,6 +116,7 @@
     [self setDisplayName:@"Weather Cams"];
 
     iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"slr_camera.png"];
+    sitesInfo = [[NSMutableDictionary alloc] init];
 
     return self;
 }
@@ -163,7 +165,7 @@
 {
     if ([elementName isEqualToString:@"sites"])
     {
-        [self addCurrentPlacemark];
+        [self addCurrentCamera];
 
         currentPlacemarkDict = nil;
     }
@@ -187,6 +189,8 @@
 
 - (void) parserDidEndDocument:(NSXMLParser*)parser
 {
+    [self createPlacemarks];
+
     [self performSelectorOnMainThread:@selector(addPlacemarksOnMainThread:)
                            withObject:nil
                         waitUntilDone:NO];
@@ -212,40 +216,58 @@
     }
 }
 
-- (void) addCurrentPlacemark
+- (void) addCurrentCamera
 {
-    WWPosition* position = [self parseCoordinates];
-    WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
-    [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
-    [pointPlacemark setUserObject:currentPlacemarkDict];
+    NSString* siteID = [currentPlacemarkDict objectForKey:@"siteID"];
+    NSMutableArray* siteCameraList = [sitesInfo objectForKey:siteID];
 
-    NSString* name = [currentPlacemarkDict objectForKey:@"siteName"];
-    if (name != nil)
+    if (siteCameraList == nil)
     {
-        [pointPlacemark setDisplayName:name];
+        siteCameraList = [[NSMutableArray alloc] init];
+        [sitesInfo setObject:siteCameraList forKey:siteID];
     }
 
-    WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
-    [attrs setImagePath:iconFilePath];
-    [attrs setImageScale:0.25];
-    [pointPlacemark setAttributes:attrs];
-
-    if (placemarks == nil)
-    {
-        placemarks = [[NSMutableArray alloc] init];
-    }
-    [placemarks addObject:pointPlacemark];
+    [siteCameraList addObject:currentPlacemarkDict];
 }
 
-- (WWPosition*) parseCoordinates
+- (void) createPlacemarks
 {
-    NSString* latString = [currentPlacemarkDict objectForKey:@"siteLatitude"];
-    NSString* lonString = [currentPlacemarkDict objectForKey:@"siteLongitude"];
+    NSEnumerator* enumerator = [sitesInfo objectEnumerator];
+    NSArray* siteCameras;
+    while ((siteCameras = [enumerator nextObject]) != nil)
+    {
+        NSDictionary* firstCamera = [siteCameras objectAtIndex:0];
 
-    double lat = [latString doubleValue];
-    double lon = [lonString doubleValue];
+        NSString* latString = [firstCamera objectForKey:@"siteLatitude"];
+        NSString* lonString = [firstCamera objectForKey:@"siteLongitude"];
+        double lat = [latString doubleValue];
+        double lon = [lonString doubleValue];
+        WWPosition* position = [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
 
-    return [[WWPosition alloc] initWithDegreesLatitude:lat longitude:lon altitude:0];
+        WWPointPlacemark* pointPlacemark = [[WWPointPlacemark alloc] initWithPosition:position];
+        [pointPlacemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
+        [pointPlacemark setUserObject:siteCameras];
+
+        NSString* name = [firstCamera objectForKey:@"siteName"];
+        if (name != nil)
+        {
+            [pointPlacemark setDisplayName:name];
+        }
+
+        WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
+        [attrs setImagePath:iconFilePath];
+        [attrs setImageScale:0.25];
+        [pointPlacemark setAttributes:attrs];
+
+        if (placemarks == nil)
+        {
+            placemarks = [[NSMutableArray alloc] init];
+        }
+        [placemarks addObject:pointPlacemark];
+    }
+
+    // Sites info hash table is no lonber needed.
+    sitesInfo = nil;
 }
 
 @end

@@ -11,6 +11,6 @@
 
 -(WeatherCamViewController*)init;
 
-- (void) setSiteInfo:(NSObject*) entries;
+- (void) setSiteInfo:(NSArray*) siteCameras;
 
 @end

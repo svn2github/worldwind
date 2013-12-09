@@ -11,15 +11,16 @@
 
 #define IMAGE_WIDTH (640)
 #define IMAGE_HEIGHT (480)
+#define MARGIN (10)
 
 @implementation WeatherCamViewController
 {
     NSString* imagesCachePath;
-    UIImageView* imageView;
-    NSDictionary* siteInfo;
+    UIView* contentView;
+    UIScrollView* scrollView;
 }
 
-- (WeatherCamViewController*)init
+- (WeatherCamViewController*) init
 {
     self = [super init];
 
@@ -28,12 +29,13 @@
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     imagesCachePath = [cacheDir stringByAppendingPathComponent:@"weathercams"];
 
-    imageView = [[UIImageView alloc] init];
-    imageView.frame = CGRectMake(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-    imageView.backgroundColor = [UIColor whiteColor];
-    imageView.userInteractionEnabled = YES;
-    imageView.contentMode = UIViewContentModeScaleAspectFit;
-    [[self view] addSubview:imageView];
+    contentView = [[UIView alloc] init];
+
+    scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)];
+    [scrollView setDelegate:self];
+    [scrollView addSubview:contentView];
+
+    [[self view] addSubview:scrollView];
 
     return self;
 }
@@ -43,23 +45,38 @@
     return CGSizeMake(IMAGE_WIDTH, IMAGE_HEIGHT);
 }
 
--(void) setSiteInfo:(NSObject*)siteInformation
+- (void) setSiteInfo:(NSArray*)siteCameras
 {
-    siteInfo = (NSDictionary*)siteInformation;
-    NSString* cameraID = [siteInfo objectForKey:@"cameraID"];
+    NSArray* contentSubviews = [contentView subviews];
+    for (NSUInteger i = 0; i < [contentSubviews count]; i++)
+    {
+        [[contentSubviews objectAtIndex:i] removeFromSuperview];
+    }
+
+    [scrollView setContentOffset:CGPointZero];
+
+    for (NSUInteger cameraNumber = 0; cameraNumber < [siteCameras count]; cameraNumber++)
+    {
+        [self setCameraInfo:cameraNumber siteInformation:[siteCameras objectAtIndex:cameraNumber]];
+    }
+}
+
+- (void) setCameraInfo:(NSUInteger)cameraNumber siteInformation:(NSDictionary*)cameraInfo
+{
+    NSString* cameraID = [cameraInfo objectForKey:@"cameraID"];
     NSString* imageURLString = [[NSString alloc]
             initWithFormat:@"http://worldwind.arc.nasa.gov/alaska/%@/currentimage.jpg", cameraID];
     NSURL* imageURL = [[NSURL alloc] initWithString:imageURLString];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:imageURL timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
-                                                    [self loadImage:myRetriever];
+                                                    [self loadImage:cameraNumber retriever:myRetriever];
                                                 }];
     [retriever setUserData:cameraID];
     [retriever performRetrieval];
 }
 
-- (void) loadImage:(WWRetriever*)retriever
+- (void) loadImage:(NSUInteger)cameraNumber retriever:(WWRetriever*)retriever
 {
     NSString* imageFileName = [[NSString alloc] initWithFormat:@"%@-currentimage.jpg", [retriever userData]];
     NSString* imagePath = [imagesCachePath stringByAppendingPathComponent:imageFileName];
@@ -72,8 +89,23 @@
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:imagePath])
     {
+        UIImageView* imageView = [[UIImageView alloc] init];
+        imageView.frame = CGRectMake(cameraNumber * (IMAGE_WIDTH + MARGIN), 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        imageView.backgroundColor = [UIColor whiteColor];
+        imageView.userInteractionEnabled = YES;
+        imageView.contentMode = UIViewContentModeScaleAspectFit;
         [imageView setImage:[[UIImage alloc] initWithContentsOfFile:imagePath]];
+
+        [self performSelectorOnMainThread:@selector(adjustContentView:) withObject:imageView waitUntilDone:NO];
     }
+}
+
+- (void) adjustContentView:(UIImageView*)imageView
+{
+    [contentView addSubview:imageView];
+    contentView.frame = CGRectMake(0, 0, IMAGE_WIDTH + ([contentView.subviews count] - 1) * (IMAGE_WIDTH + MARGIN),
+            IMAGE_HEIGHT);
+    [scrollView setContentSize:contentView.frame.size];
 }
 
 @end
