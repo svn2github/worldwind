@@ -18,6 +18,7 @@
     NSString* imagesCachePath;
     UIView* contentView;
     UIScrollView* scrollView;
+    UIImageView* referenceImage;
 }
 
 - (WeatherCamViewController*) init
@@ -37,6 +38,14 @@
 
     [[self view] addSubview:scrollView];
 
+    referenceImage = [[UIImageView alloc] init];
+    referenceImage.backgroundColor = [UIColor whiteColor];
+    referenceImage.userInteractionEnabled = YES;
+    referenceImage.contentMode = UIViewContentModeScaleAspectFit;
+    NSString* referenceImagePath =
+            [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"wx_cam_reference_placeholder.jpg"];
+    [referenceImage setImage:[[UIImage alloc] initWithContentsOfFile:referenceImagePath]];
+
     return self;
 }
 
@@ -54,6 +63,9 @@
     }
 
     [scrollView setContentOffset:CGPointZero];
+
+    referenceImage.frame = CGRectMake([siteCameras count] * (IMAGE_WIDTH + MARGIN), 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    [contentView addSubview:referenceImage];
 
     for (NSUInteger cameraNumber = 0; cameraNumber < [siteCameras count]; cameraNumber++)
     {

@@ -146,6 +146,7 @@
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
 		1BF9ADF1A80BC00BF04E462B /* 122-stats@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */; };
 		1BF9AE30EFD4181D61CA3D2F /* 275-broadcast@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */; };
+		1BF9AE4043E24494BD132CFE /* wx_cam_reference_placeholder.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A599123A9CFCB25453F1 /* wx_cam_reference_placeholder.jpg */; };
 		1BF9AE6E63F3F58E65410DE4 /* 38-airplane.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A230DEB50D96296D6835 /* 38-airplane.png */; };
 		1BF9AE7F42B06C78172833A7 /* PIREP_ICONS_Generic.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA14493BA4DD4FD7BA5F /* PIREP_ICONS_Generic.png */; };
 		1BF9AE82645EF31E0C4A5EF3 /* WB_20kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5DA2126401970FECA9 /* WB_20kt_128.png */; };
@@ -266,6 +267,7 @@
 		1BF9A58C5A9203B80728D529 /* WB_50kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_50kt_128.png; sourceTree = "<group>"; };
 		1BF9A58F8364A0EC4B77CF54 /* 387-bookmarks@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "387-bookmarks@2x.png"; sourceTree = "<group>"; };
 		1BF9A591D1865106089F5EFE /* 401-globe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "401-globe.png"; sourceTree = "<group>"; };
+		1BF9A599123A9CFCB25453F1 /* wx_cam_reference_placeholder.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wx_cam_reference_placeholder.jpg; sourceTree = "<group>"; };
 		1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
 		1BF9A5C3F478E682E9F71C42 /* AppUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppUpdateController.h; sourceTree = "<group>"; };
 		1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
@@ -672,6 +674,7 @@
 				CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */,
 				CC8CF942C767E4A7E4EBE9C0 /* airport@large.png */,
 				CC8CF95DB4FB13AD332B4BC2 /* airport@small.png */,
+				1BF9A599123A9CFCB25453F1 /* wx_cam_reference_placeholder.jpg */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -846,6 +849,7 @@
 				CC8CFC66EF18CB4B4697BC96 /* 07-map-marker@2x.png in Resources */,
 				CC8CF8D644EE55C5AD000363 /* airport@large.png in Resources */,
 				CC8CFA530B346D44738BF7DC /* airport@small.png in Resources */,
+				1BF9AE4043E24494BD132CFE /* wx_cam_reference_placeholder.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
