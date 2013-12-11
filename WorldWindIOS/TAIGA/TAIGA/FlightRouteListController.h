@@ -17,12 +17,12 @@
     NSUInteger flightRouteColorIndex;
 }
 
-@property (nonatomic, readonly) WaypointFile* waypointFile;
-
 @property (nonatomic, readonly) WorldWindView* wwv;
 
 @property (nonatomic, readonly) WWRenderableLayer* flightRouteLayer;
 
-- (FlightRouteListController*) initWithWaypointFile:(WaypointFile*)waypointFile worldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer;
+@property (nonatomic, readonly) WaypointFile* waypointFile;
+
+- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile;
 
 @end

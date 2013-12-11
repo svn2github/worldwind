@@ -11,6 +11,7 @@
 @class Waypoint;
 @class WWGlobe;
 @class WWPath;
+@class WWPosition;
 @class WWSector;
 @class WWShapeAttributes;
 @protocol WWExtent;
@@ -24,6 +25,8 @@
     WWPath* waypointPath;
     WWShapeAttributes* shapeAttrs;
 }
+
++ (NSArray*) flightRouteColors;
 
 /// Indicates this flight route's display name.
 @property (nonatomic) NSString* displayName;
@@ -42,9 +45,9 @@
 
 - (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray;
 
-+ (NSArray*) flightRouteColors;
-
 - (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
+
+- (void) positionForPercent:(double)pct result:(WWPosition*)result;
 
 - (NSUInteger) waypointCount;
 

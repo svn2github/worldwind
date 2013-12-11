@@ -11,6 +11,7 @@
 #import "WorldWind/Geometry/WWBoundingSphere.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Layer/WWLayer.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "Worldwind/Shapes/WWPath.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
@@ -21,9 +22,28 @@
 #import "WorldWind/WWLog.h"
 
 const float PathWidth = 4.0;
-const float ShapeWidth = 12.0;
+const float ShapeRadius = 6.0;
+const float ShapePickRadius = 22.0;
 
 @implementation FlightRoute
+
++ (NSArray*) flightRouteColors
+{
+    static NSArray* colors = nil;
+    if (colors == nil)
+    {
+        colors = @[
+                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.035 b:0.329 a:1.0], @"displayName":@"Red"},
+                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.522 b:0.000 a:1.0], @"displayName":@"Orange"},
+                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.776 b:0.000 a:1.0], @"displayName":@"Yellow"},
+                @{@"color":[[WWColor alloc] initWithR:0.310 g:0.851 b:0.129 a:1.0], @"displayName":@"Green"},
+                @{@"color":[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1.0], @"displayName":@"Blue"},
+                @{@"color":[[WWColor alloc] initWithR:0.757 g:0.325 b:0.863 a:1.0], @"displayName":@"Purple"}
+        ];
+    }
+
+    return colors;
+}
 
 - (FlightRoute*) init
 {
@@ -72,19 +92,30 @@ const float ShapeWidth = 12.0;
         WWPosition* pos = [[WWPosition alloc] initWithLocation:[waypoint location] altitude:_altitude];
         [waypointPositions addObject:pos];
 
-        id shape = [self createShapeForWaypoint:waypoint withPosition:pos width:ShapeWidth];
-        [shape setAttributes:shapeAttrs];
+        id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
         [waypointShapes addObject:shape];
     }
 
-    waypointPath = [[WWPath alloc] initWithPositions:waypointPositions];
-    [waypointPath setPathType:WW_RHUMB];
-    [waypointPath setAttributes:shapeAttrs];
+    waypointPath = [self createPathForRoute:waypointPositions];
 }
 
-- (id) createShapeForWaypoint:(Waypoint*)waypoint withPosition:(WWPosition*)position width:(double)width
+- (WWPath*) createPathForRoute:(NSArray*)positions
 {
-    return [[WWSphere alloc] initWithPosition:position radiusInPixels:width / 2.0];
+    WWPath* path = [[WWPath alloc] initWithPositions:positions];
+    [path setPathType:WW_RHUMB];
+    [path setAttributes:shapeAttrs];
+    [path setPickDelegate:self];
+
+    return path;
+}
+
+- (id) createShapeForWaypoint:(Waypoint*)waypoint withPosition:(WWPosition*)position
+{
+    WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:1.0]; // radius specified in doRender:
+    [shape setAttributes:shapeAttrs];
+    [shape setPickDelegate:self];
+
+    return shape;
 }
 
 - (void) updateShape:(id)shape withPosition:(WWPosition*)position
@@ -116,24 +147,6 @@ const float ShapeWidth = 12.0;
     [self didChangeColor];
 }
 
-+ (NSArray*) flightRouteColors
-{
-    static NSArray* colors = nil;
-    if (colors == nil)
-    {
-        colors = @[
-            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.035 b:0.329 a:1.0], @"displayName":@"Red"},
-            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.522 b:0.000 a:1.0], @"displayName":@"Orange"},
-            @{@"color":[[WWColor alloc] initWithR:1.000 g:0.776 b:0.000 a:1.0], @"displayName":@"Yellow"},
-            @{@"color":[[WWColor alloc] initWithR:0.310 g:0.851 b:0.129 a:1.0], @"displayName":@"Green"},
-            @{@"color":[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1.0], @"displayName":@"Blue"},
-            @{@"color":[[WWColor alloc] initWithR:0.757 g:0.325 b:0.863 a:1.0], @"displayName":@"Purple"}
-        ];
-    }
-
-    return colors;
-}
-
 - (void) render:(WWDrawContext*)dc
 {
     if (!_enabled)
@@ -142,7 +155,13 @@ const float ShapeWidth = 12.0;
     }
 
     [waypointPath render:dc];
-    [waypointShapes makeObjectsPerformSelector:@selector(render:) withObject:dc];
+
+    for (id shape in waypointShapes)
+    {
+        double radius = [dc pickingMode] ? ShapePickRadius : ShapeRadius;
+        [shape setRadius:radius];
+        [shape render:dc];
+    }
 }
 
 - (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
@@ -165,6 +184,58 @@ const float ShapeWidth = 12.0;
     }
 
     return [[WWBoundingSphere alloc] initWithPoints:waypointPoints];
+}
+
+- (void) positionForPercent:(double)pct result:(WWPosition*)result
+{
+    if (pct < 0 || pct > 1)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Percent is invalid")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
+    }
+
+    NSUInteger waypointCount = [waypointPositions count];
+    if (waypointCount == 1)
+    {
+        [result setPosition:[waypointPositions firstObject]];
+    }
+    else if (waypointCount > 1)
+    {
+        double legDistance[waypointCount - 1];
+        double routeDistance = 0;
+
+        NSUInteger i;
+        for (i = 0; i < waypointCount - 1; i++)
+        {
+            WWPosition* begin = [waypointPositions objectAtIndex:i];
+            WWPosition* end = [waypointPositions objectAtIndex:i + 1];
+            legDistance[i] = [WWLocation rhumbDistance:begin endLocation:end];
+            routeDistance += legDistance[i];
+        }
+
+        double pctDistance = pct * routeDistance;
+        double remainingDistance = pctDistance;
+
+        for (i = 0; i < waypointCount - 1; i++)
+        {
+            if (remainingDistance < legDistance[i]) // location is within this non-zero length leg
+            {
+                double legPct = remainingDistance / legDistance[i];
+                WWPosition* begin = [waypointPositions objectAtIndex:i];
+                WWPosition* end = [waypointPositions objectAtIndex:i + 1];
+                [WWPosition rhumbInterpolate:begin endPosition:end amount:legPct outputPosition:result];
+                return;
+            }
+
+            remainingDistance -= legDistance[i];
+        }
+
+        [result setPosition:[waypointPositions lastObject]]; // location is at the last waypoint
+    }
 }
 
 - (NSUInteger) waypointCount
@@ -292,8 +363,7 @@ const float ShapeWidth = 12.0;
     [waypointPositions insertObject:pos atIndex:index];
     [waypointPath setPositions:waypointPositions];
 
-    id shape = [self createShapeForWaypoint:waypoint withPosition:pos width:ShapeWidth];
-    [shape setAttributes:shapeAttrs];
+    id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
     [waypointShapes insertObject:shape atIndex:index];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self

@@ -32,7 +32,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 //-- Initializing FlightRouteListController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteListController*) initWithWaypointFile:(WaypointFile*)waypointFile worldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer
+- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -45,10 +45,9 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
-    _waypointFile = waypointFile;
     _wwv = wwv;
     _flightRouteLayer = flightRouteLayer;
-
+    _waypointFile = waypointFile;
     [self restoreAllFlightRouteState]; // restore state with waypointFile
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
