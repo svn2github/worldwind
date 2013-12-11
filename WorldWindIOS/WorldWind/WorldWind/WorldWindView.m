@@ -215,9 +215,10 @@
     // that the renderbuffers fit the view, and that the OpenGL viewport and projection matrix match the renderbuffer
     // dimensions.
 
+    [super layoutSubviews]; // let superclass perform Auto Layout
+
     CAEAGLLayer* eaglLayer = (CAEAGLLayer*) super.layer;
     [self resizeWithLayer:eaglLayer];
-
     [self drawView];
 }
 
