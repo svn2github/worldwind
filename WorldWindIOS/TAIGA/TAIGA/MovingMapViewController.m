@@ -33,7 +33,6 @@
 #import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
-#import "FlightRouteListController.h"
 #import "FlightPathsLayer.h"
 #import "PositionReadoutController.h"
 #import "ChartViewController.h"
@@ -43,12 +42,17 @@
 #import "WeatherCamViewController.h"
 #import "WaypointFile.h"
 #import "WaypointLayer.h"
+#import "FlightRoute.h"
+#import "FlightRouteListController.h"
+#import "SimulationViewController.h"
 
 @implementation MovingMapViewController
 {
     CGRect myFrame;
     NSArray* normalConstraints;
     NSArray* splitViewConstraints;
+    NSArray* showSimulationViewConstraints;
+    NSArray* hideSimulationViewConstraints;
     BOOL isSplitView;
 
     UIToolbar* topToolBar;
@@ -95,6 +99,8 @@
     WWRenderableLayer* flightRouteLayer;
     FlightRouteListController* flightRouteController;
     UIPopoverController* flightRoutePopoverController;
+    SimulationViewController* simulationViewController;
+    UINavigationController* simulationNavController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -116,10 +122,12 @@
     self.view = [[UIView alloc] initWithFrame:myFrame];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.autoresizesSubviews = YES;
+    self.view.clipsToBounds = YES;
 
     [self createWorldWindView];
     [self createTopToolbar];
     [self createChartsController];
+    [self createSimulationController];
 
     float x = 20;//myFrame.size.width - 220;
     float y = myFrame.size.height - 70;
@@ -130,10 +138,12 @@
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [[simulationNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView);
+    UIView* simulationView = [simulationNavController view];
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView, simulationView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
@@ -141,18 +151,23 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][chartView(>=400)]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[simulationView(==_wwv)]"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
 
     normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(==view)][chartView(==0)]|"
                                                                 options:0 metrics:nil views:viewsDictionary];
     splitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(>=400)][chartView(==350)]|"
                                                                    options:0 metrics:nil views:viewsDictionary];
-
     isSplitView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.splitview.enabled" defaultValue:NO];
     [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
     if (isSplitView)
         [self loadMostRecentlyUsedChart];
 
-    [self loadWaypoints];
+    showSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[simulationView(150)]|"
+                                                                            options:0 metrics:nil views:viewsDictionary];
+    hideSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[_wwv][simulationView(150)]"
+                                                                            options:0 metrics:nil views:viewsDictionary];
+    [view addConstraints:hideSimulationViewConstraints];
 }
 
 - (void) loadMostRecentlyUsedChart
@@ -186,22 +201,10 @@
 
 - (void) waypointsDidLoad
 {
-    waypointLayer = [[WaypointLayer alloc] initWithWaypointFile:waypointFile];
-    [waypointLayer setDisplayName:@"Airports"];
-    [waypointLayer setEnabled:[Settings getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
-    [waypointLayer setOpacity:[Settings getFloatForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.%@.opacity", [waypointLayer displayName]] defaultValue:[waypointLayer opacity]]];
-    [[[_wwv sceneController] layers] insertLayer:waypointLayer atIndex:0];
-
-    flightRouteLayer = [[WWRenderableLayer alloc] init];
-    [flightRouteLayer setDisplayName:@"Flight Routes"];
-    [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [[[_wwv sceneController] layers] insertLayer:flightRouteLayer atIndex:1];
-
-    flightRouteController = [[FlightRouteListController alloc] initWithWaypointFile:waypointFile
-                                                                      worldWindView:_wwv
-                                                                   flightRouteLayer:flightRouteLayer];
+    [waypointLayer setWaypoints:waypointFile];
+    flightRouteController = [[FlightRouteListController alloc] initWithWorldWindView:_wwv
+                                                                    flightRouteLayer:flightRouteLayer
+                                                                        waypointFile:waypointFile];
     [routePlanningButton setEnabled:YES];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
@@ -218,6 +221,16 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
+
+    flightRouteLayer = [[WWRenderableLayer alloc] init];
+    [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [layers addLayer:flightRouteLayer];
+
+    waypointLayer = [[WaypointLayer alloc] init];
+    [waypointLayer setDisplayName:@"Airports"];
+    [waypointLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
+    [layers addLayer:waypointLayer];
 
     faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
     [faaChartsLayer setEnabled:[Settings                                                                               getBoolForName:
@@ -300,6 +313,8 @@
         float opacity = [Settings getFloatForName:settingName defaultValue:[wwLayer opacity]];
         [wwLayer setOpacity:opacity];
     }
+
+    [self loadWaypoints];
 }
 
 - (void) viewWillAppear:(BOOL)animated
@@ -362,6 +377,41 @@
 - (void) pushChart
 {
     [((UINavigationController*) [chartsListController parentViewController]) pushViewController:chartViewController animated:YES];
+}
+
+- (void) createSimulationController
+{
+    simulationViewController = [[SimulationViewController alloc] initWithWorldWindView:_wwv];
+    simulationNavController = [[UINavigationController alloc] initWithRootViewController:simulationViewController];
+    [self.view addSubview:[simulationNavController view]];
+
+    [[simulationViewController doneButtonItem] setTarget:self];
+    [[simulationViewController doneButtonItem] setAction:@selector(dismissSimulationController)];
+}
+
+- (void) presentSimulationControllerWithFlightRoute:(FlightRoute*)flightRoute
+{
+    [self.view bringSubviewToFront:[simulationNavController view]];
+    [simulationViewController setFlightRoute:flightRoute];
+
+    [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+    [UIView animateWithDuration:0.3 animations:^{
+        [self.view removeConstraints:hideSimulationViewConstraints];
+        [self.view addConstraints:showSimulationViewConstraints];
+        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+    }];
+}
+
+- (void) dismissSimulationController
+{
+    [simulationViewController setFlightRoute:nil];
+
+    [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+    [UIView animateWithDuration:0.3 animations:^{
+        [self.view removeConstraints:showSimulationViewConstraints];
+        [self.view addConstraints:hideSimulationViewConstraints];
+        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+    }];
 }
 
 - (void) createTopToolbar
@@ -567,6 +617,10 @@
                     [self showWeatherCam:pm];
             }
         }
+        else if ([[topObject userObject] isKindOfClass:[FlightRoute class]])
+        {
+            [self selectFlightRoute:[topObject userObject]];
+        }
     }
 }
 
@@ -673,6 +727,14 @@
         weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
     [weatherCamPopoverController presentPopoverFromRect:rect inView:_wwv
                                permittedArrowDirections:0 animated:YES];
+}
+
+- (void) selectFlightRoute:(FlightRoute*)flightRoute
+{
+    if ([simulationViewController flightRoute] == nil) // no flight route currently selected
+    {
+        [self presentSimulationControllerWithFlightRoute:flightRoute];
+    }
 }
 
 @end

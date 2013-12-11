@@ -12,6 +12,8 @@
 
 @interface WaypointLayer : WWRenderableLayer
 
-- (WaypointLayer*) initWithWaypointFile:(WaypointFile*)waypointFile;
+- (WaypointLayer*) init;
+
+- (void) setWaypoints:(WaypointFile*)waypointFile;
 
 @end

@@ -26,26 +26,22 @@
 
 @implementation WaypointLayer
 
-- (WaypointLayer*) initWithWaypointFile:(WaypointFile*)waypointFile
+- (WaypointLayer*) init
+{
+    self = [super init];
+
+    return self;
+}
+
+- (void) setWaypoints:(WaypointFile*)waypointFile
 {
     if (waypointFile == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint file is nil")
     }
 
-    self = [super init];
+    [self removeAllRenderables];
 
-    [self assembleShapes:waypointFile];
-
-    [[WorldWind loadQueue] addOperationWithBlock:^{
-        [self assembleShapeImages];
-    }];
-
-    return self;
-}
-
-- (void) assembleShapes:(WaypointFile*)waypointFile
-{
     WWPointPlacemarkAttributes* attrs = [[WWPointPlacemarkAttributes alloc] init];
     [attrs setImagePath:[[NSBundle mainBundle] pathForResource:@"airport@small" ofType:@"png"]];
     [attrs setImageOffset:[[WWOffset alloc] initWithFractionX:0.5 y:0.5]];
@@ -63,9 +59,13 @@
         [placemark setAttributes:attrs];
         [self addRenderable:placemark];
     }
+
+    [[WorldWind loadQueue] addOperationWithBlock:^{
+        [self assembleWaypointImages];
+    }];
 }
 
-- (void) assembleShapeImages
+- (void) assembleWaypointImages
 {
     NSString* highlightImageDir = NSTemporaryDirectory();
     NSError* error = nil;
