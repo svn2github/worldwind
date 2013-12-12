@@ -28,12 +28,10 @@
 #import "WWPickedObjectList.h"
 #import "PIREPLayer.h"
 #import "PIREPDataViewController.h"
-#import "OpenWeatherMapLayer.h"
 #import "WWNavigator.h"
 #import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
-#import "FlightPathsLayer.h"
 #import "PositionReadoutController.h"
 #import "ChartViewController.h"
 #import "WWUtil.h"
@@ -57,7 +55,6 @@
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
-    //UIBarButtonItem* flightPathsButton;
     UIBarButtonItem* overlaysButton;
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
@@ -71,17 +68,11 @@
     UIPopoverController* layerListPopoverController;
 
     FAAChartsAlaskaLayer* faaChartsLayer;
-    OpenWeatherMapLayer* precipitationLayer;
-    OpenWeatherMapLayer* cloudsLayer;
-    OpenWeatherMapLayer* temperatureLayer;
-    OpenWeatherMapLayer* snowLayer;
-    OpenWeatherMapLayer* windLayer;
     WWElevationShadingLayer* terrainAltitudeLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
     WeatherCamLayer* weatherCamLayer;
     CompassLayer* compassLayer;
-    FlightPathsLayer* flightPathsLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
 
@@ -236,41 +227,6 @@
     [faaChartsLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
-
-    flightPathsLayer = [[FlightPathsLayer alloc] initWithPathsLocation:@"http://worldwind.arc.nasa.gov/mobile/PassageWays.json"];
-    [flightPathsLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [flightPathsLayer displayName]] defaultValue:NO]];
-    [[[_wwv sceneController] layers] addLayer:flightPathsLayer];
-
-    precipitationLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"precipitation" displayName:@"Precipitation"];
-    [precipitationLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [precipitationLayer displayName]] defaultValue:NO]];
-    [precipitationLayer setOpacity:0.4];
-    [[[_wwv sceneController] layers] addLayer:precipitationLayer];
-
-    cloudsLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"clouds" displayName:@"Clouds"];
-    [cloudsLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [cloudsLayer displayName]] defaultValue:NO]];
-    [cloudsLayer setOpacity:0.4];
-    [[[_wwv sceneController] layers] addLayer:cloudsLayer];
-
-    temperatureLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"temp" displayName:@"Temperature"];
-    [temperatureLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [temperatureLayer displayName]] defaultValue:NO]];
-    [temperatureLayer setOpacity:0.4];
-    [[[_wwv sceneController] layers] addLayer:temperatureLayer];
-
-    snowLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"snow" displayName:@"Snow"];
-    [snowLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [snowLayer displayName]] defaultValue:NO]];
-    [snowLayer setOpacity:0.4];
-    [[[_wwv sceneController] layers] addLayer:snowLayer];
-
-    windLayer = [[OpenWeatherMapLayer alloc] initWithLayerName:@"wind" displayName:@"Wind"];
-    [windLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [windLayer displayName]] defaultValue:NO]];
-    [windLayer setOpacity:0.4];
-    [[[_wwv sceneController] layers] addLayer:windLayer];
 
     [self createTerrainAltitudeLayer];
     [terrainAltitudeLayer setEnabled:[Settings                                                                               getBoolForName:
