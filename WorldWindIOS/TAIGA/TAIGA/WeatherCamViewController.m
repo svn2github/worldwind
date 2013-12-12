@@ -8,6 +8,7 @@
 #import "WeatherCamViewController.h"
 #import "WWRetriever.h"
 #import "WorldWindConstants.h"
+#import "DotsView.h"
 
 #define IMAGE_WIDTH (640)
 #define IMAGE_HEIGHT (480)
@@ -18,6 +19,8 @@
     NSString* imagesCachePath;
     UIView* contentView;
     UIScrollView* scrollView;
+    DotsView* dotsView;
+    CGPoint dotsCenter;
 }
 
 - (WeatherCamViewController*) init
@@ -36,6 +39,8 @@
     [scrollView addSubview:contentView];
 
     [[self view] addSubview:scrollView];
+
+    dotsCenter = CGPointMake(IMAGE_WIDTH / 2, 0.85 * IMAGE_HEIGHT);
 
     return self;
 }
@@ -62,6 +67,12 @@
     contentView.frame = CGRectMake(0, 0, IMAGE_WIDTH + ([siteCameras count] - 1) * (IMAGE_WIDTH + MARGIN),
             2 * (IMAGE_HEIGHT + MARGIN));
     [scrollView setContentSize:contentView.frame.size];
+
+    if (dotsView != nil)
+        [dotsView removeFromSuperview];
+
+    dotsView = [[DotsView alloc] initWithCenter:dotsCenter dotCount:[siteCameras count]];
+    [[self view] addSubview:dotsView];
 
     for (NSUInteger cameraNumber = 0; cameraNumber < [siteCameras count]; cameraNumber++)
     {
@@ -135,6 +146,14 @@
 - (void) addCameraView:(UIImageView*)imageView
 {
     [contentView addSubview:imageView];
+}
+
+- (void) scrollViewDidScroll:(UIScrollView*)sv
+{
+    int cameraNumber = (int) ((IMAGE_WIDTH / 2 + [sv contentOffset].x) / IMAGE_WIDTH);
+    if ([dotsView highlightedDot] != cameraNumber)
+        [dotsView setNeedsDisplay];
+    [dotsView setHighlightedDot:cameraNumber];
 }
 
 @end

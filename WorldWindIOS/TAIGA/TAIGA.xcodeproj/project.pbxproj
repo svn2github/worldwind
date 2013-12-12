@@ -155,6 +155,7 @@
 		1BF9AEB497E2DECFE809A12E /* PIREP_ICONS_0004_Layer-6.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA8BC69476B78C51EB65 /* PIREP_ICONS_0004_Layer-6.png */; };
 		1BF9AF0E2106E053989367BE /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */; };
 		1BF9AF209840952651C41FC2 /* 42-photos@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */; };
+		1BF9AF269E904A6912CCC716 /* DotsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A60283D89A0A8E919E16 /* DotsView.m */; };
 		1BF9AF42F473A31996C0897B /* PIREP_ICONS_0020_Layer-22.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A2EC323E14E28B23EB9E /* PIREP_ICONS_0020_Layer-22.png */; };
 		1BF9AF5AA03657A43015F7DF /* PIREPLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AAD0347D3D745E7E6B55 /* PIREPLayer.m */; };
 		1BF9AF670B8F1C52A7FD8823 /* MainScreenController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8C063EF836D58C35624 /* MainScreenController.m */; };
@@ -281,6 +282,7 @@
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
 		1BF9A5F865D6E2B5126D4632 /* CC_CLR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_CLR_128.png; sourceTree = "<group>"; };
+		1BF9A60283D89A0A8E919E16 /* DotsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DotsView.m; sourceTree = "<group>"; };
 		1BF9A60A34F23F4B58521768 /* WeatherCamViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherCamViewController.h; sourceTree = "<group>"; };
 		1BF9A6372291DD219E89CDFD /* PIREP_ICONS_0000_Layer-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0000_Layer-2.png"; sourceTree = "<group>"; };
 		1BF9A63FF712D639C84EECD3 /* WX_FG_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_FG_128.png; sourceTree = "<group>"; };
@@ -299,6 +301,7 @@
 		1BF9A8097DB0B1A43FC6138D /* 42-photos.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "42-photos.png"; sourceTree = "<group>"; };
 		1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SliderCellWithReadout.m; sourceTree = "<group>"; };
 		1BF9A8295D8680541340F866 /* 275-broadcast-noconnection@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast-noconnection@2x.png"; sourceTree = "<group>"; };
+		1BF9A8328CE86B9E8C930343 /* DotsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DotsView.h; sourceTree = "<group>"; };
 		1BF9A8334881DA2A22450231 /* WX_NONE_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_NONE_128.png; sourceTree = "<group>"; };
 		1BF9A8547F0FFC6887C54F52 /* METARDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = METARDataViewController.h; sourceTree = "<group>"; };
 		1BF9A85675D005136C622F50 /* PIREP_ICONS_0009_Layer-11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0009_Layer-11.png"; sourceTree = "<group>"; };
@@ -567,6 +570,8 @@
 				CC8CFCE70CDF2979DDFD1139 /* AircraftMarker.m */,
 				CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */,
 				CC8CFD24B08756B57C45C655 /* SimulationViewController.m */,
+				1BF9A60283D89A0A8E919E16 /* DotsView.m */,
+				1BF9A8328CE86B9E8C930343 /* DotsView.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -932,6 +937,7 @@
 				CC8CF7C07D34E964137D88B6 /* WaypointLayer.m in Sources */,
 				CC8CF2D2D535E0E29FADB160 /* AircraftMarker.m in Sources */,
 				CC8CF413521615D8E131FE18 /* SimulationViewController.m in Sources */,
+				1BF9AF269E904A6912CCC716 /* DotsView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
