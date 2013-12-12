@@ -64,8 +64,6 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 {
     [super viewDidAppear:animated];
 
-    [[self tableView] flashScrollIndicators];
-
     scrollBar = [[BRScrollBarController alloc] initForScrollView:[self tableView]
                                                       inPosition:kIntBRScrollBarPositionRight];
     scrollBar.scrollBar.hideScrollBar = NO;
