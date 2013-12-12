@@ -123,6 +123,8 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
     [self removeFlightRouteState:flightRoute];
     [self saveFlightRouteListState];
     [self requestRedraw];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_REMOVED object:flightRoute];
 }
 
 - (void) moveFlightRouteFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex

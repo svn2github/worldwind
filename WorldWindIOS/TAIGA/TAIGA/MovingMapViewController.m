@@ -343,6 +343,9 @@
 
     [[simulationViewController doneButtonItem] setTarget:self];
     [[simulationViewController doneButtonItem] setAction:@selector(dismissSimulationController)];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteRemoved:)
+                                                 name:TAIGA_FLIGHT_ROUTE_REMOVED object:nil];
 }
 
 - (void) presentSimulationControllerWithFlightRoute:(FlightRoute*)flightRoute
@@ -368,6 +371,15 @@
         [self.view addConstraints:hideSimulationViewConstraints];
         [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
     }];
+}
+
+- (void) handleFlightRouteRemoved:(NSNotification*)notification
+{
+    FlightRoute* flightRoute = [notification object];
+    if (flightRoute == [simulationViewController flightRoute])
+    {
+        [self dismissSimulationController];
+    }
 }
 
 - (void) createTopToolbar
