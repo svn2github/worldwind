@@ -18,7 +18,6 @@
     NSString* imagesCachePath;
     UIView* contentView;
     UIScrollView* scrollView;
-    UIImageView* referenceImage;
 }
 
 - (WeatherCamViewController*) init
@@ -38,14 +37,6 @@
 
     [[self view] addSubview:scrollView];
 
-    referenceImage = [[UIImageView alloc] init];
-    referenceImage.backgroundColor = [UIColor whiteColor];
-    referenceImage.userInteractionEnabled = YES;
-    referenceImage.contentMode = UIViewContentModeScaleAspectFit;
-    NSString* referenceImagePath =
-            [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"wx_cam_reference_placeholder.jpg"];
-    [referenceImage setImage:[[UIImage alloc] initWithContentsOfFile:referenceImagePath]];
-
     return self;
 }
 
@@ -54,22 +45,36 @@
     return CGSizeMake(IMAGE_WIDTH, IMAGE_HEIGHT);
 }
 
+- (void) didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+
+    if ([contentView window] == nil) // if content view is not visible
+        [self removeImageViews];
+}
+
 - (void) setSiteInfo:(NSArray*)siteCameras
+{
+    [self removeImageViews];
+
+    [scrollView setContentOffset:CGPointZero];
+
+    contentView.frame = CGRectMake(0, 0, IMAGE_WIDTH + ([siteCameras count] - 1) * (IMAGE_WIDTH + MARGIN),
+            2 * (IMAGE_HEIGHT + MARGIN));
+    [scrollView setContentSize:contentView.frame.size];
+
+    for (NSUInteger cameraNumber = 0; cameraNumber < [siteCameras count]; cameraNumber++)
+    {
+        [self setCameraInfo:cameraNumber siteInformation:[siteCameras objectAtIndex:cameraNumber]];
+    }
+}
+
+- (void) removeImageViews
 {
     NSArray* contentSubviews = [contentView subviews];
     for (NSUInteger i = 0; i < [contentSubviews count]; i++)
     {
         [[contentSubviews objectAtIndex:i] removeFromSuperview];
-    }
-
-    [scrollView setContentOffset:CGPointZero];
-
-    referenceImage.frame = CGRectMake([siteCameras count] * (IMAGE_WIDTH + MARGIN), 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-    [contentView addSubview:referenceImage];
-
-    for (NSUInteger cameraNumber = 0; cameraNumber < [siteCameras count]; cameraNumber++)
-    {
-        [self setCameraInfo:cameraNumber siteInformation:[siteCameras objectAtIndex:cameraNumber]];
     }
 }
 
@@ -86,11 +91,24 @@
                                                 }];
     [retriever setUserData:cameraID];
     [retriever performRetrieval];
+
+    // Get the reference image. TODO: Use the correct URL when the reference images are added to the server.
+    imageURLString = [[NSString alloc]
+            initWithFormat:@"http://worldwind.arc.nasa.gov/alaska/%@/currentimage.jpg", cameraID];
+    imageURL = [[NSURL alloc] initWithString:imageURLString];
+    retriever = [[WWRetriever alloc] initWithUrl:imageURL timeout:5
+                                   finishedBlock:^(WWRetriever* myRetriever)
+                                   {
+                                       [self loadImage:cameraNumber + 100 retriever:myRetriever];
+                                   }];
+    [retriever setUserData:cameraID];
+    [retriever performRetrieval];
 }
 
 - (void) loadImage:(NSUInteger)cameraNumber retriever:(WWRetriever*)retriever
 {
-    NSString* imageFileName = [[NSString alloc] initWithFormat:@"%@-currentimage.jpg", [retriever userData]];
+    NSString* suffix = cameraNumber < 100 ? @"-currentimage.jpg" : @"-referenceimage.jpg";
+    NSString* imageFileName = [[NSString alloc] initWithFormat:@"%@%@", [retriever userData], suffix];
     NSString* imagePath = [imagesCachePath stringByAppendingPathComponent:imageFileName];
 
     // If the retrieval was successful, cache the retrieved chart.
@@ -102,22 +120,21 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:imagePath])
     {
         UIImageView* imageView = [[UIImageView alloc] init];
-        imageView.frame = CGRectMake(cameraNumber * (IMAGE_WIDTH + MARGIN), 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        int x = (cameraNumber < 100 ? cameraNumber : cameraNumber - 100) * (IMAGE_WIDTH + MARGIN);
+        int y = cameraNumber < 100 ? 0 : IMAGE_HEIGHT + MARGIN;
+        imageView.frame = CGRectMake(x, y, IMAGE_WIDTH, IMAGE_HEIGHT);
         imageView.backgroundColor = [UIColor whiteColor];
         imageView.userInteractionEnabled = YES;
         imageView.contentMode = UIViewContentModeScaleAspectFit;
         [imageView setImage:[[UIImage alloc] initWithContentsOfFile:imagePath]];
 
-        [self performSelectorOnMainThread:@selector(adjustContentView:) withObject:imageView waitUntilDone:NO];
+        [self performSelectorOnMainThread:@selector(addCameraView:) withObject:imageView waitUntilDone:NO];
     }
 }
 
-- (void) adjustContentView:(UIImageView*)imageView
+- (void) addCameraView:(UIImageView*)imageView
 {
     [contentView addSubview:imageView];
-    contentView.frame = CGRectMake(0, 0, IMAGE_WIDTH + ([contentView.subviews count] - 1) * (IMAGE_WIDTH + MARGIN),
-            IMAGE_HEIGHT);
-    [scrollView setContentSize:contentView.frame.size];
 }
 
 @end
