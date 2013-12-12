@@ -6,6 +6,7 @@
  */
 
 #import "PIREPDataViewController.h"
+#import "BRScrollBarController.h"
 
 static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 
@@ -13,6 +14,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 {
     NSMutableArray* names;
     NSMutableArray* values;
+    BRScrollBarController* scrollBar;
 }
 
 + (void) initialize
@@ -63,6 +65,11 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
     [super viewDidAppear:animated];
 
     [[self tableView] flashScrollIndicators];
+
+    scrollBar = [[BRScrollBarController alloc] initForScrollView:[self tableView]
+                                                      inPosition:kIntBRScrollBarPositionRight];
+    scrollBar.scrollBar.hideScrollBar = NO;
+    scrollBar.scrollBar.showLabel = NO;
 }
 
 - (void) setEntries:(NSDictionary*)entries
