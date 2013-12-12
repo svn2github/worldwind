@@ -139,13 +139,25 @@
         imageView.contentMode = UIViewContentModeScaleAspectFit;
         [imageView setImage:[[UIImage alloc] initWithContentsOfFile:imagePath]];
 
-        [self performSelectorOnMainThread:@selector(addCameraView:) withObject:imageView waitUntilDone:NO];
+        [self performSelectorOnMainThread:@selector(addView:) withObject:imageView waitUntilDone:NO];
+
+        if (cameraNumber >= 100)
+        {
+            CGRect labelFrame = CGRectMake(imageView.frame.origin.x, imageView.frame.origin.y + IMAGE_HEIGHT / 2,
+                    IMAGE_WIDTH, 100);
+            UILabel* label = [[UILabel alloc] initWithFrame:labelFrame];
+            [label setText:@"REFERENCE IMAGE"];
+            [label setTextAlignment:NSTextAlignmentCenter];
+            [label setTextColor:[UIColor redColor]];
+            [label setFont:[UIFont fontWithName:@"Helvetica-Bold" size:30]];
+            [self performSelectorOnMainThread:@selector(addView:) withObject:label waitUntilDone:NO];
+        }
     }
 }
 
-- (void) addCameraView:(UIImageView*)imageView
+- (void) addView:(UIView*)view
 {
-    [contentView addSubview:imageView];
+    [contentView addSubview:view];
 }
 
 - (void) scrollViewDidScroll:(UIScrollView*)sv
