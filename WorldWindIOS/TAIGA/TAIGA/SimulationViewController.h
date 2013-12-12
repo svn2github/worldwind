@@ -17,8 +17,8 @@
 {
 @protected
     UISlider* aircraftSlider;
-    WWRenderableLayer* aircraftLayer;
     AircraftMarker* aircraftMarker;
+    WWRenderableLayer* simulationLayer;
 }
 
 @property (nonatomic, readonly) UIBarButtonItem* doneButtonItem;

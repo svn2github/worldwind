@@ -44,12 +44,11 @@ static const CGFloat AircraftSliderHeight = 4;
 
 @implementation SimulationViewController
 
-// TODO: Handle changes in flight route displayName.
-// TODO: Handle changes in flight route altitude.
-// TODO: Handle changes in flight route waypoints.
-// TODO: Handle flight route with 0 waypoints, or modified to have 0 waypoints.
-// TODO: Handle flight route with 1 waypoint, or modified to have 1 waypoint.
-// TODO: Handle flight route with redundant waypoints.
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Initializing SimulationViewController --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+// TODO: Handle fight route deleted.
 - (SimulationViewController*) initWithWorldWindView:(WorldWindView*)wwv
 {
     self = [super initWithNibName:nil bundle:nil];
@@ -61,15 +60,23 @@ static const CGFloat AircraftSliderHeight = 4;
 
     _wwv = wwv;
 
-    aircraftLayer = aircraftLayer = [[WWRenderableLayer alloc] init];
-    [[aircraftLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [[[_wwv sceneController] layers] addLayer:aircraftLayer];
+    simulationLayer = simulationLayer = [[WWRenderableLayer alloc] init];
+    [[simulationLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [simulationLayer setEnabled:NO];
+    [[[_wwv sceneController] layers] addLayer:simulationLayer];
 
     aircraftMarker = [[AircraftMarker alloc] init];
-    [aircraftLayer addRenderable:aircraftMarker];
+    [simulationLayer addRenderable:aircraftMarker];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
+                                                 name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
 
     return self;
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Flight Route --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) setFlightRoute:(FlightRoute*)flightRoute
 {
@@ -78,34 +85,56 @@ static const CGFloat AircraftSliderHeight = 4;
 
     _flightRoute = flightRoute;
 
-    // Set the navigator item title to flight route display name + " Simulation". Sets the title to nil if the flight
-    // route is nil.
-    NSString* title = [[_flightRoute displayName] stringByAppendingString:@" Simulation"];
-    [[self navigationItem] setTitle:title];
-
-    // Set the aircraft slider and aircraft marker to the beginning of the flight route. This has no effect on the
-    // aircraft marker if the flight route is nil.
+    // Set the aircraft slider to the beginning of the flight route and update the simulation UI elements to match the
+    // new flight route.
     [aircraftSlider setValue:0];
-    [_flightRoute positionForPercent:0 result:[aircraftMarker position]]; // does nothing if flightRoute is nil
-
-    // Enable the aircraft layer when the flight route is not nil.
-    [aircraftLayer setEnabled:_flightRoute != nil];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [self handleFightRouteChanged];
 }
+
+- (void) handleFlightRouteNotification:(NSNotification*)notification
+{
+    FlightRoute* flightRoute = [notification object];
+    if (flightRoute == _flightRoute)
+    {
+        [self handleFightRouteChanged];
+    }
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- View Control Events --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) handleDoneButton
 {
-    [self setFlightRoute:nil];
 }
 
-- (void) handleSimulationSlider:(UISlider*)slider
+- (void) handleAircraftSlider
 {
-    double pct = [slider value];
+    double pct = [aircraftSlider value];
     [_flightRoute positionForPercent:pct result:[aircraftMarker position]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
+
+- (void) handleFightRouteChanged
+{
+    // Set the navigator item title to flight route display name + " Simulation". This sets the title to nil if the
+    // flight route is nil.
+    NSString* title = [[_flightRoute displayName] stringByAppendingString:@" Simulation"];
+    [[self navigationItem] setTitle:title];
+
+    // Set the aircraft marker's position to the percentage along the flight route corresponding to the current aircraft
+    // slider value. This has no effect on the aircraft marker if the flight route is nil. Disable the simulation layer
+    // if the flight route is nil or has no waypoints.
+    [_flightRoute positionForPercent:[aircraftSlider value] result:[aircraftMarker position]];
+    [simulationLayer setEnabled:_flightRoute != nil && [_flightRoute waypointCount] > 0];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- View Layout --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) loadView
 {
@@ -116,7 +145,7 @@ static const CGFloat AircraftSliderHeight = 4;
     [self setView:view];
 
     aircraftSlider = [[AircraftSlider alloc] init];
-    [aircraftSlider addTarget:self action:@selector(handleSimulationSlider:) forControlEvents:UIControlEventValueChanged];
+    [aircraftSlider addTarget:self action:@selector(handleAircraftSlider) forControlEvents:UIControlEventValueChanged];
     [aircraftSlider setMinimumTrackTintColor:[UIColor whiteColor]];
     [aircraftSlider setMaximumTrackTintColor:[UIColor blackColor]];
     [aircraftSlider setMinimumValueImage:[UIImage imageNamed:@"route-begin"]];
