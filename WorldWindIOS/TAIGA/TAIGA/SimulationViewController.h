@@ -9,9 +9,10 @@
 
 @class AircraftMarker;
 @class FlightRoute;
+@class RedrawingSlider;
 @class WWPosition;
-@class WorldWindView;
 @class WWRenderableLayer;
+@class WorldWindView;
 
 @interface SimulationViewController : UIViewController
 {

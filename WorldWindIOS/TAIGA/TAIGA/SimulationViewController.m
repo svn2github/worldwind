@@ -9,6 +9,7 @@
 #import "AircraftMarker.h"
 #import "AppConstants.h"
 #import "FlightRoute.h"
+#import "RedrawingSlider.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
@@ -21,7 +22,7 @@
 
 static const CGFloat AircraftSliderHeight = 4;
 
-@interface AircraftSlider : UISlider
+@interface AircraftSlider : RedrawingSlider
 @end
 
 @implementation AircraftSlider
@@ -48,7 +49,6 @@ static const CGFloat AircraftSliderHeight = 4;
 //-- Initializing SimulationViewController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-// TODO: Handle fight route deleted.
 - (SimulationViewController*) initWithWorldWindView:(WorldWindView*)wwv
 {
     self = [super initWithNibName:nil bundle:nil];
@@ -112,8 +112,6 @@ static const CGFloat AircraftSliderHeight = 4;
 {
     double pct = [aircraftSlider value];
     [_flightRoute positionForPercent:pct result:[aircraftMarker position]];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleFightRouteChanged

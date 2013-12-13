@@ -6,6 +6,7 @@
  */
 
 #import "SliderCellWithReadout.h"
+#import "RedrawingSlider.h"
 
 @implementation SliderCellWithReadout
 
@@ -15,7 +16,7 @@
 
     CGRect frame = [self frame];
 
-    _slider = [[UISlider alloc] initWithFrame:CGRectMake(20, 0, 0.7 * frame.size.width, frame.size.height)];
+    _slider = [[RedrawingSlider alloc] initWithFrame:CGRectMake(20, 0, 0.7 * frame.size.width, frame.size.height)];
 
     _readout = [[UILabel alloc] initWithFrame:CGRectMake(0.8 * frame.size.width, 0,
             0.2 * frame.size.width, frame.size.height)];

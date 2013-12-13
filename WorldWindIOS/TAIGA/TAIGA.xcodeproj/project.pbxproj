@@ -163,6 +163,7 @@
 		1BF9AFBE3807391CB8085CA9 /* 314-move-point.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAFDE565B336A0D805BC /* 314-move-point.png */; };
 		1BF9AFC293E02D3E756BEF0D /* notched-compass.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1E5E84D850365CD6B01 /* notched-compass.png */; };
 		1BF9AFF6ABD87609B3D91383 /* 19-gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */; };
+		CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */; };
 		CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */; };
 		CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF3E5AF50715A46F682B /* ColorPicker.m */; };
 		CC8CF21EB186B45723B50126 /* Waypoint.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFE7BD858DAAEC112171 /* Waypoint.m */; };
@@ -386,6 +387,7 @@
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
 		CC8CF2A1449A236B9E911B54 /* route-end@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end@2x.png"; sourceTree = "<group>"; };
+		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
 		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
@@ -403,6 +405,7 @@
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 		CC8CFA2383D923D871357C39 /* AircraftMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftMarker.h; sourceTree = "<group>"; };
 		CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AltitudePicker.m; sourceTree = "<group>"; };
+		CC8CFB4BF49DE156B2954624 /* RedrawingSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedrawingSlider.h; sourceTree = "<group>"; };
 		CC8CFBEC62A136CE9A0C5295 /* Waypoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Waypoint.h; sourceTree = "<group>"; };
 		CC8CFC0B49EF23E9FF36D8F6 /* WaypointFileControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointFileControl.h; sourceTree = "<group>"; };
 		CC8CFCA0D8092BD7B6B01688 /* WaypointLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointLayer.m; sourceTree = "<group>"; };
@@ -572,6 +575,8 @@
 				CC8CFD24B08756B57C45C655 /* SimulationViewController.m */,
 				1BF9A60283D89A0A8E919E16 /* DotsView.m */,
 				1BF9A8328CE86B9E8C930343 /* DotsView.h */,
+				CC8CFB4BF49DE156B2954624 /* RedrawingSlider.h */,
+				CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -938,6 +943,7 @@
 				CC8CF2D2D535E0E29FADB160 /* AircraftMarker.m in Sources */,
 				CC8CF413521615D8E131FE18 /* SimulationViewController.m in Sources */,
 				1BF9AF269E904A6912CCC716 /* DotsView.m in Sources */,
+				CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

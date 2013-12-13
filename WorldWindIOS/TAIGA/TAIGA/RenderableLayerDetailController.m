@@ -10,6 +10,7 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "RenderableLayerDetailController.h"
 #import "Settings.h"
+#import "RedrawingSlider.h"
 
 @implementation RenderableLayerDetailController
 {
@@ -91,7 +92,7 @@
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:layerControlOpacityCellIdentifier];
                 [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
                 [[cell textLabel] setText:@"Opacity"];
-                UISlider* slider = [[UISlider alloc] init];
+                RedrawingSlider* slider = [[RedrawingSlider alloc] init];
                 [slider setTag:sliderTag];
                 [slider addTarget:self action:@selector(opacityValueChanged:) forControlEvents:UIControlEventValueChanged];
                 [cell setAccessoryView:slider];
@@ -143,7 +144,6 @@
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
-    [self requestRedraw];
 }
 
 - (void) handleRefreshButtonTap
