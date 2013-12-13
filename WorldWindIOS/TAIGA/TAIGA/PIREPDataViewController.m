@@ -6,7 +6,6 @@
  */
 
 #import "PIREPDataViewController.h"
-#import "BRScrollBarController.h"
 
 static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 

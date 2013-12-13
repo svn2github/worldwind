@@ -7,7 +7,6 @@
 
 #import "METARDataViewController.h"
 #import "WWLog.h"
-#import "BRScrollBarController.h"
 
 static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
 
