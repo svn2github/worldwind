@@ -17,12 +17,14 @@
 @interface SimulationViewController : UIViewController
 {
 @protected
+    UIButton* doneButton;
+    UILabel* titleLabel;
     UISlider* aircraftSlider;
     AircraftMarker* aircraftMarker;
     WWRenderableLayer* simulationLayer;
 }
 
-@property (nonatomic, readonly) UIBarButtonItem* doneButtonItem;
+@property (nonatomic, readonly) UIControl* doneControl;
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 

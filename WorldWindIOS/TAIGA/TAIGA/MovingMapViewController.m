@@ -91,7 +91,6 @@
     FlightRouteListController* flightRouteController;
     UIPopoverController* flightRoutePopoverController;
     SimulationViewController* simulationViewController;
-    UINavigationController* simulationNavController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -129,11 +128,11 @@
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [[simulationNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
-    UIView* simulationView = [simulationNavController view];
+    UIView* simulationView = [simulationViewController view];
     NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView, simulationView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
@@ -154,9 +153,9 @@
     if (isSplitView)
         [self loadMostRecentlyUsedChart];
 
-    showSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[simulationView(150)]|"
+    showSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[simulationView(80)]|"
                                                                             options:0 metrics:nil views:viewsDictionary];
-    hideSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[_wwv][simulationView(150)]"
+    hideSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[_wwv][simulationView(80)]"
                                                                             options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:hideSimulationViewConstraints];
 }
@@ -338,19 +337,20 @@
 - (void) createSimulationController
 {
     simulationViewController = [[SimulationViewController alloc] initWithWorldWindView:_wwv];
-    simulationNavController = [[UINavigationController alloc] initWithRootViewController:simulationViewController];
-    [self.view addSubview:[simulationNavController view]];
+    [self.view addSubview:[simulationViewController view]];
 
-    [[simulationViewController doneButtonItem] setTarget:self];
-    [[simulationViewController doneButtonItem] setAction:@selector(dismissSimulationController)];
+    // Dismiss the simulation view controller when the user taps its done button.
+    [[simulationViewController doneControl] addTarget:self action:@selector(dismissSimulationController)
+                                     forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchUpOutside];
 
+    // Dismiss the simulation view controller when the user removes the simulated flight route.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteRemoved:)
                                                  name:TAIGA_FLIGHT_ROUTE_REMOVED object:nil];
 }
 
 - (void) presentSimulationControllerWithFlightRoute:(FlightRoute*)flightRoute
 {
-    [self.view bringSubviewToFront:[simulationNavController view]];
+    [self.view bringSubviewToFront:[simulationViewController view]];
     [simulationViewController setFlightRoute:flightRoute];
 
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.

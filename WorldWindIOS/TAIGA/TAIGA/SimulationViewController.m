@@ -53,11 +53,6 @@ static const CGFloat AircraftSliderHeight = 4;
 {
     self = [super initWithNibName:nil bundle:nil];
 
-    _doneButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                                                                    target:self
-                                                                    action:@selector(handleDoneButton)];
-    [[self navigationItem] setRightBarButtonItem:_doneButtonItem];
-
     _wwv = wwv;
 
     simulationLayer = simulationLayer = [[WWRenderableLayer alloc] init];
@@ -104,10 +99,6 @@ static const CGFloat AircraftSliderHeight = 4;
 //-- View Control Events --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) handleDoneButton
-{
-}
-
 - (void) handleAircraftSlider
 {
     double pct = [aircraftSlider value];
@@ -116,10 +107,9 @@ static const CGFloat AircraftSliderHeight = 4;
 
 - (void) handleFightRouteChanged
 {
-    // Set the navigator item title to flight route display name + " Simulation". This sets the title to nil if the
-    // flight route is nil.
-    NSString* title = [[_flightRoute displayName] stringByAppendingString:@" Simulation"];
-    [[self navigationItem] setTitle:title];
+    // Set the title label to the flight route display name + " Simulation". This sets the title to nil if the flight
+    // route is nil.
+    [titleLabel setText:[[_flightRoute displayName] stringByAppendingString:@" Simulation"]];
 
     // Set the aircraft marker's position to the percentage along the flight route corresponding to the current aircraft
     // slider value. This has no effect on the aircraft marker if the flight route is nil. Disable the simulation layer
@@ -142,6 +132,14 @@ static const CGFloat AircraftSliderHeight = 4;
     [view setAlpha:0.95];
     [self setView:view];
 
+    doneButton = [[UIButton alloc] init];
+    [doneButton setImage:[[UIImage imageNamed:@"433-x"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [view addSubview:doneButton];
+    _doneControl = doneButton;
+
+    titleLabel = [[UILabel alloc] init];
+    [view addSubview:titleLabel];
+
     aircraftSlider = [[AircraftSlider alloc] init];
     [aircraftSlider addTarget:self action:@selector(handleAircraftSlider) forControlEvents:UIControlEventValueChanged];
     [aircraftSlider setMinimumTrackTintColor:[UIColor whiteColor]];
@@ -155,17 +153,24 @@ static const CGFloat AircraftSliderHeight = 4;
 
 - (void) layout
 {
-    UIView* view = [self view];
-    id topGuide = [self topLayoutGuide];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(aircraftSlider, topGuide);
-
-    // Disable automatic translation of autoresizing mask into constraints. We're using explicit layout constraints
-    // below.
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(doneButton, titleLabel, aircraftSlider);
+    [doneButton setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [aircraftSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-100-[aircraftSlider]-100-|"
+
+    UIView* view = [self view];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[doneButton]-10-|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topGuide]-20-[aircraftSlider]"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-10-[doneButton]"
                                                                  options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:titleLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual
+                                                        toItem:view attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-10-[titleLabel]"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-50-[aircraftSlider]-50-|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:aircraftSlider attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual
+                                                        toItem:view attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
 }
 
 @end

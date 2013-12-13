@@ -178,12 +178,14 @@
 		CC8CF8D644EE55C5AD000363 /* airport@large.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF942C767E4A7E4EBE9C0 /* airport@large.png */; };
 		CC8CF97294CE6422E993EF34 /* route-end.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF6C6DC046EDF8EF726B2 /* route-end.png */; };
 		CC8CF9F7A5258C5387DEF2CB /* route-end@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF2A1449A236B9E911B54 /* route-end@2x.png */; };
+		CC8CFA0A20371B9056928618 /* 433-x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF8F2BE2B44F67B01F16F /* 433-x.png */; };
 		CC8CFA530B346D44738BF7DC /* airport@small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF95DB4FB13AD332B4BC2 /* airport@small.png */; };
 		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
 		CC8CFC66EF18CB4B4697BC96 /* 07-map-marker@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */; };
 		CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */; };
 		CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */; };
 		CC8CFCE3F1BE13D6F074FDF2 /* 07-map-marker.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */; };
+		CC8CFD34C63521CFBEAB0EDF /* 433-x@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */; };
 		CC8CFD551E097043A86C1BBE /* WaypointFileControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */; };
 		CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */; };
 		CC8CFF5B1FB3B7ECD5810696 /* FlightRouteListController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */; };
@@ -390,6 +392,7 @@
 		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
+		CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
 		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
 		CC8CF5CD9CFC96A54162C86B /* WaypointCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointCell.m; sourceTree = "<group>"; };
 		CC8CF6883C23299D48C6D79F /* WaypointLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointLayer.h; sourceTree = "<group>"; };
@@ -398,6 +401,7 @@
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimulationViewController.h; sourceTree = "<group>"; };
 		CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small@2x.png"; sourceTree = "<group>"; };
+		CC8CF8F2BE2B44F67B01F16F /* 433-x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x.png"; sourceTree = "<group>"; };
 		CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker@2x.png"; sourceTree = "<group>"; };
 		CC8CF91DF9D8B1008D64A35F /* WaypointCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointCell.h; sourceTree = "<group>"; };
 		CC8CF942C767E4A7E4EBE9C0 /* airport@large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "airport@large.png"; sourceTree = "<group>"; };
@@ -707,6 +711,8 @@
 				CC8CFCD52A777ACE793EEA4F /* route-begin@2x.png */,
 				CC8CF6C6DC046EDF8EF726B2 /* route-end.png */,
 				CC8CF2A1449A236B9E911B54 /* route-end@2x.png */,
+				CC8CF8F2BE2B44F67B01F16F /* 433-x.png */,
+				CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -886,6 +892,8 @@
 				CC8CF6B7421F077AE2831D77 /* route-begin@2x.png in Resources */,
 				CC8CF97294CE6422E993EF34 /* route-end.png in Resources */,
 				CC8CF9F7A5258C5387DEF2CB /* route-end@2x.png in Resources */,
+				CC8CFA0A20371B9056928618 /* 433-x.png in Resources */,
+				CC8CFD34C63521CFBEAB0EDF /* 433-x@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
