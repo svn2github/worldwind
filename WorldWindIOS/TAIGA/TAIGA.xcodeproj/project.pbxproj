@@ -572,7 +572,6 @@
 				CC8CFD24B08756B57C45C655 /* SimulationViewController.m */,
 				1BF9A60283D89A0A8E919E16 /* DotsView.m */,
 				1BF9A8328CE86B9E8C930343 /* DotsView.h */,
-				1BF9A2F40F4E26C3D547998D /* BRScrollBar */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -705,13 +704,6 @@
 				CC8CF2A1449A236B9E911B54 /* route-end@2x.png */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		1BF9A2F40F4E26C3D547998D /* BRScrollBar */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = BRScrollBar;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
