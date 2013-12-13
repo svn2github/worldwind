@@ -105,7 +105,7 @@
 
     // Get the reference image. TODO: Use the correct URL when the reference images are added to the server.
     imageURLString = [[NSString alloc]
-            initWithFormat:@"http://worldwind.arc.nasa.gov/alaska/%@/currentimage.jpg", cameraID];
+            initWithFormat:@"http://avcams.faa.gov/images/clearday/%@-clearday.jpg", cameraID];
     imageURL = [[NSURL alloc] initWithString:imageURLString];
     retriever = [[WWRetriever alloc] initWithUrl:imageURL timeout:5
                                    finishedBlock:^(WWRetriever* myRetriever)
@@ -143,10 +143,9 @@
 
         if (cameraNumber >= 100)
         {
-            CGRect labelFrame = CGRectMake(imageView.frame.origin.x, imageView.frame.origin.y + IMAGE_HEIGHT / 2,
-                    IMAGE_WIDTH, 100);
+            CGRect labelFrame = CGRectMake(imageView.frame.origin.x, imageView.frame.origin.y, IMAGE_WIDTH, 50);
             UILabel* label = [[UILabel alloc] initWithFrame:labelFrame];
-            [label setText:@"REFERENCE IMAGE"];
+            [label setText:@"CLEARDAY IMAGE"];
             [label setTextAlignment:NSTextAlignmentCenter];
             [label setTextColor:[UIColor redColor]];
             [label setFont:[UIFont fontWithName:@"Helvetica-Bold" size:30]];
