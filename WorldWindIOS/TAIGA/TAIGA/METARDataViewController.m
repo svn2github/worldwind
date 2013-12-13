@@ -15,7 +15,6 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
 {
     NSMutableArray* names;
     NSMutableArray* values;
-    BRScrollBarController* scrollBar;
 }
 
 + (void) initialize
@@ -74,10 +73,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
 {
     [super viewDidAppear:animated];
 
-    scrollBar = [[BRScrollBarController alloc] initForScrollView:[self tableView]
-                                                      inPosition:kIntBRScrollBarPositionRight];
-    scrollBar.scrollBar.hideScrollBar = NO;
-    scrollBar.scrollBar.showLabel = NO;
+    [self flashScrollIndicator];
 }
 
 - (void) setEntries:(NSDictionary*)entries
@@ -85,6 +81,11 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
     _entries = entries;
     [self initializeNamesAndValues];
     [[self tableView] reloadData];
+}
+
+- (void) flashScrollIndicator
+{
+    [[self tableView] performSelector:@selector(flashScrollIndicators) withObject:nil afterDelay:0];
 }
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView

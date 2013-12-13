@@ -13,5 +13,6 @@
 @property(nonatomic) NSDictionary* entries;
 
 - (METARDataViewController*) init;
+- (void) flashScrollIndicator;
 
 @end

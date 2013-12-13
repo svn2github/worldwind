@@ -641,6 +641,7 @@
         metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
     [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [metarDataViewController flashScrollIndicator];
 }
 
 - (void) showPIREPData:(WWPointPlacemark*)pm
@@ -670,6 +671,7 @@
         pirepDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:pirepDataViewController];
     [pirepDataPopoverController presentPopoverFromRect:rect inView:_wwv
                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [pirepDataViewController flashScrollIndicator];
 }
 
 - (void) showWeatherCam:(WWPointPlacemark*)pm

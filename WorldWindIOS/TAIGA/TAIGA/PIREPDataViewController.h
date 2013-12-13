@@ -13,5 +13,6 @@
 @property(nonatomic) NSDictionary* entries;
 
 - (PIREPDataViewController*) init;
+- (void) flashScrollIndicator;
 
 @end
