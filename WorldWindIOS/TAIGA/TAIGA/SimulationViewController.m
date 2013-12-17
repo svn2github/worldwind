@@ -108,8 +108,6 @@ static const CGFloat AircraftSliderHeight = 4;
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION
                                                         object:[[AircraftPosition alloc] initWithPosition:[aircraftMarker position]
                                                                                                   heading:heading]];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleFightRouteChanged
