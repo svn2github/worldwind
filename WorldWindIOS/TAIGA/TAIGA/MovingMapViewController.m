@@ -187,7 +187,7 @@
             constraintsWithVisualFormat:@"V:[terrainProfileView(200)][simulationView(80)]"
                                 options:0 metrics:nil views:viewsDictionary];
     hideTerrainProfileConstraints = [NSLayoutConstraint
-            constraintsWithVisualFormat:@"V:[terrainProfileView(0)][simulationView(80)]"
+            constraintsWithVisualFormat:@"V:[_wwv][terrainProfileView(200)]"
                                 options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:hideTerrainProfileConstraints];
 }
@@ -392,6 +392,7 @@
 - (void) presentTerrainProfile
 {
     [self.view bringSubviewToFront:terrainProfileView];
+    [self.view bringSubviewToFront:[simulationViewController view]];
 
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
     [UIView animateWithDuration:0.3 animations:^
@@ -405,6 +406,8 @@
 
 - (void) dismissTerrainProfile
 {
+    [self.view bringSubviewToFront:[simulationViewController view]];
+
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
     [UIView animateWithDuration:0.3 animations:^
     {
