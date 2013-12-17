@@ -10,6 +10,7 @@
 #define TAIGA_VERSION (@"0.0020")
 #define TAIGA_VERSION_DATE (@"12/13/13")
 
+#define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
 #define TAIGA_METERS_TO_FEET (3.28083989501)
 #define TAIGA_TOOLBAR_HEIGHT (80)
@@ -20,6 +21,7 @@
 #define TAIGA_SHADED_ELEVATION_OFFSET (@"gov.nasa.worldwind.taiga.shadedelevation.offset")
 #define TAIGA_SHADED_ELEVATION_OPACITY (@"gov.nasa.worldwind.taiga.shadedelevation.opacity")
 #define TAIGA_SHADED_ELEVATION_THRESHOLD_RED (@"gov.nasa.worldwind.taiga.shadedelevation.threshold.red")
+#define TAIGA_SHOW_TERRAIN_PROFILE (@"gov.nasa.worldwind.taiga.terrainprofile.show")
 
 @interface AppConstants : NSObject
 @end

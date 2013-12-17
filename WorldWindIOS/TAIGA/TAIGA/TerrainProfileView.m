@@ -142,6 +142,9 @@
         ys = nil;
     }
 
+    if (_path == nil)
+        return;
+
     WWGlobe* globe = [[_wwv sceneController] globe];
 
     numPoints = ([_path count] - 1) * (NUM_INTERNAL_SEGMENTS + 1);
@@ -179,7 +182,7 @@
     [self computeProfile];
 
     CGContextRef context = UIGraphicsGetCurrentContext();
-    [[UIColor clearColor] set];
+    [[UIColor redColor] set];
     CGContextFillRect(context, rect);
 
     if (numPoints < 2)

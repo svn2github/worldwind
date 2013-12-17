@@ -15,6 +15,7 @@
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
+#import "AircraftPosition.h"
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- AircraftSlider --//
@@ -102,7 +103,13 @@ static const CGFloat AircraftSliderHeight = 4;
 - (void) handleAircraftSlider
 {
     double pct = [aircraftSlider value];
-    [_flightRoute positionForPercent:pct result:[aircraftMarker position]];
+    double heading = [_flightRoute positionForPercent:pct result:[aircraftMarker position]];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION
+                                                        object:[[AircraftPosition alloc] initWithPosition:[aircraftMarker position]
+                                                                                                  heading:heading]];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleFightRouteChanged
@@ -114,8 +121,12 @@ static const CGFloat AircraftSliderHeight = 4;
     // Set the aircraft marker's position to the percentage along the flight route corresponding to the current aircraft
     // slider value. This has no effect on the aircraft marker if the flight route is nil. Disable the simulation layer
     // if the flight route is nil or has no waypoints.
-    [_flightRoute positionForPercent:[aircraftSlider value] result:[aircraftMarker position]];
+    double heading =[_flightRoute positionForPercent:[aircraftSlider value] result:[aircraftMarker position]];
     [simulationLayer setEnabled:_flightRoute != nil && [_flightRoute waypointCount] > 0];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION
+                                                        object:[[AircraftPosition alloc] initWithPosition:[aircraftMarker position]
+                                                                                                  heading:heading]];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
@@ -127,7 +138,7 @@ static const CGFloat AircraftSliderHeight = 4;
 - (void) loadView
 {
     UIView* view = [[UIView alloc] init];
-    [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
+    [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [view setBackgroundColor:[UIColor colorWithWhite:0.8 alpha:1]];
     [view setAlpha:0.95];
     [self setView:view];

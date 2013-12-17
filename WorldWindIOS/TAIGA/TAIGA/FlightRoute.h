@@ -47,7 +47,7 @@
 
 - (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 
-- (void) positionForPercent:(double)pct result:(WWPosition*)result;
+- (double) positionForPercent:(double)pct result:(WWPosition*)result;
 
 - (NSUInteger) waypointCount;
 

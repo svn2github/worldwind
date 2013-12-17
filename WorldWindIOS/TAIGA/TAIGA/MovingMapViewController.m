@@ -43,6 +43,9 @@
 #import "FlightRoute.h"
 #import "FlightRouteListController.h"
 #import "SimulationViewController.h"
+#import "TerrainProfileView.h"
+#import "ViewSelectionController.h"
+#import "AircraftPosition.h"
 
 @implementation MovingMapViewController
 {
@@ -51,6 +54,8 @@
     NSArray* splitViewConstraints;
     NSArray* showSimulationViewConstraints;
     NSArray* hideSimulationViewConstraints;
+    NSArray* showTerrainProfileConstraints;
+    NSArray* hideTerrainProfileConstraints;
     BOOL isSplitView;
 
     UIToolbar* topToolBar;
@@ -91,6 +96,9 @@
     FlightRouteListController* flightRouteController;
     UIPopoverController* flightRoutePopoverController;
     SimulationViewController* simulationViewController;
+    TerrainProfileView* terrainProfileView;
+    ViewSelectionController* viewSelectionController;
+    UIPopoverController* viewSelectionPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -103,8 +111,17 @@
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
+//
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showCurrentPositionNotification:)
+//                                                 name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
 
     return self;
+}
+
+- (void) showCurrentPositionNotification:(NSNotification*)notification
+{
+//    AircraftPosition* ap = [notification object];
+//    NSLog(@"%f, %f, %f, %f", [ap latitude], [ap longitude], [ap altitude], [ap heading]);
 }
 
 - (void) loadView
@@ -118,6 +135,9 @@
     [self createTopToolbar];
     [self createChartsController];
     [self createSimulationController];
+    [self createTerrainProfile];
+
+    viewSelectionController = [[ViewSelectionController alloc] initWithWorldWindView:_wwv];
 
     float x = 20;//myFrame.size.width - 220;
     float y = myFrame.size.height - 70;
@@ -129,11 +149,13 @@
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [terrainProfileView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
     UIView* simulationView = [simulationViewController view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView, simulationView);
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView,
+    simulationView, terrainProfileView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
@@ -142,6 +164,8 @@
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][chartView(>=400)]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[simulationView(==_wwv)]"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[terrainProfileView(==_wwv)]"
                                                                  options:0 metrics:nil views:viewsDictionary]];
 
     normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(==view)][chartView(==0)]|"
@@ -158,6 +182,14 @@
     hideSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[_wwv][simulationView(80)]"
                                                                             options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:hideSimulationViewConstraints];
+
+    showTerrainProfileConstraints = [NSLayoutConstraint
+            constraintsWithVisualFormat:@"V:[terrainProfileView(200)][simulationView(80)]"
+                                options:0 metrics:nil views:viewsDictionary];
+    hideTerrainProfileConstraints = [NSLayoutConstraint
+            constraintsWithVisualFormat:@"V:[terrainProfileView(0)][simulationView(80)]"
+                                options:0 metrics:nil views:viewsDictionary];
+    [view addConstraints:hideTerrainProfileConstraints];
 }
 
 - (void) loadMostRecentlyUsedChart
@@ -218,7 +250,7 @@
 
     waypointLayer = [[WaypointLayer alloc] init];
     [waypointLayer setDisplayName:@"Airports"];
-    [waypointLayer setEnabled:[Settings getBoolForName:
+    [waypointLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
     [layers addLayer:waypointLayer];
 
@@ -334,6 +366,56 @@
     [((UINavigationController*) [chartsListController parentViewController]) pushViewController:chartViewController animated:YES];
 }
 
+- (void) createTerrainProfile
+{
+    terrainProfileView = [[TerrainProfileView alloc] initWithFrame:CGRectZero worldWindView:_wwv];
+    [self.view addSubview:terrainProfileView];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleShowTerrainProfile:)
+                                                 name:TAIGA_SHOW_TERRAIN_PROFILE object:nil];
+}
+
+- (void) handleShowTerrainProfile:(NSNotification*)notification
+{
+    NSNumber* yn = [notification object];
+
+    if ([yn boolValue] == YES)
+    {
+        [self performSelectorOnMainThread:@selector(presentTerrainProfile) withObject:nil waitUntilDone:NO];
+    }
+    else
+    {
+        [self performSelectorOnMainThread:@selector(dismissTerrainProfile) withObject:nil waitUntilDone:NO];
+    }
+}
+
+- (void) presentTerrainProfile
+{
+    [self.view bringSubviewToFront:terrainProfileView];
+
+    [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+    [UIView animateWithDuration:0.3 animations:^
+    {
+        [self.view removeConstraints:hideTerrainProfileConstraints];
+        [self.view addConstraints:showTerrainProfileConstraints];
+        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+    }];
+    [terrainProfileView setNeedsDisplay]; // TODO: Determine why this is needed to make the profile window visible
+}
+
+- (void) dismissTerrainProfile
+{
+    [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+    [UIView animateWithDuration:0.3 animations:^
+    {
+        [self.view removeConstraints:showTerrainProfileConstraints];
+        [self.view addConstraints:hideTerrainProfileConstraints];
+        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+        [terrainProfileView setNeedsDisplay];
+    }];
+    [terrainProfileView setNeedsDisplay]; // TODO: Determine why this is needed to make the profile window visible
+}
+
 - (void) createSimulationController
 {
     simulationViewController = [[SimulationViewController alloc] initWithWorldWindView:_wwv];
@@ -341,7 +423,7 @@
 
     // Dismiss the simulation view controller when the user taps its done button.
     [[simulationViewController doneControl] addTarget:self action:@selector(dismissSimulationController)
-                                     forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchUpOutside];
+                                     forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
 
     // Dismiss the simulation view controller when the user removes the simulated flight route.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteRemoved:)
@@ -354,7 +436,8 @@
     [simulationViewController setFlightRoute:flightRoute];
 
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 animations:^
+    {
         [self.view removeConstraints:hideSimulationViewConstraints];
         [self.view addConstraints:showSimulationViewConstraints];
         [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
@@ -366,7 +449,8 @@
     [simulationViewController setFlightRoute:nil];
 
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 animations:^
+    {
         [self.view removeConstraints:showSimulationViewConstraints];
         [self.view addConstraints:hideSimulationViewConstraints];
         [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
@@ -418,13 +502,13 @@
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
-//
-//    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-//            initWithImageName:@"309-thumbtack" text:@"Quick Views" size:size target:self action:@selector
-//            (handleButtonTap)]];
-//    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-//    [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
-//    [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
+
+    quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"309-thumbtack" text:@"Views" size:size target:self action:@selector
+            (handleViewsButton)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
     routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
@@ -444,8 +528,8 @@
             overlaysButton,
             flexibleSpace,
             splitViewButton,
-//            flexibleSpace,
-//            quickViewsButton,
+            flexibleSpace,
+            quickViewsButton,
             flexibleSpace,
             routePlanningButton,
             flexibleSpace,
@@ -557,6 +641,28 @@
     UIView* view = [self view];
     [view removeConstraints:isSplitView ? normalConstraints : splitViewConstraints];
     [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
+}
+
+- (void) handleViewsButton
+{
+//    [self presentTerrainProfile];
+    if (viewSelectionPopoverController == nil)
+    {
+        UINavigationController* navController = [[UINavigationController alloc]
+                initWithRootViewController:viewSelectionController];
+        [navController setDelegate:viewSelectionController];
+        viewSelectionPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
+    }
+
+    if ([viewSelectionPopoverController isPopoverVisible])
+    {
+        [viewSelectionPopoverController dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [viewSelectionPopoverController presentPopoverFromBarButtonItem:quickViewsButton
+                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
 }
 
 - (void) handleTap:(UITapGestureRecognizer*)recognizer

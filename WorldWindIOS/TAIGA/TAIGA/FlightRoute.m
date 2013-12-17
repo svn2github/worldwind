@@ -33,12 +33,12 @@ const float ShapePickRadius = 22.0;
     if (colors == nil)
     {
         colors = @[
-                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.035 b:0.329 a:1.0], @"displayName":@"Red"},
-                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.522 b:0.000 a:1.0], @"displayName":@"Orange"},
-                @{@"color":[[WWColor alloc] initWithR:1.000 g:0.776 b:0.000 a:1.0], @"displayName":@"Yellow"},
-                @{@"color":[[WWColor alloc] initWithR:0.310 g:0.851 b:0.129 a:1.0], @"displayName":@"Green"},
-                @{@"color":[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1.0], @"displayName":@"Blue"},
-                @{@"color":[[WWColor alloc] initWithR:0.757 g:0.325 b:0.863 a:1.0], @"displayName":@"Purple"}
+                @{@"color" : [[WWColor alloc] initWithR:1.000 g:0.035 b:0.329 a:1.0], @"displayName" : @"Red"},
+                @{@"color" : [[WWColor alloc] initWithR:1.000 g:0.522 b:0.000 a:1.0], @"displayName" : @"Orange"},
+                @{@"color" : [[WWColor alloc] initWithR:1.000 g:0.776 b:0.000 a:1.0], @"displayName" : @"Yellow"},
+                @{@"color" : [[WWColor alloc] initWithR:0.310 g:0.851 b:0.129 a:1.0], @"displayName" : @"Green"},
+                @{@"color" : [[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1.0], @"displayName" : @"Blue"},
+                @{@"color" : [[WWColor alloc] initWithR:0.757 g:0.325 b:0.863 a:1.0], @"displayName" : @"Purple"}
         ];
     }
 
@@ -164,7 +164,7 @@ const float ShapePickRadius = 22.0;
     }
 }
 
-- (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
+- (id <WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 {
     if (globe == nil)
     {
@@ -186,7 +186,7 @@ const float ShapePickRadius = 22.0;
     return [[WWBoundingSphere alloc] initWithPoints:waypointPoints];
 }
 
-- (void) positionForPercent:(double)pct result:(WWPosition*)result
+- (double) positionForPercent:(double)pct result:(WWPosition*)result
 {
     if (pct < 0 || pct > 1)
     {
@@ -202,8 +202,9 @@ const float ShapePickRadius = 22.0;
     if (waypointCount == 1)
     {
         [result setPosition:[waypointPositions firstObject]];
+        return 0;
     }
-    else if (waypointCount > 1)
+    else // if (waypointCount > 1)
     {
         double legDistance[waypointCount - 1];
         double routeDistance = 0;
@@ -228,13 +229,15 @@ const float ShapePickRadius = 22.0;
                 WWPosition* begin = [waypointPositions objectAtIndex:i];
                 WWPosition* end = [waypointPositions objectAtIndex:i + 1];
                 [WWPosition rhumbInterpolate:begin endPosition:end amount:legPct outputPosition:result];
-                return;
+                return [WWPosition rhumbAzimuth:begin endLocation:end];
             }
 
             remainingDistance -= legDistance[i];
         }
 
         [result setPosition:[waypointPositions lastObject]]; // location is at the last waypoint
+        return [WWPosition rhumbAzimuth:[waypointPositions objectAtIndex:waypointCount - 2]
+                            endLocation:[waypointPositions lastObject]];
     }
 }
 
@@ -367,7 +370,7 @@ const float ShapePickRadius = 22.0;
     [waypointShapes insertObject:shape atIndex:index];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
@@ -377,7 +380,7 @@ const float ShapePickRadius = 22.0;
     [waypointPath setPositions:waypointPositions];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:index]}];
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
@@ -392,7 +395,7 @@ const float ShapePickRadius = 22.0;
     [waypointShapes insertObject:shape atIndex:toIndex];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX:[NSNumber numberWithUnsignedInteger:toIndex]}];
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:toIndex]}];
 }
 
 @end
