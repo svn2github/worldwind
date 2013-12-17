@@ -8,7 +8,6 @@
 #import "WorldWind/Util/WWTile.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
-#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -375,6 +374,7 @@
     // terrain surface.
     double nearestLat = WWCLAMP([eyePos latitude], [_sector minLatitude], [_sector maxLatitude]);
     double nearestLon = WWCLAMP([eyePos longitude], [_sector minLongitude], [_sector maxLongitude]);
+    double minHeight = _minElevation * [dc verticalExaggeration];
     [globe computePointFromPosition:nearestLat longitude:nearestLon altitude:minHeight outputPoint:nearestPoint];
 
     // Compute the cell size and distance to the nearest point on the tile. Cell size is radius * radian texel size.
@@ -409,11 +409,13 @@
         // in this tile's coverage area. In the latter case the globe does not modify the result parameter.
         double extremes[2] = {0, 0};
         [globe minAndMaxElevationsForSector:_sector result:extremes];
+        _minElevation = extremes[0];
+        _maxElevation = extremes[1];
 
         // Multiply the minimum and maximum elevations by the scene's vertical exaggeration. This ensures that the
         // elevations to used build the terrain are contained by this tile's extent.
-        minHeight = extremes[0] * verticalExaggeration;
-        maxHeight = extremes[1] * verticalExaggeration;
+        double minHeight = _minElevation * verticalExaggeration;
+        double maxHeight = _maxElevation * verticalExaggeration;
         if (minHeight == maxHeight)
             minHeight = maxHeight + 10; // TODO: Determine if this is necessary.
 

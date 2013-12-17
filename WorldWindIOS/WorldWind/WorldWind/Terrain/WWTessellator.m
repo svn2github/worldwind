@@ -246,8 +246,10 @@
         [tile setElevations:elevations];
     }
 
-    // The min elevation is used to determine the necessary depth of the tile skirts.
-    double borderElevation = [_globe minElevation] * ve;
+    // Compute the tile's Cartesian vertices. The tile's min elevation is used to determine the necessary depth of the
+    // tile border. Use the tile's min elevation instead of the global min elevation in order to reduce tile border
+    // height. As of SVN revision 1768 this change reduces worst-case frame time for terrain rendering by ~20 ms.
+    double borderElevation = [tile minElevation] * ve;
     [_globe computePointsFromPositions:sector
                                 numLat:numLatVertices
                                 numLon:numLonVertices

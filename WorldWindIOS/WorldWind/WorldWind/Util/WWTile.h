@@ -32,8 +32,6 @@
     // Cache key used to retrieve the tile's children from a memory cache.
     NSString* tileKey;
     // Values used to update the tile's extent and determine when the tile needs to subdivide.
-    double minHeight;
-    double maxHeight;
     WWVec4* nearestPoint;
     // Values used to invalidate the tile's extent when the elevations or the vertical exaggeration changes.
     NSTimeInterval extentTimestamp;
@@ -57,8 +55,24 @@
 /// The tile's Cartesian bounding box.
 @property(nonatomic, readonly) WWBoundingBox* extent;
 
-/// The tile's local origin point. Any model coordinate points created for the tile should be relative to this point.
+/// The tile's local origin point in model coordinates.
+///
+/// Any model coordinate points associated with the tile should be relative to this point. The local origin point
+/// depends on the elevation data currently in memory, and is not guaranteed to have a meaningful result until after
+/// [WWTile update:] has been called for a given frame.
 @property(nonatomic, readonly) WWVec4* referencePoint;
+
+/// The minimum elevation value in the tile's sector.
+///
+/// The minimum elevation depends on the elevation data currently in memory, and is not guaranteed to have a meaningful
+/// result until after [WWTile update:] has been called for a given frame.
+@property(nonatomic, readonly) double minElevation;
+
+/// The maximum elevation value in the tile's sector.
+///
+/// The maximum elevation depends on the elevation data currently in memory, and is not guaranteed to have a meaningful
+/// result until after [WWTile update:] has been called for a given frame.
+@property(nonatomic, readonly) double maxElevation;
 
 /**
 * Indicates the width in pixels or cells of this tile's resource.
@@ -241,15 +255,16 @@
 /// @name Operations on Tiles
 
 /**
-* Updates this tile's extent (bounding volume) and reference points according to this tile's sector on the current
-* globe.
+* Updates this tile's frame-dependent properties according to the specified draw context.
 *
-* This tile's extent is invalid and must be recomputed whenever the globe's elevations or the vertical exaggeration
-* changes. Therefore updateExtent must be called once per frame before the extent is used. updateExtent intelligently
-* determines when it is necessary to recompute the extent, and does nothing if the elevations or the vertical
-* exaggeration have not changed since the last call.
+* The tile's frame-dependent properties include the extent (bounding volume), referencePoint, minElevation and
+* maxElevation. These properties are dependent on the tile's sector and the elevation values currently in memory, and
+* change when the globe's elevations change or when the scene's vertical exaggeration changes. Therefore updateExtent:
+* must be called once per frame before these properties are used. updateExtent: intelligently determines when it is
+* necessary to recompute these properties, and does nothing if the elevations or the vertical exaggeration have not
+* changed since the last call.
 *
-* @param dc The draw context used to update this tile's extent and reference points.
+* @param dc The draw context used to update this tile's frame-dependent properties.
 */
 - (void) update:(WWDrawContext*)dc;
 
