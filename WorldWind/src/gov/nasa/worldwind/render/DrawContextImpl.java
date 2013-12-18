@@ -1277,6 +1277,16 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             return;
         }
 
+        // Optimize the outline-only case.
+        if (renderer.isDrawOutline(this, shape) && !renderer.isDrawInterior(this, shape))
+        {
+            gl.glColorMask(true, true, true, true);
+            gl.glDepthMask(true);
+
+            renderer.drawOutline(this, shape);
+            return;
+        }
+
         OGLStackHandler ogsh = new OGLStackHandler();
         int attribMask = GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT;
         ogsh.pushAttrib(gl, attribMask);
