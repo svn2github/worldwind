@@ -6,6 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 #import "WorldWind/Render/WWRenderable.h"
 
 @class Waypoint;
@@ -24,6 +25,7 @@
     NSMutableArray* waypointShapes;
     WWPath* waypointPath;
     WWShapeAttributes* shapeAttrs;
+    WWPosition* currentPosition;
 }
 
 + (NSArray*) flightRouteColors;
@@ -47,7 +49,11 @@
 
 - (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 
-- (double) positionForPercent:(double)pct result:(WWPosition*)result;
+- (void) locationForPercent:(double)pct
+                   latitude:(CLLocationDegrees*)latitude
+                  longitude:(CLLocationDegrees*)longitude
+                   altitude:(CLLocationDistance*)altitude
+                     course:(CLLocationDirection*)course;
 
 - (NSUInteger) waypointCount;
 

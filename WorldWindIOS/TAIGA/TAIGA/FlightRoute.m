@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "FlightRoute.h"
 #import "Waypoint.h"
 #import "AppConstants.h"
@@ -55,6 +56,7 @@ const float ShapePickRadius = 22.0;
     _colorIndex = 0;
 
     waypoints = [[NSMutableArray alloc] initWithCapacity:8];
+    currentPosition = [[WWPosition alloc] initWithZeroPosition];
     [self initShapes];
 
     return self;
@@ -70,6 +72,7 @@ const float ShapePickRadius = 22.0;
     _colorIndex = 0;
 
     waypoints = [[NSMutableArray alloc] initWithArray:waypointArray];
+    currentPosition = [[WWPosition alloc] initWithZeroPosition];
     [self initShapes];
 
     return self;
@@ -186,23 +189,25 @@ const float ShapePickRadius = 22.0;
     return [[WWBoundingSphere alloc] initWithPoints:waypointPoints];
 }
 
-- (double) positionForPercent:(double)pct result:(WWPosition*)result
+- (void) locationForPercent:(double)pct
+                   latitude:(CLLocationDegrees*)latitude
+                  longitude:(CLLocationDegrees*)longitude
+                   altitude:(CLLocationDistance*)altitude
+                     course:(CLLocationDirection*)course
 {
     if (pct < 0 || pct > 1)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Percent is invalid")
     }
 
-    if (result == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Result is nil")
-    }
-
     NSUInteger waypointCount = [waypointPositions count];
     if (waypointCount == 1)
     {
-        [result setPosition:[waypointPositions firstObject]];
-        return 0;
+        WWPosition* pos = [waypointPositions firstObject];
+        *latitude = [pos latitude];
+        *longitude = [pos longitude];
+        *altitude = [pos altitude];
+        *course = 0;
     }
     else // if (waypointCount > 1)
     {
@@ -228,16 +233,24 @@ const float ShapePickRadius = 22.0;
                 double legPct = remainingDistance / legDistance[i];
                 WWPosition* begin = [waypointPositions objectAtIndex:i];
                 WWPosition* end = [waypointPositions objectAtIndex:i + 1];
-                [WWPosition rhumbInterpolate:begin endPosition:end amount:legPct outputPosition:result];
-                return [WWPosition rhumbAzimuth:begin endLocation:end];
+                [WWPosition rhumbInterpolate:begin endPosition:end amount:legPct outputPosition:currentPosition];
+                *latitude = [currentPosition latitude];
+                *longitude = [currentPosition longitude];
+                *altitude = [currentPosition altitude];
+                *course = [WWPosition rhumbAzimuth:begin endLocation:end];
+                return;
             }
 
             remainingDistance -= legDistance[i];
         }
 
-        [result setPosition:[waypointPositions lastObject]]; // location is at the last waypoint
-        return [WWPosition rhumbAzimuth:[waypointPositions objectAtIndex:waypointCount - 2]
-                            endLocation:[waypointPositions lastObject]];
+        // location is at the last waypoint
+        WWPosition* begin = [waypointPositions objectAtIndex:i - 1];
+        WWPosition* end = [waypointPositions objectAtIndex:i];
+        *latitude = [end latitude];
+        *longitude = [end longitude];
+        *altitude = [end altitude];
+        *course = [WWPosition rhumbAzimuth:begin endLocation:end];
     }
 }
 

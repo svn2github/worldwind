@@ -5,17 +5,18 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "SimulationViewController.h"
 #import "AircraftMarker.h"
 #import "AppConstants.h"
 #import "FlightRoute.h"
 #import "RedrawingSlider.h"
 #import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
-#import "AircraftPosition.h"
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- AircraftSlider --//
@@ -96,35 +97,54 @@ static const CGFloat AircraftSliderHeight = 4;
     }
 }
 
+- (void) postAircraftPosition
+{
+    CLLocationCoordinate2D coordinate;
+    CLLocationDistance altitude;
+    CLLocationDirection course;
+    NSDate* now = [NSDate date];
+
+    [_flightRoute locationForPercent:[aircraftSlider value]
+                            latitude:&coordinate.latitude
+                           longitude:&coordinate.longitude
+                            altitude:&altitude
+                              course:&course];
+
+    CLLocation* location = [[CLLocation alloc] initWithCoordinate:coordinate
+                                                         altitude:altitude
+                                               horizontalAccuracy:0
+                                                 verticalAccuracy:0
+                                                           course:course
+                                                            speed:0
+                                                        timestamp:now];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION object:location];
+
+    [[aircraftMarker position] setCLLocation:location altitude:altitude];
+}
+
 //--------------------------------------------------------------------------------------------------------------------//
 //-- View Control Events --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (void) handleAircraftSlider
 {
-    double pct = [aircraftSlider value];
-    double heading = [_flightRoute positionForPercent:pct result:[aircraftMarker position]];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION
-                                                        object:[[AircraftPosition alloc] initWithPosition:[aircraftMarker position]
-                                                                                                  heading:heading]];
+    // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
+    // aircraft slider value.
+    [self postAircraftPosition];
 }
 
 - (void) handleFightRouteChanged
 {
-    // Set the title label to the flight route display name + " Simulation". This sets the title to nil if the flight
-    // route is nil.
+    // Set the title label to the flight route display name + " Simulation", or nil if the flight route is nil.
     [titleLabel setText:[[_flightRoute displayName] stringByAppendingString:@" Simulation"]];
 
-    // Set the aircraft marker's position to the percentage along the flight route corresponding to the current aircraft
-    // slider value. This has no effect on the aircraft marker if the flight route is nil. Disable the simulation layer
-    // if the flight route is nil or has no waypoints.
-    double heading =[_flightRoute positionForPercent:[aircraftSlider value] result:[aircraftMarker position]];
+    // Disable the simulation layer if the flight route is nil or has no waypoints.
     [simulationLayer setEnabled:_flightRoute != nil && [_flightRoute waypointCount] > 0];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION
-                                                        object:[[AircraftPosition alloc] initWithPosition:[aircraftMarker position]
-                                                                                                  heading:heading]];
+    // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
+    // aircraft slider value.
+    [self postAircraftPosition];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }

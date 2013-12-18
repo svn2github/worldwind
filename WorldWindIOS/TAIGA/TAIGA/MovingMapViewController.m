@@ -45,7 +45,6 @@
 #import "SimulationViewController.h"
 #import "TerrainProfileView.h"
 #import "ViewSelectionController.h"
-#import "AircraftPosition.h"
 
 @implementation MovingMapViewController
 {
