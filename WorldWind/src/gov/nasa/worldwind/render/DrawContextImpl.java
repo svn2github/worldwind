@@ -1280,9 +1280,6 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         // Optimize the outline-only case.
         if (renderer.isDrawOutline(this, shape) && !renderer.isDrawInterior(this, shape))
         {
-            gl.glColorMask(true, true, true, true);
-            gl.glDepthMask(true);
-
             renderer.drawOutline(this, shape);
             return;
         }
