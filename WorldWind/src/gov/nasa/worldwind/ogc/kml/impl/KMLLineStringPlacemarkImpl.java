@@ -182,7 +182,8 @@ public class KMLLineStringPlacemarkImpl extends Path implements KMLRenderable
                 attrs.setUnresolved(true);
 
             attrs.setDrawInterior(((KMLPolyStyle) fillSubStyle).isFill());
-            attrs.setDrawOutline(((KMLPolyStyle) fillSubStyle).isOutline());
+            if (this.isExtrude())
+                attrs.setDrawOutline(((KMLPolyStyle) fillSubStyle).isOutline());
         }
 
         return attrs;
