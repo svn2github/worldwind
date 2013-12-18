@@ -14,7 +14,6 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.*;
 import java.awt.*;
 import java.awt.geom.*;
-import java.util.*;
 import java.util.List;
 
 /**
@@ -35,7 +34,6 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
     private boolean maintainSize = false;
     private double maxSize = Double.MAX_VALUE;      // Meter
     private double minSize = .1;                    // Meter
-    protected Map<Globe, SectorInfo> sectorCache = new HashMap<Globe, SectorInfo>();
 
     protected WWTexture texture;
     protected int imageWidth = 32;
@@ -382,23 +380,19 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
             throw new IllegalArgumentException(message);
         }
 
-        if (this.isMaintainAppearance())
-            return this.computeSectors(dc);
+        return this.computeSectors(dc);
+    }
 
-        // If the icon does not redraw all the time, then cache it's sector, using texelSize and last modified time as
-        // keys which uniquely identify the icon's sector.
+    public Extent getExtent(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
 
-        SectorInfo info = this.sectorCache.get(dc.getGlobe());
-        if (info != null && info.isValid(dc))
-        {
-            return info.sectors;
-        }
-        else
-        {
-            info = new SectorInfo(this.computeSectors(dc), dc);
-            this.sectorCache.put(dc.getGlobe(), info);
-            return info.sectors;
-        }
+        return this.computeExtent(dc);
     }
 
     public void drawGeographic(DrawContext dc, SurfaceTileDrawContext sdc)
@@ -449,7 +443,6 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
     protected void clearCaches()
     {
         super.clearCaches();
-        this.sectorCache.clear();
     }
 
     protected List<Sector> computeSectors(DrawContext dc)
