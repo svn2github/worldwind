@@ -84,6 +84,7 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Repaired non-scoped abstract method declaration in RigidShape class.
 - Added Angle formatting for degrees and decimal minutes. Added degrees and decimal minutes option to LatLonGraticule.
 - Modified shapefile loading to recognize the HGT attribute field as a height and create extruded polygons as a result.
+- Repaired KML LineString but described in forum post http://forum.worldwindcentral.com/showthread.php?41174
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
