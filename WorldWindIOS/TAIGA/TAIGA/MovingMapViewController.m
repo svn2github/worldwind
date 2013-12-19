@@ -440,17 +440,33 @@
 
 - (void) presentSimulationControllerWithFlightRoute:(FlightRoute*)flightRoute
 {
-    [simulationViewController setFlightRoute:flightRoute];
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SIMULATION_DID_BEGIN object:flightRoute];
-
-    [self.view bringSubviewToFront:[simulationViewController view]];
-    [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
-    [UIView animateWithDuration:0.3 animations:^
+    if ([simulationViewController flightRoute] == nil) // start simulation with the flight route
     {
-        [self.view removeConstraints:hideSimulationViewConstraints];
-        [self.view addConstraints:showSimulationViewConstraints];
-        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
-    }];
+        [simulationViewController setFlightRoute:flightRoute];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SIMULATION_DID_BEGIN object:flightRoute];
+
+        [self.view bringSubviewToFront:[simulationViewController view]];
+        [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+        [UIView animateWithDuration:0.3 animations:^
+        {
+            [self transitionSimulationController:YES];
+        }];
+    }
+    else if ([simulationViewController flightRoute] != flightRoute) // switch simulated flight routes
+    {
+        [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+        [UIView animateWithDuration:0.3 animations:^
+        {
+            [self transitionSimulationController:NO];
+        } completion:^(BOOL finished)
+        {
+            [simulationViewController setFlightRoute:flightRoute];
+            [UIView animateWithDuration:0.3 animations:^
+            {
+                [self transitionSimulationController:YES];
+            }];
+        }];
+    }
 }
 
 - (void) dismissSimulationController
@@ -458,14 +474,19 @@
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.
     [UIView animateWithDuration:0.3 animations:^
     {
-        [self.view removeConstraints:showSimulationViewConstraints];
-        [self.view addConstraints:hideSimulationViewConstraints];
-        [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+        [self transitionSimulationController:NO];
     } completion:^(BOOL finished)
     {
         [simulationViewController setFlightRoute:nil];
         [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SIMULATION_DID_END object:nil];
     }];
+}
+
+- (void) transitionSimulationController:(BOOL)visible
+{
+    [self.view removeConstraints:visible ? hideSimulationViewConstraints : showSimulationViewConstraints];
+    [self.view addConstraints:visible ? showSimulationViewConstraints : hideSimulationViewConstraints];
+    [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
 }
 
 - (void) handleFlightRouteRemoved:(NSNotification*)notification
@@ -818,10 +839,7 @@
 
 - (void) selectFlightRoute:(FlightRoute*)flightRoute
 {
-    if ([simulationViewController flightRoute] == nil) // no flight route currently selected
-    {
-        [self presentSimulationControllerWithFlightRoute:flightRoute];
-    }
+    [self presentSimulationControllerWithFlightRoute:flightRoute];
 }
 
 @end
