@@ -99,6 +99,9 @@ static const CGFloat AircraftSliderHeight = 4;
 
 - (void) postAircraftPosition
 {
+    if (_flightRoute == nil)
+        return;
+
     CLLocationCoordinate2D coordinate;
     CLLocationDistance altitude;
     CLLocationDirection course;

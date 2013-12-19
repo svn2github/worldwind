@@ -5,6 +5,7 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "MovingMapViewController.h"
 #import "WorldWind.h"
 #import "WorldWindView.h"
@@ -110,17 +111,17 @@
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
-//
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showCurrentPositionNotification:)
-//                                                 name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
+
+    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showCurrentPositionNotification:)
+    //                                             name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
 
     return self;
 }
 
 - (void) showCurrentPositionNotification:(NSNotification*)notification
 {
-//    AircraftPosition* ap = [notification object];
-//    NSLog(@"%f, %f, %f, %f", [ap latitude], [ap longitude], [ap altitude], [ap heading]);
+    //CLLocation* ap = [notification object];
+    //NSLog(@"%f, %f, %f, %f", [ap coordinate].latitude, [ap coordinate].longitude, ap.altitude, ap.course);
 }
 
 - (void) loadView
