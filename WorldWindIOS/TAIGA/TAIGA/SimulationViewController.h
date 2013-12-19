@@ -7,11 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class AircraftMarker;
 @class FlightRoute;
-@class RedrawingSlider;
-@class WWPosition;
-@class WWRenderableLayer;
 @class WorldWindView;
 
 @interface SimulationViewController : UIViewController
@@ -20,8 +16,6 @@
     UIButton* doneButton;
     UILabel* titleLabel;
     UISlider* aircraftSlider;
-    AircraftMarker* aircraftMarker;
-    WWRenderableLayer* simulationLayer;
 }
 
 @property (nonatomic, readonly) UIControl* doneControl;

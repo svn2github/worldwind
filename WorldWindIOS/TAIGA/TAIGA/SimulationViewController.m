@@ -7,14 +7,10 @@
 
 #import <CoreLocation/CoreLocation.h>
 #import "SimulationViewController.h"
-#import "AircraftMarker.h"
+#import "AircraftLayer.h"
 #import "AppConstants.h"
 #import "FlightRoute.h"
 #import "RedrawingSlider.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 
@@ -56,14 +52,6 @@ static const CGFloat AircraftSliderHeight = 4;
     self = [super initWithNibName:nil bundle:nil];
 
     _wwv = wwv;
-
-    simulationLayer = simulationLayer = [[WWRenderableLayer alloc] init];
-    [[simulationLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [simulationLayer setEnabled:NO];
-    [[[_wwv sceneController] layers] addLayer:simulationLayer];
-
-    aircraftMarker = [[AircraftMarker alloc] init];
-    [simulationLayer addRenderable:aircraftMarker];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
                                                  name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
@@ -122,8 +110,6 @@ static const CGFloat AircraftSliderHeight = 4;
                                                         timestamp:now];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION object:location];
-
-    [[aircraftMarker position] setCLLocation:location altitude:altitude];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -141,9 +127,6 @@ static const CGFloat AircraftSliderHeight = 4;
 {
     // Set the title label to the flight route display name + " Simulation", or nil if the flight route is nil.
     [titleLabel setText:[[_flightRoute displayName] stringByAppendingString:@" Simulation"]];
-
-    // Disable the simulation layer if the flight route is nil or has no waypoints.
-    [simulationLayer setEnabled:_flightRoute != nil && [_flightRoute waypointCount] > 0];
 
     // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
     // aircraft slider value.

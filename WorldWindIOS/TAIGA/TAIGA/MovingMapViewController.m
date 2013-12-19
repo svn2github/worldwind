@@ -5,7 +5,6 @@
  @version $Id$
  */
 
-#import <CoreLocation/CoreLocation.h>
 #import "MovingMapViewController.h"
 #import "WorldWind.h"
 #import "WorldWindView.h"
@@ -46,6 +45,7 @@
 #import "SimulationViewController.h"
 #import "TerrainProfileView.h"
 #import "ViewSelectionController.h"
+#import "AircraftLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -92,6 +92,7 @@
 
     WaypointFile* waypointFile;
     WaypointLayer* waypointLayer;
+    AircraftLayer* aircraftLayer;
     WWRenderableLayer* flightRouteLayer;
     FlightRouteListController* flightRouteController;
     UIPopoverController* flightRoutePopoverController;
@@ -243,6 +244,10 @@
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
+
+    aircraftLayer = [[AircraftLayer alloc] init];
+    [[aircraftLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [layers addLayer:aircraftLayer];
 
     flightRouteLayer = [[WWRenderableLayer alloc] init];
     [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
