@@ -22,6 +22,8 @@
 #define TAIGA_SHADED_ELEVATION_OPACITY (@"gov.nasa.worldwind.taiga.shadedelevation.opacity")
 #define TAIGA_SHADED_ELEVATION_THRESHOLD_RED (@"gov.nasa.worldwind.taiga.shadedelevation.threshold.red")
 #define TAIGA_SHOW_TERRAIN_PROFILE (@"gov.nasa.worldwind.taiga.terrainprofile.show")
+#define TAIGA_SIMULATION_DID_BEGIN (@"gov.nasa.worldwind.taiga.simulationdidbegin")
+#define TAIGA_SIMULATION_DID_END (@"gov.nasa.worldwind.taiga.simulationdidend")
 
 @interface AppConstants : NSObject
 @end
