@@ -20,42 +20,8 @@
 #import "WorldWind/WorldWindConstants.h"
 
 static const NSString* AircraftShapeVerticesKey = @"AircraftShape.VerticesKey";
-static const GLsizei AircraftShapeVertexCount = 8;
-static const GLsizei AircraftShapeVerticesSize = 3 * sizeof(GLfloat) * AircraftShapeVertexCount;
-static const GLfloat AircraftShapeVertices[] =
-        {
-                0.0, 1.0/2.0, 1.0/12.0,
-                -1.0/3.0, -1.0/2.0, 1.0/12.0,
-                0.0, -1.0/6.0, 1.0/12.0,
-                1.0/3.0, -1.0/2.0, 1.0/12.0,
-                0.0, 1.0/2.0, -1.0/12.0,
-                -1.0/3.0, -1.0/2.0, -1.0/12.0,
-                0.0, -1.0/6.0, -1.0/12.0,
-                1.0/3.0, -1.0/2.0, -1.0/12.0
-        };
-
-static const NSString* AircraftShapeInteriorIndicesKey = @"AircraftShape.InteriorIndicesKey";
-static const GLsizei AircraftShapeInteriorIndexCount = 36;
-static const GLsizei AircraftShapeInteriorIndicesSize = sizeof(GLushort) * AircraftShapeInteriorIndexCount;
-static const GLushort AircraftShapeInteriorIndices[] =
-        {
-                0, 1, 2, 2, 3, 0, // top
-                4, 7, 6, 6, 5, 4, // bottom
-                0, 4, 5, 5, 1, 0, // left
-                3, 7, 4, 4, 0, 3, // right
-                1, 5, 6, 6, 2, 1, // back left
-                2, 6, 7, 7, 3, 2  // back right
-        };
-
-static const NSString* AircraftShapeOutlineIndicesKey = @"AircraftShape.OutlineIndicesKey";
-static const GLsizei AircraftShapeOutlineIndexCount = 24;
-static const GLsizei AircraftShapeOutlineIndicesSize = sizeof(GLushort) * AircraftShapeOutlineIndexCount;
-static const GLushort AircraftShapeOutlineIndices[] =
-        {
-                0, 1, 1, 2, 2, 3, 3, 0, // top
-                4, 5, 5, 6, 6, 7, 7, 4, // bottom
-                0, 4, 1, 5, 2, 6, 3, 7  // top-to-bottom
-        };
+static const GLfloat AircraftShapeVertices[] = {0.0, 0.5, -0.35, -0.5, 0.35, -0.5};
+static const GLsizei AircraftShapeVertexCount = 3;
 
 @implementation AircraftShape
 
@@ -195,13 +161,14 @@ static const GLushort AircraftShapeOutlineIndices[] =
     if (verticesVboId == nil)
     {
         GLuint vboId;
+        GLsizei vboSize = 2 * sizeof(GLfloat) * AircraftShapeVertexCount;
         glGenBuffers(1, &vboId);
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, AircraftShapeVerticesSize, AircraftShapeVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vboSize, AircraftShapeVertices, GL_STATIC_DRAW);
         verticesVboId = [[NSNumber alloc] initWithInt:vboId];
         [[dc gpuResourceCache] putResource:verticesVboId
                               resourceType:WW_GPU_VBO
-                                      size:AircraftShapeVerticesSize
+                                      size:vboSize
                                     forKey:AircraftShapeVerticesKey];
     }
     else
@@ -210,53 +177,17 @@ static const GLushort AircraftShapeOutlineIndices[] =
     }
 
     WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
-    glVertexAttribPointer([program vertexPointLocation], 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer([program vertexPointLocation], 2, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc
 {
-    NSNumber* indicesVboId = (NSNumber*) [[dc gpuResourceCache] resourceForKey:AircraftShapeInteriorIndicesKey];
-    if (indicesVboId == nil)
-    {
-        GLuint vboId;
-        glGenBuffers(1, &vboId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, AircraftShapeInteriorIndicesSize, AircraftShapeInteriorIndices, GL_STATIC_DRAW);
-        indicesVboId = [[NSNumber alloc] initWithInt:vboId];
-        [[dc gpuResourceCache] putResource:indicesVboId
-                              resourceType:WW_GPU_VBO
-                                      size:AircraftShapeInteriorIndicesSize
-                                    forKey:AircraftShapeInteriorIndicesKey];
-    }
-    else
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) [indicesVboId intValue]);
-    }
-
-    glDrawElements(GL_TRIANGLES, AircraftShapeInteriorIndexCount, GL_UNSIGNED_SHORT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, AircraftShapeVertexCount);
 }
 
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
-    NSNumber* indicesVboId = (NSNumber*) [[dc gpuResourceCache] resourceForKey:AircraftShapeOutlineIndicesKey];
-    if (indicesVboId == nil)
-    {
-        GLuint vboId;
-        glGenBuffers(1, &vboId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, AircraftShapeOutlineIndicesSize, AircraftShapeOutlineIndices, GL_STATIC_DRAW);
-        indicesVboId = [[NSNumber alloc] initWithInt:vboId];
-        [[dc gpuResourceCache] putResource:indicesVboId
-                              resourceType:WW_GPU_VBO
-                                      size:AircraftShapeOutlineIndicesSize
-                                    forKey:AircraftShapeOutlineIndicesKey];
-    }
-    else
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) [indicesVboId intValue]);
-    }
-
-    glDrawElements(GL_LINES, AircraftShapeOutlineIndexCount, GL_UNSIGNED_SHORT, 0);
+    glDrawArrays(GL_LINE_LOOP, 0, AircraftShapeVertexCount);
 }
 
 @end

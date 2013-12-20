@@ -48,7 +48,7 @@
     [shapeAttrs setOutlineColor:[[WWColor alloc] initWithR:1 g:1 b:1 a:1]];
     [shapeAttrs setOutlineWidth:2];
 
-    AircraftShape* shape = [[AircraftShape alloc] initWithSizeInPixels:40 minSize:10 maxSize:DBL_MAX];
+    AircraftShape* shape = [[AircraftShape alloc] initWithSizeInPixels:30 minSize:10 maxSize:DBL_MAX];
     [shape setAttributes:shapeAttrs];
 
     return shape;
