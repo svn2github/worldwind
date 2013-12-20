@@ -10,17 +10,25 @@
 #import "WWGlobe.h"
 #import "WorldWindView.h"
 #import "WWSceneController.h"
+#import "AppConstants.h"
 
 #define NUM_INTERNAL_SEGMENTS (20)
+#define BOTTOM_MARGIN (20)
+#define TRI_HEIGHT (30)
+#define TRI_HALF_WIDTH (12)
+#define AXIS_LABEL_Y (175)
 
 @implementation TerrainProfileView
 {
     int numPoints;
     float* xs;
     float* ys;
-    UILabel* minLabel;
+//    UILabel* minLabel;
     UILabel* maxLabel;
-    UILabel* crosshairLabel;
+    UILabel* leftLabelView;
+    UILabel* centerLabelView;
+    UILabel* rightLabelView;
+    UILabel* aircraftAltitudeLabelView;
     float* gradientColors;
 }
 
@@ -30,6 +38,8 @@
 
     _wwv = worldWindView;
     [_wwv addDelegate:self];
+
+    _maxAltitude = 100;
 
     xs = nil;
     ys = nil;
@@ -63,27 +73,50 @@
 
     [self setBackgroundColor:[UIColor clearColor]];
     [self setUserInteractionEnabled:NO];
+//
+//    minLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, frame.size.height - 22, frame.size.width, 30)];
+//    [minLabel setTextColor:[UIColor whiteColor]];
+//    [minLabel setTextAlignment:NSTextAlignmentCenter];
+//    [minLabel setShadowColor:[UIColor blackColor]];
+//    [minLabel setShadowOffset:CGSizeMake(1, 1)];
+//    [self addSubview:minLabel];
 
-    minLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, frame.size.height - 22, frame.size.width, 30)];
-    [minLabel setTextColor:[UIColor whiteColor]];
-    [minLabel setTextAlignment:NSTextAlignmentCenter];
-    [minLabel setShadowColor:[UIColor blackColor]];
-    [minLabel setShadowOffset:CGSizeMake(1, 1)];
-    [self addSubview:minLabel];
-
-    maxLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    maxLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 400, 30)];
     [maxLabel setTextColor:[UIColor whiteColor]];
     [maxLabel setTextAlignment:NSTextAlignmentLeft];
     [maxLabel setShadowColor:[UIColor blackColor]];
     [maxLabel setShadowOffset:CGSizeMake(1, 1)];
     [self addSubview:maxLabel];
 
-    crosshairLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
-    [crosshairLabel setTextColor:[UIColor whiteColor]];
-    [crosshairLabel setTextAlignment:NSTextAlignmentLeft];
-    [crosshairLabel setShadowColor:[UIColor blackColor]];
-    [crosshairLabel setShadowOffset:CGSizeMake(1, 1)];
-    [self addSubview:crosshairLabel];
+    leftLabelView = [[UILabel alloc] initWithFrame:CGRectMake(5, AXIS_LABEL_Y, 100, 30)];
+    [leftLabelView setTextColor:[UIColor whiteColor]];
+    [leftLabelView setTextAlignment:NSTextAlignmentLeft];
+    [leftLabelView setShadowColor:[UIColor blackColor]];
+    [leftLabelView setShadowOffset:CGSizeMake(1, 1)];
+    [self addSubview:leftLabelView];
+
+    centerLabelView = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    [centerLabelView setTextColor:[UIColor whiteColor]];
+    [centerLabelView setTextAlignment:NSTextAlignmentLeft];
+    [centerLabelView setShadowColor:[UIColor blackColor]];
+    [centerLabelView setShadowOffset:CGSizeMake(1, 1)];
+    [self addSubview:centerLabelView];
+
+    rightLabelView = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    [rightLabelView setTextColor:[UIColor whiteColor]];
+    [rightLabelView setTextAlignment:NSTextAlignmentLeft];
+    [rightLabelView setShadowColor:[UIColor blackColor]];
+    [rightLabelView setShadowOffset:CGSizeMake(1, 1)];
+    [self addSubview:rightLabelView];
+
+    aircraftAltitudeLabelView = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 30)];
+    [aircraftAltitudeLabelView setTextColor:[UIColor whiteColor]];
+    [aircraftAltitudeLabelView setTextAlignment:NSTextAlignmentLeft];
+    [aircraftAltitudeLabelView setShadowColor:[UIColor blackColor]];
+    [aircraftAltitudeLabelView setShadowOffset:CGSizeMake(1, 1)];
+    [self addSubview:aircraftAltitudeLabelView];
+
+    [self setUserInteractionEnabled:YES];
 
     return self;
 }
@@ -172,23 +205,27 @@
                 xs[n] = xs[n - 1] + (float) ds;
 
             [WWLocation greatCircleLocation:posA azimuth:azimuth distance:j * ds outputLocation:pos];
-            ys[n++] = 3.280839895f * (float) [globe elevationForLatitude:pos.latitude longitude:pos.longitude];
+            ys[n++] = (float) [globe elevationForLatitude:pos.latitude longitude:pos.longitude];
         }
     }
 }
 
 - (void) drawRect:(CGRect)rect
 {
+    if (!_enabled)
+        return;
+
     [self computeProfile];
 
     CGContextRef context = UIGraphicsGetCurrentContext();
-    [[UIColor redColor] set];
+    [[UIColor colorWithWhite:0.8 alpha:0.95] set];
     CGContextFillRect(context, rect);
 
     if (numPoints < 2)
         return;
 
     CGRect frame = CGRectMake(0, 0, [self frame].size.width, [self frame].size.height);
+    float graphYMax = frame.size.height - BOTTOM_MARGIN;
 
     float xMin = xs[0];
     float xMax = xs[numPoints - 1];
@@ -198,8 +235,8 @@
 
     for (int i = 0; i < numPoints; i++)
     {
-        if (ys[i] < yMin)
-            yMin = ys[i];
+//        if (ys[i] < yMin)
+//            yMin = ys[i];
         if (ys[i] > yMax)
         {
             yMax = ys[i];
@@ -207,26 +244,28 @@
         }
     }
 
-    float dx = xMax - xMin;
-    float dy = yMax - yMin;
+    float xRange = xMax - xMin;
+    float yRange = _maxAltitude - yMin;
 
-    float firstY = frame.size.height * (1 - (ys[0] - yMin) / dy);
+    float firstY = graphYMax * (1 - (ys[0] - yMin) / yRange);
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0, firstY);
 
     for (int i = 0; i < numPoints; i++)
     {
-        float x = frame.size.width * (xs[i] - xMin) / dx;
-        float y = frame.size.height * (1 - (ys[i] - yMin) / dy);
+        float x = frame.size.width * (xs[i] - xMin) / xRange;
+        float y = graphYMax * (1 - (ys[i] - yMin) / yRange);
         CGContextAddLineToPoint(context, x, y);
     }
 
-    // Add the bottom of the graph.
-    CGContextAddLineToPoint(context, frame.size.width, frame.size.height);
-    CGContextAddLineToPoint(context, 0, frame.size.height);
-    CGContextAddLineToPoint(context, 0, firstY);
+    // Add the side and bottom edges of the graph.
+    CGContextAddLineToPoint(context, frame.size.width, graphYMax); // right side
+    CGContextAddLineToPoint(context, 0, graphYMax); // bottom
+    CGContextAddLineToPoint(context, 0, firstY); // left side
+    CGContextClosePath(context);
 
+    CGContextSaveGState(context);
     CGContextClip(context);
 
     if (_warningAltitude > yMax)
@@ -236,64 +275,108 @@
     }
     else if (_dangerAltitude > yMax)
     {
-        float y0 = 1.0 - (_warningAltitude - yMin) / dy;
+        float y0 = 1.0 - (_warningAltitude - yMin) / yRange;
         CGFloat locations[3] = {1.0, y0 + 0.03, y0};
         CGGradientRef gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), gradientColors, locations, 3);
-        CGContextDrawLinearGradient(context, gradient, CGPointMake(0, 0), CGPointMake(0, frame.size.height),
+        CGContextDrawLinearGradient(context, gradient, CGPointMake(0, 0), CGPointMake(0, graphYMax),
                 kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
         CGGradientRelease(gradient);
     }
     else
     {
-        float y0 = 1.0 - (_warningAltitude - yMin) / dy;
-        float r0 = 1.0 - (_dangerAltitude - yMin) / dy;
+        float y0 = 1.0 - (_warningAltitude - yMin) / yRange;
+        float r0 = 1.0 - (_dangerAltitude - yMin) / yRange;
         CGFloat locations[6] = {1.0, y0 + 0.03, y0, r0 + 0.03, r0, 0.0};
         CGGradientRef gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), gradientColors, locations, 6);
-        CGContextDrawLinearGradient(context, gradient, CGPointMake(0, 0), CGPointMake(0, frame.size.height),
+        CGContextDrawLinearGradient(context, gradient, CGPointMake(0, 0), CGPointMake(0, graphYMax),
                 kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
         CGGradientRelease(gradient);
     }
 
+    CGContextRestoreGState(context); // eliminate the clip path set above
+
+    // Draw a line at the bottom of the profile to separate it from the simulator controls.
+    [[UIColor blackColor] setStroke];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, 0, frame.size.height);
+    CGContextAddLineToPoint(context, frame.size.width, frame.size.height);
+    CGContextStrokePath(context);
+
+    // Draw the horizontal axis.
+    [[UIColor blackColor] setStroke];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, 0, graphYMax);
+    CGContextAddLineToPoint(context, frame.size.width, graphYMax);
+    CGContextStrokePath(context);
+
+    // Show the aircraft altitude.
+    float aircraftY = graphYMax * (1 - (_aircraftAltitude - yMin) / yRange);
+
+    NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
+    [attrDict setObject:[aircraftAltitudeLabelView font] forKey:NSFontAttributeName];
+    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) (_aircraftAltitude * TAIGA_METERS_TO_FEET)];
+    CGSize stringSize = [displayString sizeWithAttributes:attrDict];
+
+    [aircraftAltitudeLabelView setFrame:CGRectMake(35, aircraftY - 0.8 * stringSize.height, 100, 30)];
+    [aircraftAltitudeLabelView setText:displayString];
+
+    // Show the aircraft altitude as a dashed line across the entire graph.
+    [[UIColor blackColor] setStroke];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, TRI_HEIGHT + 5  + 1.2 * stringSize.width, aircraftY);
+    CGContextAddLineToPoint(context, frame.size.width, aircraftY);
+    CGFloat lengths[] = {4, 4};
+    CGContextSetLineDash(context, 0, lengths, 2);
+    CGContextStrokePath(context);
+    CGContextSetLineDash(context, 0, nil, 0);
+
+    // Show the aircraft as a filled triangle with outline.
+    [[UIColor colorWithRed:.027 green:.596 blue:.976 alpha:1] setFill];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, TRI_HEIGHT, aircraftY);
+    CGContextAddLineToPoint(context, 0, aircraftY - TRI_HALF_WIDTH);
+    CGContextAddLineToPoint(context, 0, aircraftY + TRI_HALF_WIDTH);
+    CGContextClosePath(context);
+    CGContextFillPath(context);
+
+    [[UIColor whiteColor] setStroke];
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, TRI_HEIGHT, aircraftY);
+    CGContextAddLineToPoint(context, 0, aircraftY - TRI_HALF_WIDTH);
+    CGContextAddLineToPoint(context, 0, aircraftY + TRI_HALF_WIDTH);
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
+
+    // Update the text and positions of the labels.
     NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
-    NSString* numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:ceilf(yMin)]];
-    NSString* displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
-    [minLabel setText:displayString];
-
-    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:ceilf(yMax)]];
-    displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
-    NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
-    [attrDict setObject:[maxLabel font] forKey:NSFontAttributeName];
-    CGSize stringSize = [displayString sizeWithAttributes:attrDict];
-    float maxLabelX = frame.size.width * (xAtYMax - xMin) / dx - 0.5 * stringSize.width;
-    [maxLabel setFrame:CGRectMake(maxLabelX, 0, stringSize.width, stringSize.height)];
+//    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:ceilf(yMax * (float) TAIGA_METERS_TO_FEET)]];
+    displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) ceil(yMax * TAIGA_METERS_TO_FEET)];
+    stringSize = [displayString sizeWithAttributes:attrDict];
+    float maxLabelX = frame.size.width * (xAtYMax - xMin) / xRange - 0.5 * stringSize.width;
+    if (yMax <= 0)
+        maxLabelX = stringSize.width;
+    else if (maxLabelX < 0.5 * stringSize.width)
+        maxLabelX = 0.5 * stringSize.width;
+    else if (maxLabelX + stringSize.width > frame.size.width)
+        maxLabelX = frame.size.width - stringSize.width;
+    float maxLabelY = graphYMax * (1 - (yMax - yMin) / yRange);
+    if (maxLabelY < 0)
+        maxLabelY = 0;
+    else if (maxLabelY + stringSize.height > graphYMax)
+        maxLabelY = graphYMax - stringSize.height;
+    [maxLabel setFrame:CGRectMake(maxLabelX, maxLabelY, stringSize.width, stringSize.height)];
     [maxLabel setText:displayString];
-//
-//    float crosshairSize = 10;
-//    float x = frame.size.width * (_aircraftLocation.x - xMin) / dx;
-//    float y = frame.size.height * (1 - (_aircraftLocation.y - yMin) / dy);
-//
-//    [[UIColor blackColor] set];
-//    CGContextBeginPath(context);
-//    CGContextMoveToPoint(context, x - crosshairSize + 1, y + 1);
-//    CGContextAddLineToPoint(context, x + crosshairSize + 1, y + 1);
-//    CGContextMoveToPoint(context, x + 1, y - crosshairSize + 1);
-//    CGContextAddLineToPoint(context, x + 1, y + crosshairSize + 1);
-//    CGContextStrokePath(context);
-//
-//    [[UIColor whiteColor] set];
-//    CGContextBeginPath(context);
-//    CGContextMoveToPoint(context, x - crosshairSize, y);
-//    CGContextAddLineToPoint(context, x + crosshairSize, y);
-//    CGContextMoveToPoint(context, x, y - crosshairSize);
-//    CGContextAddLineToPoint(context, x, y + crosshairSize);
-//    CGContextStrokePath(context);
-//
-//    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:_aircraftLocation.y]];
-//    displayString = [[NSString alloc] initWithFormat:@"%@ ft", numberString];
-//    stringSize = [displayString sizeWithAttributes:attrDict];
-//    [crosshairLabel setFrame:CGRectMake(x + 12, y - 0.75 * stringSize.height, 200, 30)];
-//    [crosshairLabel setText:displayString];
+
+    [leftLabelView setText:_leftLabel];
+
+    stringSize = [_centerLabel sizeWithAttributes:attrDict];
+    [centerLabelView setFrame:CGRectMake(frame.size.width / 2 - stringSize.width / 2, AXIS_LABEL_Y, 200, 30)];
+    [centerLabelView setText:_centerLabel];
+
+    stringSize = [_rightLabel sizeWithAttributes:attrDict];
+    [rightLabelView setFrame:CGRectMake(frame.size.width - stringSize.width, AXIS_LABEL_Y, 200, 30)];
+    [rightLabelView setText:_rightLabel];
 }
 @end

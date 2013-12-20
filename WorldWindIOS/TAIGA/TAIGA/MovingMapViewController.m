@@ -45,6 +45,7 @@
 #import "SimulationViewController.h"
 #import "TerrainProfileView.h"
 #import "ViewSelectionController.h"
+#import "TerrainProfileController.h"
 #import "AircraftLayer.h"
 
 @implementation MovingMapViewController
@@ -98,6 +99,7 @@
     UIPopoverController* flightRoutePopoverController;
     SimulationViewController* simulationViewController;
     TerrainProfileView* terrainProfileView;
+    TerrainProfileController* terrainProfileController;
     ViewSelectionController* viewSelectionController;
     UIPopoverController* viewSelectionPopoverController;
 }
@@ -376,6 +378,8 @@
     terrainProfileView = [[TerrainProfileView alloc] initWithFrame:CGRectZero worldWindView:_wwv];
     [self.view addSubview:terrainProfileView];
 
+    terrainProfileController = [[TerrainProfileController alloc] initWithTerrainProfileView:terrainProfileView];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleShowTerrainProfile:)
                                                  name:TAIGA_SHOW_TERRAIN_PROFILE object:nil];
 }
@@ -407,10 +411,12 @@
         [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
     }];
     [terrainProfileView setNeedsDisplay]; // TODO: Determine why this is needed to make the profile window visible
+    [terrainProfileView setEnabled:YES];
 }
 
 - (void) dismissTerrainProfile
 {
+    [terrainProfileView setEnabled:NO];
     [self.view bringSubviewToFront:[simulationViewController view]];
 
     [self.view layoutIfNeeded]; // Ensure all pending layout operations have completed.

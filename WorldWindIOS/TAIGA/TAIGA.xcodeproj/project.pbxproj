@@ -142,6 +142,7 @@
 		1BF9AD74A19AED4BB0B7E873 /* weather32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */; };
 		1BF9AD8C0CFB45EC26874E61 /* PIREP_ICONS_0015_Layer-17.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD0D9B05173FA74A8F02 /* PIREP_ICONS_0015_Layer-17.png */; };
 		1BF9AD92FDEF5764683F72D9 /* CC_BKN_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3BCD28EC7E52BD71D11 /* CC_BKN_128.png */; };
+		1BF9ADA1B437C51FB50B3152 /* TerrainProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A549199359016553F855 /* TerrainProfileController.m */; };
 		1BF9ADB9A290CCCF5FDA4BB9 /* WB_85kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1F2EEE24D578EA7129E /* WB_85kt_128.png */; };
 		1BF9ADBD57598D7AB3B6FADC /* 42-photos.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8097DB0B1A43FC6138D /* 42-photos.png */; };
 		1BF9ADF1A80BC00BF04E462B /* 122-stats@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A71F3FC884280AB7BAE2 /* 122-stats@2x.png */; };
@@ -273,6 +274,7 @@
 		1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "431-yes@2x.png"; sourceTree = "<group>"; };
 		1BF9A51E0EE853DDBE7A3752 /* WB_15kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_15kt_128.png; sourceTree = "<group>"; };
 		1BF9A543A5F665E7A3D28E28 /* TerrainProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileView.h; sourceTree = "<group>"; };
+		1BF9A549199359016553F855 /* TerrainProfileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainProfileController.m; sourceTree = "<group>"; };
 		1BF9A54EC5F423EACBC91D76 /* WX_BR_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_BR_128.png; sourceTree = "<group>"; };
 		1BF9A56534F8DA54C20C1831 /* TAIGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAIGA.h; sourceTree = "<group>"; };
 		1BF9A566638B05791DCBF73B /* WeatherCamViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeatherCamViewController.m; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 		1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionReadoutController.m; sourceTree = "<group>"; };
 		1BF9A9BDB8AECE5417A1271E /* WX_RA_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A9CEC9CECC0D70A019DA /* FAAChartsAlaskaLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAAChartsAlaskaLayer.h; sourceTree = "<group>"; };
+		1BF9A9D1F33A1E4D1A075CC8 /* TerrainProfileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileController.h; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9A9E8D5D414A14E7BD282 /* PIREP_ICONS_0008_Layer-10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0008_Layer-10.png"; sourceTree = "<group>"; };
 		1BF9A9F42B1255C2B7E2AA34 /* WX_DU_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DU_128.png; sourceTree = "<group>"; };
@@ -591,6 +594,8 @@
 				1BF9AE37E84B7A21B3888FAA /* ViewSelectionController.h */,
 				CC8CF8F60C10525135F57A82 /* AircraftShape.m */,
 				CC8CFB9C151CBACD0AEA093A /* AircraftShape.h */,
+				1BF9A9D1F33A1E4D1A075CC8 /* TerrainProfileController.h */,
+				1BF9A549199359016553F855 /* TerrainProfileController.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -964,6 +969,7 @@
 				CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */,
 				1BF9AE63329E2620C8D72E30 /* ViewSelectionController.m in Sources */,
 				CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */,
+				1BF9ADA1B437C51FB50B3152 /* TerrainProfileController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

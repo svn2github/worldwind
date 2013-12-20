@@ -22,8 +22,6 @@
 
     _wwv = wwv;
 
-    trackUp = YES;
-
     [[self navigationItem] setTitle:@"Views"];
     [self setPreferredContentSize:CGSizeMake(300, 250)];
 
