@@ -7,12 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-#define TAIGA_VERSION (@"0.0020")
-#define TAIGA_VERSION_DATE (@"12/13/13")
+#define TAIGA_VERSION (@"0.0021")
+#define TAIGA_VERSION_DATE (@"12/20/13")
 
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
+#define TAIGA_EARTH_RADIUS (6378137.0)
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
 #define TAIGA_METERS_TO_FEET (3.28083989501)
+#define TAIGA_MILES_TO_METERS (1609.34)
 #define TAIGA_TOOLBAR_HEIGHT (80)
 #define TAIGA_SETTING_CHANGED (@"gov.nasa.worldwind.taiga.setting.changed")
 #define TAIGA_FLIGHT_ROUTE_REMOVED (@"gov.nasa.worldwind.taiga.flightroute.removed")

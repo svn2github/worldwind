@@ -42,12 +42,12 @@
 
 - (void) performRetrieval
 {
-    if (![WorldWind isNetworkAvailable])
-    {
-        _status = WW_CANCELED;
-        [self doFinish];
-    }
-    else
+//    if (![WorldWind isNetworkAvailable])
+//    {
+//        _status = WW_CANCELED;
+//        [self doFinish];
+//    }
+//    else
     {
         @try
         {
