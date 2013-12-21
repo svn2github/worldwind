@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "TerrainAltitudeController.h"
+#import "TerrainAltitudeDetailController.h"
 #import "WWLog.h"
 #import "WWElevationShadingLayer.h"
 #import "SliderCellWithReadout.h"
@@ -14,13 +14,13 @@
 
 #define MAX_WARNING_OFFSET_IN_FEET (1000)
 
-@implementation TerrainAltitudeController
+@implementation TerrainAltitudeDetailController
 {
     SliderCellWithReadout* opacityCell;
     SliderCellWithReadout* warningOffsetCell;
 }
 
-- (TerrainAltitudeController*) initWithLayer:(WWElevationShadingLayer*)layer
+- (TerrainAltitudeDetailController*) initWithLayer:(WWElevationShadingLayer*)layer
 {
     if (layer == nil)
     {

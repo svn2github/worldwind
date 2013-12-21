@@ -15,7 +15,7 @@
 #import "ImageLayerDetailController.h"
 #import "RenderableLayerDetailController.h"
 #import "WWElevationShadingLayer.h"
-#import "TerrainAltitudeController.h"
+#import "TerrainAltitudeDetailController.h"
 #import "AppConstants.h"
 #import "METARLayer.h"
 #import "PIREPLayer.h"
@@ -127,8 +127,8 @@
     }
     else if ([layer isKindOfClass:[WWElevationShadingLayer class]])
     {
-        TerrainAltitudeController* detailController =
-                [[TerrainAltitudeController alloc] initWithLayer:(WWElevationShadingLayer*) layer];
+        TerrainAltitudeDetailController* detailController =
+                [[TerrainAltitudeDetailController alloc] initWithLayer:(WWElevationShadingLayer*) layer];
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }

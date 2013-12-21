@@ -116,7 +116,7 @@
 		1BF9AAE6C037E5AC1F7B81AD /* WX_DZ_PLUS_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A585164F35CC333652FF /* WX_DZ_PLUS_128.png */; };
 		1BF9AAF10336EEE020EE21A6 /* PIREP_ICONS_0012_Layer-14.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB2EB6370F5ED060DE1C /* PIREP_ICONS_0012_Layer-14.png */; };
 		1BF9AAF8F305EEDBC91C7C27 /* CC_OVC_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A04EA08370FAEA7CF2AB /* CC_OVC_128.png */; };
-		1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */; };
+		1BF9AB038047FA68148622E7 /* TerrainAltitudeDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE661684A1D80A47F6D /* TerrainAltitudeDetailController.m */; };
 		1BF9AB20A6940E2687D50BEE /* RenderableLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A745C84B09E10A0DDD7F /* RenderableLayerDetailController.m */; };
 		1BF9AB2688A37A6071BDCA6D /* slr_camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A25184505A9B412C771D /* slr_camera.png */; };
 		1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */; };
@@ -254,7 +254,7 @@
 		1BF9A2A84FE083FC39A4CD3B /* PIREP_ICONS_0005_Layer-7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0005_Layer-7.png"; sourceTree = "<group>"; };
 		1BF9A2AAB0EEDA4071617237 /* WB_95kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_95kt_128.png; sourceTree = "<group>"; };
 		1BF9A2AD71E8799F45361258 /* PIREPDataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PIREPDataViewController.h; sourceTree = "<group>"; };
-		1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainAltitudeController.h; sourceTree = "<group>"; };
+		1BF9A2C8672E0C53B1529765 /* TerrainAltitudeDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainAltitudeDetailController.h; sourceTree = "<group>"; };
 		1BF9A2DEF39DF69593B3065F /* WX_RA_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A2EC323E14E28B23EB9E /* PIREP_ICONS_0020_Layer-22.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0020_Layer-22.png"; sourceTree = "<group>"; };
 		1BF9A2ED832C796AFBF72D61 /* WX_SA_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SA_128.png; sourceTree = "<group>"; };
@@ -389,7 +389,7 @@
 		1BF9AFC7AB69D8EC255753A5 /* METARDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARDataViewController.m; sourceTree = "<group>"; };
 		1BF9AFCB43CFF8C0595DB2A8 /* WeatherCamLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeatherCamLayer.m; sourceTree = "<group>"; };
 		1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = weather32x32.png; sourceTree = "<group>"; };
-		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeController.m; sourceTree = "<group>"; };
+		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeDetailController.m; sourceTree = "<group>"; };
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
 		CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFile.m; sourceTree = "<group>"; };
 		CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteListController.m; sourceTree = "<group>"; };
@@ -525,8 +525,8 @@
 				1BF9ADC6374E2CD340E235AD /* ChartsListController.m */,
 				1BF9A0B6E08BC5F07990932A /* ChartViewController.m */,
 				1BF9A4A2653ADB93169AAD04 /* ChartViewController.h */,
-				1BF9AFE661684A1D80A47F6D /* TerrainAltitudeController.m */,
-				1BF9A2C8672E0C53B1529765 /* TerrainAltitudeController.h */,
+				1BF9AFE661684A1D80A47F6D /* TerrainAltitudeDetailController.m */,
+				1BF9A2C8672E0C53B1529765 /* TerrainAltitudeDetailController.h */,
 				1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */,
 				1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */,
 				1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */,
@@ -935,7 +935,7 @@
 				1BF9A5847595B9B347E632D4 /* Settings.m in Sources */,
 				1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */,
 				1BF9A79DF265265F384F1979 /* ChartViewController.m in Sources */,
-				1BF9AB038047FA68148622E7 /* TerrainAltitudeController.m in Sources */,
+				1BF9AB038047FA68148622E7 /* TerrainAltitudeDetailController.m in Sources */,
 				1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */,
 				1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */,
 				1BF9AB2CB5CA77A38170746D /* METARDataViewController.m in Sources */,

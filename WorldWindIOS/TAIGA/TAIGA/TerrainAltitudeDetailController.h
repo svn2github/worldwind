@@ -9,10 +9,10 @@
 
 @class WWElevationShadingLayer;
 
-@interface TerrainAltitudeController : UITableViewController
+@interface TerrainAltitudeDetailController : UITableViewController
 
 @property (readonly, nonatomic, weak) WWElevationShadingLayer* layer;
 
-- (TerrainAltitudeController*) initWithLayer:(WWElevationShadingLayer*)layer;
+- (TerrainAltitudeDetailController*) initWithLayer:(WWElevationShadingLayer*)layer;
 
 @end
