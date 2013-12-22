@@ -65,6 +65,7 @@
 		1BF9A5C0915C60BB28B24226 /* 25-weather@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */; };
 		1BF9A5CFE6106D19F7C91DBC /* WX_RA_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ABCB8122ED354045DC81 /* WX_RA_128.png */; };
 		1BF9A5DABFB53DF12FFD6979 /* MetarIconGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A99F6415E09E84C670BB /* MetarIconGenerator.m */; };
+		1BF9A5FE37D7FEC21418DF38 /* TerrainAltitudeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AD77F1944F4FFA668ACE /* TerrainAltitudeLayer.m */; };
 		1BF9A5FE815834BD73476207 /* CC_FEW_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A16A71CE8FC3BA17C9A9 /* CC_FEW_128.png */; };
 		1BF9A6135202FC08A1D33E3A /* 309-thumbtack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ACCF58742B49CE915CA2 /* 309-thumbtack@2x.png */; };
 		1BF9A627FFE269FEB4526191 /* WB_80kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0A6D0CFD912855D9B5E /* WB_80kt_128.png */; };
@@ -260,6 +261,7 @@
 		1BF9A2ED832C796AFBF72D61 /* WX_SA_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SA_128.png; sourceTree = "<group>"; };
 		1BF9A3318561DC7F3CF47984 /* CompassLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CompassLayer.m; sourceTree = "<group>"; };
 		1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageLayerDetailController.m; sourceTree = "<group>"; };
+		1BF9A374EC6C285E375E1FE9 /* TerrainAltitudeLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainAltitudeLayer.h; sourceTree = "<group>"; };
 		1BF9A38BEF1C4F903C7FFE32 /* FlightPathsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightPathsLayer.h; sourceTree = "<group>"; };
 		1BF9A39A9A0664502184C902 /* CC_OVX_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_OVX_128.png; sourceTree = "<group>"; };
 		1BF9A3AA9A2291B666A1CADD /* PIREP_ICONS_0013_Layer-15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0013_Layer-15.png"; sourceTree = "<group>"; };
@@ -364,6 +366,7 @@
 		1BF9ACFA76BAB92CC2669038 /* 01-refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh@2x.png"; sourceTree = "<group>"; };
 		1BF9AD0D9B05173FA74A8F02 /* PIREP_ICONS_0015_Layer-17.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0015_Layer-17.png"; sourceTree = "<group>"; };
 		1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up@2x.png"; sourceTree = "<group>"; };
+		1BF9AD77F1944F4FFA668ACE /* TerrainAltitudeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeLayer.m; sourceTree = "<group>"; };
 		1BF9AD7B4E8449B13741C59D /* WB_55kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_55kt_128.png; sourceTree = "<group>"; };
 		1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear@2x.png"; sourceTree = "<group>"; };
 		1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppConstants.m; sourceTree = "<group>"; };
@@ -596,6 +599,8 @@
 				CC8CFB9C151CBACD0AEA093A /* AircraftShape.h */,
 				1BF9A9D1F33A1E4D1A075CC8 /* TerrainProfileController.h */,
 				1BF9A549199359016553F855 /* TerrainProfileController.m */,
+				1BF9AD77F1944F4FFA668ACE /* TerrainAltitudeLayer.m */,
+				1BF9A374EC6C285E375E1FE9 /* TerrainAltitudeLayer.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -970,6 +975,7 @@
 				1BF9AE63329E2620C8D72E30 /* ViewSelectionController.m in Sources */,
 				CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */,
 				1BF9ADA1B437C51FB50B3152 /* TerrainProfileController.m in Sources */,
+				1BF9A5FE37D7FEC21418DF38 /* TerrainAltitudeLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

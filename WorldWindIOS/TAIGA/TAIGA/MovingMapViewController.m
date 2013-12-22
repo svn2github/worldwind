@@ -47,6 +47,7 @@
 #import "ViewSelectionController.h"
 #import "TerrainProfileController.h"
 #import "AircraftLayer.h"
+#import "TerrainAltitudeLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -74,7 +75,7 @@
     UIPopoverController* layerListPopoverController;
 
     FAAChartsAlaskaLayer* faaChartsLayer;
-    WWElevationShadingLayer* terrainAltitudeLayer;
+    TerrainAltitudeLayer* terrainAltitudeLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
     WeatherCamLayer* weatherCamLayer;
@@ -579,7 +580,7 @@
 
 - (void) createTerrainAltitudeLayer
 {
-    terrainAltitudeLayer = [[WWElevationShadingLayer alloc] init];
+    terrainAltitudeLayer = [[TerrainAltitudeLayer alloc] init];
     [terrainAltitudeLayer setDisplayName:@"Terrain Altitude"];
 
     float threshold = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_THRESHOLD_RED defaultValue:3000.0];
