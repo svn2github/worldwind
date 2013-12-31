@@ -315,7 +315,7 @@
 
     NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
     [attrDict setObject:[aircraftAltitudeLabelView font] forKey:NSFontAttributeName];
-    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) (_aircraftAltitude * TAIGA_METERS_TO_FEET)];
+    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) ceil((_aircraftAltitude * TAIGA_METERS_TO_FEET))];
     CGSize stringSize = [displayString sizeWithAttributes:attrDict];
 
     [aircraftAltitudeLabelView setFrame:CGRectMake(35, aircraftY - 0.8 * stringSize.height, 100, 30)];
