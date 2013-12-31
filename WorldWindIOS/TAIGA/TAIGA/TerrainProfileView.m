@@ -205,7 +205,8 @@
                 xs[n] = xs[n - 1] + (float) ds;
 
             [WWLocation greatCircleLocation:posA azimuth:azimuth distance:j * ds outputLocation:pos];
-            ys[n++] = (float) [globe elevationForLatitude:pos.latitude longitude:pos.longitude];
+            float elevation = (float) [globe elevationForLatitude:pos.latitude longitude:pos.longitude];
+            ys[n++] = elevation >= 0 ? elevation : 0;
         }
     }
 }
