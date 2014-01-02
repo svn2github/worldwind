@@ -32,11 +32,19 @@
     id<WWNavigatorState> touchPointBeginState;
     int touchPointGestures;
     // Animation properties.
+    NSDate* animationBeginDate;
+    NSDate* animationEndDate;
     WWLocation* animBeginLocation;
     WWLocation* animEndLocation;
     double animBeginAltitude;
     double animEndAltitude;
     double animMidAltitude;
+    double animBeginHeading;
+    double animEndHeading;
+    double animBeginTilt;
+    double animEndTilt;
+    double animBeginRoll;
+    double animEndRoll;
 }
 
 /// @name Navigator Attributes
@@ -48,17 +56,6 @@
 - (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view;
 
 - (WWFirstPersonNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
-
-/// @name Setting the Location of Interest
-
-- (void) animateToEyePosition:(WWPosition*)eyePosition
-                 overDuration:(NSTimeInterval)duration;
-
-- (void) animateToEyePosition:(WWPosition*)eyePosition
-               headingDegrees:(double)heading
-                  tiltDegrees:(double)tilt
-                  rollDegrees:(double)roll
-                 overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 

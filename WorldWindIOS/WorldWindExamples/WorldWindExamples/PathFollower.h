@@ -6,10 +6,10 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <QuartzCore/QuartzCore.h>
 
-@class WWPath;
+@protocol WWNavigator;
 @class WorldWindView;
+@class WWPath;
 @class WWSphere;
 @class WWRenderableLayer;
 @class WWPosition;
@@ -20,19 +20,19 @@
 @interface PathFollower : NSObject
 {
 @protected
-    CADisplayLink* displayLink;
-    NSTimeInterval offsetTime;
+    BOOL followingPath;
     NSTimeInterval beginTime;
-    NSTimeInterval currentTime;
-    WWPosition* currentPosition;
+    NSTimeInterval markTime;
+    NSTimeInterval elapsedTime;
+    NSTimeInterval headingBeginTime;
+    NSTimeInterval headingEndTime;
+    double beginHeading;
+    double endHeading;
+    double lastHeading;
     double currentHeading;
-    double currentIndex;
+    WWPosition* currentPosition;
     WWSphere* marker;
     WWRenderableLayer* layer;
-    NSTimeInterval animBeginTime;
-    NSTimeInterval animEndTime;
-    NSTimeInterval animBeginHeading;
-    NSTimeInterval animEndHeading;
 }
 
 /// @name Attributes
@@ -49,7 +49,10 @@
 /// Indicates whether or not the path follower is enabled. YES indicates that the marker should move along the path
 /// until it reaches the end; NO indicates that the path follower should display the marker at its current location but
 /// otherwise do nothing.
-@property(nonatomic, getter=isEnabled) BOOL enabled;
+@property(nonatomic) BOOL enabled;
+
+/// Indicates whether or not the path follower has reached the end of the path.
+@property(nonatomic, readonly) BOOL finished;
 
 /// @name Initializing
 
@@ -78,96 +81,44 @@
 /// @name Methods of Interest Only to Subclasses
 
 /**
-* Starts the display link that moves the path marker along the path.
+* Navigates the WorldWindView to the current position along the path, then begins following the path.
 */
-- (void) startDisplayLink;
+- (void) startFollowingPath;
 
 /**
-* Stops the display link that moves the path marker along the path.
+* Moves a marker along the current path position at the specified speed, while keeping the WorldWindView centered on the
+* current path position.
 */
-- (void) stopDisplayLink;
+- (void) followPath;
 
 /**
-* Indicates that the path following display link has fired.
+* Updates the current path position and heading corresponding to the specified time interval.
 *
-* @param notifyingDisplayLink The display link that sent his message.
+* @param seconds The elapsed time since the beginning of the path, in seconds.
 */
-- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink;
+- (void) updateCurrentPositionWithTimeInterval:(NSTimeInterval)seconds;
 
 /**
-* Updates the current path position and heading corresponding to the specified time.
-*
-* @param time The elapsed time since the beginning of the path, in seconds.
-*
-* @return YES if the time interval identifies a time between the beginning and end of the path, NO if the time interval
-* represents a time at or beyond the end of the path.
+* Updates a marker object to appear at the current path position.
 */
-- (BOOL) updatePositionForElapsedTime:(NSTimeInterval)time;
+- (void) markCurrentPosition;
 
 /**
-* Computes the current index in the path's list of positions corresponding to the specified time.
-*
-* The returned index ranges from 0 to count - 1, where count is the number of positions in the path. This returns
-* count - 1 if the time interval represents a time at or beyond the end of the path.
-*
-* The integral portion of the returned number indicates the position ordinal corresponding to the beginning of the
-* current path segment. The fractional portion of the returned number indicates the percentage travelled between the
-* begin and end positions of the current path segment.
-*
-* @param time The elapsed time since the beginning of the path, in seconds.
-*
-* @return The current index in the path's list of positions.
+* Updates the navigator to place the current path position in the center of the WorldWindView.
 */
-- (double) pathIndexForElapsedTime:(NSTimeInterval)time;
+- (void) followCurrentPosition;
 
 /**
-* Indicates that this path follower has moved from one path segment to another.
-*
-* The specified positions indicate the begin and end positions associated with the new segment.
-*
-* @param beginPosition The new segment's beginning position.
-* @param endPosition The new segment's ending position.
+* Configures the navigator with the current path position and current path heading. The behavior of this method depends
+* on the navigator type. When the navigator is a WWFirstPersonNavigator this sets the navigator's eye position to the
+* specified position; Otherwise this sets the navigator looking at the specified position from a pre-defined distance.
 */
-- (void) segmentDidChange:(WWPosition*)beginPosition endPosition:(WWPosition*)endPosition;
+- (void) setNavigator:(id<WWNavigator>)navigator withPosition:(WWPosition*)position heading:(double)heading;
 
 /**
-* Updates the view elements corresponding to this path follower.
+* Called when the WorldWindView's navigator instance changes. This typically indicates that the application has switched
+* between two navigator types.
 */
-- (void) updateView;
-
-/**
-* Animates the World Wind view's navigator to the specified position and heading over a period of time.
-*
-* @param position The navigator's new position.
-* @param heading The navigator's new heading, in degrees.
-*/
-- (void) animateNavigatorToPosition:(WWPosition*)position headingDegrees:(double)heading;
-
-/**
-* Sets the World Wind view's navigator to the specified position.
-*
-* @param position The navigator's new position.
-*/
-- (void) setNavigatorToPosition:(WWPosition*)position;
-
-/**
-* Starts observing messages sent to the notification center by the World Wind Navigator.
-*/
-- (void) startObservingNavigator;
-
-/**
-* Stops observing messages sent to the notification center by the World Wind Navigator.
-*/
-- (void) stopObservingNavigator;
-
-/**
-* Interprets messages sent to the notification center by the World Wind Navigator.
-*
-* This disables path following if a navigator animation has ended or been cancelled, or if a navigator gesture has been
-* recognized. This starts the path following display link when the initial navigator animation ends.
-*
-* @param notification The notification to interpret.
-*/
-- (void) handleNavigatorNotification:(NSNotification*)notification;
+- (void) navigatorDidChange;
 
 @end

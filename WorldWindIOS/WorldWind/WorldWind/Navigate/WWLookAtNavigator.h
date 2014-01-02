@@ -24,11 +24,19 @@
     double gestureBeginHeading;
     double gestureBeginTilt;
     // Animation properties.
+    NSDate* animationBeginDate;
+    NSDate* animationEndDate;
     WWPosition* animBeginLookAt;
     WWPosition* animEndLookAt;
     double animBeginRange;
     double animEndRange;
     double animMidRange;
+    double animBeginHeading;
+    double animEndHeading;
+    double animBeginTilt;
+    double animEndTilt;
+    double animBeginRoll;
+    double animEndRoll;
 }
 
 /// @name Navigator Attributes
@@ -42,19 +50,6 @@
 - (WWLookAtNavigator*) initWithView:(WorldWindView*)view;
 
 - (WWLookAtNavigator*) initWithView:(WorldWindView*)view navigatorToMatch:(id<WWNavigator>)navigator;
-
-/// @name Setting the Location of Interest
-
-- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
-                           range:(double)range
-                    overDuration:(NSTimeInterval)duration;
-
-- (void) animateToLookAtPosition:(WWPosition*)lookAtPosition
-                           range:(double)range
-                  headingDegrees:(double)heading
-                     tiltDegrees:(double)tilt
-                     rollDegrees:(double)roll
-                    overDuration:(NSTimeInterval)duration;
 
 /// @name Gesture Recognizer Interface for Subclasses
 

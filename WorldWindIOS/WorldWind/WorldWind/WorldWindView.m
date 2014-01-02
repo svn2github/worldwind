@@ -139,6 +139,17 @@
     self->_pickingFrameBuffer = 0;
 }
 
+- (void) setNavigator:(id<WWNavigator>)navigator
+{
+    if (navigator == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Navigator is nil")
+    }
+
+    _navigator = navigator;
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_NAVIGATOR_CHANGED object:_navigator];
+}
+
 - (void) addDelegate:(id <WorldWindViewDelegate>)delegate
 {
     if (delegate != nil)

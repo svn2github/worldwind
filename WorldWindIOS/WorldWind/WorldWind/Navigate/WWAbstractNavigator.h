@@ -22,14 +22,8 @@
     int displayLinkObservers;
     // Animation interface properties.
     BOOL animating;
-    NSDate* animBeginDate;
-    NSDate* animEndDate;
-    double animBeginHeading;
-    double animEndHeading;
-    double animBeginTilt;
-    double animEndTilt;
-    double animBeginRoll;
-    double animEndRoll;
+    void (^animationBlock)(NSDate* timestamp, BOOL* stop);
+    void (^completionBlock)(BOOL finished);
 }
 
 /// @name Navigator Attributes
@@ -74,20 +68,14 @@
 
 /// @name Animation Interface for Subclasses
 
-- (void) beginAnimationWithDuration:(NSTimeInterval)duration;
+- (void) beginAnimation;
 
-- (void) endAnimation;
+- (void) endAnimation:(BOOL)finished;
 
-- (void) cancelAnimation;
+- (void) updateAnimation:(NSDate*)timestamp;
 
-- (void) updateAnimationForDate:(NSDate*)date;
+- (void) doUpdateAnimation:(NSDate*)timestamp;
 
-- (void) animationDidBegin;
-
-- (void) animationDidEnd;
-
-- (void) animationWasCancelled;
-
-- (void) animationDidUpdate:(NSDate*)date begin:(NSDate*)begin end:(NSDate*)end;
+- (void) setupAnimationWithDuration:(NSTimeInterval)duration animations:(void (^)(void))animations;
 
 @end

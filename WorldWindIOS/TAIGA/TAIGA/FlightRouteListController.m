@@ -406,10 +406,13 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     // of the WorldWindView's viewport. This region has its center at the eastern edge of the flight route relative to
     // the navigator's current heading, and has its radius scaled such that the flight route fits in half of the
     // viewport width.
-    WWPosition* lookAtCenter = [[WWPosition alloc] initWithZeroPosition];
+    WWLocation* lookAtCenter = [[WWLocation alloc] initWithZeroLocation];
     [WWLocation greatCircleLocation:center azimuth:[navigator heading] + 90 distance:radiusDegrees outputLocation:lookAtCenter];
     double lookAtRadius = radiusMeters * radiusScale;
-    [navigator animateToRegionWithCenter:lookAtCenter radius:lookAtRadius overDuration:FlightRouteNavigatorDuration];
+    [navigator animateWithDuration:FlightRouteNavigatorDuration animations:^
+    {
+        [navigator setCenterLocation:lookAtCenter radius:lookAtRadius];
+    }];
 }
 
 - (void) requestRedraw

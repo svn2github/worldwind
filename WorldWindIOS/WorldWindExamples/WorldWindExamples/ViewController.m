@@ -45,6 +45,7 @@
 #import "BulkRetrieverController.h"
 #import "FrameStatisticsController.h"
 #import "WorldWind/Layer/WWBMNGLandsatCombinedLayer.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind.h"
 #import "DimensionedLayerController.h"
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
@@ -475,9 +476,9 @@
 
 - (void) handleTrackButtonTap
 {
-    [trackingController setEnabled:![trackingController isEnabled]];
+    [trackingController setEnabled:![trackingController enabled]];
 
-    if ([trackingController isEnabled])
+    if ([trackingController enabled])
     {
         [pathFollower setEnabled:NO];
     }
@@ -485,9 +486,9 @@
 
 - (void) handleFlightButtonTap
 {
-    [pathFollower setEnabled:![pathFollower isEnabled]];
+    [pathFollower setEnabled:![pathFollower enabled]];
 
-    if ([pathFollower isEnabled])
+    if ([pathFollower enabled])
     {
         [trackingController setEnabled:NO];
     }
@@ -543,10 +544,13 @@
     {
         CLPlacemark* firstPlacemark = [placemarks objectAtIndex:0];
         CLRegion* region = [firstPlacemark region];
-        WWPosition* center = [[WWPosition alloc] initWithCLCoordinate:[region center] altitude:0];
+        WWLocation* center = [[WWLocation alloc] initWithCLCoordinate:[region center]];
         double radius = [region radius];
 
-        [[_wwv navigator] animateToRegionWithCenter:center radius:radius overDuration:WWNavigatorDurationDefault];
+        [[_wwv navigator] animateWithDuration:WWNavigatorDurationAutomatic animations:^
+        {
+            [[_wwv navigator] setCenterLocation:center radius:radius];
+        }];
     }
     else
     {

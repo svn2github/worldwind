@@ -331,8 +331,8 @@
         return;
     }
 
-    WWPosition* position = [[WWPosition alloc] initWithDegreesLatitude:65 longitude:-150 altitude:0];
-    [[_wwv navigator] setToRegionWithCenter:position radius:800e3];
+    WWLocation* center = [[WWLocation alloc] initWithDegreesLatitude:65 longitude:-150];
+    [[_wwv navigator] setCenterLocation:center radius:800e3];
 
     //[_wwv setContentScaleFactor:[[UIScreen mainScreen] scale]]; // enable retina resolution
     [self.view addSubview:_wwv];

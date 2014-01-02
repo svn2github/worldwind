@@ -9,10 +9,9 @@
 #import "WorldWind/Util/WWDisposable.h"
 
 @protocol WWNavigatorState;
-@class WorldWindView;
-@class WWPosition;
+@class WWLocation;
 
-static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
+static const NSTimeInterval WWNavigatorDurationAutomatic = DBL_MAX;
 
 @protocol WWNavigator <NSObject, WWDisposable>
 
@@ -30,12 +29,20 @@ static const NSTimeInterval WWNavigatorDurationDefault = DBL_MAX;
 
 /// @name Setting the Location of Interest
 
-- (void) setToPosition:(WWPosition*)position;
+- (void) setCenterLocation:(WWLocation*)location;
 
-- (void) setToRegionWithCenter:(WWPosition*)center radius:(double)radius;
+- (void) setCenterLocation:(WWLocation*)location radius:(double)radius;
 
-- (void) animateToPosition:(WWPosition*)position overDuration:(NSTimeInterval)duration;
+/// @name Animating the Navigator
 
-- (void) animateToRegionWithCenter:(WWPosition*)center radius:(double)radius overDuration:(NSTimeInterval)duration;
+- (void) animateWithDuration:(NSTimeInterval)duration animations:(void (^)(void))animations;
+
+- (void) animateWithDuration:(NSTimeInterval)duration animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion;
+
+- (void) animateWithBlock:(void (^)(NSDate* timestamp, BOOL* stop))block;
+
+- (void) animateWithBlock:(void (^)(NSDate* timestamp, BOOL* stop))block completion:(void (^)(BOOL finished))completion;
+
+- (void) stopAnimations;
 
 @end
