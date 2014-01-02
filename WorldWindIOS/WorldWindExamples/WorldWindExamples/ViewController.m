@@ -8,7 +8,7 @@
 #import "ViewController.h"
 #import "LayerListController.h"
 #import "NavigatorSettingsController.h"
-#import "TrackingController.h"
+#import "LocationTrackingController.h"
 #import "AnyGestureRecognizer.h"
 #import "PathFollower.h"
 #import "CrashDataLayer.h"
@@ -52,6 +52,8 @@
 #import "WorldWind/Shapes/WWScreenImage.h"
 #import "WorldWind/Util/WWOffset.h"
 #import "WWElevationShadingLayer.h"
+#import "CurrentPositionLayer.h"
+#import "LocationServicesController.h"
 
 #define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
@@ -77,7 +79,8 @@
     METARDataViewController* metarDataViewController;
     NavigatorSettingsController* navigatorSettingsController;
     UIPopoverController* navigatorSettingsPopoverController;
-    TrackingController* trackingController;
+    LocationServicesController* locationServicesController;
+    LocationTrackingController* locationTrackingController;
     PathFollower* pathFollower;
     UISearchBar* searchBar;
     CLGeocoder* geocoder;
@@ -116,6 +119,7 @@
 
     [self createWorldWindView];
     [self createToolbar];
+    [self createLocationController];
 }
 
 - (void) viewDidLoad
@@ -161,9 +165,8 @@
     layer = [[CompassLayer alloc] init];
     [layers addLayer:layer];
 
-    [self makeTrackingController];
     [self makeFlightPathsLayer];
-//
+
 //    layer = [[WWShowTessellationLayer alloc] init];
 //    [layers addLayer:layer];
 
@@ -173,6 +176,9 @@
 
     layer = [[METARLayer alloc] init];
     [layer setEnabled:NO];
+    [layers addLayer:layer];
+
+    layer = [[CurrentPositionLayer alloc] init];
     [layers addLayer:layer];
 
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
@@ -192,13 +198,6 @@
 
     screenImageDragPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector
     (handleScreenImageDragGesture:)];
-}
-
-- (void) makeTrackingController
-{
-    trackingController = [[TrackingController alloc] initWithView:_wwv];
-    [trackingController addObserver:self forKeyPath:@"enabled"
-                            options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial context:NULL];
 }
 
 - (void) makeFlightPathsLayer
@@ -476,9 +475,9 @@
 
 - (void) handleTrackButtonTap
 {
-    [trackingController setEnabled:![trackingController enabled]];
+    [locationTrackingController setEnabled:![locationTrackingController enabled]];
 
-    if ([trackingController enabled])
+    if ([locationTrackingController enabled])
     {
         [pathFollower setEnabled:NO];
     }
@@ -490,7 +489,7 @@
 
     if ([pathFollower enabled])
     {
-        [trackingController setEnabled:NO];
+        [locationTrackingController setEnabled:NO];
     }
 }
 
@@ -499,16 +498,27 @@
                          change:(NSDictionary*)change
                         context:(void*)context
 {
-    if (object == trackingController && [keyPath isEqualToString:@"enabled"])
+    if (object == locationTrackingController && [keyPath isEqualToString:@"enabled"])
     {
-        NSNumber* value = [change objectForKey:NSKeyValueChangeNewKey];
-        [trackButton setImage:[UIImage imageNamed:[value boolValue] ? @"LocationArrowWithLine" : @"LocationArrow"]];
+        BOOL enabled = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        [trackButton setImage:[UIImage imageNamed:enabled ? @"LocationArrowWithLine" : @"LocationArrow"]];
+        [locationServicesController setMode:enabled ? LocationServicesControllerModeAllChanges : LocationServicesControllerModeSignificantChanges];
     }
     else if (object == pathFollower && [keyPath isEqualToString:@"enabled"])
     {
-        NSNumber* value = [change objectForKey:NSKeyValueChangeNewKey];
-        [flightButton setImage:[UIImage imageNamed:[value boolValue] ? @"38-airplane-location" : @"38-airplane"]];
+        BOOL enabled = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        [flightButton setImage:[UIImage imageNamed:enabled ? @"38-airplane-location" : @"38-airplane"]];
     }
+}
+
+- (void) createLocationController
+{
+    locationServicesController = [[LocationServicesController alloc] init];
+    [locationServicesController setMode:LocationServicesControllerModeSignificantChanges];
+
+    locationTrackingController = [[LocationTrackingController alloc] initWithView:_wwv];
+    [locationTrackingController addObserver:self forKeyPath:@"enabled"
+                                    options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial context:NULL];
 }
 
 - (void) dismissSearchBar
