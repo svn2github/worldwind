@@ -55,7 +55,6 @@
 #import "CurrentPositionLayer.h"
 #import "LocationServicesController.h"
 
-#define TOOLBAR_HEIGHT 44
 #define SEARCHBAR_PLACEHOLDER @"Search or Address"
 
 @implementation ViewController
@@ -114,12 +113,39 @@
 
 - (void) loadView
 {
-    self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
-    self.view.autoresizesSubviews = YES;
+    self.view = [[UIView alloc] init];
 
     [self createWorldWindView];
     [self createToolbar];
     [self createLocationController];
+    [self layout];
+}
+
+- (void) layout
+{
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_toolbar, _wwv);
+    [_toolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+    UIView* view = [self view];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_toolbar]|" options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv]|" options:0 metrics:nil views:viewsDictionary]];
+
+    if ([self respondsToSelector:@selector(topLayoutGuide)])
+    {
+        id topLayoutGuide = [self topLayoutGuide];
+        viewsDictionary = NSDictionaryOfVariableBindings(topLayoutGuide, _toolbar, _wwv);
+        [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topLayoutGuide][_toolbar(44)][_wwv]|" options:0 metrics:nil views:viewsDictionary]];
+    }
+    else
+    {
+        [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_toolbar(44)][_wwv]|" options:0 metrics:nil views:viewsDictionary]];
+    }
+}
+
+- (UIStatusBarStyle) preferredStatusBarStyle
+{
+    return UIStatusBarStyleLightContent;
 }
 
 - (void) viewDidLoad
@@ -311,11 +337,7 @@
 
 - (void) createWorldWindView
 {
-    CGFloat wwvWidth = self.view.bounds.size.width;
-    CGFloat wwvHeight = self.view.bounds.size.height - TOOLBAR_HEIGHT;
-    CGFloat wwvOriginY = self.view.bounds.origin.y + TOOLBAR_HEIGHT;
-
-    _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, wwvOriginY, wwvWidth, wwvHeight)];
+    _wwv = [[WorldWindView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
     if (_wwv == nil)
     {
         NSLog(@"Unable to create a WorldWindView");
@@ -329,8 +351,6 @@
 - (void) createToolbar
 {
     _toolbar = [[UIToolbar alloc] init];
-    _toolbar.frame = CGRectMake(0, 0, self.view.frame.size.width, TOOLBAR_HEIGHT);
-    [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [_toolbar setBarStyle:UIBarStyleBlack];
     [_toolbar setTranslucent:NO];
 
@@ -339,34 +359,45 @@
     layerButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"LayerList"]
                                                    style:UIBarButtonItemStylePlain
                                                   target:self action:@selector(handleLayerButtonTap)];
+    [layerButton setTintColor:[UIColor whiteColor]];
     layerListController = [[LayerListController alloc] initWithWorldWindView:_wwv];
 
     wmsServersButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"401-globe"]
                                                         style:UIBarButtonItemStylePlain
                                                        target:self action:@selector(handleWMSServersListButtonTap)];
+    [wmsServersButton setTintColor:[UIColor whiteColor]];
     wmsServersListController = [[WMSServerListController alloc] initWithWorldWindView:_wwv];
 
     bulkRetrieverButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"265-download"]
                                                            style:UIBarButtonItemStylePlain
                                                           target:self action:@selector(handleBulkRetrieverButtonTap)];
+    [bulkRetrieverButton setTintColor:[UIColor whiteColor]];
     [bulkRetrieverButton setEnabled:NO];
     bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
 
     navigatorButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"12-eye"]
                                                        style:UIBarButtonItemStylePlain
                                                       target:self action:@selector(handleNavigatorButtonTap)];
+    [navigatorButton setTintColor:[UIColor whiteColor]];
     navigatorSettingsController = [[NavigatorSettingsController alloc] initWithWorldWindView:_wwv];
 
     trackButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
                                                   target:self action:@selector(handleTrackButtonTap)];
+    [trackButton setTintColor:[UIColor whiteColor]];
 
     flightButton = [[UIBarButtonItem alloc] initWithImage:nil style:UIBarButtonItemStylePlain
                                                    target:self action:@selector(handleFlightButtonTap)];
+    [flightButton setTintColor:[UIColor whiteColor]];
 
-    self->searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, TOOLBAR_HEIGHT)];
-    [self->searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
-    UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self->searchBar];
-    [self->searchBar setDelegate:self];
+    searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 200, 44)];
+    [searchBar setPlaceholder:SEARCHBAR_PLACEHOLDER];
+    [searchBar setDelegate:self];
+    [searchBar setTranslucent:NO];
+    if ([searchBar respondsToSelector:@selector(barTintColor)])
+    {
+        [searchBar setBarTintColor:[UIColor lightGrayColor]];
+    }
+    UIBarButtonItem* searchBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:searchBar];
 
     UIBarButtonItem* flexibleSpace1 = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
