@@ -550,12 +550,12 @@
     [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
     routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"122-stats" text:@"Route Planning" size:size target:self action:@selector
+            initWithImageName:@"122-stats" text:@"Flight Planning" size:size target:self action:@selector
             (handleRoutePlanningButton)]];
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [routePlanningButton customView]) setFontSize:15];
-    [routePlanningButton setEnabled:NO]; // route planning button is enabled after waypoints load
+    [routePlanningButton setEnabled:NO]; // flight planning button is enabled after waypoints load
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
