@@ -138,7 +138,7 @@
 - (void) centerOnCurrentLocation
 {
     // Animate the navigator to the most recent location without zooming in.
-    [[_wwv navigator] animateWithDuration:1 animations:^
+    [[_wwv navigator] animateWithDuration:WWNavigatorDurationAutomatic animations:^
     {
         WWLocation* location = [[WWLocation alloc] initWithCLLocation:currentLocation];
         [[_wwv navigator] setCenterLocation:location];
