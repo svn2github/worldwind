@@ -12,14 +12,19 @@
 #import "WaypointFileControl.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
-#import "AppConstants.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWindView.h"
+#import "BulkRetrieverController.h"
+#import "WaypointFile.h"
+#import "WWSector.h"
+#import "AppConstants.h"
 
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
 #define SECTION_WAYPOINTS (1)
 #define ROW_COLOR (0)
 #define ROW_ALTITUDE (1)
+#define ROW_DOWNLOAD (2)
 
 @implementation FlightRouteDetailController
 
@@ -27,7 +32,9 @@
 //-- Initializing FlightRouteDetailController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute waypointFile:(WaypointFile*)waypointFile
+- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute
+                                        waypointFile:(WaypointFile*)waypointFile
+                                                view:(WorldWindView*)wwv;
 {
     self = [super initWithNibName:nil bundle:nil];
 
@@ -36,6 +43,7 @@
 
     _flightRoute = flightRoute;
     _waypointFile = waypointFile;
+    _wwv = wwv;
     altitudeFormatter = [[NSNumberFormatter alloc] init];
     [altitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [altitudeFormatter setMultiplier:@TAIGA_METERS_TO_FEET];
@@ -63,7 +71,7 @@
 - (void) loadView
 {
     UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-    [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
+    [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [self setView:view];
 
     flightRouteTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 1, 1) style:UITableViewStyleGrouped];
@@ -157,7 +165,7 @@
     switch (section)
     {
         case SECTION_PROPERTIES:
-            return 2;
+            return 3;
         case SECTION_WAYPOINTS:
             return [_flightRoute waypointCount];
         default:
@@ -217,6 +225,11 @@
         [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
         [[cell detailTextLabel] setTextColor:detailTextColor]; // show altitude detail text in the default color
     }
+    else if ([indexPath row] == ROW_DOWNLOAD)
+    {
+        [[cell textLabel] setText:@"Download data"];
+        [[cell detailTextLabel] setText:nil];
+    }
 
     return cell;
 }
@@ -267,6 +280,26 @@
         [viewController setTitle:@"Altitude"];
         [[self navigationController] pushViewController:viewController animated:YES];
     }
+    else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_DOWNLOAD)
+    {
+        if (bulkRetrieverController == nil)
+            bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
+        [((UINavigationController*) [self parentViewController]) pushViewController:bulkRetrieverController animated:YES];
+        NSMutableArray* locations = [[NSMutableArray alloc] initWithCapacity:[_flightRoute waypointCount]];
+        for (NSUInteger i = 0; i < [_flightRoute waypointCount]; i++)
+        {
+            Waypoint* waypoint = [_flightRoute waypointAtIndex:i];
+            [locations addObject:[waypoint location]];
+        }
+
+        if ([locations count] > 0)
+            [bulkRetrieverController setSector:[[WWSector alloc] initWithLocations:locations]];
+        else
+            [bulkRetrieverController setSector:[[WWSector alloc] initWithDegreesMinLatitude:0
+                                                                                maxLatitude:0
+                                                                               minLongitude:0
+                                                                               maxLongitude:0]];
+    }
 }
 
 - (BOOL) tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)indexPath
@@ -295,7 +328,7 @@
     }
 }
 
-- (NSIndexPath*) tableView:(UITableView*)tableView
+- (NSIndexPath*)               tableView:(UITableView*)tableView
 targetIndexPathForMoveFromRowAtIndexPath:(NSIndexPath*)sourceIndexPath
                      toProposedIndexPath:(NSIndexPath*)proposedDestinationIndexPath
 {
@@ -330,10 +363,10 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
     if ([sourceIndexPath section] == SECTION_WAYPOINTS
-     && [destinationIndexPath section] == SECTION_WAYPOINTS)
+            && [destinationIndexPath section] == SECTION_WAYPOINTS)
     {
         [_flightRoute moveWaypointAtIndex:(NSUInteger) [sourceIndexPath row]
-                                 toIndex:(NSUInteger) [destinationIndexPath row]];
+                                  toIndex:(NSUInteger) [destinationIndexPath row]];
     }
 }
 

@@ -10,6 +10,8 @@
 @class FlightRoute;
 @class WaypointFile;
 @class WaypointFileControl;
+@class BulkRetrieverController;
+@class WorldWindView;
 
 @interface FlightRouteDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 {
@@ -19,12 +21,17 @@
     WaypointFileControl* waypointFileControl;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
+    BulkRetrieverController* bulkRetrieverController;
 }
 
 @property (nonatomic, readonly, weak) FlightRoute* flightRoute;
 
 @property (nonatomic, readonly, weak) WaypointFile* waypointFile;
 
-- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute waypointFile:(WaypointFile*)waypointFile;
+@property (nonatomic, readonly, weak) WorldWindView* wwv;
+
+- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute
+                                        waypointFile:(WaypointFile*)waypointFile
+                                                view:(WorldWindView*)wwv;
 
 @end

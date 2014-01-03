@@ -93,7 +93,7 @@ static const NSTimeInterval FlightRouteNavigatorDuration = 1.5;
 - (UIViewController*) flightRouteDetailControllerAtIndex:(NSUInteger)index
 {
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
-    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:_waypointFile];
+    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:_waypointFile view:_wwv];
 }
 
 - (void) addFlightRouteAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
