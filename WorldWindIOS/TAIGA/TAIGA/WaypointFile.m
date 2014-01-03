@@ -188,7 +188,7 @@
 
         Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location type:WaypointTypeAirport];
         [waypoint setProperties:row];
-        [waypoint setDisplayName:[row objectForKey:@"FAA_HOST_ID"]];
+        [waypoint setDisplayName:[row objectForKey:@"ICAO"]];
         [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
         [waypointArray addObject:waypoint];
         [waypointKeyMap setValue:waypoint forKey:key];
