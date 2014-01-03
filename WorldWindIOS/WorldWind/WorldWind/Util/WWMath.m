@@ -6,17 +6,12 @@
  */
 
 #import "WorldWind/Util/WWMath.h"
+#import "WorldWind/Geometry/WWLine.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Geometry/WWLine.h"
-
-#define ANIMATION_DISTANCE_MIN 1000
-#define ANIMATION_DISTANCE_MAX 1000000
-#define ANIMATION_DURATION_MIN 1.0
-#define ANIMATION_DURATION_MAX 5.0
 
 @implementation WWMath
 
@@ -247,36 +242,6 @@
 //-- Computing Viewing and Navigation Information --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-+ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition* __unsafe_unretained)posA
-                                             endPosition:(WWPosition* __unsafe_unretained)posB
-                                                 onGlobe:(WWGlobe* __unsafe_unretained)globe
-{
-    if (posA == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin position is nil")
-    }
-
-    if (posB == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"End position is nil")
-    }
-
-    if (globe == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
-    }
-
-    WWVec4* pa = [[WWVec4 alloc] initWithZeroVector];
-    WWVec4* pb = [[WWVec4 alloc] initWithZeroVector];
-    [globe computePointFromPosition:[posA latitude] longitude:[posA longitude] altitude:[posA altitude] outputPoint:pa];
-    [globe computePointFromPosition:[posB latitude] longitude:[posB longitude] altitude:[posB altitude] outputPoint:pb];
-
-    double distance = [pa distanceTo3:pb];
-    double stepDistance = [WWMath stepValue:distance min:ANIMATION_DISTANCE_MIN max:ANIMATION_DISTANCE_MAX];
-
-    return [WWMath interpolateValue1:ANIMATION_DURATION_MIN value2:ANIMATION_DURATION_MAX amount:stepDistance];
-}
-
 + (double) horizonDistanceForGlobeRadius:(double)radius eyeAltitude:(double)altitude
 {
     if (radius < 0)
@@ -425,6 +390,67 @@
     double radius = [pa distanceTo3:pb] / 2;
 
     return [WWMath perspectiveFitDistance:viewport forObjectWithRadius:radius];
+}
+
++ (NSTimeInterval) perspectiveAnimationDuration:(CGRect)viewport
+                                   forPositionA:(WWPosition*)posA
+                                      positionB:(WWPosition*)posB
+                                        onGlobe:(WWGlobe*)globe
+{
+    if (CGRectGetWidth(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport width is zero")
+    }
+
+    if (CGRectGetHeight(viewport) == 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
+    }
+
+    if (posA == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position A is nil")
+    }
+
+    if (posB == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position B is nil")
+    }
+
+    if (globe == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
+    }
+
+    // Compute the constant animation rate in pixels per second. We use the maximum viewport dimension so that this rate
+    // scales correctly when the viewport dimensions change.
+    double pixelsPerSecond = MAX(CGRectGetWidth(viewport), CGRectGetHeight(viewport));
+
+    // Compute the horizontal duration in seconds as a function of the great-circle distance between the two positions
+    // and the average altitude during the animation. The fit distance indicates the distance from which both positions
+    // are visible and is used to provide a better estimate of average animation viewing distance when the two positions
+    // have low altitudes and are distant from one another. This assumes that an animation using this duration would
+    // zoom out and back in in order to avoid keeping the viewer near the surface.
+    double fitDistance = [WWMath perspectiveFitDistance:viewport forPositionA:posA positionB:posB onGlobe:globe];
+    double avgDistance = (fitDistance > [posA altitude] && fitDistance > [posB altitude])
+            ? (fitDistance + [posA altitude] + [posB altitude]) / 3 : ([posA altitude] + [posB altitude]) / 2;
+    double metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:avgDistance];
+    double metersPerSecond = metersPerPixel * pixelsPerSecond;
+    double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+    double horizontalMeters = RADIANS([WWLocation greatCircleDistance:posA endLocation:posB]) * globeRadius;
+    double horizontalSeconds = horizontalMeters / metersPerSecond;
+
+    // Compute the vertical duration in seconds as a function of the distance between the two altitudes and the average
+    // altitude during the animation.
+    avgDistance = ([posA altitude] + [posB altitude]) / 2;
+    metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:avgDistance];
+    metersPerSecond = metersPerPixel * pixelsPerSecond;
+    double verticalMeters = fabs([posA altitude] - [posB altitude]);
+    double verticalSeconds = verticalMeters / metersPerSecond;
+
+    // The maximum of the horizontal and vertical duration is appropriate for the entire animation. If one duration is
+    // greater than the other, then it's assumed to be appropriate for the entire animation.
+    return MAX(horizontalSeconds, verticalSeconds);
 }
 
 + (double) perspectiveNearDistance:(CGRect)viewport forObjectAtDistance:(double)distance

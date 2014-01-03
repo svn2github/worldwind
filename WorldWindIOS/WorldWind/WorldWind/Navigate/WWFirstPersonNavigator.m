@@ -554,7 +554,7 @@
     // eye positions in order to factor the change to both location and altitude into the duration.
     if (duration == WWNavigatorDurationAutomatic)
     {
-        duration = [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe];
+        duration = [WWMath perspectiveAnimationDuration:viewport forPositionA:pa positionB:pb onGlobe:globe];
     }
 
     animationBeginDate = now;

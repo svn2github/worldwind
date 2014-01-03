@@ -286,25 +286,6 @@
 /// @name Computing Information for Viewing and Projection
 
 /**
-* Computes a recommended duration for a navigator animation between the specified positions as an NSTimeInterval.
-*
-* This returns a duration between 1.0 and 5.0 seconds corresponding to the distance between the two positions. These
-* durations and the distances they are associated with are a recommendation based on observation with common World Wind
-* navigator use cases, such as animating from the current position to the result of a location search.
-*
-* @param posA The animation's begin position.
-* @param posB The animation's end position.
-* @param globe The globe the two positions are associated with.
-*
-* @return The animation duration, in seconds.
-*
-* @exception NSInvalidArgumentException If any argument is nil.
-*/
-+ (NSTimeInterval) durationForAnimationWithBeginPosition:(WWPosition*)posA
-                                             endPosition:(WWPosition*)posB
-                                                 onGlobe:(WWGlobe*)globe;
-
-/**
 * Computes the distance to a globe's horizon from a viewer at a given altitude.
 *
 * Only the globe's ellipsoid is considered; terrain height is not incorporated. This returns zero if the radius is zero
@@ -401,6 +382,32 @@
                      forPositionA:(WWPosition*)posA
                         positionB:(WWPosition*)posB
                           onGlobe:(WWGlobe*)globe;
+
+/**
+* Computes a recommended duration in seconds for an animation between the two positions in a perspective projection on
+* the given globe.
+*
+* This returns a duration typically between 0 seconds and 3 seconds corresponding to the distance between the two
+* positions in OpenGL screen coordinates. This considers both the distance between the two geographic locations and the
+* distance between the two altitudes.
+*
+* The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+* up and to the right from the origin point.
+*
+* @param viewport The viewport rectangle, in OpenGL screen coordinates.
+* @param posA The animation's begin position.
+* @param posB The animation's end position.
+* @param globe The globe the two positions are associated with.
+*
+* @return The animation duration, in seconds.
+*
+* @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, or if any argument
+* is nil.
+*/
++ (NSTimeInterval) perspectiveAnimationDuration:(CGRect)viewport
+                                   forPositionA:(WWPosition*)posA
+                                      positionB:(WWPosition*)posB
+                                        onGlobe:(WWGlobe*)globe;
 
 /**
 * Computes the maximum near clip distance for a perspective projection that avoids clipping an object at a given

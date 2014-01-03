@@ -468,7 +468,7 @@
     {
         pa = [[WWPosition alloc] initWithLocation:animBeginLookAt altitude:animBeginRange];
         pb = [[WWPosition alloc] initWithLocation:animEndLookAt altitude:animEndRange];
-        duration = [WWMath durationForAnimationWithBeginPosition:pa endPosition:pb onGlobe:globe];
+        duration = [WWMath perspectiveAnimationDuration:viewport forPositionA:pa positionB:pb onGlobe:globe];
     }
 
     animationBeginDate = now;
