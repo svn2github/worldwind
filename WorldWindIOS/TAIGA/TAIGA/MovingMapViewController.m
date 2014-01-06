@@ -48,6 +48,7 @@
 #import "TerrainProfileController.h"
 #import "AircraftLayer.h"
 #import "TerrainAltitudeLayer.h"
+#import "NavigationModeView.h"
 
 @implementation MovingMapViewController
 {
@@ -66,6 +67,7 @@
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
+    NavigationModeView* navigationModeView;
     ScaleBarView* scaleBarView;
     ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
@@ -149,17 +151,21 @@
     scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:scaleBarView];
 
+    navigationModeView = [[NavigationModeView alloc] init];
+    [self.view addSubview:navigationModeView];
+
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [terrainProfileView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [navigationModeView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
     UIView* simulationView = [simulationViewController view];
     NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView,
-    simulationView, terrainProfileView);
+    simulationView, terrainProfileView, navigationModeView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
@@ -171,6 +177,12 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[terrainProfileView(==_wwv)]"
                                                                  options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:navigationModeView attribute:NSLayoutAttributeLeft
+                                                     relatedBy:NSLayoutRelationEqual
+                                                        toItem:_wwv attribute:NSLayoutAttributeLeft multiplier:1 constant:20]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:navigationModeView attribute:NSLayoutAttributeTop
+                                                     relatedBy:NSLayoutRelationEqual
+                                                        toItem:_wwv attribute:NSLayoutAttributeTop multiplier:1 constant:20]];
 
     normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(==view)][chartView(==0)]|"
                                                                 options:0 metrics:nil views:viewsDictionary];
@@ -684,7 +696,6 @@
 
 - (void) handleViewsButton
 {
-//    [self presentTerrainProfile];
     if (viewSelectionPopoverController == nil)
     {
         UINavigationController* navController = [[UINavigationController alloc]

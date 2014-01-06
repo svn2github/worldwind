@@ -9,10 +9,9 @@
 #import "WorldWindView.h"
 #import "AppConstants.h"
 
-
 @implementation ViewSelectionController
 {
-    BOOL trackUp;
+    NSString* navigationMode;
     BOOL terrainProfileVisible;
 }
 
@@ -21,6 +20,13 @@
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     _wwv = wwv;
+
+    navigationMode = [[NSUserDefaults standardUserDefaults] objectForKey:TAIGA_NAVIGATION_MODE];
+    if (navigationMode == nil)
+    {
+        navigationMode = TAIGA_NAVIGATION_MODE_TRACK_UP;
+        [self postNavigationMode];
+    }
 
     [[self navigationItem] setTitle:@"Views"];
     [self setPreferredContentSize:CGSizeMake(300, 250)];
@@ -40,18 +46,38 @@
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
     if ([indexPath section] == 0)
     {
+        NSString* newNavigationMode = navigationMode;
+        if ([indexPath row] == 0)
+        {
+            newNavigationMode = TAIGA_NAVIGATION_MODE_TRACK_UP;
+        }
+        else if ([indexPath row] == 1)
+        {
+            newNavigationMode = TAIGA_NAVIGATION_MODE_NORTH_UP;
+        }
 
+        if (![navigationMode isEqualToString:newNavigationMode])
+        {
+            navigationMode = newNavigationMode;
+            [self postNavigationMode];
+        }
+
+        [tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                 withRowAnimation:UITableViewRowAnimationAutomatic];
     }
     else if ([indexPath section] == 1)
     {
         terrainProfileVisible = !terrainProfileVisible;
         NSNumber* yn = [[NSNumber alloc] initWithBool:terrainProfileVisible];
         [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SHOW_TERRAIN_PROFILE object:yn];
-    }
 
-    [[self tableView] reloadData];
+        [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                         withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -63,7 +89,6 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
-        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     }
 
     if ([indexPath section] == 0)
@@ -71,22 +96,29 @@
         if ([indexPath row] == 0)
         {
             [[cell textLabel] setText:@"Track Up"];
-            [[cell imageView] setHidden:!trackUp];
+            [[cell imageView] setHidden:![navigationMode isEqual:TAIGA_NAVIGATION_MODE_TRACK_UP]];
         }
         else if ([indexPath row] == 1)
         {
             [[cell textLabel] setText:@"North Up"];
-            [[cell imageView] setHidden:trackUp];
+            [[cell imageView] setHidden:![navigationMode isEqual:TAIGA_NAVIGATION_MODE_NORTH_UP]];
         }
+        [cell setAccessoryType:UITableViewCellAccessoryNone];
     }
     else if ([indexPath section] == 1)
     {
         [[cell textLabel] setText:@"Terrain Profile"];
         [[cell imageView] setHidden:!terrainProfileVisible];
-        [cell setAccessoryType: UITableViewCellAccessoryDetailButton];
+        [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
     }
 
     return cell;
+}
+
+- (void) postNavigationMode
+{
+    [[NSUserDefaults standardUserDefaults] setObject:navigationMode forKey:TAIGA_NAVIGATION_MODE];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_NAVIGATION_MODE object:navigationMode];
 }
 
 @end

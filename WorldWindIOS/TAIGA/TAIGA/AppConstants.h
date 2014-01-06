@@ -12,6 +12,7 @@
 
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_EARTH_RADIUS (6378137.0)
+#define TAIGA_ENABLE_NAVIGATION_MODE (@"gov.nasa.worldwind.taiga.enable.navigation.mode")
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
 #define TAIGA_METERS_TO_FEET (3.28083989501)
 #define TAIGA_MILES_TO_METERS (1609.34)
@@ -26,6 +27,9 @@
 #define TAIGA_SHOW_TERRAIN_PROFILE (@"gov.nasa.worldwind.taiga.terrainprofile.show")
 #define TAIGA_SIMULATION_DID_BEGIN (@"gov.nasa.worldwind.taiga.simulationdidbegin")
 #define TAIGA_SIMULATION_DID_END (@"gov.nasa.worldwind.taiga.simulationdidend")
+#define TAIGA_NAVIGATION_MODE (@"gov.nasa.worldwind.taiga.navigation.mode")
+#define TAIGA_NAVIGATION_MODE_NORTH_UP (@"gov.nasa.worldwind.taiga.navigation.mode.northup")
+#define TAIGA_NAVIGATION_MODE_TRACK_UP (@"gov.nasa.worldwind.taiga.navigation.mode.trackup")
 
 @interface AppConstants : NSObject
 @end
