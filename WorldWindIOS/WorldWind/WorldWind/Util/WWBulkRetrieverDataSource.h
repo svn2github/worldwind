@@ -6,6 +6,7 @@
  */
 
 @class WWBulkRetriever;
+@class WWSector;
 
 /**
 * WWBulkRetrieverDataSource defines an protocol for a network enabled layer or model to download network resources on
@@ -35,5 +36,15 @@
 * @exception NSInvalidArgumentException If the retriever is nil.
 */
 - (void) performBulkRetrieval:(WWBulkRetriever*)retriever;
+
+/**
+* Returns the data size, in megabytes, of the data for a specified sector and resolution.
+*
+* @param sector The sector for which to determine the data size.
+* @param targetResolution The target resolution for the data. 0 indicates use best resolution.
+*
+* @exception NSInvalidArgumentException If the sector is nil.
+*/
+- (int) dataSizeForSector:(WWSector*)sector targetResolution:(double)targetResolution;
 
 @end

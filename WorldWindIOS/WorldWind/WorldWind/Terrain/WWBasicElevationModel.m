@@ -283,6 +283,19 @@
 #define BULK_RETRIEVER_SIMULTANEOUS_TILES 8
 #define BULK_RETRIEVER_SLEEP_INTERVAL 0.1
 
+- (int) dataSizeForSector:(WWSector*)sector targetResolution:(double)targetResolution
+{
+    if (sector == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+    }
+
+    int lastLevel = [[levels levelForTexelSize:targetResolution] levelNumber];
+    NSUInteger tileCount = [levels tileCountForSector:sector lastLevel:lastLevel];
+
+    return (int) (tileCount * ([levels tileWidth] * [levels tileHeight] * 2) / 1e6); // assumes 2-bytes per pixel
+}
+
 - (void) performBulkRetrieval:(WWBulkRetriever*)retriever
 {
     if (retriever == nil)

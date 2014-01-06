@@ -28,9 +28,11 @@
 
 - (BulkRetrieverCell*) initWithDataSource:(id)dataSource sector:(WWSector*)sector operationQueue:(NSOperationQueue*)queue
 {
-    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
 
     [[self textLabel] setText:[dataSource displayName]];
+    dataSize = [dataSource dataSizeForSector:sector targetResolution:0];
+    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB", dataSize]];
 
     startAccessory = [self createStartAccessory];
     stopAccessory = [self createStopAccessory];
@@ -121,6 +123,8 @@
 - (void) observeValueForKeyPath:(NSString*)keyPath ofObject:(id)object change:(NSDictionary*)change context:(void*)context
 {
     [progress setProgress:[object progress] animated:YES];
+    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB,  %d MB remaining",
+                    dataSize, (int) ((1 - [object progress]) * dataSize)]];
 }
 
 @end
