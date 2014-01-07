@@ -48,7 +48,7 @@
 #import "TerrainProfileController.h"
 #import "AircraftLayer.h"
 #import "TerrainAltitudeLayer.h"
-#import "LocationTrackingView.h"
+#import "LocationTrackingViewController.h"
 
 @implementation MovingMapViewController
 {
@@ -67,7 +67,7 @@
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
-    LocationTrackingView* locationTrackingView;
+    LocationTrackingViewController* locationTrackingViewController;
     ScaleBarView* scaleBarView;
     ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
@@ -142,6 +142,7 @@
     [self createChartsController];
     [self createSimulationController];
     [self createTerrainProfile];
+    [self createLocationTrackingController];
 
     viewSelectionController = [[ViewSelectionController alloc] init];
 
@@ -151,19 +152,17 @@
     scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:scaleBarView];
 
-    locationTrackingView = [[LocationTrackingView alloc] init];
-    [self.view addSubview:locationTrackingView];
-
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [terrainProfileView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [locationTrackingView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [[locationTrackingViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
     UIView* simulationView = [simulationViewController view];
+    UIView* locationTrackingView = [locationTrackingViewController view];
     NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView,
     simulationView, terrainProfileView, locationTrackingView);
 
@@ -518,6 +517,12 @@
     {
         [self dismissSimulationController];
     }
+}
+
+- (void) createLocationTrackingController
+{
+    locationTrackingViewController = [[LocationTrackingViewController alloc] initWithView:_wwv];
+    [self.view addSubview:[locationTrackingViewController view]];
 }
 
 - (void) createTopToolbar

@@ -20,7 +20,7 @@
     self = [super initWithStyle:UITableViewStyleGrouped];
 
     locationTrackingMode = [Settings getObjectForName:TAIGA_LOCATION_TRACKING_MODE
-                                         defaultValue:TAIGA_LOCATION_TRACKING_MODE_TRACK_UP];
+                                         defaultValue:TAIGA_DEFAULT_LOCATION_TRACKING_MODE];
 
     [[self navigationItem] setTitle:@"Views"];
     [self setPreferredContentSize:CGSizeMake(300, 250)];
