@@ -87,7 +87,7 @@ static const CGFloat AircraftSliderHeight = 4;
 
 - (void) postAircraftPosition
 {
-    if (_flightRoute == nil)
+    if (_flightRoute == nil || [_flightRoute waypointCount] == 0)
         return;
 
     CLLocationCoordinate2D coordinate;

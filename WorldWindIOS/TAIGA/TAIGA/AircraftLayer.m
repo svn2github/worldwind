@@ -28,10 +28,10 @@
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(flightRouteDidChange:)
                                                  name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationDidBegin:)
-                                                 name:TAIGA_SIMULATION_DID_BEGIN object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationDidEnd:)
-                                                 name:TAIGA_SIMULATION_DID_END object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationWillBegin:)
+                                                 name:TAIGA_SIMULATION_WILL_BEGIN object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationWillEnd:)
+                                                 name:TAIGA_SIMULATION_WILL_END object:nil];
 
     return self;
 }
@@ -61,30 +61,33 @@
 
 - (void) aircraftPositionDidChange:(NSNotification*)notification
 {
+    if (![self enabled]) // enable this layer once we have a fix on the current location
+    {
+        [self setEnabled:YES];
+    }
+
     CLLocation* location = [notification object];
     [self updateAircraftShape:aircraftShape withLocation:location];
 }
 
 - (void) flightRouteDidChange:(NSNotification*)notification
 {
-    if (simulatedFlightRoute == [notification object])
+    if (simulatedFlightRoute == [notification object] && [simulatedFlightRoute waypointCount] == 0)
     {
-        // Enable the aircraft layer if the flight route is not nil and has at least one waypoint.
-        [self setEnabled:simulatedFlightRoute != nil && [simulatedFlightRoute waypointCount] > 0];
+        [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
     }
 }
 
-- (void) simulationDidBegin:(NSNotification*)notification
+- (void) simulationWillBegin:(NSNotification*)notification
 {
-    // Enable the aircraft layer if the flight route is not nil and has at least one waypoint.
     simulatedFlightRoute = [notification object];
-    [self setEnabled:simulatedFlightRoute != nil && [simulatedFlightRoute waypointCount] > 0];
+    [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
 }
 
-- (void) simulationDidEnd:(NSNotification*)notification
+- (void) simulationWillEnd:(NSNotification*)notification
 {
     simulatedFlightRoute = nil;
-    [self setEnabled:NO];
+    [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
 }
 
 @end

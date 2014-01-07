@@ -14,7 +14,7 @@
 {
 @protected
     id aircraftShape;
-    FlightRoute* simulatedFlightRoute;
+    id simulatedFlightRoute;
 }
 
 - (AircraftLayer*) init;
