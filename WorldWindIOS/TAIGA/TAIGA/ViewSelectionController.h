@@ -11,8 +11,6 @@
 
 @interface ViewSelectionController : UITableViewController <UINavigationControllerDelegate>
 
-@property (nonatomic, readonly) WorldWindView* wwv;
-
-- (ViewSelectionController*) initWithWorldWindView:(WorldWindView*)wwv;
+- (ViewSelectionController*) init;
 
 @end

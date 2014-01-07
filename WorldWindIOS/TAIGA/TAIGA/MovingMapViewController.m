@@ -48,7 +48,7 @@
 #import "TerrainProfileController.h"
 #import "AircraftLayer.h"
 #import "TerrainAltitudeLayer.h"
-#import "NavigationModeView.h"
+#import "LocationTrackingView.h"
 
 @implementation MovingMapViewController
 {
@@ -67,7 +67,7 @@
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
     UIBarButtonItem* routePlanningButton;
-    NavigationModeView* navigationModeView;
+    LocationTrackingView* locationTrackingView;
     ScaleBarView* scaleBarView;
     ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
@@ -143,7 +143,7 @@
     [self createSimulationController];
     [self createTerrainProfile];
 
-    viewSelectionController = [[ViewSelectionController alloc] initWithWorldWindView:_wwv];
+    viewSelectionController = [[ViewSelectionController alloc] init];
 
     float x = 20;//myFrame.size.width - 220;
     float y = myFrame.size.height - 70;
@@ -151,21 +151,21 @@
     scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:scaleBarView];
 
-    navigationModeView = [[NavigationModeView alloc] init];
-    [self.view addSubview:navigationModeView];
+    locationTrackingView = [[LocationTrackingView alloc] init];
+    [self.view addSubview:locationTrackingView];
 
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [terrainProfileView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [navigationModeView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [locationTrackingView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* chartView = [chartListNavController view];
     UIView* simulationView = [simulationViewController view];
     NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView,
-    simulationView, terrainProfileView, navigationModeView);
+    simulationView, terrainProfileView, locationTrackingView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
@@ -177,10 +177,10 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[terrainProfileView(==_wwv)]"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraint:[NSLayoutConstraint constraintWithItem:navigationModeView attribute:NSLayoutAttributeLeft
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:locationTrackingView attribute:NSLayoutAttributeLeft
                                                      relatedBy:NSLayoutRelationEqual
                                                         toItem:_wwv attribute:NSLayoutAttributeLeft multiplier:1 constant:20]];
-    [view addConstraint:[NSLayoutConstraint constraintWithItem:navigationModeView attribute:NSLayoutAttributeTop
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:locationTrackingView attribute:NSLayoutAttributeTop
                                                      relatedBy:NSLayoutRelationEqual
                                                         toItem:_wwv attribute:NSLayoutAttributeTop multiplier:1 constant:20]];
 

@@ -5,12 +5,12 @@
  @version $Id$
  */
 
-#import "NavigationModeView.h"
+#import "LocationTrackingView.h"
 #import "AppConstants.h"
 
-@implementation NavigationModeView
+@implementation LocationTrackingView
 
-- (NavigationModeView*) initWithFrame:(CGRect)frame
+- (LocationTrackingView*) initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
 
@@ -55,15 +55,11 @@
 
 - (void) buttonTapped
 {
-    enableNavigationMode = !enableNavigationMode;
-    [button setImage:enableNavigationMode ? enabledImage : disabledImage forState:UIControlStateNormal];
-    [self postEnableNavigationMode];
-}
+    enable = !enable;
+    [button setImage:enable ? enabledImage : disabledImage forState:UIControlStateNormal];
 
-- (void) postEnableNavigationMode
-{
-    NSNumber* yn = [NSNumber numberWithBool:enableNavigationMode];
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_ENABLE_NAVIGATION_MODE object:yn];
+    NSNumber* yn = [NSNumber numberWithBool:enable];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_ENABLE_LOCATION_TRACKING object:yn];
 }
 
 @end

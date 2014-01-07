@@ -10,6 +10,30 @@
 
 @implementation Settings
 
++ (void) setObject:(id)object forName:(NSString*)name
+{
+    [[NSUserDefaults standardUserDefaults] setObject:object forKey:name];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SETTING_CHANGED object:name];
+}
+
++ (id) getObjectForName:(NSString*)name defaultValue:(id)defaultValue
+{
+    id object = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+    if (object != nil)
+        return object;
+
+    [[NSUserDefaults standardUserDefaults] setObject:defaultValue forKey:name];
+
+    return defaultValue;
+}
+
++ (id) getObjectForName:(NSString*)name
+{
+    return [[NSUserDefaults standardUserDefaults] objectForKey:name];
+}
+
 + (void) setFloat:(float)value forName:(NSString*)name
 {
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithFloat:value] forKey:name];

@@ -6,27 +6,21 @@
  */
 
 #import "ViewSelectionController.h"
-#import "WorldWindView.h"
 #import "AppConstants.h"
+#import "Settings.h"
 
 @implementation ViewSelectionController
 {
-    NSString* navigationMode;
+    id locationTrackingMode;
     BOOL terrainProfileVisible;
 }
 
-- (ViewSelectionController*) initWithWorldWindView:(WorldWindView*)wwv
+- (ViewSelectionController*) init
 {
     self = [super initWithStyle:UITableViewStyleGrouped];
 
-    _wwv = wwv;
-
-    navigationMode = [[NSUserDefaults standardUserDefaults] objectForKey:TAIGA_NAVIGATION_MODE];
-    if (navigationMode == nil)
-    {
-        navigationMode = TAIGA_NAVIGATION_MODE_TRACK_UP;
-        [self postNavigationMode];
-    }
+    locationTrackingMode = [Settings getObjectForName:TAIGA_LOCATION_TRACKING_MODE
+                                         defaultValue:TAIGA_LOCATION_TRACKING_MODE_TRACK_UP];
 
     [[self navigationItem] setTitle:@"Views"];
     [self setPreferredContentSize:CGSizeMake(300, 250)];
@@ -50,24 +44,23 @@
 
     if ([indexPath section] == 0)
     {
-        NSString* newNavigationMode = navigationMode;
+        id newMode = locationTrackingMode;
         if ([indexPath row] == 0)
         {
-            newNavigationMode = TAIGA_NAVIGATION_MODE_TRACK_UP;
+            newMode = TAIGA_LOCATION_TRACKING_MODE_TRACK_UP;
         }
         else if ([indexPath row] == 1)
         {
-            newNavigationMode = TAIGA_NAVIGATION_MODE_NORTH_UP;
+            newMode = TAIGA_LOCATION_TRACKING_MODE_NORTH_UP;
         }
 
-        if (![navigationMode isEqualToString:newNavigationMode])
+        if (![locationTrackingMode isEqualToString:newMode])
         {
-            navigationMode = newNavigationMode;
-            [self postNavigationMode];
+            locationTrackingMode = newMode;
+            [Settings setObject:newMode forName:TAIGA_LOCATION_TRACKING_MODE];
+            [tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                     withRowAnimation:UITableViewRowAnimationAutomatic];
         }
-
-        [tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                 withRowAnimation:UITableViewRowAnimationAutomatic];
     }
     else if ([indexPath section] == 1)
     {
@@ -96,12 +89,12 @@
         if ([indexPath row] == 0)
         {
             [[cell textLabel] setText:@"Track Up"];
-            [[cell imageView] setHidden:![navigationMode isEqual:TAIGA_NAVIGATION_MODE_TRACK_UP]];
+            [[cell imageView] setHidden:![locationTrackingMode isEqual:TAIGA_LOCATION_TRACKING_MODE_TRACK_UP]];
         }
         else if ([indexPath row] == 1)
         {
             [[cell textLabel] setText:@"North Up"];
-            [[cell imageView] setHidden:![navigationMode isEqual:TAIGA_NAVIGATION_MODE_NORTH_UP]];
+            [[cell imageView] setHidden:![locationTrackingMode isEqual:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP]];
         }
         [cell setAccessoryType:UITableViewCellAccessoryNone];
     }
@@ -113,12 +106,6 @@
     }
 
     return cell;
-}
-
-- (void) postNavigationMode
-{
-    [[NSUserDefaults standardUserDefaults] setObject:navigationMode forKey:TAIGA_NAVIGATION_MODE];
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_NAVIGATION_MODE object:navigationMode];
 }
 
 @end

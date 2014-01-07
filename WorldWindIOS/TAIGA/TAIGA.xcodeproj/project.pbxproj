@@ -188,7 +188,7 @@
 		CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8F60C10525135F57A82 /* AircraftShape.m */; };
 		CC8CF7C07D34E964137D88B6 /* WaypointLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCA0D8092BD7B6B01688 /* WaypointLayer.m */; };
 		CC8CF832A1920118F96D9839 /* circle-small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF77711BB8EB271836CF7 /* circle-small.png */; };
-		CC8CF84ED0295E3A6171D3B2 /* NavigationModeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF829F3CCABEED04F32C5 /* NavigationModeView.m */; };
+		CC8CF84ED0295E3A6171D3B2 /* LocationTrackingView.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF829F3CCABEED04F32C5 /* LocationTrackingView.m */; };
 		CC8CF8D644EE55C5AD000363 /* airport@large.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF942C767E4A7E4EBE9C0 /* airport@large.png */; };
 		CC8CF97294CE6422E993EF34 /* route-end.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF6C6DC046EDF8EF726B2 /* route-end.png */; };
 		CC8CF9F7A5258C5387DEF2CB /* route-end@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF2A1449A236B9E911B54 /* route-end@2x.png */; };
@@ -430,7 +430,7 @@
 		CC8CF6C6DC046EDF8EF726B2 /* route-end.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end.png"; sourceTree = "<group>"; };
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimulationViewController.h; sourceTree = "<group>"; };
-		CC8CF829F3CCABEED04F32C5 /* NavigationModeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavigationModeView.m; sourceTree = "<group>"; };
+		CC8CF829F3CCABEED04F32C5 /* LocationTrackingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationTrackingView.m; sourceTree = "<group>"; };
 		CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small@2x.png"; sourceTree = "<group>"; };
 		CC8CF8F2BE2B44F67B01F16F /* 433-x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x.png"; sourceTree = "<group>"; };
 		CC8CF8F60C10525135F57A82 /* AircraftShape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftShape.m; sourceTree = "<group>"; };
@@ -442,7 +442,7 @@
 		CC8CF95DB4FB13AD332B4BC2 /* airport@small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "airport@small.png"; sourceTree = "<group>"; };
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 		CC8CFA2383D923D871357C39 /* AircraftLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftLayer.h; sourceTree = "<group>"; };
-		CC8CFA81302B248110B5B84F /* NavigationModeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigationModeView.h; sourceTree = "<group>"; };
+		CC8CFA81302B248110B5B84F /* LocationTrackingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationTrackingView.h; sourceTree = "<group>"; };
 		CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AltitudePicker.m; sourceTree = "<group>"; };
 		CC8CFB4BF49DE156B2954624 /* RedrawingSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedrawingSlider.h; sourceTree = "<group>"; };
 		CC8CFB9C151CBACD0AEA093A /* AircraftShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftShape.h; sourceTree = "<group>"; };
@@ -629,8 +629,8 @@
 				1BF9A374EC6C285E375E1FE9 /* TerrainAltitudeLayer.h */,
 				1BF9A9E63B2CB769F37E99E8 /* BulkRetrieverController.h */,
 				1BF9A4980F4D05776EDA5E23 /* BulkRetrieverController.m */,
-				CC8CF829F3CCABEED04F32C5 /* NavigationModeView.m */,
-				CC8CFA81302B248110B5B84F /* NavigationModeView.h */,
+				CC8CF829F3CCABEED04F32C5 /* LocationTrackingView.m */,
+				CC8CFA81302B248110B5B84F /* LocationTrackingView.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1027,7 +1027,7 @@
 				1BF9ADA1B437C51FB50B3152 /* TerrainProfileController.m in Sources */,
 				1BF9A5FE37D7FEC21418DF38 /* TerrainAltitudeLayer.m in Sources */,
 				1BF9AC3531EC9D705031A80C /* BulkRetrieverController.m in Sources */,
-				CC8CF84ED0295E3A6171D3B2 /* NavigationModeView.m in Sources */,
+				CC8CF84ED0295E3A6171D3B2 /* LocationTrackingView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

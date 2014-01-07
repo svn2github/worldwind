@@ -7,16 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NavigationModeView : UIView
+@interface LocationTrackingView : UIView
 {
 @protected
-    BOOL enableNavigationMode;
+    BOOL enable;
     UIImage* enabledImage;
     UIImage* disabledImage;
     UIImageView* backgroundView;
     UIButton* button;
 }
 
-- (NavigationModeView*) initWithFrame:(CGRect)frame;
+- (LocationTrackingView*) initWithFrame:(CGRect)frame;
 
 @end
