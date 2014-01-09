@@ -269,12 +269,7 @@
     CGContextSaveGState(context);
     CGContextClip(context);
 
-    if (_warningAltitude > yMax)
-    {
-        [[[UIColor alloc] initWithRed:0 green:1 blue:0 alpha:_opacity] set];
-        CGContextFillRect(context, rect);
-    }
-    else if (_dangerAltitude > yMax)
+    if (_dangerAltitude > yMax)
     {
         float y0 = 1.0 - (_warningAltitude - yMin) / yRange;
         CGFloat locations[3] = {1.0, y0 + 0.03, y0};
@@ -315,7 +310,7 @@
 
     NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
     [attrDict setObject:[aircraftAltitudeLabelView font] forKey:NSFontAttributeName];
-    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) ceil((_aircraftAltitude * TAIGA_METERS_TO_FEET))];
+    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) round((_aircraftAltitude * TAIGA_METERS_TO_FEET))];
     CGSize stringSize = [displayString sizeWithAttributes:attrDict];
 
     [aircraftAltitudeLabelView setFrame:CGRectMake(35, aircraftY - 0.8 * stringSize.height, 100, 30)];
@@ -353,7 +348,7 @@
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 //    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:ceilf(yMax * (float) TAIGA_METERS_TO_FEET)]];
-    displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) ceil(yMax * TAIGA_METERS_TO_FEET)];
+    displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) round(yMax * TAIGA_METERS_TO_FEET)];
     stringSize = [displayString sizeWithAttributes:attrDict];
     float maxLabelX = frame.size.width * (xAtYMax - xMin) / xRange - 0.5 * stringSize.width;
     if (yMax <= 0)
