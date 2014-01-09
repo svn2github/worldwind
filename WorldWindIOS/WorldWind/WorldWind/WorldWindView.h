@@ -43,14 +43,26 @@
 * the redraw need not have a reference to the WorldWindView object.
 */
 @interface WorldWindView : UIView <WWDisposable>
+{
+@protected
+    NSLock* redrawRequestLock;
+    NSMutableArray* delegates;
+}
 
-/// @name World Wind View attributes
+/// @name Attributes
 
 /// The view's scene controller. Use this to add and remove layers.
 @property(nonatomic, readonly) WWSceneController* sceneController;
 
 /// The view's navigator.
 @property(nonatomic) id <WWNavigator> navigator;
+
+/// The view's frame statistics associated with the most recent frame. Frame statistics provides measurements indicating
+/// the view's current and average rendering performance.
+@property(nonatomic, readonly) WWFrameStatistics* frameStatistics;
+
+/// The view's OpenGL context. Applications typically do not need to be aware of this object.
+@property(nonatomic, readonly) EAGLContext* context;
 
 /// The view's viewport, in screen coordinates.
 @property(nonatomic, readonly) CGRect viewport;
@@ -77,13 +89,6 @@
 /// The view's OpenGL picking depth buffer. Applications typically do not need to be aware of this object.
 @property(nonatomic, readonly) GLuint pickingDepthBuffer;
 
-/// The view's OpenGL context. Applications typically do not need to be aware of this object.
-@property(nonatomic, readonly) EAGLContext* context;
-
-/// The view's frame statistics associated with the most recent frame. Frame statistics provides measurements indicating
-/// the view's current and average rendering performance.
-@property(nonatomic, readonly) WWFrameStatistics* frameStatistics;
-
 /// A flag indicating that a redraw has been requested. Applications typically do not need to be aware of this object.
 @property BOOL redrawRequested;
 
@@ -91,7 +96,7 @@
 /// statistic gathering and should not be used by the application.
 @property(nonatomic) BOOL drawContinuously;
 
-/// @name Redrawing World Wind Views
+/// @name Updating the World Wind Scene
 
 /**
 * Redraw the view. The redraw is performed immediately.
@@ -107,7 +112,7 @@
 */
 - (void) requestRedraw;
 
-/// @name Picking
+/// @name Picking Objects in the World Wind Scene
 
 /**
 * Request the objects at a specified pick point.
@@ -118,20 +123,6 @@
 * the returned list contains an object identifying the associated geographic position.
 */
 - (WWPickedObjectList*) pick:(CGPoint)pickPoint;
-
-/// @name Methods of Interest Only to Subclasses
-
-/**
-* Releases the OpenGL objects created when the view was initialized.
-*/
-- (void) tearDownGL;
-
-/**
-* Responds to notifications of interest to the view.
-*
-* @param notification The notification to respond to.
-*/
-- (void) handleNotification:(NSNotification*)notification;
 
 /// @name Interposing in View Operations
 
@@ -148,5 +139,29 @@
 * @param delegate The delegate to remove.
 */
 - (void) removeDelegate:(id <WorldWindViewDelegate>)delegate;
+
+/// @name Methods of Interest Only to Subclasses
+
+/**
+* Allocates storage for this view's OpenGL renderbuffer objects and updates the viewport and depthBits properties to
+* match the current renderbuffer storage configuration.
+*
+* Called when this view is initialized and any time its OpenGL renderbuffer dimensions change thereafter.
+*
+* @param drawable The EAGLDrawable instance that will serve as the storage target for this view's OpenGL rendering.
+*/
+- (void) establishRenderbufferStorage:(id <EAGLDrawable>)drawable;
+
+/**
+* Releases the OpenGL framebuffer objects and renderbuffer objects created when this view was initialized.
+*/
+- (void) deleteRenderbuffers;
+
+/**
+* Responds to notifications of interest to the view.
+*
+* @param notification The notification to respond to.
+*/
+- (void) handleNotification:(NSNotification*)notification;
 
 @end
