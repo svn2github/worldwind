@@ -98,6 +98,11 @@
 
 - (void) dealloc
 {
+    [self dispose];
+}
+
+- (void) dispose
+{
     // Make this view's OpenGL context the current rendering context. OpenGL functions invoked by the scene controller
     // and deleteRenderbuffers and are applied to this view's context.
     [EAGLContext setCurrentContext:_context];
@@ -113,13 +118,7 @@
     if ([EAGLContext currentContext] == _context)
         [EAGLContext setCurrentContext:nil];
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void) dispose
-{
-    // TODO: Is there a reason the sceneController is not disposed here?
-    [_navigator dispose];
+    [delegates removeAllObjects];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
