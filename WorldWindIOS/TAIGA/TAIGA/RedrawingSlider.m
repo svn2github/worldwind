@@ -6,17 +6,19 @@
  */
 
 #import "RedrawingSlider.h"
-#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation RedrawingSlider
+{
+@protected
+    NSUInteger trackingCount;
+}
 
 - (void) dealloc
 {
-    if (displayLink != nil)
+    if (trackingCount > 0)
     {
-        [displayLink invalidate];
-        displayLink = nil;
-        displayLinkObservers = 0;
+        [WorldWindView stopRedrawing];
     }
 }
 
@@ -24,9 +26,9 @@
 {
     BOOL track = [super beginTrackingWithTouch:touch withEvent:event];
 
-    if (track)
+    if (track && (++trackingCount == 1))
     {
-        [self startDisplayLink];
+        [WorldWindView startRedrawing];
     }
 
     return track;
@@ -36,53 +38,20 @@
 {
     [super endTrackingWithTouch:touch withEvent:event];
 
-    // Stop the display link and redraw the view. This handles the case where the last touch event occurs before the
-    // display link has a chance to fire and cause a redraw.
-    [self stopDisplayLink];
-    [self redraw];
+    if (--trackingCount == 0)
+    {
+        [WorldWindView stopRedrawing];
+    }
 }
 
 - (void) cancelTrackingWithEvent:(UIEvent*)event
 {
     [super cancelTrackingWithEvent:event];
 
-    // Stop the display link and redraw the view. This handles the case where the last touch event occurs before the
-    // display link has a chance to fire and cause a redraw.
-    [self stopDisplayLink];
-    [self redraw];
-}
-
-- (void) redraw
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
-}
-
-- (void) startDisplayLink
-{
-    if (displayLinkObservers == 0)
+    if (--trackingCount == 0)
     {
-        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire)];
-        [displayLink setFrameInterval:3]; // redraw every 20 ms
-        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [WorldWindView stopRedrawing];
     }
-
-    displayLinkObservers++;
-}
-
-- (void) stopDisplayLink
-{
-    displayLinkObservers--;
-
-    if (displayLinkObservers == 0)
-    {
-        [displayLink invalidate];
-        displayLink = nil;
-    }
-}
-
-- (void) displayLinkDidFire
-{
-    [self redraw];
 }
 
 @end

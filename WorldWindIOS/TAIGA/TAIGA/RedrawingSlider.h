@@ -7,13 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class WorldWindView;
-
 @interface RedrawingSlider : UISlider
-{
-@protected
-    CADisplayLink* displayLink;
-    NSUInteger displayLinkObservers;
-}
 
 @end
