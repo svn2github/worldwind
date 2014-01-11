@@ -15,7 +15,8 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindView.h"
 
-#define LOCATION_SMOOTHING_AMOUNT (0.5)
+#define LOCATION_SMOOTHING_AMOUNT (0.8)
+#define HEADING_SMOOTHING_AMOUNT (0.4)
 #define VIEW_TAG_BUTTON 1
 
 @implementation LocationTrackingViewController
@@ -163,7 +164,7 @@
         [[_wwv navigator] setCenterLocation:smoothedPosition];
         // Smooth the current location to eliminate jarring navigator changes when the current heading changes or when
         // the location tracking mode changes.
-        [self smoothCurrentHeadingWithAmount:LOCATION_SMOOTHING_AMOUNT];
+        [self smoothCurrentHeadingWithAmount:HEADING_SMOOTHING_AMOUNT];
         [[_wwv navigator] setHeading:smoothedHeading];
     } completion:^(BOOL finished)
     {
