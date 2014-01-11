@@ -13,6 +13,7 @@
 @interface FrameStatisticsController : UITableViewController
 {
     NSTimer* timer;
+    BOOL drawContinuously;
 }
 
 @property (nonatomic, readonly) WorldWindView* wwv;

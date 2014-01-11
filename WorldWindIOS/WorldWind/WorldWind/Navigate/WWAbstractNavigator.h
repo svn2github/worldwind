@@ -17,13 +17,11 @@
 @interface WWAbstractNavigator : NSObject <WWNavigator>
 {
 @protected
-    // Display link interface properties.
-    CADisplayLink* displayLink;
-    int displayLinkObservers;
-    // Animation interface properties.
+    NSUInteger gestureCount;
     BOOL animating;
     void (^animationBlock)(NSDate* timestamp, BOOL* stop);
     void (^completionBlock)(BOOL finished);
+    CADisplayLink* animationDisplayLink;
 }
 
 /// @name Navigator Attributes
@@ -52,14 +50,6 @@
 
 - (WWPosition*) lastKnownPosition;
 
-/// @name Display Link Interface for Subclasses
-
-- (void) startDisplayLink;
-
-- (void) stopDisplayLink;
-
-- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink;
-
 /// @name Gesture Recognizer Interface for Subclasses
 
 - (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer;
@@ -72,7 +62,7 @@
 
 - (void) endAnimation:(BOOL)finished;
 
-- (void) updateAnimation:(NSDate*)timestamp;
+- (void) updateAnimation;
 
 - (void) doUpdateAnimation:(NSDate*)timestamp;
 

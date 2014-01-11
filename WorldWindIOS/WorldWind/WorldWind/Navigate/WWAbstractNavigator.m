@@ -17,12 +17,12 @@
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
+#define ANIMATION_FRAME_INTERVAL (3)
 #define DEFAULT_HEADING 0
 #define DEFAULT_TILT 0
 #define DEFAULT_ROLL 0
 #define DEFAULT_NEAR_DISTANCE 1
 #define DEFAULT_FAR_DISTANCE 10000000
-#define DISPLAY_LINK_FRAME_INTERVAL 3
 #define MIN_NEAR_DISTANCE 1
 #define MIN_FAR_DISTANCE 1000
 #define TARGET_FAR_RESOLUTION 10.0
@@ -59,11 +59,10 @@
 
 - (void) dispose
 {
-    // Invalidate the display link if the navigator is de-allocated before the display link can be cleaned up normally.
-    if (displayLink != nil)
+    if (gestureCount > 0)
     {
-        [displayLink invalidate];
-        displayLink = nil;
+        gestureCount = 0;
+        [WorldWindView stopRedrawing]; // send a stop redrawing request for this navigator's active gestures
     }
 
     if (animating)
@@ -71,6 +70,9 @@
         animating = NO;
         animationBlock = NULL;
         completionBlock = NULL;
+        [animationDisplayLink invalidate];
+        animationDisplayLink = nil;
+        [WorldWindView stopRedrawing]; // send a stop redrawing request for this navigator's running animation
     }
 }
 
@@ -264,65 +266,28 @@
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Display Link Interface for Subclasses --//
-//--------------------------------------------------------------------------------------------------------------------//
-
-- (void) startDisplayLink
-{
-    if (displayLinkObservers == 0)
-    {
-        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire:)];
-        [displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
-        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    }
-
-    displayLinkObservers++;
-}
-
-- (void) stopDisplayLink
-{
-    displayLinkObservers--;
-
-    if (displayLinkObservers == 0)
-    {
-        [displayLink invalidate];
-        displayLink = nil;
-    }
-}
-
-- (void) displayLinkDidFire:(CADisplayLink*)notifyingDisplayLink
-{
-    if (animating)
-    {
-        NSDate* now = [NSDate date]; // capture the current date as a timestamp
-        [self updateAnimation:now];
-    }
-
-    [_view drawView]; // The view is a weak reference; this has no effect if the view has been deallocated.
-}
-
-//--------------------------------------------------------------------------------------------------------------------//
 //-- Gesture Recognizer Interface for Subclasses --//
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (void) gestureRecognizerDidBegin:(UIGestureRecognizer*)recognizer
 {
-    // Stop any currently active animations. Navigator gestures override any currently active animation.
-    if (animating)
+    if (animating) // Stop any currently running animation without finishing it. Navigator gestures override animations.
     {
-        [self endAnimation:NO]; // end current animation without finishing it
+        [self endAnimation:NO];
     }
 
-    // Start the display link that will refresh the view while the gesture is active.
-    [self startDisplayLink];
+    if (++gestureCount == 1) // start redrawing when the first gesture begins and keep track of the total gesture count
+    {
+        [WorldWindView startRedrawing];
+    }
 }
 
 - (void) gestureRecognizerDidEnd:(UIGestureRecognizer*)recognizer
 {
-    // Stop the display link and redraw the view. This handles the case when the last gesture update and the gesture end
-    // occur before the display link has a chance to fire and redraw the view.
-    [self stopDisplayLink];
-    [_view drawView]; // The view is a weak reference; this has no effect if the view has been deallocated.
+    if (--gestureCount == 0) // stop redrawing when all gestures have ended
+    {
+        [WorldWindView stopRedrawing];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -331,14 +296,25 @@
 
 - (void) beginAnimation
 {
+    if (animating) // the current animation must end or be forced to end before another one can begin
+        return;
+
     animating = YES;
-    [self startDisplayLink];
+    animationDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateAnimation)];
+    [animationDisplayLink setFrameInterval:ANIMATION_FRAME_INTERVAL];
+    [animationDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [WorldWindView startRedrawing]; // Redraw the view continuously while the animation is running.
 }
 
 - (void) endAnimation:(BOOL)finished
 {
+    if (!animating) // ignore this call when there's no animation running
+        return;
+
     animating = NO;
-    [self stopDisplayLink];
+    [animationDisplayLink invalidate];
+    animationDisplayLink = nil;
+    [WorldWindView stopRedrawing]; // Stop redrawing the view continuously when the animation ends.
 
     if (animationBlock != NULL)
     {
@@ -353,8 +329,13 @@
     }
 }
 
-- (void) updateAnimation:(NSDate*)timestamp
+- (void) updateAnimation
 {
+    if (!animating) // ignore this call when there's no animation running
+        return;
+
+    NSDate* timestamp = [NSDate date]; // now
+
     if (animationBlock != NULL)
     {
         BOOL stop = NO; // stop the animation when the caller's block requests it

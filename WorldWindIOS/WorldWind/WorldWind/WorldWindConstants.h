@@ -37,6 +37,8 @@ extern NSString* const WW_REFRESH_COMPLETE;
 extern NSString* const WW_REQUEST_REDRAW;
 extern NSString* const WW_RESPONSE_CODE;
 extern NSString* const WW_RHUMB;
+extern NSString* const WW_START_REDRAWING;
+extern NSString* const WW_STOP_REDRAWING;
 extern NSString* const WW_SUCCEEDED;
 extern NSString* const WW_RETRIEVAL_STATUS;
 extern NSString* const WW_REQUEST_STATUS;

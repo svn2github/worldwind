@@ -8,7 +8,6 @@
 #import "FrameStatisticsController.h"
 #import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/WorldWindView.h"
-#import "WorldWind/WorldWindConstants.h"
 
 #define CONTROLS_SECTION (-1) // not currently used
 #define FRAME_SECTION (0)
@@ -26,6 +25,15 @@
                                             repeats:YES];
 
     return self;
+}
+
+- (void) dealloc
+{
+    if (drawContinuously)
+    {
+        drawContinuously = NO;
+        [WorldWindView stopRedrawing];
+    }
 }
 
 - (void) handleTimer
@@ -157,12 +165,14 @@
 
 - (void) handleDrawContinuouslySwitch:(UISwitch*)enableSwitch
 {
-    [_wwv setDrawContinuously:[enableSwitch isOn]];
-
-    if ([enableSwitch isOn])
+    drawContinuously = [enableSwitch isOn];
+    if (drawContinuously)
     {
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        [WorldWindView startRedrawing];
+    }
+    else
+    {
+        [WorldWindView stopRedrawing];
     }
 }
 

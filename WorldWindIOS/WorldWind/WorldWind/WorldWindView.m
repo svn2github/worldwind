@@ -14,6 +14,8 @@
 #import "WorldWind/WorldWindViewDelegate.h"
 #import "WorldWind/WWLog.h"
 
+#define REDRAW_FRAME_INTERVAL (3)
+
 @implementation WorldWindView
 
 + (Class) layerClass
@@ -25,7 +27,6 @@
 {
     if (self = [super initWithFrame:frame])
     {
-        redrawRequestLock = [[NSLock alloc] init];
         delegates = [[NSMutableArray alloc] init];
         _sceneController = [[WWSceneController alloc] init];
         _navigator = [[WWLookAtNavigator alloc] initWithView:self];
@@ -86,11 +87,13 @@
             return nil;
         }
 
-        // Set up to handle redraw requests.
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleNotification:)
-                                                     name:WW_REQUEST_REDRAW
-                                                   object:nil];
+        // Set up to receive redraw notifications.
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRequestRedraw:)
+                                                     name:WW_REQUEST_REDRAW object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleStartRedrawing:)
+                                                     name:WW_START_REDRAWING object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleStopRedrawing:)
+                                                     name:WW_STOP_REDRAWING object:nil];
     }
 
     return self;
@@ -118,18 +121,27 @@
     if ([EAGLContext currentContext] == _context)
         [EAGLContext setCurrentContext:nil];
 
+    // Invalidate the redraw display link if the view is de-allocated before continuous redraw can be stopped normally.
+    if (redrawDisplayLink != nil)
+    {
+        [redrawDisplayLink invalidate];
+        redrawDisplayLink = nil;
+    }
+
+    // Remove references to view delegates and remove this view from the default notification center.
     [delegates removeAllObjects];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void) layoutSubviews
 {
-    [super layoutSubviews]; // let the superclass UIView perform Auto Layout functions
+    // Let the superclass UIView perform auto layout.
+    [super layoutSubviews];
 
-    // Called whenever the backing Core Animation layer's bounds or properties change. In this case, the WorldWindView
-    // must re-establish storage for the color and depth renderbuffers, and reassign the viewport property. This ensures
-    // that the renderbuffers fit the view, and that the OpenGL viewport and projection matrix match the renderbuffer
-    // dimensions.
+    // The backing Core Animation layer's bounds or properties may have changed. Re-establish storage for the view's
+    // renderbuffers and update the viewport and depthBits propertites. This ensures that the renderbuffer dimensions
+    // match the view and the OpenGL viewport and projection matrix. Finally, draw this view immediately to ensure its
+    // state matches the current layout.
     [EAGLContext setCurrentContext:_context];
     [self establishRenderbufferStorage:(CAEAGLLayer*) [super layer]];
     [self drawView];
@@ -149,11 +161,6 @@
 - (void) drawView
 {
     [_frameStatistics beginFrame];
-
-    @synchronized (redrawRequestLock)
-    {
-        [self setRedrawRequested:NO];
-    }
 
     // Notify any delegates that the WorldWindView is about to draw its OpenGL framebuffer contents.
     for (id <WorldWindViewDelegate> delegate in delegates)
@@ -181,12 +188,6 @@
     [_context presentRenderbuffer:GL_RENDERBUFFER];
     [_frameStatistics setDisplayRenderbufferTime:[NSDate timeIntervalSinceReferenceDate] - beginTime];
 
-    if (_drawContinuously)
-    {
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
-    }
-
     // Notify any delegates that the WorldWindView completed drawing its OpenGL framebuffer contents.
     for (id <WorldWindViewDelegate> delegate in delegates)
     {
@@ -197,10 +198,31 @@
     [_frameStatistics endFrame];
 }
 
-- (void) requestRedraw
++ (void) requestRedraw
 {
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    if (![NSThread isMainThread]) // enqueue notifications on the main thread to ensure they are delivered
+    {
+        [[WorldWindView class] performSelectorOnMainThread:@selector(requestRedraw) withObject:nil waitUntilDone:NO];
+        return;
+    }
+
+    // Enqueue a request redraw notification on the main thread using the default notification queue to coalesce redraw
+    // requests posted on the same iteration of the run loop. Coalesced notifications are posted to the default
+    // notification center when the current run loop completes. Notifications must be enqueued on the main thread for
+    // two reasons: (1) each thread has its own default notification queue which performs coalescing, and (2) enqueued
+    // notifications are not posted when the thread they are posted terminates before the next run loop iteration.
+    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:nil];
+    [[NSNotificationQueue defaultQueue] enqueueNotification:redrawNotification postingStyle:NSPostASAP];
+}
+
++ (void) startRedrawing
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_START_REDRAWING object:nil]; // don't coalesce start/stop notifications
+}
+
++ (void) stopRedrawing
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:WW_STOP_REDRAWING object:nil]; // don't coalesce start/stop notifications
 }
 
 - (WWPickedObjectList*) pick:(CGPoint)pickPoint
@@ -280,18 +302,49 @@
     _pickingFrameBuffer = 0;
 }
 
-- (void) handleNotification:(NSNotification*)notification
+- (void) handleRequestRedraw:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_REQUEST_REDRAW])
+    if (![NSThread isMainThread]) // handle notifications on the main thread
     {
-        @synchronized (redrawRequestLock)
-        {
-            if (![self redrawRequested])
-            {
-                [self performSelectorOnMainThread:@selector(drawView) withObject:nil waitUntilDone:NO];
-                [self setRedrawRequested:YES];
-            }
-        }
+        [self performSelectorOnMainThread:@selector(handleRequestRedraw:) withObject:notification waitUntilDone:NO];
+        return;
+    }
+
+    if (startRedrawingRequests == 0) // ignore redraw requests while the view is redrawing continuously
+    {
+        [self drawView];
+    }
+}
+
+- (void) handleStartRedrawing:(NSNotification*)notification
+{
+    if (![NSThread isMainThread]) // handle notifications on the main thread
+    {
+        [self performSelectorOnMainThread:@selector(handleStartRedrawing:) withObject:notification waitUntilDone:NO];
+        return;
+    }
+
+    if (++startRedrawingRequests == 1) // start redrawing on the first request and keep track of the total count
+    {
+        redrawDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
+        [redrawDisplayLink setFrameInterval:REDRAW_FRAME_INTERVAL];
+        [redrawDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    }
+}
+
+- (void) handleStopRedrawing:(NSNotification*)notification
+{
+    if (![NSThread isMainThread]) // handle notifications on the main thread
+    {
+        [self performSelectorOnMainThread:@selector(handleStopRedrawing:) withObject:notification waitUntilDone:NO];
+        return;
+    }
+
+    if (--startRedrawingRequests == 0) // stop redrawing when all start requests have been accompanied by a stop request
+    {
+        [redrawDisplayLink invalidate];
+        redrawDisplayLink = nil;
+        [WorldWindView requestRedraw]; // request that a final frame be drawn during the next run loop iteration
     }
 }
 
