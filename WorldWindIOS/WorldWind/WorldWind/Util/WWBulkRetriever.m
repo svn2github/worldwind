@@ -12,28 +12,28 @@
 
 @implementation WWBulkRetriever
 
-- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sector:(WWSector*)sector;
+- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sectors:(NSArray*)sectors;
 {
     if (dataSource == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Data source is nil")
     }
 
-    if (sector == nil)
+    if (sectors == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sectors is nil")
     }
 
     self = [super init];
 
     _dataSource = dataSource;
-    _sector = sector;
+    _sectors = sectors;
     _targetResolution = 0; // Indicates the best available resolution.
 
     return self;
 }
 
-- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sector:(WWSector*)sector
+- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sectors:(NSArray*)sectors
                        targetResolution:(double)resolution;
 {
     if (dataSource == nil)
@@ -41,15 +41,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Data source is nil")
     }
 
-    if (sector == nil)
+    if (sectors == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sectors is nil")
     }
 
     self = [super init];
 
     _dataSource = dataSource;
-    _sector = sector;
+    _sectors = sectors;
     _targetResolution = resolution;
 
     return self;

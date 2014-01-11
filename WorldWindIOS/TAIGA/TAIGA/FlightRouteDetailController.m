@@ -285,21 +285,53 @@
         if (bulkRetrieverController == nil)
             bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
         [((UINavigationController*) [self parentViewController]) pushViewController:bulkRetrieverController animated:YES];
-        NSMutableArray* locations = [[NSMutableArray alloc] initWithCapacity:[_flightRoute waypointCount]];
-        for (NSUInteger i = 0; i < [_flightRoute waypointCount]; i++)
-        {
-            Waypoint* waypoint = [_flightRoute waypointAtIndex:i];
-            [locations addObject:[waypoint location]];
-        }
 
-        if ([locations count] > 0)
-            [bulkRetrieverController setSector:[[WWSector alloc] initWithLocations:locations]];
+        if ([_flightRoute waypointCount] == 0)
+        {
+            WWSector* sector = [[WWSector alloc] initWithDegreesMinLatitude:0 maxLatitude:0
+                                                               minLongitude:0 maxLongitude:0];
+            [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:sector, nil]];
+        }
+        else if ([_flightRoute waypointCount] == 1)
+        {
+            Waypoint* waypoint = [_flightRoute waypointAtIndex:0];
+            WWSector* sector = [[WWSector alloc] initWithLocations:[[NSArray alloc] initWithObjects:[waypoint location], nil]];
+            [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:sector, nil]];
+        }
         else
-            [bulkRetrieverController setSector:[[WWSector alloc] initWithDegreesMinLatitude:0
-                                                                                maxLatitude:0
-                                                                               minLongitude:0
-                                                                               maxLongitude:0]];
+        {
+            // The BulkRetrievalController can handle multiple sectors, but we use only one here. See the commented
+            // out code below for logic that defines one sector per flight-path segment. Doing that causes
+            // over-estimation of the amount of data that needs to be downloaded, so we don't use it.
+            NSMutableArray* locations = [[NSMutableArray alloc] initWithCapacity:2];
+            for (NSUInteger i = 0; i < [_flightRoute waypointCount]; i++)
+            {
+                [locations addObject:[[_flightRoute waypointAtIndex:i] location]];
+            }
+
+            [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:[[WWSector alloc]
+                    initWithLocations:locations], nil]];
+        }
+//        else
+//        {
+//        // This logic causes over-estimation of the amount of data that needs to be downloaded. To avoid that the
+//        // else clause above is used instead.
+//            NSMutableArray* sectors = [[NSMutableArray alloc] initWithCapacity:[_flightRoute waypointCount] - 1];
+//            NSMutableArray* locations = [[NSMutableArray alloc] initWithCapacity:2];
+//            for (NSUInteger i = 0; i < [_flightRoute waypointCount] - 1; i++)
+//            {
+//                [locations removeAllObjects];
+//
+//                [locations addObject:[[_flightRoute waypointAtIndex:i] location]];
+//                [locations addObject:[[_flightRoute waypointAtIndex:i + 1] location]];
+//
+//                [sectors addObject:[[WWSector alloc] initWithLocations:locations]];
+//            }
+//
+//            [bulkRetrieverController setSectors:sectors];
+//        }
     }
+
 }
 
 - (BOOL) tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)indexPath

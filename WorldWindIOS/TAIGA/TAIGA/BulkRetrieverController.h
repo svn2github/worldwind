@@ -26,11 +26,12 @@
 
 @property (nonatomic, readonly) id dataSource;
 
-@property (nonatomic, readonly) WWSector* sector;
+@property (nonatomic, readonly) NSArray* sectors;
 
 @property (nonatomic, readonly) NSOperationQueue* operationQueue;
 
-- (BulkRetrieverCell*) initWithDataSource:(id)dataSource sector:(WWSector*)sector operationQueue:(NSOperationQueue*)queue;
+- (BulkRetrieverCell*) initWithDataSource:(id)dataSource sectors:(NSArray*)sectors operationQueue:(NSOperationQueue*)
+        queue;
 
 - (void) startRetrieving;
 
@@ -51,7 +52,7 @@
 
 @property (nonatomic, readonly) NSOperationQueue* operationQueue;
 
-@property (nonatomic) WWSector* sector;
+@property (nonatomic) NSArray* sectors;
 
 - (BulkRetrieverController*) initWithWorldWindView:(WorldWindView*)wwv;
 

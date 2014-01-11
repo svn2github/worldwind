@@ -41,8 +41,8 @@
 /// The data source to retrieve network resources for. Downloads network resources on behalf of a bulk retriever.
 @property (readonly) id <WWBulkRetrieverDataSource> dataSource;
 
-/// The sector in which to retrieve network resources.
-@property (readonly) WWSector* sector;
+/// The sectors in which to retrieve network resources.
+@property (readonly) NSArray* sectors;
 
 /// The maximum resolution desired for the data source's network resources, in radians per pixel or elevation cell.
 /// A value of 0.0 indicates that the best available resolution should be retrieved.
@@ -62,27 +62,27 @@
 *
 * @param dataSource The data source to retrieve network resources for. Downloads network resources on behalf of a bulk
 * retriever.
-* @param sector The sector in which to retrieve network resources.
+* @param sectors The sectors in which to retrieve network resources.
 *
 * @return This bulk retriever initialized with the specified data source and sector.
 *
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sector:(WWSector*)sector;
+- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sectors:(NSArray*)sectors;
 
 /**
 * Initializes this bulk retriever with the specified data source, sector and target resolution.
 *
 * @param dataSource The data source to retrieve network resources for. Downloads network resources on behalf of a bulk
 * retriever.
-* @param sector The sector in which to retrieve network resources.
+* @param sectors The sectors in which to retrieve network resources.
 * @param resolution The maximum resolution desired for the data source's network resources, in radians per pixel or elevation cell.
 *
 * @return This bulk retriever initialized with the specified data source, sector and target resolution.
 *
 * @exception NSInvalidArgumentException If any argument is nil.
 */
-- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sector:(WWSector*)sector
+- (WWBulkRetriever*) initWithDataSource:(id <WWBulkRetrieverDataSource>)dataSource sectors:(NSArray*)sectors
                        targetResolution:(double)resolution;
 
 /// @name Executing the Bulk Retrieval

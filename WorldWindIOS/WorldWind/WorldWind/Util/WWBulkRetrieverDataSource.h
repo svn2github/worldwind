@@ -40,11 +40,11 @@
 /**
 * Returns the data size, in megabytes, of the data for a specified sector and resolution.
 *
-* @param sector The sector for which to determine the data size.
+* @param sectors The sectors for which to determine the data size.
 * @param targetResolution The target resolution for the data. 0 indicates use best resolution.
 *
 * @exception NSInvalidArgumentException If the sector is nil.
 */
-- (int) dataSizeForSector:(WWSector*)sector targetResolution:(double)targetResolution;
+- (int) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution;
 
 @end

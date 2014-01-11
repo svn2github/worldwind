@@ -26,12 +26,13 @@
 
 @implementation BulkRetrieverCell
 
-- (BulkRetrieverCell*) initWithDataSource:(id)dataSource sector:(WWSector*)sector operationQueue:(NSOperationQueue*)queue
+- (BulkRetrieverCell*) initWithDataSource:(id)dataSource sectors:(NSArray*)sectors operationQueue:(NSOperationQueue*)
+        queue
 {
     self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
 
     [[self textLabel] setText:[dataSource displayName]];
-    dataSize = [dataSource dataSizeForSector:sector targetResolution:0];
+    dataSize = [dataSource dataSizeForSectors:sectors targetResolution:0];
     [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB", dataSize]];
 
     startAccessory = [self createStartAccessory];
@@ -39,7 +40,7 @@
     [self setAccessoryView:startAccessory];
 
     _dataSource = dataSource;
-    _sector = sector;
+    _sectors = sectors;
     _operationQueue = queue;
 
     return self;
@@ -93,7 +94,7 @@
 
         // Create the retriever and add it to the operation queue for execution. Add a key-value observer for the
         // progress property, which updates the progress view when this property changes.
-        retriever = [[WWBulkRetriever alloc] initWithDataSource:_dataSource sector:_sector];
+        retriever = [[WWBulkRetriever alloc] initWithDataSource:_dataSource sectors:_sectors];
         [retriever addObserver:self forKeyPath:@"progress" options:NSKeyValueObservingOptionNew context:NULL];
         [retriever setCompletionBlock:completionBlock];
         [_operationQueue addOperation:retriever];
@@ -160,9 +161,9 @@
     [[self navigationItem] setTitle:@"Download for Offline Use"];
 }
 
-- (void) setSector:(WWSector*)sector
+- (void) setSectors:(NSArray*)sectors
 {
-    _sector = sector;
+    _sectors = sectors;
 
     [_operationQueue cancelAllOperations];
     [self assembleTableCells];
@@ -230,7 +231,7 @@
 {
     if ([dataSource conformsToProtocol:@protocol(WWBulkRetrieverDataSource)])
     {
-        [array addObject:[[BulkRetrieverCell alloc] initWithDataSource:dataSource sector:_sector
+        [array addObject:[[BulkRetrieverCell alloc] initWithDataSource:dataSource sectors:_sectors
                                                         operationQueue:_operationQueue]];
     }
 }

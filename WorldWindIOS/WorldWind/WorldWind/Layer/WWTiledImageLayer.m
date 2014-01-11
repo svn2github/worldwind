@@ -159,15 +159,20 @@
 #define BULK_RETRIEVER_SIMULTANEOUS_TILES 8
 #define BULK_RETRIEVER_SLEEP_INTERVAL 0.1
 
-- (int) dataSizeForSector:(WWSector*)sector targetResolution:(double)targetResolution
+- (int) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
 {
-    if (sector == nil)
+    if (sectors == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sector is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Sectors is nil")
     }
 
     int lastLevel = [[levels levelForTexelSize:targetResolution] levelNumber];
-    NSUInteger tileCount = [levels tileCountForSector:sector lastLevel:lastLevel];
+
+    NSUInteger tileCount = 0;
+    for (WWSector* sector in sectors)
+    {
+        tileCount += [levels tileCountForSector:sector lastLevel:lastLevel];
+    }
 
     return (int) (tileCount * ([levels tileWidth] * [levels tileHeight] * 2) / 1e6); // assumes 2-bytes per pixel
 }
@@ -180,56 +185,65 @@
     }
 
     int lastLevel = [[levels levelForTexelSize:[retriever targetResolution]] levelNumber];
-    NSUInteger tileCount = [levels tileCountForSector:[retriever sector] lastLevel:lastLevel];
     NSUInteger simultaneousTileCount = BULK_RETRIEVER_SIMULTANEOUS_TILES;
     NSUInteger completedTileCount = 0;
 
-    NSEnumerator* tileEnumerator = [levels tileEnumeratorForSector:[retriever sector] lastLevel:lastLevel];
     NSMutableArray* tiles = [[NSMutableArray alloc] initWithCapacity:simultaneousTileCount];
     NSMutableArray* completedTiles = [[NSMutableArray alloc] initWithCapacity:simultaneousTileCount];
 
-    do
+    NSUInteger tileCount = 0;
+    for (WWSector* sector in [retriever sectors])
     {
-        @autoreleasepool
+        tileCount += [levels tileCountForSector:sector lastLevel:lastLevel];
+    }
+
+    for (WWSector* sector in [retriever sectors])
+    {
+        NSEnumerator* tileEnumerator = [levels tileEnumeratorForSector:sector lastLevel:lastLevel];
+
+        do
         {
-            for (WWTile* tile in tiles)
+            @autoreleasepool
             {
-                if ([self retrieveTileImage:(WWTextureTile*) tile] != nil) // tile absent or local
+                for (WWTile* tile in tiles)
                 {
-                    [self bulkRetriever:retriever tilesCompleted:++completedTileCount tileCount:tileCount];
-                    [completedTiles addObject:tile];
-                }
-            }
-
-            [tiles removeObjectsInArray:completedTiles];
-            [completedTiles removeAllObjects];
-
-            while ([tiles count] < simultaneousTileCount && ![retriever mustStopBulkRetrieval])
-            {
-                @autoreleasepool
-                {
-                    id nextObject = [tileEnumerator nextObject];
-                    if (nextObject == nil)
-                    {
-                        break;
-                    }
-
-                    WWTile* nextTile = [self createTile:(WWTileKey*) nextObject];
-                    if ([self retrieveTileImage:(WWTextureTile*) nextTile] != nil) // tile absent or local
+                    if ([self retrieveTileImage:(WWTextureTile*) tile] != nil) // tile absent or local
                     {
                         [self bulkRetriever:retriever tilesCompleted:++completedTileCount tileCount:tileCount];
+                        [completedTiles addObject:tile];
                     }
-                    else
+                }
+
+                [tiles removeObjectsInArray:completedTiles];
+                [completedTiles removeAllObjects];
+
+                while ([tiles count] < simultaneousTileCount && ![retriever mustStopBulkRetrieval])
+                {
+                    @autoreleasepool
                     {
-                        [tiles addObject:nextTile];
+                        id nextObject = [tileEnumerator nextObject];
+                        if (nextObject == nil)
+                        {
+                            break;
+                        }
+
+                        WWTile* nextTile = [self createTile:(WWTileKey*) nextObject];
+                        if ([self retrieveTileImage:(WWTextureTile*) nextTile] != nil) // tile absent or local
+                        {
+                            [self bulkRetriever:retriever tilesCompleted:++completedTileCount tileCount:tileCount];
+                        }
+                        else
+                        {
+                            [tiles addObject:nextTile];
+                        }
                     }
                 }
             }
-        }
 
-        [NSThread sleepForTimeInterval:BULK_RETRIEVER_SLEEP_INTERVAL];
+            [NSThread sleepForTimeInterval:BULK_RETRIEVER_SLEEP_INTERVAL];
+        }
+        while ([tiles count] > 0 && ![retriever mustStopBulkRetrieval]);
     }
-    while ([tiles count] > 0 && ![retriever mustStopBulkRetrieval]);
 }
 
 - (void) bulkRetriever:(WWBulkRetriever*)retriever tilesCompleted:(NSUInteger)completed tileCount:(NSUInteger)count
