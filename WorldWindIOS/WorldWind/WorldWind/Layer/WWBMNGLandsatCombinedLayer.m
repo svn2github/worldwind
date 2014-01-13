@@ -71,7 +71,7 @@
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
-                       numLevels:11
+                       numLevels:10
             retrievalImageFormat:@"image/jpeg"
                        cachePath:cachePath];
     [self setDisplayName:@"Blue Marble + Landsat"];

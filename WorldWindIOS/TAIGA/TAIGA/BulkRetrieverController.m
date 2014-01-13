@@ -33,7 +33,7 @@
 
     [[self textLabel] setText:[dataSource displayName]];
     dataSize = [dataSource dataSizeForSectors:sectors targetResolution:0];
-    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB", dataSize]];
+    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB", (int) dataSize]];
 
     startAccessory = [self createStartAccessory];
     stopAccessory = [self createStopAccessory];

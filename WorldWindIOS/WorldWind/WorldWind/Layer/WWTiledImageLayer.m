@@ -159,7 +159,7 @@
 #define BULK_RETRIEVER_SIMULTANEOUS_TILES 8
 #define BULK_RETRIEVER_SLEEP_INTERVAL 0.1
 
-- (int) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
+- (double) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
 {
     if (sectors == nil)
     {
@@ -174,7 +174,9 @@
         tileCount += [levels tileCountForSector:sector lastLevel:lastLevel];
     }
 
-    return (int) (tileCount * ([levels tileWidth] * [levels tileHeight] * 2) / 1e6); // assumes 2-bytes per pixel
+    double tw = [levels tileWidth];
+    double th = [levels tileHeight];
+    return tileCount * tw * th * 2.0 / 1.0e6; // assumes 2-bytes per pixel
 }
 
 - (void) performBulkRetrieval:(WWBulkRetriever*)retriever

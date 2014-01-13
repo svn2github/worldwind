@@ -18,6 +18,7 @@
 #import "WaypointFile.h"
 #import "WWSector.h"
 #import "AppConstants.h"
+#import "WWLocation.h"
 
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
@@ -308,6 +309,14 @@
             {
                 [locations addObject:[[_flightRoute waypointAtIndex:i] location]];
             }
+//
+//            // The below is an approximation of the full state of Alaska. I'm leaving it here so that we can do
+//            // data size calculations.
+//            [locations removeAllObjects];
+//            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:55.7 longitude:-169.2]];
+//            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:55.7 longitude:-129.5]];
+//            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:71.1 longitude:-129.5]];
+//            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:71.1 longitude:-169.2]];
 
             [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:[[WWSector alloc]
                     initWithLocations:locations], nil]];

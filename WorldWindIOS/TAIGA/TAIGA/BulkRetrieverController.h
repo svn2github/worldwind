@@ -20,7 +20,7 @@
     UIView* startAccessory;
     UIView* stopAccessory;
     UIProgressView* progress;
-    int dataSize;
+    double dataSize;
     WWBulkRetriever* retriever;
 }
 

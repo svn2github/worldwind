@@ -45,6 +45,6 @@
 *
 * @exception NSInvalidArgumentException If the sector is nil.
 */
-- (int) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution;
+- (double) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution;
 
 @end
