@@ -11,14 +11,15 @@
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Shapes/WWScreenImage.h"
-#import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Util/WWWMSDimension.h"
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/Util/WWWMSDimension.h"
 
 @implementation WWWMSTiledImageLayer
 
@@ -236,7 +237,7 @@
     [_legendOverlay setImageOffset:imageOffset];
 
     // Cause the WorldWindView to draw itself.
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 @end

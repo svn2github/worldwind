@@ -20,6 +20,7 @@
 #import "WorldWind/Util/WWTileKey.h"
 #import "WorldWind/Util/WWUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation WWBasicElevationModel
 
@@ -650,7 +651,7 @@
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
             [self setTimestamp:[NSDate timeIntervalSinceReferenceDate]];
-            [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+            [WorldWindView requestRedraw];
         }
     }
     @finally
@@ -707,7 +708,7 @@
         {
             [self setTimestamp:[NSDate timeIntervalSinceReferenceDate]];
             [absentResources unmarkResourceAbsent:imagePath];
-            [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+            [WorldWindView requestRedraw];
         }
         else
         {

@@ -6,11 +6,10 @@
  */
 
 #import "WorldWind/Layer/WWWMSLayerExpirationRetriever.h"
-#import "WorldWind/Layer/WWLayer.h"
-#import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Layer/WWTiledImageLayer.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
 
 @implementation WWWMSLayerExpirationRetriever
 
@@ -65,8 +64,7 @@
             [_layer setExpiration:layerLastUpdateTime];
 
             // Request a redraw so the layer can updated itself.
-            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+            [WorldWindView requestRedraw];
         }
     }
 }

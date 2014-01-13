@@ -10,7 +10,7 @@
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation WWOpenWeatherMapLayer
 
@@ -88,8 +88,7 @@
         [layer setExpiration:now];
     }
 
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [WorldWindView requestRedraw];
 }
 
 - (WWTiledImageLayer*) makeLayerForName:(NSString*)layerName displayName:(NSString*)displayName

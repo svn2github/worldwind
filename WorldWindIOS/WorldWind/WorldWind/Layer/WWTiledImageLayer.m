@@ -9,6 +9,7 @@
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWSector.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWDrawContext.h"
@@ -29,7 +30,7 @@
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWWMSUrlBuilder.h"
 #import "WorldWind/WorldWind.h"
-#import "WorldWind/Geometry/WWMatrix.h"
+#import "WorldWind/WorldWindView.h"
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing Tiled Image Layers --//
@@ -590,8 +591,7 @@
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
             [self setCurrentTilesInvalid:YES];
-            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+            [WorldWindView requestRedraw];
         }
     }
     @finally
@@ -666,8 +666,7 @@
             [self setCurrentTilesInvalid:YES];
             [absentResources unmarkResourceAbsent:pathKey];
 
-            NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+            [WorldWindView requestRedraw];
         }
         else
         {

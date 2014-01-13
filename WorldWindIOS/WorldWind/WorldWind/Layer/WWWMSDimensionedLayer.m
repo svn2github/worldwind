@@ -6,17 +6,18 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "WorldWind/Layer/WWTiledImageLayer.h"
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
+#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
+#import "WorldWind/Shapes/WWScreenImage.h"
+#import "WorldWind/Util/WWOffset.h"
+#import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/Util/WWWMSCapabilities.h"
 #import "WorldWind/Util/WWWMSDimension.h"
-#import "WorldWind/Layer/WWTiledImageLayer.h"
-#import "WWScreenImage.h"
-#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/Util/WWRetriever.h"
-#import "WorldWind/Util/WWOffset.h"
-#import "WorldWind/Util/WWUtil.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WWWMSDimensionedLayer
 
@@ -210,6 +211,6 @@
     [legendOverlay setImageOffset:imageOffset];
 
     // Cause the WorldWindView to draw itself.
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 @end

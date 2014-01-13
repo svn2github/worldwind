@@ -9,7 +9,7 @@
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
 #import "WorldWind/WorldWind.h"
-#import "WorldWind/WWLog.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation WWResourceLoader
 
@@ -78,8 +78,7 @@
 
     if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
     {
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        [WorldWindView requestRedraw];
     }
 }
 
