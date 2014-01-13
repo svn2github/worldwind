@@ -18,6 +18,7 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWOffset.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/WorldWindView.h"
 
 #define HIGHLIGHT_NEAR_DIST (450e3)
 #define HIGHLIGHT_FAR_DIST (550e3)
@@ -124,7 +125,7 @@
     @finally
     {
         UIGraphicsEndImageContext();
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+        [WorldWindView requestRedraw];
     }
 }
 

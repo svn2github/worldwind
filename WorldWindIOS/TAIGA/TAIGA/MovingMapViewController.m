@@ -243,8 +243,7 @@
                                                                     flightRouteLayer:flightRouteLayer
                                                                         waypointFile:waypointFile];
     [routePlanningButton setEnabled:YES];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 - (void) viewDidLoad
@@ -444,7 +443,7 @@
 
 - (void) createSimulationController
 {
-    simulationViewController = [[SimulationViewController alloc] initWithWorldWindView:_wwv];
+    simulationViewController = [[SimulationViewController alloc] init];
     [self.view addSubview:[simulationViewController view]];
 
     // Dismiss the simulation view controller when the user taps its done button.

@@ -12,6 +12,7 @@
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation AircraftLayer
 
@@ -68,6 +69,7 @@
 
     CLLocation* location = [notification object];
     [self updateAircraftShape:aircraftShape withLocation:location];
+    [WorldWindView requestRedraw];
 }
 
 - (void) flightRouteDidChange:(NSNotification*)notification
@@ -75,6 +77,7 @@
     if (simulatedFlightRoute == [notification object] && [simulatedFlightRoute waypointCount] == 0)
     {
         [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
+        [WorldWindView requestRedraw];
     }
 }
 
@@ -82,12 +85,14 @@
 {
     simulatedFlightRoute = [notification object];
     [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
+    [WorldWindView requestRedraw];
 }
 
 - (void) simulationWillEnd:(NSNotification*)notification
 {
     simulatedFlightRoute = nil;
     [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
+    [WorldWindView requestRedraw];
 }
 
 @end

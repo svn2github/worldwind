@@ -8,9 +8,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import "TerrainAltitudeLayer.h"
 #import "AppConstants.h"
-#import "WWPosition.h"
-#import "WorldWindConstants.h"
-
+#import "WorldWind/WorldWindView.h"
 
 @implementation TerrainAltitudeLayer
 
@@ -36,7 +34,7 @@
     [self setRedThreshold:(float)[position altitude]];
     [self setYellowThreshold:[self redThreshold] - warningOffset];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 @end

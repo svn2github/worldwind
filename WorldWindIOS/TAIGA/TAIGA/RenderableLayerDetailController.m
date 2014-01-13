@@ -5,12 +5,13 @@
  @version $Id$
  */
 
-#import <WWRenderableLayer.h>
-#import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "RenderableLayerDetailController.h"
-#import "Settings.h"
 #import "RedrawingSlider.h"
+#import "Settings.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation RenderableLayerDetailController
 {
@@ -127,7 +128,7 @@
 {
     if ([indexPath section] == 0)
     {
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:_layer];
+        [WorldWindView requestRedraw];
     }
     else if ([indexPath section] == 1) // the list of renderables
     {
@@ -137,7 +138,7 @@
         [Settings setBool:[renderable enabled] forName:
                 [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.renderable.enabled.%@", [renderable displayName]]];
         [[self tableView] reloadData];
-        [self requestRedraw];
+        [WorldWindView requestRedraw];
     }
 }
 
@@ -149,11 +150,6 @@
 - (void) handleRefreshButtonTap
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH object:_layer];
-}
-
-- (void) requestRedraw
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleRefreshNotification:(NSNotification*)notification

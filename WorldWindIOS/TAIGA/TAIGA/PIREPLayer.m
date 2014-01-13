@@ -6,13 +6,12 @@
  */
 
 #import "PIREPLayer.h"
-#import "WWRetriever.h"
-#import "WorldWindConstants.h"
-#import "WWLog.h"
-#import "WorldWind.h"
-#import "WWPosition.h"
-#import "WWPointPlacemarkAttributes.h"
-#import "WWPointPlacemark.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Shapes/WWPointPlacemark.h"
+#import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
+#import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/WorldWind.h"
+#import "WorldWind/WorldWindView.h"
 
 @interface PIREPLayerRetriever : NSOperation
 @end
@@ -233,8 +232,7 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH_COMPLETE object:self];
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        [WorldWindView requestRedraw];
     }
     @catch (NSException* exception)
     {

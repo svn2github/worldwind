@@ -20,10 +20,8 @@
 
 @property (nonatomic, readonly) UIControl* doneControl;
 
-@property (nonatomic, readonly) WorldWindView* wwv;
-
 @property (nonatomic) FlightRoute* flightRoute;
 
-- (SimulationViewController*) initWithWorldWindView:(WorldWindView*)wwv;
+- (SimulationViewController*) init;
 
 @end

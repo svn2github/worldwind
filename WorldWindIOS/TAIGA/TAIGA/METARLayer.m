@@ -6,18 +6,17 @@
  */
 
 #import "METARLayer.h"
-#import "WorldWind/Util/WWRetriever.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WWLog.h"
+#import "MetarIconGenerator.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Render/WWDrawContext.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
+#import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWind.h"
-#import "MetarIconGenerator.h"
-#import "WWDrawContext.h"
-#import "WWNavigatorState.h"
-#import "WWVec4.h"
-#import "WWGlobe.h"
+#import "WorldWind/WorldWindView.h"
 
 @interface METARLayerRetriever : NSOperation
 @end
@@ -257,8 +256,7 @@
 - (void) addPlacemarkOnMainThread:(WWPointPlacemark*)placemark
 {
     [self addRenderable:placemark];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 - (WWPosition*) parseCoordinates

@@ -21,7 +21,6 @@
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindView.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
 @implementation FlightRouteListController
@@ -110,7 +109,7 @@
 
     [self saveFlightRouteState:flightRoute];
     [self saveFlightRouteListState];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 }
 
 - (void) removeFlightRouteAtIndex:(NSUInteger)index
@@ -120,7 +119,7 @@
 
     [self removeFlightRouteState:flightRoute];
     [self saveFlightRouteListState];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_REMOVED object:flightRoute];
 }
@@ -133,7 +132,7 @@
     [flightRoutes insertObject:flightRoute atIndex:toIndex];
 
     [self saveFlightRouteListState];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 }
 
 - (void) flightRouteDidChange:(FlightRoute*)flightRoute notification:(NSNotification*)notification
@@ -148,7 +147,7 @@
     // when the navigator logic below is not invoked in order to display flight route changes that do not result in
     // changes to the navigator.
     [self saveFlightRouteState:flightRoute];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 
     // Show the the flight route in the WorldWindView when the flight route's waypoint list has changed.
     if ([[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] != nil)
@@ -411,11 +410,6 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     {
         [navigator setCenterLocation:lookAtCenter radius:lookAtRadius];
     }];
-}
-
-- (void) requestRedraw
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 @end

@@ -11,8 +11,6 @@
 #import "AppConstants.h"
 #import "FlightRoute.h"
 #import "RedrawingSlider.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WorldWindView.h"
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- AircraftSlider --//
@@ -47,11 +45,9 @@ static const CGFloat AircraftSliderHeight = 4;
 //-- Initializing SimulationViewController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (SimulationViewController*) initWithWorldWindView:(WorldWindView*)wwv
+- (SimulationViewController*) init
 {
     self = [super initWithNibName:nil bundle:nil];
-
-    _wwv = wwv;
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
                                                  name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
@@ -131,8 +127,6 @@ static const CGFloat AircraftSliderHeight = 4;
     // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
     // aircraft slider value.
     [self postAircraftPosition];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

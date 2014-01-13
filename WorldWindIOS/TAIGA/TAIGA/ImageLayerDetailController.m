@@ -5,12 +5,12 @@
  @version $Id$
  */
 
-#import <WWTiledImageLayer.h>
 #import "ImageLayerDetailController.h"
-#import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "Settings.h"
 #import "RedrawingSlider.h"
+#import "Settings.h"
+#import "WorldWind/Layer/WWTiledImageLayer.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation ImageLayerDetailController
 
@@ -101,7 +101,7 @@
 - (void) handleRefreshButtonTap
 {
     [_layer setExpiration:[[NSDate alloc] initWithTimeIntervalSinceNow:-1]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:_layer];
+    [WorldWindView requestRedraw];
 }
 
 @end
