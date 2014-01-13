@@ -7,8 +7,8 @@
 
 #import "DimensionedLayerController.h"
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/Layer/WWWMSTiledImageLayer.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation DimensionedLayerController
 
@@ -45,8 +45,7 @@
     [_wmsLayer setEnabledDimensionNumber:value];
     [self adjustLabel];
 
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [WorldWindView requestRedraw];
 }
 
 - (void) adjustLabel

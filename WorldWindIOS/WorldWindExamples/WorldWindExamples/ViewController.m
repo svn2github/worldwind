@@ -810,7 +810,7 @@
     [selectedPath setHighlighted:NO];
     [path setHighlighted:YES];
     selectedPath = path;
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 
     if (path != nil)
     {
@@ -902,7 +902,7 @@
         [currentScreenImage setScreenOffset:newOffset];
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 @end

@@ -5,10 +5,10 @@
  @version $Id$
  */
 
-#import <WorldWind/WWRenderableLayer.h>
-#import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "RenderableLayerDetailController.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
+#import "Worldwind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation RenderableLayerDetailController
 
@@ -109,20 +109,14 @@
         id <WWRenderable> renderable = [[_layer renderables] objectAtIndex:(NSUInteger) [indexPath row]];
         [renderable setEnabled:[renderable enabled] ? NO : YES];
         [[self tableView] reloadData];
-        [self requestRedraw];
+        [WorldWindView requestRedraw];
     }
 }
 
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
-    [self requestRedraw];
-}
-
-- (void) requestRedraw
-{
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [WorldWindView requestRedraw];
 }
 
 @end

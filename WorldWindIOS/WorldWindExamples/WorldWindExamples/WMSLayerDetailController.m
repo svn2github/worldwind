@@ -6,17 +6,16 @@
  */
 
 #import "WMSLayerDetailController.h"
-#import "WorldWind/Util/WWWMSCapabilities.h"
-#import "WorldWind/WorldWindView.h"
-#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WWLog.h"
 #import "WebViewController.h"
 #import "WorldWind/Geometry/WWSector.h"
-#import "WorldWind/Util/WWWMSDimension.h"
+#import "WorldWind/Layer/WWLayerList.h"
 #import "WorldWind/Layer/WWWMSDimensionedLayer.h"
+#import "WorldWind/Layer/WWWMSTiledImageLayer.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Util/WWWMSCapabilities.h"
+#import "WorldWind/Util/WWWMSDimension.h"
+#import "WorldWind/WorldWindView.h"
+#import "WorldWind/WWLog.h"
 
 @implementation WMSLayerDetailController
 
@@ -375,8 +374,8 @@
                 [[[_wwv sceneController] layers] removeLayer:layer];
             }
         }
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+
+        [WorldWindView requestRedraw];
     }
     @catch (NSException* exception)
     {

@@ -6,13 +6,12 @@
  */
 
 #import "METARLayer.h"
-#import "WorldWind/Util/WWRetriever.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
+#import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWind.h"
+#import "WorldWind/WorldWindView.h"
 
 @interface METARLayerRetriever : NSOperation
 @end
@@ -206,8 +205,7 @@
         placemarks = nil; // placemark list is needed only during parsing
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
-        NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+        [WorldWindView requestRedraw];
     }
     @catch (NSException* exception)
     {

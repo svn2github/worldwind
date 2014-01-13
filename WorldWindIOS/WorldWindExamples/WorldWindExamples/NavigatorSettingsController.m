@@ -8,7 +8,6 @@
 #import "NavigatorSettingsController.h"
 #import "WorldWind/Navigate/WWFirstPersonNavigator.h"
 #import "WorldWind/Navigate/WWLookAtNavigator.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
 
@@ -101,7 +100,7 @@
         id<WWNavigator> newNavigator = [[WWFirstPersonNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator];
         [oldNavigator dispose];
         [_wwv setNavigator:newNavigator];
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+        [WorldWindView requestRedraw];
     }
     else if ([modelType isEqual:MODEL_TYPE_LOOK_AT])
     {
@@ -109,7 +108,7 @@
         id<WWNavigator> newNavigator = [[WWLookAtNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator];
         [oldNavigator dispose];
         [_wwv setNavigator:newNavigator];
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+        [WorldWindView requestRedraw];
     }
     else
     {

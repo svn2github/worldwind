@@ -13,6 +13,7 @@
 #import "WorldWind/Shapes/WWSphere.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation CurrentPositionLayer
 
@@ -66,7 +67,7 @@
     }
 
     currentLocation = [notification object];
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 - (void) forecastCurrentLocationWithDate:(NSDate*)date onGlobe:(WWGlobe*)globe

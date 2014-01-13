@@ -7,8 +7,8 @@
 
 #import <WorldWind/WWTiledImageLayer.h>
 #import "ImageLayerDetailController.h"
+#import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
-#import "WorldWind/WorldWindConstants.h"
 
 @implementation ImageLayerDetailController
 
@@ -85,8 +85,6 @@
 - (void) opacityValueChanged:(UISlider*)opacitySlider
 {
     [_layer setOpacity:[opacitySlider value]];
-
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [WorldWindView requestRedraw];
 }
 @end

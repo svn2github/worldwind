@@ -80,7 +80,7 @@
         [layer setEnabled:NO];
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
+    [WorldWindView requestRedraw];
 }
 
 - (void) navigatorDidChange

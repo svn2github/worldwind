@@ -7,12 +7,11 @@
 
 #import "CrashDataLayer.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/WWLog.h"
 #import "WorldWind/Shapes/WWPointPlacemark.h"
 #import "WorldWind/Shapes/WWPointPlacemarkAttributes.h"
-#import "WorldWind/WorldWindConstants.h"
-#import "WorldWind/WorldWind.h"
 #import "WorldWind/Util/WWRetriever.h"
+#import "WorldWind/WorldWind.h"
+#import "WorldWind/WorldWindView.h"
 
 @interface CrashDataLayerRetriever : NSOperation
 @end
@@ -158,8 +157,7 @@
     placemarks = nil; // placemark list is needed only during parsing
 
     // Redraw in case the layer was enabled before all the placemarks were loaded.
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
+    [WorldWindView requestRedraw];
 }
 
 - (WWPosition*) parseCoordinates:(NSString*)string

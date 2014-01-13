@@ -78,7 +78,7 @@
     [Settings setBool:[layer enabled] forName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [layer displayName]]];
     [[self tableView] reloadData];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -149,11 +149,6 @@
     }
 
     return nonHiddenLayers;
-}
-
-- (void) requestRedraw
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REQUEST_REDRAW object:self];
 }
 
 - (void) handleNotification:(NSNotification*)notification

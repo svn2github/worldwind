@@ -5,15 +5,15 @@
  @version $Id$
  */
 
-#import <WorldWind/WWTiledImageLayer.h>
-#import <WorldWind/WWRenderableLayer.h>
 #import "LayerListController.h"
-#import "WorldWind/WorldWindView.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Layer/WWLayerList.h"
-#import "WorldWind/WorldWindConstants.h"
 #import "ImageLayerDetailController.h"
 #import "RenderableLayerDetailController.h"
+#import "WorldWind/Layer/WWLayerList.h"
+#import "WorldWind/Layer/WWRenderableLayer.h"
+#import "WorldWind/Layer/WWTiledImageLayer.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/WorldWindConstants.h"
+#import "WorldWind/WorldWindView.h"
 
 @implementation LayerListController
 
@@ -52,7 +52,7 @@
     WWLayer* layer = [[[_wwv sceneController] layers] layerAtIndex:(NSUInteger) [indexPath row]];
     [layer setEnabled:[layer enabled] ? NO : YES];
     [[self tableView] reloadData];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -85,7 +85,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
        toIndexPath:(NSIndexPath*)destinationIndexPath
 {
     [[[_wwv sceneController] layers] moveLayerAtRow:[sourceIndexPath row] toRow:[destinationIndexPath row]];
-    [self requestRedraw];
+    [WorldWindView requestRedraw];
 }
 
 - (void) tableView:(UITableView*)tableView
@@ -95,7 +95,7 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
     if (editingStyle == UITableViewCellEditingStyleDelete)
     {
         [[[_wwv sceneController] layers] removeLayerAtRow:[indexPath row]];
-        [self requestRedraw];
+        [WorldWindView requestRedraw];
     }
 }
 
@@ -121,12 +121,6 @@ commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
-}
-
-- (void) requestRedraw
-{
-    NSNotification* redrawNotification = [NSNotification notificationWithName:WW_REQUEST_REDRAW object:self];
-    [[NSNotificationCenter defaultCenter] postNotification:redrawNotification];
 }
 
 - (void) handleNotification:(NSNotification*)notification
