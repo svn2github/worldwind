@@ -91,7 +91,7 @@
 
         // Create the retriever and add it to the operation queue for execution. Add a key-value observer for the
         // progress property, which updates the progress view when this property changes.
-        retriever = [[WWBulkRetriever alloc] initWithDataSource:_dataSource sector:_sector];
+        retriever = [[WWBulkRetriever alloc] initWithDataSource:_dataSource sectors:[NSArray arrayWithObject:_sector]];
         [retriever addObserver:self forKeyPath:@"progress" options:NSKeyValueObservingOptionNew context:NULL];
         [retriever setCompletionBlock:completionBlock];
         [_operationQueue addOperation:retriever];
