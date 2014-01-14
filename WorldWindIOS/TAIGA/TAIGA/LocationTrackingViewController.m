@@ -10,7 +10,8 @@
 #import "AppConstants.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Navigate/WWNavigator.h"
+#import "WorldWind/Navigate/WWFirstPersonNavigator.h"
+#import "WorldWind/Navigate/WWLookAtNavigator.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindView.h"
@@ -27,6 +28,8 @@
 
     _mode = [Settings getObjectForName:TAIGA_LOCATION_TRACKING_MODE defaultValue:TAIGA_DEFAULT_LOCATION_TRACKING_MODE];
     _wwv = wwv;
+
+    [self setupLocationTrackingNavigator];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(locationTrackingModeDidChange:)
                                                  name:TAIGA_SETTING_CHANGED object:TAIGA_LOCATION_TRACKING_MODE];
@@ -49,6 +52,7 @@
     forecastPosition = nil;
     smoothedPosition = nil;
     smoothedHeading = DBL_MAX;
+    trackingLocation = NO;
 
     if (_enabled)
     {
@@ -69,7 +73,14 @@
 - (void) locationTrackingModeDidChange:(NSNotification*)notification
 {
     _mode = [Settings getObjectForName:TAIGA_LOCATION_TRACKING_MODE];
-    currentHeading = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_TRACK_UP] ? [currentLocation course] : 0;
+    currentHeading = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP] ? 0 : [currentLocation course];
+
+    [self setupLocationTrackingNavigator]; // Setup a new navigator according ot the location tracking mode.
+
+    if (_enabled)
+    {
+        [self resumeLocationTracking]; // Resume location tracking with the new navigator.
+    }
 }
 
 - (void) aircraftPositionDidChange:(NSNotification*)notification
@@ -77,11 +88,11 @@
     CLLocation* oldLocation = currentLocation;
     CLLocation* newLocation = [notification object];
     currentLocation = newLocation;
-    currentHeading = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_TRACK_UP] ? [newLocation course] : 0;
+    currentHeading = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP] ? 0 : [newLocation course];
 
-    if (_enabled && oldLocation == nil) // we have a location fix, start or restart location tracking
+    if (_enabled && oldLocation == nil)
     {
-        [self startLocationTracking];
+        [self resumeLocationTracking]; // We have an initial location fix; resume location tracking.
     }
 }
 
@@ -92,7 +103,7 @@
 
 - (void) simulationWillEnd:(NSNotification*)notification
 {
-    [self suspendLocationTracking]; // Suspend location tracking when we have an actual location fix.
+    [self suspendLocationTracking]; // Suspend location tracking until we have an actual location fix.
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -108,12 +119,8 @@
     // this makes no additional changes to the navigator until the animation completes.
     [[_wwv navigator] animateWithDuration:WWNavigatorDurationAutomatic animations:^
     {
-        WWLocation* location = [[WWLocation alloc] initWithCLLocation:currentLocation];
-        double radius = 10000 + [currentLocation altitude];
-        [[_wwv navigator] setHeading:currentHeading];
-        [[_wwv navigator] setTilt:0];
-        [[_wwv navigator] setRoll:0];
-        [[_wwv navigator] setCenterLocation:location radius:radius];
+        NSDate* now = [NSDate date];
+        [self doTrackLocationWithDate:now];
     } completion:^(BOOL finished)
     {
         // Disable this controller when its navigator animation is interrupted. The user has performed a navigation
@@ -136,38 +143,43 @@
 
 - (void) suspendLocationTracking
 {
-    trackLocation = NO;
     currentLocation = nil;
     forecastPosition = nil;
     smoothedPosition = nil;
     currentHeading = 0;
     smoothedHeading = DBL_MAX;
+    trackingLocation = NO;
+}
+
+- (void) resumeLocationTracking
+{
+    if (trackingLocation)
+    {
+        [self trackLocation];
+    }
+    else
+    {
+        [self startLocationTracking];
+    }
 }
 
 - (void) trackLocation
 {
-    trackLocation = YES;
     // Animate the navigator to the current position until the animation is interrupted either by this controller
     // changing modes, another object initiating an animation, or by the user performing a navigation gesture.
+    trackingLocation = YES;
     [[_wwv navigator] animateWithBlock:^(NSDate* timestamp, BOOL* stop)
     {
         // Stop animating when this controller is disabled or location tracking has been suspended.
-        *stop = ![self enabled] || !trackLocation;
-        if (*stop)
-            return;
-
-        // Forecast the current location from the most recent location, then smooth the forecast location. Forecasting
-        // and smoothing in a display link enables generation of intermediate locations at sub-second intervals between
-        // Core Location's 1-2 second updates and eliminates jarring navigator changes.
-        [self forecastCurrentLocationWithDate:timestamp];
-        [self smoothForecastLocationWithAmount:LOCATION_SMOOTHING_AMOUNT];
-        [[_wwv navigator] setCenterLocation:smoothedPosition];
-        // Smooth the current location to eliminate jarring navigator changes when the current heading changes or when
-        // the location tracking mode changes.
-        [self smoothCurrentHeadingWithAmount:HEADING_SMOOTHING_AMOUNT];
-        [[_wwv navigator] setHeading:smoothedHeading];
+        *stop = !_enabled || !trackingLocation;
+        if (!*stop)
+        {
+            [self doTrackLocationWithDate:timestamp];
+        }
     } completion:^(BOOL finished)
     {
+        trackingLocation = NO;
+
         // Disable this controller when its navigator animation is interrupted. The user has performed a navigation
         // gesture, or another object has initiated an animation at the user's request.
         if (!finished)
@@ -176,6 +188,46 @@
         }
     }];
 }
+
+- (void) doTrackLocationWithDate:(NSDate*)date
+{
+    // Forecast the current location from the most recent location, then smooth the forecast location and smooth the
+    // current heading. Forecasting and smoothing in an animation block enables generation of intermediate locations
+    // and headings at sub-second intervals between location updates and eliminates jarring navigator changes.
+    [self forecastCurrentLocationWithDate:date];
+    [self smoothForecastLocation];
+
+    if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT])
+    {
+        [(WWFirstPersonNavigator*) [_wwv navigator] setEyePosition:smoothedPosition];
+        [[_wwv navigator] setHeading:smoothedHeading];
+        [[_wwv navigator] setTilt:75];
+        [[_wwv navigator] setRoll:0];
+    }
+    else
+    {
+        double radius = 1000 + [smoothedPosition altitude];
+        [[_wwv navigator] setCenterLocation:smoothedPosition radius:radius];
+        [[_wwv navigator] setHeading:smoothedHeading];
+        [[_wwv navigator] setTilt:0];
+        [[_wwv navigator] setRoll:0];
+    }
+}
+
+- (void) setupLocationTrackingNavigator
+{
+    id<WWNavigator> oldNavigator = [_wwv navigator];
+    id<WWNavigator> newNavigator = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT] ?
+            [[WWFirstPersonNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator] :
+            [[WWLookAtNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator];
+    [oldNavigator dispose];
+    [_wwv setNavigator:newNavigator];
+    [WorldWindView requestRedraw];
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+//-- Location Forecasting --//
+//--------------------------------------------------------------------------------------------------------------------//
 
 - (void) forecastCurrentLocationWithDate:(NSDate*)date
 {
@@ -188,29 +240,26 @@
     [WWPosition forecastPosition:currentLocation forDate:date onGlobe:globe outputPosition:forecastPosition];
 }
 
-- (void) smoothForecastLocationWithAmount:(double)amount
+- (void) smoothForecastLocation
 {
     if (smoothedPosition == nil)
     {
         smoothedPosition = [[WWPosition alloc] initWithPosition:forecastPosition];
-        return;
-    }
-
-    [WWPosition greatCircleInterpolate:smoothedPosition
-                           endLocation:forecastPosition
-                                amount:amount
-                        outputLocation:smoothedPosition]; // Input position can be reused to store the output.
-}
-
-- (void) smoothCurrentHeadingWithAmount:(double)amount
-{
-    if (smoothedHeading == DBL_MAX)
-    {
         smoothedHeading = currentHeading;
-        return;
     }
-
-    smoothedHeading = [WWMath interpolateDegrees1:smoothedHeading degrees2:currentHeading amount:amount];
+    else
+    {
+        [WWPosition greatCircleInterpolate:smoothedPosition
+                               endLocation:forecastPosition
+                                    amount:LOCATION_SMOOTHING_AMOUNT
+                            outputLocation:smoothedPosition]; // Input position can be reused to store the output.
+        [smoothedPosition setAltitude:[WWMath interpolateValue1:[smoothedPosition altitude]
+                                                         value2:[forecastPosition altitude]
+                                                         amount:LOCATION_SMOOTHING_AMOUNT]];
+        smoothedHeading = [WWMath interpolateDegrees1:smoothedHeading
+                                             degrees2:currentHeading
+                                               amount:HEADING_SMOOTHING_AMOUNT];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

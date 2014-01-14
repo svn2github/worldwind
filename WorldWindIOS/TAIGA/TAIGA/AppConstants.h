@@ -27,6 +27,7 @@
 #define TAIGA_SIMULATION_WILL_BEGIN (@"gov.nasa.worldwind.taiga.simulationwillbegin")
 #define TAIGA_SIMULATION_WILL_END (@"gov.nasa.worldwind.taiga.simulationwillend")
 #define TAIGA_LOCATION_TRACKING_MODE (@"gov.nasa.worldwind.taiga.navigation.mode")
+#define TAIGA_LOCATION_TRACKING_MODE_COCKPIT (@"gov.nasa.worldwind.taiga.location.tracking.mode.cockpit")
 #define TAIGA_LOCATION_TRACKING_MODE_NORTH_UP (@"gov.nasa.worldwind.taiga.location.tracking.mode.northup")
 #define TAIGA_LOCATION_TRACKING_MODE_TRACK_UP (@"gov.nasa.worldwind.taiga.location.tracking.mode.trackup")
 #define TAIGA_DEFAULT_LOCATION_TRACKING_MODE (TAIGA_LOCATION_TRACKING_MODE_TRACK_UP)

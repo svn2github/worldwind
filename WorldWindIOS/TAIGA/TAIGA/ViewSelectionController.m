@@ -35,7 +35,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return section == 0 ? 2 : 1;
+    return section == 0 ? 3 : 1;
 }
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
@@ -52,6 +52,10 @@
         else if ([indexPath row] == 1)
         {
             newMode = TAIGA_LOCATION_TRACKING_MODE_NORTH_UP;
+        }
+        else if ([indexPath row] == 2)
+        {
+            newMode = TAIGA_LOCATION_TRACKING_MODE_COCKPIT;
         }
 
         if (![locationTrackingMode isEqualToString:newMode])
@@ -95,6 +99,11 @@
         {
             [[cell textLabel] setText:@"North Up"];
             [[cell imageView] setHidden:![locationTrackingMode isEqual:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP]];
+        }
+        else if ([indexPath row] == 2)
+        {
+            [[cell textLabel] setText:@"Cockpit"];
+            [[cell imageView] setHidden:![locationTrackingMode isEqual:TAIGA_LOCATION_TRACKING_MODE_COCKPIT]];
         }
         [cell setAccessoryType:UITableViewCellAccessoryNone];
     }
