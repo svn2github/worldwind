@@ -106,7 +106,7 @@
 * @param value2 The second value.
 * @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
 *
-* @return The linear interpolation of value1, and value2.
+* @return The linear interpolation of value1 and value2.
 */
 + (double) interpolateValue1:(double)value1 value2:(double)value2 amount:(double)amount;
 
@@ -118,7 +118,7 @@
 * interpolation of angle1 and angle2 appropriate for the specified amount. For example, if amount is 0.5 this returns a
 * number that is half way between angle1 and angle2.
 *
-* The two angles are assumed to represent angles and are interpolated along the shortest arc on the unit circle. For
+* The two values are assumed to represent angles and are interpolated along the shortest arc on the unit circle. For
 * example, interpolating 50% between -135 degrees and +135 degrees produces a result of +180 degrees. The returned angle
 * is normalized to the range from -180 to +180, inclusive.
 *
@@ -126,9 +126,22 @@
 * @param angle2 The second angle, in degrees.
 * @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
 *
-* @return The linear interpolation of angle1, and angle2.
+* @return The linear interpolation of angle1 and angle2, in degrees.
 */
 + (double) interpolateDegrees1:(double)angle1 degrees2:(double)angle2 amount:(double)amount;
+
+/**
+* Returns the absolute angular distance between two floating point angles.
+*
+* The returned distance represents the shortest arc length between the two angles on the unit circle. For example, the
+* distance between -135 degrees and +135 degrees is 90 degrees.
+*
+* @param angle1 The first angle, in degrees.
+* @param angle2 The second angle, in degrees.
+*
+* @return The absolute angular distance between angle1 and angle2, in degrees.
+*/
++ (double) angularDistanceDegrees1:(double)angle1 degrees2:(double)angle2;
 
 /**
 * Normalizes a specified angle to the range from -180 to +180, inclusive
@@ -384,20 +397,26 @@
                           onGlobe:(WWGlobe*)globe;
 
 /**
-* Computes a recommended duration in seconds for an animation between the two positions in a perspective projection on
+* Computes a recommended duration in seconds for an animation between two orientations in a perspective projection on
 * the given globe.
 *
-* This returns a duration typically between 0 seconds and 3 seconds corresponding to the distance between the two
-* positions in OpenGL screen coordinates. This considers both the distance between the two geographic locations and the
-* distance between the two altitudes.
+* This returns a duration typically between 0 seconds and 3 seconds based on the distance between the begin position
+* and the end position in OpenGL screen coordinates, and the distance between the pairs of begin angles and end angles:
+* heading, tilt and roll.
 *
 * The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
 * up and to the right from the origin point.
 *
 * @param viewport The viewport rectangle, in OpenGL screen coordinates.
-* @param posA The animation's begin position.
-* @param posB The animation's end position.
-* @param globe The globe the two positions are associated with.
+* @param beginPosition The begin perspective eye position.
+* @param beginHeading The begin heading.
+* @param beginTilt The begin tilt.
+* @param beginRoll The begin roll.
+* @param endPosition The end perspective eye position.
+* @param endHeading The end heading.
+* @param endTilt The end tilt.
+* @param endRoll The end roll.
+* @param globe The globe the two perspectives are associated with.
 *
 * @return The animation duration, in seconds.
 *
@@ -405,8 +424,14 @@
 * is nil.
 */
 + (NSTimeInterval) perspectiveAnimationDuration:(CGRect)viewport
-                                   forPositionA:(WWPosition*)posA
-                                      positionB:(WWPosition*)posB
+                               forBeginPosition:(WWPosition*)beginPosition
+                                   beginHeading:(double)beginHeading
+                                      beginTilt:(double)beginTilt
+                                      beginRoll:(double)beginRoll
+                                    endPosition:(WWPosition*)endPosition
+                                     endHeading:(double)endHeading
+                                        endTilt:(double)endTilt
+                                        endRoll:(double)endRoll
                                         onGlobe:(WWGlobe*)globe;
 
 /**

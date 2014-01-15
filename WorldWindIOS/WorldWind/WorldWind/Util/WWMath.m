@@ -93,6 +93,26 @@
     return [WWMath normalizeDegrees:a];
 }
 
++ (double) angularDistanceDegrees1:(double)angle1 degrees2:(double)angle2
+{
+    // Normalize the two angles to the range [-180, +180].
+    double a1 = [WWMath normalizeDegrees:angle1];
+    double a2 = [WWMath normalizeDegrees:angle2];
+
+    // If the shortest arc between the two angles crosses the -180/+180 degree boundary, add 360 degrees to the smaller
+    // of the two angles then compute the absolute difference.
+    if (a1 - a2 > 180)
+    {
+        a2 += 360;
+    }
+    else if (a1 - a2 < -180)
+    {
+        a1 += 360;
+    }
+
+    return fabs(a1 - a2);
+}
+
 + (double) normalizeDegrees:(double)angle
 {
     double a = fmod(angle, 360);
@@ -393,8 +413,14 @@
 }
 
 + (NSTimeInterval) perspectiveAnimationDuration:(CGRect)viewport
-                                   forPositionA:(WWPosition*)posA
-                                      positionB:(WWPosition*)posB
+                               forBeginPosition:(WWPosition*)beginPosition
+                                   beginHeading:(double)beginHeading
+                                      beginTilt:(double)beginTilt
+                                      beginRoll:(double)beginRoll
+                                    endPosition:(WWPosition*)endPosition
+                                     endHeading:(double)endHeading
+                                        endTilt:(double)endTilt
+                                        endRoll:(double)endRoll
                                         onGlobe:(WWGlobe*)globe
 {
     if (CGRectGetWidth(viewport) == 0)
@@ -407,14 +433,14 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Viewport height is zero")
     }
 
-    if (posA == nil)
+    if (beginPosition == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position A is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Begin position is nil")
     }
 
-    if (posB == nil)
+    if (endPosition == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Position B is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"End position is nil")
     }
 
     if (globe == nil)
@@ -422,8 +448,9 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Globe is nil")
     }
 
-    // Compute the constant animation rate in pixels per second. We use the maximum viewport dimension so that this rate
-    // scales correctly when the viewport dimensions change.
+    // Compute the constant geographic animation rate in pixels per second. We use the maximum viewport dimension so
+    // that this rate scales correctly when the viewport dimensions change. The result is one maximum viewport dimension
+    // per second.
     double pixelsPerSecond = MAX(CGRectGetWidth(viewport), CGRectGetHeight(viewport));
 
     // Compute the horizontal duration in seconds as a function of the great-circle distance between the two positions
@@ -431,26 +458,37 @@
     // are visible and is used to provide a better estimate of average animation viewing distance when the two positions
     // have low altitudes and are distant from one another. This assumes that an animation using this duration would
     // zoom out and back in in order to avoid keeping the viewer near the surface.
-    double fitDistance = [WWMath perspectiveFitDistance:viewport forPositionA:posA positionB:posB onGlobe:globe];
-    double avgDistance = (fitDistance > [posA altitude] && fitDistance > [posB altitude])
-            ? (fitDistance + [posA altitude] + [posB altitude]) / 3 : ([posA altitude] + [posB altitude]) / 2;
+    double fitDistance = [WWMath perspectiveFitDistance:viewport forPositionA:beginPosition positionB:endPosition onGlobe:globe];
+    double avgDistance = (fitDistance > [beginPosition altitude] && fitDistance > [endPosition altitude])
+            ? (fitDistance + [beginPosition altitude] + [endPosition altitude]) / 3 : ([beginPosition altitude] + [endPosition altitude]) / 2;
     double metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:avgDistance];
     double metersPerSecond = metersPerPixel * pixelsPerSecond;
     double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
-    double horizontalMeters = RADIANS([WWLocation greatCircleDistance:posA endLocation:posB]) * globeRadius;
+    double horizontalMeters = RADIANS([WWLocation greatCircleDistance:beginPosition endLocation:endPosition]) * globeRadius;
     double horizontalSeconds = horizontalMeters / metersPerSecond;
 
     // Compute the vertical duration in seconds as a function of the distance between the two altitudes and the average
     // altitude during the animation.
-    avgDistance = ([posA altitude] + [posB altitude]) / 2;
+    avgDistance = ([beginPosition altitude] + [endPosition altitude]) / 2;
     metersPerPixel = [WWMath perspectivePixelSize:viewport atDistance:avgDistance];
     metersPerSecond = metersPerPixel * pixelsPerSecond;
-    double verticalMeters = fabs([posA altitude] - [posB altitude]);
+    double verticalMeters = fabs([beginPosition altitude] - [endPosition altitude]);
     double verticalSeconds = verticalMeters / metersPerSecond;
 
-    // The maximum of the horizontal and vertical duration is appropriate for the entire animation. If one duration is
-    // greater than the other, then it's assumed to be appropriate for the entire animation.
-    return MAX(horizontalSeconds, verticalSeconds);
+    // Compute the angular duration in seconds as a function of the maximum distance between the pairs of begin and end
+    // angles: heading, tilt and roll. The constant angular animation rate is configured to animate at 360 degrees per
+    // second. The result is a maximum angular duration of 0.5 seconds, since the maximum angular distance is 180
+    // degrees.
+    double degreesPerSecond = 360;
+    double headingDistance = [WWMath angularDistanceDegrees1:beginHeading degrees2:endHeading];
+    double tiltDistance = [WWMath angularDistanceDegrees1:beginTilt degrees2:endTilt];
+    double rollDistance = [WWMath angularDistanceDegrees1:beginRoll degrees2:endRoll];
+    double angularDegrees = MAX(headingDistance, MAX(tiltDistance, rollDistance));
+    double angularSeconds = angularDegrees / degreesPerSecond;
+
+    // The maximum of the horizontal, vertical and angular durations is appropriate for the entire animation. If one
+    // duration is greater than the other, then it's assumed to be appropriate for the entire animation.
+    return MAX(horizontalSeconds, MAX(verticalSeconds, angularSeconds));
 }
 
 + (double) perspectiveNearDistance:(CGRect)viewport forObjectAtDistance:(double)distance
