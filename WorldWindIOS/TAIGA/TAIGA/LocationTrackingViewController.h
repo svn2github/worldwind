@@ -17,13 +17,9 @@
     // Location tracking properties.
     BOOL trackingLocation;
     CLLocation* currentLocation;
-    WWPosition* forecastPosition;
-    WWPosition* smoothedPosition;
-    double currentHeading;
-    double smoothedHeading;
-    double firstPersonTilt;
-    double lookAtRange;
-    double lookAtTilt;
+    double currentCockpitTilt;
+    double currentTrackUpTilt;
+    double currentRange;
     // View properties
     UIImage* enabledImage;
     UIImage* disabledImage;
