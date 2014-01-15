@@ -124,8 +124,8 @@
 - (void) observeValueForKeyPath:(NSString*)keyPath ofObject:(id)object change:(NSDictionary*)change context:(void*)context
 {
     [progress setProgress:[object progress] animated:YES];
-    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%d MB,  %d MB remaining",
-                    dataSize, (int) ((1 - [object progress]) * dataSize)]];
+    [[self detailTextLabel] setText:[[NSString alloc] initWithFormat:@"%.0f MB,  %.0f MB remaining",
+                    dataSize, ((1.0 - [object progress]) * dataSize)]];
 }
 
 @end

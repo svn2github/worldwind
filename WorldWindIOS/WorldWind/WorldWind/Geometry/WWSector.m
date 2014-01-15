@@ -67,6 +67,93 @@
     return self;
 }
 
+- (WWSector*) initWithWorldFile:(NSString*)worldFilePath width:(int)width height:(int)height
+{
+    self = [super init];
+
+    NSError* error = nil;
+    NSString* worldString = [[NSString alloc] initWithContentsOfFile:worldFilePath encoding:NSASCIIStringEncoding
+                                                             error:&error];
+    if (error != nil || worldString == nil)
+    {
+        WWLog("@Unable to open world file %@ (%@)", worldFilePath, error != nil ? [error description] : @"");
+        return nil;
+    }
+
+    // Extract the parameters from the world file. This method assumes the world file is in degrees.
+
+    NSScanner* scanner = [[NSScanner alloc] initWithString:worldString];
+
+    double xPixelSize;
+    BOOL status = [scanner scanDouble:&xPixelSize];
+    if (status != YES)
+        return nil;
+
+    double yRotation;
+    status = [scanner scanDouble:&yRotation];
+    if (status != YES)
+        return nil;
+
+    double xRotation;
+    status = [scanner scanDouble:&xRotation];
+    if (status != YES)
+        return nil;
+
+    double yPixelSize;
+    status = [scanner scanDouble:&yPixelSize];
+    if (status != YES)
+        return nil;
+
+    double lonOrigin;
+    status = [scanner scanDouble:&lonOrigin];
+    if (status != YES)
+        return nil;
+
+    double latOrigin;
+    status = [scanner scanDouble:&latOrigin];
+    if (status != YES)
+        return nil;
+
+    // Make y offset negative if it's not already. World file convention is upper left origin.
+    // The latitude and longitude dimensions are computed by multiplying the pixel size by the width or height.
+    // The pixel size denotes the dimension of a pixel in degrees.
+    double latOffset = latOrigin + height * (yPixelSize <= 0 ? yPixelSize : -yPixelSize);
+    double lonOffset = lonOrigin + width * xPixelSize;
+
+    double minLon;
+    double maxLon;
+    if (lonOrigin < lonOffset)
+    {
+        minLon = lonOrigin;
+        maxLon = lonOffset;
+    }
+    else
+    {
+        minLon = lonOffset;
+        maxLon = lonOrigin;
+    }
+
+    double minLat;
+    double maxLat;
+    if (latOrigin < latOffset)
+    {
+        minLat = latOrigin;
+        maxLat = latOffset;
+    }
+    else
+    {
+        minLat = latOffset;
+        maxLat = latOrigin;
+    }
+
+    _minLatitude = minLat;
+    _maxLatitude = maxLat;
+    _minLongitude = minLon;
+    _maxLongitude = maxLon;
+
+    return self;
+}
+
 - (id) copyWithZone:(NSZone*)zone
 {
     return [[[self class] alloc] initWithDegreesMinLatitude:_minLatitude maxLatitude:_maxLatitude minLongitude:_minLongitude maxLongitude:_maxLongitude];

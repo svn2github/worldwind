@@ -151,6 +151,8 @@
 */
 - (WWSector*) initWithFullSphere;
 
+- (WWSector*) initWithWorldFile:(NSString*)worldFilePath width:(int)width height:(int)height;
+
 /// @name Changing Sector Values
 
 /**

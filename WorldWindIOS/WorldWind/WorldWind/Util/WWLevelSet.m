@@ -172,6 +172,9 @@
     // are outside the coverage area.
     WWSector* coverageSector = [[WWSector alloc] initWithSector:sector];
     [coverageSector intersection:_sector];
+    if ([coverageSector minLatitude] == [coverageSector maxLatitude]
+        || [coverageSector minLongitude] == [coverageSector maxLongitude])
+        return 0;
 
     NSUInteger tileCount = 0;
 
