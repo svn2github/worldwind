@@ -10,12 +10,12 @@
         <DisplayName>USA 10m, World 30m, Ocean 900m</DisplayName>
         <Service serviceName="OGC:WMS" version="1.3">
             <GetCapabilitiesURL> http://worldwind26.arc.nasa.gov/wms</GetCapabilitiesURL>
-            <GetMapURL> http://worldwind26.arc.nasa.gov/wms</GetMapURL>
-            <LayerNames>continents,NASA_SRTM30_900m_Tiled,USGS-NED</LayerNames>
+            <GetMapURL>http://worldwind26.arc.nasa.gov/wms</GetMapURL>
+            <LayerNames>NASA_SRTM30_900m_Tiled,aster_v2,USGS-NED</LayerNames>
         </Service>
         <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
         <!-- day month year hours:minutes:seconds timezone -->
-        <LastUpdate>25 06 2013 19:20:00 GMT</LastUpdate>
+        <LastUpdate>16 01 2014 20:00:00 GMT</LastUpdate>
         <DataCacheName>Earth/EarthElevations2</DataCacheName>
         <ImageFormat>application/bil16</ImageFormat>
         <DataType type="Int16" byteOrder="LittleEndian"/>
