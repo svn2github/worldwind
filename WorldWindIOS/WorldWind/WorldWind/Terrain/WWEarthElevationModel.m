@@ -16,7 +16,7 @@
 
 - (WWEarthElevationModel*) init
 {
-    NSString* layerName = @"continents,NASA_SRTM30_900m_Tiled,USGS-NED";
+    NSString* layerName = @"NASA_SRTM30_900m_Tiled,aster_v2,USGS-NED";
     NSString* serviceAddress = @"http://worldwind26.arc.nasa.gov/wms";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -30,6 +30,11 @@
     [self setDisplayName:@"Earth Elevations"];
     [self setMinElevation:-11000]; // Depth of Marianas Trench, in meters.
     [self setMaxElevation:+8850]; // Height of Mt. Everest, in meters.
+
+    // On 1/16/14 we repaired the configuration to request the Aster layer, so invalidate prior cache.
+    NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
+    [self setExpiration:[formatter dateFromString:@"2014-01-16T13:40:00-0800"]];
 
     WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
                                                                        layerNames:layerName
