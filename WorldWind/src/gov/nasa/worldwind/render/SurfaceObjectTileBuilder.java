@@ -1047,32 +1047,20 @@ public class SurfaceObjectTileBuilder
      */
     protected boolean needToSplit(DrawContext dc, Tile tile)
     {
-        Vec4[] corners = tile.getSector().computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
-        Vec4 centerPoint = tile.getSector().computeCenterPoint(dc.getGlobe(), dc.getVerticalExaggeration());
+        // Compute the distance between the eye point and the sector in meters, and compute the height in meters of a
+        // texel from the specified level.
+        double eyeDistanceMeters = tile.getSector().distanceTo(dc, dc.getView().getEyePoint());
+        double texelSizeRadians = tile.getLevel().getTexelSize();
+        double texelSizeMeters = dc.getGlobe().getRadius() * texelSizeRadians; // globe radius x radian texel size
 
-        Vec4 eyePoint = dc.getView().getEyePoint();
-        double d1 = eyePoint.distanceTo3(corners[0]);
-        double d2 = eyePoint.distanceTo3(corners[1]);
-        double d3 = eyePoint.distanceTo3(corners[2]);
-        double d4 = eyePoint.distanceTo3(corners[3]);
-        double d5 = eyePoint.distanceTo3(centerPoint);
-
-        double minDistance = d1;
-        if (d2 < minDistance)
-            minDistance = d2;
-        if (d3 < minDistance)
-            minDistance = d3;
-        if (d4 < minDistance)
-            minDistance = d4;
-        if (d5 < minDistance)
-            minDistance = d5;
-
-        // Compute the cell size as a function of the tile's latitude delta in meters and the tile builder's target tile
-        // density in texels.
-        double cellSize = tile.getSector().getDeltaLatRadians() * dc.getGlobe().getRadius()
-            / (double) this.currentTileDimension.height;
-
-        return Math.log10(minDistance) < (this.getSplitScale() + Math.log10(cellSize));
+        // Split when the texel size in meters becomes greater than the specified fraction of the eye distance, also in
+        // meters. The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the
+        // texel size becomes more than one thousandth of the eye distance. Another way to say it is, use the current
+        // tile if its texel size is less than the specified fraction of the eye distance.
+        //
+        // NOTE: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is
+        // window-size dependent and results in selecting an excessive number of tiles when the window is large.
+        return texelSizeMeters > eyeDistanceMeters * Math.pow(10, -this.getSplitScale());
     }
 
     //**************************************************************//

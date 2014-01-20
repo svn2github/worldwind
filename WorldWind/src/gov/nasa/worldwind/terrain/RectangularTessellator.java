@@ -152,22 +152,21 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         protected final int level;
         protected final Sector sector;
         protected final int density;
-        protected final double log10CellSize;
+        protected final double cellSize;
         protected Extent extent; // extent of sector in object coordinates
         protected RenderInfo ri;
 
         protected int minColorCode = 0;
         protected int maxColorCode = 0;
 
-        public RectTile(RectangularTessellator tessellator, Extent extent, int level, int density, Sector sector,
-            double cellSize)
+        public RectTile(RectangularTessellator tessellator, Extent extent, int level, int density, Sector sector)
         {
             this.tessellator = tessellator;
             this.level = level;
             this.density = density;
             this.sector = sector;
             this.extent = extent;
-            this.log10CellSize = Math.log10(cellSize);
+            this.cellSize = sector.getDeltaLatRadians() / density;
         }
 
         public Sector getSector()
@@ -195,9 +194,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             return density;
         }
 
-        public double getLog10CellSize()
+        public double getCellSize()
         {
-            return log10CellSize;
+            return cellSize;
         }
 
         public RenderInfo getRi()
@@ -486,9 +485,8 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     protected RectTile createTile(DrawContext dc, Sector tileSector, int level)
     {
         Extent extent = Sector.computeBoundingBox(dc.getGlobe(), dc.getVerticalExaggeration(), tileSector);
-        double cellSize = tileSector.getDeltaLatRadians() * dc.getGlobe().getRadius() / this.density;
 
-        return new RectTile(this, extent, level, this.density, tileSector, cellSize);
+        return new RectTile(this, extent, level, this.density, tileSector);
     }
 
     public boolean isMakeTileSkirts()
@@ -534,39 +532,27 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected boolean atBestResolution(DrawContext dc, RectTile tile)
     {
-        double best = dc.getGlobe().getElevationModel().getBestResolution(tile.getSector())
-            * dc.getGlobe().getRadiusAt(tile.getSector().getCentroid());
+        double bestResolution = dc.getGlobe().getElevationModel().getBestResolution(tile.getSector());
 
-        return tile.log10CellSize <= Math.log10(best);
+        return tile.getCellSize() <= bestResolution;
     }
 
     protected boolean needToSplit(DrawContext dc, RectTile tile)
     {
-        Vec4[] corners = tile.sector.computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
-        Vec4 centerPoint = tile.sector.computeCenterPoint(dc.getGlobe(), dc.getVerticalExaggeration());
+        // Compute the distance between the eye point and the sector in meters, and compute the height in meters of a
+        // cell from the specified tile.
+        double eyeDistanceMeters = tile.getSector().distanceTo(dc, dc.getView().getEyePoint());
+        double cellSizeRadians = tile.getCellSize();
+        double cellSizeMeters = dc.getGlobe().getRadius() * cellSizeRadians; // globe radius x radian cell size
 
-        View view = dc.getView();
-        double d1 = view.getEyePoint().distanceTo3(corners[0]);
-        double d2 = view.getEyePoint().distanceTo3(corners[1]);
-        double d3 = view.getEyePoint().distanceTo3(corners[2]);
-        double d4 = view.getEyePoint().distanceTo3(corners[3]);
-        double d5 = view.getEyePoint().distanceTo3(centerPoint);
-
-        double minDistance = d1;
-        if (d2 < minDistance)
-            minDistance = d2;
-        if (d3 < minDistance)
-            minDistance = d3;
-        if (d4 < minDistance)
-            minDistance = d4;
-        if (d5 < minDistance)
-            minDistance = d5;
-
-        double logDist = Math.log10(minDistance);
-        double target = this.computeTileResolutionTarget(dc, tile);
-
-        boolean useTile = tile.log10CellSize <= (logDist - target);
-        return !useTile;
+        // Split when the cell size in meters becomes greater than the specified fraction of the eye distance, also in
+        // meters. The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the
+        // cell size becomes more than one thousandth of the eye distance. Another way to say it is, use the current
+        // tile if its cell size is less than the specified fraction of the eye distance.
+        //
+        // NOTE: It's tempting to instead compare a screen pixel size to the cell size, but that calculation is
+        // window-size dependent and results in selecting an excessive number of tiles when the window is large.
+        return cellSizeMeters > eyeDistanceMeters * Math.pow(10, -this.computeTileResolutionTarget(dc, tile));
     }
 
     protected double computeTileResolutionTarget(DrawContext dc, RectTile tile)
