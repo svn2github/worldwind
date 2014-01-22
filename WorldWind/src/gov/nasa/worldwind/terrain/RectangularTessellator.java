@@ -539,20 +539,34 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected boolean needToSplit(DrawContext dc, RectTile tile)
     {
-        // Compute the distance between the eye point and the sector in meters, and compute the height in meters of a
-        // cell from the specified tile.
-        double eyeDistanceMeters = tile.getSector().distanceTo(dc, dc.getView().getEyePoint());
+        // Compute the height in meters of a cell from the specified tile. Take care to convert from the radians to
+        // meters by multiplying by the globe's radius, not the length of a Cartesian point. Using the length of a
+        // Cartesian point is incorrect when the globe is flat.
         double cellSizeRadians = tile.getCellSize();
-        double cellSizeMeters = dc.getGlobe().getRadius() * cellSizeRadians; // globe radius x radian cell size
+        double cellSizeMeters = dc.getGlobe().getRadius() * cellSizeRadians;
+
+        // Compute the level of detail scale and the field of view scale. These scales are multiplied by the eye
+        // distance to derive a scaled distance that is then compared to the cell size. The level of detail scale is
+        // specified as a power of 10. For example, a detail factor of 3 means split when the cell size becomes more
+        // than one thousandth of the eye distance. The field of view scale is specified as a ratio between the current
+        // field of view and a the default field of view. In a perspective projection, decreasing the field of view by
+        // 50% has the same effect on object size as decreasing the distance between the eye and the object by 50%.
+        double detailScale = Math.pow(10, -this.computeTileResolutionTarget(dc, tile));
+        double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
+        fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
+
+        // Compute the distance between the eye point and the sector in meters, and compute a fraction of that distance
+        // by multiplying the actual distance by the level of detail scale and the field of view scale.
+        double eyeDistanceMeters = tile.getSector().distanceTo(dc, dc.getView().getEyePoint());
+        double scaledEyeDistanceMeters = eyeDistanceMeters * detailScale * fieldOfViewScale;
 
         // Split when the cell size in meters becomes greater than the specified fraction of the eye distance, also in
-        // meters. The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the
-        // cell size becomes more than one thousandth of the eye distance. Another way to say it is, use the current
-        // tile if its cell size is less than the specified fraction of the eye distance.
+        // meters. Another way to say it is, use the current tile if its cell size is less than the specified fraction
+        // of the eye distance.
         //
         // NOTE: It's tempting to instead compare a screen pixel size to the cell size, but that calculation is
         // window-size dependent and results in selecting an excessive number of tiles when the window is large.
-        return cellSizeMeters > eyeDistanceMeters * Math.pow(10, -this.computeTileResolutionTarget(dc, tile));
+        return cellSizeMeters > scaledEyeDistanceMeters;
     }
 
     protected double computeTileResolutionTarget(DrawContext dc, RectTile tile)
