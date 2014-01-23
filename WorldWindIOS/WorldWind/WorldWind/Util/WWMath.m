@@ -26,9 +26,9 @@
 
 + (double) stepValue:(double)value min:(double)min max:(double)max
 {
-    // When the min and max are equivalent this cannot distinguish between the two. In this case, this returns 0 if the
-    // value is on or before the min, and 1 if the value is after the max. The case that would cause a divide by zero
-    // error is never evaluated. The value is always less than, equal to, or greater than the min/max.
+    // Note: when min==max this returns 0 if the value is on or before the min, and 1 if the value is after the max.
+    // The case that would cause a divide by zero error is never evaluated. The value is always less than, equal to,
+    // or greater than the min/max.
 
     if (value <= min)
     {

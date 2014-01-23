@@ -216,8 +216,8 @@
 - (void) sortOrderedRenderables
 {
     // Sort the ordered renderables by eye distance from front to back and then by insertion time. The ordered
-    // renderable list is processed front its last object to its first object below, thereby drawing ordered renderables
-    // from front to back.
+    // renderable peek and pop access the back of the ordered renderable list, thereby causing ordered renderables to
+    // be processed from back to front.
     [orderedRenderables sortUsingComparator:
             ^(id <WWOrderedRenderable> orA, id <WWOrderedRenderable> orB)
             {
