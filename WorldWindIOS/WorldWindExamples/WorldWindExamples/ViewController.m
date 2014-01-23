@@ -701,18 +701,17 @@
         {
             if (statisticsController == nil)
             {
+                CGSize size = CGSizeMake(200, 450);
+                CGRect rect = CGRectMake(CGRectGetMaxX([_wwv frame]) - size.width, CGRectGetMinY([_wwv frame]),
+                        size.width, size.height);
                 statisticsController = [[FrameStatisticsController alloc] initWithView:_wwv];
-                CGRect rect = CGRectMake([_wwv bounds].size.width - 210, 50, 200, 320);
                 [[statisticsController view] setFrame:rect];
                 [self addChildViewController:statisticsController];
                 [[self view] addSubview:[statisticsController view]];
-                [statisticsController didMoveToParentViewController:self];
             }
             else
             {
-                [statisticsController willMoveToParentViewController:nil];
                 [[statisticsController view] removeFromSuperview];
-                [statisticsController removeFromParentViewController];
                 statisticsController = nil;
             }
         }

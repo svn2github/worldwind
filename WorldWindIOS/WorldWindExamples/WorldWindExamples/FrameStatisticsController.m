@@ -9,9 +9,9 @@
 #import "WorldWind/Util/WWFrameStatistics.h"
 #import "WorldWind/WorldWindView.h"
 
-#define CONTROLS_SECTION (-1) // not currently used
-#define FRAME_SECTION (0)
-#define TILES_SECTION (1)
+#define SETTINGS_SECTION (0)
+#define FRAME_SECTION (1)
+#define TILES_SECTION (2)
 
 @implementation FrameStatisticsController
 
@@ -36,18 +36,15 @@
     }
 }
 
-- (void) handleTimer
-{
-    [[self tableView] reloadData];
-}
-
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 2;
+    return 3;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
+    if (section == SETTINGS_SECTION)
+        return 1;
     if (section == FRAME_SECTION)
         return 2;
     else if (section == TILES_SECTION)
@@ -58,6 +55,8 @@
 
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
 {
+    if (section == SETTINGS_SECTION)
+        return @"Settings";
     if (section == FRAME_SECTION)
         return @"Frame";
     else if (section == TILES_SECTION)
@@ -72,7 +71,7 @@
 
     UITableViewCell* cell = nil;
 
-    if ([indexPath section] == CONTROLS_SECTION)
+    if ([indexPath section] == SETTINGS_SECTION)
     {
         static NSString* switchCell = @"switchCellForRunContinuously";
 
@@ -84,10 +83,10 @@
             UISwitch* enableSwitch = [[UISwitch alloc] init];
             [enableSwitch addTarget:self action:@selector(handleDrawContinuouslySwitch:)
                    forControlEvents:UIControlEventValueChanged];
-            [cell setAccessoryView:[[UIView alloc] initWithFrame:[enableSwitch frame]]];
-            [[cell accessoryView] addSubview:enableSwitch];
+            [cell setAccessoryView:enableSwitch];
             [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
             [[cell textLabel] setText:@"Draw Continuously"];
+            [[cell textLabel] setFont:[UIFont systemFontOfSize:[UIFont smallSystemFontSize]]];
         }
     }
     else if ([indexPath section] == FRAME_SECTION)
@@ -106,12 +105,12 @@
         {
             case 0:
                 name = @"Avg Time";
-                value = [[NSString alloc] initWithFormat:@"%d ms", (int) (1000 * [frameStats frameTimeAverage])];
+                value = [[NSString alloc] initWithFormat:@"%d ms", (int) round(1000 * [frameStats frameTimeAverage])];
                 break;
 
             case 1:
                 name = @"Rate";
-                value = [[NSString alloc] initWithFormat:@"%d Hz", (int) [frameStats frameRateAverage]];
+                value = [[NSString alloc] initWithFormat:@"%d Hz", (int) round([frameStats frameRateAverage])];
                 break;
 
             default:
@@ -161,6 +160,11 @@
     }
 
     return cell;
+}
+
+- (void) handleTimer
+{
+    [[self tableView] reloadData];
 }
 
 - (void) handleDrawContinuouslySwitch:(UISwitch*)enableSwitch
