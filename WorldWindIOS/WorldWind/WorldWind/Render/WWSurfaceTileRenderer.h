@@ -23,9 +23,8 @@
 @interface WWSurfaceTileRenderer : NSObject
 {
 @protected
-    NSString* programKey;
-    WWMatrix* tileCoordMatrix;
-    WWMatrix* textureMatrix;
+    WWMatrix* texSamplerMatrix;
+    WWMatrix* texMaskMatrix;
 }
 
 /// @name Initialized a Surface Tile Renderer

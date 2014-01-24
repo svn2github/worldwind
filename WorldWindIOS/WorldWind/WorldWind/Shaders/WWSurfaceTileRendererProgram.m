@@ -22,9 +22,9 @@
     vertexPointLocation = (GLuint) [self attributeLocation:@"vertexPoint"];
     vertexTexCoordLocation = (GLuint) [self attributeLocation:@"vertexTexCoord"];
     mvpMatrixLocation = (GLuint) [self uniformLocation:@"mvpMatrix"];
-    tileCoordMatrixLocation = (GLuint) [self uniformLocation:@"tileCoordMatrix"];
-    textureUnitLocation = (GLuint) [self uniformLocation:@"tileTexture"];
-    textureMatrixLocation = (GLuint) [self uniformLocation:@"texCoordMatrix"];
+    texSamplerMatrixLocation = (GLuint) [self uniformLocation:@"texSamplerMatrix"];
+    texMaskMatrixLocation = (GLuint) [self uniformLocation:@"texMaskMatrix"];
+    texSamplerLocation = (GLuint) [self uniformLocation:@"texSampler"];
     opacityLocation = (GLuint) [self uniformLocation:@"opacity"];
 
     return self;
@@ -61,29 +61,29 @@
     [WWGpuProgram loadUniformMatrix:matrix location:mvpMatrixLocation];
 }
 
-- (void) loadTileCoordMatrix:(WWMatrix* __unsafe_unretained)matrix
+- (void) loadTexSamplerMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
     }
 
-    [WWGpuProgram loadUniformMatrix:matrix location:tileCoordMatrixLocation];
+    [WWGpuProgram loadUniformMatrix:matrix location:texSamplerMatrixLocation];
 }
 
-- (void) loadTextureUnit:(GLenum)unit
-{
-    glUniform1i(textureUnitLocation, unit - GL_TEXTURE0);
-}
-
-- (void) loadTextureMatrix:(WWMatrix* __unsafe_unretained)matrix
+- (void) loadTexMaskMatrix:(WWMatrix* __unsafe_unretained)matrix
 {
     if (matrix == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Matrix is nil")
     }
 
-    [WWGpuProgram loadUniformMatrix:matrix location:textureMatrixLocation];
+    [WWGpuProgram loadUniformMatrix:matrix location:texMaskMatrixLocation];
+}
+
+- (void) loadTexSampler:(GLenum)unit
+{
+    glUniform1i(texSamplerLocation, unit - GL_TEXTURE0);
 }
 
 - (void) loadOpacity:(GLfloat)opacity

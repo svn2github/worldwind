@@ -13,35 +13,36 @@
 @class WWTexture;
 
 /**
-* WWSurfaceTileRendererProgram is a GLSL program used by WWSurfaceTileRenderer that draws geometry with a texture
-* applied to a geographic sector. WWSurfaceTileRendererProgram exposes the following vertex attributes and uniform
+* WWSurfaceTileRendererProgram is a GLSL v1.00 program used by WWSurfaceTileRenderer that draws primitive fragments with
+* the colors from a specified texture sampler, multiplied by a specified opacity. This program draws transparent black
+* (0, 0, 0, 0) if the transformed texture coordinate indicates a texel outside of the texture data's standard range of
+* [0,1]. WWSurfaceTileRendererProgram exposes the following vertex attributes and uniform
 * variables to configure its behavior:
 *
 * ###Vertex Attributes###
 *
-* `vec4 vertexPoint` - The geometry's vertex points, in model coordinates. This attribute's location is provided by
+* `vec4 vertexPoint` - The primitive's vertex points in model coordinates. This attribute's location is provided by
 * the vertexPointLocation property.
 *
-* `vec4 vertexTexCoord` - The geometry's vertex texture coordinates. This attribute's location is provided by
+* `vec4 vertexTexCoord` - The primitive's vertex texture coordinates. This attribute's location is provided by
 * the vertexTexCoordLocation property.
 *
 * ###Uniform Variables###
 *
-* `mat4 mvpMatrix` - The modelview-projection matrix used to transform the `vertexPoint` attribute. Specified using
-* loadModelviewProjection:.
+* `mat4 mvpMatrix` - Transforms the primitives' vertex points from model coordinates to clip coordinates. Specified
+* using loadModelviewProjection:.
 *
-* `mat4 tileCoordMatrix` - The matrix used to transform the `vertexTexCoord` attribute to the range [0,1] in the
-* geographic region the texture should be applied. Coordinates outside of this range have a fragment color of
-* (0, 0, 0, 0). Specified using loadTileCoordMatrix:.
+* `mat4 texSamplerMatrix` - Transforms the primitive's vertex texture coordinates to sampler texture coordinates.
+* Specified using loadTexSamplerMatrix:.
 *
-* `mat4 texCoordMatrix` - The matrix used to transform the `vertexTexCoord` attribute. Specified using
-* loadTextureMatrix:.
+* `mat4 texMaskMatrix` - Transforms the primitive's vertex texture coordinates to mask texture coordinates. Transformed
+* coordinates outside of the range [0,1] are drawn in the color (0, 0, 0, 0). Specified using loadTexMaskMatrix:.
+*
+* `sampler2D texSampler` - Indicates the texture 2D unit to use when sampling texture color
+* (GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, etc.). Specified using loadTextureSampler:.
 *
 * `float opacity` - The opacity used to modulate the RGBA components of the sampled texture color. Specified using
 * loadOpacity:.
-*
-* `sampler2D tileTexture` - The texture unit the texture is bound to (GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, etc.).
-* Specified using loadTextureUnit:.
 */
 @interface WWSurfaceTileRendererProgram : WWGpuProgram
 {
@@ -49,9 +50,9 @@
     GLuint vertexPointLocation;
     GLuint vertexTexCoordLocation;
     GLuint mvpMatrixLocation;
-    GLuint tileCoordMatrixLocation;
-    GLuint textureUnitLocation;
-    GLuint textureMatrixLocation;
+    GLuint texSamplerMatrixLocation;
+    GLuint texMaskMatrixLocation;
+    GLuint texSamplerLocation;
     GLuint opacityLocation;
 }
 
@@ -118,7 +119,7 @@
 - (void) loadModelviewProjection:(WWMatrix*)matrix;
 
 /**
-* Loads the specified matrix as the value of this program's `tileCoordMatrix` uniform variable.
+* Loads the specified matrix as the value of this program's `texSamplerMatrix` uniform variable.
 *
 * An OpenGL context must be current when this method is called, and this program must be bound. The result of this
 * method is undefined if there is no current OpenGL context or if this program is not bound.
@@ -127,34 +128,34 @@
 *
 * @exception NSInvalidArgumentException If the matrix is nil.
 */
-- (void) loadTileCoordMatrix:(WWMatrix*)matrix;
+- (void) loadTexSamplerMatrix:(WWMatrix*)matrix;
 
 /**
-* Loads the specified OpenGL texture unit enumeration as the value of this program's `tileTexture` uniform variable.
+* Loads the specified matrix as the value of this program's `texMaskMatrix` uniform variable.
+*
+* An OpenGL context must be current when this method is called, and this program must be bound. The result of this
+* method is undefined if there is no current OpenGL context or if this program is not bound.
+*
+* @param matrix The matrix to set the uniform variable to.
+*
+* @exception NSInvalidArgumentException If the matrix is nil.
+*/
+- (void) loadTexMaskMatrix:(WWMatrix*)matrix;
+
+/**
+* Loads the specified OpenGL texture unit enumeration as the value of this program's `texSampler` uniform variable.
 *
 * An OpenGL context must be current when this method is called, and this program must be bound. The result of this
 * method is undefined if there is no current OpenGL context or if this program is not bound.
 *
 * The specified unit must be one of the GL_TEXTUREi OpenGL enumerations, where i ranges from 0 to
-* (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1). The value is converted from an enumeration to a GLSL texture unit index
+* GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1. The value is converted from an enumeration to a GLSL texture unit index
 * prior to loading the unit in the GLSL uniform variable.
 *
 * @param unit The OpenGL texture unit to sample. Must be one of GL_TEXTUREi, where i ranges from 0 to
-* (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1)
+* GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1.
 */
-- (void) loadTextureUnit:(GLenum)unit;
-
-/**
-* Loads the specified matrix as the value of this program's `texCoordMatrix` uniform variable.
-*
-* An OpenGL context must be current when this method is called, and this program must be bound. The result of this
-* method is undefined if there is no current OpenGL context or if this program is not bound.
-*
-* @param matrix The matrix to set the uniform variable to.
-*
-* @exception NSInvalidArgumentException If the matrix is nil.
-*/
-- (void) loadTextureMatrix:(WWMatrix*)matrix;
+- (void) loadTexSampler:(GLenum)unit;
 
 /**
 * Loads the specified GLfloat as the value of this program's `opacity` uniform variable.
