@@ -191,6 +191,9 @@
 /**
 * Indicates whether this sector intersects a specified sector.
 *
+* This sector intersects the specified sector when each of sector's boundaries either overlap with the specified
+* sector or are adjacent to the specified sector.
+*
 * @param sector The sector to test intersection with. May by nil, in which case this method returns NO.
 *
 * @return YES if the sectors intersect, otherwise NO.
@@ -198,10 +201,21 @@
 - (BOOL) intersects:(WWSector*)sector;
 
 /**
+* Indicates whether this sector overlaps a specified sector.
+*
+* This sector overlaps the specified sector when the union of the two sectors defines a non-empty sector.
+*
+* @param sector The sector to test overlap with. May be nil, in which case this method returns NO.
+*
+* @return YES if the sectors overlap, otherwise NO.
+*/
+- (BOOL) overlaps:(WWSector*)sector;
+
+/**
 * Indicates whether this sector contains a specified sector.
 *
-* This sector contains the specified sector when this sector's min and max latitude and longitude are greater than or
-* equal to that of the specified sector.
+* This sector contains the specified sector when the specified sector's boundaries are completely contained within this
+* sector's boundaries, or are equal to this sector's boundaries.
 *
 * @param sector The sector to test containment with. May be nil, in which case this method returns NO.
 *

@@ -280,6 +280,18 @@
         && _maxLatitude >= sector->_minLatitude;
 }
 
+- (BOOL) overlaps:(WWSector* __unsafe_unretained)sector
+{
+    if (sector == nil)
+        return NO;
+
+    // Assumes normalized angles: [-180, 180], [-90, 90].
+    return _minLongitude < sector->_maxLongitude
+        && _maxLongitude > sector->_minLongitude
+        && _minLatitude < sector->_maxLatitude
+        && _maxLatitude > sector->_minLatitude;
+}
+
 - (BOOL) contains:(WWSector* __unsafe_unretained)sector
 {
     if (sector == nil)

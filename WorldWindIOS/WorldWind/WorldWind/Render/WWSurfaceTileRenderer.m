@@ -122,7 +122,7 @@
             {
                 for (id <WWSurfaceTile> __unsafe_unretained surfaceTile in surfaceTiles)
                 {
-                    if ([[surfaceTile sector] intersects:terrainTileSector] && [surfaceTile bind:dc])
+                    if ([[surfaceTile sector] overlaps:terrainTileSector] && [surfaceTile bind:dc])
                     {
                         [self applyTileState:dc terrainTile:terrainTile surfaceTile:surfaceTile];
                         [tess render:dc tile:terrainTile];
