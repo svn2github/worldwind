@@ -411,8 +411,7 @@
 
 - (BOOL) tileMeetsRenderCriteria:(WWDrawContext*)dc tile:(WWTextureTile*)tile
 {
-    return [levels isLastLevel:[[tile level] levelNumber]]
-            || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
+    return [[tile level] isLastLevel] || ![tile mustSubdivide:dc detailFactor:(detailHintOrigin + _detailHint)];
 }
 
 - (BOOL) isTileTextureInMemory:(WWDrawContext*)dc tile:(WWTextureTile*)tile
