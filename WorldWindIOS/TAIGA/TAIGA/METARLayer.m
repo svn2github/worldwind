@@ -138,7 +138,8 @@
     [self removeAllRenderables];
 
     // Retrieve the data on a separate thread because it takes a while to download and parse.
-    NSString* urlString = @"http://weather.aero/dataserver_current/httpparam?dataSource=metars&requestType=retrieve"
+    NSString* urlString = @"http://aviationweather.gov/adds"
+            "/dataserver_current/httpparam?dataSource=metars&requestType=retrieve"
             "&format=xml&stationString=PA*&hoursBeforeNow=1&mostRecentForEachStation=postfilter";
     METARLayerRetriever* retriever = [[METARLayerRetriever alloc] initWithUrl:urlString layer:self];
     [[WorldWind loadQueue] addOperation:retriever];
