@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#define TAIGA_VERSION (@"0.0025")
-#define TAIGA_VERSION_DATE (@"1/16/14")
+#define TAIGA_VERSION (@"0.0026")
+#define TAIGA_VERSION_DATE (@"1/29/14")
 
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_EARTH_RADIUS (6378137.0)
