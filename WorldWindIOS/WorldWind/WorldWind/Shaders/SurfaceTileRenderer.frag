@@ -18,11 +18,12 @@ varying vec2 texSamplerCoord;
 varying vec2 texMaskCoord;
 
 /*
- * Returns 1.0 when the coordinate's s- and t-components are in the range [0,1], and returns 0.0 otherwise. The
- * returned float can be muptilied by a sampled texture color in order to mask fragments of a textured primitive when
- * its texture coordinates result in texels that are either repeated or clamped to the texture's edge.
+ * Returns 1.0 when the coordinate's s- and t-components are in the range [0,1], and returns 0.0 otherwise. The returned
+ * float can be muptilied by a sampled texture color in order to mask fragments of a textured primitive. This mask
+ * performs has the same result as setting the texture wrap state to GL_CLAMP_TO_BORDER and providing a border color of
+ * (0, 0, 0, 0).
  */
-float texture2DWrapMask(const vec2 coord)
+float texture2DBorderMask(const vec2 coord)
 {
     vec2 maskVec = vec2(greaterThanEqual(coord, vec2(0.0))) * vec2(lessThanEqual(coord, vec2(1.0)));
     return maskVec.x * maskVec.y;
@@ -30,12 +31,16 @@ float texture2DWrapMask(const vec2 coord)
                                                           
 /*
  * OpenGL ES Shading Language v1.00 fragment shader for SurfaceTileRendererProgram. Writes the value of the texture 2D
- * object bound to texSampler at the current transformed texture coordinate, multiplied by the uniform opacity.
- * Writes transparent black (0, 0, 0, 0) if the transformed texture coordinate indicates a texel outside of the texture
- * data's standard range of [0,1].
+ * object bound to texSampler at the current transformed texture coordinate, multiplied by the uniform opacity. Writes
+ * transparent black (0, 0, 0, 0) if the transformed texture coordinate indicates a texel outside of the texture data's
+ * standard range of [0,1].
  */
 void main(void)
 {
-    gl_FragColor = texture2D(texSampler, texSamplerCoord) * texture2DWrapMask(texMaskCoord) * opacity;
+    /* Avoid unnecessary vector multiplications by multiplying the mask and the alpha before applying the result to the sampler color. */
+    float alpha = texture2DBorderMask(texMaskCoord) * opacity;
+    
+    /* Return either the sampled texture2D color multiplyed by opacity or transparent black. */
+    gl_FragColor = texture2D(texSampler, texSamplerCoord) * alpha;
 }
 );
