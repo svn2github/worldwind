@@ -20,17 +20,17 @@
     [self setDisplayName:@"DAFIF"];
 
     WWTiledImageLayer* layer = [self makeLayerForName:@"show:0,1,21" displayName:@"Airports"];
-    [layer setEnabled:NO];
+    [layer setEnabled:YES];
     [self setMaxActiveAltitude:3000000];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"show:2,4" displayName:@"Navigation"];
-    [layer setEnabled:NO];
+    [layer setEnabled:YES];
     [self setMaxActiveAltitude:750000];
     [self addRenderable:layer];
 
     layer = [self makeLayerForName:@"show:13,17,24" displayName:@"Special Activity"];
-    [layer setEnabled:NO];
+    [layer setEnabled:YES];
     [self setMaxActiveAltitude:3000000];
     [self addRenderable:layer];
 
@@ -47,7 +47,7 @@
     WWTiledImageLayer* layer = [[WWTiledImageLayer alloc] initWithSector:sector
                                                           levelZeroDelta:[[WWLocation alloc]
                                                                   initWithDegreesLatitude:45 longitude:45]
-                                                               numLevels:5
+                                                               numLevels:10
                                                     retrievalImageFormat:@"image/png" cachePath:cachePath];
     [layer setDisplayName:displayName];
 

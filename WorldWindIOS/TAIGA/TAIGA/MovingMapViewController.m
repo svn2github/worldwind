@@ -49,6 +49,7 @@
 #import "AircraftLayer.h"
 #import "TerrainAltitudeLayer.h"
 #import "LocationTrackingViewController.h"
+#import "WWDAFIFLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -82,6 +83,7 @@
     PIREPLayer* pirepLayer;
     WeatherCamLayer* weatherCamLayer;
     CompassLayer* compassLayer;
+    WWDAFIFLayer* dafifLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
 
@@ -276,6 +278,11 @@
     [faaChartsLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
+
+    dafifLayer = [[WWDAFIFLayer alloc] init];
+    [dafifLayer setEnabled:[Settings                                                                               getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [dafifLayer displayName]] defaultValue:YES]];
+    [[[_wwv sceneController] layers] addLayer:dafifLayer];
 
     [self createTerrainAltitudeLayer];
     [terrainAltitudeLayer setEnabled:[Settings                                                                               getBoolForName:
