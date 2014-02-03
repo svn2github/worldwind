@@ -106,6 +106,7 @@ const float ShapePickRadius = 22.0;
 {
     WWPath* path = [[WWPath alloc] initWithPositions:positions];
     [path setPathType:WW_RHUMB];
+    [path setNumSubsegments:100];
     [path setAttributes:shapeAttrs];
     [path setPickDelegate:self];
 
