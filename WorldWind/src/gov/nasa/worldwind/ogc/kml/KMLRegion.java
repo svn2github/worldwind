@@ -514,8 +514,7 @@ public class KMLRegion extends KMLAbstractObject
         if (box == null)
             return;
 
-        int altitudeMode = !WWUtil.isEmpty(box.getAltitudeMode()) ? KMLUtil.convertAltitudeMode(box.getAltitudeMode())
-            : WorldWind.CLAMP_TO_GROUND;
+        int altitudeMode = KMLUtil.convertAltitudeMode(box.getAltitudeMode(), WorldWind.CLAMP_TO_GROUND); // KML default
         this.getCurrentData().setAltitudeMode(altitudeMode);
 
         if (altitudeMode == WorldWind.CLAMP_TO_GROUND)

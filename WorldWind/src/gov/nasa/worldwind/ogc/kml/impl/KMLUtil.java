@@ -77,7 +77,7 @@ public class KMLUtil
         return styleState != null && styleState.equals(KMLConstants.HIGHLIGHT);
     }
 
-    public static int convertAltitudeMode(String altMode)
+    public static int convertAltitudeMode(String altMode, int defaultAltMode)
     {
         if ("clampToGround".equals(altMode))
             return WorldWind.CLAMP_TO_GROUND;
@@ -86,7 +86,7 @@ public class KMLUtil
         else if ("absolute".equals(altMode))
             return WorldWind.ABSOLUTE;
         else
-            return WorldWind.RELATIVE_TO_GROUND; // Default to relative to ground
+            return defaultAltMode;
     }
 
     /**
@@ -256,7 +256,7 @@ public class KMLUtil
         Angle latitude = position.getLatitude();
         Angle longitude = position.getLongitude();
 
-        int altMode = convertAltitudeMode(altitudeMode);
+        int altMode = convertAltitudeMode(altitudeMode, WorldWind.CLAMP_TO_GROUND); // KML default
         if (altMode == WorldWind.CLAMP_TO_GROUND)
             height = globe.getElevation(latitude, longitude);
         else if (altMode == WorldWind.RELATIVE_TO_GROUND)

@@ -74,7 +74,7 @@ public class KMLFlyViewController extends KMLViewController
 
         Animator animator = createFlyToLookAtAnimator(this.flyView, lookAtPosition,
             Angle.fromDegrees(heading), Angle.fromDegrees(tilt), range,
-            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode));
+            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.CLAMP_TO_GROUND)); // KML default
 
         FlyViewInputHandler inputHandler = (FlyViewInputHandler) this.flyView.getViewInputHandler();
         inputHandler.stopAnimators();
@@ -109,7 +109,7 @@ public class KMLFlyViewController extends KMLViewController
             this.flyView.getPitch(), Angle.fromDegrees(tilt),
             this.flyView.getRoll(), Angle.fromDegrees(roll),
             this.flyView.getEyePosition().getElevation(), cameraPosition.getElevation(),
-            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode));
+            timeToMove, KMLUtil.convertAltitudeMode(altitudeMode, WorldWind.RELATIVE_TO_GROUND)); // Camera default, differs from KML default
 
         FlyViewInputHandler inputHandler = (FlyViewInputHandler) this.flyView.getViewInputHandler();
         inputHandler.stopAnimators();

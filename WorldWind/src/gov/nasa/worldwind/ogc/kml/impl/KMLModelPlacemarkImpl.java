@@ -152,7 +152,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
 
         Position refPosition = this.model.getLocation().getPosition();
         root.setPosition(refPosition);
-        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode()));
+        root.setAltitudeMode(KMLUtil.convertAltitudeMode(this.model.getAltitudeMode(), WorldWind.CLAMP_TO_GROUND)); // KML default
 
         KMLOrientation orientation = this.model.getOrientation();
         if (orientation != null)
