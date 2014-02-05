@@ -56,7 +56,9 @@ public class GDALUtils
 
     static
     {
-        replaceLibraryLoader(); // This must be the first line of initialization
+        // Allow the app or user to prevent library loader replacement.
+        if (System.getProperty("gov.nasa.worldwind.prevent.gdal.loader.replacement") == null)
+            replaceLibraryLoader(); // This must be the first line of initialization
         initialize();
     }
 
