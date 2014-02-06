@@ -115,6 +115,7 @@
 		1BF9AA710F20CB924FDAAE99 /* PIREP_ICONS_0000_Layer-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A6372291DD219E89CDFD /* PIREP_ICONS_0000_Layer-2.png */; };
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
+		1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB9A65C92CBB14A98EE4 /* NMEASentence.m */; };
 		1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */; };
 		1BF9AAD19F506395476E4D00 /* PIREP_ICONS_0006_Layer-8.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AC62274413AAB34740F4 /* PIREP_ICONS_0006_Layer-8.png */; };
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
@@ -281,6 +282,7 @@
 		1BF9A3BCD28EC7E52BD71D11 /* CC_BKN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_BKN_128.png; sourceTree = "<group>"; };
 		1BF9A3C7CD276C3C6FC0C700 /* PIREP_ICONS_0003_Layer-5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0003_Layer-5.png"; sourceTree = "<group>"; };
 		1BF9A3F10314E2E43C3F237C /* 361-1up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up.png"; sourceTree = "<group>"; };
+		1BF9A3FC88AC081BCFD87650 /* NMEASentence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMEASentence.h; sourceTree = "<group>"; };
 		1BF9A43F3357745E65A15FC1 /* 25-weather@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "25-weather@2x.png"; sourceTree = "<group>"; };
 		1BF9A44285FDD4AEB9C24014 /* MetarIconGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetarIconGenerator.h; sourceTree = "<group>"; };
 		1BF9A44B08032F6A0F4173C9 /* 309-thumbtack.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "309-thumbtack.png"; sourceTree = "<group>"; };
@@ -364,6 +366,7 @@
 		1BF9AB6BDBC0359E355CAC4A /* WB_90kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_90kt_128.png; sourceTree = "<group>"; };
 		1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2.png"; sourceTree = "<group>"; };
 		1BF9AB94DF8C59F1331310C0 /* WeatherScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeatherScreenController.m; sourceTree = "<group>"; };
+		1BF9AB9A65C92CBB14A98EE4 /* NMEASentence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NMEASentence.m; sourceTree = "<group>"; };
 		1BF9ABAFB061D76A9CC23907 /* WX_SN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_128.png; sourceTree = "<group>"; };
 		1BF9ABC19AB361BCC5D075F0 /* WB_5kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_5kt_128.png; sourceTree = "<group>"; };
 		1BF9ABCB8122ED354045DC81 /* WX_RA_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_128.png; sourceTree = "<group>"; };
@@ -631,6 +634,8 @@
 				1BF9A4980F4D05776EDA5E23 /* BulkRetrieverController.m */,
 				CC8CF829F3CCABEED04F32C5 /* LocationTrackingViewController.m */,
 				CC8CFA81302B248110B5B84F /* LocationTrackingViewController.h */,
+				1BF9AB9A65C92CBB14A98EE4 /* NMEASentence.m */,
+				1BF9A3FC88AC081BCFD87650 /* NMEASentence.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1028,6 +1033,7 @@
 				1BF9A5FE37D7FEC21418DF38 /* TerrainAltitudeLayer.m in Sources */,
 				1BF9AC3531EC9D705031A80C /* BulkRetrieverController.m in Sources */,
 				CC8CF84ED0295E3A6171D3B2 /* LocationTrackingViewController.m in Sources */,
+				1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
