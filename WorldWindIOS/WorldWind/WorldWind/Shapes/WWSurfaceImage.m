@@ -50,10 +50,10 @@
     {
         unsigned int pickColor = [dc bindPickTexture];
         [pickSupport addPickableObject:[[WWPickedObject alloc] initWithColorCode:pickColor
-                                                                      userObject:self
                                                                        pickPoint:[dc pickPoint]
+                                                                      userObject:self
                                                                         position:nil
-                                                                       isTerrain:NO]];
+                                                                     parentLayer:[dc currentLayer]]];
         return YES;
     }
 
@@ -77,7 +77,7 @@
 
     if ([dc pickingMode])
     {
-        [pickSupport resolvePick:dc layer:[dc currentLayer]];
+        [pickSupport resolvePick:dc];
         [dc unbindPickTexture];
     }
 }

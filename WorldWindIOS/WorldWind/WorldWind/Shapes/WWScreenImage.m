@@ -73,7 +73,7 @@
 
         if ([dc pickingMode])
         {
-            [pickSupport resolvePick:dc layer:layer];
+            [pickSupport resolvePick:dc];
         }
     }
     else
@@ -220,10 +220,10 @@
 - (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
 {
     return [[WWPickedObject alloc] initWithColorCode:colorCode
-                                          userObject:(_pickDelegate != nil ? _pickDelegate : self)
                                            pickPoint:[dc pickPoint]
+                                          userObject:(_pickDelegate != nil ? _pickDelegate : self)
                                             position:nil
-                                           isTerrain:NO];
+                                         parentLayer:layer];
 }
 
 @end

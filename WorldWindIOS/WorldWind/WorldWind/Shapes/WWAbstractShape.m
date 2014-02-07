@@ -104,7 +104,7 @@
 
         if ([dc pickingMode])
         {
-            [pickSupport resolvePick:dc layer:pickLayer];
+            [pickSupport resolvePick:dc];
         }
     }
     else
@@ -139,15 +139,14 @@
         return;
     }
 
-    if ([self isOrderedRenderableValid:dc])
+    if (![self isOrderedRenderableValid:dc])
     {
-        if ([dc pickingMode])
-        {
-            pickLayer = [dc currentLayer];
-        }
-
-        [self addOrderedRenderable:dc];
+        return;
     }
+
+    layer = [dc currentLayer];
+
+    [self addOrderedRenderable:dc];
 }
 
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
@@ -315,10 +314,10 @@
 - (WWPickedObject*) createPickedObject:(WWDrawContext*)dc colorCode:(unsigned int)colorCode
 {
     return [[WWPickedObject alloc] initWithColorCode:colorCode
-                                          userObject:(_pickDelegate != nil ? _pickDelegate : self)
                                            pickPoint:[dc pickPoint]
+                                          userObject:(_pickDelegate != nil ? _pickDelegate : self)
                                             position:[self referencePosition]
-                                           isTerrain:NO];
+                                         parentLayer:layer];
 }
 
 @end

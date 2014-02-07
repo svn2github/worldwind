@@ -11,18 +11,35 @@
 @implementation WWPickedObject
 
 - (WWPickedObject*) initWithColorCode:(int)colorCode
-                           userObject:(id)userObject
                             pickPoint:(CGPoint)pickPoint
+                           userObject:(id)userObject
                              position:(WWPosition*)position
-                            isTerrain:(BOOL)isTerrain
+                          parentLayer:(WWLayer*)parentLayer
 {
     self = [super init];
 
     _colorCode = colorCode;
-    _userObject = userObject;
     _pickPoint = pickPoint;
+    _userObject = userObject;
     _position = position;
-    _isTerrain = isTerrain;
+    _parentLayer = parentLayer;
+    _isTerrain = NO;
+
+    return self;
+}
+
+- (WWPickedObject*) initWithColorCode:(int)colorCode
+                            pickPoint:(CGPoint)pickPoint
+                      terrainPosition:(WWPosition*)terrainPosition
+{
+    self = [super init];
+
+    _colorCode = colorCode;
+    _pickPoint = pickPoint;
+    _userObject = nil;
+    _position = terrainPosition;
+    _parentLayer = nil;
+    _isTerrain = YES;
 
     return self;
 }

@@ -792,10 +792,8 @@
     [position setAltitude:altitude * [dc verticalExaggeration]];
 
     WWPickedObject* po = [[WWPickedObject alloc] initWithColorCode:colorCode
-                                                        userObject:position
                                                          pickPoint:pickPoint
-                                                          position:position
-                                                         isTerrain:YES];
+                                                   terrainPosition:position];
     [dc addPickedObject:po];
 }
 

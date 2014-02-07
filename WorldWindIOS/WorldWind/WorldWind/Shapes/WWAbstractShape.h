@@ -36,7 +36,7 @@
     double verticalExaggeration; // the vertical exaggeration last used to create the shape's Cartesian representation
     NSString* _altitudeMode;
     WWPickSupport* pickSupport;
-    WWLayer* pickLayer;
+    WWLayer* layer;
 }
 
 /// @name Shape Attributes

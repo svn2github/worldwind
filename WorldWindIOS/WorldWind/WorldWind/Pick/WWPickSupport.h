@@ -65,10 +65,9 @@
 * This instance's picked object list is cleared by this method.
 *
 * @param dc The current draw context.
-* @param layer The layer to associate with the top picked object.
 *
 * @return The top picked object.
 */
-- (WWPickedObject*) resolvePick:(WWDrawContext*)dc layer:(WWLayer*)layer;
+- (WWPickedObject*) resolvePick:(WWDrawContext*)dc;
 
 @end

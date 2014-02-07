@@ -19,6 +19,7 @@
 */
 @interface WWSurfaceImage : NSObject <WWSurfaceTile, WWRenderable>
 {
+@protected
     WWPickSupport* pickSupport;
 }
 
