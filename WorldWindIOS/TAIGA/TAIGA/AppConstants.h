@@ -11,8 +11,10 @@
 #define TAIGA_VERSION_DATE (@"2/3/14")
 
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
+#define TAIGA_GPS_QUALITY (@"gov.nasa.worldwind.taiga.gpsfixquality")
 #define TAIGA_EARTH_RADIUS (6378137.0)
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
+#define TAIGA_KNOTS_TO_METERS_PER_SECOND (0.51444444444)
 #define TAIGA_METERS_TO_FEET (3.28083989501)
 #define TAIGA_MILES_TO_METERS (1609.34)
 #define TAIGA_TOOLBAR_HEIGHT (80)

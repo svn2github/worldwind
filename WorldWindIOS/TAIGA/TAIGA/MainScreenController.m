@@ -14,6 +14,7 @@
 #import "ButtonWithImageAndText.h"
 #import "TAIGA.h"
 #import "AppUpdateController.h"
+#import "GPSController.h"
 
 #define VIEW_TAG (100)
 
@@ -29,11 +30,15 @@
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
+
+//    GPSController* gpsController;
 }
 
 - (id) init
 {
     self = [super initWithNibName:nil bundle:nil];
+
+//    gpsController = [[GPSController alloc] init];
 
     return self;
 }

@@ -15,10 +15,10 @@
 #define NMEA_FIELD_3D_FIX @"3DFix"
 #define NMEA_FIELD_ALTITUDE @"Altitude"
 #define NMEA_FIELD_AUTO_SELECTION @"AutoSelection"
-#define NMEA_FIELD_DATE @"Date"
 #define NMEA_FIELD_DGPS_STATION_ID @"DGPSStationID"
 #define NMEA_FIELD_DGPS_UPDATE_TIME @"DGPSUpdateTime"
 #define NMEA_FIELD_DILUTION_OF_PRECISION @"DilutionOfPrecision"
+#define NMEA_FIELD_FIX_DATE @"FixDate"
 #define NMEA_FIELD_FIX_QUALITY @"FixQuality"
 #define NMEA_FIELD_FIX_TIME @"FixTime"
 #define NMEA_FIELD_FIX_TYPE @"FixType"
@@ -28,7 +28,7 @@
 #define NMEA_FIELD_LONGITUDE @"Longitude"
 #define NMEA_FIELD_MAGNETIC_VARIATION_DIRECTION @"MagneticVariationDirection"
 #define NMEA_FIELD_MAGNETIC_VARIATION_VALUE @"MagneticVariationValue"
-#define NMEA_FIELD_MESSAGE_TYPE @"MessageType"
+#define NMEA_FIELD_SENTENCE_TYPE @"SentenceType"
 #define NMEA_FIELD_NUMBER_OF_SENTENCES @"NumberOfSentences"
 #define NMEA_FIELD_NUMBER_OF_SATELLITES_IN_VIEW @"NumberOfSatellitesInView"
 #define NMEA_FIELD_SATELLITE_INFO @"SatelliteInfo"
@@ -51,5 +51,7 @@
 - (NMEASentence*) initWithString:(NSString*)sentence;
 
 - (id) fieldWithName:(NSString*)fieldName;
+
+- (NSString*) sentenceType;
 
 @end

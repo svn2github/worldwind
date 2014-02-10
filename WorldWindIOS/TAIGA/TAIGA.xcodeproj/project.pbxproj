@@ -28,6 +28,7 @@
 		1BF9A051EB31657B295B49E0 /* AppUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A6ED39263DD099FCBDBB /* AppUpdateController.m */; };
 		1BF9A061D0926D68405B039B /* PIREP_ICONS_0013_Layer-15.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3AA9A2291B666A1CADD /* PIREP_ICONS_0013_Layer-15.png */; };
 		1BF9A06C0A26AD261A4B470C /* WB_70kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A989027E719B196FB35C /* WB_70kt_128.png */; };
+		1BF9A086BA3A7476E5F29268 /* GPSController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */; };
 		1BF9A095B9DC8723CCC2019C /* PAJN.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */; };
 		1BF9A0A386D3B5C4CFAA627D /* CC_SKC_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A29F3541632387EE0C21 /* CC_SKC_128.png */; };
 		1BF9A0D06E856B798CA671E3 /* WX_SN_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ABAFB061D76A9CC23907 /* WX_SN_128.png */; };
@@ -394,7 +395,9 @@
 		1BF9ADC15E4E8774D480494D /* WX_TS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_TS_128.png; sourceTree = "<group>"; };
 		1BF9ADC4A4A1BBB857690021 /* LayerListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerListController.m; sourceTree = "<group>"; };
 		1BF9ADC6374E2CD340E235AD /* ChartsListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsListController.m; sourceTree = "<group>"; };
+		1BF9ADEB0ACCD63030C1E160 /* GPSController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPSController.h; sourceTree = "<group>"; };
 		1BF9ADEEF78D72A8CA597BAA /* MainScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainScreenController.h; sourceTree = "<group>"; };
+		1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPSController.m; sourceTree = "<group>"; };
 		1BF9AE2B724A7892BACAFA44 /* 01-refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh.png"; sourceTree = "<group>"; };
 		1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast@2x.png"; sourceTree = "<group>"; };
 		1BF9AE37E84B7A21B3888FAA /* ViewSelectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewSelectionController.h; sourceTree = "<group>"; };
@@ -636,6 +639,8 @@
 				CC8CFA81302B248110B5B84F /* LocationTrackingViewController.h */,
 				1BF9AB9A65C92CBB14A98EE4 /* NMEASentence.m */,
 				1BF9A3FC88AC081BCFD87650 /* NMEASentence.h */,
+				1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */,
+				1BF9ADEB0ACCD63030C1E160 /* GPSController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1034,6 +1039,7 @@
 				1BF9AC3531EC9D705031A80C /* BulkRetrieverController.m in Sources */,
 				CC8CF84ED0295E3A6171D3B2 /* LocationTrackingViewController.m in Sources */,
 				1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */,
+				1BF9A086BA3A7476E5F29268 /* GPSController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

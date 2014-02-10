@@ -40,6 +40,11 @@
     return fieldName != nil ? [fields objectForKey:fieldName] : nil;
 }
 
+- (NSString*) sentenceType
+{
+    return [self fieldWithName:NMEA_FIELD_SENTENCE_TYPE];
+}
+
 - (void) parseSentence
 {
     fields = [[NSMutableDictionary alloc] init];
@@ -64,7 +69,7 @@
 
 - (void) parseGPGGA
 {
-    [fields setObject:NMEA_SENTENCE_TYPE_GPGGA forKey:NMEA_FIELD_MESSAGE_TYPE];
+    [fields setObject:NMEA_SENTENCE_TYPE_GPGGA forKey:NMEA_FIELD_SENTENCE_TYPE];
 
     NSString* tempString;
 
@@ -142,7 +147,7 @@
 
 - (void) parseGPGSA
 {
-    [fields setObject:NMEA_SENTENCE_TYPE_GPGSA forKey:NMEA_FIELD_MESSAGE_TYPE];
+    [fields setObject:NMEA_SENTENCE_TYPE_GPGSA forKey:NMEA_FIELD_SENTENCE_TYPE];
 
     NSMutableArray* satellitePRNs = [[NSMutableArray alloc] initWithCapacity:5];
 
@@ -202,7 +207,7 @@
 
 - (void) parseGPGSV
 {
-    [fields setObject:NMEA_SENTENCE_TYPE_GPGSV forKey:NMEA_FIELD_MESSAGE_TYPE];
+    [fields setObject:NMEA_SENTENCE_TYPE_GPGSV forKey:NMEA_FIELD_SENTENCE_TYPE];
 
     NSMutableArray* satelliteInfos = [[NSMutableArray alloc] initWithCapacity:4];
     NSMutableDictionary* currentSatelliteInfo;
@@ -270,7 +275,7 @@
 
 - (void) parseGPRMC
 {
-    [fields setObject:NMEA_SENTENCE_TYPE_GPRMC forKey:NMEA_FIELD_MESSAGE_TYPE];
+    [fields setObject:NMEA_SENTENCE_TYPE_GPRMC forKey:NMEA_FIELD_SENTENCE_TYPE];
 
     NSString* tempString;
 
@@ -317,7 +322,7 @@
                 break;
 
             case 9:
-                [fields setObject:token forKey:NMEA_FIELD_DATE];
+                [fields setObject:token forKey:NMEA_FIELD_FIX_DATE];
                 break;
 
             case 10:
