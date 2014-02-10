@@ -50,6 +50,7 @@
 #import "TerrainAltitudeLayer.h"
 #import "LocationTrackingViewController.h"
 #import "WWDAFIFLayer.h"
+#import "WWBingLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -120,16 +121,7 @@
     positionReadoutViewController = [[PositionReadoutController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
 
-    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showCurrentPositionNotification:)
-    //                                             name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
-
     return self;
-}
-
-- (void) showCurrentPositionNotification:(NSNotification*)notification
-{
-    //CLLocation* ap = [notification object];
-    //NSLog(@"%f, %f, %f, %f", [ap coordinate].latitude, [ap coordinate].longitude, ap.altitude, ap.course);
 }
 
 - (void) loadView
@@ -258,6 +250,9 @@
 
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [layers addLayer:layer];
+
+    layer = [[WWBingLayer alloc] init];
     [layers addLayer:layer];
 
     aircraftLayer = [[AircraftLayer alloc] init];

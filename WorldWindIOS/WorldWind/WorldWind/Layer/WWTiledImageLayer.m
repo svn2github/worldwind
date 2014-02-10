@@ -392,10 +392,10 @@
             [tile setFallbackTile:currentAncestorTile];
             [currentTiles addObject:tile];
         }
-        else if ([[currentAncestorTile level] levelNumber] == 0)
-        {
-            [self loadOrRetrieveTileImage:dc tile:currentAncestorTile];
-        }
+//        else if ([[currentAncestorTile level] levelNumber] == 0)
+//        {
+//            [self loadOrRetrieveTileImage:dc tile:currentAncestorTile];
+//        }
     }
 }
 
