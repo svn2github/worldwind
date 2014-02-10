@@ -26,10 +26,17 @@
     [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
     [dateFormatter setDateFormat:@"yyyy MM dd HH mm ss"];
 
-    timer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(pollDevice)
+    timer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(pollDevice)
                                            userInfo:nil repeats:YES];
 
     return self;
+}
+
+- (void) dispose
+{
+    [timer invalidate];
+    timer = nil;
+    dateFormatter = nil;
 }
 
 - (void) pollDevice

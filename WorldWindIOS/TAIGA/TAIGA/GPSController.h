@@ -11,5 +11,6 @@
 @interface GPSController : NSObject
 
 - (GPSController*) init;
+- (void) dispose;
 
 @end

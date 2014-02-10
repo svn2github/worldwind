@@ -7,10 +7,21 @@
 
 #import "SettingsScreenController.h"
 #import "AppConstants.h"
+#import "GPSController.h"
+
+#define ABOUT_SECTION (0)
+#define GPS_CONTROLLER_SECTION (1)
+
+#define GPS_SOURCE_NONE (0)
+#define GPS_SOURCE_DEVICE (1)
+#define GPS_SOURCE_LOCATION_SERVICES (2)
 
 @implementation SettingsScreenController
 {
     CGRect myFrame;
+    int gpsSource;
+
+    GPSController* gpsController;
 }
 
 - (SettingsScreenController*) initWithFrame:(CGRect)frame
@@ -47,22 +58,43 @@
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 1;
+    if (section == ABOUT_SECTION)
+        return 1;
+
+    else if (section == GPS_CONTROLLER_SECTION)
+        return 1; // TODO: Change this to 2 when the Location Services GPS source is implemented.
+
+    return 0;
 }
 
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
 {
+    if (section == ABOUT_SECTION)
+        return @"About";
+    else if (section == GPS_CONTROLLER_SECTION)
+        return @"GPS Source";
+
     return nil;
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    static NSString* cellIdentifier = @"cell";
+    if ([indexPath section] == ABOUT_SECTION)
+        return [self cellForAboutSection:tableView inddexPath:indexPath];
+    else if ([indexPath section] == GPS_CONTROLLER_SECTION)
+        return [self cellForGPSControllerSection:tableView inddexPath:indexPath];
+
+    return nil;
+}
+
+- (UITableViewCell*) cellForAboutSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
+{
+    static NSString* cellIdentifier = @"AboutCell";
 
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil)
@@ -77,8 +109,59 @@
     return cell;
 }
 
+- (UITableViewCell*) cellForGPSControllerSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
+{
+    static NSString* cellIdentifier = @"GPSControllerCell";
+
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+    }
+
+    if ([indexPath row] == 0)
+    {
+        [[cell textLabel] setText:@"GPS Device"];
+        [[cell imageView] setHidden:gpsSource != GPS_SOURCE_DEVICE];
+    }
+    else if ([indexPath row] == 1)
+    {
+        [[cell textLabel] setText:@"Location Services"];
+        [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
+    }
+
+    return cell;
+}
+
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+    if ([indexPath section] == GPS_CONTROLLER_SECTION)
+    {
+        if (gpsSource == GPS_SOURCE_DEVICE)
+        {
+            [gpsController dispose];
+            gpsController = nil;
+        }
+
+        if ([indexPath row] == 0)
+        {
+            gpsSource = gpsSource == GPS_SOURCE_DEVICE ? GPS_SOURCE_NONE : GPS_SOURCE_DEVICE;
+
+            if (gpsSource == GPS_SOURCE_DEVICE)
+            {
+                gpsController = [[GPSController alloc] init];
+            }
+        }
+        else if ([indexPath row] == 1)
+        {
+            gpsSource = gpsSource == GPS_SOURCE_LOCATION_SERVICES ? GPS_SOURCE_NONE : GPS_SOURCE_LOCATION_SERVICES;
+        }
+
+        [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
+                 withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
 }
 
 @end
