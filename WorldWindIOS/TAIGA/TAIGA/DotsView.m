@@ -28,8 +28,6 @@
 
 - (void) drawRect:(CGRect)rect
 {
-    float width = (2 * _dotCount - 1) * _dotSize;
-
     for (NSUInteger i = 0; i < _dotCount; i++)
     {
         float x = (0.5 + i * 2) * _dotSize;

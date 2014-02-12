@@ -82,8 +82,6 @@
     [topToolBar setBarStyle:UIBarStyleBlack];
     [topToolBar setTranslucent:NO];
 
-    CGSize size = CGSizeMake(140, TAIGA_TOOLBAR_HEIGHT);
-
     connectivityButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"275-broadcast"]
                                                           style:UIBarButtonItemStylePlain
                                                          target:nil
