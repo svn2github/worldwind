@@ -337,6 +337,9 @@ public class SegmentPlaneRenderer
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+
         int attribMask = GL2.GL_CURRENT_BIT  // For current RGBA color.
             | GL2.GL_LINE_BIT     // For line width.
             | GL2.GL_POLYGON_BIT // For cull face, polygon offset.
@@ -345,13 +348,7 @@ public class SegmentPlaneRenderer
             | (!dc.isPickingMode() ? GL2.GL_TRANSFORM_BIT : 0); // for normalize state.
         ogsh.pushAttrib(gl, attribMask);
 
-        int clientAttribMask =
-            GL2.GL_CLIENT_VERTEX_ARRAY_BIT; // For vertex and element pointers.
-        ogsh.pushClientAttrib(gl, clientAttribMask);
-
         gl.glDisable(GL.GL_CULL_FACE);
-        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
 
         if (!dc.isPickingMode())
         {
@@ -378,6 +375,10 @@ public class SegmentPlaneRenderer
     protected void end(DrawContext dc, OGLStackHandler ogsh)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+        // Restore default GL client vertex array state.
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
 
         ogsh.pop(gl);
     }
