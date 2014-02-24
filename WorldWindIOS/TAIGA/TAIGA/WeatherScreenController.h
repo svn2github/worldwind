@@ -9,7 +9,7 @@
 
 @class WorldWindView;
 
-@interface WeatherScreenController : UIViewController <UIGestureRecognizerDelegate>
+@interface WeatherScreenController : UIViewController <UIGestureRecognizerDelegate,  UIScrollViewDelegate>
 
 - (WeatherScreenController*) initWithFrame:(CGRect)frame;
 
