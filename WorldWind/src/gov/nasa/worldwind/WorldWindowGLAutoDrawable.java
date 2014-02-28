@@ -114,12 +114,6 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
         this.setGpuResourceCache(cache);
     }
 
-    public void initGpuResourceCache(GpuResourceCache cache, boolean shared)
-    {
-        this.preventCacheReinitialization = shared;
-        this.initGpuResourceCache(cache);
-    }
-
     public void endInitialization()
     {
         initializeCreditsController();
@@ -216,7 +210,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
 
         if (this.firstInit)
             this.firstInit = false;
-        else if (!this.preventCacheReinitialization)
+        else
             this.reinitialize(glAutoDrawable);
 
         // Disables use of the OpenGL extension GL_ARB_texture_rectangle by JOGL's Texture creation utility.

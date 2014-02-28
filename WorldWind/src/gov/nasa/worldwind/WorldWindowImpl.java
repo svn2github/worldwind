@@ -31,7 +31,6 @@ public abstract class WorldWindowImpl extends WWObjectImpl implements WorldWindo
     private final EventListenerList eventListeners = new EventListenerList();
     private InputHandler inputHandler;
     protected GpuResourceCache gpuResourceCache;
-    protected boolean preventCacheReinitialization;
 
     public WorldWindowImpl()
     {

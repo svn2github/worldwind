@@ -20,7 +20,5 @@ public interface WorldWindowGLDrawable extends WorldWindow
 
     void initGpuResourceCache(GpuResourceCache cache);
 
-    void initGpuResourceCache(GpuResourceCache cache, boolean shared);
-
     void endInitialization();
 }

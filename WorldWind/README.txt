@@ -73,10 +73,6 @@ New features and improvements in World Wind Java SDK 2.0.0
   Moved the performance package into gov.nasa.worldwindx.performance.
 - Repaired a problem that caused the compass not to be displayed when another instance of the layer had been used in
   another WorldWindow.
-- Changed the meaning of passing null to the WorldWindowGLCanvas and WorldWindowGLJPanel constructors that have a
-  share-with argument to indicate that a null value causes the gpu resource cache not to be cleared when the window
-  is destroyed. This keeps its contents available to other windows that may have been opened and shared after the
-  initial one.
 - Added a method to the Terrain interface that identifies the input positions' altitude reference and converts the
   altitudes to relative-to-ground, which is what the intersection methods expect.
 - Updated TiledImageLayer, RectangularTessellator and SurfaceObjectTileBuilder to adjust their level of detail when the

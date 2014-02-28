@@ -60,7 +60,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
     /** Constructs a new <code>WorldWindowGLCanvas</code> window on the default graphics device. */
     public WorldWindowGLJPanel()
     {
-        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser(), null);
+        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser());
 
         try
         {
@@ -84,19 +84,17 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      * Constructs a new <code>WorldWindowGLJPanel</code> on the default graphics device and shares graphics resources
      * with another <code>WorldWindow</code>.
      *
-     * @param shareWith a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
-     *                  it's assumed that the window will be shared with another, unspecified, <code>WorldWindow</code>
-     *                  that will reference this <code>WorldWindowGLCanvas</code> as its shared window. Specifying null
-     *                  prevents this window's GPU resource cache from being cleared when the window is closed, thereby
-     *                  leaving those resources in tact for the shared windows.
+     * @param shareWith a <code>WorldWindow</code> with which to share graphics resources.
      *
      * @see GLJPanel#GLJPanel(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
      *      javax.media.opengl.GLContext)
      */
     public WorldWindowGLJPanel(WorldWindow shareWith)
     {
-        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser(),
-            shareWith != null ? shareWith.getContext() : null);
+        super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser());
+
+        if (shareWith != null)
+            this.setSharedContext(shareWith.getContext());
 
         try
         {
@@ -105,7 +103,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
             if (shareWith != null)
                 this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
-                this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache(), true);
+                this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache());
             this.createView();
             this.createDefaultInputHandler();
             WorldWind.addPropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
@@ -124,11 +122,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
      * <code>WorldWindow</code> and whose capabilities are chosen via a specified {@link GLCapabilities} object and a
      * {@link GLCapabilitiesChooser}.
      *
-     * @param shareWith    a <code>WorldWindow</code> with which to share graphics resources. May be null, in which case
-     *                     it's assumed that the window will be shared with another, unspecified,
-     *                     <code>WorldWindow</code> that will reference this <code>WorldWindowGLCanvas</code> as its
-     *                     shared window. Specifying null prevents this window's GPU resource cache from being cleared
-     *                     when the window is closed, thereby leaving those resources in tact for the shared windows.
+     * @param shareWith    a <code>WorldWindow</code> with which to share graphics resources.
      * @param capabilities a capabilities object indicating the OpenGL rendering context's capabilities. May be null, in
      *                     which case a default set of capabilities is used.
      * @param chooser      a chooser object that customizes the specified capabilities. May be null, in which case a
@@ -140,7 +134,10 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
     public WorldWindowGLJPanel(WorldWindow shareWith, GLCapabilities capabilities,
         GLCapabilitiesChooser chooser)
     {
-        super(capabilities, chooser, shareWith != null ? shareWith.getContext() : null);
+        super(capabilities, chooser);
+
+        if (shareWith != null)
+            this.setSharedContext(shareWith.getContext());
 
         try
         {
@@ -149,7 +146,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
             if (shareWith != null)
                 this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
-                this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache(), true);
+                this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache());
             this.createView();
             this.createDefaultInputHandler();
             WorldWind.addPropertyChangeListener(WorldWind.SHUTDOWN_EVENT, this);
