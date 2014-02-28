@@ -103,7 +103,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             if (shareWith != null)
-                this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache(), true);
+                this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
                 this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache(), true);
             this.createView();
@@ -147,7 +147,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             if (shareWith != null)
-                this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache(), true);
+                this.wwd.initGpuResourceCache(shareWith.getGpuResourceCache());
             else
                 this.wwd.initGpuResourceCache(WorldWindowImpl.createGpuResourceCache(), true);
             this.createView();
