@@ -12,6 +12,7 @@
 - (AltitudePicker*) initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
+    [self setBackgroundColor:[UIColor whiteColor]];
 
     _minimumAltitude = 0;
     _maximumAltitude = 100000;

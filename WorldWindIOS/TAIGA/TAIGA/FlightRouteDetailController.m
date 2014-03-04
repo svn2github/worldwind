@@ -102,9 +102,9 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointFileControl]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)]-[waypointFileControl(>=160)]"
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)][waypointFileControl(==400)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(<=320)]-[waypointFileControl(>=160)]|"
+    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable][waypointFileControl(==400)]|"
                                                                  options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:normalConstraints];
 }
@@ -114,6 +114,7 @@
     UIView* view = [self view];
     [view removeConstraints:editing ? normalConstraints : editingConstraints];
     [view addConstraints:editing ? editingConstraints : normalConstraints];
+    [view layoutIfNeeded];
 }
 
 - (void) setEditing:(BOOL)editing animated:(BOOL)animated
@@ -128,8 +129,7 @@
                             options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
                          animations:^
                          {
-                             [self layoutForEditing:editing];
-                             [[self view] layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+                             [self layoutForEditing:editing]; // Force layout to capture constraint frame changes in the animation block.
                          }
                          completion:^(BOOL finished)
                          {
@@ -138,8 +138,7 @@
     }
     else
     {
-        [self layoutForEditing:editing];
-        [[self view] layoutIfNeeded]; // Force layout to capture constraint frame changes now.
+        [self layoutForEditing:editing]; // Force layout to capture constraint frame changes now.
         [self flashScrollIndicators];
     }
 

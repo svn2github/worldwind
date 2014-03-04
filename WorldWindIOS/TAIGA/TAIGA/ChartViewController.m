@@ -38,6 +38,7 @@
     [scrollView setContentSize:[_imageView frame].size];
     [scrollView setShowsHorizontalScrollIndicator:NO];
     [scrollView setShowsVerticalScrollIndicator:NO];
+    [scrollView setBackgroundColor:[UIColor darkGrayColor]];
     [scrollView addSubview:_imageView];
 
     [[self view] addSubview:scrollView];

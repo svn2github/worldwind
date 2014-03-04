@@ -19,9 +19,9 @@
     NSNumberFormatter* altitudeFormatter;
     UITableView* flightRouteTable;
     WaypointFileControl* waypointFileControl;
+    BulkRetrieverController* bulkRetrieverController;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
-    BulkRetrieverController* bulkRetrieverController;
 }
 
 @property (nonatomic, readonly, weak) FlightRoute* flightRoute;

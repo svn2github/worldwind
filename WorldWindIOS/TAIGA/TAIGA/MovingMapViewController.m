@@ -55,29 +55,43 @@
 @implementation MovingMapViewController
 {
     CGRect myFrame;
-    NSArray* normalConstraints;
-    NSArray* splitViewConstraints;
+    NSArray* showSplitViewConstraints;
+    NSArray* hideSplitViewConstraints;
+    NSArray* showRouteViewConstraints;
+    NSArray* hideRouteViewConstraints;
     NSArray* showSimulationViewConstraints;
     NSArray* hideSimulationViewConstraints;
     NSArray* showTerrainProfileConstraints;
     NSArray* hideTerrainProfileConstraints;
-    BOOL isSplitView;
+    BOOL isShowSplitView;
+    BOOL isShowRouteView;
 
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
     UIBarButtonItem* overlaysButton;
-    UIBarButtonItem* splitViewButton;
     UIBarButtonItem* quickViewsButton;
-    UIBarButtonItem* routePlanningButton;
+    UIBarButtonItem* splitViewButton;
+    UIBarButtonItem* routeViewButton;
+
     LocationTrackingViewController* locationTrackingViewController;
     ScaleBarView* scaleBarView;
+    LayerListController* layerListController;
+    UIPopoverController* layerListPopoverController;
+    ViewSelectionController* viewSelectionController;
+    UIPopoverController* viewSelectionPopoverController;
     ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
     UINavigationController* chartListNavController;
+    FlightRouteListController* routeViewController;
+    UINavigationController* routeViewNavController;
+    SimulationViewController* simulationViewController;
+    TerrainProfileView* terrainProfileView;
+    TerrainProfileController* terrainProfileController;
 
-    LayerListController* layerListController;
-    UIPopoverController* layerListPopoverController;
-
+    WaypointFile* waypointFile;
+    WaypointLayer* waypointLayer;
+    AircraftLayer* aircraftLayer;
+    WWRenderableLayer* flightRouteLayer;
     FAAChartsAlaskaLayer* faaChartsLayer;
     TerrainAltitudeLayer* terrainAltitudeLayer;
     METARLayer* metarLayer;
@@ -87,7 +101,6 @@
     WWDAFIFLayer* dafifLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
-
     METARDataViewController* metarDataViewController;
     UIPopoverController* metarDataPopoverController;
     PIREPDataViewController* pirepDataViewController;
@@ -96,18 +109,6 @@
     UIPopoverController* positionReadoutPopoverController;
     WeatherCamViewController* weatherCamViewController;
     UIPopoverController* weatherCamPopoverController;
-
-    WaypointFile* waypointFile;
-    WaypointLayer* waypointLayer;
-    AircraftLayer* aircraftLayer;
-    WWRenderableLayer* flightRouteLayer;
-    FlightRouteListController* flightRouteController;
-    UIPopoverController* flightRoutePopoverController;
-    SimulationViewController* simulationViewController;
-    TerrainProfileView* terrainProfileView;
-    TerrainProfileController* terrainProfileController;
-    ViewSelectionController* viewSelectionController;
-    UIPopoverController* viewSelectionPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -154,21 +155,25 @@
     [[locationTrackingViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
-    UIView* chartView = [chartListNavController view];
+    UIView* splitView = [chartListNavController view];
     UIView* simulationView = [simulationViewController view];
     UIView* locationTrackingView = [locationTrackingViewController view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, _wwv, chartView, topToolBar, scaleBarView,
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_wwv, splitView, topToolBar, scaleBarView,
     simulationView, terrainProfileView, locationTrackingView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][_wwv(>=400)]|"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)][chartView(>=400)]|"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[simulationView]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[simulationView(==_wwv)]"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[terrainProfileView]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[terrainProfileView(==_wwv)]"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar(==80)]"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][_wwv]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][splitView]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraint:[NSLayoutConstraint constraintWithItem:locationTrackingView attribute:NSLayoutAttributeLeft
                                                      relatedBy:NSLayoutRelationEqual
@@ -177,13 +182,13 @@
                                                      relatedBy:NSLayoutRelationEqual
                                                         toItem:_wwv attribute:NSLayoutAttributeTop multiplier:1 constant:20]];
 
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(==view)][chartView(==0)]|"
+    showSplitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[splitView(==350)]|"
+                                                                          options:0 metrics:nil views:viewsDictionary];
+    hideSplitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[_wwv][splitView(==350)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    splitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_wwv(>=400)][chartView(==350)]|"
-                                                                   options:0 metrics:nil views:viewsDictionary];
-    isSplitView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.splitview.enabled" defaultValue:NO];
-    [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
-    if (isSplitView)
+    isShowSplitView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.splitview.enabled" defaultValue:NO];
+    [view addConstraints:isShowSplitView ? showSplitViewConstraints : hideSplitViewConstraints];
+    if (isShowSplitView)
         [self loadMostRecentlyUsedChart];
 
     showSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[simulationView(80)]|"
@@ -232,11 +237,30 @@
 
 - (void) waypointsDidLoad
 {
+    routeViewController = [[FlightRouteListController alloc] initWithWorldWindView:_wwv
+                                                                  flightRouteLayer:flightRouteLayer
+                                                                      waypointFile:waypointFile];
+    [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
+
+    routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
+    [routeViewNavController setDelegate:self]; // Propagate the root view alpha to views pushed on the navigation stack.
+
+    UIView* view = [self view];
+    UIView* routeView = [routeViewNavController view];
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_wwv, topToolBar, routeView);
+    [routeView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [view addSubview:routeView];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][routeView]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
+    showRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[routeView(==350)]|"
+                                                                       options:0 metrics:nil views:viewsDictionary];
+    hideRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[_wwv][routeView(==350)]"
+                                                                       options:0 metrics:nil views:viewsDictionary];
+    isShowRouteView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.routeview.enabled" defaultValue:NO];
+    [view addConstraints:isShowRouteView ? showRouteViewConstraints : hideRouteViewConstraints];
+
+    [routeViewButton setEnabled:YES];
     [waypointLayer setWaypoints:waypointFile];
-    flightRouteController = [[FlightRouteListController alloc] initWithWorldWindView:_wwv
-                                                                    flightRouteLayer:flightRouteLayer
-                                                                        waypointFile:waypointFile];
-    [routePlanningButton setEnabled:YES];
     [WorldWindView requestRedraw];
 }
 
@@ -350,10 +374,24 @@
     [self.view addSubview:_wwv];
 }
 
+- (void) navigationController:(UINavigationController*)navigationController
+       willShowViewController:(UIViewController*)viewController
+                     animated:(BOOL)animated
+{
+    UIViewController* rootViewController = [[navigationController viewControllers] firstObject];
+    if (viewController != rootViewController)
+    {
+        [[viewController view] setAlpha:[[rootViewController view] alpha]];
+    }
+}
+
 - (void) createChartsController
 {
     chartsListController = [[ChartsTableController alloc] initWithParent:self];
+    [[chartsListController view] setAlpha:0.95]; // Make the chart list view semi-transparent.
+
     chartListNavController = [[UINavigationController alloc] initWithRootViewController:chartsListController];
+    [chartListNavController setDelegate:self]; // Propagate the root view alpha to views pushed on the navigation stack.
     [self.view addSubview:[chartListNavController view]];
 }
 
@@ -556,13 +594,6 @@
     [((ButtonWithImageAndText*) [overlaysButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [overlaysButton customView]) setFontSize:15];
 
-    splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
-            (handleSplitViewButton)]];
-    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-    [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
-    [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
-
     quickViewsButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
             initWithImageName:@"309-thumbtack" text:@"Views" size:size target:self action:@selector
             (handleViewsButton)]];
@@ -570,13 +601,20 @@
     [((ButtonWithImageAndText*) [quickViewsButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [quickViewsButton customView]) setFontSize:15];
 
-    routePlanningButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
-            initWithImageName:@"122-stats" text:@"Flight Planning" size:size target:self action:@selector
-            (handleRoutePlanningButton)]];
+    splitViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"362-2up" text:@"Split View" size:size target:self action:@selector
+            (handleSplitViewButton)]];
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
-    [((ButtonWithImageAndText*) [routePlanningButton customView]) setTextColor:color];
-    [((ButtonWithImageAndText*) [routePlanningButton customView]) setFontSize:15];
-    [routePlanningButton setEnabled:NO]; // flight planning button is enabled after waypoints load
+    [((ButtonWithImageAndText*) [splitViewButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [splitViewButton customView]) setFontSize:15];
+
+    routeViewButton = [[UIBarButtonItem alloc] initWithCustomView:[[ButtonWithImageAndText alloc]
+            initWithImageName:@"122-stats" text:@"Flight Planning" size:size target:self action:@selector
+            (handleRouteViewButton)]];
+    color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
+    [((ButtonWithImageAndText*) [routeViewButton customView]) setTextColor:color];
+    [((ButtonWithImageAndText*) [routeViewButton customView]) setFontSize:15];
+    [routeViewButton setEnabled:NO]; // flight planning button is enabled after waypoints load
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -587,11 +625,11 @@
             flexibleSpace,
             overlaysButton,
             flexibleSpace,
-            splitViewButton,
-            flexibleSpace,
             quickViewsButton,
             flexibleSpace,
-            routePlanningButton,
+            splitViewButton,
+            flexibleSpace,
+            routeViewButton,
             flexibleSpace,
             connectivityButton,
             nil]];
@@ -615,11 +653,6 @@
     float opacity = [Settings getFloatForName:TAIGA_SHADED_ELEVATION_OPACITY defaultValue:0.3];
     [terrainAltitudeLayer setOpacity:opacity];
     [Settings setFloat:opacity forName:TAIGA_SHADED_ELEVATION_OPACITY];
-}
-
-- (void) handleButtonTap
-{
-    NSLog(@"BUTTON TAPPED");
 }
 
 //- (void) handleFlightPathsButton
@@ -651,58 +684,6 @@
     }
 }
 
-- (void) handleRoutePlanningButton
-{
-    if (flightRoutePopoverController == nil)
-    {
-        UINavigationController* navController = [[UINavigationController alloc]
-                initWithRootViewController:flightRouteController];
-        [navController setDelegate:flightRouteController];
-        flightRoutePopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
-    }
-
-    if ([flightRoutePopoverController isPopoverVisible])
-    {
-        [flightRoutePopoverController dismissPopoverAnimated:YES];
-    }
-    else
-    {
-        [flightRoutePopoverController presentPopoverFromBarButtonItem:routePlanningButton
-                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    }
-}
-
-- (void) handleSplitViewButton
-{
-    isSplitView = !isSplitView;
-
-    [[self view] layoutIfNeeded]; // Ensure all pending layout operations have completed.
-
-    [UIView animateWithDuration:0.3
-                          delay:0.0
-                        options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
-                     animations:^
-                     {
-                         [self transitionSplitView];
-                         [[self view] layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
-                     }
-                     completion:nil];
-
-    if (!isSplitView)
-    {
-        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartpath"];
-        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
-    }
-    [Settings setBool:isSplitView forName:@"gov.nasa.worldwind.taiga.splitview.enabled"];
-}
-
-- (void) transitionSplitView
-{
-    UIView* view = [self view];
-    [view removeConstraints:isSplitView ? normalConstraints : splitViewConstraints];
-    [view addConstraints:isSplitView ? splitViewConstraints : normalConstraints];
-}
-
 - (void) handleViewsButton
 {
     if (viewSelectionPopoverController == nil)
@@ -720,8 +701,80 @@
     else
     {
         [viewSelectionPopoverController presentPopoverFromBarButtonItem:quickViewsButton
-                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+                                               permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
+}
+
+- (void) handleSplitViewButton
+{
+    if (isShowRouteView) // Hide the route view if it's currently shown.
+    {
+        [self transitionRouteView];
+    }
+
+    [self transitionSplitView];
+}
+
+- (void) transitionSplitView
+{
+    isShowSplitView = !isShowSplitView;
+
+    UIView* view = [self view];
+    UIView* splitView = [chartListNavController view];
+    [view bringSubviewToFront:splitView];
+    [view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
+                     animations:^
+                     {
+                         [view removeConstraints:isShowSplitView ? hideSplitViewConstraints : showSplitViewConstraints];
+                         [view addConstraints:isShowSplitView ? showSplitViewConstraints : hideSplitViewConstraints];
+                         [view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+                     }
+                     completion:NULL];
+
+    if (!isShowSplitView)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartpath"];
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
+    }
+    [Settings setBool:isShowSplitView forName:@"gov.nasa.worldwind.taiga.splitview.enabled"];
+}
+
+- (void) handleRouteViewButton
+{
+    if (isShowSplitView) // Hide the split view if it's currently shown.
+    {
+        [self transitionSplitView];
+    }
+
+    [self transitionRouteView];
+}
+
+- (void) transitionRouteView
+{
+    isShowRouteView = !isShowRouteView;
+
+    UIView* view = [self view];
+    UIView* routeView = [routeViewNavController view];
+    [view bringSubviewToFront:routeView];
+    [view layoutIfNeeded]; // Ensure all pending layout operations have completed.
+
+
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
+                     animations:^
+                     {
+                         [view removeConstraints:isShowRouteView ? hideRouteViewConstraints : showRouteViewConstraints];
+                         [view addConstraints:isShowRouteView ? showRouteViewConstraints : hideRouteViewConstraints];
+                         [view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
+                     }
+                     completion:NULL];
+
+    [Settings setBool:isShowRouteView forName:@"gov.nasa.worldwind.taiga.routeview.enabled"];
 }
 
 - (void) handleTap:(UITapGestureRecognizer*)recognizer

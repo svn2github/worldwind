@@ -9,7 +9,7 @@
 
 @class WorldWindView;
 
-@interface MovingMapViewController : UIViewController <UIGestureRecognizerDelegate>
+@interface MovingMapViewController : UIViewController <UIGestureRecognizerDelegate, UINavigationControllerDelegate>
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 

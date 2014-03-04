@@ -25,7 +25,7 @@
     waypoints = nil;
 
     waypointSearchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-    [waypointSearchBar setPlaceholder:@"Search or enter an FAA code"];
+    [waypointSearchBar setPlaceholder:@"Search or enter an ICAO code"];
     [waypointSearchBar setDelegate:self];
     [self addSubview:waypointSearchBar];
 
@@ -46,7 +46,7 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointTable]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[waypointSearchBar(44)]-[waypointTable]|"
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[waypointSearchBar(44)][waypointTable]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
 
     return self;
