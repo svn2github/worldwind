@@ -230,10 +230,9 @@
 - (void) loadWaypoints
 {
     NSString* airportsPath = @"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT";
-    NSString* waypointsPath = @"http://worldwindserver.net/taiga/dafif/WPT2_ALASKA.TXT";
 
     waypointFile = [[WaypointFile alloc] init];
-    [waypointFile loadWaypointLocations:@[airportsPath, waypointsPath]
+    [waypointFile loadWaypointLocations:@[airportsPath]
                           finishedBlock:^(WaypointFile* retrievedWaypointFile)
                           {
                               [self waypointsDidLoad];
