@@ -91,6 +91,7 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Repaired KML LineString but described in forum post http://forum.worldwindcentral.com/showthread.php?41174
 - Repaired bug described at http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-410
 - Added option to eliminate library loader replacement when initializing GDAL.
+- Added a base depth to ExtrudedPolygon to enable positioning of base vertices below the terrain.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
