@@ -117,7 +117,7 @@ const float ShapePickRadius = 22.0;
 {
     WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:1.0]; // radius specified in doRender:
     [shape setAttributes:shapeAttrs];
-    [shape setPickDelegate:self];
+    [shape setPickDelegate:waypoint];
 
     return shape;
 }
@@ -269,6 +269,16 @@ const float ShapePickRadius = 22.0;
     }
 
     return [waypoints objectAtIndex:index];
+}
+
+- (BOOL) containsWaypoint:(Waypoint*)waypoint
+{
+    if (waypoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
+    }
+
+    return [waypoints containsObject:waypoint];
 }
 
 - (void) addWaypoint:(Waypoint*)waypoint

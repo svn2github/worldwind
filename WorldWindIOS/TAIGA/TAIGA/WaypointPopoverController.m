@@ -11,8 +11,6 @@
 #import "FlightRoute.h"
 #import "WorldWind/Pick/WWPickedObject.h"
 
-#define ROW_ADD_TO_ROUTE (1)
-
 @implementation WaypointPopoverController
 
 - (id) init
@@ -32,8 +30,8 @@
 - (void) presentPopoverFromPickedObject:(WWPickedObject*)po inView:(UIView*)view
                permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated
 {
-    pickedObject = po;
     [tableCells removeAllObjects];
+    pickedObject = po;
 
     WaypointCell* waypointCell = [[WaypointCell alloc] initWithReuseIdentifier:nil];
     [waypointCell setToWaypoint:[pickedObject userObject]];
@@ -42,8 +40,9 @@
 
     if (_activeFlightRoute != nil)
     {
+        NSString* text = [_activeFlightRoute containsWaypoint:[po userObject]] ? @"Remove from Flight Route" : @"Add To Flight Route";
         UITableViewCell* addToRouteCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        [[addToRouteCell textLabel] setText:@"Add To Flight Route"];
+        [[addToRouteCell textLabel] setText:text];
         [[addToRouteCell textLabel] setTextColor:[[[self contentViewController] view] tintColor]];
         [addToRouteCell setSeparatorInset:[waypointCell separatorInset]];
         [tableCells addObject:addToRouteCell];
@@ -73,9 +72,18 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if ([indexPath row] == ROW_ADD_TO_ROUTE)
+    if ([indexPath row] == 1)
     {
-        [_activeFlightRoute addWaypoint:[pickedObject userObject]];
+        NSString* cellText = [[[tableView cellForRowAtIndexPath:indexPath] textLabel] text];
+        if ([cellText hasPrefix:@"Add"])
+        {
+            [_activeFlightRoute addWaypoint:[pickedObject userObject]];
+        }
+        else if ([cellText hasPrefix:@"Remove"])
+        {
+            [_activeFlightRoute removeWaypoint:[pickedObject userObject]];
+        }
+
         [self dismissPopoverAnimated:YES];
     }
 }

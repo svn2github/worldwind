@@ -32,4 +32,20 @@
     return self;
 }
 
+- (BOOL) isEqual:(id __unsafe_unretained)anObject // Suppress unnecessary ARC retain/release calls.
+{
+    if (anObject == nil || [anObject class] != [Waypoint class])
+    {
+        return NO;
+    }
+
+    Waypoint* __unsafe_unretained other = (Waypoint*) anObject; // Suppress unnecessary ARC retain/release calls.
+    return [_key isEqualToString:other->_key];
+}
+
+- (NSUInteger) hash
+{
+    return [_key hash];
+}
+
 @end
