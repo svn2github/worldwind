@@ -383,7 +383,7 @@ const float ShapePickRadius = 22.0;
     id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
     [waypointShapes insertObject:shape atIndex:index];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
@@ -393,7 +393,7 @@ const float ShapePickRadius = 22.0;
     [waypointShapes removeObjectAtIndex:index];
     [waypointPath setPositions:waypointPositions];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
@@ -408,7 +408,7 @@ const float ShapePickRadius = 22.0;
     [waypointShapes removeObjectAtIndex:fromIndex];
     [waypointShapes insertObject:shape atIndex:toIndex];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:toIndex]}];
 }
 

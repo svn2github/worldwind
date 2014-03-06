@@ -55,6 +55,7 @@
         WWPosition* pos = [[WWPosition alloc] initWithLocation:[waypoint location] altitude:0];
         WWPointPlacemark* placemark = [[WWPointPlacemark alloc] initWithPosition:pos];
         [placemark setUserObject:waypoint];
+        [placemark setPickDelegate:waypoint]; // make the waypoint the picked object
         [placemark setDisplayName:[waypoint displayName]];
         [placemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
         [placemark setAttributes:attrs];

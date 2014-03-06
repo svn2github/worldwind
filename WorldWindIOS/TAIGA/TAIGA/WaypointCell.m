@@ -90,6 +90,7 @@ static const CGFloat WaypointCellImagePadding = 30;
 
     CGFloat displayNameInset = WaypointCellMaxImageWidth + WaypointCellImagePadding;
     NSDictionary* metrics = @{@"displayNameInset":[NSNumber numberWithFloat:displayNameInset]};
+    [self setSeparatorInset:UIEdgeInsetsMake(0, displayNameInset, 0, 0)];
 
     [contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-displayNameInset-[displayNameView]"
                                                                         options:0 metrics:metrics views:views]];

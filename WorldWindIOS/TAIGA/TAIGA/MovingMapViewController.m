@@ -38,6 +38,7 @@
 #import "ChartsTableController.h"
 #import "WeatherCamLayer.h"
 #import "WeatherCamViewController.h"
+#import "Waypoint.h"
 #import "WaypointFile.h"
 #import "WaypointLayer.h"
 #import "FlightRoute.h"
@@ -51,6 +52,8 @@
 #import "LocationTrackingViewController.h"
 #import "WWDAFIFLayer.h"
 #import "WWBingLayer.h"
+#import "WaypointPopoverController.h"
+#import "FlightRouteDetailController.h"
 
 @implementation MovingMapViewController
 {
@@ -109,6 +112,7 @@
     UIPopoverController* positionReadoutPopoverController;
     WeatherCamViewController* weatherCamViewController;
     UIPopoverController* weatherCamPopoverController;
+    WaypointPopoverController* waypointPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -121,6 +125,7 @@
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
+    waypointPopoverController = [[WaypointPopoverController alloc] init];
 
     return self;
 }
@@ -762,7 +767,6 @@
     [view bringSubviewToFront:routeView];
     [view layoutIfNeeded]; // Ensure all pending layout operations have completed.
 
-
     [UIView animateWithDuration:0.3
                           delay:0.0
                         options:UIViewAnimationOptionBeginFromCurrentState // Animate scroll views from their current state.
@@ -783,7 +787,6 @@
     {
         CGPoint tapPoint = [recognizer locationInView:_wwv];
         WWPickedObjectList* pickedObjects = [_wwv pick:tapPoint];
-
         WWPickedObject* topObject = [pickedObjects topPickedObject];
 
         if (topObject.isTerrain)
@@ -807,21 +810,18 @@
         {
             [self selectFlightRoute:[topObject userObject]];
         }
+        else if ([[topObject userObject] isKindOfClass:[Waypoint class]])
+        {
+            [self showWaypoint:topObject];
+        }
     }
 }
 
 - (void) showPositionReadout:(WWPickedObject*)po
 {
     WWPosition* position = [po position];
-    WWVec4* cartesianPoint = [[WWVec4 alloc] init];
-    WWVec4* screenPoint = [[WWVec4 alloc] init];
-
-    [[[_wwv sceneController] globe] computePointFromPosition:[position latitude] longitude:[position longitude]
-                                                    altitude:[position altitude] outputPoint:cartesianPoint];
-    [[[_wwv sceneController] navigatorState] project:cartesianPoint result:screenPoint];
-
-    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
-    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
+    CGPoint point = [po pickPoint];
+    CGRect rect = CGRectMake(point.x, point.y, 1, 1);
 
     [positionReadoutViewController setPosition:position];
 
@@ -915,6 +915,24 @@
         weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
     [weatherCamPopoverController presentPopoverFromRect:rect inView:_wwv
                                permittedArrowDirections:0 animated:YES];
+}
+
+- (void) showWaypoint:(WWPickedObject*)po
+{
+    [waypointPopoverController setActiveFlightRoute:[self editableFlightRoute]];
+    [waypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                     permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (FlightRoute*) editableFlightRoute
+{
+    UIViewController* topViewController = [routeViewNavController topViewController];
+    if (isShowRouteView && [topViewController isKindOfClass:[FlightRouteDetailController class]])
+    {
+        return [(FlightRouteDetailController*) topViewController flightRoute];
+    }
+
+    return nil;
 }
 
 - (void) selectFlightRoute:(FlightRoute*)flightRoute
