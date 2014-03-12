@@ -359,13 +359,13 @@ public class LevelSet extends WWObjectImpl
 
     private long getTileNumber(Tile tile)
     {
-        return tile.getRow() < 0 ? -1 : tile.getRow() * this.numColumnsInLevel(tile.getLevel()) + tile.getColumn();
+        return tile.getRow() < 0 ? -1 : (long) tile.getRow() * this.numColumnsInLevel(tile.getLevel()) + tile.getColumn();
     }
 
     private long getTileNumber(TileKey tileKey)
     {
         return tileKey.getRow() < 0 ? -1 :
-            tileKey.getRow() * this.numColumnsInLevel(this.getLevel(tileKey.getLevelNumber())) + tileKey.getColumn();
+            (long) tileKey.getRow() * this.numColumnsInLevel(this.getLevel(tileKey.getLevelNumber())) + tileKey.getColumn();
     }
 
     /**
