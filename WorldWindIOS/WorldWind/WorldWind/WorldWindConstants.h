@@ -44,6 +44,7 @@ extern NSString* const WW_RETRIEVAL_STATUS;
 extern NSString* const WW_REQUEST_STATUS;
 extern NSString* const WW_RANGE;
 extern NSString* const WW_ROLL;
+extern NSString* const WW_TEXTURE_AS_IS;
 extern NSString* const WW_TEXTURE_PVRTC_4BPP;
 extern NSString* const WW_TEXTURE_RGBA_5551;
 extern NSString* const WW_TEXTURE_RGBA_8888;

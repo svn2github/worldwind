@@ -74,7 +74,7 @@
     _retrievalImageFormat = retrievalImageFormat;
     _cachePath = cachePath;
     _timeout = 20; // seconds
-    _textureFormat = WW_TEXTURE_RGBA_5551;
+    _textureCacheFormat = WW_TEXTURE_RGBA_5551;
 
     levels = [[WWLevelSet alloc] initWithSector:sector
                                  levelZeroDelta:levelZeroDelta
@@ -121,17 +121,17 @@
 
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
-    NSString* formatSuffix = _retrievalImageFormat;
+    NSString* formatSuffix = [WWUtil suffixForMimeType:_retrievalImageFormat];
 
-    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
+    if ([_textureCacheFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
     {
         formatSuffix = @"pvr";
     }
-    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
+    if ([_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_5551])
     {
         formatSuffix = @"5551";
     }
-    if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
+    if ([_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_8888])
     {
         formatSuffix = @"8888";
     }
@@ -160,7 +160,7 @@
 #define BULK_RETRIEVER_SIMULTANEOUS_TILES 8
 #define BULK_RETRIEVER_SLEEP_INTERVAL 0.1
 
-- (double) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
+- (long) tileCountForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
 {
     if (sectors == nil)
     {
@@ -175,9 +175,17 @@
         tileCount += [levels tileCountForSector:sector lastLevel:lastLevel];
     }
 
+    return tileCount;
+}
+
+- (double) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
+{
+    long tileCount = [self tileCountForSectors:sectors targetResolution:targetResolution];
+
     double tw = [levels tileWidth];
     double th = [levels tileHeight];
-    return tileCount * tw * th * 2.0 / 1.0e6; // assumes 2-bytes per pixel
+
+    return tileCount * tw * th * 2.0 / 1.0e6; // assumes two bytes per pixel
 }
 
 - (void) performBulkRetrieval:(WWBulkRetriever*)retriever
@@ -532,9 +540,9 @@
     NSURL* url = [self resourceUrlForTile:tile imageFormat:_retrievalImageFormat];
 
     WWRetrieverToFile* retriever;
-    if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP]
-            || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551]
-            || [_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
+    if ([_textureCacheFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP]
+            || [_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_5551]
+            || [_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_8888])
     {
         // Download to a file with the download format suffix. The image will be decoded and possibly compressed when
         // the notification of download success is received in handleNotification above.
@@ -646,17 +654,17 @@
     {
         if ([retrievalStatus isEqualToString:WW_SUCCEEDED])
         {
-            if ([_textureFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
+            if ([_textureCacheFormat isEqualToString:WW_TEXTURE_PVRTC_4BPP])
             {
                 [WWPVRTCImage compressFile:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
-            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_8888])
+            else if ([_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_8888])
             {
                 [WWTexture convertTextureTo8888:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
             }
-            else if ([_textureFormat isEqualToString:WW_TEXTURE_RGBA_5551])
+            else if ([_textureCacheFormat isEqualToString:WW_TEXTURE_RGBA_5551])
             {
                 [WWTexture convertTextureTo5551:imagePath];
                 [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];

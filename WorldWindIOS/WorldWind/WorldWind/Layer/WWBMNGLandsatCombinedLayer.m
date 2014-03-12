@@ -75,6 +75,7 @@
             retrievalImageFormat:@"image/jpeg"
                        cachePath:cachePath];
     [self setDisplayName:@"Blue Marble + Landsat"];
+    [self setTextureCacheFormat:WW_TEXTURE_AS_IS]; // do not convert to 5551 on download
 
     WWWMSUrlBuilder* urlBuilder = [[WWBMNGLandsatURLBuilder alloc] initWithServiceAddress:serviceAddress
                                                                                layerNames:layerName
@@ -90,5 +91,12 @@
     [[WorldWind loadQueue] addOperation:expirationChecker];
 
     return self;
+}
+
+- (double) dataSizeForSectors:(NSArray*)sectors targetResolution:(double)targetResolution
+{
+    long tileCount = [self tileCountForSectors:sectors targetResolution:targetResolution];
+
+    return tileCount * 1.0e4 / 1.0e6; // assumes 10K bytes per tile
 }
 @end

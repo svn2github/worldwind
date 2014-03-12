@@ -102,6 +102,9 @@
     if ([@"image/jpeg" isEqualToString:mimeType])
         return @"jpg";
 
+    if ([@"image/jp2k" isEqualToString:mimeType])
+        return @"jp2";
+
     return nil;
 }
 

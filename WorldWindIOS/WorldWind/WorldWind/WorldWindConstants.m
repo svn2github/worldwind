@@ -42,6 +42,7 @@ NSString* const WW_RETRIEVAL_STATUS = @"gov.nasa.worldwind.RetrievalStatus";
 NSString* const WW_REQUEST_STATUS = @"gov.nasa.worldwind.RequestStatus";
 NSString* const WW_RANGE = @"gov.nasa.worldwind.Range";
 NSString* const WW_ROLL = @"gov.nasa.worldwind.Roll";
+NSString* const WW_TEXTURE_AS_IS = @"gov.nasa.worldwind.TextureAsIs";
 NSString* const WW_TEXTURE_PVRTC_4BPP = @"gov.nasa.worldwind.TexturePVRTC4BPP";
 NSString* const WW_TEXTURE_RGBA_5551 = @"gov.nasa.worldwind.Texture5551";
 NSString* const WW_TEXTURE_RGBA_8888 = @"gov.nasa.worldwind.Texture8888";

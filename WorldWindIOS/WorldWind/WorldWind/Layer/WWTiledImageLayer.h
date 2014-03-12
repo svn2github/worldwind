@@ -81,9 +81,10 @@
 /// Indicates when this layer's textures should be considered invalid and re-retrieved from the associated server.
 @property (nonatomic) NSDate* expiration;
 
-/// The texture format to use for the OpenGL texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551 or
-/// WW_TEXTURE_PVRTC_4BPP. If nil, the texture is passed as RGBA 8888.
-@property (nonatomic) NSString* textureFormat;
+/// The format in which to cache the texture. One of WW_TEXTURE_RGBA_8888, WW_TEXTURE_RGBA_5551,
+/// WW_TEXTURE_PVRTC_4BPP, or WW_TEXTURE_AS_IS, in which case it is cached in the same format in which it is
+// retrieved.
+@property (nonatomic) NSString* textureCacheFormat;
 
 /// The current detail hint.
 @property (nonatomic) double detailHint; // TODO: Document this per setDetailHint in the desktop/android version
@@ -385,5 +386,15 @@
 * WW_FAILED or WW_CANCELED.
 */
 - (void) handleTextureRetrievalNotification:(NSNotification*)notification;
+
+/**
+* Returns the number of tiles intersecting a specified list of sectors and a resolution.
+*
+* @param sectors The sectors for which to determine the number of tiles.
+* @param targetResolution The target resolution for the data. 0 indicates use best resolution.
+*
+* @exception NSInvalidArgumentException If the sector is nil.
+*/
+- (long) tileCountForSectors:(NSArray*)sectors targetResolution:(double)targetResolution;
 
 @end
