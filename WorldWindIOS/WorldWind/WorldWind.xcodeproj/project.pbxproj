@@ -224,6 +224,7 @@
 		CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */; };
 		CC8CF11A6FDFD05C06E27FEF /* WWPointPlacemarkAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAA9D70EA3EB7B912854 /* WWPointPlacemarkAttributes.m */; };
 		CC8CF1DC410C2407ACF32D39 /* WWTileKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */; };
+		CC8CF25FC4A5BCE3549902DC /* priorityq-heap.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFEFD26C1ECCC22469A43 /* priorityq-heap.c */; };
 		CC8CF26EA05AFC8A913C72CC /* WWLine.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5DAF750A3F415928ECA /* WWLine.m */; };
 		CC8CF2CE5D811272FB790AC0 /* WWFrameStatistics.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */; };
 		CC8CF2EE8E5A08B1123176B1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */; };
@@ -231,12 +232,16 @@
 		CC8CF356057F68E8E2E539DB /* WWFirstPersonNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF92F1ACB74005B86DA9B /* WWFirstPersonNavigator.h */; };
 		CC8CF37B1BA24B055524EFFB /* WWOffset.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF1EC84119508DA0479D6 /* WWOffset.m */; };
 		CC8CF45C6898988F6C2D425B /* WWLookAtNavigator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0FEA2510D74288768A7 /* WWLookAtNavigator.m */; };
+		CC8CF4AD278EEFB68856A9A9 /* priorityq.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF39BE2828865ED007997 /* priorityq.c */; };
 		CC8CF4C56ED3D6EF20268DEF /* WWDAFIFLayer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFEA541CCE024B38C0DEC /* WWDAFIFLayer.h */; };
 		CC8CF4C868F900B101F1A759 /* WWSurfaceTileRendererProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE2E7612A4EFF9BA0E42 /* WWSurfaceTileRendererProgram.m */; };
 		CC8CF4CB984F53169CBEE0BF /* WWEarthElevationModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFE8071FABB0AC0F3A856 /* WWEarthElevationModel.h */; };
+		CC8CF4CDDD34E958D91E2944 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0EC9B19D5B0E04B1AF0 /* error.c */; };
 		CC8CF51D3994426792D99CB4 /* WWArcGisUrlBuilder.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFE191A782BBEC44A2E3B /* WWArcGisUrlBuilder.h */; };
+		CC8CF584577814DB6E35EB65 /* render.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF2D37A471A0C5D2B6F46 /* render.c */; };
 		CC8CF5ABE16E4806E44CEB63 /* WWEarthElevationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFACBED8843206FD801C8 /* WWEarthElevationModel.m */; };
 		CC8CF5AE663CF8D85ACE2CB9 /* WWBasicNavigatorState.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */; };
+		CC8CF5CEBD07867F6E2B2EF4 /* glue.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF03D674994733EBFD2F0 /* glue.c */; };
 		CC8CF6375A098A256F29B363 /* WWNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */; };
 		CC8CF65E7ACDED57AF58907E /* WWFrameStatistics.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFEFF4F705256C4323966 /* WWFrameStatistics.h */; };
 		CC8CF6602C357C83980CF6FF /* WWBulkRetrieverDataSource.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF9E00A792C5A2E9CBA7C /* WWBulkRetrieverDataSource.h */; };
@@ -244,6 +249,7 @@
 		CC8CF6A9BC4FA2A46CCF142F /* WWMath.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFB028A4DEB1340F1D0AF /* WWMath.h */; };
 		CC8CF71B5062F054C777DC65 /* WWOffset.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFAB9B10E62667F12A6D1 /* WWOffset.h */; };
 		CC8CF766AA611E3CADD3CBF7 /* WWBasicProgram.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFB896E085004602B440F /* WWBasicProgram.h */; };
+		CC8CF866415884DCE1C31016 /* tess.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF20F180F1AED78FDFA99 /* tess.c */; };
 		CC8CF8BEFC3CA03A86CD44F9 /* WWBasicProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF655CED30409A3D2204C /* WWBasicProgram.m */; };
 		CC8CF8F6BC8A651A037BE74B /* WWArcGisUrlBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4C323D976D2EACCAC45 /* WWArcGisUrlBuilder.m */; };
 		CC8CF92425FFA278EE63D408 /* WWBulkRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF1B3205567F6609F9936 /* WWBulkRetriever.m */; };
@@ -252,8 +258,12 @@
 		CC8CF9752A4A919B90A25EA5 /* WWPointPlacemark.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF715A9D28569C2AB1994 /* WWPointPlacemark.m */; };
 		CC8CF9814F2AA156C501C475 /* WWFirstPersonNavigator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF959A1EF5768F701391 /* WWFirstPersonNavigator.m */; };
 		CC8CF98FBDBEEE1892023D1E /* WWDAFIFLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF346A0A996DF86D4EFB8 /* WWDAFIFLayer.m */; };
+		CC8CF9BECD225DEF7C9C7E57 /* geom.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFC36566E7BCC245CCD4 /* geom.c */; };
+		CC8CF9E1444719F312B3F517 /* normal.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF47DF8549B2E70772CE6 /* normal.c */; };
 		CC8CFA647678547E23AD515B /* WWLine.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF4B0B169733305825721 /* WWLine.h */; };
 		CC8CFA6B7D7504F337EF6473 /* WWSize.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFABC7B7BE5F87FBC2022 /* WWSize.h */; };
+		CC8CFA6E4626D53DC89BF466 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF6190F54ABF0C76AE469 /* dict.c */; };
+		CC8CFA71659A15AC6E3747C5 /* sweep.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF2A182765E97051FC899 /* sweep.c */; };
 		CC8CFA91DBABC83303127DDA /* WWMath.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF876C2D9BF7128E50B36 /* WWMath.m */; };
 		CC8CFAA5DD3FC9E8BA9BDD61 /* WWBasicTextureProgram.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFC788CB228045D595FBE /* WWBasicTextureProgram.h */; };
 		CC8CFABB9FB2B6F6B5F3A8BB /* WWLookAtNavigator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFF1CC1B22282FDE20451 /* WWLookAtNavigator.h */; };
@@ -261,9 +271,12 @@
 		CC8CFAEF17E98DA154E5AC4E /* WWElevationTile.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF55FC4E8FE8144E58FBD /* WWElevationTile.h */; };
 		CC8CFB27ABD25DCDDEE1E8AC /* WWSurfaceTileRendererProgram.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFAC882D8A13813A712A9 /* WWSurfaceTileRendererProgram.h */; };
 		CC8CFB8442EEF0E8D105C5CA /* WWAbstractNavigator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF80DB99021F93D596B0C /* WWAbstractNavigator.m */; };
+		CC8CFB92A03663897D461CDB /* mesh.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF334D33A4A9B0706D2C8 /* mesh.c */; };
 		CC8CFC0A1013EDD6EEA9BEE0 /* WWBulkRetriever.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF6F4B814C0E6F5908E0B /* WWBulkRetriever.h */; };
 		CC8CFCB2AFD1A2C364D19795 /* WWPointPlacemark.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CF2501BDFB987AE9C89D1 /* WWPointPlacemark.h */; };
 		CC8CFCFBC5D8440BF98A82A6 /* WWResourceLoader.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFD59B8B9D86587BDD69E /* WWResourceLoader.h */; };
+		CC8CFD4AB2386F883A3FA7FE /* registry.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF73457084DD79C23453 /* registry.c */; };
+		CC8CFD4E6A2291318950B43C /* memalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF65084950C367C8F23E4 /* memalloc.c */; };
 		CC8CFD6EE3FDF009B16F77C9 /* WWElevationImage.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFBC339C4411CB2195DDF /* WWElevationImage.h */; };
 		CC8CFDA737AD81B0802B5B54 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */; };
 		CC8CFDF82CBFE9B498CA014D /* WWElevationImage.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFB8FB5244C792F46BFF2 /* WWElevationImage.m */; };
@@ -276,6 +289,7 @@
 		CC8CFE7C31374389E16F50E6 /* WWZeroElevationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF3328494E380B2C72EFD /* WWZeroElevationModel.m */; };
 		CC8CFEE38FE764151EC113DC /* WWBasicElevationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFC7DC0C26514DF5F2944 /* WWBasicElevationModel.m */; };
 		CC8CFF4C152BFA2641FB7545 /* WWBasicElevationModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFB6953B96592F33F8409 /* WWBasicElevationModel.h */; };
+		CC8CFF4F7E05904181E040AC /* tessmono.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF31C981895D6ACC6956C /* tessmono.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -587,34 +601,58 @@
 		1BF9AFDC42D63335332E8C9A /* WWUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWUtil.h; sourceTree = "<group>"; };
 		1BF9AFDFF388F5BB6D7E606D /* WWPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPath.m; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
+		CC8CF01F8BAA4D136A3AD1E8 /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mesh.h; sourceTree = "<group>"; };
+		CC8CF03D674994733EBFD2F0 /* glue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glue.c; sourceTree = "<group>"; };
+		CC8CF04784FC503FD556FC89 /* gluos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gluos.h; sourceTree = "<group>"; };
 		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigator.h; sourceTree = "<group>"; };
+		CC8CF0EC9B19D5B0E04B1AF0 /* error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = error.c; sourceTree = "<group>"; };
 		CC8CF0F946E4D3210B9D529A /* BasicTextureShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BasicTextureShader.vert; sourceTree = "<group>"; };
 		CC8CF0FEA2510D74288768A7 /* WWLookAtNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWLookAtNavigator.m; sourceTree = "<group>"; };
 		CC8CF1B3205567F6609F9936 /* WWBulkRetriever.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBulkRetriever.m; sourceTree = "<group>"; };
 		CC8CF1EC84119508DA0479D6 /* WWOffset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWOffset.m; sourceTree = "<group>"; };
+		CC8CF20F180F1AED78FDFA99 /* tess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tess.c; sourceTree = "<group>"; };
 		CC8CF2501BDFB987AE9C89D1 /* WWPointPlacemark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPointPlacemark.h; sourceTree = "<group>"; };
+		CC8CF2A182765E97051FC899 /* sweep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sweep.c; sourceTree = "<group>"; };
 		CC8CF2CD741816D3A11FB65D /* WWLevelSetEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWLevelSetEnumerator.m; sourceTree = "<group>"; };
+		CC8CF2D37A471A0C5D2B6F46 /* render.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = render.c; sourceTree = "<group>"; };
+		CC8CF2FD54659FF2274500ED /* priorityq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = priorityq.h; sourceTree = "<group>"; };
+		CC8CF311E0C7956E28260F35 /* sweep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sweep.h; sourceTree = "<group>"; };
+		CC8CF31C981895D6ACC6956C /* tessmono.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tessmono.c; sourceTree = "<group>"; };
 		CC8CF3328494E380B2C72EFD /* WWZeroElevationModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWZeroElevationModel.m; sourceTree = "<group>"; };
+		CC8CF334D33A4A9B0706D2C8 /* mesh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mesh.c; sourceTree = "<group>"; };
 		CC8CF346A0A996DF86D4EFB8 /* WWDAFIFLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWDAFIFLayer.m; sourceTree = "<group>"; };
 		CC8CF35714B1052C415FC2E5 /* WWScreenImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWScreenImage.m; sourceTree = "<group>"; };
 		CC8CF36FAECA181D7A466D12 /* WWLevelSetEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLevelSetEnumerator.h; sourceTree = "<group>"; };
+		CC8CF39052D430FAE530E009 /* gluint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gluint.h; sourceTree = "<group>"; };
+		CC8CF39BE2828865ED007997 /* priorityq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = priorityq.c; sourceTree = "<group>"; };
+		CC8CF3A6A1E567A9CC3267FF /* normal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = normal.h; sourceTree = "<group>"; };
 		CC8CF3D8B4D8C32BEED780E6 /* WWZeroElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWZeroElevationModel.h; sourceTree = "<group>"; };
+		CC8CF47DF8549B2E70772CE6 /* normal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = normal.c; sourceTree = "<group>"; };
 		CC8CF4B0B169733305825721 /* WWLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWLine.h; path = Geometry/WWLine.h; sourceTree = "<group>"; };
 		CC8CF4C323D976D2EACCAC45 /* WWArcGisUrlBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWArcGisUrlBuilder.m; sourceTree = "<group>"; };
 		CC8CF55FC4E8FE8144E58FBD /* WWElevationTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWElevationTile.h; sourceTree = "<group>"; };
 		CC8CF5DAF750A3F415928ECA /* WWLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWLine.m; path = Geometry/WWLine.m; sourceTree = "<group>"; };
+		CC8CF5E8355FCFC8C6F5A0F1 /* glu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glu.h; sourceTree = "<group>"; };
+		CC8CF6190F54ABF0C76AE469 /* dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dict.c; sourceTree = "<group>"; };
 		CC8CF62C314380EC4B91F491 /* WWPointPlacemarkAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPointPlacemarkAttributes.h; sourceTree = "<group>"; };
+		CC8CF65084950C367C8F23E4 /* memalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memalloc.c; sourceTree = "<group>"; };
 		CC8CF655CED30409A3D2204C /* WWBasicProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicProgram.m; sourceTree = "<group>"; };
+		CC8CF6BD948650D5D8A25C26 /* tessmono.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tessmono.h; sourceTree = "<group>"; };
+		CC8CF6BDBF5816323681753D /* geom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
 		CC8CF6F4B814C0E6F5908E0B /* WWBulkRetriever.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBulkRetriever.h; sourceTree = "<group>"; };
 		CC8CF715A9D28569C2AB1994 /* WWPointPlacemark.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPointPlacemark.m; sourceTree = "<group>"; };
 		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
+		CC8CF7B1D979491DBB31E2B3 /* alg-outline */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "alg-outline"; sourceTree = "<group>"; };
 		CC8CF7BE0991298AA915B3F9 /* WWTileKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTileKey.h; sourceTree = "<group>"; };
 		CC8CF7CA6C3D99D0949D788C /* WWScreenImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWScreenImage.h; sourceTree = "<group>"; };
 		CC8CF803ECDEA0FDA984E2B8 /* WWSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWSize.m; sourceTree = "<group>"; };
 		CC8CF80DB99021F93D596B0C /* WWAbstractNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWAbstractNavigator.m; sourceTree = "<group>"; };
+		CC8CF824A0F54565DDBF62BD /* priorityq-heap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "priorityq-heap.h"; sourceTree = "<group>"; };
 		CC8CF876C2D9BF7128E50B36 /* WWMath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWMath.m; sourceTree = "<group>"; };
 		CC8CF92F1ACB74005B86DA9B /* WWFirstPersonNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWFirstPersonNavigator.h; sourceTree = "<group>"; };
+		CC8CF99A59E23CF1CA5780A9 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		CC8CF9E00A792C5A2E9CBA7C /* WWBulkRetrieverDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBulkRetrieverDataSource.h; sourceTree = "<group>"; };
+		CC8CF9EDE8502A01DF3BD609 /* priorityq-sort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "priorityq-sort.h"; sourceTree = "<group>"; };
 		CC8CFA5D6BB66C13FE4C71AE /* WWNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigatorState.h; sourceTree = "<group>"; };
 		CC8CFAA9D70EA3EB7B912854 /* WWPointPlacemarkAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPointPlacemarkAttributes.m; sourceTree = "<group>"; };
 		CC8CFAB9B10E62667F12A6D1 /* WWOffset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWOffset.h; sourceTree = "<group>"; };
@@ -622,6 +660,8 @@
 		CC8CFAC882D8A13813A712A9 /* WWSurfaceTileRendererProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWSurfaceTileRendererProgram.h; sourceTree = "<group>"; };
 		CC8CFACBED8843206FD801C8 /* WWEarthElevationModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWEarthElevationModel.m; sourceTree = "<group>"; };
 		CC8CFB028A4DEB1340F1D0AF /* WWMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWMath.h; sourceTree = "<group>"; };
+		CC8CFB33ED8383DD7DC9D6CD /* memalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memalloc.h; sourceTree = "<group>"; };
+		CC8CFB387AA4026F20FE5FEA /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		CC8CFB6953B96592F33F8409 /* WWBasicElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicElevationModel.h; sourceTree = "<group>"; };
 		CC8CFB896E085004602B440F /* WWBasicProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicProgram.h; sourceTree = "<group>"; };
 		CC8CFB8FB5244C792F46BFF2 /* WWElevationImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWElevationImage.m; sourceTree = "<group>"; };
@@ -635,15 +675,22 @@
 		CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWTileKey.m; sourceTree = "<group>"; };
 		CC8CFD59B8B9D86587BDD69E /* WWResourceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWResourceLoader.h; sourceTree = "<group>"; };
 		CC8CFD5AC1FEDB77F2EB2D7C /* WWBasicTextureProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicTextureProgram.m; sourceTree = "<group>"; };
+		CC8CFD7B8C185F076BF8C4ED /* dict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dict.h; sourceTree = "<group>"; };
+		CC8CFDE35DFE67530C29A0B5 /* render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = render.h; sourceTree = "<group>"; };
+		CC8CFE14DA8A75A0D412D862 /* dict-list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "dict-list.h"; sourceTree = "<group>"; };
 		CC8CFE191A782BBEC44A2E3B /* WWArcGisUrlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWArcGisUrlBuilder.h; sourceTree = "<group>"; };
 		CC8CFE2E7612A4EFF9BA0E42 /* WWSurfaceTileRendererProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWSurfaceTileRendererProgram.m; sourceTree = "<group>"; };
 		CC8CFE515B8594149A01564C /* WWBasicNavigatorState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBasicNavigatorState.h; sourceTree = "<group>"; };
 		CC8CFE8071FABB0AC0F3A856 /* WWEarthElevationModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWEarthElevationModel.h; sourceTree = "<group>"; };
 		CC8CFE8FB5834A95EC50AF64 /* WWResourceLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWResourceLoader.m; sourceTree = "<group>"; };
 		CC8CFEA541CCE024B38C0DEC /* WWDAFIFLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWDAFIFLayer.h; sourceTree = "<group>"; };
+		CC8CFEFD26C1ECCC22469A43 /* priorityq-heap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "priorityq-heap.c"; sourceTree = "<group>"; };
 		CC8CFEFF4F705256C4323966 /* WWFrameStatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWFrameStatistics.h; sourceTree = "<group>"; };
+		CC8CFF11FC41F1B0F1B84030 /* tess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tess.h; sourceTree = "<group>"; };
 		CC8CFF1CC1B22282FDE20451 /* WWLookAtNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWLookAtNavigator.h; sourceTree = "<group>"; };
+		CC8CFF73457084DD79C23453 /* registry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = registry.c; sourceTree = "<group>"; };
 		CC8CFF959A1EF5768F701391 /* WWFirstPersonNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWFirstPersonNavigator.m; sourceTree = "<group>"; };
+		CC8CFFC36566E7BCC245CCD4 /* geom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = geom.c; sourceTree = "<group>"; };
 		CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWFrameStatistics.m; sourceTree = "<group>"; };
 		CC8CFFF92389CD2C90CE7176 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -921,6 +968,7 @@
 				1BF9A3B7C460FEDAD3074FD8 /* Formats */,
 				1BF9A2BC23A74C84A31DF3D4 /* Pick */,
 				1BF9A33A67B3C24C24986D59 /* WorldWindViewDelegate.h */,
+				CC8CF388DFDD5A5E91D91BA3 /* GLU */,
 			);
 			path = WorldWind;
 			sourceTree = "<group>";
@@ -1096,6 +1144,62 @@
 				CC8CFF959A1EF5768F701391 /* WWFirstPersonNavigator.m */,
 			);
 			path = Navigate;
+			sourceTree = "<group>";
+		};
+		CC8CF388DFDD5A5E91D91BA3 /* GLU */ = {
+			isa = PBXGroup;
+			children = (
+				CC8CF5E8355FCFC8C6F5A0F1 /* glu.h */,
+				CC8CF04784FC503FD556FC89 /* gluos.h */,
+				CC8CF9B9B28B2B274AAC96D3 /* libtess */,
+				CC8CF7E0E7F0A73FDCA60574 /* libutil */,
+				CC8CF99A59E23CF1CA5780A9 /* README */,
+			);
+			path = GLU;
+			sourceTree = "<group>";
+		};
+		CC8CF7E0E7F0A73FDCA60574 /* libutil */ = {
+			isa = PBXGroup;
+			children = (
+				CC8CF03D674994733EBFD2F0 /* glue.c */,
+				CC8CF0EC9B19D5B0E04B1AF0 /* error.c */,
+				CC8CF39052D430FAE530E009 /* gluint.h */,
+				CC8CFF73457084DD79C23453 /* registry.c */,
+			);
+			path = libutil;
+			sourceTree = "<group>";
+		};
+		CC8CF9B9B28B2B274AAC96D3 /* libtess */ = {
+			isa = PBXGroup;
+			children = (
+				CC8CF6190F54ABF0C76AE469 /* dict.c */,
+				CC8CFD7B8C185F076BF8C4ED /* dict.h */,
+				CC8CFFC36566E7BCC245CCD4 /* geom.c */,
+				CC8CF6BDBF5816323681753D /* geom.h */,
+				CC8CF334D33A4A9B0706D2C8 /* mesh.c */,
+				CC8CF01F8BAA4D136A3AD1E8 /* mesh.h */,
+				CC8CFB387AA4026F20FE5FEA /* README */,
+				CC8CF20F180F1AED78FDFA99 /* tess.c */,
+				CC8CFF11FC41F1B0F1B84030 /* tess.h */,
+				CC8CF2A182765E97051FC899 /* sweep.c */,
+				CC8CF311E0C7956E28260F35 /* sweep.h */,
+				CC8CF47DF8549B2E70772CE6 /* normal.c */,
+				CC8CF3A6A1E567A9CC3267FF /* normal.h */,
+				CC8CF2D37A471A0C5D2B6F46 /* render.c */,
+				CC8CFDE35DFE67530C29A0B5 /* render.h */,
+				CC8CF65084950C367C8F23E4 /* memalloc.c */,
+				CC8CFB33ED8383DD7DC9D6CD /* memalloc.h */,
+				CC8CF31C981895D6ACC6956C /* tessmono.c */,
+				CC8CF6BD948650D5D8A25C26 /* tessmono.h */,
+				CC8CF7B1D979491DBB31E2B3 /* alg-outline */,
+				CC8CFE14DA8A75A0D412D862 /* dict-list.h */,
+				CC8CF39BE2828865ED007997 /* priorityq.c */,
+				CC8CF2FD54659FF2274500ED /* priorityq.h */,
+				CC8CFEFD26C1ECCC22469A43 /* priorityq-heap.c */,
+				CC8CF824A0F54565DDBF62BD /* priorityq-heap.h */,
+				CC8CF9EDE8502A01DF3BD609 /* priorityq-sort.h */,
+			);
+			path = libtess;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1314,6 +1418,20 @@
 				1BF9AF232D00DB7439E3DA3F /* WWWMSDimensionedLayer.m in Sources */,
 				1BF9A057FEE0B20CD8C52103 /* WWElevationShadingLayer.m in Sources */,
 				1BF9A0B8D79FDE21A6652DD1 /* WWElevationShadingProgram.m in Sources */,
+				CC8CFA6E4626D53DC89BF466 /* dict.c in Sources */,
+				CC8CF9BECD225DEF7C9C7E57 /* geom.c in Sources */,
+				CC8CFB92A03663897D461CDB /* mesh.c in Sources */,
+				CC8CF866415884DCE1C31016 /* tess.c in Sources */,
+				CC8CFA71659A15AC6E3747C5 /* sweep.c in Sources */,
+				CC8CF9E1444719F312B3F517 /* normal.c in Sources */,
+				CC8CF584577814DB6E35EB65 /* render.c in Sources */,
+				CC8CFD4E6A2291318950B43C /* memalloc.c in Sources */,
+				CC8CFF4F7E05904181E040AC /* tessmono.c in Sources */,
+				CC8CF4AD278EEFB68856A9A9 /* priorityq.c in Sources */,
+				CC8CF25FC4A5BCE3549902DC /* priorityq-heap.c in Sources */,
+				CC8CF5CEBD07867F6E2B2EF4 /* glue.c in Sources */,
+				CC8CF4CDDD34E958D91E2944 /* error.c in Sources */,
+				CC8CFD4AB2386F883A3FA7FE /* registry.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
