@@ -290,6 +290,7 @@
 		CC8CFEE38FE764151EC113DC /* WWBasicElevationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFC7DC0C26514DF5F2944 /* WWBasicElevationModel.m */; };
 		CC8CFF4C152BFA2641FB7545 /* WWBasicElevationModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = CC8CFB6953B96592F33F8409 /* WWBasicElevationModel.h */; };
 		CC8CFF4F7E05904181E040AC /* tessmono.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF31C981895D6ACC6956C /* tessmono.c */; };
+		CC8CFFD5355B00B05D31E39E /* WWPolygon.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF64C406A5C50BD16FDA9 /* WWPolygon.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -635,6 +636,7 @@
 		CC8CF5E8355FCFC8C6F5A0F1 /* glu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glu.h; sourceTree = "<group>"; };
 		CC8CF6190F54ABF0C76AE469 /* dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dict.c; sourceTree = "<group>"; };
 		CC8CF62C314380EC4B91F491 /* WWPointPlacemarkAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPointPlacemarkAttributes.h; sourceTree = "<group>"; };
+		CC8CF64C406A5C50BD16FDA9 /* WWPolygon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPolygon.m; sourceTree = "<group>"; };
 		CC8CF65084950C367C8F23E4 /* memalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memalloc.c; sourceTree = "<group>"; };
 		CC8CF655CED30409A3D2204C /* WWBasicProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicProgram.m; sourceTree = "<group>"; };
 		CC8CF6BD948650D5D8A25C26 /* tessmono.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tessmono.h; sourceTree = "<group>"; };
@@ -642,6 +644,7 @@
 		CC8CF6F4B814C0E6F5908E0B /* WWBulkRetriever.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWBulkRetriever.h; sourceTree = "<group>"; };
 		CC8CF715A9D28569C2AB1994 /* WWPointPlacemark.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPointPlacemark.m; sourceTree = "<group>"; };
 		CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBasicNavigatorState.m; sourceTree = "<group>"; };
+		CC8CF7858A16A3760771659F /* WWPolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPolygon.h; sourceTree = "<group>"; };
 		CC8CF7B1D979491DBB31E2B3 /* alg-outline */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "alg-outline"; sourceTree = "<group>"; };
 		CC8CF7BE0991298AA915B3F9 /* WWTileKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWTileKey.h; sourceTree = "<group>"; };
 		CC8CF7CA6C3D99D0949D788C /* WWScreenImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWScreenImage.h; sourceTree = "<group>"; };
@@ -1104,6 +1107,8 @@
 				CC8CFAA9D70EA3EB7B912854 /* WWPointPlacemarkAttributes.m */,
 				CC8CF7CA6C3D99D0949D788C /* WWScreenImage.h */,
 				CC8CF35714B1052C415FC2E5 /* WWScreenImage.m */,
+				CC8CF7858A16A3760771659F /* WWPolygon.h */,
+				CC8CF64C406A5C50BD16FDA9 /* WWPolygon.m */,
 			);
 			path = Shapes;
 			sourceTree = "<group>";
@@ -1432,6 +1437,7 @@
 				CC8CF5CEBD07867F6E2B2EF4 /* glue.c in Sources */,
 				CC8CF4CDDD34E958D91E2944 /* error.c in Sources */,
 				CC8CFD4AB2386F883A3FA7FE /* registry.c in Sources */,
+				CC8CFFD5355B00B05D31E39E /* WWPolygon.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
