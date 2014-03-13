@@ -17,6 +17,18 @@
 + (float) getFloatForName:(NSString*)name defaultValue:(float)defaultValue;
 + (float) getFloatForName:(NSString*)name;
 
++ (void) setDouble:(double)value forName:(NSString*)name;
++ (double) getDoubleForName:(NSString*)name defaultValue:(double)defaultValue;
++ (double) getDoubleForName:(NSString*)name;
+
++ (void) setInt:(int)value forName:(NSString*)name;
++ (int) getIntForName:(NSString*)name defaultValue:(int)defaultValue;
++ (int) getIntForName:(NSString*)name;
+
++ (void) setLong:(long)value forName:(NSString*)name;
++ (long) getLongForName:(NSString*)name defaultValue:(long)defaultValue;
++ (long) getLongForName:(NSString*)name;
+
 + (void) setBool:(BOOL)value forName:(NSString*)name;
 + (BOOL) getBoolForName:(NSString*)name defaultValue:(BOOL)defaultValue;
 + (BOOL) getBoolForName:(NSString*)name;

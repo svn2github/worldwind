@@ -20,7 +20,7 @@
     NSString* serviceAddress = @"http://worldwind26.arc.nasa.gov/wms";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"EarthElevation"];
+    NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"EarthElevations256"];
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]

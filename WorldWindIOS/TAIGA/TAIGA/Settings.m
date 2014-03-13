@@ -60,6 +60,84 @@
     return value != nil ? [value floatValue] : 0;
 }
 
++ (void) setDouble:(double)value forName:(NSString*)name
+{
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithDouble:value] forKey:name];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SETTING_CHANGED object:name];
+}
+
++ (double) getDoubleForName:(NSString*)name defaultValue:(double)defaultValue
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+    if (value != nil)
+        return value.doubleValue;
+
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithDouble:defaultValue] forKey:name];
+
+    return defaultValue;
+}
+
++ (double) getDoubleForName:(NSString*)name
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+
+    return value != nil ? [value doubleValue] : 0;
+}
+
++ (void) setInt:(int)value forName:(NSString*)name
+{
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:value] forKey:name];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SETTING_CHANGED object:name];
+}
+
++ (int) getIntForName:(NSString*)name defaultValue:(int)defaultValue
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+    if (value != nil)
+        return value.intValue;
+
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:defaultValue] forKey:name];
+
+    return defaultValue;
+}
+
++ (int) getIntForName:(NSString*)name
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+
+    return value != nil ? [value intValue] : 0;
+}
+
++ (void) setLong:(long)value forName:(NSString*)name
+{
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithLong:value] forKey:name];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_SETTING_CHANGED object:name];
+}
+
++ (long) getLongForName:(NSString*)name defaultValue:(long)defaultValue
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+    if (value != nil)
+        return value.longValue;
+
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithLong:defaultValue] forKey:name];
+
+    return defaultValue;
+}
+
++ (long) getLongForName:(NSString*)name
+{
+    NSNumber* value = [[NSUserDefaults standardUserDefaults] objectForKey:name];
+
+    return value != nil ? [value longValue] : 0;
+}
+
 + (void) setBool:(BOOL)value forName:(NSString*)name
 {
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:value] forKey:name];

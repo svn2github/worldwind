@@ -260,7 +260,7 @@
 - (WWTile*) createTile:(WWSector*)sector level:(WWLevel*)level row:(int)row column:(int)column
 {
     NSString* imagePath = [NSString stringWithFormat:@"%@/%d/%d/%d_%d.%@",
-                                                     _cachePath, [level levelNumber], row, row, column, @"raw"];
+                                                     _cachePath, [level levelNumber], row, row, column, @"bil"];
 
     return [[WWElevationTile alloc] initWithSector:sector level:level row:row column:column imagePath:imagePath
                                              cache:imageCache];

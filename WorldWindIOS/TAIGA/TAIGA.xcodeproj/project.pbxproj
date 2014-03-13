@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B0D46CD18D0E919004F8819 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B0D46CC18D0E919004F8819 /* libz.dylib */; };
 		0BCBC60B17C68E6D00709B37 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60A17C68E6D00709B37 /* UIKit.framework */; };
 		0BCBC60D17C68E6D00709B37 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60C17C68E6D00709B37 /* Foundation.framework */; };
 		0BCBC60F17C68E6D00709B37 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60E17C68E6D00709B37 /* CoreGraphics.framework */; };
@@ -211,6 +212,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0B0D46CC18D0E919004F8819 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		0BCBC60717C68E6D00709B37 /* TAIGA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAIGA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BCBC60A17C68E6D00709B37 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0BCBC60C17C68E6D00709B37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -479,6 +481,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B0D46CD18D0E919004F8819 /* libz.dylib in Frameworks */,
 				0BCBC77C17D559B000709B37 /* libWorldWind.a in Frameworks */,
 				0BCBC77217C68F1A00709B37 /* OpenGLES.framework in Frameworks */,
 				0BCBC77017C68F1400709B37 /* QuartzCore.framework in Frameworks */,
@@ -521,6 +524,7 @@
 		0BCBC60917C68E6D00709B37 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0B0D46CC18D0E919004F8819 /* libz.dylib */,
 				0BCBC60A17C68E6D00709B37 /* UIKit.framework */,
 				0BCBC60C17C68E6D00709B37 /* Foundation.framework */,
 				0BCBC60E17C68E6D00709B37 /* CoreGraphics.framework */,
@@ -1142,6 +1146,7 @@
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
@@ -1160,6 +1165,7 @@
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;

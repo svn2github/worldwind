@@ -67,7 +67,7 @@
     NSString* serviceAddress = @"http://worldwind25.arc.nasa.gov/wms";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"BMNGLandsatCombined"];
+    NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"BMNGLandsat256"];
 
     self = [super initWithSector:[[WWSector alloc] initWithFullSphere]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]

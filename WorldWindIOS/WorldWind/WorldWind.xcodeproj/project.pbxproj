@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B0D46BA18D0E79D004F8819 /* GMAppleDouble+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469218D0E79D004F8819 /* GMAppleDouble+ZKAdditions.m */; };
+		0B0D46BB18D0E79D004F8819 /* GMAppleDouble.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469618D0E79D004F8819 /* GMAppleDouble.m */; };
+		0B0D46BC18D0E79D004F8819 /* NSData+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469818D0E79D004F8819 /* NSData+ZKAdditions.m */; };
+		0B0D46BD18D0E79D004F8819 /* NSDate+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469A18D0E79D004F8819 /* NSDate+ZKAdditions.m */; };
+		0B0D46BE18D0E79D004F8819 /* NSDictionary+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469C18D0E79D004F8819 /* NSDictionary+ZKAdditions.m */; };
+		0B0D46BF18D0E79D004F8819 /* NSFileHandle+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D469E18D0E79D004F8819 /* NSFileHandle+ZKAdditions.m */; };
+		0B0D46C018D0E79D004F8819 /* NSFileManager+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46A018D0E79D004F8819 /* NSFileManager+ZKAdditions.m */; };
+		0B0D46C118D0E79D004F8819 /* NSString+ZKAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46A218D0E79D004F8819 /* NSString+ZKAdditions.m */; };
+		0B0D46C218D0E79D004F8819 /* ZKArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46A718D0E79D004F8819 /* ZKArchive.m */; };
+		0B0D46C318D0E79D004F8819 /* ZKCDHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46A918D0E79D004F8819 /* ZKCDHeader.m */; };
+		0B0D46C418D0E79D004F8819 /* ZKCDTrailer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46AB18D0E79D004F8819 /* ZKCDTrailer.m */; };
+		0B0D46C518D0E79D004F8819 /* ZKCDTrailer64.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46AD18D0E79D004F8819 /* ZKCDTrailer64.m */; };
+		0B0D46C618D0E79D004F8819 /* ZKCDTrailer64Locator.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46AF18D0E79D004F8819 /* ZKCDTrailer64Locator.m */; };
+		0B0D46C718D0E79D004F8819 /* ZKDataArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46B118D0E79D004F8819 /* ZKDataArchive.m */; };
+		0B0D46C818D0E79D004F8819 /* ZKDefs.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46B318D0E79D004F8819 /* ZKDefs.m */; };
+		0B0D46C918D0E79D004F8819 /* ZKFileArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46B518D0E79D004F8819 /* ZKFileArchive.m */; };
+		0B0D46CA18D0E79D004F8819 /* ZKLFHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46B718D0E79D004F8819 /* ZKLFHeader.m */; };
+		0B0D46CB18D0E79D004F8819 /* ZKLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B0D46B918D0E79D004F8819 /* ZKLog.m */; };
 		0B62F5EF16643C5B002FD6EA /* WWSector.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B62F5EE16643C5B002FD6EA /* WWSector.m */; };
 		0B62F5F016643C5B002FD6EA /* WWSector.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B62F5EE16643C5B002FD6EA /* WWSector.m */; };
 		0B62F5F416644058002FD6EA /* WWVec4.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B62F5F316644058002FD6EA /* WWVec4.m */; };
@@ -193,7 +211,6 @@
 		1BF9AEB671E2CF851372F89C /* WWLevelSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A4198C46AC6A44ACA331 /* WWLevelSet.m */; };
 		1BF9AEE600811CB67CE8757C /* WWPVRTCImage.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AA4A6D5283286D40C1EB /* WWPVRTCImage.h */; };
 		1BF9AEF823731D8546D193BE /* WWColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A13DA18A92DA6A0A48F6 /* WWColor.m */; };
-		1BF9AF04B1BD4965CD0FE56F /* PBXBuildFile */ = {isa = PBXBuildFile; fileRef = 1BF9A3BA00ED962C2D55658A /* WWRetrieverToFile.m */; };
 		1BF9AF232D00DB7439E3DA3F /* WWWMSDimensionedLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AEE0C1545E4C7849427C /* WWWMSDimensionedLayer.m */; };
 		1BF9AF4F5A1BD49D28D34BC1 /* WWOrderedRenderable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9A07222A3B5F6EA8DE8C2 /* WWOrderedRenderable.h */; };
 		1BF9AF76E65DEB8ACAECB60A /* WWRenderable.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1BF9AA82A12E77637CF92E72 /* WWRenderable.h */; };
@@ -362,6 +379,46 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0B0D469118D0E79D004F8819 /* GMAppleDouble+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GMAppleDouble+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D469218D0E79D004F8819 /* GMAppleDouble+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMAppleDouble+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D469418D0E79D004F8819 /* COPYING.TXT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING.TXT; sourceTree = "<group>"; };
+		0B0D469518D0E79D004F8819 /* GMAppleDouble.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMAppleDouble.h; sourceTree = "<group>"; };
+		0B0D469618D0E79D004F8819 /* GMAppleDouble.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GMAppleDouble.m; sourceTree = "<group>"; };
+		0B0D469718D0E79D004F8819 /* NSData+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D469818D0E79D004F8819 /* NSData+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D469918D0E79D004F8819 /* NSDate+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D469A18D0E79D004F8819 /* NSDate+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D469B18D0E79D004F8819 /* NSDictionary+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D469C18D0E79D004F8819 /* NSDictionary+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D469D18D0E79D004F8819 /* NSFileHandle+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileHandle+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D469E18D0E79D004F8819 /* NSFileHandle+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileHandle+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D469F18D0E79D004F8819 /* NSFileManager+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D46A018D0E79D004F8819 /* NSFileManager+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D46A118D0E79D004F8819 /* NSString+ZKAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+ZKAdditions.h"; sourceTree = "<group>"; };
+		0B0D46A218D0E79D004F8819 /* NSString+ZKAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+ZKAdditions.m"; sourceTree = "<group>"; };
+		0B0D46A318D0E79D004F8819 /* ZipKit-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ZipKit-Info.plist"; sourceTree = "<group>"; };
+		0B0D46A418D0E79D004F8819 /* ZipKit-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZipKit-Prefix.pch"; sourceTree = "<group>"; };
+		0B0D46A518D0E79D004F8819 /* ZipKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipKit.h; sourceTree = "<group>"; };
+		0B0D46A618D0E79D004F8819 /* ZKArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKArchive.h; sourceTree = "<group>"; };
+		0B0D46A718D0E79D004F8819 /* ZKArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKArchive.m; sourceTree = "<group>"; };
+		0B0D46A818D0E79D004F8819 /* ZKCDHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKCDHeader.h; sourceTree = "<group>"; };
+		0B0D46A918D0E79D004F8819 /* ZKCDHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKCDHeader.m; sourceTree = "<group>"; };
+		0B0D46AA18D0E79D004F8819 /* ZKCDTrailer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKCDTrailer.h; sourceTree = "<group>"; };
+		0B0D46AB18D0E79D004F8819 /* ZKCDTrailer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKCDTrailer.m; sourceTree = "<group>"; };
+		0B0D46AC18D0E79D004F8819 /* ZKCDTrailer64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKCDTrailer64.h; sourceTree = "<group>"; };
+		0B0D46AD18D0E79D004F8819 /* ZKCDTrailer64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKCDTrailer64.m; sourceTree = "<group>"; };
+		0B0D46AE18D0E79D004F8819 /* ZKCDTrailer64Locator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKCDTrailer64Locator.h; sourceTree = "<group>"; };
+		0B0D46AF18D0E79D004F8819 /* ZKCDTrailer64Locator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKCDTrailer64Locator.m; sourceTree = "<group>"; };
+		0B0D46B018D0E79D004F8819 /* ZKDataArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKDataArchive.h; sourceTree = "<group>"; };
+		0B0D46B118D0E79D004F8819 /* ZKDataArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKDataArchive.m; sourceTree = "<group>"; };
+		0B0D46B218D0E79D004F8819 /* ZKDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKDefs.h; sourceTree = "<group>"; };
+		0B0D46B318D0E79D004F8819 /* ZKDefs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKDefs.m; sourceTree = "<group>"; };
+		0B0D46B418D0E79D004F8819 /* ZKFileArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKFileArchive.h; sourceTree = "<group>"; };
+		0B0D46B518D0E79D004F8819 /* ZKFileArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKFileArchive.m; sourceTree = "<group>"; };
+		0B0D46B618D0E79D004F8819 /* ZKLFHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKLFHeader.h; sourceTree = "<group>"; };
+		0B0D46B718D0E79D004F8819 /* ZKLFHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKLFHeader.m; sourceTree = "<group>"; };
+		0B0D46B818D0E79D004F8819 /* ZKLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKLog.h; sourceTree = "<group>"; };
+		0B0D46B918D0E79D004F8819 /* ZKLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKLog.m; sourceTree = "<group>"; };
 		0B62F5ED16643C5B002FD6EA /* WWSector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWSector.h; path = Geometry/WWSector.h; sourceTree = "<group>"; };
 		0B62F5EE16643C5B002FD6EA /* WWSector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WWSector.m; path = Geometry/WWSector.m; sourceTree = "<group>"; };
 		0B62F5F216644058002FD6EA /* WWVec4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WWVec4.h; path = Geometry/WWVec4.h; sourceTree = "<group>"; };
@@ -616,6 +673,61 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0B0D469018D0E79D004F8819 /* ZipKit */ = {
+			isa = PBXGroup;
+			children = (
+				0B0D469118D0E79D004F8819 /* GMAppleDouble+ZKAdditions.h */,
+				0B0D469218D0E79D004F8819 /* GMAppleDouble+ZKAdditions.m */,
+				0B0D469318D0E79D004F8819 /* MacFUSE */,
+				0B0D469718D0E79D004F8819 /* NSData+ZKAdditions.h */,
+				0B0D469818D0E79D004F8819 /* NSData+ZKAdditions.m */,
+				0B0D469918D0E79D004F8819 /* NSDate+ZKAdditions.h */,
+				0B0D469A18D0E79D004F8819 /* NSDate+ZKAdditions.m */,
+				0B0D469B18D0E79D004F8819 /* NSDictionary+ZKAdditions.h */,
+				0B0D469C18D0E79D004F8819 /* NSDictionary+ZKAdditions.m */,
+				0B0D469D18D0E79D004F8819 /* NSFileHandle+ZKAdditions.h */,
+				0B0D469E18D0E79D004F8819 /* NSFileHandle+ZKAdditions.m */,
+				0B0D469F18D0E79D004F8819 /* NSFileManager+ZKAdditions.h */,
+				0B0D46A018D0E79D004F8819 /* NSFileManager+ZKAdditions.m */,
+				0B0D46A118D0E79D004F8819 /* NSString+ZKAdditions.h */,
+				0B0D46A218D0E79D004F8819 /* NSString+ZKAdditions.m */,
+				0B0D46A318D0E79D004F8819 /* ZipKit-Info.plist */,
+				0B0D46A418D0E79D004F8819 /* ZipKit-Prefix.pch */,
+				0B0D46A518D0E79D004F8819 /* ZipKit.h */,
+				0B0D46A618D0E79D004F8819 /* ZKArchive.h */,
+				0B0D46A718D0E79D004F8819 /* ZKArchive.m */,
+				0B0D46A818D0E79D004F8819 /* ZKCDHeader.h */,
+				0B0D46A918D0E79D004F8819 /* ZKCDHeader.m */,
+				0B0D46AA18D0E79D004F8819 /* ZKCDTrailer.h */,
+				0B0D46AB18D0E79D004F8819 /* ZKCDTrailer.m */,
+				0B0D46AC18D0E79D004F8819 /* ZKCDTrailer64.h */,
+				0B0D46AD18D0E79D004F8819 /* ZKCDTrailer64.m */,
+				0B0D46AE18D0E79D004F8819 /* ZKCDTrailer64Locator.h */,
+				0B0D46AF18D0E79D004F8819 /* ZKCDTrailer64Locator.m */,
+				0B0D46B018D0E79D004F8819 /* ZKDataArchive.h */,
+				0B0D46B118D0E79D004F8819 /* ZKDataArchive.m */,
+				0B0D46B218D0E79D004F8819 /* ZKDefs.h */,
+				0B0D46B318D0E79D004F8819 /* ZKDefs.m */,
+				0B0D46B418D0E79D004F8819 /* ZKFileArchive.h */,
+				0B0D46B518D0E79D004F8819 /* ZKFileArchive.m */,
+				0B0D46B618D0E79D004F8819 /* ZKLFHeader.h */,
+				0B0D46B718D0E79D004F8819 /* ZKLFHeader.m */,
+				0B0D46B818D0E79D004F8819 /* ZKLog.h */,
+				0B0D46B918D0E79D004F8819 /* ZKLog.m */,
+			);
+			path = ZipKit;
+			sourceTree = "<group>";
+		};
+		0B0D469318D0E79D004F8819 /* MacFUSE */ = {
+			isa = PBXGroup;
+			children = (
+				0B0D469418D0E79D004F8819 /* COPYING.TXT */,
+				0B0D469518D0E79D004F8819 /* GMAppleDouble.h */,
+				0B0D469618D0E79D004F8819 /* GMAppleDouble.m */,
+			);
+			path = MacFUSE;
+			sourceTree = "<group>";
+		};
 		0B62F5EB16643B99002FD6EA /* Terrain */ = {
 			isa = PBXGroup;
 			children = (
@@ -789,6 +901,7 @@
 		0B9813BE165FF5FC00193E50 /* WorldWind */ = {
 			isa = PBXGroup;
 			children = (
+				0B0D469018D0E79D004F8819 /* ZipKit */,
 				0B9814461660392D00193E50 /* Geometry */,
 				0B62F61816659A0E002FD6EA /* Layer */,
 				0B9813EC165FF6E500193E50 /* Render */,
@@ -1092,6 +1205,7 @@
 				0B9813C4165FF5FC00193E50 /* WorldWind.m in Sources */,
 				0B9813F3165FF77700193E50 /* WWSceneController.m in Sources */,
 				0B9813F7165FF84F00193E50 /* WorldWindView.m in Sources */,
+				0B0D46C718D0E79D004F8819 /* ZKDataArchive.m in Sources */,
 				0B981430165FFDF200193E50 /* WorldWindConstants.m in Sources */,
 				0B98144916607E2300193E50 /* WWLocation.m in Sources */,
 				0B62F5EF16643C5B002FD6EA /* WWSector.m in Sources */,
@@ -1101,14 +1215,18 @@
 				0B62F606166569A9002FD6EA /* WWTile.m in Sources */,
 				0B62F60A16656B35002FD6EA /* WWLevel.m in Sources */,
 				0B62F60E16656D15002FD6EA /* WWTerrainTile.m in Sources */,
+				0B0D46C418D0E79D004F8819 /* ZKCDTrailer.m in Sources */,
+				0B0D46C318D0E79D004F8819 /* ZKCDHeader.m in Sources */,
 				0B62F61216656D89002FD6EA /* WWTessellator.m in Sources */,
 				0B62F61616658E14002FD6EA /* WWTerrainTileList.m in Sources */,
 				0B62F61F16659A8B002FD6EA /* WWLayer.m in Sources */,
 				0B62F62316659AED002FD6EA /* WWLayerList.m in Sources */,
 				1BF9A78C8CECAA7101703312 /* WWShowTessellationLayer.m in Sources */,
 				1BF9AE7F21E1AA26D5F744D2 /* WWMatrix.m in Sources */,
+				0B0D46C018D0E79D004F8819 /* NSFileManager+ZKAdditions.m in Sources */,
 				1BF9AB1CC6534F30CB9D9DBC /* WWTerrainSharedGeometry.m in Sources */,
 				0BFCC7C016710C3200B74C8A /* WWPosition.m in Sources */,
+				0B0D46C218D0E79D004F8819 /* ZKArchive.m in Sources */,
 				1BF9A61A24CEC8714AE1123C /* WWGpuProgram.m in Sources */,
 				1BF9A84382A6CC240117EF4E /* WWGpuShader.m in Sources */,
 				1BF9AD40B55DD54FCA764D63 /* WWSurfaceTileRenderer.m in Sources */,
@@ -1116,7 +1234,10 @@
 				1BF9A297DD0276545C6AEE99 /* WWBMNGOneImageLayer.m in Sources */,
 				CC8CF45C6898988F6C2D425B /* WWLookAtNavigator.m in Sources */,
 				CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */,
+				0B0D46C118D0E79D004F8819 /* NSString+ZKAdditions.m in Sources */,
+				0B0D46C918D0E79D004F8819 /* ZKFileArchive.m in Sources */,
 				1BF9AAEBDAF047FBB70FBDDF /* WWTexture.m in Sources */,
+				0B0D46BE18D0E79D004F8819 /* NSDictionary+ZKAdditions.m in Sources */,
 				1BF9A7A5B13C43FB331830CD /* WWMemoryCache.m in Sources */,
 				1BF9AE61B1BBD5E1D7C9560B /* WWGpuResourceCache.m in Sources */,
 				CC8CFA91DBABC83303127DDA /* WWMath.m in Sources */,
@@ -1129,23 +1250,32 @@
 				1BF9A430DCAEE9A5C8699F89 /* WWRetriever.m in Sources */,
 				1BF9AFB529211A1E468BAC8F /* WWBoundingBox.m in Sources */,
 				1BF9A93F36F124A6C134E7DF /* WWFrustum.m in Sources */,
+				0B0D46C618D0E79D004F8819 /* ZKCDTrailer64Locator.m in Sources */,
 				1BF9A31E19DCD76D879602F9 /* WWPlane.m in Sources */,
 				CC8CF8F6BC8A651A037BE74B /* WWArcGisUrlBuilder.m in Sources */,
 				CC8CF98FBDBEEE1892023D1E /* WWDAFIFLayer.m in Sources */,
+				0B0D46BB18D0E79D004F8819 /* GMAppleDouble.m in Sources */,
 				1BF9AD9D8838B154A5DDDE97 /* WWBoundingSphere.m in Sources */,
 				1BF9A71BA633CE637762825E /* WWI3LandsatLayer.m in Sources */,
 				1BF9AB1112F9EB52C1B9BA5C /* WWTileList.m in Sources */,
+				0B0D46C518D0E79D004F8819 /* ZKCDTrailer64.m in Sources */,
 				1BF9A5AE2EAB0F7E3586B2DF /* WWPVRTCImage.m in Sources */,
 				1BF9A7960E0A806C3EFFCFF3 /* WWBingLayer.m in Sources */,
+				0B0D46BD18D0E79D004F8819 /* NSDate+ZKAdditions.m in Sources */,
 				1BF9AAE11D4674CDACEC5608 /* WWColor.m in Sources */,
+				0B0D46CA18D0E79D004F8819 /* ZKLFHeader.m in Sources */,
 				1BF9A61573E8CDF51C54C0B8 /* WWShapeAttributes.m in Sources */,
+				0B0D46BF18D0E79D004F8819 /* NSFileHandle+ZKAdditions.m in Sources */,
 				1BF9A898B09199016C49AA5E /* WWAbstractShape.m in Sources */,
+				0B0D46BA18D0E79D004F8819 /* GMAppleDouble+ZKAdditions.m in Sources */,
 				1BF9A7CC622948D87EE79DAA /* WWBasicTerrain.m in Sources */,
+				0B0D46C818D0E79D004F8819 /* ZKDefs.m in Sources */,
 				1BF9AAA6E1A56F4A5E3093E7 /* WWPath.m in Sources */,
 				CC8CFE7C31374389E16F50E6 /* WWZeroElevationModel.m in Sources */,
 				1BF9A1836738044379BE671C /* WWRenderableLayer.m in Sources */,
 				CC8CFEE38FE764151EC113DC /* WWBasicElevationModel.m in Sources */,
 				CC8CF5ABE16E4806E44CEB63 /* WWEarthElevationModel.m in Sources */,
+				0B0D46CB18D0E79D004F8819 /* ZKLog.m in Sources */,
 				CC8CFDF82CBFE9B498CA014D /* WWElevationImage.m in Sources */,
 				CC8CFE032879D0B770C592ED /* WWElevationTile.m in Sources */,
 				1BF9A6C6E476A9CAE1F2F941 /* WWOpenStreetMapLayer.m in Sources */,
@@ -1175,6 +1305,7 @@
 				CC8CFE7263077370DB82EB44 /* WWScreenImage.m in Sources */,
 				1BF9AE43FF9797EC146A2835 /* WWBMNGLandsatCombinedLayer.m in Sources */,
 				CC8CF8BEFC3CA03A86CD44F9 /* WWBasicProgram.m in Sources */,
+				0B0D46BC18D0E79D004F8819 /* NSData+ZKAdditions.m in Sources */,
 				CC8CFE52F78D04F6B50B857E /* WWBasicTextureProgram.m in Sources */,
 				CC8CF4C868F900B101F1A759 /* WWSurfaceTileRendererProgram.m in Sources */,
 				CC8CF2CE5D811272FB790AC0 /* WWFrameStatistics.m in Sources */,
