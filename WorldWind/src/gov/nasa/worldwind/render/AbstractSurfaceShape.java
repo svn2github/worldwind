@@ -76,7 +76,8 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     protected int maxEdgeIntervals = DEFAULT_MAX_EDGE_INTERVALS;
     // Rendering properties.
     protected List<List<LatLon>> activeGeometry = new ArrayList<List<LatLon>>(); // re-determined each frame
-    protected WWTexture texture; // An optional texture.    
+    protected List<List<LatLon>> activeOutlineGeometry = new ArrayList<List<LatLon>>(); // re-determined each frame
+    protected WWTexture texture; // An optional texture.
     protected Map<Object, CacheEntry> sectorCache = new HashMap<Object, CacheEntry>();
     protected Map<Object, CacheEntry> geometryCache = new HashMap<Object, CacheEntry>();
     protected OGLStackHandler stackHandler = new OGLStackHandler();
@@ -708,6 +709,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     protected void determineActiveGeometry(DrawContext dc, SurfaceTileDrawContext sdc)
     {
         this.activeGeometry.clear();
+        this.activeOutlineGeometry.clear();
 
         List<List<LatLon>> geom = this.getCachedGeometry(dc, sdc);
         if (geom == null)
@@ -720,17 +722,23 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             String pole = this.containsPole(drawLocations);
             if (pole != null)
             {
+                // Wrap the shape interior around the pole and along the anti-meridian. See WWJ-284.
                 List<LatLon> poleLocations = this.cutAlongDateLine(drawLocations, pole, dc.getGlobe());
                 this.activeGeometry.add(poleLocations);
+                // The outline need only compensate for dateline crossing. See WWJ-452.
+                List<List<LatLon>> datelineLocations = this.repeatAroundDateline(drawLocations);
+                this.activeOutlineGeometry.addAll(datelineLocations);
             }
             else if (LatLon.locationsCrossDateLine(drawLocations))
             {
                 List<List<LatLon>> datelineLocations = this.repeatAroundDateline(drawLocations);
                 this.activeGeometry.addAll(datelineLocations);
+                this.activeOutlineGeometry.addAll(datelineLocations);
             }
             else
             {
                 this.activeGeometry.add(drawLocations);
+                this.activeOutlineGeometry.add(drawLocations);
             }
         }
     }
@@ -982,7 +990,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-        if (this.getActiveGeometry().isEmpty())
+        if (this.activeOutlineGeometry.isEmpty())
             return;
 
         Position refPos = this.getReferencePosition();
@@ -991,7 +999,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
         this.applyOutlineState(dc, this.getActiveAttributes());
 
-        for (List<LatLon> drawLocations : this.getActiveGeometry())
+        for (List<LatLon> drawLocations : this.activeOutlineGeometry)
         {
             if (vertexBuffer == null || vertexBuffer.capacity() < 2 * drawLocations.size())
                 vertexBuffer = Buffers.newDirectFloatBuffer(2 * drawLocations.size());
