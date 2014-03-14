@@ -8,9 +8,11 @@
 #import "SettingsScreenController.h"
 #import "AppConstants.h"
 #import "GPSController.h"
+#import "Settings.h"
 
 #define ABOUT_SECTION (0)
 #define GPS_CONTROLLER_SECTION (1)
+#define DATA_INSTALLATION_SECTION (2)
 
 #define GPS_SOURCE_NONE (0)
 #define GPS_SOURCE_DEVICE (1)
@@ -46,7 +48,22 @@
     tableView.dataSource = self;
     [tableView reloadData];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
+                                                 name:TAIGA_DATA_FILE_INSTALLATION_COMPLETE object:nil];
+
     [self.view addSubview:tableView];
+}
+
+- (void) updateTable:(NSNotification*)notification
+{
+    if (![NSThread isMainThread])
+    {
+        [self performSelectorOnMainThread:@selector(updateTable:) withObject:notification waitUntilDone:NO];
+    }
+    else
+    {
+        [(UITableView*) [self.view subviews][0] reloadData];
+    }
 }
 
 - (void) viewDidLoad
@@ -58,7 +75,7 @@
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 2;
+    return 3;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
@@ -69,6 +86,9 @@
     else if (section == GPS_CONTROLLER_SECTION)
         return 1; // TODO: Change this to 2 when the Location Services GPS source is implemented.
 
+    else if (section == DATA_INSTALLATION_SECTION)
+        return 1;
+
     return 0;
 }
 
@@ -78,6 +98,8 @@
         return @"About";
     else if (section == GPS_CONTROLLER_SECTION)
         return @"GPS Source";
+    else if (section == DATA_INSTALLATION_SECTION)
+        return @"Data Installation";
 
     return nil;
 }
@@ -88,6 +110,8 @@
         return [self cellForAboutSection:tableView inddexPath:indexPath];
     else if ([indexPath section] == GPS_CONTROLLER_SECTION)
         return [self cellForGPSControllerSection:tableView inddexPath:indexPath];
+    else if ([indexPath section] == DATA_INSTALLATION_SECTION)
+        return [self cellForDataInstallationSection:tableView inddexPath:indexPath];
 
     return nil;
 }
@@ -131,6 +155,24 @@
         [[cell textLabel] setText:@"Location Services"];
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
     }
+
+    return cell;
+}
+
+- (UITableViewCell*) cellForDataInstallationSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
+{
+    static NSString* cellIdentifier = @"DataInstallationCell";
+
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+    }
+
+    BOOL dataInstallationComplete = [Settings getBoolForName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE];
+    NSString* msg = dataInstallationComplete ? @"Data installation is complete" : @"Data installation is incomplete";
+    [[cell textLabel] setText:msg];
 
     return cell;
 }

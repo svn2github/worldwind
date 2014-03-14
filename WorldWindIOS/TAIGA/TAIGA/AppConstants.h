@@ -13,6 +13,7 @@
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_DATA_FILE_ID (@"gov.nasa.worldwind.taiga.data.file.id")
 #define TAIGA_DATA_FILE_NUM_FILES_EXTRACTED (@"gov.nasa.worldwind.taiga.data.file.num.files.extracted")
+#define TAIGA_DATA_FILE_INSTALLATION_COMPLETE (@"gov.nasa.worldwind.taiga.data.file.installation.complete")
 #define TAIGA_GPS_QUALITY (@"gov.nasa.worldwind.taiga.gpsfixquality")
 #define TAIGA_EARTH_RADIUS (6378137.0)
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")

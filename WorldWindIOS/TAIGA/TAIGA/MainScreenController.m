@@ -241,6 +241,10 @@
         // difficult to repeat the transfer/extract process in case errors occur during extraction.
         [Settings setInt:0 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
 
+        // Mark that data installation is complete so that the Settings screen can reflect that.
+        [Settings setBool:YES forName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE object:nil];
+
         // Remove the archive now that its contents have been fully extracted.
         [[NSFileManager defaultManager] removeItemAtPath:zipPath error:nil];
 
@@ -249,6 +253,18 @@
         NSTimeInterval delta = [end timeIntervalSinceDate:start];
         NSLog(@"Extracted %d data files in %f minutes (%f seconds per file)",
                 numEntries, delta / 60.0, delta / numEntries);
+
+        [self performSelectorOnMainThread:@selector(performAlert) withObject:self waitUntilDone:NO];
     });
+}
+
+- (void) performAlert
+{
+    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Data Installation Is Complete"
+                                                        message:nil
+                                                       delegate:self
+                                              cancelButtonTitle:@"Dismiss"
+                                              otherButtonTitles:nil];
+    [alertView show];
 }
 @end
