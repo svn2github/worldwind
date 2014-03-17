@@ -49,7 +49,7 @@
     [tableView reloadData];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
-                                                 name:TAIGA_DATA_FILE_INSTALLATION_COMPLETE object:nil];
+                                                 name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
 
     [self.view addSubview:tableView];
 }
@@ -170,8 +170,16 @@
         [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     }
 
-    BOOL dataInstallationComplete = [Settings getBoolForName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE];
-    NSString* msg = dataInstallationComplete ? @"Data installation is complete" : @"Data installation is incomplete";
+    float dataInstallationProgress = [Settings getFloatForName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+
+    NSString* msg;
+    if (dataInstallationProgress == 0)
+        msg = @"Data installation is incomplete";
+    else if (dataInstallationProgress == 100)
+        msg = @"Data installation is complete";
+    else
+        msg = [[NSString alloc] initWithFormat:@"Data installation is %d%% complete", (int) dataInstallationProgress];
+
     [[cell textLabel] setText:msg];
 
     return cell;

@@ -232,6 +232,8 @@
             if (i % 100 == 0)
             {
                 [Settings setInt:i + 1 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
+                [Settings setFloat:100.0 * ((float) (i + 1) / numEntries) forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+                [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
             }
         }
 
@@ -242,8 +244,8 @@
         [Settings setInt:0 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
 
         // Mark that data installation is complete so that the Settings screen can reflect that.
-        [Settings setBool:YES forName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE];
-        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_COMPLETE object:nil];
+        [Settings setFloat:100.0 forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
 
         // Remove the archive now that its contents have been fully extracted.
         [[NSFileManager defaultManager] removeItemAtPath:zipPath error:nil];
