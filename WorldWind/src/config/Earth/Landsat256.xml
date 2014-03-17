@@ -22,7 +22,7 @@
         <ImageFormat>image/jpeg</ImageFormat>
     </AvailableImageFormats>
     <FormatSuffix>.jpg</FormatSuffix>
-    <NumLevels count="9" numEmpty="0"/>
+    <NumLevels count="10" numEmpty="0"/>
     <TileOrigin>
         <LatLon units="degrees" latitude="-90" longitude="-180"/>
     </TileOrigin>
