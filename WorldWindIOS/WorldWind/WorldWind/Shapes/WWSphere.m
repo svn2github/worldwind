@@ -224,10 +224,12 @@ static int numIndices; // the number of indices defining the sphere
         short* index = indices;
         for (int j = 0; j < nLatIntervals; j++)
         {
-            if (j != 0) // add redundant vertices
+            if (j != 0) // add redundant vertices to create a degenerate triangle linking two triangle strips
             {
-                *index++ = index[-1];
-                *index++ = (short) (j * (nLonIntervals + 1));
+                short prevIndex = index[-1]; // last index in previous triangle strip
+                short nextIndex = (short) (j * (nLonIntervals + 1)); // first index in next triangle strip
+                *index++ = prevIndex;
+                *index++ = nextIndex;
             }
 
             for (int i = 0; i <= nLonIntervals; i++)
