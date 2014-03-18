@@ -16,5 +16,5 @@ function load()
 
 function handleInstallButtonClick(event)
 {
-    location = "itms-services://?action=download-manifest&url=http://worldwindserver.net/taiga/install/TAIGA.plist";
+    location = "itms-services://?action=download-manifest&url=https://worldwindserver.net/taiga/install/TAIGA.plist";
 }
