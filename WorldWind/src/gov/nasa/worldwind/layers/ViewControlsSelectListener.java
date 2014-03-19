@@ -326,6 +326,10 @@ public class ViewControlsSelectListener implements SelectListener
             || event.getEventAction().equals(SelectEvent.DRAG_END))
         {
             // Release pressed control
+
+            if (pressedControl != null)
+                event.consume();
+
             this.pressedControl = null;
             resetOrbitView(view);
             view.firePropertyChange(AVKey.VIEW, null, view);
