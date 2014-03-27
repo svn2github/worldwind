@@ -6,18 +6,22 @@
  */
 
 #import "PositionReadoutController.h"
-#import "WWPosition.h"
 #import "AppConstants.h"
+#import "WorldWind/Geometry/WWPosition.h"
 
 @implementation PositionReadoutController
 
-- (PositionReadoutController*) init
+- (id) init
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
+    [self setPreferredContentSize:CGSizeMake(200, 128)];
     [[self navigationItem] setTitle:@"Position"];
-    [self setPreferredContentSize:CGSizeMake(200, 90)];
+    [[self tableView] setBounces:NO];
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+
+    tableCells = [[NSMutableArray alloc] init];
+    tableRowHeights = [[NSMutableArray alloc] init];
 
     return self;
 }
@@ -26,55 +30,68 @@
 {
     _position = position;
 
-    [[self tableView] reloadData];
-}
+    [tableCells removeAllObjects];
+    [tableRowHeights removeAllObjects];
 
-- (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
-{
-    return 1;
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:nil];
+    [[cell textLabel] setText:@"Latitude"];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentLeft];
+    [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%.4f\u00B0", [_position latitude]]];
+    [cell setUserInteractionEnabled:NO];
+    [tableCells addObject:cell];
+    [tableRowHeights addObject:@28];
+
+    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:nil];
+    [[cell textLabel] setText:@"Longitude"];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentLeft];
+    [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%.4f\u00B0", [_position longitude]]];
+    [cell setUserInteractionEnabled:NO];
+    [tableCells addObject:cell];
+    [tableRowHeights addObject:@28];
+
+    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:nil];
+    [[cell textLabel] setText:@"Altitude"];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentLeft];
+    [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%d feet",
+                                                                        (int) ([_position altitude] * TAIGA_METERS_TO_FEET)]];
+    [cell setUserInteractionEnabled:NO];
+    [tableCells addObject:cell];
+    [tableRowHeights addObject:@28];
+
+    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    [[cell textLabel] setText:@"Add to Route"];
+    [[cell textLabel] setTextColor:[cell tintColor]];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
+    [tableCells addObject:cell];
+    [tableRowHeights addObject:@44];
+
+    [[self tableView] reloadData];
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 3;
-}
-
-- (CGFloat) tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
-{
-    return 28;
+    return [tableCells count];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    static NSString* cellIdentifier = @"LatLonReadoutCell";
+    return [tableCells objectAtIndex:(NSUInteger) [indexPath row]];
+}
 
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    if (cell == nil)
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:cellIdentifier];
-    }
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [[tableRowHeights objectAtIndex:(NSUInteger) [indexPath row]] floatValue];
+}
 
-    if ([indexPath row] == 0)
-    {
-        [[cell textLabel] setText:@"Latitude"];
-        [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%.4f\u00B0", [_position latitude]]];
-    }
-    else if ([indexPath row] == 1)
-    {
-        [[cell textLabel] setText:@"Longitude"];
-        [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%.4f\u00B0", [_position longitude]]];
-    }
-    else if ([indexPath row] == 2)
-    {
-        [[cell textLabel] setText:@"Altitude"];
-        [[cell detailTextLabel] setText:[NSString localizedStringWithFormat:@"%d feet",
-                                                                            (int) ([_position altitude] * TAIGA_METERS_TO_FEET)]];
-    }
+- (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-    [[cell textLabel] setTextAlignment:NSTextAlignmentLeft];
-
-    return cell;
+    if ([indexPath row] == 3)
+    {
+        // TODO
+        //[_presentingPopoverController dismissPopoverAnimated:YES];
+    }
 }
 
 @end

@@ -177,12 +177,12 @@
 		CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */; };
 		CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */; };
 		CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF3E5AF50715A46F682B /* ColorPicker.m */; };
+		CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */; };
 		CC8CF1B24676CE4DE16A2B8F /* 193-location-arrow-outline.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF920AC4D6B8DCBFE7015 /* 193-location-arrow-outline.png */; };
 		CC8CF21EB186B45723B50126 /* Waypoint.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFE7BD858DAAEC112171 /* Waypoint.m */; };
 		CC8CF23D50213B530CEE3033 /* route-begin.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF5081A12222799BC17EF /* route-begin.png */; };
 		CC8CF2D2D535E0E29FADB160 /* AircraftLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCE70CDF2979DDFD1139 /* AircraftLayer.m */; };
 		CC8CF319F0644CCC3846A17F /* 193-location-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFFB53EF21A1718B2B021 /* 193-location-arrow.png */; };
-		CC8CF3A5A6C80BCBAB87765A /* WaypointPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF24A332C6FE272D572FC /* WaypointPopoverController.m */; };
 		CC8CF4084D0ADBD0D9255A53 /* rounded-rect@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */; };
 		CC8CF413521615D8E131FE18 /* SimulationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD24B08756B57C45C655 /* SimulationViewController.m */; };
 		CC8CF4742E28C3B51D0E334F /* 193-location-arrow-outline@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFF927F0E04A8C1FF5DA0 /* 193-location-arrow-outline@2x.png */; };
@@ -190,6 +190,7 @@
 		CC8CF6B7421F077AE2831D77 /* route-begin@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFCD52A777ACE793EEA4F /* route-begin@2x.png */; };
 		CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8F60C10525135F57A82 /* AircraftShape.m */; };
 		CC8CF7C07D34E964137D88B6 /* WaypointLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCA0D8092BD7B6B01688 /* WaypointLayer.m */; };
+		CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */; };
 		CC8CF832A1920118F96D9839 /* circle-small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF77711BB8EB271836CF7 /* circle-small.png */; };
 		CC8CF84ED0295E3A6171D3B2 /* LocationTrackingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF829F3CCABEED04F32C5 /* LocationTrackingViewController.m */; };
 		CC8CF89366564ECB26B9C433 /* UITableViewCell+TAIGAAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE9F8D03AD7CEE67B208 /* UITableViewCell+TAIGAAdditions.m */; };
@@ -427,10 +428,11 @@
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
-		CC8CF24A332C6FE272D572FC /* WaypointPopoverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointPopoverController.m; sourceTree = "<group>"; };
+		CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverController+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF2A1449A236B9E911B54 /* route-end@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end@2x.png"; sourceTree = "<group>"; };
 		CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
+		CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointReadoutController.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
 		CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
@@ -438,11 +440,12 @@
 		CC8CF6883C23299D48C6D79F /* WaypointLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointLayer.h; sourceTree = "<group>"; };
 		CC8CF698F1109BBE57E61250 /* FlightRouteListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteListController.h; sourceTree = "<group>"; };
 		CC8CF6C6DC046EDF8EF726B2 /* route-end.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end.png"; sourceTree = "<group>"; };
-		CC8CF76BE38DA1645215E9FB /* WaypointPopoverController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointPopoverController.h; sourceTree = "<group>"; };
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimulationViewController.h; sourceTree = "<group>"; };
 		CC8CF829F3CCABEED04F32C5 /* LocationTrackingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationTrackingViewController.m; sourceTree = "<group>"; };
+		CC8CF8605140773826A5BEF4 /* WaypointReadoutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointReadoutController.h; sourceTree = "<group>"; };
 		CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small@2x.png"; sourceTree = "<group>"; };
+		CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIPopoverController+TAIGAAdditions.m"; sourceTree = "<group>"; };
 		CC8CF8F2BE2B44F67B01F16F /* 433-x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x.png"; sourceTree = "<group>"; };
 		CC8CF8F60C10525135F57A82 /* AircraftShape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftShape.m; sourceTree = "<group>"; };
 		CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker@2x.png"; sourceTree = "<group>"; };
@@ -646,10 +649,12 @@
 				1BF9A3FC88AC081BCFD87650 /* NMEASentence.h */,
 				1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */,
 				1BF9ADEB0ACCD63030C1E160 /* GPSController.h */,
-				CC8CF24A332C6FE272D572FC /* WaypointPopoverController.m */,
-				CC8CF76BE38DA1645215E9FB /* WaypointPopoverController.h */,
 				CC8CFE9F8D03AD7CEE67B208 /* UITableViewCell+TAIGAAdditions.m */,
 				CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */,
+				CC8CF8605140773826A5BEF4 /* WaypointReadoutController.h */,
+				CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */,
+				CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */,
+				CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1048,8 +1053,9 @@
 				CC8CF84ED0295E3A6171D3B2 /* LocationTrackingViewController.m in Sources */,
 				1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */,
 				1BF9A086BA3A7476E5F29268 /* GPSController.m in Sources */,
-				CC8CF3A5A6C80BCBAB87765A /* WaypointPopoverController.m in Sources */,
 				CC8CF89366564ECB26B9C433 /* UITableViewCell+TAIGAAdditions.m in Sources */,
+				CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */,
+				CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

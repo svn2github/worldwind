@@ -1,22 +1,21 @@
 /*
  Copyright (C) 2013 United States Government as represented by the Administrator of the
  National Aeronautics and Space Administration. All Rights Reserved.
- 
+
  @version $Id$
  */
 
 #import <Foundation/Foundation.h>
 
-@class WWPosition;
+@class Waypoint;
 
-@interface PositionReadoutController : UITableViewController
+@interface WaypointReadoutController : UITableViewController
 {
 @protected
     NSMutableArray* tableCells;
-    NSMutableArray* tableRowHeights;
 }
 
-@property (nonatomic) WWPosition* position;
+@property (nonatomic) Waypoint* waypoint;
 
 @property (nonatomic) UIPopoverController* presentingPopoverController;
 
