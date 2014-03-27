@@ -8,7 +8,7 @@
 #import "WaypointFileControl.h"
 #import "WaypointFile.h"
 #import "Waypoint.h"
-#import "WaypointCell.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 
 @implementation WaypointFileControl
 
@@ -135,10 +135,10 @@
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     static NSString* cellIdentifier = @"cell";
-    WaypointCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil)
     {
-        cell = [[WaypointCell alloc] initWithReuseIdentifier:cellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
 
     Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];

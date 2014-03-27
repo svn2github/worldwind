@@ -9,16 +9,7 @@
 
 @class Waypoint;
 
-@interface WaypointCell : UITableViewCell
-{
-@protected
-    UIImageView* imageView;
-    UIView* displayNameView;
-    UILabel* displayNameLabel;
-    UILabel* displayNameLongLabel;
-}
-
-- (id) initWithReuseIdentifier:(NSString*)reuseIdentifier;
+@interface UITableViewCell (TAIGAAdditions)
 
 - (void) setToWaypoint:(Waypoint*)waypoint;
 

@@ -8,7 +8,6 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointCell.h"
 #import "WaypointFile.h"
 #import "WaypointFileControl.h"
 #import "AltitudePicker.h"
@@ -26,6 +25,7 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindView.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
@@ -274,10 +274,10 @@
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForWaypoint:(NSIndexPath*)indexPath
 {
     static NSString* waypointCellId = @"waypointCellId";
-    WaypointCell* cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
     if (cell == nil)
     {
-        cell = [[WaypointCell alloc] initWithReuseIdentifier:waypointCellId];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:waypointCellId];
     }
 
     Waypoint* waypoint = [_flightRoute waypointAtIndex:(NSUInteger) [indexPath row]];

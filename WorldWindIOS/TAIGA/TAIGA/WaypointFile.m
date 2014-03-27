@@ -167,10 +167,6 @@
     {
         [self parseDAFIFAirportTable:tableRows];
     }
-    else if ([[fieldNames firstObject] isEqual:@"WPT_IDENT"])
-    {
-        [self parseDAFIFWaypointTable:tableRows];
-    }
     else
     {
         WWLog(@"Unrecognized waypoint file %@", location);
@@ -181,35 +177,25 @@
 {
     for (NSDictionary* row in tableRows)
     {
-        NSString* key = [row objectForKey:@"ARPT_IDENT"];
-        double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
-        double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
-        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
+        NSString* id = [row objectForKey:@"ARPT_IDENT"];
+        NSNumber* latDegrees = [row objectForKey:@"WGS_DLAT"];
+        NSNumber* lonDegrees = [row objectForKey:@"WGS_DLONG"];
+        NSString* icao = [row objectForKey:@"ICAO"];
+        NSString* name = [row objectForKey:@"NAME"];
 
-        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location type:WaypointTypeAirport];
+        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[latDegrees doubleValue]
+                                                                 longitude:[lonDegrees doubleValue]];
+
+        NSMutableString* displayName = [[NSMutableString alloc] init];
+        [displayName appendString:icao];
+        [displayName appendString:@": "];
+        [displayName appendString:[name capitalizedString]];
+
+        Waypoint* waypoint = [[Waypoint alloc] initWithKey:id location:location type:WaypointTypeAirport];
         [waypoint setProperties:row];
-        [waypoint setDisplayName:[row objectForKey:@"ICAO"]];
-        [waypoint setDisplayNameLong:[row objectForKey:@"NAME"]];
+        [waypoint setDisplayName:displayName];
         [waypointArray addObject:waypoint];
-        [waypointKeyMap setValue:waypoint forKey:key];
-    }
-}
-
-- (void) parseDAFIFWaypointTable:(NSArray*)tableRows
-{
-    for (NSDictionary* row in tableRows)
-    {
-        NSString* key = [row objectForKey:@"WPT_IDENT"];
-        double latDegrees = [[row objectForKey:@"WGS_DLAT"] doubleValue];
-        double lonDegrees = [[row objectForKey:@"WGS_DLONG"] doubleValue];
-        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latDegrees longitude:lonDegrees];
-
-        Waypoint* waypoint = [[Waypoint alloc] initWithKey:key location:location type:WaypointTypeOther];
-        [waypoint setProperties:row];
-        [waypoint setDisplayName:[row objectForKey:@"ICAO"]];
-        [waypoint setDisplayNameLong:[row objectForKey:@"DESC"]];
-        [waypointArray addObject:waypoint];
-        [waypointKeyMap setValue:waypoint forKey:key];
+        [waypointKeyMap setValue:waypoint forKey:id];
     }
 }
 

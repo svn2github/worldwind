@@ -97,19 +97,19 @@
         for (WWPointPlacemark* placemark in [self renderables])
         {
             Waypoint* waypoint = [placemark userObject];
-            NSString* displayName = [waypoint displayName];
+            NSString* text = [[waypoint properties] objectForKey:@"ICAO"];
             NSDictionary* textAttrs = fontAttrs;
-            CGSize textSize = [displayName sizeWithAttributes:textAttrs];
+            CGSize textSize = [text sizeWithAttributes:textAttrs];
 
             if (textSize.width > 36)
             {
                 textAttrs = smallFontAttrs;
-                textSize = [displayName sizeWithAttributes:textAttrs];
+                textSize = [text sizeWithAttributes:textAttrs];
             }
 
             CGContextClearRect(gc, CGRectMake(0, 0, templateSize.width, templateSize.height));
             [templateImage drawAtPoint:CGPointMake(0, 0)];
-            [displayName drawAtPoint:CGPointMake((templateSize.width - textSize.width) / 2, (templateSize.height - textSize.height) / 2)
+            [text drawAtPoint:CGPointMake((templateSize.width - textSize.width) / 2, (templateSize.height - textSize.height) / 2)
                withAttributes:textAttrs];
 
             UIImage* highlightImage = UIGraphicsGetImageFromCurrentImageContext();

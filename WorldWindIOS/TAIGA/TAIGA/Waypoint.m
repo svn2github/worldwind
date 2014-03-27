@@ -29,6 +29,18 @@
     _location = location;
     _type  = type;
 
+    switch (_type)
+    {
+    case WaypointTypeAirport:
+        _iconPath = [[NSBundle mainBundle] pathForResource:@"38-airplane" ofType:@"png"];
+        _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        break;
+    case WaypointTypeUser :
+        _iconPath = [[NSBundle mainBundle] pathForResource:@"07-map-marker" ofType:@"png"];
+        _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        break;
+    }
+
     return self;
 }
 

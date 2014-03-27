@@ -12,7 +12,7 @@
 typedef enum
 {
     WaypointTypeAirport,
-    WaypointTypeOther
+    WaypointTypeUser
 } WaypointType;
 
 @interface Waypoint : NSObject
@@ -23,9 +23,11 @@ typedef enum
 
 @property (nonatomic, readonly) WaypointType type;
 
-@property (nonatomic) NSString* displayName;
+@property (nonatomic, readonly) NSString* iconPath;
 
-@property (nonatomic) NSString* displayNameLong;
+@property (nonatomic, readonly) UIImage* iconImage;
+
+@property (nonatomic) NSString* displayName;
 
 @property (nonatomic) NSDictionary* properties;
 

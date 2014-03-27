@@ -7,9 +7,9 @@
 
 #import "WaypointPopoverController.h"
 #import "Waypoint.h"
-#import "WaypointCell.h"
 #import "FlightRoute.h"
 #import "WorldWind/Pick/WWPickedObject.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 
 @implementation WaypointPopoverController
 
@@ -33,19 +33,19 @@
     [tableCells removeAllObjects];
     pickedObject = po;
 
-    WaypointCell* waypointCell = [[WaypointCell alloc] initWithReuseIdentifier:nil];
-    [waypointCell setToWaypoint:[pickedObject userObject]];
-    [waypointCell setUserInteractionEnabled:NO];
-    [tableCells addObject:waypointCell];
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    [cell setToWaypoint:[pickedObject userObject]];
+    [cell setUserInteractionEnabled:NO];
+    [tableCells addObject:cell];
 
     if (_activeFlightRoute != nil)
     {
         NSString* text = [_activeFlightRoute containsWaypoint:[po userObject]] ? @"Remove from Flight Route" : @"Add To Flight Route";
-        UITableViewCell* addToRouteCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        [[addToRouteCell textLabel] setText:text];
-        [[addToRouteCell textLabel] setTextColor:[[[self contentViewController] view] tintColor]];
-        [addToRouteCell setSeparatorInset:[waypointCell separatorInset]];
-        [tableCells addObject:addToRouteCell];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        [[cell textLabel] setText:text];
+        [[cell textLabel] setTextColor:[cell tintColor]];
+        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
+        [tableCells addObject:cell];
     }
 
     UITableView* tableView = [(UITableViewController*) [self contentViewController] tableView];
