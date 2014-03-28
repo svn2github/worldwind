@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class FlightRoute;
-@class WaypointFile;
+@class WaypointDatabase;
 @class WorldWindView;
 @class WWRenderableLayer;
 
@@ -23,9 +23,9 @@
 
 @property (nonatomic, readonly) WWRenderableLayer* flightRouteLayer;
 
-@property (nonatomic, readonly) WaypointFile* waypointFile;
+@property (nonatomic, readonly) WaypointDatabase* waypointDatabase;
 
-- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile;
+- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointDatabase:(WaypointDatabase*)waypointDatabase;
 
 - (NSUInteger) flightRouteCount;
 

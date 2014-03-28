@@ -39,7 +39,7 @@
 #import "WeatherCamLayer.h"
 #import "WeatherCamViewController.h"
 #import "Waypoint.h"
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "WaypointLayer.h"
 #import "FlightRoute.h"
 #import "FlightRouteController.h"
@@ -91,7 +91,7 @@
     TerrainProfileView* terrainProfileView;
     TerrainProfileController* terrainProfileController;
 
-    WaypointFile* waypointFile;
+    WaypointDatabase* waypointDatabase;
     WaypointLayer* waypointLayer;
     AircraftLayer* aircraftLayer;
     WWRenderableLayer* flightRouteLayer;
@@ -278,11 +278,9 @@
 
 - (void) loadWaypoints
 {
-    NSString* airportsPath = @"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT";
-
-    waypointFile = [[WaypointFile alloc] init];
-    [waypointFile loadWaypointLocations:@[airportsPath]
-                          finishedBlock:^(WaypointFile* retrievedWaypointFile)
+    waypointDatabase = [[WaypointDatabase alloc] init];
+    [waypointDatabase addWaypointTables:@[@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"]
+                          finishedBlock:^
                           {
                               [self waypointsDidLoad];
                           }];
@@ -292,7 +290,7 @@
 {
     routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv
                                                               flightRouteLayer:flightRouteLayer
-                                                                  waypointFile:waypointFile];
+                                                                  waypointDatabase:waypointDatabase];
     [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
 
     routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
@@ -313,7 +311,7 @@
     [view addConstraints:isShowRouteView ? showRouteViewConstraints : hideRouteViewConstraints];
 
     [routeViewButton setEnabled:YES];
-    [waypointLayer setWaypoints:waypointFile];
+    [waypointLayer setWaypointDatabase:waypointDatabase];
     [WorldWindView requestRedraw];
 }
 

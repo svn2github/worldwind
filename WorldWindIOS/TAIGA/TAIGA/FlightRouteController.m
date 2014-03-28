@@ -9,7 +9,7 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "AppConstants.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WorldWindView.h"
@@ -22,7 +22,7 @@
 //-- Initializing FlightRouteController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile
+- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointDatabase:(WaypointDatabase*)waypointDatabase
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
@@ -37,7 +37,7 @@
 
     _wwv = wwv;
     _flightRouteLayer = flightRouteLayer;
-    _waypointFile = waypointFile;
+    _waypointDatabase = waypointDatabase;
     [self restoreAllFlightRouteState]; // restore state with waypointFile
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
@@ -115,7 +115,7 @@
 - (UIViewController*) flightRouteDetailControllerAtIndex:(NSUInteger)index
 {
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
-    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointFile:_waypointFile view:_wwv];
+    return [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointDatabase:_waypointDatabase view:_wwv];
 }
 
 - (void) addFlightRouteAtIndex:(NSUInteger)index withDisplayName:(NSString*)displayName
@@ -231,7 +231,7 @@
         NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", frKey]];
         for (NSString* wpKey in waypointKeys)
         {
-            Waypoint* waypoint = [_waypointFile waypointForKey:wpKey];
+            Waypoint* waypoint = [_waypointDatabase waypointForKey:wpKey];
             if (waypoint != nil)
             {
                 [waypoints addObject:waypoint];

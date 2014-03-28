@@ -8,12 +8,12 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWRenderableLayer.h"
 
-@class WaypointFile;
+@class WaypointDatabase;
 
 @interface WaypointLayer : WWRenderableLayer
 
 - (WaypointLayer*) init;
 
-- (void) setWaypoints:(WaypointFile*)waypointFile;
+- (void) setWaypointDatabase:(WaypointDatabase*)waypointDatabase;
 
 @end

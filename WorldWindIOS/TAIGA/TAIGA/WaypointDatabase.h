@@ -9,16 +9,14 @@
 
 @class Waypoint;
 
-@interface WaypointFile : NSObject
+@interface WaypointDatabase : NSObject
 {
 @protected
     NSMutableArray* waypointArray;
     NSMutableDictionary* waypointKeyMap;
 }
 
-- (WaypointFile*) init;
-
-- (void) loadWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock;
+- (void) addWaypointTables:(NSArray*)urlArray finishedBlock:(void (^)(void))finishedBlock;
 
 - (NSArray*) waypoints;
 

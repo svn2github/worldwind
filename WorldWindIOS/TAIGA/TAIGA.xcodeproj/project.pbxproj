@@ -175,7 +175,7 @@
 		1BF9AFC293E02D3E756BEF0D /* notched-compass.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1E5E84D850365CD6B01 /* notched-compass.png */; };
 		1BF9AFF6ABD87609B3D91383 /* 19-gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */; };
 		CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */; };
-		CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */; };
+		CC8CF0D64EDCCDCB01C85E03 /* WaypointDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF06EEC13AC9DC2E4D650 /* WaypointDatabase.m */; };
 		CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF3E5AF50715A46F682B /* ColorPicker.m */; };
 		CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */; };
 		CC8CF1B24676CE4DE16A2B8F /* 193-location-arrow-outline.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF920AC4D6B8DCBFE7015 /* 193-location-arrow-outline.png */; };
@@ -424,7 +424,7 @@
 		1BF9AFE661684A1D80A47F6D /* TerrainAltitudeDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeDetailController.m; sourceTree = "<group>"; };
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
 		CC8CF021A8DD7321CB257C58 /* rounded-rect.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect.png"; sourceTree = "<group>"; };
-		CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFile.m; sourceTree = "<group>"; };
+		CC8CF06EEC13AC9DC2E4D650 /* WaypointDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointDatabase.m; sourceTree = "<group>"; };
 		CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
@@ -475,7 +475,7 @@
 		CC8CFE9F8D03AD7CEE67B208 /* UITableViewCell+TAIGAAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITableViewCell+TAIGAAdditions.m"; sourceTree = "<group>"; };
 		CC8CFECC51A637D34D3DF693 /* OpenWeatherMapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenWeatherMapLayer.h; sourceTree = "<group>"; };
 		CC8CFF3E5AF50715A46F682B /* ColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorPicker.m; sourceTree = "<group>"; };
-		CC8CFF4B6E357BB5DF3DE5FA /* WaypointFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointFile.h; sourceTree = "<group>"; };
+		CC8CFF4B6E357BB5DF3DE5FA /* WaypointDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointDatabase.h; sourceTree = "<group>"; };
 		CC8CFF927F0E04A8C1FF5DA0 /* 193-location-arrow-outline@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "193-location-arrow-outline@2x.png"; sourceTree = "<group>"; };
 		CC8CFFB53EF21A1718B2B021 /* 193-location-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "193-location-arrow.png"; sourceTree = "<group>"; };
 		CC8CFFE7BD858DAAEC112171 /* Waypoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Waypoint.m; sourceTree = "<group>"; };
@@ -612,8 +612,8 @@
 				CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */,
 				CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */,
 				CC8CFC0B49EF23E9FF36D8F6 /* WaypointFileControl.h */,
-				CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */,
-				CC8CFF4B6E357BB5DF3DE5FA /* WaypointFile.h */,
+				CC8CF06EEC13AC9DC2E4D650 /* WaypointDatabase.m */,
+				CC8CFF4B6E357BB5DF3DE5FA /* WaypointDatabase.h */,
 				CC8CFF3E5AF50715A46F682B /* ColorPicker.m */,
 				CC8CFDC5DBCA408191058CCC /* ColorPicker.h */,
 				CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */,
@@ -1038,7 +1038,7 @@
 				CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */,
 				CC8CFF5B1FB3B7ECD5810696 /* FlightRouteController.m in Sources */,
 				CC8CFD551E097043A86C1BBE /* WaypointFileControl.m in Sources */,
-				CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */,
+				CC8CF0D64EDCCDCB01C85E03 /* WaypointDatabase.m in Sources */,
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,
 				CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */,
 				1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */,

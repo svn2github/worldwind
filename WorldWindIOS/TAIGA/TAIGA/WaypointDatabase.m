@@ -5,16 +5,16 @@
  @version $Id$
  */
 
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "Waypoint.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
-@implementation WaypointFile
+@implementation WaypointDatabase
 
-- (WaypointFile*) init
+- (id) init
 {
     self = [super init];
 
@@ -24,11 +24,11 @@
     return self;
 }
 
-- (void) loadWaypointLocations:(NSArray*)locationArray finishedBlock:(void (^)(WaypointFile*))finishedBlock
+- (void) addWaypointTables:(NSArray*)urlArray finishedBlock:(void (^)(void))finishedBlock
 {
-    if (locationArray == nil)
+    if (urlArray == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location array is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL array is nil")
     }
 
     if (finishedBlock == nil)
@@ -36,19 +36,19 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Finished block is nil")
     }
 
-    const NSUInteger locationsCount = [locationArray count];
-    __block NSUInteger locationsCompleted = 0;
+    const NSUInteger tableCount = [urlArray count];
+    __block NSUInteger tablesCompleted = 0;
 
-    for (NSString* location in locationArray)
+    for (NSString* urlString in urlArray)
     {
-        NSURL* url = [NSURL URLWithString:location];
+        NSURL* url = [NSURL URLWithString:urlString];
         WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5.0 finishedBlock:^(WWRetriever* waypointRetriever)
         {
-            [self waypointRetrieverDidFinish:waypointRetriever];
+            [self waypointTableRetrieverDidFinish:waypointRetriever];
 
-            if (++locationsCompleted == locationsCount)
+            if (++tablesCompleted == tableCount)
             {
-                [self waypointLocationsDidFinish:finishedBlock];
+                [self didAddWaypointTables:finishedBlock];
             }
         }];
         [retriever performRetrieval];
@@ -83,17 +83,17 @@
     return [waypointKeyMap objectForKey:key];
 }
 
-- (void) waypointLocationsDidFinish:(void (^)(WaypointFile*))finishedBlock
+- (void) didAddWaypointTables:(void (^)(void))finishedBlock
 {
     [waypointArray sortUsingComparator:^(id obj1, id obj2)
     {
         return [[obj1 displayName] compare:[obj2 displayName]];
     }];
 
-    finishedBlock(self);
+    finishedBlock();
 }
 
-- (void) waypointRetrieverDidFinish:(WWRetriever*)retriever
+- (void) waypointTableRetrieverDidFinish:(WWRetriever*)retriever
 {
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:[[retriever url] path]];
@@ -107,14 +107,14 @@
                                   withIntermediateDirectories:YES attributes:nil error:&error];
         if (error != nil)
         {
-            WWLog(@"Unable to create waypoint file cache directory, %@", [error description]);
+            WWLog(@"Unable to create waypoint table cache directory, %@", [error description]);
         }
         else
         {
             [[retriever retrievedData] writeToFile:cachePath options:NSDataWritingAtomic error:&error];
             if (error != nil)
             {
-                WWLog(@"Unable to write waypoint file to cache, %@", [error description]);
+                WWLog(@"Unable to write waypoint table to cache, %@", [error description]);
             }
         }
 
@@ -122,7 +122,7 @@
     }
     else
     {
-        WWLog(@"Unable to retrieve waypoint file %@, falling back to local cache.", location);
+        WWLog(@"Unable to retrieve waypoint table %@, falling back to local cache.", location);
 
         // Otherwise, attempt to use a previously cached version.
         NSData* data = [NSData dataWithContentsOfFile:cachePath];
@@ -132,7 +132,7 @@
         }
         else
         {
-            WWLog(@"Unable to read local cache of waypoint file %@", location);
+            WWLog(@"Unable to read local cache of waypoint table %@", location);
         }
     }
 }
@@ -165,15 +165,15 @@
 
     if ([[fieldNames firstObject] isEqual:@"ARPT_IDENT"])
     {
-        [self parseDAFIFAirportTable:tableRows];
+        [self parseAirportTable:tableRows];
     }
     else
     {
-        WWLog(@"Unrecognized waypoint file %@", location);
+        WWLog(@"Unrecognized waypoint table %@", location);
     }
 }
 
-- (void) parseDAFIFAirportTable:(NSArray*)tableRows
+- (void) parseAirportTable:(NSArray*)tableRows
 {
     for (NSDictionary* row in tableRows)
     {

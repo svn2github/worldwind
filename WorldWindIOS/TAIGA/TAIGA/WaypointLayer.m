@@ -7,7 +7,7 @@
 
 #import "WaypointLayer.h"
 #import "Waypoint.h"
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
 #import "WorldWind/Navigate/WWNavigatorState.h"
@@ -34,11 +34,11 @@
     return self;
 }
 
-- (void) setWaypoints:(WaypointFile*)waypointFile
+- (void) setWaypointDatabase:(WaypointDatabase*)waypointDatabase
 {
-    if (waypointFile == nil)
+    if (waypointDatabase == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint file is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint database is nil")
     }
 
     [self removeAllRenderables];
@@ -47,7 +47,7 @@
     [attrs setImagePath:[[NSBundle mainBundle] pathForResource:@"airport@small" ofType:@"png"]];
     [attrs setImageOffset:[[WWOffset alloc] initWithFractionX:0.5 y:0.5]];
 
-    for (Waypoint* waypoint in [waypointFile waypoints])
+    for (Waypoint* waypoint in [waypointDatabase waypoints])
     {
         if ([waypoint type] != WaypointTypeAirport)
             continue;

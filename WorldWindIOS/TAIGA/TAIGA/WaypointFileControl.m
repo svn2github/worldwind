@@ -6,7 +6,7 @@
  */
 
 #import "WaypointFileControl.h"
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "Waypoint.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 
@@ -52,9 +52,9 @@
     return self;
 }
 
-- (void) setWaypointFile:(WaypointFile*)waypointFile
+- (void) setWaypointDatabase:(WaypointDatabase*)waypointDatabase
 {
-    _waypointFile = waypointFile;
+    _waypointDatabase = waypointDatabase;
 
     [self filterWaypoints];
     [waypointTable reloadData];
@@ -65,12 +65,12 @@
     NSString* searchText = [waypointSearchBar text];
     if ([searchText length] == 0)
     {
-        waypoints = [_waypointFile waypoints];
+        waypoints = [_waypointDatabase waypoints];
     }
     else
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        waypoints = [_waypointFile waypointsMatchingText:wildSearchText];
+        waypoints = [_waypointDatabase waypointsMatchingText:wildSearchText];
     }
 
     [waypointTable reloadData];

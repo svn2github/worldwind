@@ -8,7 +8,7 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointFile.h"
+#import "WaypointDatabase.h"
 #import "WaypointFileControl.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
@@ -41,8 +41,8 @@
 //--------------------------------------------------------------------------------------------------------------------//
 
 - (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute
-                                        waypointFile:(WaypointFile*)waypointFile
-                                                view:(WorldWindView*)wwv;
+                                    waypointDatabase:(WaypointDatabase*)waypointDatabase
+                                                view:(WorldWindView*)wwv
 {
     self = [super initWithNibName:nil bundle:nil];
 
@@ -50,7 +50,7 @@
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
 
     _flightRoute = flightRoute;
-    _waypointFile = waypointFile;
+    _waypointDatabase = waypointDatabase;
     _wwv = wwv;
     altitudeFormatter = [[NSNumberFormatter alloc] init];
     [altitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -119,7 +119,7 @@
     [view addSubview:flightRouteTable];
 
     waypointFileControl = [[WaypointFileControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
-    [waypointFileControl setWaypointFile:_waypointFile];
+    [waypointFileControl setWaypointDatabase:_waypointDatabase];
     [view addSubview:waypointFileControl];
 
     [self layout];
