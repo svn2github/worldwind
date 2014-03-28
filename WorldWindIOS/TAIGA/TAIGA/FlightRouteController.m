@@ -5,30 +5,30 @@
  @version $Id$
  */
 
-#import "FlightRouteListController.h"
+#import "FlightRouteController.h"
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
 #import "WaypointFile.h"
 #import "AppConstants.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
-#import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 
-@implementation FlightRouteListController
+@implementation FlightRouteController
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-- Initializing FlightRouteListController --//
+//-- Initializing FlightRouteController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteListController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile
+- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv flightRouteLayer:(WWRenderableLayer*)flightRouteLayer waypointFile:(WaypointFile*)waypointFile
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
     UIBarButtonItem* addButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
                                                                                    target:self
-                                                                                   action:@selector(handleAddButtonTap)];
+                                                                                   action:@selector(presentNewRouteView)];
     [[self navigationItem] setTitle:@"Flight Routes"];
     [[self navigationItem] setLeftBarButtonItem:addButtonItem];
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
@@ -84,6 +84,32 @@
 - (FlightRoute*) flightRouteAtIndex:(NSUInteger)index
 {
     return [[_flightRouteLayer renderables] objectAtIndex:index];
+}
+
+- (FlightRoute*) presentedFlightRoute
+{
+    UIViewController* topViewController = [[self navigationController] topViewController];
+    if ([topViewController isKindOfClass:[FlightRouteDetailController class]])
+    {
+        return [(FlightRouteDetailController*) topViewController flightRoute];
+    }
+
+    return nil;
+}
+
+- (void) presentFlightRouteAtIndex:(NSUInteger)index
+{
+    UIViewController* detailController = [self flightRouteDetailControllerAtIndex:index];
+    [[self navigationController] popToRootViewControllerAnimated:NO];
+    [[self navigationController] pushViewController:detailController animated:YES];
+    [[(FlightRouteDetailController*) detailController flightRoute] setEnabled:YES]; // make the flight route visible on the map
+}
+
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock
+{
+    newFlightRouteCompletionBlock = completionBlock;
+    [[self navigationController] popToRootViewControllerAnimated:NO];
+    [self presentNewRouteView];
 }
 
 - (UIViewController*) flightRouteDetailControllerAtIndex:(NSUInteger)index
@@ -237,11 +263,6 @@
 //-- Flight Route List Table --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
-{
-    return 1;
-}
-
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
     return [self flightRouteCount];
@@ -254,16 +275,12 @@
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:cellIdentifier];
         [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
-        [[cell imageView] setImage:[[UIImage imageNamed:@"431-yes.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     }
 
     FlightRoute* flightRoute = [self flightRouteAtIndex:(NSUInteger) [indexPath row]];
-    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:[flightRoute colorIndex]];
-    [[cell imageView] setHidden:![flightRoute enabled]];
-    [[cell imageView] setTintColor:[[colorAttrs objectForKey:@"color"] uiColor]];
-    [[cell textLabel] setText:[flightRoute displayName]];
+    [cell setToFlightRoute:flightRoute];
 
     return cell;
 }
@@ -320,7 +337,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 //-- Creating New Flight Routes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) handleAddButtonTap
+- (void) presentNewRouteView
 {
     UIAlertView* inputView = [[UIAlertView alloc] initWithTitle:@"New Flight Route"
                                                         message:@"Enter a name for this route."
@@ -353,6 +370,14 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
         UIViewController* detailController = [self flightRouteDetailControllerAtIndex:index];
         [detailController setEditing:YES animated:NO];
         [[self navigationController] pushViewController:detailController animated:YES];
+
+        // Invoke the add route completion block, if any.
+        if (newFlightRouteCompletionBlock != NULL)
+        {
+            FlightRoute* newFlightRoute = [self flightRouteAtIndex:index];
+            newFlightRouteCompletionBlock(newFlightRoute);
+            newFlightRouteCompletionBlock = NULL;
+        }
     }
 }
 

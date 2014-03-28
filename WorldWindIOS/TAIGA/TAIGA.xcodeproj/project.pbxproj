@@ -186,6 +186,7 @@
 		CC8CF4084D0ADBD0D9255A53 /* rounded-rect@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */; };
 		CC8CF413521615D8E131FE18 /* SimulationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD24B08756B57C45C655 /* SimulationViewController.m */; };
 		CC8CF4742E28C3B51D0E334F /* 193-location-arrow-outline@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFF927F0E04A8C1FF5DA0 /* 193-location-arrow-outline@2x.png */; };
+		CC8CF4860321053FBF1A98FE /* AddWaypointController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */; };
 		CC8CF6539CCA0C68561935FE /* circle-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */; };
 		CC8CF6B7421F077AE2831D77 /* route-begin@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFCD52A777ACE793EEA4F /* route-begin@2x.png */; };
 		CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8F60C10525135F57A82 /* AircraftShape.m */; };
@@ -209,7 +210,7 @@
 		CC8CFD551E097043A86C1BBE /* WaypointFileControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */; };
 		CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */; };
 		CC8CFF34710F494ADFABC370 /* rounded-rect.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF021A8DD7321CB257C58 /* rounded-rect.png */; };
-		CC8CFF5B1FB3B7ECD5810696 /* FlightRouteListController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */; };
+		CC8CFF5B1FB3B7ECD5810696 /* FlightRouteController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -424,7 +425,7 @@
 		1BF9AFED3331FB9A55060B38 /* WB_40kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_40kt_128.png; sourceTree = "<group>"; };
 		CC8CF021A8DD7321CB257C58 /* rounded-rect.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect.png"; sourceTree = "<group>"; };
 		CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFile.m; sourceTree = "<group>"; };
-		CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteListController.m; sourceTree = "<group>"; };
+		CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
@@ -438,7 +439,7 @@
 		CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
 		CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenWeatherMapLayer.m; sourceTree = "<group>"; };
 		CC8CF6883C23299D48C6D79F /* WaypointLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointLayer.h; sourceTree = "<group>"; };
-		CC8CF698F1109BBE57E61250 /* FlightRouteListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteListController.h; sourceTree = "<group>"; };
+		CC8CF698F1109BBE57E61250 /* FlightRouteController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteController.h; sourceTree = "<group>"; };
 		CC8CF6C6DC046EDF8EF726B2 /* route-end.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end.png"; sourceTree = "<group>"; };
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimulationViewController.h; sourceTree = "<group>"; };
@@ -466,6 +467,8 @@
 		CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFileControl.m; sourceTree = "<group>"; };
 		CC8CFCE70CDF2979DDFD1139 /* AircraftLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftLayer.m; sourceTree = "<group>"; };
 		CC8CFD24B08756B57C45C655 /* SimulationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimulationViewController.m; sourceTree = "<group>"; };
+		CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddWaypointController.m; sourceTree = "<group>"; };
+		CC8CFDB469DB93A886E6A35B /* AddWaypointController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddWaypointController.h; sourceTree = "<group>"; };
 		CC8CFDC5DBCA408191058CCC /* ColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPicker.h; sourceTree = "<group>"; };
 		CC8CFDF0F838D123AA57E0CE /* FlightRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRoute.h; sourceTree = "<group>"; };
 		CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteDetailController.m; sourceTree = "<group>"; };
@@ -605,8 +608,8 @@
 				CC8CFFE7BD858DAAEC112171 /* Waypoint.m */,
 				CC8CFFE970DC31D574B151E6 /* FlightRouteDetailController.h */,
 				CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */,
-				CC8CF698F1109BBE57E61250 /* FlightRouteListController.h */,
-				CC8CF0A0D05965E79B4A21BD /* FlightRouteListController.m */,
+				CC8CF698F1109BBE57E61250 /* FlightRouteController.h */,
+				CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */,
 				CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */,
 				CC8CFC0B49EF23E9FF36D8F6 /* WaypointFileControl.h */,
 				CC8CF06EEC13AC9DC2E4D650 /* WaypointFile.m */,
@@ -655,6 +658,8 @@
 				CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */,
 				CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */,
 				CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */,
+				CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */,
+				CC8CFDB469DB93A886E6A35B /* AddWaypointController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1031,7 +1036,7 @@
 				CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */,
 				CC8CF21EB186B45723B50126 /* Waypoint.m in Sources */,
 				CC8CFDF90C3253A2AE0A3F9A /* FlightRouteDetailController.m in Sources */,
-				CC8CFF5B1FB3B7ECD5810696 /* FlightRouteListController.m in Sources */,
+				CC8CFF5B1FB3B7ECD5810696 /* FlightRouteController.m in Sources */,
 				CC8CFD551E097043A86C1BBE /* WaypointFileControl.m in Sources */,
 				CC8CF0D64EDCCDCB01C85E03 /* WaypointFile.m in Sources */,
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,
@@ -1056,6 +1061,7 @@
 				CC8CF89366564ECB26B9C433 /* UITableViewCell+TAIGAAdditions.m in Sources */,
 				CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */,
 				CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */,
+				CC8CF4860321053FBF1A98FE /* AddWaypointController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

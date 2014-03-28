@@ -7,9 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+@class FlightRoute;
 @class Waypoint;
 
 @interface UITableViewCell (TAIGAAdditions)
+
+- (void) setToFlightRoute:(FlightRoute*)flightRoute;
 
 - (void) setToWaypoint:(Waypoint*)waypoint;
 

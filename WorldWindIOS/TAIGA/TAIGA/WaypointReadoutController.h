@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class Waypoint;
+@class MovingMapViewController;
 
 @interface WaypointReadoutController : UITableViewController
 {
@@ -16,6 +17,8 @@
 }
 
 @property (nonatomic) Waypoint* waypoint;
+
+@property (nonatomic) MovingMapViewController* mapViewController;
 
 @property (nonatomic) UIPopoverController* presentingPopoverController;
 

@@ -42,7 +42,7 @@
 #import "WaypointFile.h"
 #import "WaypointLayer.h"
 #import "FlightRoute.h"
-#import "FlightRouteListController.h"
+#import "FlightRouteController.h"
 #import "SimulationViewController.h"
 #import "TerrainProfileView.h"
 #import "ViewSelectionController.h"
@@ -53,7 +53,6 @@
 #import "WWDAFIFLayer.h"
 #import "WWBingLayer.h"
 #import "WaypointReadoutController.h"
-#import "FlightRouteDetailController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 
 @implementation MovingMapViewController
@@ -86,7 +85,7 @@
     ChartsTableController* chartsListController;
     ChartViewController* chartViewController;
     UINavigationController* chartListNavController;
-    FlightRouteListController* routeViewController;
+    FlightRouteController* routeViewController;
     UINavigationController* routeViewNavController;
     SimulationViewController* simulationViewController;
     TerrainProfileView* terrainProfileView;
@@ -126,12 +125,58 @@
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
-    positionReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:positionReadoutViewController];
+    positionReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:
+            [[UINavigationController alloc] initWithRootViewController:positionReadoutViewController]];
+    [positionReadoutViewController setMapViewController:self];
+    [positionReadoutViewController setPresentingPopoverController:positionReadoutPopoverController];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
     waypointReadoutViewController = [[WaypointReadoutController alloc] init];
-    waypointReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:waypointReadoutViewController];
+    waypointReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:
+            [[UINavigationController alloc] initWithRootViewController:waypointReadoutViewController]];
+    [waypointReadoutViewController setMapViewController:self];
+    [waypointReadoutViewController setPresentingPopoverController:waypointReadoutPopoverController];
 
     return self;
+}
+
+- (NSUInteger) flightRouteCount
+{
+    return [routeViewController flightRouteCount];
+}
+
+- (FlightRoute*) flightRouteAtIndex:(NSUInteger)index
+{
+    return [routeViewController flightRouteAtIndex:index];
+}
+
+- (FlightRoute*) presentedFlightRoute
+{
+    if (isShowRouteView)
+    {
+        return [routeViewController presentedFlightRoute];
+    }
+
+    return nil;
+}
+
+- (void) presentFlightRouteAtIndex:(NSUInteger)index
+{
+    if (!isShowRouteView)
+    {
+        [self transitionRouteView];
+    }
+
+    [routeViewController presentFlightRouteAtIndex:index];
+}
+
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock
+{
+    if (!isShowRouteView)
+    {
+        [self transitionRouteView];
+    }
+
+    [routeViewController newFlightRoute:completionBlock];
 }
 
 - (void) loadView
@@ -245,9 +290,9 @@
 
 - (void) waypointsDidLoad
 {
-    routeViewController = [[FlightRouteListController alloc] initWithWorldWindView:_wwv
-                                                                  flightRouteLayer:flightRouteLayer
-                                                                      waypointFile:waypointFile];
+    routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv
+                                                              flightRouteLayer:flightRouteLayer
+                                                                  waypointFile:waypointFile];
     [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
 
     routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
@@ -824,7 +869,7 @@
 - (void) showPositionReadout:(WWPickedObject*)po
 {
     [positionReadoutViewController setPosition:[po position]];
-    [positionReadoutViewController setPresentingPopoverController:positionReadoutPopoverController];
+    [[positionReadoutViewController navigationController] popToRootViewControllerAnimated:NO];
     [positionReadoutPopoverController presentPopoverFromPickedObject:po inView:_wwv
                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
@@ -917,20 +962,9 @@
 - (void) showWaypoint:(WWPickedObject*)po
 {
     [waypointReadoutViewController setWaypoint:[po userObject]];
-    [waypointReadoutViewController setPresentingPopoverController:waypointReadoutPopoverController];
+    [[waypointReadoutViewController navigationController] popToRootViewControllerAnimated:NO];
     [waypointReadoutPopoverController presentPopoverFromPickedObject:po inView:_wwv
                                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-}
-
-- (FlightRoute*) editableFlightRoute
-{
-    UIViewController* topViewController = [routeViewNavController topViewController];
-    if (isShowRouteView && [topViewController isKindOfClass:[FlightRouteDetailController class]])
-    {
-        return [(FlightRouteDetailController*) topViewController flightRoute];
-    }
-
-    return nil;
 }
 
 - (void) selectFlightRoute:(FlightRoute*)flightRoute

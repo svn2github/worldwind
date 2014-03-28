@@ -7,6 +7,9 @@
 
 #import "PositionReadoutController.h"
 #import "AppConstants.h"
+#import "FlightRoute.h"
+#import "MovingMapViewController.h"
+#import "AddWaypointController.h"
 #import "WorldWind/Geometry/WWPosition.h"
 
 @implementation PositionReadoutController
@@ -15,15 +18,23 @@
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
-    [self setPreferredContentSize:CGSizeMake(200, 128)];
-    [[self navigationItem] setTitle:@"Position"];
+    [[self navigationItem] setTitle:@"Waypoint"];
     [[self tableView] setBounces:NO];
     [[self tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self setPreferredContentSize:CGSizeMake(320, 128)];
 
     tableCells = [[NSMutableArray alloc] init];
     tableRowHeights = [[NSMutableArray alloc] init];
 
     return self;
+}
+
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    CGSize size = [self preferredContentSize];
+    [_presentingPopoverController setPopoverContentSize:CGSizeMake(size.width, size.height + 44) animated:animated];
 }
 
 - (void) setPosition:(WWPosition*)position
@@ -62,6 +73,8 @@
     [[cell textLabel] setText:@"Add to Route"];
     [[cell textLabel] setTextColor:[cell tintColor]];
     [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
+    [cell setAccessoryType:[_mapViewController presentedFlightRoute] != nil ?
+            UITableViewCellAccessoryNone : UITableViewCellAccessoryDetailButton];
     [tableCells addObject:cell];
     [tableRowHeights addObject:@44];
 
@@ -87,10 +100,18 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if ([indexPath row] == 3)
+    // TODO: Create a waypoint from the position
+
+    if ([indexPath row] == 3 && [[tableView cellForRowAtIndexPath:indexPath] accessoryType] == UITableViewCellAccessoryNone)
     {
-        // TODO
+        //[[_mapViewController presentedFlightRoute] addWaypoint:nil];
         //[_presentingPopoverController dismissPopoverAnimated:YES];
+    }
+    else if ([indexPath row] == 3)
+    {
+        //AddWaypointController* addController = [[AddWaypointController alloc] initWithWaypoint:nil mapViewController:_mapViewController];
+        //[addController setPresentingPopoverController:_presentingPopoverController];
+        //[[self navigationController] pushViewController:addController animated:YES];
     }
 }
 
