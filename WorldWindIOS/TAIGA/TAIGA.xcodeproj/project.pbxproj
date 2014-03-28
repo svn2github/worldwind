@@ -55,6 +55,7 @@
 		1BF9A392A0028819DC7D9F9F /* 103-map.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A1DCCF03150665477519 /* 103-map.png */; };
 		1BF9A399DB6A00464B2714B2 /* WB_5kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ABC19AB361BCC5D075F0 /* WB_5kt_128.png */; };
 		1BF9A3C390B7CF465EDB2AEB /* WX_SN_MIN_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A03B5AA46BD30ECAC594 /* WX_SN_MIN_128.png */; };
+		1BF9A3C5B6540C448DD1538E /* FAASectionalsLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A01C508D7227F59A7F2A /* FAASectionalsLayer.m */; };
 		1BF9A4124329D06150BD94CE /* WB_10kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9ACEB71B820E0386B314F /* WB_10kt_128.png */; };
 		1BF9A4170518E0F520F327BE /* 265-download@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7DED168C6E834CF9E22 /* 265-download@2x.png */; };
 		1BF9A447A38638D4042D7636 /* 433-x-gray.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A202914E42D1A87BF86A /* 433-x-gray.png */; };
@@ -98,7 +99,6 @@
 		1BF9A84DF41FEB20CF7A85C2 /* PIREP_ICONS_0002_Layer-4.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AEB3F325C744DF040CF9 /* PIREP_ICONS_0002_Layer-4.png */; };
 		1BF9A84E3E8C533F837D50BD /* LayerListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC4A4A1BBB857690021 /* LayerListController.m */; };
 		1BF9A85050C8A995F281F162 /* PIREP_ICONS_0011_Layer-13.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AE7E266D3CDDF03C5FCF /* PIREP_ICONS_0011_Layer-13.png */; };
-		1BF9A886CAE2D1EDD1EC108A /* FAAChartsAlaskaLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */; };
 		1BF9A8AA78A3A64231B94C91 /* WX_DRDU_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AABCA8893891715B1668 /* WX_DRDU_128.png */; };
 		1BF9A8B8719AA0C4643CD3F7 /* taigaversion.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AAC6022550E9089A90D7 /* taigaversion.txt */; };
 		1BF9A8C3C5EB0CCBCDA3D050 /* 362-2up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A08C95A7B92699BCEBD5 /* 362-2up@2x.png */; };
@@ -238,6 +238,7 @@
 		0BCBC77317CEA40A00709B37 /* alaska-72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72.png"; sourceTree = "<group>"; };
 		0BCBC77517CEA41600709B37 /* alaska-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72@2x.png"; sourceTree = "<group>"; };
 		0BCBC77B17D559B000709B37 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
+		1BF9A01C508D7227F59A7F2A /* FAASectionalsLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAASectionalsLayer.m; sourceTree = "<group>"; };
 		1BF9A03B5AA46BD30ECAC594 /* WX_SN_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
 		1BF9A04EA08370FAEA7CF2AB /* CC_OVC_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CC_OVC_128.png; sourceTree = "<group>"; };
@@ -309,7 +310,6 @@
 		1BF9A599123A9CFCB25453F1 /* wx_cam_reference_placeholder.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wx_cam_reference_placeholder.jpg; sourceTree = "<group>"; };
 		1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = METARLayer.m; sourceTree = "<group>"; };
 		1BF9A5C3F478E682E9F71C42 /* AppUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppUpdateController.h; sourceTree = "<group>"; };
-		1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAAChartsAlaskaLayer.m; sourceTree = "<group>"; };
 		1BF9A5CA68CC87A719BAE37A /* ChartsTableController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsTableController.h; sourceTree = "<group>"; };
 		1BF9A5D43D977C5361C2FBB0 /* ChartsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsScreenController.m; sourceTree = "<group>"; };
 		1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "328-layers2@2x.png"; sourceTree = "<group>"; };
@@ -346,7 +346,6 @@
 		1BF9A99F6415E09E84C670BB /* MetarIconGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetarIconGenerator.m; sourceTree = "<group>"; };
 		1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionReadoutController.m; sourceTree = "<group>"; };
 		1BF9A9BDB8AECE5417A1271E /* WX_RA_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_PLUS_128.png; sourceTree = "<group>"; };
-		1BF9A9CEC9CECC0D70A019DA /* FAAChartsAlaskaLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAAChartsAlaskaLayer.h; sourceTree = "<group>"; };
 		1BF9A9D1F33A1E4D1A075CC8 /* TerrainProfileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileController.h; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
 		1BF9A9E63B2CB769F37E99E8 /* BulkRetrieverController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BulkRetrieverController.h; sourceTree = "<group>"; };
@@ -395,6 +394,7 @@
 		1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up@2x.png"; sourceTree = "<group>"; };
 		1BF9AD77F1944F4FFA668ACE /* TerrainAltitudeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeLayer.m; sourceTree = "<group>"; };
 		1BF9AD7B4E8449B13741C59D /* WB_55kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_55kt_128.png; sourceTree = "<group>"; };
+		1BF9AD9638063B5BB8924579 /* FAASectionalsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAASectionalsLayer.h; sourceTree = "<group>"; };
 		1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "19-gear@2x.png"; sourceTree = "<group>"; };
 		1BF9ADBF0A3403D58C60A0F0 /* AppConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppConstants.m; sourceTree = "<group>"; };
 		1BF9ADC15E4E8774D480494D /* WX_TS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_TS_128.png; sourceTree = "<group>"; };
@@ -594,8 +594,6 @@
 				1BF9AAC6022550E9089A90D7 /* taigaversion.txt */,
 				1BF9A99F6415E09E84C670BB /* MetarIconGenerator.m */,
 				1BF9A44285FDD4AEB9C24014 /* MetarIconGenerator.h */,
-				1BF9A9CEC9CECC0D70A019DA /* FAAChartsAlaskaLayer.h */,
-				1BF9A5C4634B159AAA243E9C /* FAAChartsAlaskaLayer.m */,
 				1BF9A3318561DC7F3CF47984 /* CompassLayer.m */,
 				1BF9AEFDB195674DB617FC66 /* CompassLayer.h */,
 				1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */,
@@ -660,6 +658,8 @@
 				CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */,
 				CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */,
 				CC8CFDB469DB93A886E6A35B /* AddWaypointController.h */,
+				1BF9A01C508D7227F59A7F2A /* FAASectionalsLayer.m */,
+				1BF9AD9638063B5BB8924579 /* FAASectionalsLayer.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1029,7 +1029,6 @@
 				1BF9AA6B9B93F9AF9645E4BC /* TAIGA.m in Sources */,
 				1BF9A051EB31657B295B49E0 /* AppUpdateController.m in Sources */,
 				1BF9A5DABFB53DF12FFD6979 /* MetarIconGenerator.m in Sources */,
-				1BF9A886CAE2D1EDD1EC108A /* FAAChartsAlaskaLayer.m in Sources */,
 				1BF9A7F13FE67F4A31694451 /* CompassLayer.m in Sources */,
 				1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */,
 				1BF9A266647113D91F20BDE9 /* TerrainProfileView.m in Sources */,
@@ -1062,6 +1061,7 @@
 				CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */,
 				CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */,
 				CC8CF4860321053FBF1A98FE /* AddWaypointController.m in Sources */,
+				1BF9A3C5B6540C448DD1538E /* FAASectionalsLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

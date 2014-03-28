@@ -29,7 +29,6 @@
 #import "PIREPLayer.h"
 #import "PIREPDataViewController.h"
 #import "WWNavigator.h"
-#import "FAAChartsAlaskaLayer.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
 #import "PositionReadoutController.h"
@@ -54,6 +53,7 @@
 #import "WWBingLayer.h"
 #import "WaypointReadoutController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
+#import "FAASectionalsLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -95,7 +95,7 @@
     WaypointLayer* waypointLayer;
     AircraftLayer* aircraftLayer;
     WWRenderableLayer* flightRouteLayer;
-    FAAChartsAlaskaLayer* faaChartsLayer;
+    FAASectionalsLayer* faaChartsLayer;
     TerrainAltitudeLayer* terrainAltitudeLayer;
     METARLayer* metarLayer;
     PIREPLayer* pirepLayer;
@@ -237,9 +237,9 @@
                                                         toItem:_wwv attribute:NSLayoutAttributeTop multiplier:1 constant:20]];
 
     showSplitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[splitView(==350)]|"
-                                                                          options:0 metrics:nil views:viewsDictionary];
+                                                                       options:0 metrics:nil views:viewsDictionary];
     hideSplitViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[_wwv][splitView(==350)]"
-                                                                options:0 metrics:nil views:viewsDictionary];
+                                                                       options:0 metrics:nil views:viewsDictionary];
     isShowSplitView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.splitview.enabled" defaultValue:NO];
     [view addConstraints:isShowSplitView ? showSplitViewConstraints : hideSplitViewConstraints];
     if (isShowSplitView)
@@ -290,7 +290,7 @@
 {
     routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv
                                                               flightRouteLayer:flightRouteLayer
-                                                                  waypointDatabase:waypointDatabase];
+                                                              waypointDatabase:waypointDatabase];
     [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
 
     routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
@@ -328,6 +328,9 @@
     [layers addLayer:layer];
 
     layer = [[WWBingLayer alloc] init];
+    [layer setEnabled:[Settings                                         getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
+                                             [layer displayName]] defaultValue:YES]];
     [layers addLayer:layer];
 
     aircraftLayer = [[AircraftLayer alloc] init];
@@ -344,9 +347,10 @@
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
     [layers addLayer:waypointLayer];
 
-    faaChartsLayer = [[FAAChartsAlaskaLayer alloc] init];
-    [faaChartsLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [faaChartsLayer displayName]] defaultValue:YES]];
+    faaChartsLayer = [[FAASectionalsLayer alloc] init];
+    [faaChartsLayer setEnabled:[Settings                                 getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
+                                             [faaChartsLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
 
     dafifLayer = [[WWDAFIFLayer alloc] init];
@@ -583,7 +587,7 @@
             [self.view removeConstraints:showSimulationViewConstraints];
             [self.view addConstraints:hideSimulationViewConstraints];
             [self.view layoutIfNeeded]; // Force layout to capture constraint frame changes in the animation block.
-        } completion:^(BOOL finished)
+        }                completion:^(BOOL finished)
         {
             [simulationViewController setFlightRoute:nil];
 
