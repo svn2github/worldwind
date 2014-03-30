@@ -22,7 +22,7 @@
 
     _target = target;
     _action = action;
-    waypoints = nil;
+    waypoints = [[NSMutableArray alloc] init];
 
     waypointSearchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
     [waypointSearchBar setPlaceholder:@"Search or enter an ICAO code"];
@@ -62,16 +62,22 @@
 
 - (void) filterWaypoints
 {
+    [waypoints removeAllObjects];
+    [waypoints addObjectsFromArray:[_waypointDatabase waypoints]];
+    [waypoints filterUsingPredicate:[NSPredicate predicateWithFormat:@"type != %d", (int) WaypointTypeMarker]];
+
     NSString* searchText = [waypointSearchBar text];
-    if ([searchText length] == 0)
-    {
-        waypoints = [_waypointDatabase waypointsSortedByName];
-    }
-    else
+    if ([searchText length] > 0)
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        waypoints = [_waypointDatabase waypointsSortedByNameMatchingText:wildSearchText];
+        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ ", wildSearchText];
+        [waypoints filterUsingPredicate:predicate];
     }
+
+    [waypoints sortUsingComparator:^(id waypointA, id waypointB)
+    {
+        return [[waypointA displayName] compare:[waypointB displayName]];
+    }];
 
     [waypointTable reloadData];
 }

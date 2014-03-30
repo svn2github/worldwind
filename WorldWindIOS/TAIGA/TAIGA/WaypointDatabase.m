@@ -153,26 +153,6 @@
     return [waypoints allValues];
 }
 
-- (NSArray*) waypointsSortedByName
-{
-    return [[waypoints allValues] sortedArrayUsingComparator:^(id waypointA, id waypointB)
-    {
-        return [[waypointA displayName] compare:[waypointB displayName]];
-    }];
-}
-
-- (NSArray*) waypointsSortedByNameMatchingText:(NSString*)text
-{
-    if (text == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Text is nil")
-    }
-
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ ", text];
-
-    return [[self waypointsSortedByName] filteredArrayUsingPredicate:predicate];
-}
-
 - (Waypoint*) waypointForKey:(NSString*)key
 {
     if (key == nil)

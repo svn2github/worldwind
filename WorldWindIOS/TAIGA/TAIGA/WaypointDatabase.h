@@ -22,10 +22,6 @@
 
 - (NSArray*) waypoints;
 
-- (NSArray*) waypointsSortedByName;
-
-- (NSArray*) waypointsSortedByNameMatchingText:(NSString*)text;
-
 - (Waypoint*) waypointForKey:(NSString*)key;
 
 @end

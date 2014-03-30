@@ -12,7 +12,7 @@
 @interface WaypointFileControl : UIView<UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate>
 {
 @protected
-    NSArray* waypoints;
+    NSMutableArray* waypoints;
     UISearchBar* waypointSearchBar;
     UITableView* waypointTable;
 }
