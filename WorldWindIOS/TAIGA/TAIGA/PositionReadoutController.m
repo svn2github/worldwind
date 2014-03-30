@@ -8,6 +8,8 @@
 #import "PositionReadoutController.h"
 #import "AppConstants.h"
 #import "FlightRoute.h"
+#import "Waypoint.h"
+#import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
 #import "AddWaypointController.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -100,18 +102,22 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    // TODO: Create a waypoint from the position
+    if ([indexPath row] == 3)
+    {
+        Waypoint* waypoint = [[Waypoint alloc] initWithDegreesLatitude:[_position latitude] longitude:[_position longitude]];
+        [[_mapViewController waypointDatabase] addWaypoint:waypoint];
 
-    if ([indexPath row] == 3 && [[tableView cellForRowAtIndexPath:indexPath] accessoryType] == UITableViewCellAccessoryNone)
-    {
-        //[[_mapViewController presentedFlightRoute] addWaypoint:nil];
-        //[_presentingPopoverController dismissPopoverAnimated:YES];
-    }
-    else if ([indexPath row] == 3)
-    {
-        //AddWaypointController* addController = [[AddWaypointController alloc] initWithWaypoint:nil mapViewController:_mapViewController];
-        //[addController setPresentingPopoverController:_presentingPopoverController];
-        //[[self navigationController] pushViewController:addController animated:YES];
+        if ([[tableView cellForRowAtIndexPath:indexPath] accessoryType] == UITableViewCellAccessoryNone)
+        {
+            [_presentingPopoverController dismissPopoverAnimated:YES];
+            [[_mapViewController presentedFlightRoute] addWaypoint:waypoint];
+        }
+        else
+        {
+            AddWaypointController* addController = [[AddWaypointController alloc] initWithWaypoint:waypoint mapViewController:_mapViewController];
+            [addController setPresentingPopoverController:_presentingPopoverController];
+            [[self navigationController] pushViewController:addController animated:YES];
+        }
     }
 }
 

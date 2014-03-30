@@ -7,7 +7,6 @@
 
 #import "WaypointDatabase.h"
 #import "Waypoint.h"
-#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
@@ -18,82 +17,61 @@
 {
     self = [super init];
 
-    waypointArray = [[NSMutableArray alloc] initWithCapacity:8];
-    waypointKeyMap = [[NSMutableDictionary alloc] initWithCapacity:8];
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    waypoints = [[NSMutableDictionary alloc] init];
+    waypointStateKeys = [[NSMutableSet alloc] initWithArray:[userState objectForKey:@"gov.nasa.worldwind.taiga.waypointKeys"]];
+
+    for (NSString* stateKey in waypointStateKeys)
+    {
+        NSDictionary* stateValues = [userState objectForKey:stateKey];
+        Waypoint* waypoint = [[Waypoint alloc] initWithPropertyList:stateValues];
+        [waypoints setObject:waypoint forKey:[waypoint key]];
+    }
 
     return self;
 }
 
-- (void) addWaypointTables:(NSArray*)urlArray finishedBlock:(void (^)(void))finishedBlock
+- (void) addWaypoint:(Waypoint*)waypoint
 {
-    if (urlArray == nil)
+    if (waypoint == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL array is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
     }
 
-    if (finishedBlock == nil)
+    NSString* stateKey = [NSString stringWithFormat:@"gov.nasa.worldwind.taiga.waypoint.%@", [waypoint key]];
+    NSDictionary* stateValues = [waypoint propertyList];
+
+    [waypoints setObject:waypoint forKey:[waypoint key]];
+    [waypointStateKeys addObject:stateKey];
+
+    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
+    [userState setObject:stateValues forKey:stateKey];
+    [userState setObject:[waypointStateKeys allObjects] forKey:@"gov.nasa.worldwind.taiga.waypointKeys"];
+    [userState synchronize];
+}
+
+- (void) addWaypointsFromTable:(NSString*)urlString completionBlock:(void(^)(void))completionBlock
+{
+    if (urlString == nil)
     {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Finished block is nil")
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"URL string is nil")
     }
 
-    const NSUInteger tableCount = [urlArray count];
-    __block NSUInteger tablesCompleted = 0;
-
-    for (NSString* urlString in urlArray)
+    NSURL* url = [NSURL URLWithString:urlString];
+    WWRetriever* tableRetriever = [[WWRetriever alloc] initWithUrl:url timeout:5.0 finishedBlock:^(WWRetriever* retriever)
     {
-        NSURL* url = [NSURL URLWithString:urlString];
-        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5.0 finishedBlock:^(WWRetriever* waypointRetriever)
+        [self addWaypointsFromTableRetriever:retriever];
+
+        if (completionBlock != nil)
         {
-            [self waypointTableRetrieverDidFinish:waypointRetriever];
-
-            if (++tablesCompleted == tableCount)
-            {
-                [self didAddWaypointTables:finishedBlock];
-            }
-        }];
-        [retriever performRetrieval];
-    }
-}
-
-- (NSArray*) waypoints
-{
-    return waypointArray;
-}
-
-- (NSArray*) waypointsMatchingText:(NSString*)text
-{
-    if (text == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Text is nil")
-    }
-
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ OR displayNameLong LIKE[cd] %@",
-                    text, text];
-
-    return [waypointArray filteredArrayUsingPredicate:predicate];
-}
-
-- (Waypoint*) waypointForKey:(NSString*)key
-{
-    if (key == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
-    }
-
-    return [waypointKeyMap objectForKey:key];
-}
-
-- (void) didAddWaypointTables:(void (^)(void))finishedBlock
-{
-    [waypointArray sortUsingComparator:^(id obj1, id obj2)
-    {
-        return [[obj1 displayName] compare:[obj2 displayName]];
+            completionBlock();
+        }
     }];
 
-    finishedBlock();
+    [tableRetriever performRetrieval];
 }
 
-- (void) waypointTableRetrieverDidFinish:(WWRetriever*)retriever
+- (void) addWaypointsFromTableRetriever:(WWRetriever*)retriever
 {
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:[[retriever url] path]];
@@ -118,7 +96,7 @@
             }
         }
 
-        [self parseWaypointTable:[retriever retrievedData] location:location];
+        [self addWaypointsFromTableData:[retriever retrievedData]];
     }
     else
     {
@@ -128,7 +106,7 @@
         NSData* data = [NSData dataWithContentsOfFile:cachePath];
         if (data != nil)
         {
-            [self parseWaypointTable:data location:location];
+            [self addWaypointsFromTableData:data];
         }
         else
         {
@@ -137,7 +115,7 @@
     }
 }
 
-- (void) parseWaypointTable:(NSData*)data location:(NSString*)location
+- (void) addWaypointsFromTableData:(NSData*)data
 {
     NSString* string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSMutableArray* fieldNames = [[NSMutableArray alloc] initWithCapacity:8];
@@ -163,40 +141,46 @@
         }
     }];
 
-    if ([[fieldNames firstObject] isEqual:@"ARPT_IDENT"])
+    for (NSDictionary* row in tableRows)
     {
-        [self parseAirportTable:tableRows];
-    }
-    else
-    {
-        WWLog(@"Unrecognized waypoint table %@", location);
+        Waypoint* waypoint = [[Waypoint alloc] initWithWaypointTableRow:row];
+        [waypoints setObject:waypoint forKey:[waypoint key]];
     }
 }
 
-- (void) parseAirportTable:(NSArray*)tableRows
+- (NSArray*) waypoints
 {
-    for (NSDictionary* row in tableRows)
+    return [waypoints allValues];
+}
+
+- (NSArray*) waypointsSortedByName
+{
+    return [[waypoints allValues] sortedArrayUsingComparator:^(id waypointA, id waypointB)
     {
-        NSString* id = [row objectForKey:@"ARPT_IDENT"];
-        NSNumber* latDegrees = [row objectForKey:@"WGS_DLAT"];
-        NSNumber* lonDegrees = [row objectForKey:@"WGS_DLONG"];
-        NSString* icao = [row objectForKey:@"ICAO"];
-        NSString* name = [row objectForKey:@"NAME"];
+        return [[waypointA displayName] compare:[waypointB displayName]];
+    }];
+}
 
-        WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[latDegrees doubleValue]
-                                                                 longitude:[lonDegrees doubleValue]];
-
-        NSMutableString* displayName = [[NSMutableString alloc] init];
-        [displayName appendString:icao];
-        [displayName appendString:@": "];
-        [displayName appendString:[name capitalizedString]];
-
-        Waypoint* waypoint = [[Waypoint alloc] initWithKey:id location:location type:WaypointTypeAirport];
-        [waypoint setProperties:row];
-        [waypoint setDisplayName:displayName];
-        [waypointArray addObject:waypoint];
-        [waypointKeyMap setValue:waypoint forKey:id];
+- (NSArray*) waypointsSortedByNameMatchingText:(NSString*)text
+{
+    if (text == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Text is nil")
     }
+
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ ", text];
+
+    return [[self waypointsSortedByName] filteredArrayUsingPredicate:predicate];
+}
+
+- (Waypoint*) waypointForKey:(NSString*)key
+{
+    if (key == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
+    }
+
+    return [waypoints objectForKey:key];
 }
 
 @end

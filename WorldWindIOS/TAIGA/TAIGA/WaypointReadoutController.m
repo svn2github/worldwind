@@ -72,16 +72,19 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if ([indexPath row] == 1 && [[tableView cellForRowAtIndexPath:indexPath] accessoryType] == UITableViewCellAccessoryNone)
+    if ([indexPath row] == 1)
     {
-        [[_mapViewController presentedFlightRoute] addWaypoint:_waypoint];
-        [_presentingPopoverController dismissPopoverAnimated:YES];
-    }
-    else if ([indexPath row] == 1)
-    {
-        AddWaypointController* addController = [[AddWaypointController alloc] initWithWaypoint:_waypoint mapViewController:_mapViewController];
-        [addController setPresentingPopoverController:_presentingPopoverController];
-        [[self navigationController] pushViewController:addController animated:YES];
+        if ([[tableView cellForRowAtIndexPath:indexPath] accessoryType] == UITableViewCellAccessoryNone)
+        {
+            [_presentingPopoverController dismissPopoverAnimated:YES];
+            [[_mapViewController presentedFlightRoute] addWaypoint:_waypoint];
+        }
+        else
+        {
+            AddWaypointController* addController = [[AddWaypointController alloc] initWithWaypoint:_waypoint mapViewController:_mapViewController];
+            [addController setPresentingPopoverController:_presentingPopoverController];
+            [[self navigationController] pushViewController:addController animated:YES];
+        }
     }
 }
 

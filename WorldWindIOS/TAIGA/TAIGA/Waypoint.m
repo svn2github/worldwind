@@ -7,11 +7,12 @@
 
 #import "Waypoint.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 
 @implementation Waypoint
 
-- (Waypoint*) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type
+- (id) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type
 {
     if (key == nil)
     {
@@ -28,6 +29,8 @@
     _key = key;
     _location = location;
     _type  = type;
+    _displayName = @"";
+    _properties = [NSDictionary dictionary];
 
     switch (_type)
     {
@@ -35,13 +38,105 @@
         _iconPath = [[NSBundle mainBundle] pathForResource:@"38-airplane" ofType:@"png"];
         _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         break;
-    case WaypointTypeUser :
+    case WaypointTypeMarker :
         _iconPath = [[NSBundle mainBundle] pathForResource:@"07-map-marker" ofType:@"png"];
         _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         break;
     }
 
     return self;
+}
+
+- (id) initWithWaypointTableRow:(NSDictionary*)values
+{
+    if (values == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Values is nil")
+    }
+
+    NSString* id = [values objectForKey:@"ARPT_IDENT"];
+    NSNumber* latDegrees = [values objectForKey:@"WGS_DLAT"];
+    NSNumber* lonDegrees = [values objectForKey:@"WGS_DLONG"];
+    NSString* icao = [values objectForKey:@"ICAO"];
+    NSString* name = [values objectForKey:@"NAME"];
+    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[latDegrees doubleValue]
+                                                             longitude:[lonDegrees doubleValue]];
+
+    self = [self initWithKey:id location:location type:WaypointTypeAirport];
+
+    NSMutableString* displayName = [[NSMutableString alloc] init];
+    [displayName appendString:icao];
+    [displayName appendString:@": "];
+    [displayName appendString:[name capitalizedString]];
+
+    _displayName = displayName;
+    _properties = values;
+
+    return self;
+}
+
+- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
+{
+    NSString* id = [WWUtil generateUUID];
+    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latitude longitude:longitude];
+
+    self = [self initWithKey:id location:location type:WaypointTypeMarker];
+
+    NSNumberFormatter* latitudeFormatter = [[NSNumberFormatter alloc] init];
+    [latitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+    [latitudeFormatter setMaximumFractionDigits:2];
+    [latitudeFormatter setPositiveSuffix:@"\u00B0N"];
+    [latitudeFormatter setNegativeSuffix:@"\u00B0S"];
+    [latitudeFormatter setNegativePrefix:@""];
+
+    NSNumberFormatter* longitudeFormatter = [[NSNumberFormatter alloc] init];
+    [longitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+    [longitudeFormatter setMaximumFractionDigits:2];
+    [longitudeFormatter setPositiveSuffix:@"\u00B0E"];
+    [longitudeFormatter setNegativeSuffix:@"\u00B0W"];
+    [longitudeFormatter setNegativePrefix:@""];
+
+    NSMutableString* displayName = [[NSMutableString alloc] init];
+    [displayName appendString:[latitudeFormatter stringFromNumber:[NSNumber numberWithDouble:latitude]]];
+    [displayName appendString:@" "];
+    [displayName appendString:[longitudeFormatter stringFromNumber:[NSNumber numberWithDouble:longitude]]];
+
+    _displayName = displayName;
+
+    return self;
+}
+
+- (id) initWithPropertyList:(NSDictionary*)propertyList
+{
+    if (propertyList == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Property list is nil")
+    }
+
+    NSString* key = [propertyList objectForKey:@"key"];
+    NSNumber* lat = [propertyList objectForKey:@"latitude"];
+    NSNumber* lon = [propertyList objectForKey:@"longitude"];
+    NSNumber* type = [propertyList objectForKey:@"type"];
+    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+
+    self = [self initWithKey:key location:location type:(WaypointType) [type intValue]];
+
+    _displayName = [propertyList objectForKey:@"displayName"];
+    _properties = [propertyList objectForKey:@"properties"];
+
+    return self;
+}
+
+- (NSDictionary*) propertyList
+{
+    return @{
+        @"key" : _key,
+        @"latitude" : [NSNumber numberWithDouble:[_location latitude]],
+        @"longitude" : [NSNumber numberWithDouble:[_location longitude]],
+        @"type" : [NSNumber numberWithInt:_type],
+        @"displayName" : _displayName,
+        @"properties" : _properties
+    };
 }
 
 - (BOOL) isEqual:(id __unsafe_unretained)anObject // Suppress unnecessary ARC retain/release calls.

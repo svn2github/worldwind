@@ -12,15 +12,19 @@
 @interface WaypointDatabase : NSObject
 {
 @protected
-    NSMutableArray* waypointArray;
-    NSMutableDictionary* waypointKeyMap;
+    NSMutableDictionary* waypoints;
+    NSMutableSet* waypointStateKeys;
 }
 
-- (void) addWaypointTables:(NSArray*)urlArray finishedBlock:(void (^)(void))finishedBlock;
+- (void) addWaypoint:(Waypoint*)waypoint;
+
+- (void) addWaypointsFromTable:(NSString*)urlString completionBlock:(void(^)(void))completionBlock;
 
 - (NSArray*) waypoints;
 
-- (NSArray*) waypointsMatchingText:(NSString*)text;
+- (NSArray*) waypointsSortedByName;
+
+- (NSArray*) waypointsSortedByNameMatchingText:(NSString*)text;
 
 - (Waypoint*) waypointForKey:(NSString*)key;
 

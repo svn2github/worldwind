@@ -91,7 +91,6 @@
     TerrainProfileView* terrainProfileView;
     TerrainProfileController* terrainProfileController;
 
-    WaypointDatabase* waypointDatabase;
     WaypointLayer* waypointLayer;
     AircraftLayer* aircraftLayer;
     WWRenderableLayer* flightRouteLayer;
@@ -122,6 +121,8 @@
 
     myFrame = frame;
 
+    _waypointDatabase = [[WaypointDatabase alloc] init];
+
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     positionReadoutViewController = [[PositionReadoutController alloc] init];
@@ -149,6 +150,11 @@
     return [routeViewController flightRouteAtIndex:index];
 }
 
+- (void) newFlightRoute:(void (^)(NSUInteger index))completionBlock
+{
+    [routeViewController newFlightRoute:completionBlock];
+}
+
 - (FlightRoute*) presentedFlightRoute
 {
     if (isShowRouteView)
@@ -159,24 +165,30 @@
     return nil;
 }
 
-- (void) presentFlightRouteAtIndex:(NSUInteger)index
+- (void) presentFlightRouteAtIndex:(NSUInteger)index editing:(BOOL)editing
 {
+    // Make the flight route visible on the map.
+    FlightRoute* flightRoute = [self flightRouteAtIndex:index];
+    [flightRoute setEnabled:YES];
+
+    // Make the flight route visible on the route view controller.
+    [routeViewController presentFlightRouteAtIndex:index editing:editing];
+
     if (!isShowRouteView)
     {
         [self transitionRouteView];
     }
-
-    [routeViewController presentFlightRouteAtIndex:index];
 }
 
-- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock
+- (void) loadWaypoints
 {
-    if (!isShowRouteView)
-    {
-        [self transitionRouteView];
-    }
-
-    [routeViewController newFlightRoute:completionBlock];
+    [_waypointDatabase addWaypointsFromTable:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"
+                             completionBlock:^
+                             {
+                                 [routeViewController restoreFlightRouteState];
+                                 [waypointLayer setWaypointDatabase:_waypointDatabase];
+                                 [WorldWindView requestRedraw];
+                             }];
 }
 
 - (void) loadView
@@ -189,6 +201,7 @@
     [self createWorldWindView];
     [self createTopToolbar];
     [self createChartsController];
+    [self createRouteViewController];
     [self createSimulationController];
     [self createTerrainProfile];
     [self createLocationTrackingController];
@@ -204,15 +217,17 @@
     [topToolBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_wwv setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[chartListNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [[routeViewNavController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[simulationViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
     [terrainProfileView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[locationTrackingViewController view] setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIView* view = [self view];
     UIView* splitView = [chartListNavController view];
+    UIView* routeView = [routeViewNavController view];
     UIView* simulationView = [simulationViewController view];
     UIView* locationTrackingView = [locationTrackingViewController view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_wwv, splitView, topToolBar, scaleBarView,
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_wwv, splitView, routeView, topToolBar, scaleBarView,
     simulationView, terrainProfileView, locationTrackingView);
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topToolBar]|"
@@ -229,6 +244,8 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][splitView]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][routeView]|"
+                                                                 options:0 metrics:nil views:viewsDictionary]];
     [view addConstraint:[NSLayoutConstraint constraintWithItem:locationTrackingView attribute:NSLayoutAttributeLeft
                                                      relatedBy:NSLayoutRelationEqual
                                                         toItem:_wwv attribute:NSLayoutAttributeLeft multiplier:1 constant:20]];
@@ -244,6 +261,13 @@
     [view addConstraints:isShowSplitView ? showSplitViewConstraints : hideSplitViewConstraints];
     if (isShowSplitView)
         [self loadMostRecentlyUsedChart];
+
+    showRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[routeView(==350)]|"
+                                                                       options:0 metrics:nil views:viewsDictionary];
+    hideRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[_wwv][routeView(==350)]"
+                                                                       options:0 metrics:nil views:viewsDictionary];
+    isShowRouteView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.routeview.enabled" defaultValue:NO];
+    [view addConstraints:isShowRouteView ? showRouteViewConstraints : hideRouteViewConstraints];
 
     showSimulationViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[simulationView(80)]|"
                                                                             options:0 metrics:nil views:viewsDictionary];
@@ -276,45 +300,6 @@
     [chartsListController selectChart:chartFileName chartName:chartName];
 }
 
-- (void) loadWaypoints
-{
-    waypointDatabase = [[WaypointDatabase alloc] init];
-    [waypointDatabase addWaypointTables:@[@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"]
-                          finishedBlock:^
-                          {
-                              [self waypointsDidLoad];
-                          }];
-}
-
-- (void) waypointsDidLoad
-{
-    routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv
-                                                              flightRouteLayer:flightRouteLayer
-                                                              waypointDatabase:waypointDatabase];
-    [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
-
-    routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
-    [routeViewNavController setDelegate:self]; // Propagate the root view alpha to views pushed on the navigation stack.
-
-    UIView* view = [self view];
-    UIView* routeView = [routeViewNavController view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(_wwv, topToolBar, routeView);
-    [routeView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [view addSubview:routeView];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topToolBar][routeView]|"
-                                                                 options:0 metrics:nil views:viewsDictionary]];
-    showRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[routeView(==350)]|"
-                                                                       options:0 metrics:nil views:viewsDictionary];
-    hideRouteViewConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:[_wwv][routeView(==350)]"
-                                                                       options:0 metrics:nil views:viewsDictionary];
-    isShowRouteView = [Settings getBoolForName:@"gov.nasa.worldwind.taiga.routeview.enabled" defaultValue:NO];
-    [view addConstraints:isShowRouteView ? showRouteViewConstraints : hideRouteViewConstraints];
-
-    [routeViewButton setEnabled:YES];
-    [waypointLayer setWaypointDatabase:waypointDatabase];
-    [WorldWindView requestRedraw];
-}
-
 - (void) viewDidLoad
 {
     [super viewDidLoad];
@@ -339,6 +324,7 @@
 
     flightRouteLayer = [[WWRenderableLayer alloc] init];
     [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [flightRouteLayer addRenderable:routeViewController]; // the flight route controller draws its flight routes on the map
     [layers addLayer:flightRouteLayer];
 
     waypointLayer = [[WaypointLayer alloc] init];
@@ -477,6 +463,16 @@
 - (void) pushChart
 {
     [((UINavigationController*) [chartsListController parentViewController]) pushViewController:chartViewController animated:YES];
+}
+
+- (void) createRouteViewController
+{
+    routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv waypointDatabase:_waypointDatabase];
+    [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
+
+    routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];
+    [routeViewNavController setDelegate:self]; // Propagate the root view alpha to views pushed on the navigation stack.
+    [self.view addSubview:[routeViewNavController view]];
 }
 
 - (void) createTerrainProfile
@@ -669,7 +665,6 @@
     color = [[UIColor alloc] initWithRed:1.0 green:242. / 255. blue:183. / 255. alpha:1.0];
     [((ButtonWithImageAndText*) [routeViewButton customView]) setTextColor:color];
     [((ButtonWithImageAndText*) [routeViewButton customView]) setFontSize:15];
-    [routeViewButton setEnabled:NO]; // flight planning button is enabled after waypoints load
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];

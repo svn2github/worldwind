@@ -60,23 +60,25 @@
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [_presentingPopoverController dismissPopoverAnimated:YES];
 
     if ([indexPath row] < [_mapViewController flightRouteCount])
     {
-        NSUInteger index = (NSUInteger) [indexPath row];
-        [_presentingPopoverController dismissPopoverAnimated:YES];
-        [_mapViewController presentFlightRouteAtIndex:index];
-        [[_mapViewController flightRouteAtIndex:index] addWaypoint:_waypoint];
+        [self addWaypointToFlightRouteAtIndex:(NSUInteger) [indexPath row]];
     }
     else // New Route row
     {
-        [_presentingPopoverController dismissPopoverAnimated:YES];
-        [_mapViewController newFlightRoute:^(FlightRoute* newFlightRoute)
+        [_mapViewController newFlightRoute:^(NSUInteger index)
         {
-            [newFlightRoute addWaypoint:_waypoint];
+            [self addWaypointToFlightRouteAtIndex:index];
         }];
     }
 }
 
+- (void) addWaypointToFlightRouteAtIndex:(NSUInteger)index
+{
+    [_mapViewController presentFlightRouteAtIndex:index editing:NO];
+    [[_mapViewController flightRouteAtIndex:index] addWaypoint:_waypoint];
+}
 
 @end

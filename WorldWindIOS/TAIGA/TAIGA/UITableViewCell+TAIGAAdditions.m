@@ -24,6 +24,7 @@
     [[self imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
     [[self imageView] setHidden:![flightRoute enabled]];
     [[self textLabel] setText:[flightRoute displayName]];
+    [[self textLabel] setAdjustsFontSizeToFitWidth:YES];
     [[self detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
     [[self detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
 }
@@ -39,6 +40,7 @@
     [[self imageView] setImage:[waypoint iconImage]];
     [[self textLabel] setText:[waypoint displayName]];
     [[self textLabel] setAdjustsFontSizeToFitWidth:YES];
+    [[self detailTextLabel] setText:nil];
 }
 
 @end

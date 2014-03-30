@@ -98,8 +98,8 @@
     // The waypoint index indicates the row index that has been removed.
     NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
-    NSArray* indexPaths = [NSArray arrayWithObject:indexPath];
-    [flightRouteTable deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    [flightRouteTable deleteRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

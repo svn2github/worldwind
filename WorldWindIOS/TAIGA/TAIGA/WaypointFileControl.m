@@ -65,12 +65,12 @@
     NSString* searchText = [waypointSearchBar text];
     if ([searchText length] == 0)
     {
-        waypoints = [_waypointDatabase waypoints];
+        waypoints = [_waypointDatabase waypointsSortedByName];
     }
     else
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        waypoints = [_waypointDatabase waypointsMatchingText:wildSearchText];
+        waypoints = [_waypointDatabase waypointsSortedByNameMatchingText:wildSearchText];
     }
 
     [waypointTable reloadData];
