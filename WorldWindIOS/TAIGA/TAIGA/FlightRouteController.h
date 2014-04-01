@@ -17,7 +17,7 @@
 @protected
     NSMutableArray* flightRoutes;
     NSUInteger newFlightRouteColorIndex;
-    void (^newFlightRouteCompletionBlock)(NSUInteger index);
+    void (^newFlightRouteCompletionBlock)(FlightRoute* newFlightRoute);
 }
 
 /// @name Attributes
@@ -54,7 +54,7 @@
 
 /// @name Creating and Presenting Flight Routes
 
-- (void) newFlightRoute:(void (^)(NSUInteger index))completionBlock;
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock;
 
 - (FlightRoute*) presentedFlightRoute;
 

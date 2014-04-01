@@ -31,7 +31,6 @@
 #import "WWNavigator.h"
 #import "CompassLayer.h"
 #import "ScaleBarView.h"
-#import "PositionReadoutController.h"
 #import "ChartViewController.h"
 #import "WWUtil.h"
 #import "ChartsTableController.h"
@@ -51,7 +50,7 @@
 #import "LocationTrackingViewController.h"
 #import "WWDAFIFLayer.h"
 #import "WWBingLayer.h"
-#import "WaypointReadoutController.h"
+#import "AddWaypointPopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
 
@@ -107,12 +106,9 @@
     UIPopoverController* metarDataPopoverController;
     PIREPDataViewController* pirepDataViewController;
     UIPopoverController* pirepDataPopoverController;
-    PositionReadoutController* positionReadoutViewController;
-    UIPopoverController* positionReadoutPopoverController;
     WeatherCamViewController* weatherCamViewController;
     UIPopoverController* weatherCamPopoverController;
-    WaypointReadoutController* waypointReadoutViewController;
-    UIPopoverController* waypointReadoutPopoverController;
+    UIPopoverController* waypointPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -125,17 +121,7 @@
 
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
-    positionReadoutViewController = [[PositionReadoutController alloc] init];
-    positionReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:
-            [[UINavigationController alloc] initWithRootViewController:positionReadoutViewController]];
-    [positionReadoutViewController setMapViewController:self];
-    [positionReadoutViewController setPresentingPopoverController:positionReadoutPopoverController];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
-    waypointReadoutViewController = [[WaypointReadoutController alloc] init];
-    waypointReadoutPopoverController = [[UIPopoverController alloc] initWithContentViewController:
-            [[UINavigationController alloc] initWithRootViewController:waypointReadoutViewController]];
-    [waypointReadoutViewController setMapViewController:self];
-    [waypointReadoutViewController setPresentingPopoverController:waypointReadoutPopoverController];
 
     return self;
 }
@@ -150,7 +136,12 @@
     return [routeViewController flightRouteAtIndex:index];
 }
 
-- (void) newFlightRoute:(void (^)(NSUInteger index))completionBlock
+- (void) insertFlightRoute:(FlightRoute*)flightRoute atIndex:(NSUInteger)index
+{
+    [routeViewController insertFlightRoute:flightRoute atIndex:index];
+}
+
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock
 {
     [routeViewController newFlightRoute:completionBlock];
 }
@@ -836,7 +827,7 @@
 
         if (topObject.isTerrain)
         {
-            [self showPositionReadout:topObject];
+            [self showAddWaypointAtPickPosition:topObject];
         }
         else if ([[topObject userObject] isKindOfClass:[WWPointPlacemark class]])
         {
@@ -858,17 +849,27 @@
         else if ([[topObject userObject] isKindOfClass:[Waypoint class]])
         {
             if ([[[topObject parentLayer] displayName] isEqualToString:@"Airports"])
-                [self showWaypoint:topObject];
+                [self showAddWaypoint:topObject];
         }
     }
 }
 
-- (void) showPositionReadout:(WWPickedObject*)po
+- (void) showAddWaypoint:(WWPickedObject*)po
 {
-    [positionReadoutViewController setPosition:[po position]];
-    [[positionReadoutViewController navigationController] popToRootViewControllerAnimated:NO];
-    [positionReadoutPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                            permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    Waypoint* waypoint = [po userObject];
+    waypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
+    [waypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                     permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
+{
+    WWPosition* pos = [po position];
+    Waypoint* waypoint = [[Waypoint alloc] initWithDegreesLatitude:[pos latitude] longitude:[pos longitude]];
+    waypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
+    [(AddWaypointPopoverController*) waypointPopoverController setAddWaypointToDatabase:YES];
+    [waypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                     permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm
@@ -954,14 +955,6 @@
         weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
     [weatherCamPopoverController presentPopoverFromRect:rect inView:_wwv
                                permittedArrowDirections:0 animated:YES];
-}
-
-- (void) showWaypoint:(WWPickedObject*)po
-{
-    [waypointReadoutViewController setWaypoint:[po userObject]];
-    [[waypointReadoutViewController navigationController] popToRootViewControllerAnimated:NO];
-    [waypointReadoutPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                            permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) selectFlightRoute:(FlightRoute*)flightRoute

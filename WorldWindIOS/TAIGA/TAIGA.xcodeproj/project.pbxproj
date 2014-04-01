@@ -108,7 +108,6 @@
 		1BF9A98BDAED599CF626968F /* 25-weather.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A46DD2EE664E94DFCADD /* 25-weather.png */; };
 		1BF9A9D7FE17BA65363F9781 /* 19-gear.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA2D917BDB061CDD58F1 /* 19-gear.png */; };
 		1BF9A9D87EFDEBAE923B0A60 /* PIREP_ICONS_0003_Layer-5.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3C7CD276C3C6FC0C700 /* PIREP_ICONS_0003_Layer-5.png */; };
-		1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */; };
 		1BF9A9EAF9B712CF4F68BBCF /* 431-yes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A4A2AC3D04D3C8888642 /* 431-yes@2x.png */; };
 		1BF9AA1E322E542699D0E5ED /* WB_25kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A7AE487804CB52BF23BF /* WB_25kt_128.png */; };
 		1BF9AA44A8A7A6D4E555C799 /* ScaleBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AA03D1A24183B3A0F224 /* ScaleBarView.m */; };
@@ -186,12 +185,11 @@
 		CC8CF4084D0ADBD0D9255A53 /* rounded-rect@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */; };
 		CC8CF413521615D8E131FE18 /* SimulationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD24B08756B57C45C655 /* SimulationViewController.m */; };
 		CC8CF4742E28C3B51D0E334F /* 193-location-arrow-outline@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFF927F0E04A8C1FF5DA0 /* 193-location-arrow-outline@2x.png */; };
-		CC8CF4860321053FBF1A98FE /* AddWaypointController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */; };
 		CC8CF6539CCA0C68561935FE /* circle-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */; };
 		CC8CF6B7421F077AE2831D77 /* route-begin@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CFCD52A777ACE793EEA4F /* route-begin@2x.png */; };
 		CC8CF7AC3E0C5CEA8A95B18F /* AircraftShape.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8F60C10525135F57A82 /* AircraftShape.m */; };
 		CC8CF7C07D34E964137D88B6 /* WaypointLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFCA0D8092BD7B6B01688 /* WaypointLayer.m */; };
-		CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */; };
+		CC8CF7C935BF248A1E5BC550 /* AddWaypointPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF395F1297FACD384E75B /* AddWaypointPopoverController.m */; };
 		CC8CF832A1920118F96D9839 /* circle-small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF77711BB8EB271836CF7 /* circle-small.png */; };
 		CC8CF84ED0295E3A6171D3B2 /* LocationTrackingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF829F3CCABEED04F32C5 /* LocationTrackingViewController.m */; };
 		CC8CF89366564ECB26B9C433 /* UITableViewCell+TAIGAAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFE9F8D03AD7CEE67B208 /* UITableViewCell+TAIGAAdditions.m */; };
@@ -344,7 +342,6 @@
 		1BF9A956C0D57ACEA4A25D6A /* 433-x-gray@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x-gray@2x.png"; sourceTree = "<group>"; };
 		1BF9A989027E719B196FB35C /* WB_70kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_70kt_128.png; sourceTree = "<group>"; };
 		1BF9A99F6415E09E84C670BB /* MetarIconGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetarIconGenerator.m; sourceTree = "<group>"; };
-		1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionReadoutController.m; sourceTree = "<group>"; };
 		1BF9A9BDB8AECE5417A1271E /* WX_RA_PLUS_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_RA_PLUS_128.png; sourceTree = "<group>"; };
 		1BF9A9D1F33A1E4D1A075CC8 /* TerrainProfileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerrainProfileController.h; sourceTree = "<group>"; };
 		1BF9A9D36A0CE6FDD4D51BA9 /* LayerListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerListController.h; sourceTree = "<group>"; };
@@ -380,7 +377,6 @@
 		1BF9AC1EC3636B201FF789F6 /* WeatherScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeatherScreenController.h; sourceTree = "<group>"; };
 		1BF9AC2BC6511C9F1494366A /* SettingsScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsScreenController.m; sourceTree = "<group>"; };
 		1BF9AC453454DC284028FA57 /* WB_65kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_65kt_128.png; sourceTree = "<group>"; };
-		1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PositionReadoutController.h; sourceTree = "<group>"; };
 		1BF9AC548E1B6A8C5890C137 /* PIREPDataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PIREPDataViewController.m; sourceTree = "<group>"; };
 		1BF9AC5D90B5FD2F10994DD7 /* PIREP_ICONS_0010_Layer-12.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0010_Layer-12.png"; sourceTree = "<group>"; };
 		1BF9AC62274413AAB34740F4 /* PIREP_ICONS_0006_Layer-8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0006_Layer-8.png"; sourceTree = "<group>"; };
@@ -433,7 +429,7 @@
 		CC8CF2A1449A236B9E911B54 /* route-end@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end@2x.png"; sourceTree = "<group>"; };
 		CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
-		CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointReadoutController.m; sourceTree = "<group>"; };
+		CC8CF395F1297FACD384E75B /* AddWaypointPopoverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddWaypointPopoverController.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
 		CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
@@ -444,7 +440,7 @@
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
 		CC8CF7AD21D0FEAF5E7328DA /* SimulationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimulationViewController.h; sourceTree = "<group>"; };
 		CC8CF829F3CCABEED04F32C5 /* LocationTrackingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationTrackingViewController.m; sourceTree = "<group>"; };
-		CC8CF8605140773826A5BEF4 /* WaypointReadoutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointReadoutController.h; sourceTree = "<group>"; };
+		CC8CF8605140773826A5BEF4 /* AddWaypointPopoverController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddWaypointPopoverController.h; sourceTree = "<group>"; };
 		CC8CF868D2F14BF1A981A4F7 /* circle-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small@2x.png"; sourceTree = "<group>"; };
 		CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIPopoverController+TAIGAAdditions.m"; sourceTree = "<group>"; };
 		CC8CF8F2BE2B44F67B01F16F /* 433-x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x.png"; sourceTree = "<group>"; };
@@ -467,8 +463,6 @@
 		CC8CFCE24F3F3C30BC7C59FE /* WaypointFileControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointFileControl.m; sourceTree = "<group>"; };
 		CC8CFCE70CDF2979DDFD1139 /* AircraftLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftLayer.m; sourceTree = "<group>"; };
 		CC8CFD24B08756B57C45C655 /* SimulationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimulationViewController.m; sourceTree = "<group>"; };
-		CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddWaypointController.m; sourceTree = "<group>"; };
-		CC8CFDB469DB93A886E6A35B /* AddWaypointController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddWaypointController.h; sourceTree = "<group>"; };
 		CC8CFDC5DBCA408191058CCC /* ColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPicker.h; sourceTree = "<group>"; };
 		CC8CFDF0F838D123AA57E0CE /* FlightRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRoute.h; sourceTree = "<group>"; };
 		CC8CFE0F0B4B6CFB377B9003 /* FlightRouteDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteDetailController.m; sourceTree = "<group>"; };
@@ -616,8 +610,6 @@
 				CC8CFDC5DBCA408191058CCC /* ColorPicker.h */,
 				CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */,
 				CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */,
-				1BF9A9AF8CFCF466A0921702 /* PositionReadoutController.m */,
-				1BF9AC4545B996973CF918F0 /* PositionReadoutController.h */,
 				1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */,
 				1BF9A5CA68CC87A719BAE37A /* ChartsTableController.h */,
 				1BF9AFCB43CFF8C0595DB2A8 /* WeatherCamLayer.m */,
@@ -652,12 +644,10 @@
 				1BF9ADEB0ACCD63030C1E160 /* GPSController.h */,
 				CC8CFE9F8D03AD7CEE67B208 /* UITableViewCell+TAIGAAdditions.m */,
 				CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */,
-				CC8CF8605140773826A5BEF4 /* WaypointReadoutController.h */,
-				CC8CF395F1297FACD384E75B /* WaypointReadoutController.m */,
+				CC8CF8605140773826A5BEF4 /* AddWaypointPopoverController.h */,
+				CC8CF395F1297FACD384E75B /* AddWaypointPopoverController.m */,
 				CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */,
 				CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */,
-				CC8CFD3D663804D7AC8CEF37 /* AddWaypointController.m */,
-				CC8CFDB469DB93A886E6A35B /* AddWaypointController.h */,
 				1BF9A01C508D7227F59A7F2A /* FAASectionalsLayer.m */,
 				1BF9AD9638063B5BB8924579 /* FAASectionalsLayer.h */,
 			);
@@ -1040,7 +1030,6 @@
 				CC8CF0D64EDCCDCB01C85E03 /* WaypointDatabase.m in Sources */,
 				CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */,
 				CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */,
-				1BF9A9E1E8E99194548FBD8B /* PositionReadoutController.m in Sources */,
 				1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */,
 				1BF9AD0A5453B64A1022B6FB /* WeatherCamLayer.m in Sources */,
 				1BF9A903105B5D5C82FB7EC0 /* WeatherCamViewController.m in Sources */,
@@ -1058,9 +1047,8 @@
 				1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */,
 				1BF9A086BA3A7476E5F29268 /* GPSController.m in Sources */,
 				CC8CF89366564ECB26B9C433 /* UITableViewCell+TAIGAAdditions.m in Sources */,
-				CC8CF7C935BF248A1E5BC550 /* WaypointReadoutController.m in Sources */,
+				CC8CF7C935BF248A1E5BC550 /* AddWaypointPopoverController.m in Sources */,
 				CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */,
-				CC8CF4860321053FBF1A98FE /* AddWaypointController.m in Sources */,
 				1BF9A3C5B6540C448DD1538E /* FAASectionalsLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

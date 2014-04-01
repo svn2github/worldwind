@@ -27,9 +27,11 @@
 
 - (FlightRoute*) flightRouteAtIndex:(NSUInteger)index;
 
+- (void) insertFlightRoute:(FlightRoute*)flightRoute atIndex:(NSUInteger)index;
+
 /// @name Creating and Presenting Flight Routes
 
-- (void) newFlightRoute:(void (^)(NSUInteger index))completionBlock;
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock;
 
 - (FlightRoute*) presentedFlightRoute;
 

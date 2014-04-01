@@ -7,16 +7,24 @@
 
 #import <Foundation/Foundation.h>
 
-@class MovingMapViewController;
 @class Waypoint;
+@class MovingMapViewController;
 
-@interface AddWaypointController : UITableViewController
+@interface AddWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate, UINavigationControllerDelegate>
+{
+@protected
+    UITableViewController* addWaypointController;
+    UITableViewController* flightRouteChooser;
+    UINavigationController* navigationController;
+    NSMutableArray* addWaypointTableCells;
+    NSMutableArray* flightRouteTableCells;
+}
 
 @property (nonatomic, readonly) Waypoint* waypoint;
 
 @property (nonatomic, readonly) MovingMapViewController* mapViewController;
 
-@property (nonatomic) UIPopoverController* presentingPopoverController;
+@property (nonatomic) BOOL addWaypointToDatabase;
 
 - (id) initWithWaypoint:(Waypoint*)waypoint mapViewController:(MovingMapViewController*)mapViewController;
 

@@ -57,8 +57,10 @@
 - (void) addButtonItemTapped
 {
     // Create a new flight route using a user-specified display name, then present its detail view.
-    [self newFlightRoute:^(NSUInteger index)
+    [self newFlightRoute:^(FlightRoute* newFlightRoute)
     {
+        NSUInteger index = (NSUInteger) [self flightRouteCount];
+        [self insertFlightRoute:newFlightRoute atIndex:index];
         [self presentFlightRouteAtIndex:index editing:YES];
     }];
 }
@@ -247,7 +249,7 @@
 //-- Creating and Presenting Flight Routes --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (void) newFlightRoute:(void (^)(NSUInteger index))completionBlock
+- (void) newFlightRoute:(void (^)(FlightRoute* newFlightRoute))completionBlock
 {
     if (completionBlock == nil)
     {
@@ -283,11 +285,8 @@
             newFlightRouteColorIndex = 0;
         }
 
-        // Insert the new flight route at the end of the list and invoke the new flight route completion block. The
-        // flight route table is updated in didInsertFlightRoute:atIndex:.
-        NSUInteger index = (NSUInteger) [self flightRouteCount];
-        [self insertFlightRoute:newFlightRoute atIndex:index];
-        newFlightRouteCompletionBlock(index);
+        // Invoke the new flight route completion block.
+        newFlightRouteCompletionBlock(newFlightRoute);
     }
 
     newFlightRouteCompletionBlock = NULL;
