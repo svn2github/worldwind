@@ -161,6 +161,7 @@
     // Make the flight route visible on the map.
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
     [flightRoute setEnabled:YES];
+    [flightRouteLayer setEnabled:YES];
 
     // Make the flight route visible on the route view controller.
     [routeViewController presentFlightRouteAtIndex:index editing:editing];
@@ -299,6 +300,24 @@
 
     WWLayerList* layers = [[_wwv sceneController] layers];
 
+    flightRouteLayer = [[WWRenderableLayer alloc] init];
+    [flightRouteLayer addRenderable:routeViewController]; // the flight route controller draws its flight routes on the map
+    [flightRouteLayer setDisplayName:@"Routes"];
+    [flightRouteLayer setEnabled:[Settings getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
+                                             [flightRouteLayer displayName]] defaultValue:YES]];
+    [layers addLayer:flightRouteLayer];
+
+    waypointLayer = [[WaypointLayer alloc] init];
+    [waypointLayer setDisplayName:@"Airports"];
+    [waypointLayer setEnabled:[Settings                                                                               getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
+    [layers addLayer:waypointLayer];
+
+    aircraftLayer = [[AircraftLayer alloc] init];
+    [[aircraftLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
+    [layers addLayer:aircraftLayer];
+
     WWLayer* layer = [[WWBMNGLandsatCombinedLayer alloc] init];
     [[layer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
     [layers addLayer:layer];
@@ -308,21 +327,6 @@
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
                                              [layer displayName]] defaultValue:YES]];
     [layers addLayer:layer];
-
-    aircraftLayer = [[AircraftLayer alloc] init];
-    [[aircraftLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [layers addLayer:aircraftLayer];
-
-    flightRouteLayer = [[WWRenderableLayer alloc] init];
-    [[flightRouteLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];
-    [flightRouteLayer addRenderable:routeViewController]; // the flight route controller draws its flight routes on the map
-    [layers addLayer:flightRouteLayer];
-
-    waypointLayer = [[WaypointLayer alloc] init];
-    [waypointLayer setDisplayName:@"Airports"];
-    [waypointLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
-    [layers addLayer:waypointLayer];
 
     faaChartsLayer = [[FAASectionalsLayer alloc] init];
     [faaChartsLayer setEnabled:[Settings                                 getBoolForName:
