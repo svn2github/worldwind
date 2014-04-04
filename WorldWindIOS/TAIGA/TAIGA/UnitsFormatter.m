@@ -53,7 +53,7 @@
 {
     NSMutableString* ms = [[NSMutableString alloc] init];
     [ms appendString:[latitudeFormatter stringFromNumber:[NSNumber numberWithDouble:latitude]]];
-    [ms appendString:@" "];
+    [ms appendString:@"  "];
     [ms appendString:[longitudeFormatter stringFromNumber:[NSNumber numberWithDouble:longitude]]];
 
     return ms;
