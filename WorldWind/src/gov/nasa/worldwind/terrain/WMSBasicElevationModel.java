@@ -428,7 +428,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
             tileWidth, latlons.size() / tileWidth);
 
         this.downloadElevations(tile);
-        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()));
+        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()), this);
 
         for (int i = 0; i < latlons.size(); i++)
         {

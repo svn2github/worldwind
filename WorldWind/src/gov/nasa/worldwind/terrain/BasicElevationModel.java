@@ -487,7 +487,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (elevations == null || elevations.length() == 0)
             return false;
 
-        tile.setElevations(elevations);
+        tile.setElevations(elevations, this);
         this.addTileToCache(tile, elevations);
 
         return true;
@@ -967,6 +967,35 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             return this.extremes;
         }
+
+        /**
+         * Returns the extreme values among all the tiles in this object.
+         * @return the extreme values.
+         */
+        protected double[] getTileExtremes()
+        {
+            if (this.extremes != null)
+                return this.extremes;
+
+            Iterator<ElevationTile> iter = this.tiles.iterator();
+            if (!iter.hasNext())
+                return this.extremes = new double[] {this.elevationModel.getMinElevation(),
+                    this.elevationModel.getMaxElevation()};
+
+            this.extremes = WWUtil.defaultMinMix();
+
+            for (ElevationTile tile : this.tiles)
+            {
+                // This computes the extremes on a tile granularity rather than an elevation-value cell granularity.
+                // The latter is very expensive.
+                if (tile.extremes[0] < this.extremes[0])
+                    this.extremes[0] = tile.extremes[0];
+                if (tile.extremes[1] > this.extremes[1])
+                    this.extremes[1] = tile.extremes[1];
+            }
+
+            return this.extremes;
+        }
     }
 
     protected void determineExtremes(double value, double extremes[])
@@ -1255,9 +1284,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             if (this.extremesLevel < 0 || this.extremes == null)
                 return new double[] {this.getMinElevation(), this.getMaxElevation()};
 
-            // Compute the extremes from the extreme-elevations file, but don't cache them. Only extremes computed from
-            // fully resolved elevation tiles are cached. This ensures that the extreme values accurately reflect the
-            // extremes of the sector, which is critical for bounding volume creation and thereby performance.
+            // Compute the extremes from the extreme-elevations file.
             extremes = this.computeExtremeElevations(sector);
             if (extremes != null)
                 this.getExtremesLookupCache().add(sector, extremes, 16);
@@ -1424,6 +1451,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
     {
         protected BufferWrapper elevations; // the elevations themselves
         protected long updateTime = 0;
+        protected double[] extremes = new double[2];
 
         protected ElevationTile(Sector sector, Level level, int row, int col)
         {
@@ -1435,10 +1463,15 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             return this.elevations;
         }
 
-        public void setElevations(BufferWrapper elevations)
+        public void setElevations(BufferWrapper elevations, BasicElevationModel em)
         {
             this.elevations = elevations;
             this.updateTime = System.currentTimeMillis();
+
+            for (int i = 0; i < this.elevations.length(); i++)
+            {
+                em.determineExtremes(this.elevations.getDouble(i), extremes);
+            }
         }
 
         public boolean isElevationsExpired()
@@ -1618,12 +1651,18 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             elevations = new Elevations(this, tiles.last().getLevel().getTexelSize());
 
             // Compute the elevation extremes now that the sector is fully resolved
-            if (tiles != null && tiles.size() > 0)
+            if (tiles.size() > 0)
             {
                 elevations.tiles = tiles;
-                double[] extremes = elevations.getExtremes(requestedSector);
+                double[] extremes = elevations.getTileExtremes();
                 if (extremes != null)
-                    this.getExtremesLookupCache().add(requestedSector, extremes, 16);
+                {
+                    // Cache the newly computed extremes if they're different from the currently cached ones.
+                    double[] currentExtremes = (double[]) this.getExtremesLookupCache().getObject(requestedSector);
+                    if (currentExtremes == null || currentExtremes[0] != extremes[0]
+                        || currentExtremes[1] != extremes[1])
+                        this.getExtremesLookupCache().add(requestedSector, extremes, 16);
+                }
             }
         }
 
