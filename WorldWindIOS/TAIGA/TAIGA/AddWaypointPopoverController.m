@@ -17,7 +17,7 @@
 - (id) initWithWaypoint:(Waypoint*)waypoint mapViewController:(MovingMapViewController*)mapViewController
 {
     addWaypointController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [addWaypointController setPreferredContentSize:CGSizeMake(320, 88)];
+    [addWaypointController setPreferredContentSize:CGSizeMake(240, 88)];
     [[addWaypointController navigationItem] setTitle:@"Waypoint"];
     [[addWaypointController tableView] setDataSource:self];
     [[addWaypointController tableView] setDelegate:self];
@@ -26,7 +26,7 @@
 
     flightRouteChooser = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     [flightRouteChooser setPreferredContentSize:CGSizeMake(320, 176)];
-    [[flightRouteChooser navigationItem] setTitle:@"Add Waypoint To"];
+    [[flightRouteChooser navigationItem] setTitle:@"Add to Route"];
     [[flightRouteChooser tableView] setDataSource:self];
     [[flightRouteChooser tableView] setDelegate:self];
 
