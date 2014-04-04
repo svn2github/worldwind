@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class UnitsFormatter;
+
 @interface AltitudePicker : UIControl<UIPickerViewDataSource, UIPickerViewDelegate>
 {
 @protected
@@ -20,8 +22,6 @@
 @property (nonatomic) double altitudeInterval;
 
 @property (nonatomic) double altitude;
-
-@property (nonatomic) NSNumberFormatter* formatter;
 
 - (AltitudePicker*) initWithFrame:(CGRect)frame;
 

@@ -14,6 +14,9 @@
 #import "ColorPicker.h"
 #import "BulkRetrieverController.h"
 #import "AppConstants.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Geometry/WWExtent.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -25,7 +28,6 @@
 #import "WorldWind/Util/WWMath.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindView.h"
-#import "UITableViewCell+TAIGAAdditions.h"
 
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
@@ -52,10 +54,6 @@
     _flightRoute = flightRoute;
     _waypointDatabase = waypointDatabase;
     _wwv = wwv;
-    altitudeFormatter = [[NSNumberFormatter alloc] init];
-    [altitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-    [altitudeFormatter setMultiplier:@TAIGA_METERS_TO_FEET];
-    [altitudeFormatter setPositiveSuffix:@"ft MSL"];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointInserted:)
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:_flightRoute];
@@ -259,7 +257,7 @@
     {
         double altitude = [_flightRoute altitude];
         [[cell textLabel] setText:@"Altitude"];
-        [[cell detailTextLabel] setText:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude]]];
+        [[cell detailTextLabel] setText:[[TAIGA unitsFormatter] formatMetersAltitude:altitude]];
         [[cell detailTextLabel] setTextColor:detailTextColor]; // show altitude detail text in the default color
     }
     else if ([indexPath row] == ROW_DOWNLOAD)
@@ -310,7 +308,6 @@
         [picker setMaximumAltitude:6096]; // 100,000ft maximum
         [picker setAltitudeInterval:152.4]; // 500ft interval
         [picker setAltitude:[_flightRoute altitude]];
-        [picker setFormatter:altitudeFormatter];
 
         UIViewController* viewController = [[UIViewController alloc] init];
         [viewController setView:picker];

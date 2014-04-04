@@ -7,10 +7,12 @@
 
 #import "TAIGA.h"
 #import "AppUpdateController.h"
+#import "UnitsFormatter.h"
 
 @implementation TAIGA
 
 static AppUpdateController* appUpdateController; // singleton instance
+static UnitsFormatter* unitsFormatter;
 
 + (void) initialize
 {
@@ -21,12 +23,18 @@ static AppUpdateController* appUpdateController; // singleton instance
         initialized = YES;
 
         appUpdateController = [[AppUpdateController alloc] init];
+        unitsFormatter = [[UnitsFormatter alloc] init];
     }
 }
 
 + (AppUpdateController*) appUpdateController
 {
     return appUpdateController;
+}
+
++ (UnitsFormatter*) unitsFormatter
+{
+    return unitsFormatter;
 }
 
 @end

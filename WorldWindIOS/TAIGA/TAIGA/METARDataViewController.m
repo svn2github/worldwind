@@ -6,7 +6,9 @@
  */
 
 #import "METARDataViewController.h"
-#import "WWLog.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
+#import "WorldWind/WWLog.h"
 
 static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
 
@@ -140,7 +142,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 NSMutableString* cover = [[NSMutableString alloc] initWithString:[conditionDict objectForKey:@"sky_cover"]];
                 NSString* cloud_bases = [conditionDict objectForKey:@"cloud_base_ft_agl"];
                 if (cloud_bases != nil)
-                    [cover appendFormat:@" @ %@ ft AGL", cloud_bases];
+                    [cover appendFormat:@" @ %@\u2032 AGL", cloud_bases];
                 [[cell textLabel] setText:nil];
                 [[cell detailTextLabel] setText:cover];
                 return cell;
@@ -198,7 +200,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Latitude"];
-            [values addObject:entry];
+            [values addObject:[[TAIGA unitsFormatter] formatDegreesLatitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"longitude"])
         {
@@ -207,7 +209,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Longitude"];
-            [values addObject:entry];
+            [values addObject:[[TAIGA unitsFormatter] formatDegreesLongitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"temp_c"])
         {
@@ -396,7 +398,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Vertical Vis"];
-            [values addObject:[[NSString alloc] initWithFormat:@"%@ ft", entry]];
+            [values addObject:[[NSString alloc] initWithFormat:@"%@\u2032", entry]];
         }
         else if ([field isEqualToString:@"elevation_m"])
         {
@@ -405,7 +407,7 @@ static NSArray* TAIGA_METAR_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Elevation"];
-            [values addObject:[[NSString alloc] initWithFormat:@"%@ m", entry]];
+            [values addObject:[[TAIGA unitsFormatter] formatMetersAltitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"metar_type"])
         {

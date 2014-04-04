@@ -125,6 +125,6 @@
 
 - (NSString*) warningOffsetString
 {
-    return [[NSString alloc] initWithFormat:@"%dft", (int) (([_layer redThreshold] - [_layer yellowThreshold]) * TAIGA_METERS_TO_FEET)];
+    return [[NSString alloc] initWithFormat:@"%d\u2032", (int) round(([_layer redThreshold] - [_layer yellowThreshold]) * TAIGA_METERS_TO_FEET)];
 }
 @end

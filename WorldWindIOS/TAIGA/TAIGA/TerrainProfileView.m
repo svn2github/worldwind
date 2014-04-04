@@ -10,7 +10,8 @@
 #import "WWGlobe.h"
 #import "WorldWindView.h"
 #import "WWSceneController.h"
-#import "AppConstants.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
 
 #define NUM_INTERNAL_SEGMENTS (20)
 #define BOTTOM_MARGIN (20)
@@ -310,7 +311,7 @@
 
     NSMutableDictionary* attrDict = [[NSMutableDictionary alloc] init];
     [attrDict setObject:[aircraftAltitudeLabelView font] forKey:NSFontAttributeName];
-    NSString* displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) round((_aircraftAltitude * TAIGA_METERS_TO_FEET))];
+    NSString* displayString = [[TAIGA unitsFormatter] formatMetersAltitude:_aircraftAltitude];
     CGSize stringSize = [displayString sizeWithAttributes:attrDict];
 
     [aircraftAltitudeLabelView setFrame:CGRectMake(35, aircraftY - 0.8 * stringSize.height, 100, 30)];
@@ -348,7 +349,7 @@
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 //    numberString = [formatter stringFromNumber:[[NSNumber alloc] initWithFloat:ceilf(yMax * (float) TAIGA_METERS_TO_FEET)]];
-    displayString = [[NSString alloc] initWithFormat:@"%d ft", (int) round(yMax * TAIGA_METERS_TO_FEET)];
+    displayString = [[TAIGA unitsFormatter] formatMetersAltitude:yMax];
     stringSize = [displayString sizeWithAttributes:attrDict];
     float maxLabelX = frame.size.width * (xAtYMax - xMin) / xRange - 0.5 * stringSize.width;
     if (yMax <= 0)

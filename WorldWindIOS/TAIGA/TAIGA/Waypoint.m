@@ -6,6 +6,8 @@
  */
 
 #import "Waypoint.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
@@ -82,26 +84,7 @@
 
     self = [self initWithKey:id location:location type:WaypointTypeMarker];
 
-    NSNumberFormatter* latitudeFormatter = [[NSNumberFormatter alloc] init];
-    [latitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-    [latitudeFormatter setMaximumFractionDigits:2];
-    [latitudeFormatter setPositiveSuffix:@"\u00B0N"];
-    [latitudeFormatter setNegativeSuffix:@"\u00B0S"];
-    [latitudeFormatter setNegativePrefix:@""];
-
-    NSNumberFormatter* longitudeFormatter = [[NSNumberFormatter alloc] init];
-    [longitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-    [longitudeFormatter setMaximumFractionDigits:2];
-    [longitudeFormatter setPositiveSuffix:@"\u00B0E"];
-    [longitudeFormatter setNegativeSuffix:@"\u00B0W"];
-    [longitudeFormatter setNegativePrefix:@""];
-
-    NSMutableString* displayName = [[NSMutableString alloc] init];
-    [displayName appendString:[latitudeFormatter stringFromNumber:[NSNumber numberWithDouble:latitude]]];
-    [displayName appendString:@" "];
-    [displayName appendString:[longitudeFormatter stringFromNumber:[NSNumber numberWithDouble:longitude]]];
-
-    _displayName = displayName;
+    _displayName = [[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude];
 
     return self;
 }

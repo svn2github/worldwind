@@ -6,6 +6,8 @@
  */
 
 #import "AltitudePicker.h"
+#import "UnitsFormatter.h"
+#import "TAIGA.h"
 
 @implementation AltitudePicker
 
@@ -18,9 +20,6 @@
     _maximumAltitude = 100000;
     _altitudeInterval = 1000;
     _altitude = 0;
-    _formatter = [[NSNumberFormatter alloc] init];
-    [_formatter setNumberStyle:NSNumberFormatterDecimalStyle];
-    [_formatter setPositiveSuffix:@"m"];
 
     picker = [[UIPickerView alloc] initWithFrame:frame];
     [picker setDataSource:self];
@@ -53,12 +52,6 @@
 {
     _altitude = altitude;
     [self selectAltitude:_altitude animated:YES];
-}
-
-- (void) setFormatter:(NSNumberFormatter*)formatter
-{
-    _formatter = formatter;
-    [picker reloadAllComponents];
 }
 
 - (double) altitudeForRow:(NSInteger)row
@@ -100,7 +93,7 @@
 {
     double altitude = [self altitudeForRow:row];
 
-    return [_formatter stringFromNumber:[NSNumber numberWithDouble:altitude]];
+    return [[TAIGA unitsFormatter] formatMetersAltitude:altitude];
 }
 
 - (void) pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component

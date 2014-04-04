@@ -16,7 +16,6 @@
 @interface FlightRouteDetailController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 {
 @protected
-    NSNumberFormatter* altitudeFormatter;
     UITableView* flightRouteTable;
     WaypointFileControl* waypointFileControl;
     BulkRetrieverController* bulkRetrieverController;

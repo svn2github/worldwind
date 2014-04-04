@@ -6,6 +6,8 @@
  */
 
 #import "PIREPDataViewController.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
 
 static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 
@@ -158,7 +160,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Latitude"];
-            [values addObject:entry];
+            [values addObject:[[TAIGA unitsFormatter] formatDegreesLatitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"longitude"])
         {
@@ -167,7 +169,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Longitude"];
-            [values addObject:entry];
+            [values addObject:[[TAIGA unitsFormatter] formatDegreesLongitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"altitude_ft_msl"])
         {
@@ -176,7 +178,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 continue;
 
             [names addObject:@"Altitude"];
-            [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+            [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
         }
         else if ([field isEqualToString:@"visibility_statute_mi"])
         {
@@ -260,14 +262,14 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 if (entry != nil)
                 {
                     [names addObject:@"Cloud Base"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
 
                 entry = [condition objectForKey:@"cloud_top_ft_msl"];
                 if (entry != nil)
                 {
                     [names addObject:@"Cloud Top"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
             }
         }
@@ -297,14 +299,14 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 if (entry != nil)
                 {
                     [names addObject:@"Turb Base"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
 
                 entry = [condition objectForKey:@"turbulence_top_ft_msl"];
                 if (entry != nil)
                 {
                     [names addObject:@"Turb Top"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
 
                 entry = [condition objectForKey:@"turbulence_freq"];
@@ -341,14 +343,14 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
                 if (entry != nil)
                 {
                     [names addObject:@"Icing Base"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
 
                 entry = [condition objectForKey:@"icing_top_ft_msl"];
                 if (entry != nil)
                 {
                     [names addObject:@"Icing Top"];
-                    [values addObject:[[NSString alloc] initWithFormat:@"%@ ft MSL", entry]];
+                    [values addObject:[[TAIGA unitsFormatter] formatFeetAltitude:[entry doubleValue]]];
                 }
             }
         }
