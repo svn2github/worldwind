@@ -51,6 +51,7 @@
 #import "WWDAFIFLayer.h"
 #import "WWBingLayer.h"
 #import "AddWaypointPopoverController.h"
+#import "EditWaypointPopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
 
@@ -108,7 +109,8 @@
     UIPopoverController* pirepDataPopoverController;
     WeatherCamViewController* weatherCamViewController;
     UIPopoverController* weatherCamPopoverController;
-    UIPopoverController* waypointPopoverController;
+    AddWaypointPopoverController* addWaypointPopoverController;
+    EditWaypointPopoverController* editWaypointPopoverController;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -846,14 +848,20 @@
                     [self showWeatherCam:pm];
             }
         }
-        else if ([[topObject userObject] isKindOfClass:[FlightRoute class]])
-        {
-            [self selectFlightRoute:[topObject userObject]];
-        }
         else if ([[topObject userObject] isKindOfClass:[Waypoint class]])
         {
-            if ([[[topObject parentLayer] displayName] isEqualToString:@"Airports"])
-                [self showAddWaypoint:topObject];
+            [self showAddWaypoint:topObject];
+        }
+        else if ([[[topObject parentLayer] displayName] isEqualToString:@"Routes"])
+        {
+            if ([[topObject userObject] objectForKey:@"waypoint"] != nil)
+            {
+                [self showEditWaypoint:topObject];
+            }
+            else
+            {
+                [self selectFlightRoute:topObject];
+            }
         }
     }
 }
@@ -861,19 +869,28 @@
 - (void) showAddWaypoint:(WWPickedObject*)po
 {
     Waypoint* waypoint = [po userObject];
-    waypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
-    [waypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                     permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
+    [addWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
 {
     WWPosition* pos = [po position];
     Waypoint* waypoint = [[Waypoint alloc] initWithDegreesLatitude:[pos latitude] longitude:[pos longitude]];
-    waypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
-    [(AddWaypointPopoverController*) waypointPopoverController setAddWaypointToDatabase:YES];
-    [waypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                     permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
+    [addWaypointPopoverController setAddWaypointToDatabase:YES];
+    [addWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void) showEditWaypoint:(WWPickedObject*)po
+{
+    Waypoint* waypoint = [[po userObject] objectForKey:@"waypoint"];
+    FlightRoute* flightRoute = [[po userObject] objectForKey:@"flightRoute"];
+    editWaypointPopoverController = [[EditWaypointPopoverController alloc] initWithWaypoint:waypoint flightRoute:flightRoute mapViewController:self];
+    [editWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+                                         permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm
@@ -961,8 +978,9 @@
                                permittedArrowDirections:0 animated:YES];
 }
 
-- (void) selectFlightRoute:(FlightRoute*)flightRoute
+- (void) selectFlightRoute:(WWPickedObject*)po
 {
+    FlightRoute* flightRoute = [[po userObject] objectForKey:@"flightRoute"];
     [self presentSimulationControllerWithFlightRoute:flightRoute];
 }
 

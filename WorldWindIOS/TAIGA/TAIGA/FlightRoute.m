@@ -108,7 +108,7 @@ const float ShapePickRadius = 22.0;
     [path setPathType:WW_RHUMB];
     [path setNumSubsegments:100];
     [path setAttributes:shapeAttrs];
-    [path setPickDelegate:self];
+    [path setPickDelegate:@{@"flightRoute":self}];
 
     return path;
 }
@@ -117,7 +117,7 @@ const float ShapePickRadius = 22.0;
 {
     WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:1.0]; // radius specified in doRender:
     [shape setAttributes:shapeAttrs];
-    [shape setPickDelegate:waypoint];
+    [shape setPickDelegate:@{@"flightRoute":self, @"waypoint":waypoint}];
 
     return shape;
 }
