@@ -59,11 +59,21 @@
     return _minimumAltitude + _altitudeInterval * row;
 }
 
+- (NSInteger) rowForAltitude:(double)altitude
+{
+    return (NSInteger) round((altitude - _minimumAltitude) / _altitudeInterval); // round to the nearest row
+}
+
 - (void) selectAltitude:(double)altitude animated:(BOOL)animated
 {
-    NSInteger row = (NSInteger) ((altitude - _minimumAltitude) / _altitudeInterval);
+    NSInteger row = [self rowForAltitude:altitude];
     NSInteger numRows = [self pickerView:picker numberOfRowsInComponent:0];
-    if (row >= numRows)
+
+    if (row < 0)
+    {
+        row = 0;
+    }
+    else if (row > numRows - 1)
     {
         row = numRows - 1;
     }
