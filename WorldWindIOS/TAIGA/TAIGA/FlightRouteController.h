@@ -40,6 +40,8 @@
 
 - (FlightRoute*) flightRouteAtIndex:(NSUInteger)index;
 
+- (NSUInteger) indexOfFlightRoute:(FlightRoute*)flightRoute;
+
 - (BOOL) containsFlightRoute:(FlightRoute*)flightRoute;
 
 - (void) addFlightRoute:(FlightRoute*)flightRoute;

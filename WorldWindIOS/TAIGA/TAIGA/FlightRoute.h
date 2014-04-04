@@ -59,6 +59,8 @@
 
 - (Waypoint*) waypointAtIndex:(NSUInteger)index;
 
+- (NSUInteger) indexOfWaypoint:(Waypoint*)waypoint;
+
 - (BOOL) containsWaypoint:(Waypoint*)waypoint;
 
 - (void) addWaypoint:(Waypoint*)waypoint;

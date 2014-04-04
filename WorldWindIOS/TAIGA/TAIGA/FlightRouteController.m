@@ -99,6 +99,16 @@
     return [flightRoutes objectAtIndex:index];
 }
 
+- (NSUInteger) indexOfFlightRoute:(FlightRoute*)flightRoute
+{
+    if (flightRoute == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Flight route is nil")
+    }
+
+    return [flightRoutes indexOfObject:flightRoute];
+}
+
 - (BOOL) containsFlightRoute:(FlightRoute*)flightRoute
 {
     if (flightRoute == nil)

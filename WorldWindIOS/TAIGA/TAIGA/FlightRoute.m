@@ -271,6 +271,16 @@ const float ShapePickRadius = 22.0;
     return [waypoints objectAtIndex:index];
 }
 
+- (NSUInteger) indexOfWaypoint:(Waypoint*)waypoint
+{
+    if (waypoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
+    }
+
+    return [waypoints indexOfObject:waypoint];
+}
+
 - (BOOL) containsWaypoint:(Waypoint*)waypoint
 {
     if (waypoint == nil)

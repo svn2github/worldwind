@@ -138,6 +138,11 @@
     return [routeViewController flightRouteAtIndex:index];
 }
 
+- (NSUInteger) indexOfFlightRoute:(FlightRoute*)flightRoute
+{
+    return [routeViewController indexOfFlightRoute:flightRoute];
+}
+
 - (void) insertFlightRoute:(FlightRoute*)flightRoute atIndex:(NSUInteger)index
 {
     [routeViewController insertFlightRoute:flightRoute atIndex:index];
