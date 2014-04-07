@@ -6,6 +6,7 @@
  */
 
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WWLog.h"
 
 @implementation WWColor
@@ -153,6 +154,30 @@
 + (GLuint) makeColorInt:(GLubyte)r g:(GLubyte)g b:(GLubyte)b a:(GLubyte)a;
 {
     return r << 24 | g << 16 | b << 8 | a;
+}
+
++ (void) interpolateColor1:(WWColor*)color1 color2:(WWColor*)color2 amount:(double)amount result:(WWColor*)result
+{
+    if (color1 == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color 1 is nil")
+    }
+
+    if (color2 == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Color 2 is nil")
+    }
+
+    if (result == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Output color is nil")
+    }
+
+    float r = (float) [WWMath interpolateValue1:[color1 r] value2:[color2 r] amount:amount];
+    float g = (float) [WWMath interpolateValue1:[color1 g] value2:[color2 g] amount:amount];
+    float b = (float) [WWMath interpolateValue1:[color1 b] value2:[color2 b] amount:amount];
+    float a = (float) [WWMath interpolateValue1:[color1 a] value2:[color2 a] amount:amount];
+    [result setToR:r g:g b:b a:a];
 }
 
 @end

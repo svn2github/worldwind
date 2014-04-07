@@ -149,4 +149,21 @@
 */
 + (unsigned int) makeColorInt:(GLubyte)r g:(GLubyte)g b:(GLubyte)b a:(GLubyte)a;
 
+/**
+* Computes the linear interpolation of two RGBA colors.
+*
+* The amount indicates the percentage of the two colors, and should be a number between 0.0 and 1.0, inclusive. The
+* resultant color is undefined if amount < 0.0 or if amount > 1.0. Otherwise, the resultant color is a linear
+* interpolation of the individual RGBA components of color1 and color2 appropriate for the specified amount. For
+* example, if amount is 0.5 this outputs a color that is a 50% blend of color1 and color2.
+*
+* @param color1 The first color.
+* @param color2 The second color.
+* @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
+* @param result A WWColor instance in which to return the linear interpolation of color1 and color2.
+*
+* @exception NSInvalidArgumentException if any argument is nil.
+*/
++ (void) interpolateColor1:(WWColor*)color1 color2:(WWColor*)color2 amount:(double)amount result:(WWColor*)result;
+
 @end
