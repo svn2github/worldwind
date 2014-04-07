@@ -26,6 +26,8 @@
     WWPath* waypointPath;
     WWShapeAttributes* shapeAttrs;
     WWPosition* currentPosition;
+    BOOL animating;
+    void (^animationBlock)(NSDate* timestamp, BOOL* stop);
 }
 
 + (NSArray*) flightRouteColors;
@@ -71,6 +73,14 @@
 
 - (void) removeWaypointAtIndex:(NSUInteger)index;
 
+- (void) replaceWaypointAtIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint;
+
 - (void) moveWaypointAtIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex;
+
+- (void) updateWaypointAtIndex:(NSUInteger)index;
+
+- (BOOL) isWaypointAtIndexHighlighted:(NSUInteger)index;
+
+- (void) highlightWaypointAtIndex:(NSUInteger)index highlighted:(BOOL)highlighted;
 
 @end

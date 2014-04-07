@@ -49,7 +49,12 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
+                                                 name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:nil];
+    // Note that the TAIGA_FLIGHT_ROUTE_WAYPOINT_UPDATED notification is intentionally ignored. The flight route table
+    // and the flight route state do not need to change in response to waypoint updates. Waypoint state is persited by
+    // the waypoint database.
 
     return self;
 }

@@ -19,12 +19,12 @@
     NSMutableArray* tableCells;
 }
 
-@property (nonatomic, readonly) Waypoint* waypoint;
-
 @property (nonatomic, readonly) FlightRoute* flightRoute;
+
+@property (nonatomic, readonly) NSUInteger waypointIndex;
 
 @property (nonatomic, readonly) MovingMapViewController* mapViewController;
 
-- (id) initWithWaypoint:(Waypoint*)waypoint flightRoute:(FlightRoute*)flightRoute mapViewController:(MovingMapViewController*)mapViewController;
+- (id) initWithFlightRoute:(FlightRoute*)flightRoute waypointIndex:(NSUInteger)waypointIndex mapViewController:(MovingMapViewController*)mapViewController;
 
 @end

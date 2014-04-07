@@ -59,6 +59,10 @@
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:_flightRoute];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointRemoved:)
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:_flightRoute];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointReplaced:)
+                                                 name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:_flightRoute];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointUpdated:)
+                                                 name:TAIGA_FLIGHT_ROUTE_WAYPOINT_UPDATED object:_flightRoute];
 
     return self;
 }
@@ -98,6 +102,26 @@
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
     NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
     [flightRouteTable deleteRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+- (void) handleFlightRouteWaypointReplaced:(NSNotification*)notification
+{
+    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
+    // The waypoint index indicates the row index that has been replaced.
+    NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    [flightRouteTable reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+- (void) handleFlightRouteWaypointUpdated:(NSNotification*)notification
+{
+    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
+    // The waypoint index indicates the row index that has been replaced.
+    NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    [flightRouteTable reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationNone];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

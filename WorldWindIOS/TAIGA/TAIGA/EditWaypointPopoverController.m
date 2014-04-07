@@ -13,10 +13,10 @@
 
 @implementation EditWaypointPopoverController
 
-- (id) initWithWaypoint:(Waypoint*)waypoint flightRoute:(FlightRoute*)flightRoute mapViewController:(MovingMapViewController*)mapViewController
+- (id) initWithFlightRoute:(FlightRoute*)flightRoute waypointIndex:(NSUInteger)waypointIndex mapViewController:(MovingMapViewController*)mapViewController
 {
     tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [tableViewController setPreferredContentSize:CGSizeMake(240, 88)];
+    [tableViewController setPreferredContentSize:CGSizeMake(240, 132)];
     [[tableViewController navigationItem] setTitle:[flightRoute displayName]];
     [[tableViewController tableView] setDataSource:self];
     [[tableViewController tableView] setDelegate:self];
@@ -26,8 +26,8 @@
 
     self = [super initWithContentViewController:navigationController];
 
-    _waypoint = waypoint;
     _flightRoute = flightRoute;
+    _waypointIndex = waypointIndex;
     _mapViewController = mapViewController;
 
     [self populateTableCells];
@@ -35,10 +35,17 @@
     return self;
 }
 
-- (void) removeFromRouteRowTapped
+- (void) moveWaypointRowTapped
 {
     [self dismissPopoverAnimated:YES];
-    [_flightRoute removeWaypoint:_waypoint];
+    [_mapViewController editFlightRoute:_flightRoute waypointAtIndex:_waypointIndex];
+}
+
+- (void) removeFromRouteRowTapped
+{
+    // TODO: Display a delete confirmation.
+    [self dismissPopoverAnimated:YES];
+    [_flightRoute removeWaypointAtIndex:_waypointIndex];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -50,8 +57,14 @@
     tableCells = [[NSMutableArray alloc] init];
 
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    [cell setToWaypoint:_waypoint];
+    [cell setToWaypoint:[_flightRoute waypointAtIndex:_waypointIndex]];
     [cell setUserInteractionEnabled:NO];
+    [tableCells addObject:cell];
+
+    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    [[cell textLabel] setText:@"Move Waypoint"];
+    [[cell textLabel] setTextColor:[cell tintColor]];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
     [tableCells addObject:cell];
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -79,7 +92,11 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if ([indexPath row] == 1) // Remove from Route row tapped
+    if ([indexPath row] == 1) // Move Waypoint row tapped
+    {
+        [self moveWaypointRowTapped];
+    }
+    else if ([indexPath row] == 2) // Remove from Route row tapped
     {
         [self removeFromRouteRowTapped];
     }
