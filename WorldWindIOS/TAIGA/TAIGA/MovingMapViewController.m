@@ -118,8 +118,8 @@
 
     FlightRoute* editingFlightRoute;
     NSUInteger editingWaypointIndex;
-    Waypoint* oldWaypoint;
-    MutableWaypoint* newWaypoint;
+    Waypoint* editLastWaypointState;
+    MutableWaypoint* editNewWaypoint;
     double terrainBeginLat;
     double terrainBeginLon;
 }
@@ -190,20 +190,45 @@
     }
 }
 
-- (void) editFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index
+- (void) beginEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index
 {
-    [flightRoute highlightWaypointAtIndex:index highlighted:YES];
+    if (editingFlightRoute != nil) // end the current editing state and discard the changes
+    {
+        [self endEditingFlightRoute:NO];
+    }
 
     editingFlightRoute = flightRoute;
     editingWaypointIndex = index;
+    editLastWaypointState = [flightRoute waypointAtIndex:index];
+    editNewWaypoint = nil;
+
+    [editingFlightRoute highlightWaypointAtIndex:editingWaypointIndex highlighted:YES];
+    [_wwv addGestureRecognizer:waypointEditGestureRecognizer];
 }
 
-- (void) stopEditing
+- (void) endEditingFlightRoute:(BOOL)keepChanges
 {
+    if (keepChanges && editNewWaypoint != nil) // end the current editing state and keep the changes
+    {
+        [_waypointDatabase addWaypoint:editNewWaypoint]; // Save the new waypoint in the waypoint database.
+    }
+    else // end the current editing state and discard the changes
+    {
+        [editingFlightRoute replaceWaypointAtIndex:editingWaypointIndex withWaypoint:editLastWaypointState];
+    }
+
     [editingFlightRoute highlightWaypointAtIndex:editingWaypointIndex highlighted:NO];
+    [_wwv removeGestureRecognizer:waypointEditGestureRecognizer];
 
     editingFlightRoute = nil;
     editingWaypointIndex = NSNotFound;
+    editLastWaypointState = nil;
+    editNewWaypoint = nil;
+}
+
+- (BOOL) isEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index
+{
+    return editingFlightRoute == flightRoute && editingWaypointIndex == index;
 }
 
 - (void) loadWaypoints
@@ -410,7 +435,6 @@
     [waypointEditGestureRecognizer setMinimumNumberOfTouches:1];
     [waypointEditGestureRecognizer setMaximumNumberOfTouches:1];
     [waypointEditGestureRecognizer setDelegate:self];
-    [_wwv addGestureRecognizer:waypointEditGestureRecognizer];
 
     // Set any persisted layer opacity.
     for (WWLayer* wwLayer in [[[_wwv sceneController] layers] allLayers])
@@ -911,39 +935,39 @@
 
     if (state == UIGestureRecognizerStateBegan)
     {
-        WWPosition* pos = [self globePositionAtScreenPoint:location];
+        WWPosition* pos = [self positionAtScreenPoint:location];
         terrainBeginLat = [pos latitude];
         terrainBeginLon = [pos longitude];
 
-        oldWaypoint = [editingFlightRoute waypointAtIndex:editingWaypointIndex];
-        newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
-        [editingFlightRoute replaceWaypointAtIndex:editingWaypointIndex withWaypoint:newWaypoint];
+        editNewWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker
+                                                degreesLatitude:[editLastWaypointState latitude]
+                                                      longitude:[editLastWaypointState longitude]];
+        [editingFlightRoute replaceWaypointAtIndex:editingWaypointIndex withWaypoint:editNewWaypoint];
 
         [WorldWindView startRedrawing];
     }
-    else if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled)
+    else if (state == UIGestureRecognizerStateEnded)
     {
-        // TODO: Show a cancel/confirm dialog or popover. Revert to old waypoint if cancelled.
-        if (state == UIGestureRecognizerStateEnded)
-        {
-            [_waypointDatabase addWaypoint:newWaypoint]; // Save the new waypoint in the waypoint database.
-        }
-        else
-        {
-            [editingFlightRoute replaceWaypointAtIndex:editingWaypointIndex withWaypoint:oldWaypoint];
-        }
-
-        [self stopEditing];
+        Waypoint* waypoint = [editingFlightRoute waypointAtIndex:editingWaypointIndex];
+        WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:[editingFlightRoute altitude]];
+        editWaypointPopoverController = [[EditWaypointPopoverController alloc] initWithFlightRoute:editingFlightRoute waypointIndex:editingWaypointIndex mapViewController:self];
+        [editWaypointPopoverController presentPopoverFromPosition:pos inView:_wwv
+                                         permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        [WorldWindView stopRedrawing];
+    }
+    else if (state == UIGestureRecognizerStateCancelled)
+    {
+        [self endEditingFlightRoute:NO]; // undo edit changes when the gesture is cancelled
         [WorldWindView stopRedrawing];
     }
     else if (state == UIGestureRecognizerStateChanged)
     {
-        WWPosition* pos = [self globePositionAtScreenPoint:location];
-        double latDegrees = [oldWaypoint latitude] + [pos latitude] - terrainBeginLat;
-        double lonDegrees = [oldWaypoint longitude] + [pos longitude] - terrainBeginLon;
+        WWPosition* pos = [self positionAtScreenPoint:location];
+        double latDegrees = [editLastWaypointState latitude] + [pos latitude] - terrainBeginLat;
+        double lonDegrees = [editLastWaypointState longitude] + [pos longitude] - terrainBeginLon;
 
-        [newWaypoint setDegreesLatitude:latDegrees longitude:lonDegrees];
-        [newWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:latDegrees longitude:lonDegrees]];
+        [editNewWaypoint setDegreesLatitude:latDegrees longitude:lonDegrees];
+        [editNewWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:latDegrees longitude:lonDegrees]];
         [editingFlightRoute updateWaypointAtIndex:editingWaypointIndex];
     }
 }
@@ -960,14 +984,14 @@
         {
             FlightRoute* flightRoute = [[topObject userObject] objectForKey:@"flightRoute"];
             NSUInteger waypointIndex = [[[topObject userObject] objectForKey:@"waypointIndex"] unsignedIntegerValue];
-            return editingFlightRoute == flightRoute && editingWaypointIndex == waypointIndex;
+            return [self isEditingFlightRoute:flightRoute waypointAtIndex:waypointIndex];
         }
     }
 
     return NO;
 }
 
-- (WWPosition*) globePositionAtScreenPoint:(CGPoint)screenPoint
+- (WWPosition*) positionAtScreenPoint:(CGPoint)screenPoint
 {
     WWLine* ray = [[[_wwv sceneController] navigatorState] rayFromScreenPoint:screenPoint];
     WWVec4* modelPoint = [[WWVec4 alloc] init];
@@ -983,9 +1007,10 @@
 - (void) showAddWaypoint:(WWPickedObject*)po
 {
     Waypoint* waypoint = [po userObject];
+    CGRect rect = CGRectMake([po pickPoint].x, [po pickPoint].y, 1, 1);
     addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
-    [addWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [addWaypointPopoverController presentPopoverFromRect:rect inView:_wwv
+                                permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
@@ -994,8 +1019,8 @@
     Waypoint* waypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[pos latitude] longitude:[pos longitude]];
     addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
     [addWaypointPopoverController setAddWaypointToDatabase:YES];
-    [addWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
-                                        permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [addWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
+                                    permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showEditWaypoint:(WWPickedObject*)po
@@ -1003,26 +1028,12 @@
     FlightRoute* flightRoute = [[po userObject] objectForKey:@"flightRoute"];
     NSUInteger waypointIndex = [[[po userObject] objectForKey:@"waypointIndex"] unsignedIntegerValue];
     editWaypointPopoverController = [[EditWaypointPopoverController alloc] initWithFlightRoute:flightRoute waypointIndex:waypointIndex mapViewController:self];
-    [editWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv
+    [editWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
                                          permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm
 {
-    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
-    // that screen position.
-
-    WWPosition* pmPos = [pm position];
-    WWVec4* pmPoint = [[WWVec4 alloc] init];
-    WWVec4* screenPoint = [[WWVec4 alloc] init];
-
-    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
-                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
-    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
-
-    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
-    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
-
     // Give the controller the placemark's dictionary.
     [metarDataViewController setEntries:[pm userObject]];
 
@@ -1032,27 +1043,13 @@
 
     if (metarDataPopoverController == nil)
         metarDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:metarDataViewController];
-    [metarDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [metarDataPopoverController presentPopoverFromPosition:[pm position] inView:_wwv
+                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     [metarDataViewController flashScrollIndicator];
 }
 
 - (void) showPIREPData:(WWPointPlacemark*)pm
 {
-    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
-    // that screen position.
-
-    WWPosition* pmPos = [pm position];
-    WWVec4* pmPoint = [[WWVec4 alloc] init];
-    WWVec4* screenPoint = [[WWVec4 alloc] init];
-
-    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
-                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
-    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
-
-    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
-    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
-
     // Give the controller the placemark's dictionary.
     [pirepDataViewController setEntries:[pm userObject]];
 
@@ -1062,34 +1059,20 @@
 
     if (pirepDataPopoverController == nil)
         pirepDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:pirepDataViewController];
-    [pirepDataPopoverController presentPopoverFromRect:rect inView:_wwv
-                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [pirepDataPopoverController presentPopoverFromPosition:[pm position] inView:_wwv
+                                  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     [pirepDataViewController flashScrollIndicator];
 }
 
 - (void) showWeatherCam:(WWPointPlacemark*)pm
 {
-    // Compute a screen position that corresponds with the placemarks' position, then show data popover at
-    // that screen position.
-
-    WWPosition* pmPos = [pm position];
-    WWVec4* pmPoint = [[WWVec4 alloc] init];
-    WWVec4* screenPoint = [[WWVec4 alloc] init];
-
-    [[[_wwv sceneController] globe] computePointFromPosition:[pmPos latitude] longitude:[pmPos longitude]
-                                                    altitude:[pmPos altitude] outputPoint:pmPoint];
-    [[[_wwv sceneController] navigatorState] project:pmPoint result:screenPoint];
-
-    CGPoint uiPoint = [[[_wwv sceneController] navigatorState] convertPointToView:screenPoint];
-    CGRect rect = CGRectMake(uiPoint.x, uiPoint.y, 1, 1);
-
     // Give the controller the placemark's dictionary.
     [weatherCamViewController setSiteInfo:[pm userObject]];
 
     if (weatherCamPopoverController == nil)
         weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
-    [weatherCamPopoverController presentPopoverFromRect:rect inView:_wwv
-                               permittedArrowDirections:0 animated:YES];
+    [weatherCamPopoverController presentPopoverFromPosition:[pm position] inView:_wwv
+                                   permittedArrowDirections:0 animated:YES];
 }
 
 - (void) selectFlightRoute:(WWPickedObject*)po

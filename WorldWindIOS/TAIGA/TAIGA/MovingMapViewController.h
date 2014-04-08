@@ -41,6 +41,10 @@
 
 /// @name Editing Flight Route Waypoints
 
-- (void) editFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index;
+- (void) beginEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index;
+
+- (void) endEditingFlightRoute:(BOOL)keepChanges;
+
+- (BOOL) isEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index;
 
 @end

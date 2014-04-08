@@ -7,11 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@class Waypoint;
 @class FlightRoute;
 @class MovingMapViewController;
 
-@interface EditWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
+@interface EditWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate>
 {
 @protected
     UITableViewController* tableViewController;

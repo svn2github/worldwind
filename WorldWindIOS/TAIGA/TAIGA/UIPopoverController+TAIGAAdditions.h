@@ -7,14 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWPickedObject;
 @class WorldWindView;
+@class WWPosition;
 
 @interface UIPopoverController (TAIGAAdditions)
 
-- (void) presentPopoverFromPickedObject:(WWPickedObject*)pickedObject
-                                 inView:(WorldWindView*)view
-               permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections
-                               animated:(BOOL)animated;
+- (void) presentPopoverFromPosition:(WWPosition*)position
+                             inView:(WorldWindView*)view
+           permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections
+                           animated:(BOOL)animated;
 
 @end
