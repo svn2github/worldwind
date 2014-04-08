@@ -17,6 +17,8 @@
 @class WWShapeAttributes;
 @protocol WWExtent;
 
+typedef void (^FlightRouteAnimationBlock)(NSDate* timestamp, BOOL* stop);
+
 @interface FlightRoute : NSObject <WWRenderable>
 {
 @protected
@@ -26,8 +28,7 @@
     WWPath* waypointPath;
     WWShapeAttributes* shapeAttrs;
     WWPosition* currentPosition;
-    BOOL animating;
-    void (^animationBlock)(NSDate* timestamp, BOOL* stop);
+    NSMutableArray* animations;
 }
 
 + (NSArray*) flightRouteColors;

@@ -59,6 +59,7 @@ const float ShapePickRadius = 22.0;
 
     waypoints = [[NSMutableArray alloc] initWithCapacity:8];
     currentPosition = [[WWPosition alloc] initWithZeroPosition];
+    animations = [[NSMutableArray alloc] init];
     [self initShapes];
 
     return self;
@@ -75,6 +76,7 @@ const float ShapePickRadius = 22.0;
 
     waypoints = [[NSMutableArray alloc] initWithArray:waypointArray];
     currentPosition = [[WWPosition alloc] initWithZeroPosition];
+    animations = [[NSMutableArray alloc] init];
     [self initShapes];
 
     return self;
@@ -161,7 +163,7 @@ const float ShapePickRadius = 22.0;
         return;
     }
 
-    [self updateAnimation]; // does nothing when there's no animation running
+    [self updateAnimations]; // does nothing when there's no animation running
 
     [waypointPath render:dc];
 
@@ -496,7 +498,7 @@ const float ShapePickRadius = 22.0;
 - (void) didReplaceWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint
 {
     WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
+    [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude]];
     [waypointPath setPositions:waypointPositions];
 
     id shape = [waypointShapes objectAtIndex:index];
@@ -609,39 +611,33 @@ const float ShapePickRadius = 22.0;
     }];
 }
 
-- (void) beginAnimation:(void (^)(NSDate* timestamp, BOOL* stop))block
+- (void) beginAnimation:(FlightRouteAnimationBlock)animationBlock
 {
-    if (animating) // the current animation must end or be forced to end before another one can begin
-        return;
-
-    animating = YES;
-    animationBlock = block;
-    [WorldWindView startRedrawing];
+    [animations addObject:animationBlock];
+    [WorldWindView startRedrawing]; // let the WorldWindView track when to start and stop redrawing
 }
 
-- (void) endAnimation
+- (void) updateAnimations
 {
-    if (!animating) // ignore this call when there's no animation running
-        return;
-
-    animating = NO;
-    animationBlock = NULL;
-    [WorldWindView stopRedrawing];
-}
-
-- (void) updateAnimation
-{
-    if (!animating) // ignore this call when there's no animation running
+    if ([animations count] == 0) // ignore this call when there's no animation running
         return;
 
     NSDate* timestamp = [NSDate date]; // now
-    BOOL stop = NO; // stop the animation when the caller's block requests it
-    animationBlock(timestamp, &stop);
+    NSMutableArray* stoppedAnimations = [[NSMutableArray alloc] init];
 
-    if (stop) // the caller's block requested that the animation stop
+    for (FlightRouteAnimationBlock animationBlock in animations)
     {
-        [self endAnimation];
+        BOOL stop = NO; // stop the animation when the caller's block requests it
+        animationBlock(timestamp, &stop);
+
+        if (stop) // the caller's block requested that the animation stop
+        {
+            [stoppedAnimations addObject:animationBlock];
+            [WorldWindView stopRedrawing];  // let the WorldWindView track when to start and stop redrawing
+        }
     }
+
+    [animations removeObjectsInArray:stoppedAnimations];
 }
 
 @end
