@@ -284,7 +284,7 @@
 
 - (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == 1) // Ok button tapped
+    if ([alertView cancelButtonIndex] != buttonIndex) // Ok button tapped
     {
         // Create a new flight route with its display name set to the UIAlert's text field contents, the default
         // altitude, a color from the list of flight route colors, and a unique state key.

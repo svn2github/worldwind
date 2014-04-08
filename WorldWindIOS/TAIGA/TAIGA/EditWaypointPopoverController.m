@@ -41,11 +41,23 @@
     [_mapViewController editFlightRoute:_flightRoute waypointAtIndex:_waypointIndex];
 }
 
-- (void) removeFromRouteRowTapped
+- (void) removeWaypointRowTapped
 {
-    // TODO: Display a delete confirmation.
-    [self dismissPopoverAnimated:YES];
-    [_flightRoute removeWaypointAtIndex:_waypointIndex];
+    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Remove Waypoint"
+                                                        message:nil
+                                                       delegate:self
+                                              cancelButtonTitle:@"Cancel"
+                                              otherButtonTitles:@"Remove", nil];
+    [alertView show];
+}
+
+- (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if ([alertView cancelButtonIndex] != buttonIndex) // Remove button tapped
+    {
+        [self dismissPopoverAnimated:YES];
+        [_flightRoute removeWaypointAtIndex:_waypointIndex];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -68,7 +80,7 @@
     [tableCells addObject:cell];
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    [[cell textLabel] setText:@"Remove from Route"];
+    [[cell textLabel] setText:@"Remove Waypoint"];
     [[cell textLabel] setTextColor:[UIColor redColor]];
     [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
     [tableCells addObject:cell];
@@ -96,9 +108,9 @@
     {
         [self moveWaypointRowTapped];
     }
-    else if ([indexPath row] == 2) // Remove from Route row tapped
+    else if ([indexPath row] == 2) // Remove Waypoint row tapped
     {
-        [self removeFromRouteRowTapped];
+        [self removeWaypointRowTapped];
     }
 }
 

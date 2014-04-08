@@ -11,7 +11,7 @@
 @class FlightRoute;
 @class MovingMapViewController;
 
-@interface EditWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate>
+@interface EditWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
 {
 @protected
     UITableViewController* tableViewController;
