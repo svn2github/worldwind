@@ -94,7 +94,7 @@ const float ShapePickRadius = 22.0;
 
     for (Waypoint* waypoint in waypoints)
     {
-        WWPosition* pos = [[WWPosition alloc] initWithLocation:[waypoint location] altitude:_altitude];
+        WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude];
         [waypointPositions addObject:pos];
 
         id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
@@ -199,9 +199,8 @@ const float ShapePickRadius = 22.0;
     NSMutableArray* waypointPoints = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
     for (Waypoint* waypoint in waypoints)
     {
-        WWLocation* location = [waypoint location];
         WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
-        [globe computePointFromPosition:[location latitude] longitude:[location longitude] altitude:_altitude outputPoint:point];
+        [globe computePointFromPosition:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude outputPoint:point];
         [waypointPoints addObject:point];
     }
 
@@ -473,7 +472,7 @@ const float ShapePickRadius = 22.0;
 
 - (void) didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
 {
-    WWPosition* pos = [[WWPosition alloc] initWithLocation:[waypoint location] altitude:_altitude];
+    WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude];
     [waypointPositions insertObject:pos atIndex:index];
     [waypointPath setPositions:waypointPositions];
 
@@ -497,7 +496,7 @@ const float ShapePickRadius = 22.0;
 - (void) didReplaceWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint
 {
     WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setLocation:[newWaypoint location]];
+    [pos setDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
     [waypointPath setPositions:waypointPositions];
 
     id shape = [waypointShapes objectAtIndex:index];
@@ -525,7 +524,7 @@ const float ShapePickRadius = 22.0;
 - (void) didUpdateWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
 {
     WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setLocation:[waypoint location]];
+    [pos setDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
     [waypointPath setPositions:waypointPositions];
 
     id shape = [waypointShapes objectAtIndex:index];

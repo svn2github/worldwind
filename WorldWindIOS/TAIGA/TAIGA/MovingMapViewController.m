@@ -55,6 +55,8 @@
 #import "EditWaypointPopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
 
 @implementation MovingMapViewController
 {
@@ -914,7 +916,7 @@
         terrainBeginLon = [pos longitude];
 
         oldWaypoint = [editingFlightRoute waypointAtIndex:editingWaypointIndex];
-        newWaypoint = [[MutableWaypoint alloc] initWithDegreesLatitude:[[oldWaypoint location] latitude] longitude:[[oldWaypoint location] longitude]];
+        newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
         [editingFlightRoute replaceWaypointAtIndex:editingWaypointIndex withWaypoint:newWaypoint];
 
         [WorldWindView startRedrawing];
@@ -937,10 +939,11 @@
     else if (state == UIGestureRecognizerStateChanged)
     {
         WWPosition* pos = [self globePositionAtScreenPoint:location];
-        double latDegrees = [[oldWaypoint location] latitude] + [pos latitude] - terrainBeginLat;
-        double lonDegrees = [[oldWaypoint location] longitude] + [pos longitude] - terrainBeginLon;
+        double latDegrees = [oldWaypoint latitude] + [pos latitude] - terrainBeginLat;
+        double lonDegrees = [oldWaypoint longitude] + [pos longitude] - terrainBeginLon;
 
         [newWaypoint setDegreesLatitude:latDegrees longitude:lonDegrees];
+        [newWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:latDegrees longitude:lonDegrees]];
         [editingFlightRoute updateWaypointAtIndex:editingWaypointIndex];
     }
 }
@@ -988,7 +991,7 @@
 - (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
 {
     WWPosition* pos = [po position];
-    Waypoint* waypoint = [[Waypoint alloc] initWithDegreesLatitude:[pos latitude] longitude:[pos longitude]];
+    Waypoint* waypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[pos latitude] longitude:[pos longitude]];
     addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
     [addWaypointPopoverController setAddWaypointToDatabase:YES];
     [addWaypointPopoverController presentPopoverFromPickedObject:po inView:_wwv

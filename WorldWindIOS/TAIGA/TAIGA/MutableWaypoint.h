@@ -10,8 +10,10 @@
 
 @interface MutableWaypoint : Waypoint
 
-- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude;
+- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude;
 
 - (void) setDegreesLatitude:(double)latitude longitude:(double)longitude;
+
+- (void) setDisplayName:(NSString*)displayName;
 
 @end

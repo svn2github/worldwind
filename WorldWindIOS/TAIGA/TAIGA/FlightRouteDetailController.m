@@ -353,8 +353,9 @@
         else if ([_flightRoute waypointCount] == 1)
         {
             Waypoint* waypoint = [_flightRoute waypointAtIndex:0];
-            WWSector* sector = [[WWSector alloc] initWithLocations:[[NSArray alloc] initWithObjects:[waypoint location], nil]];
-            [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:sector, nil]];
+            WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
+            WWSector* sector = [[WWSector alloc] initWithLocations:@[location]];
+            [bulkRetrieverController setSectors:@[sector]];
         }
         else
         {
@@ -364,7 +365,9 @@
             NSMutableArray* locations = [[NSMutableArray alloc] initWithCapacity:2];
             for (NSUInteger i = 0; i < [_flightRoute waypointCount]; i++)
             {
-                [locations addObject:[[_flightRoute waypointAtIndex:i] location]];
+                Waypoint* waypoint = [_flightRoute waypointAtIndex:i];
+                WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
+                [locations addObject:location];
             }
 //
 //            // The below is an approximation of the full state of Alaska. I'm leaving it here so that we can do
@@ -375,8 +378,7 @@
 //            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:71.1 longitude:-129.5]];
 //            [locations addObject:[[WWLocation alloc] initWithDegreesLatitude:71.1 longitude:-169.2]];
 
-            [bulkRetrieverController setSectors:[[NSArray alloc] initWithObjects:[[WWSector alloc]
-                    initWithLocations:locations], nil]];
+            [bulkRetrieverController setSectors:@[[[WWSector alloc] initWithLocations:locations]]];
         }
 //        else
 //        {

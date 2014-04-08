@@ -6,23 +6,31 @@
  */
 
 #import "MutableWaypoint.h"
-#import "TAIGA.h"
-#import "UnitsFormatter.h"
-#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/WWLog.h"
 
 @implementation MutableWaypoint
 
-- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
+- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude
 {
-    self = [super initWithDegreesLatitude:latitude longitude:longitude];
+    self = [super initWithType:type degreesLatitude:latitude longitude:longitude];
 
     return self;
 }
 
 - (void) setDegreesLatitude:(double)latitude longitude:(double)longitude
 {
-    [[self location] setDegreesLatitude:latitude longitude:longitude];
-    [self setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude]];
+    _latitude = latitude;
+    _longitude = longitude;
+}
+
+- (void) setDisplayName:(NSString*)displayName
+{
+    if (displayName == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Display name is nil")
+    }
+
+    _displayName = displayName;
 }
 
 @end

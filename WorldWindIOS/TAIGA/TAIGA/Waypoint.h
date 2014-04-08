@@ -16,26 +16,39 @@ typedef enum
 } WaypointType;
 
 @interface Waypoint : NSObject
+{
+@protected
+    NSString* _key;
+    WaypointType _type;
+    double _latitude;
+    double _longitude;
+    NSString* _displayName;
+    NSString* _iconPath;
+    UIImage* _iconImage;
+    NSDictionary* _properties;
+}
 
-@property (nonatomic, readonly) NSString* key;
+- (NSString*) key;
 
-@property (nonatomic, readonly) WWLocation* location;
+- (WaypointType) type;
 
-@property (nonatomic, readonly) WaypointType type;
+- (double) latitude;
 
-@property (nonatomic, readonly) NSString* iconPath;
+- (double) longitude;
 
-@property (nonatomic, readonly) UIImage* iconImage;
+- (NSString*) displayName;
 
-@property (nonatomic) NSString* displayName;
+- (NSString*) iconPath;
 
-@property (nonatomic) NSDictionary* properties;
+- (UIImage*) iconImage;
 
-- (id) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type;
+- (NSDictionary*) properties;
+
+- (id) initWithKey:(NSString*)key type:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude;
+
+- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude;
 
 - (id) initWithWaypointTableRow:(NSDictionary*)values;
-
-- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude;
 
 - (id) initWithPropertyList:(NSDictionary*)propertyList;
 

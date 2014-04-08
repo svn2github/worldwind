@@ -8,30 +8,65 @@
 #import "Waypoint.h"
 #import "TAIGA.h"
 #import "UnitsFormatter.h"
-#import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
 
 @implementation Waypoint
 
-- (id) initWithKey:(NSString*)key location:(WWLocation*)location type:(WaypointType)type
+- (NSString*) key
+{
+    return _key;
+}
+
+- (WaypointType) type
+{
+    return _type;
+}
+
+- (double) latitude
+{
+    return _latitude;
+}
+
+- (double) longitude
+{
+    return _longitude;
+}
+
+- (NSString*) displayName
+{
+    return _displayName;
+}
+
+- (NSString*) iconPath
+{
+    return _iconPath;
+}
+
+- (UIImage*) iconImage
+{
+    return _iconImage;
+}
+
+- (NSDictionary*) properties
+{
+    return _properties;
+}
+
+- (id) initWithKey:(NSString*)key type:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude
 {
     if (key == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
     }
 
-    if (location == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Location is nil")
-    }
-
     self = [super init];
 
     _key = key;
-    _location = location;
     _type  = type;
-    _displayName = @"";
+    _latitude = latitude;
+    _longitude = longitude;
+    _displayName = [[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude];
     _properties = [NSDictionary dictionary];
 
     switch (_type)
@@ -49,6 +84,13 @@
     return self;
 }
 
+- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude
+{
+    self = [self initWithKey:[WWUtil generateUUID] type:type degreesLatitude:latitude longitude:longitude];
+
+    return self;
+}
+
 - (id) initWithWaypointTableRow:(NSDictionary*)values
 {
     if (values == nil)
@@ -61,10 +103,8 @@
     NSNumber* lonDegrees = [values objectForKey:@"WGS_DLONG"];
     NSString* icao = [values objectForKey:@"ICAO"];
     NSString* name = [values objectForKey:@"NAME"];
-    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[latDegrees doubleValue]
-                                                             longitude:[lonDegrees doubleValue]];
 
-    self = [self initWithKey:id location:location type:WaypointTypeAirport];
+    self = [self initWithKey:id type:WaypointTypeAirport degreesLatitude:[latDegrees doubleValue] longitude:[lonDegrees doubleValue]];
 
     NSMutableString* displayName = [[NSMutableString alloc] init];
     [displayName appendString:icao];
@@ -77,18 +117,6 @@
     return self;
 }
 
-- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude
-{
-    NSString* id = [WWUtil generateUUID];
-    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:latitude longitude:longitude];
-
-    self = [self initWithKey:id location:location type:WaypointTypeMarker];
-
-    _displayName = [[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude];
-
-    return self;
-}
-
 - (id) initWithPropertyList:(NSDictionary*)propertyList
 {
     if (propertyList == nil)
@@ -97,12 +125,11 @@
     }
 
     NSString* key = [propertyList objectForKey:@"key"];
-    NSNumber* lat = [propertyList objectForKey:@"latitude"];
-    NSNumber* lon = [propertyList objectForKey:@"longitude"];
     NSNumber* type = [propertyList objectForKey:@"type"];
-    WWLocation* location = [[WWLocation alloc] initWithDegreesLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+    NSNumber* latitude = [propertyList objectForKey:@"latitude"];
+    NSNumber* longitude = [propertyList objectForKey:@"longitude"];
 
-    self = [self initWithKey:key location:location type:(WaypointType) [type intValue]];
+    self = [self initWithKey:key type:(WaypointType) [type intValue] degreesLatitude:[latitude doubleValue] longitude:[longitude doubleValue]];
 
     _displayName = [propertyList objectForKey:@"displayName"];
     _properties = [propertyList objectForKey:@"properties"];
@@ -114,9 +141,9 @@
 {
     return @{
         @"key" : _key,
-        @"latitude" : [NSNumber numberWithDouble:[_location latitude]],
-        @"longitude" : [NSNumber numberWithDouble:[_location longitude]],
         @"type" : [NSNumber numberWithInt:_type],
+        @"latitude" : [NSNumber numberWithDouble:_latitude],
+        @"longitude" : [NSNumber numberWithDouble:_longitude],
         @"displayName" : _displayName,
         @"properties" : _properties
     };
