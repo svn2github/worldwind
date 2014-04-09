@@ -23,13 +23,14 @@
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"FAASectionals"];
 
     // dateline, and WW doesn't have a way to specify that, or a way to specify more than one region.
-    self = [super initWithSector:[[WWSector alloc] initWithDegreesMinLatitude:50 maxLatitude:72.5
-                                                                 minLongitude:-180 maxLongitude:-129]
+    self = [super initWithSector:[[WWSector alloc] initWithDegreesMinLatitude:51 maxLatitude:71.4
+                                                                 minLongitude:-180 maxLongitude:-130]
                   levelZeroDelta:[[WWLocation alloc] initWithDegreesLatitude:45 longitude:45]
                        numLevels:9
             retrievalImageFormat:@"image/png"
                        cachePath:cachePath];
     [self setDisplayName:@"FAA Sectionals"];
+    [self setTextureCacheFormat:WW_TEXTURE_AS_IS]; // do not convert to 5551 on download
 
     WWWMSUrlBuilder* urlBuilder = [[WWWMSUrlBuilder alloc] initWithServiceAddress:serviceAddress
                                                                        layerNames:layerName
