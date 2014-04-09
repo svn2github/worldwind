@@ -6,27 +6,44 @@
  */
 
 #import "AddWaypointPopoverController.h"
-#import "Waypoint.h"
 #import "FlightRoute.h"
+#import "Waypoint.h"
+#import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
 #import "UITableViewCell+TAIGAAdditions.h"
-#import "WaypointDatabase.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWPosition.h"
+
+static NSString* AddWaypointActionAdd = @"Add to Route";
 
 @implementation AddWaypointPopoverController
 
-- (id) initWithWaypoint:(Waypoint*)waypoint mapViewController:(MovingMapViewController*)mapViewController
+- (id) initWithWaypointSource:(id)waypointSource mapViewController:(MovingMapViewController*)mapViewController
 {
+    _waypointSource = waypointSource;
+    _mapViewController = mapViewController;
+    [self populateAddWaypointTable];
+    [self populateFlightRouteTable];
+
+    CGSize size = CGSizeMake(240, 44 * [addWaypointTableCells count]);
+    UIImage* rightButtonImage = [UIImage imageNamed:@"all-directions"];
+    UIBarButtonItem* rightButtonItem = [[UIBarButtonItem alloc] initWithImage:rightButtonImage style:UIBarButtonItemStylePlain target:nil action:NULL];
     addWaypointController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [addWaypointController setPreferredContentSize:CGSizeMake(240, 88)];
+    [addWaypointController setPreferredContentSize:size];
     [[addWaypointController navigationItem] setTitle:@"Waypoint"];
+    [[addWaypointController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[addWaypointController tableView] setDataSource:self];
     [[addWaypointController tableView] setDelegate:self];
     [[addWaypointController tableView] setBounces:NO];
     [[addWaypointController tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
 
+    NSUInteger numRows = MIN(4, [flightRouteTableCells count]);
+    size = CGSizeMake(320, MAX(44 * numRows, size.height));
     flightRouteChooser = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [flightRouteChooser setPreferredContentSize:CGSizeMake(320, 176)];
-    [[flightRouteChooser navigationItem] setTitle:@"Add to Route"];
+    [flightRouteChooser setPreferredContentSize:size];
+    [[flightRouteChooser navigationItem] setTitle:AddWaypointActionAdd];
     [[flightRouteChooser tableView] setDataSource:self];
     [[flightRouteChooser tableView] setDelegate:self];
 
@@ -35,20 +52,15 @@
 
     self = [super initWithContentViewController:navigationController];
 
-    _waypoint = waypoint;
-    _mapViewController = mapViewController;
-
-    [self populateAddWaypointTable];
-    [self populateFlightRouteTable];
-
     return self;
 }
 
-- (void) addToRouteRowTapped
+- (void) addSelected
 {
     if ([_mapViewController presentedFlightRoute] != nil)
     {
-        [self doAddToRoute:[_mapViewController presentedFlightRoute]];
+        [self dismissPopoverAnimated:YES];
+        [self addConfirmed:[_mapViewController presentedFlightRoute]];
     }
     else
     {
@@ -56,32 +68,58 @@
     }
 }
 
-- (void) flightRouteTapped:(NSUInteger)index
+- (void) addConfirmed:(FlightRoute*)flightRoute
 {
-    [self doAddToRoute:[_mapViewController flightRouteAtIndex:index]];
-    [_mapViewController presentFlightRouteAtIndex:index editing:NO];
-}
-
-- (void) newFlightRouteTapped
-{
-    [_mapViewController newFlightRoute:^(FlightRoute* newFlightRoute)
+    if ([_waypointSource isKindOfClass:[Waypoint class]])
     {
-        NSUInteger index = (NSUInteger) [_mapViewController flightRouteCount];
-        [_mapViewController insertFlightRoute:newFlightRoute atIndex:index]; // append to the end of the route list
-        [_mapViewController presentFlightRouteAtIndex:index editing:YES]; // create new routes in editing mode
-        [self doAddToRoute:newFlightRoute];
-    }];
+        [flightRoute addWaypoint:(Waypoint*) _waypointSource];
+    }
+    else
+    {
+        WWLocation* location = (WWLocation*) _waypointSource;
+        Waypoint* waypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker
+                                            degreesLatitude:[location latitude]
+                                                  longitude:[location longitude]];
+        [flightRoute addWaypoint:waypoint];
+        [[_mapViewController waypointDatabase] addWaypoint:waypoint];
+    }
 }
 
-- (void) doAddToRoute:(FlightRoute*)flightRoute
+- (void) flightRouteSelected:(NSUInteger)index
 {
     [self dismissPopoverAnimated:YES];
-    [flightRoute addWaypoint:_waypoint];
 
-    if (_addWaypointToDatabase)
+    if (index < [_mapViewController flightRouteCount])
     {
-        [[_mapViewController waypointDatabase] addWaypoint:_waypoint];
+        [self addConfirmed:[_mapViewController flightRouteAtIndex:index]];
+        [_mapViewController presentFlightRouteAtIndex:index editing:NO];
     }
+    else
+    {
+        [_mapViewController newFlightRoute:^(FlightRoute* newFlightRoute)
+        {
+            NSUInteger newIndex = (NSUInteger) [_mapViewController flightRouteCount];
+            [_mapViewController insertFlightRoute:newFlightRoute atIndex:newIndex]; // append to the end of the route list
+            [_mapViewController presentFlightRouteAtIndex:newIndex editing:YES]; // create new routes in editing mode
+            [self addConfirmed:newFlightRoute];
+        }];
+    }
+}
+
+- (void) positionDidChange
+{
+    id oldWaypointSource = _waypointSource;
+    id newWaypointSource = [[WWLocation alloc] initWithLocation:[self position]];
+    _waypointSource = newWaypointSource;
+    [self setToWaypointSource:[addWaypointTableCells objectAtIndex:0]];
+
+    // Make the waypoint cell match the change in the waypoint source location. Use UIKit animations to display the
+    // change instantaneously if the waypoint source was already a location, and smooth the change if the waypoint
+    // source has changed type.
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    UITableViewRowAnimation animation = [oldWaypointSource isKindOfClass:[WWLocation class]] ? UITableViewRowAnimationNone : UITableViewRowAnimationAutomatic;
+    [[addWaypointController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:animation];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -93,12 +131,12 @@
     addWaypointTableCells = [[NSMutableArray alloc] init];
 
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    [cell setToWaypoint:_waypoint];
+    [self setToWaypointSource:cell];
     [cell setUserInteractionEnabled:NO];
     [addWaypointTableCells addObject:cell];
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    [[cell textLabel] setText:@"Add to Route"];
+    [[cell textLabel] setText:AddWaypointActionAdd];
     [[cell textLabel] setTextColor:[cell tintColor]];
     [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
     [addWaypointTableCells addObject:cell];
@@ -120,6 +158,21 @@
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     [[cell textLabel] setText:@"New Route..."];
     [flightRouteTableCells addObject:cell];
+}
+
+- (void) setToWaypointSource:(UITableViewCell*)cell
+{
+    if ([_waypointSource isKindOfClass:[Waypoint class]])
+    {
+        [cell setToWaypoint:(Waypoint*) _waypointSource];
+    }
+    else
+    {
+        WWLocation* location = (WWLocation*) _waypointSource;
+        NSString* text = [[TAIGA unitsFormatter] formatDegreesLatitude:[location latitude] longitude:[location longitude]];
+        [[cell textLabel] setText:text];
+        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
+    }
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
@@ -154,17 +207,14 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if (tableView == [addWaypointController tableView] && [indexPath row] == 1) // Add to Route row tapped
+    NSString* cellText = [[[tableView cellForRowAtIndexPath:indexPath] textLabel] text];
+    if ([cellText isEqualToString:AddWaypointActionAdd])
     {
-        [self addToRouteRowTapped];
+        [self addSelected];
     }
-    else if (tableView == [flightRouteChooser tableView] && [indexPath row] < [_mapViewController flightRouteCount]) // Flight route row tapped
+    else if (tableView == [flightRouteChooser tableView])
     {
-        [self flightRouteTapped:(NSUInteger) [indexPath row]];
-    }
-    else if (tableView == [flightRouteChooser tableView]) // New Route row tapped
-    {
-        [self newFlightRouteTapped];
+        [self flightRouteSelected:(NSUInteger) [indexPath row]];
     }
 }
 
@@ -177,6 +227,8 @@
     CGSize viewSize = [viewController preferredContentSize];
     CGSize navBarSize = [navController navigationBar].bounds.size;
     [self setPopoverContentSize:CGSizeMake(viewSize.width, viewSize.height + navBarSize.height) animated:animated];
+    [self setDragEnabled:viewController == addWaypointController];
+
 }
 
 @end

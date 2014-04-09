@@ -7,51 +7,51 @@
 
 #import "EditWaypointPopoverController.h"
 #import "FlightRoute.h"
+#import "MutableWaypoint.h"
+#import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
 #import "UITableViewCell+TAIGAAdditions.h"
+#import "TAIGA.h"
+#import "UnitsFormatter.h"
+#import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/WorldWindView.h"
 
-static NSString* EditWaypointActionDone = @"Done";
-static NSString* EditWaypointActionMove = @"Move Waypoint";
 static NSString* EditWaypointActionRemove = @"Remove Waypoint";
-static NSString* EditWaypointActionUndo = @"Undo";
 
 @implementation EditWaypointPopoverController
 
 - (id) initWithFlightRoute:(FlightRoute*)flightRoute waypointIndex:(NSUInteger)waypointIndex mapViewController:(MovingMapViewController*)mapViewController
 {
-    BOOL isEditing = [mapViewController isEditingFlightRoute:flightRoute waypointAtIndex:waypointIndex];
+    _flightRoute = flightRoute;
+    _waypointIndex = waypointIndex;
+    _mapViewController = mapViewController;
+    oldWaypoint = [flightRoute waypointAtIndex:waypointIndex];
+    [self populateTableCells];
 
+    UIImage* rightButtonImage = [UIImage imageNamed:@"all-directions"];
+    UIBarButtonItem* rightButtonItem = [[UIBarButtonItem alloc] initWithImage:rightButtonImage style:UIBarButtonItemStylePlain target:nil action:NULL];
     tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [tableViewController setPreferredContentSize:CGSizeMake(240, isEditing ? 176 : 132)];
-    [[tableViewController navigationItem] setTitle:[flightRoute displayName]];
+    [tableViewController setPreferredContentSize:CGSizeMake(240, 44 * [tableCells count])];
+    [[tableViewController navigationItem] setTitle:@"Waypoint"];
+    [[tableViewController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[tableViewController tableView] setDataSource:self];
     [[tableViewController tableView] setDelegate:self];
     [[tableViewController tableView] setBounces:NO];
     [[tableViewController tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     navigationController = [[UINavigationController alloc] initWithRootViewController:tableViewController];
+    cancelButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelSelected)];
 
     self = [super initWithContentViewController:navigationController];
-
-    _flightRoute = flightRoute;
-    _waypointIndex = waypointIndex;
-    _mapViewController = mapViewController;
-
-    [self populateTableCells];
     [self setDelegate:self];
 
     return self;
 }
 
-- (void) doneSelected
+- (void) cancelSelected
 {
     [self dismissPopoverAnimated:YES];
-    [_mapViewController endEditingFlightRoute:YES]; // end editing and keep the changes
-}
-
-- (void) moveSelected
-{
-    [self dismissPopoverAnimated:YES];
-    [_mapViewController beginEditingFlightRoute:_flightRoute waypointAtIndex:_waypointIndex];
+    [self rejectChanges];
 }
 
 - (void) removeSelected
@@ -64,29 +64,79 @@ static NSString* EditWaypointActionUndo = @"Undo";
     [alertView show];
 }
 
-- (void) undoSelected
+- (void) removeConfirmed
 {
     [self dismissPopoverAnimated:YES];
-    [_mapViewController endEditingFlightRoute:NO]; // end editing and discard the changes
+    [_flightRoute removeWaypointAtIndex:_waypointIndex];
+    // TODO: Remove marker waypoints from the waypoint database.
+}
+
+- (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if ([alertView cancelButtonIndex] != buttonIndex)
+    {
+        [self removeConfirmed];
+    }
 }
 
 - (void) popoverControllerDidDismissPopover:(UIPopoverController*)popoverController
 {
     // End editing and keep the changes when the user soft-dismisses this popover. Note that this method is not called
     // when dismissPopoverAnimated is called directly.
-    if ([_mapViewController isEditingFlightRoute:_flightRoute waypointAtIndex:_waypointIndex])
+    [self commitChanges];
+}
+
+- (void) commitChanges
+{
+    if (newWaypoint != nil)
     {
-        [_mapViewController endEditingFlightRoute:YES];
+        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
+        // TODO: Remove old marker waypoints from the waypoint database.
     }
 }
 
-- (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (void) rejectChanges
 {
-    if ([alertView cancelButtonIndex] != buttonIndex) // Remove button tapped
+    if (newWaypoint != nil)
     {
-        [self dismissPopoverAnimated:YES];
-        [_flightRoute removeWaypointAtIndex:_waypointIndex];
+        [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:oldWaypoint];
     }
+}
+
+- (void) beginDrag
+{
+    newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
+    [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
+
+    // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change smoothly.
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+    [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
+
+    // Display the cancel button in the left side of the navigation bar.
+    [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
+
+    [WorldWindView startRedrawing];
+}
+
+- (void) endDrag
+{
+    [WorldWindView stopRedrawing];
+}
+
+- (void) positionDidChange
+{
+    WWPosition* pos = [self position];
+    [newWaypoint setDegreesLatitude:[pos latitude] longitude:[pos longitude]];
+    [newWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:[pos latitude] longitude:[pos longitude]]];
+    [_flightRoute updateWaypointAtIndex:_waypointIndex];
+
+    // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change instantly.
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+    [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationNone];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -101,29 +151,6 @@ static NSString* EditWaypointActionUndo = @"Undo";
     [cell setToWaypoint:[_flightRoute waypointAtIndex:_waypointIndex]];
     [cell setUserInteractionEnabled:NO];
     [tableCells addObject:cell];
-
-    if ([_mapViewController isEditingFlightRoute:_flightRoute waypointAtIndex:_waypointIndex])
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        [[cell textLabel] setText:EditWaypointActionDone];
-        [[cell textLabel] setTextColor:[cell tintColor]];
-        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
-        [tableCells addObject:cell];
-
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        [[cell textLabel] setText:EditWaypointActionUndo];
-        [[cell textLabel] setTextColor:[cell tintColor]];
-        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
-        [tableCells addObject:cell];
-    }
-    else
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        [[cell textLabel] setText:EditWaypointActionMove];
-        [[cell textLabel] setTextColor:[cell tintColor]];
-        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
-        [tableCells addObject:cell];
-    }
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     [[cell textLabel] setText:EditWaypointActionRemove];
@@ -149,25 +176,13 @@ static NSString* EditWaypointActionUndo = @"Undo";
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
-    NSString* cellText = [[cell textLabel] text];
 
-    if ([cellText isEqual:EditWaypointActionDone])
-    {
-        [self doneSelected];
-    }
-    else if ([cellText isEqual:EditWaypointActionMove])
-    {
-        [self moveSelected];
-    }
-    else if ([cellText isEqual:EditWaypointActionRemove])
+    NSString* cellText = [[[tableView cellForRowAtIndexPath:indexPath] textLabel] text];
+    if ([cellText isEqual:EditWaypointActionRemove])
     {
         [self removeSelected];
     }
-    else if ([cellText isEqual:EditWaypointActionUndo])
-    {
-        [self undoSelected];
-    }
+
 }
 
 @end

@@ -498,7 +498,7 @@ const float ShapePickRadius = 22.0;
 - (void) didReplaceWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint
 {
     WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude]];
+    [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude] altitude:_altitude];
     [waypointPath setPositions:waypointPositions];
 
     id shape = [waypointShapes objectAtIndex:index];
@@ -526,7 +526,7 @@ const float ShapePickRadius = 22.0;
 - (void) didUpdateWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
 {
     WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude]];
+    [pos setDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude];
     [waypointPath setPositions:waypointPositions];
 
     id shape = [waypointShapes objectAtIndex:index];

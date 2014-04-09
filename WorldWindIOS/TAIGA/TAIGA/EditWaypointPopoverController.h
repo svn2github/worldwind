@@ -6,16 +6,22 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "DraggablePopoverController.h"
 
 @class FlightRoute;
 @class MovingMapViewController;
+@class Waypoint;
+@class MutableWaypoint;
 
-@interface EditWaypointPopoverController : UIPopoverController <UITableViewDataSource, UITableViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate>
+@interface EditWaypointPopoverController : DraggablePopoverController <UITableViewDataSource, UITableViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate>
 {
 @protected
     UITableViewController* tableViewController;
     UINavigationController* navigationController;
+    UIBarButtonItem* cancelButtonItem;
     NSMutableArray* tableCells;
+    Waypoint* oldWaypoint;
+    MutableWaypoint* newWaypoint;
 }
 
 @property (nonatomic, readonly) FlightRoute* flightRoute;

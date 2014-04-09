@@ -11,7 +11,7 @@
 @class WaypointDatabase;
 @class WorldWindView;
 
-@interface MovingMapViewController : UIViewController <UIGestureRecognizerDelegate, UINavigationControllerDelegate>
+@interface MovingMapViewController : UIViewController <UINavigationControllerDelegate>
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 
@@ -38,13 +38,5 @@
 - (FlightRoute*) presentedFlightRoute;
 
 - (void) presentFlightRouteAtIndex:(NSUInteger)index editing:(BOOL)editing;
-
-/// @name Editing Flight Route Waypoints
-
-- (void) beginEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index;
-
-- (void) endEditingFlightRoute:(BOOL)keepChanges;
-
-- (BOOL) isEditingFlightRoute:(FlightRoute*)flightRoute waypointAtIndex:(NSUInteger)index;
 
 @end
