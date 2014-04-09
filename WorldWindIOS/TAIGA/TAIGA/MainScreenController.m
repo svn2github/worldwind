@@ -17,6 +17,7 @@
 #import "ZKFileArchive.h"
 #import "ZKCDHeader.h"
 #import "Settings.h"
+#import "WWLog.h"
 
 #define VIEW_TAG (100)
 
@@ -32,6 +33,9 @@
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
+
+    NSTimer* dataInstallationCheckTimer;
+    BOOL dataInstallationInProgress;
 }
 
 - (id) init
@@ -69,7 +73,6 @@
     [((ButtonWithImageAndText*) [movingMapButton customView]) highlight:YES];
 }
 
-
 - (void) viewDidLoad
 {
     [super viewDidLoad];
@@ -78,7 +81,7 @@
 
     [[TAIGA appUpdateController] checkForUpdate:YES];
 
-    [self installPreparedData];
+    [self setupInstalledDataTimer];
 }
 
 - (UIStatusBarStyle) preferredStatusBarStyle
@@ -182,91 +185,181 @@
     [((ButtonWithImageAndText*) [button customView]) highlight:YES];
 }
 
+- (void) setupInstalledDataTimer
+{
+    // Check for a data file once a minute.
+    dataInstallationCheckTimer = [NSTimer scheduledTimerWithTimeInterval:60
+                                                                  target:self selector:@selector(installPreparedData)
+                                                                userInfo:nil repeats:YES];
+    [dataInstallationCheckTimer setTolerance:10];
+}
+
 - (void) installPreparedData
 {
+    @synchronized (self)
+    {
+        if (dataInstallationInProgress)
+            return;
+
+        dataInstallationInProgress = YES;
+    }
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^
     {
-        NSString* docsDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString* zipPath = [docsDir stringByAppendingPathComponent:@"TAIGAData.zip"];
-
-        BOOL archiveExists = [[NSFileManager defaultManager] fileExistsAtPath:zipPath];
-        if (!archiveExists)
-            return; // nothing to install
-
-        // Determine whether the archive has been partially read in a previous session, and if so, how many entries
-        // were previously read.
-
-        NSDictionary* fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:zipPath error:nil];
-        NSDate* fileDate = [fileAttrs objectForKey:NSFileModificationDate];
-        NSTimeInterval currentDataFileID = fileDate.timeIntervalSince1970; // use the file date as the archive ID
-
-        NSUInteger numEntriesExtracted = 0; // assume that no entries were previously extracted.
-
-        // Determine whether partial extraction occurred previously from this archive.
-        double previousDataFileID = [Settings getDoubleForName:TAIGA_DATA_FILE_ID];
-        if (currentDataFileID == previousDataFileID) // these will match if the archive is the one read previously
+        @try
         {
-            // We've extracted from this archive before. Determine how many entries were extracted.
-            numEntriesExtracted = (NSUInteger) [Settings getIntForName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
-        }
+            NSString* zipPath = [self determineDataFile];
+            if (zipPath == nil)
+                return;
 
-        NSDate* start = [[NSDate alloc] init]; // to keep track of how long the extraction takes
-
-        // Open the archive and get its central directory -- its list of files.
-        ZKFileArchive* archive = [ZKFileArchive archiveWithArchivePath:zipPath];
-        NSArray* centralDirectory = [archive centralDirectory];
-
-        // Mark that we've extracted files from this archive.
-        [Settings setDouble:currentDataFileID forName:TAIGA_DATA_FILE_ID];
-
-        // Iterate over the central directory and extract each entry.
-        NSUInteger numEntries = [centralDirectory count];
-        for (NSUInteger i = numEntriesExtracted; i < numEntries; i++)
-        {
-            ZKCDHeader* entry = [centralDirectory objectAtIndex:i];
-            [archive inflateFile:entry toDirectory:cacheDir];
-
-            // Mark the number of entries read. Since doing so causes the user preferences cache to synch, mark only
-            // every 100th extraction.
-            if (i % 100 == 0)
+            NSFileCoordinator* fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+            NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:zipPath];
+            NSError* error = nil;
+            [fileCoordinator coordinateReadingItemAtURL:fileURL options:0
+                                                  error:&error byAccessor:^void (NSURL* url)
             {
-                [Settings setInt:i + 1 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
-                [Settings setFloat:100.0 * ((float) (i + 1) / numEntries) forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
-                [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
+                [self doInstallPreparedData:[url path]];
+            }];
+
+            if (error != nil)
+            {
+                WWLog("@Error occurred waiting for preinstallation data file: %@", [error description]);
             }
         }
-
-        // Reset the number of extracted entries to 0. This causes the archive to be re-extracted if it is ever
-        // again transferred to the device. An alternative policy would be to avoid re-extracting when the same
-        // archive is transferred again. To do that simply save "numEntries" here. But that policy would make it
-        // difficult to repeat the transfer/extract process in case errors occur during extraction.
-        [Settings setInt:0 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
-
-        // Mark that data installation is complete so that the Settings screen can reflect that.
-        [Settings setFloat:100.0 forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
-        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
-
-        // Remove the archive now that its contents have been fully extracted.
-        [[NSFileManager defaultManager] removeItemAtPath:zipPath error:nil];
-
-        // Report how long the extraction took.
-        NSDate* end = [[NSDate alloc] init];
-        NSTimeInterval delta = [end timeIntervalSinceDate:start];
-        NSLog(@"Extracted %d data files in %f minutes (%f seconds per file)",
-                numEntries, delta / 60.0, delta / numEntries);
-
-        [self performSelectorOnMainThread:@selector(performAlert) withObject:self waitUntilDone:NO];
+        @catch (NSException* exception)
+        {
+            NSLog(@"Exception occurred installing data: %@, %@", exception, [exception userInfo]);
+        }
+        @finally
+        {
+            @synchronized (self)
+            {
+                dataInstallationInProgress = NO;
+            }
+        }
     });
 }
 
-- (void) performAlert
+- (NSString*) determineDataFile
 {
-    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Data Installation Is Complete"
+    NSString* docsDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+
+    NSDirectoryEnumerator* files = [[NSFileManager defaultManager] enumeratorAtPath:docsDir];
+    for (NSString* fileName = files.nextObject; fileName != nil; fileName = files.nextObject)
+    {
+        if ([fileName hasSuffix:@"zip"])
+        {
+            return [docsDir stringByAppendingPathComponent:fileName];
+        }
+    }
+
+    return nil;
+}
+
+- (void) doInstallPreparedData:(NSString*)zipPath
+{
+    NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+
+    // Determine whether the archive has been partially read in a previous session, and if so, how many entries
+    // were previously read.
+
+    NSDictionary* fileAttrs = [[NSFileManager defaultManager] attributesOfItemAtPath:zipPath error:nil];
+    NSDate* fileDate = [fileAttrs objectForKey:NSFileModificationDate];
+    NSTimeInterval currentDataFileID = fileDate.timeIntervalSince1970; // use the file date as the archive ID
+
+    NSUInteger numEntriesExtracted = 0; // assume that no entries were previously extracted.
+
+    // Determine whether partial extraction occurred previously from this archive.
+    double previousDataFileID = [Settings getDoubleForName:TAIGA_DATA_FILE_ID];
+    if (currentDataFileID == previousDataFileID) // these will match if the archive is the one read previously
+    {
+        // We've extracted from this archive before. Determine how many entries were extracted.
+        numEntriesExtracted = (NSUInteger) [Settings getIntForName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
+    }
+
+    NSDate* start = [[NSDate alloc] init]; // to keep track of how long the extraction takes
+
+    // Open the archive and get its central directory -- its list of files.
+    ZKFileArchive* archive = [ZKFileArchive archiveWithArchivePath:zipPath];
+    if (archive == nil)
+        return;
+
+    NSArray* centralDirectory = [archive centralDirectory];
+
+    [self performSelectorOnMainThread:@selector(performAlert:)
+                           withObject:(numEntriesExtracted == 0 ? @"start" : @"resume")
+                        waitUntilDone:NO];
+
+    // Mark that we've extracted files from this archive.
+    [Settings setDouble:currentDataFileID forName:TAIGA_DATA_FILE_ID];
+
+    // Iterate over the central directory and extract each entry.
+    NSUInteger numEntries = [centralDirectory count];
+    [Settings setFloat:100.0 * ((float) numEntriesExtracted / numEntries) forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
+
+    for (NSUInteger i = numEntriesExtracted; i < numEntries; i++)
+    {
+        ZKCDHeader* entry = [centralDirectory objectAtIndex:i];
+        [archive inflateFile:entry toDirectory:cacheDir];
+
+        // Mark the number of entries read. Since doing so causes the user preferences cache to synch, mark only
+        // every 100th extraction.
+        if (i % 100 == 0)
+        {
+            [Settings setInt:i + 1 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
+            [Settings setFloat:100.0 * ((float) (i + 1) / numEntries) forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
+        }
+    }
+
+    // Reset the number of extracted entries to 0. This causes the archive to be re-extracted if it is ever
+    // again transferred to the device. An alternative policy would be to avoid re-extracting when the same
+    // archive is transferred again. To do that simply save "numEntries" here. But that policy would make it
+    // difficult to repeat the transfer/extract process in case errors occur during extraction.
+    [Settings setInt:0 forName:TAIGA_DATA_FILE_NUM_FILES_EXTRACTED];
+
+    // Mark that data installation is complete so that the Settings screen can reflect that.
+    [Settings setFloat:100.0 forName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
+
+    // Remove the archive now that its contents have been fully extracted.
+    [[NSFileManager defaultManager] removeItemAtPath:zipPath error:nil];
+
+    // Report how long the extraction took.
+    NSDate* end = [[NSDate alloc] init];
+    NSTimeInterval delta = [end timeIntervalSinceDate:start];
+    NSLog(@"Extracted %d data files in %f minutes (%f seconds per file)",
+            numEntries, delta / 60.0, delta / numEntries);
+
+    [self performSelectorOnMainThread:@selector(performAlert:) withObject:@"end" waitUntilDone:NO];
+
+    return;
+}
+
+- (void) performAlert:(NSString*)state
+{
+    NSString* title;
+
+    if ([state isEqualToString:@"start"])
+    {
+        title = @"Data Installation has started. You may dismiss this message and continue working";
+    }
+    else if ([state isEqualToString:@"resume"])
+    {
+        title = @"Data Installation has resumed. You may dismiss this message and continue working";
+    }
+    else
+    {
+        title = @"Data Installation Is Complete";
+    }
+
+    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:title
                                                         message:nil
                                                        delegate:self
                                               cancelButtonTitle:@"Dismiss"
                                               otherButtonTitles:nil];
+
     [alertView show];
 }
 @end
