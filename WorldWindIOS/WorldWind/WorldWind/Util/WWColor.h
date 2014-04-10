@@ -162,7 +162,7 @@
 * @param amount The amount to interpolate as a number between 0.0 and 1.0, inclusive.
 * @param result A WWColor instance in which to return the linear interpolation of color1 and color2.
 *
-* @exception NSInvalidArgumentException if any argument is nil.
+* @exception NSInvalidArgumentException If any argument is nil.
 */
 + (void) interpolateColor1:(WWColor*)color1 color2:(WWColor*)color2 amount:(double)amount result:(WWColor*)result;
 
