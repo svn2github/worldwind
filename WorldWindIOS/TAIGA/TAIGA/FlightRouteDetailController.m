@@ -161,9 +161,9 @@
                                                                  options:0 metrics:nil views:viewsDictionary]];
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointFileControl]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)][waypointFileControl(==400)]"
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)][waypointFileControl(==176)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable][waypointFileControl(==400)]|"
+    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable][waypointFileControl(==176)]|"
                                                                  options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:normalConstraints];
 }
@@ -242,6 +242,19 @@
             return @"Waypoints";
         default:
             return nil;
+    }
+}
+
+- (CGFloat) tableView:(UITableView*)tableView heightForHeaderInSection:(NSInteger)section
+{
+    switch (section)
+    {
+        case SECTION_PROPERTIES:
+            return CGFLOAT_MIN;
+        case SECTION_WAYPOINTS:
+            return 15;
+        default:
+            return UITableViewAutomaticDimension;
     }
 }
 
