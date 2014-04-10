@@ -10,8 +10,8 @@
 
 @class WWFrameStatistics;
 @class WWPickedObjectList;
+@class WWPosition;
 @class WWSceneController;
-@class WWVec4;
 @protocol WWNavigator;
 @protocol WorldWindViewDelegate;
 
@@ -141,17 +141,36 @@
 */
 + (void) stopRedrawing;
 
-/// @name Picking Objects in the World Wind Scene
+/// @name Interacting With the World Wind Scene
 
 /**
-* Request the objects at a specified pick point.
+* Request the World Wind objects at a point in the receiver's local coordinate system.
 *
-* @param pickPoint The point to examine, in screen coordinates.
+* If the point intersects the globe, the returned list contains an object identifying the associated geographic
+* position. This returns an empty list when nothing in the World Wind scene intersects the specified point.
 *
-* @return The objects at the specified pick point. If the pick point intersects the globe,
-* the returned list contains an object identifying the associated geographic position.
+* @param pickPoint The point to examine in the receiver's local coordinate system (bounds).
+*
+* @return The World Wind objects at the specified point.
 */
 - (WWPickedObjectList*) pick:(CGPoint)pickPoint;
+
+/**
+* Converts a geographic position to a point in the receiver's local coordinate system.
+*
+* This stores the converted screen coordinates in the point parameter, and returns YES or NO to indicate whether or not
+* the conversion was successful. This returns YES if the position is within the WorldWindView's visible region, and NO
+* otherwise. The position is considered visible when it is within the World Wind scene's minimum and maximum drawing
+* distances and its screen point is within the WorldWindView's bounds.
+*
+* @param position The geographic latitude, longitude and altitude to convert.
+* @param point Upon returning, a point in the receiver's local coordinate system (bounds) corresponding to the position.
+*
+* @return YES if the position can be converted to a screen point, otherwise NO.
+*
+* @exception NSInvalidArgumentException If any argument is nil.
+*/
+- (BOOL) convertPosition:(WWPosition*)position toPoint:(CGPoint*)point;
 
 /// @name Interposing in View Operations
 
