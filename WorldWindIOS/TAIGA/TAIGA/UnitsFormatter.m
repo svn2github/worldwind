@@ -59,6 +59,18 @@
     return ms;
 }
 
+- (NSString*) formatDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude
+{
+    NSMutableString* ms = [[NSMutableString alloc] init];
+    [ms appendString:[latitudeFormatter stringFromNumber:[NSNumber numberWithDouble:latitude]]];
+    [ms appendString:@"  "];
+    [ms appendString:[longitudeFormatter stringFromNumber:[NSNumber numberWithDouble:longitude]]];
+    [ms appendString:@"  "];
+    [ms appendString:[altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude * TAIGA_METERS_TO_FEET]]];
+
+    return ms;
+}
+
 - (NSString*) formatMetersAltitude:(double)altitude
 {
     return [altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:altitude * TAIGA_METERS_TO_FEET]];

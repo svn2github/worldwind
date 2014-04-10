@@ -15,6 +15,10 @@
 #import "UnitsFormatter.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Geometry/WWVec4.h"
+#import "WorldWind/Navigate/WWNavigatorState.h"
+#import "WorldWind/Render/WWSceneController.h"
+#import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/WorldWindView.h"
 
 static NSString* EditWaypointActionRemove = @"Remove Waypoint";
@@ -90,8 +94,8 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     if (newWaypoint != nil)
     {
-        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
         // TODO: Remove old marker waypoints from the waypoint database.
+        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
     }
 }
 
@@ -103,31 +107,49 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     }
 }
 
-- (void) beginDrag
+- (void) popoverDraggingDidBegin
 {
-    newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
-    [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
+    // TODO: Review this logic for a potential bug where the newWaypoint state is not saved.
+    if (newWaypoint == nil)
+    {
+        newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker
+                                            degreesLatitude:[oldWaypoint latitude]
+                                                  longitude:[oldWaypoint longitude]];
+        [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
 
-    // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change smoothly.
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
-    [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
+        // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change smoothly.
+        NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+        NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
+        [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+        [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray
+                                               withRowAnimation:UITableViewRowAnimationAutomatic];
 
-    // Display the cancel button in the left side of the navigation bar.
-    [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
+        // Display the cancel button in the left side of the navigation bar.
+        [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
+    }
 
     [WorldWindView startRedrawing];
 }
 
-- (void) endDrag
+- (void) popoverDraggingDidEnd
 {
     [WorldWindView stopRedrawing];
 }
 
-- (void) positionDidChange
+- (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
-    WWPosition* pos = [self position];
+    WorldWindView* wwv = [_mapViewController wwv];
+    WWLine* ray = [[[wwv sceneController] navigatorState] rayFromScreenPoint:newPoint];
+    WWVec4* point = [[WWVec4 alloc] init];
+
+    // TODO: Intersect against a larger ellipsoid that passes through the waypoint altitude.
+    if (![[[wwv sceneController] globe] intersectWithRay:ray result:point])
+    {
+        return NO;
+    }
+
+    WWPosition* pos = [[WWPosition alloc] init];
+    [[[wwv sceneController] globe] computePositionFromPoint:[point x] y:[point y] z:[point z] outputPosition:pos];
     [newWaypoint setDegreesLatitude:[pos latitude] longitude:[pos longitude]];
     [newWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:[pos latitude] longitude:[pos longitude]]];
     [_flightRoute updateWaypointAtIndex:_waypointIndex];
@@ -137,6 +159,8 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
     [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
     [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationNone];
+
+    return YES;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

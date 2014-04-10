@@ -21,6 +21,8 @@
 
 - (NSString*) formatDegreesLatitude:(double)latitude longitude:(double)longitude;
 
+- (NSString*) formatDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude;
+
 - (NSString*) formatMetersAltitude:(double)altitude;
 
 - (NSString*) formatFeetAltitude:(double)altitude;

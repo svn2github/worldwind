@@ -871,7 +871,7 @@
 - (void) showAddWaypoint:(WWPickedObject*)po
 {
     Waypoint* waypoint = [po userObject];
-    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypointSource:waypoint mapViewController:self];
+    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
     [addWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
                                 permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
@@ -879,7 +879,7 @@
 - (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
 {
     WWPosition* pos = [po position];
-    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypointSource:pos mapViewController:self];
+    addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithPosition:pos mapViewController:self];
     [addWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
                                     permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }

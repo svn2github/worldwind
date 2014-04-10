@@ -9,6 +9,8 @@
 #import "DraggablePopoverController.h"
 
 @class MovingMapViewController;
+@class Waypoint;
+@class WWPosition;
 
 @interface AddWaypointPopoverController : DraggablePopoverController <UITableViewDataSource, UITableViewDelegate, UINavigationControllerDelegate>
 {
@@ -24,6 +26,8 @@
 
 @property (nonatomic, readonly) MovingMapViewController* mapViewController;
 
-- (id) initWithWaypointSource:(id)waypointSource mapViewController:(MovingMapViewController*)mapViewController;
+- (id) initWithWaypoint:(Waypoint*)waypoint mapViewController:(MovingMapViewController*)mapViewController;
+
+- (id) initWithPosition:(WWPosition*)position mapViewController:(MovingMapViewController*)mapViewController;
 
 @end

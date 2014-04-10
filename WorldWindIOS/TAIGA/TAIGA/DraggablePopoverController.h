@@ -7,32 +7,30 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWPosition;
-@class WorldWindView;
-
-@interface DraggablePopoverController : UIPopoverController <UIGestureRecognizerDelegate>
+@interface DraggablePopoverController : UIPopoverController <UIPopoverControllerDelegate, UIGestureRecognizerDelegate>
 {
 @protected
     UIPanGestureRecognizer* panGestureRecognizer;
     CGPoint gestureBeginPoint;
 }
 
-@property (nonatomic, readonly) WWPosition* position;
-
 @property (nonatomic, readonly) CGPoint point;
 
-@property (nonatomic, readonly) WorldWindView* view;
+@property (nonatomic, readonly) UIView* view;
 
 @property (nonatomic, readonly) UIPopoverArrowDirection arrowDirections;
 
 @property (nonatomic) BOOL dragEnabled;
 
-- (void) presentPopoverFromPosition:(WWPosition*)position inView:(WorldWindView*)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
+- (void) presentPopoverFromPoint:(CGPoint)point
+                          inView:(UIView*)view
+        permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections
+                        animated:(BOOL)animated;
 
-- (void) beginDrag;
+- (void) popoverDraggingDidBegin;
 
-- (void) endDrag;
+- (void) popoverDraggingDidEnd;
 
-- (void) positionDidChange;
+- (BOOL) popoverPointWillChange:(CGPoint)newPoint;
 
 @end

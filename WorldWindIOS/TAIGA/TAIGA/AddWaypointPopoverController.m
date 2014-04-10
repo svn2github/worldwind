@@ -11,10 +11,11 @@
 #import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
 #import "UITableViewCell+TAIGAAdditions.h"
-#import "TAIGA.h"
-#import "UnitsFormatter.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
+#import "WorldWind/Pick/WWPickedObjectList.h"
+#import "WorldWind/Pick/WWPickedObject.h"
+#import "WorldWind/WorldWindView.h"
 
 static NSString* AddWaypointActionAdd = @"Add to Route";
 
@@ -55,6 +56,20 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     return self;
 }
 
+- (id) initWithWaypoint:(Waypoint*)waypoint mapViewController:(MovingMapViewController*)mapViewController
+{
+    self = [self initWithWaypointSource:waypoint mapViewController:mapViewController];
+
+    return self;
+}
+
+- (id) initWithPosition:(WWPosition*)position mapViewController:(MovingMapViewController*)mapViewController
+{
+    self = [self initWithWaypointSource:position mapViewController:mapViewController];
+
+    return self;
+}
+
 - (void) addSelected
 {
     if ([_mapViewController presentedFlightRoute] != nil)
@@ -76,10 +91,10 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     }
     else
     {
-        WWLocation* location = (WWLocation*) _waypointSource;
+        WWPosition* position = (WWPosition*) _waypointSource;
         Waypoint* waypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker
-                                            degreesLatitude:[location latitude]
-                                                  longitude:[location longitude]];
+                                            degreesLatitude:[position latitude]
+                                                  longitude:[position longitude]];
         [flightRoute addWaypoint:waypoint];
         [[_mapViewController waypointDatabase] addWaypoint:waypoint];
     }
@@ -106,20 +121,30 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     }
 }
 
-- (void) positionDidChange
+- (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
+    WWPickedObjectList* pickedObjects = [[_mapViewController wwv] pick:newPoint];
+    WWPickedObject* terrainObject = [pickedObjects terrainObject];
+    if (terrainObject == nil)
+    {
+        return NO;
+    }
+
     id oldWaypointSource = _waypointSource;
-    id newWaypointSource = [[WWLocation alloc] initWithLocation:[self position]];
+    id newWaypointSource = [[WWPosition alloc] initWithPosition:[terrainObject position]];
     _waypointSource = newWaypointSource;
-    [self setToWaypointSource:[addWaypointTableCells objectAtIndex:0]];
 
     // Make the waypoint cell match the change in the waypoint source location. Use UIKit animations to display the
     // change instantaneously if the waypoint source was already a location, and smooth the change if the waypoint
     // source has changed type.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
     NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    UITableViewRowAnimation animation = [oldWaypointSource isKindOfClass:[WWLocation class]] ? UITableViewRowAnimationNone : UITableViewRowAnimationAutomatic;
+    UITableViewRowAnimation animation = [oldWaypointSource isKindOfClass:[Waypoint class]] ?
+            UITableViewRowAnimationAutomatic : UITableViewRowAnimationNone;
+    [[addWaypointTableCells objectAtIndex:0] setToPosition:(WWPosition*) newWaypointSource];
     [[addWaypointController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:animation];
+
+    return YES;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -131,7 +156,8 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     addWaypointTableCells = [[NSMutableArray alloc] init];
 
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    [self setToWaypointSource:cell];
+    [_waypointSource isKindOfClass:[Waypoint class]] ?
+            [cell setToWaypoint:(Waypoint*) _waypointSource] : [cell setToPosition:(WWPosition*) _waypointSource];
     [cell setUserInteractionEnabled:NO];
     [addWaypointTableCells addObject:cell];
 
@@ -158,21 +184,6 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     [[cell textLabel] setText:@"New Route..."];
     [flightRouteTableCells addObject:cell];
-}
-
-- (void) setToWaypointSource:(UITableViewCell*)cell
-{
-    if ([_waypointSource isKindOfClass:[Waypoint class]])
-    {
-        [cell setToWaypoint:(Waypoint*) _waypointSource];
-    }
-    else
-    {
-        WWLocation* location = (WWLocation*) _waypointSource;
-        NSString* text = [[TAIGA unitsFormatter] formatDegreesLatitude:[location latitude] longitude:[location longitude]];
-        [[cell textLabel] setText:text];
-        [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
-    }
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section

@@ -12,6 +12,11 @@
 
 @interface UIPopoverController (TAIGAAdditions)
 
+- (void) presentPopoverFromPoint:(CGPoint)point
+                          inView:(UIView*)view
+        permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections
+                        animated:(BOOL)animated;
+
 - (void) presentPopoverFromPosition:(WWPosition*)position
                              inView:(WorldWindView*)view
            permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections

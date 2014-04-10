@@ -6,12 +6,7 @@
  */
 
 #import "DraggablePopoverController.h"
-#import "WorldWind/Geometry/WWPosition.h"
-#import "WorldWind/Geometry/WWVec4.h"
-#import "WorldWind/Navigate/WWNavigatorState.h"
-#import "WorldWind/Render/WWSceneController.h"
-#import "WorldWind/Terrain/WWGlobe.h"
-#import "WorldWind/WorldWindView.h"
+#import "UIPopoverController+TAIGAAdditions.h"
 
 @implementation DraggablePopoverController
 
@@ -27,23 +22,35 @@
     return self;
 }
 
-- (void) presentPopoverFromPosition:(WWPosition*)position inView:(WorldWindView*)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated
+- (void) dealloc
 {
-    WWVec4* modelPoint = [[WWVec4 alloc] init];
-    [[[view sceneController] globe] computePointFromPosition:[position latitude] longitude:[position longitude]
-                                                    altitude:[position altitude] outputPoint:modelPoint];
+    [[[self contentViewController] view] removeGestureRecognizer:panGestureRecognizer];
+}
 
-    WWVec4* screenPoint = [[WWVec4 alloc] init];
-    [[[view sceneController] navigatorState] project:modelPoint result:screenPoint];
+- (void) setContentViewController:(UIViewController*)newViewController
+{
+    [self setContentViewController:newViewController animated:NO];
+}
 
-    CGPoint uiPoint = [[[view sceneController] navigatorState] convertPointToView:screenPoint];
+- (void) setContentViewController:(UIViewController*)newViewController animated:(BOOL)animated
+{
+    UIViewController* oldViewController = [self contentViewController];
+    [[oldViewController view] removeGestureRecognizer:panGestureRecognizer];
+    [[newViewController view] addGestureRecognizer:panGestureRecognizer];
 
-    _position = [[WWPosition alloc] initWithPosition:position];
-    _point = uiPoint;
+    [super setContentViewController:newViewController animated:animated];
+}
+
+- (void) presentPopoverFromPoint:(CGPoint)point
+                          inView:(UIView*)view
+        permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections
+                        animated:(BOOL)animated
+{
+    [super presentPopoverFromPoint:point inView:view permittedArrowDirections:arrowDirections animated:animated];
+
+    _point = point;
     _view = view;
     _arrowDirections = arrowDirections;
-
-    [self presentPopoverFromRect:CGRectMake(_point.x, _point.y, 1, 1) inView:_view permittedArrowDirections:_arrowDirections animated:animated];
 }
 
 - (void) handlePanFrom:(UIPanGestureRecognizer*)recognizer
@@ -51,28 +58,35 @@
     if ([recognizer state] == UIGestureRecognizerStateBegan)
     {
         gestureBeginPoint = _point;
-        [self beginDrag];
+        [self popoverDraggingDidBegin];
     }
     else if ([recognizer state] == UIGestureRecognizerStateEnded || [recognizer state] == UIGestureRecognizerStateCancelled)
     {
-        [self endDrag];
+        [self popoverDraggingDidEnd];
     }
     else if ([recognizer state] == UIGestureRecognizerStateChanged)
     {
+        // Compute the coordinates of the new point based on the current pan translation.
         CGPoint translation = [recognizer translationInView:[[self contentViewController] view]];
         CGPoint newPoint = CGPointMake(gestureBeginPoint.x + translation.x, gestureBeginPoint.y + translation.y);
-        if (CGRectContainsPoint([_view bounds], newPoint))
-        {
-            WWLine* ray = [[[_view sceneController] navigatorState] rayFromScreenPoint:newPoint];
-            WWVec4* p = [[WWVec4 alloc] init];
-            if ([[[_view sceneController] globe] intersectWithRay:ray result:p])
-            {
-                [[[_view sceneController] globe] computePositionFromPoint:[p x] y:[p y] z:[p z] outputPosition:_position];
-                _point = newPoint;
 
-                [self presentPopoverFromRect:CGRectMake(_point.x, _point.y, 1, 1) inView:_view permittedArrowDirections:_arrowDirections animated:NO];
-                [self positionDidChange];
-            }
+        // Limit the new point's coordinates to the view's bounds.
+        CGRect bounds = [_view bounds];
+        if (newPoint.x < CGRectGetMinX(bounds))
+            newPoint.x = CGRectGetMinX(bounds);
+        if (newPoint.x > CGRectGetMaxX(bounds))
+            newPoint.x = CGRectGetMaxX(bounds);
+        if (newPoint.y < CGRectGetMinY(bounds))
+            newPoint.y = CGRectGetMinY(bounds);
+        if (newPoint.y > CGRectGetMaxY(bounds))
+            newPoint.y = CGRectGetMaxY(bounds);
+
+        // Update the popover to display its arrow at the new point's coordinates, provided a subclass does not suppress
+        // this change.
+        if ([self popoverPointWillChange:newPoint])
+        {
+            _point = newPoint;
+            [super presentPopoverFromPoint:_point inView:_view permittedArrowDirections:_arrowDirections animated:NO];
         }
     }
 }
@@ -82,19 +96,19 @@
     return _dragEnabled;
 }
 
-- (void) beginDrag
+- (void) popoverDraggingDidBegin
 {
-    // Subclasses must implement this method.
+    // Subclasses should implement this method.
 }
 
-- (void) endDrag
+- (void) popoverDraggingDidEnd
 {
-    // Subclasses must implement this method.
+    // Subclasses should implement this method.
 }
 
-- (void) positionDidChange
+- (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
-    // Subclasses must implement this method to determine when the popover's position changes.
+    return YES; // Subclasses should implement this method.
 }
 
 @end
