@@ -20,11 +20,17 @@
     self = [super init];
 
     [self setDisplayName:@"Elevation Shading"];
+    [super setPickEnabled:NO]; // Must call superclass method since we've overridden this method to do nothing.
 
     _yellowThreshold = 2000.0;
     _redThreshold = 3000.0;
 
     return self;
+}
+
+- (void) setPickEnabled:(BOOL)pickEnabled
+{
+    // Picking can never be enabled for ElevationShadingLayer. It's disabled at initialization and can't be set.
 }
 
 - (void) doRender:(WWDrawContext*)dc

@@ -89,7 +89,7 @@
     currentLoads = [[NSMutableSet alloc] init];
     absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
 
-    [self setPickEnabled:NO];
+    [super setPickEnabled:NO]; // Must call superclass method since we've overridden this method to do nothing.
 
     // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
