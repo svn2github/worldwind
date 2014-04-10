@@ -146,14 +146,27 @@
 /**
 * Request the World Wind objects at a point in the receiver's local coordinate system.
 *
-* If the point intersects the globe, the returned list contains an object identifying the associated geographic
+* If the point intersects the terrain, the returned list contains an object identifying the associated geographic
 * position. This returns an empty list when nothing in the World Wind scene intersects the specified point.
 *
 * @param pickPoint The point to examine in the receiver's local coordinate system (bounds).
 *
-* @return The World Wind objects at the specified point.
+* @return A list of picked World Wind objects at the specified point.
 */
 - (WWPickedObjectList*) pick:(CGPoint)pickPoint;
+
+/**
+* Requests the position of the World Wind terrain a point in the receiver's local coordinate system.
+*
+* If the point intersects the terrain, the returned list contains a single object identifying the associated geographic
+* position. Otherwise this returns an empty list.
+*
+* @param pickPoint The point to examine in the receiver's local coordinate system (bounds).
+*
+* @return A list containing the picked World Wind terrain position at the specified point, or an empty list if the point
+* does not intersect the terrain.
+*/
+- (WWPickedObjectList*) pickTerrain:(CGPoint)pickPoint;
 
 /**
 * Converts a geographic position to a point in the receiver's local coordinate system.

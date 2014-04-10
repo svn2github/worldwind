@@ -73,6 +73,26 @@
     }
 }
 
+- (WWPickedObjectList*) pickTerrain:(CGRect)viewport pickPoint:(CGPoint)pickPoint
+{
+    @try
+    {
+        [self resetDrawContext];
+        [drawContext setPickingMode:YES];
+        [drawContext setPickTerrainOnly:YES];
+        [drawContext setPickPoint:pickPoint];
+        [self drawFrame:viewport];
+
+        return [drawContext objectsAtPickPoint];
+    }
+    @catch (NSException* exception)
+    {
+        WWLogE(@"Picking Scene", exception);
+
+        return nil;
+    }
+}
+
 - (void) resetDrawContext
 {
     [self->drawContext reset];
@@ -177,7 +197,10 @@
 {
     [[[drawContext surfaceGeometry] tessellator] pick:drawContext];
 
-    [self doDraw];
+    if (![drawContext pickTerrainOnly])
+    {
+        [self doDraw];
+    }
 
     [self resolveTopPick];
 }

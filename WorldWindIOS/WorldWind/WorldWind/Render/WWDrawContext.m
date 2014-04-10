@@ -57,6 +57,7 @@
     [orderedRenderables removeAllObjects];
     [_objectsAtPickPoint clear];
     _pickingMode = NO;
+    _pickTerrainOnly = NO;
     _pickPoint = CGPointMake(0, 0);
 }
 

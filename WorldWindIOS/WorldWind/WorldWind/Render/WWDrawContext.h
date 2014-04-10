@@ -98,6 +98,9 @@
 /// Indicates whether this frame is generating a pick rather than displaying.
 @property(nonatomic) BOOL pickingMode;
 
+/// Indicates whether a frame should only pick the terrain when generating a pick.
+@property(nonatomic) BOOL pickTerrainOnly;
+
 /// The current pick point as specified by the application, in UIKit screen coordinates.
 ///
 /// The pick point is understood to be in the UIKit coordinate system of the WorldWindView, with its origin in the

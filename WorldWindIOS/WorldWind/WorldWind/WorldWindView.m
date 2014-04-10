@@ -183,7 +183,7 @@
     // OpenGL render buffer resolution. Note that the scene controller catches and logs rendering exceptions, so we
     // don't do it here.
     [_sceneController setFrameStatistics:_frameStatistics];
-    [_sceneController setNavigatorState:[[self navigator] currentState]];
+    [_sceneController setNavigatorState:[_navigator currentState]];
     [_sceneController render:_viewport];
 
     // Request that Core Animation display the renderbuffer currently bound to GL_RENDERBUFFER. This assumes that the
@@ -234,9 +234,19 @@
     [EAGLContext setCurrentContext:_context];
     glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);
 
-    [_sceneController setNavigatorState:[[self navigator] currentState]];
+    [_sceneController setNavigatorState:[_navigator currentState]];
 
-    return [_sceneController pick:[self viewport] pickPoint:pickPoint];
+    return [_sceneController pick:_viewport pickPoint:pickPoint];
+}
+
+- (WWPickedObjectList*) pickTerrain:(CGPoint)pickPoint
+{
+    [EAGLContext setCurrentContext:_context];
+    glBindFramebuffer(GL_FRAMEBUFFER, _pickingFrameBuffer);
+
+    [_sceneController setNavigatorState:[_navigator currentState]];
+
+    return [_sceneController pickTerrain:_viewport pickPoint:pickPoint];
 }
 
 - (BOOL) convertPosition:(WWPosition*)position toPoint:(CGPoint*)point
