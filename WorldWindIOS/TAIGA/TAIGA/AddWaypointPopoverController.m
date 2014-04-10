@@ -91,12 +91,15 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     }
     else
     {
+        // The waypoint source is a terrain position. Create a new marker waypoint at the position.
         WWPosition* position = (WWPosition*) _waypointSource;
-        Waypoint* waypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker
-                                            degreesLatitude:[position latitude]
-                                                  longitude:[position longitude]];
-        [flightRoute addWaypoint:waypoint];
-        [[_mapViewController waypointDatabase] addWaypoint:waypoint];
+        Waypoint* newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker
+                                               degreesLatitude:[position latitude]
+                                                     longitude:[position longitude]];
+
+        // Append the new waypoint to the selected flight route then add it to the waypoint database.
+        [flightRoute addWaypoint:newWaypoint];
+        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
     }
 }
 

@@ -384,37 +384,10 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Result pointer is nil")
     }
 
-    // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.4.
-    //
-    // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
-    // parameter is always 1, so its square and its product with any other value simplifies to the identity.
-
-    double m = _equatorialRadius / _polarRadius; // ratio of the x semi-axis length to the y semi-axis length
-    double m2 = m * m;
-    double r2 = _equatorialRadius * _equatorialRadius; // nominal radius squared
-
-    double vx = [[ray direction] x];
-    double vy = [[ray direction] y];
-    double vz = [[ray direction] z];
-    double sx = [[ray origin] x];
-    double sy = [[ray origin] y];
-    double sz = [[ray origin] z];
-
-    double a = vx * vx + m2 * vy * vy + vz * vz;
-    double b = 2 * (sx * vx + m2 * sy * vy + sz * vz);
-    double c = sx * sx + m2 * sy * sy + sz * sz - r2;
-    double d = b * b - 4 * a * c; // discriminant
-
-    if (d < 0)
-    {
-        return NO;
-    }
-    else
-    {
-        double t = (-b - sqrt(d)) / (2 * a);
-        [ray pointAt:t result:result];
-        return YES;
-    }
+    return [WWMath computeEllipsoidalGlobeIntersection:ray
+                                      equatorialRadius:_equatorialRadius
+                                           polarRadius:_polarRadius
+                                                result:result];
 }
 
 - (NSTimeInterval) elevationTimestamp

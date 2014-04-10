@@ -296,6 +296,26 @@
                                  vcz:(double)vcz
                               result:(WWVec4*)result;
 
+/**
+* Computes the first intersection of an ellipsoidal globe with the specified ray, returning whether the ray intersects
+* the globe.
+*
+* This interprets the specified line as a ray; intersection points behind the line's origin are ignored.
+*
+* @param ray The ray to intersect with the globe.
+* @param equatorialRadius The globe's equatorial radius.
+* @param polarRadius The globe's polar radius.
+* @param result A WWVec4 instance in which to return the intersection point.
+*
+* @return YES if the ray intersects the globe, otherwise NO.
+*
+* @exception NSInvalidArgumentException If any argument is nil.
+*/
++ (BOOL) computeEllipsoidalGlobeIntersection:(WWLine*)ray
+                            equatorialRadius:(double)equatorialRadius
+                                 polarRadius:(double)polarRadius
+                                      result:(WWVec4*)result;
+
 /// @name Computing Information for Viewing and Projection
 
 /**

@@ -19,6 +19,7 @@
 #import "WorldWind/Navigate/WWNavigatorState.h"
 #import "WorldWind/Render/WWSceneController.h"
 #import "WorldWind/Terrain/WWGlobe.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindView.h"
 
 static NSString* EditWaypointActionRemove = @"Remove Waypoint";
@@ -72,7 +73,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     [self dismissPopoverAnimated:YES];
     [_flightRoute removeWaypointAtIndex:_waypointIndex];
-    // TODO: Remove marker waypoints from the waypoint database.
+    newWaypoint = nil;
 }
 
 - (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -94,8 +95,9 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     if (newWaypoint != nil)
     {
-        // TODO: Remove old marker waypoints from the waypoint database.
+        // Add the new waypoint to the waypoint database.
         [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
+        newWaypoint = nil;
     }
 }
 
@@ -103,15 +105,20 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     if (newWaypoint != nil)
     {
+        // Replace the new waypoint with the old waypoint. There's no need to update the waypoint database, since the
+        // new waypoint was never added to the database.
         [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:oldWaypoint];
+        newWaypoint = nil;
     }
 }
 
 - (void) popoverDraggingDidBegin
 {
-    // TODO: Review this logic for a potential bug where the newWaypoint state is not saved.
     if (newWaypoint == nil)
     {
+        // The waypoint will be dragged to a new location. Create a new marker waypoint at the current position and
+        // replace the old waypoint with the new waypoint. The new waypoint is added to the waypoint database when the
+        // change is committed by dismissing this popover.
         newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker
                                             degreesLatitude:[oldWaypoint latitude]
                                                   longitude:[oldWaypoint longitude]];
@@ -124,7 +131,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
         [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray
                                                withRowAnimation:UITableViewRowAnimationAutomatic];
 
-        // Display the cancel button in the left side of the navigation bar.
+        // Display the cancel button in the left side of the navigation bar. This enables the user to undo this change.
         [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
     }
 
@@ -139,15 +146,21 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 - (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
     WorldWindView* wwv = [_mapViewController wwv];
+    WWGlobe* globe = [[wwv sceneController] globe];
     WWLine* ray = [[[wwv sceneController] navigatorState] rayFromScreenPoint:newPoint];
     WWVec4* point = [[WWVec4 alloc] init];
 
-    // TODO: Intersect against a larger ellipsoid that passes through the waypoint altitude.
-    if (![[[wwv sceneController] globe] intersectWithRay:ray result:point])
+    // Compute the intersection of a ray through the popover's screen point against a larger ellipsoid that passes
+    // through the waypoint altitude. This ensures that the waypoint's new location accurately tracks with the popover.
+    double equatorialRadius = [globe equatorialRadius] + [_flightRoute altitude];
+    double polarRadius = [globe polarRadius] + [_flightRoute altitude];
+    if (![WWMath computeEllipsoidalGlobeIntersection:ray equatorialRadius:equatorialRadius polarRadius:polarRadius result:point])
     {
         return NO;
     }
 
+    // Update the waypoint's location and display name to match the popover arrow's screen point. The waypoint's
+    // location is saved in the waypoint database when popover dragging ends.
     WWPosition* pos = [[WWPosition alloc] init];
     [[[wwv sceneController] globe] computePositionFromPoint:[point x] y:[point y] z:[point z] outputPosition:pos];
     [newWaypoint setDegreesLatitude:[pos latitude] longitude:[pos longitude]];
