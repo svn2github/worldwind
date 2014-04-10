@@ -126,7 +126,7 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
 
 - (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
-    WWPickedObjectList* pickedObjects = [[_mapViewController wwv] pick:newPoint];
+    WWPickedObjectList* pickedObjects = [[_mapViewController wwv] pickTerrain:newPoint];
     WWPickedObject* terrainObject = [pickedObjects terrainObject];
     if (terrainObject == nil)
     {
