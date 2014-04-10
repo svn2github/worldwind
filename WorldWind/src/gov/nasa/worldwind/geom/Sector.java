@@ -60,6 +60,33 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     }
 
     /**
+     * Creates a new <code>Sector</code> and initializes it to the specified angles. The angles are assumed to be
+     * normalized to +/- 90 degrees latitude and +/- 180 degrees longitude, but this method does not verify that.
+     *
+     * @param minLatitude  the sector's minimum latitude in degrees.
+     * @param maxLatitude  the sector's maximum latitude in degrees.
+     * @param minLongitude the sector's minimum longitude in degrees.
+     * @param maxLongitude the sector's maximum longitude in degrees.
+     *
+     * @return the new <code>Sector</code>
+     */
+    public static Sector fromDegreesAndClamp(double minLatitude, double maxLatitude, double minLongitude,
+        double maxLongitude)
+    {
+        if (minLatitude < -90)
+            minLatitude = -90;
+        if (maxLatitude > 90)
+            maxLatitude = 90;
+        if (minLongitude < -180)
+            minLongitude = -180;
+        if (maxLongitude > 180)
+            maxLongitude = 180;
+
+        return new Sector(Angle.fromDegrees(minLatitude), Angle.fromDegrees(maxLatitude), Angle.fromDegrees(
+            minLongitude), Angle.fromDegrees(maxLongitude));
+    }
+
+    /**
      * Creates a new <code>Sector</code> and initializes it to angles in the specified array. The array is assumed to
      * hold four elements containing the Sector's angles, and must be ordered as follows: minimum latitude, maximum
      * latitude, minimum longitude, and maximum longitude. Additionally, the angles are assumed to be normalized to +/-

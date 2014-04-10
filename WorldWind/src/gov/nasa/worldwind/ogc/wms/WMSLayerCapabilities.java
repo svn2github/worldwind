@@ -525,7 +525,7 @@ public class WMSLayerCapabilities extends AbstractXMLEventParser
             if (ctx.isEndElement(event, bboxEvent))
             {
                 if (minLat != null && minLon != null && maxLat != null && maxLon != null)
-                    this.setGeographicBoundingBox(Sector.fromDegrees(minLat, maxLat, minLon, maxLon));
+                    this.setGeographicBoundingBox(Sector.fromDegreesAndClamp(minLat, maxLat, minLon, maxLon));
                 return;
             }
             else if (event.isStartElement())
