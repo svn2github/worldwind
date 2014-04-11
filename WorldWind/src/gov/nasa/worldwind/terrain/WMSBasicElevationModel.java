@@ -157,7 +157,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
     // TODO: consolidate common code in WMSTiledImageLayer.URLBuilder and WMSBasicElevationModel.URLBuilder
     protected static class URLBuilder implements TileUrlBuilder
     {
-        protected static final String MAX_VERSION = "1.3";
+        protected static final String MAX_VERSION = "1.3.0";
 
         private final String layerNames;
         private final String styleNames;
@@ -174,7 +174,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
             this.styleNames = params.getStringValue(AVKey.STYLE_NAMES);
             this.imageFormat = params.getStringValue(AVKey.IMAGE_FORMAT);
 
-            if (version == null || version.compareTo(MAX_VERSION) >= 0)
+            if (version == null || WWUtil.compareVersion(version, MAX_VERSION) >= 0)
             {
                 this.wmsVersion = MAX_VERSION;
                 this.crs = "&crs=CRS:84";
