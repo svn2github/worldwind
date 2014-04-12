@@ -549,8 +549,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         this.numCols = (int) Math.ceil(this.sector.getDeltaLonRadians() / (this.density * resTarget));
         this.numRows = (int) Math.ceil(this.sector.getDeltaLatRadians() / (this.density * resTarget));
 
-        this.lonTileSize = this.sector.getDeltaLonDegrees() / this.numCols;
-        this.latTileSize = this.sector.getDeltaLatDegrees() / this.numRows;
+        this.lonTileSize = this.sector.getDeltaLonDegrees() / (this.numCols - 1);
+        this.latTileSize = this.sector.getDeltaLatDegrees() / (this.numRows - 1);
 
         if (this.geometryCache != null)
             this.geometryCache.clear();
@@ -635,7 +635,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 
         double s = (latitude.degrees - bot) / (top - bot);
 
-        return (int) (s * (double) this.numRows);
+        return (int) (s * (double) (this.numRows - 1));
     }
 
     /**
@@ -653,7 +653,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 
         double s = (longitude.degrees - left) / (right - left);
 
-        return (int) (s * (double) this.numCols);
+        return (int) (s * (double) (this.numCols - 1));
     }
 
     /**
