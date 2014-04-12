@@ -85,13 +85,18 @@ public class HighResolutionTerrainTest
 
     protected static void testPositions(ArrayList<Position> referencePositions, ArrayList<Position> testPositions)
     {
+        int numMatches = 0;
+
         for (int i = 0; i < referencePositions.size(); i++)
         {
             if (!testPositions.get(i).equals(referencePositions.get(i)))
-                System.out.println("MISMATCH");
+                System.out.println(
+                    "MISMATCH: reference = " + referencePositions.get(i) + ", test = " + testPositions.get(i));
             else
-                System.out.println("MATCH");
+                ++numMatches;
         }
+
+        System.out.println(numMatches + " Matches");
     }
 
     protected static void generateReferenceValues(String filePath) throws FileNotFoundException
@@ -110,7 +115,7 @@ public class HighResolutionTerrainTest
         {
             String filePath = "HRTOutput.txt";
 
-            generateReferenceValues(filePath);
+//            generateReferenceValues(filePath);
 
             ArrayList<Position> referencePositions = readReferencePositions(filePath);
             ArrayList<Position> computedPositions = computeElevations(referencePositions);
