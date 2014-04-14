@@ -77,6 +77,8 @@ New features and improvements in World Wind Java SDK 2.0.0
   altitudes to relative-to-ground, which is what the intersection methods expect.
 - Updated TiledImageLayer, RectangularTessellator and SurfaceObjectTileBuilder to adjust their level of detail when the
   application uses a narrow field of view. See WWJ-445.
+- Updated View to use the smallest possible near clip distance for the currently available depth buffer resolution.
+  See WWJ-460.
 - Updated the FlatWorldEarthquakes example to use the USGS GeoJSON earthquake feed.
 - Fixed WWJ-302, that caused flashing of continuously updating KML ground overlays.
 - Fixed WWJ-371, where some portions of Collada shapes were not pickable.

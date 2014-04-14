@@ -267,9 +267,10 @@ public class BasicFlyView extends BasicView
         this.dc.getGL().glGetIntegerv(GL.GL_VIEWPORT, viewportArray, 0);
         this.viewport = new java.awt.Rectangle(viewportArray[0], viewportArray[1], viewportArray[2], viewportArray[3]);
 
-        // Compute the current clip plane distances.
-        this.nearClipDistance = this.computeNearClipDistance();
+        // Compute the current clip plane distances. The near distance depends on the far distance, so we must compute
+        // the far distance first.
         this.farClipDistance = this.computeFarClipDistance();
+        this.nearClipDistance = this.computeNearClipDistance();
 
         // Compute the current viewport dimensions.
         double viewportWidth = this.viewport.getWidth() <= 0.0 ? 1.0 : this.viewport.getWidth();

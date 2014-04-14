@@ -44,6 +44,7 @@ public class GLRuntimeCapabilities
     protected boolean isFramebufferObjectEnabled;
     protected boolean isVertexBufferObjectAvailable;
     protected boolean isVertexBufferObjectEnabled;
+    protected int depthBits;
     protected double maxTextureAnisotropy;
     protected int maxTextureSize;
     protected int numTextureUnits;
@@ -116,6 +117,13 @@ public class GLRuntimeCapabilities
         this.isFramebufferObjectAvailable = gl.isExtensionAvailable(GL_EXT_FRAMEBUFFER_OBJECT_STRING);
         // Vertex Buffer Objects are supported in version 1.5 or greater only.
         this.isVertexBufferObjectAvailable = this.glVersion >= 1.5;
+
+        if (this.depthBits == 0)
+        {
+            int[] params = new int[1];
+            gl.glGetIntegerv(GL.GL_DEPTH_BITS, params, 0);
+            this.depthBits = params[0];
+        }
 
         // Texture max anisotropy defaults to -1. A value less than 2.0 indicates that this graphics context does not
         // support texture anisotropy.
@@ -338,6 +346,38 @@ public class GLRuntimeCapabilities
     public void setVertexBufferObjectEnabled(boolean enable)
     {
         this.isVertexBufferObjectEnabled = enable;
+    }
+
+    /**
+     * Returns the number of bitplanes in the current GL depth buffer. The number of bitplanes is directly proportional
+     * to the accuracy of the GL renderer's hidden surface removal. The returned value is typically 16, 24 or 32. For
+     * more information on OpenGL depth buffering, see <a href="http://www.opengl.org/archives/resources/faq/technical/depthbuffer.htm"
+     * target="_blank">http://www.opengl.org/archives/resources/faq/technical/depthbuffer.htm</a>.
+     *
+     * @return the number of bitplanes in the current GL depth buffer.
+     */
+    public int getDepthBits()
+    {
+        return this.depthBits;
+    }
+
+    /**
+     * Sets the number of bitplanes in the current GL depth buffer. The specified value is typically 16, 24 or 32.
+     *
+     * @param depthBits the number of bitplanes in the current GL depth buffer.
+     *
+     * @throws IllegalArgumentException if depthBits is less than one.
+     */
+    public void setDepthBits(int depthBits)
+    {
+        if (maxTextureSize < 1)
+        {
+            String message = Logging.getMessage("generic.DepthBitsLessThanOne");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.depthBits = depthBits;
     }
 
     /**
