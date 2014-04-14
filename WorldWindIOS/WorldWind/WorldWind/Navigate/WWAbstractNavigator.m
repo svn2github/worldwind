@@ -118,19 +118,23 @@
 
     // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance. This
     // computed distance is limited such that it does not intersect the terrain when possible and is never less than
-    // one.
+    // a predetermined minimum (usually one). The computed near distance automatically scales with the resolution of
+    // the OpenGL depth buffer.
     GLint viewDepthBits = [_view depthBits];
     _nearDistance = [WWMath perspectiveNearDistanceForFarDistance:_farDistance farResolution:TARGET_FAR_RESOLUTION depthBits:viewDepthBits];
 
+    // Prevent the near clip plane from intersecting the terrain.
     double distanceToSurface = [eyePos altitude] - [globe elevationForLatitude:[eyePos latitude] longitude:[eyePos longitude]];
-    if (distanceToSurface > 0) // The eye is above the terrain; avoid intersecting the terrain with the near clip plane.
+    if (distanceToSurface > 0)
     {
         double maxNearDistance = [WWMath perspectiveNearDistance:viewport forObjectAtDistance:distanceToSurface];
         if (_nearDistance > maxNearDistance)
             _nearDistance = maxNearDistance;
     }
 
-    if (_nearDistance < MIN_NEAR_DISTANCE) // The near clip distance must be at least one.
+    // Prevent the near clip plane from becoming unnecessarily small. A very small clip plane is not useful for
+    // rendering the World Wind scene, and significantly reduces the depth precision in the majority of the scene.
+    if (_nearDistance < MIN_NEAR_DISTANCE)
         _nearDistance = MIN_NEAR_DISTANCE;
 
     // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
