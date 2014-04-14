@@ -174,16 +174,20 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
             this.backgroundColor = params.getStringValue(AVKey.WMS_BACKGROUND_COLOR);
             String version = params.getStringValue(AVKey.WMS_VERSION);
 
-            if (version == null || WWUtil.compareVersion(version, MAX_VERSION) >= 0)
+            String coordSystemKey;
+            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0)
             {
                 this.wmsVersion = MAX_VERSION;
-                this.crs = "&crs=CRS:84";
+                coordSystemKey = "&crs=";
             }
             else
             {
                 this.wmsVersion = version;
-                this.crs = "&srs=EPSG:4326";
+                coordSystemKey = "&srs=";
             }
+
+            String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
+            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : "EPSG:4326");
         }
 
         public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException
@@ -220,14 +224,29 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer
 
             Sector s = tile.getSector();
             sb.append("&bbox=");
-            sb.append(s.getMinLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMinLatitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLatitude().getDegrees());
-//            sb.append("&"); // terminate the query string
+            // The order of the coordinate specification matters, and it changed with WMS 1.3.0.
+            if (WWUtil.compareVersion(this.wmsVersion, "1.1.1") <= 0 || this.crs.contains("CRS:84"))
+            {
+                // 1.1.1 and earlier and CRS:84 use lon/lat order
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+            }
+            else
+            {
+                // 1.3.0 uses lat/lon ordering
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+            }
 
             return new java.net.URL(sb.toString().replace(" ", "%20"));
         }

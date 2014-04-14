@@ -765,7 +765,7 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (names == null || names.length == 0)
             return;
 
-        final Long expiryTime = caps.getLayerLatestLastUpdateTime(caps, names);
+        final Long expiryTime = caps.getLayerLatestLastUpdateTime(names);
         if (expiryTime == null)
             return;
 

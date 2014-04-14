@@ -174,16 +174,20 @@ public class WMSBasicElevationModel extends BasicElevationModel
             this.styleNames = params.getStringValue(AVKey.STYLE_NAMES);
             this.imageFormat = params.getStringValue(AVKey.IMAGE_FORMAT);
 
-            if (version == null || WWUtil.compareVersion(version, MAX_VERSION) >= 0)
+            String coordSystemKey;
+            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0)
             {
                 this.wmsVersion = MAX_VERSION;
-                this.crs = "&crs=CRS:84";
+                coordSystemKey = "&crs=";
             }
             else
             {
                 this.wmsVersion = version;
-                this.crs = "&srs=EPSG:4326";
+                coordSystemKey = "&srs=";
             }
+
+            String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
+            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : "EPSG:4326");
         }
 
         public URL getURL(gov.nasa.worldwind.util.Tile tile, String altImageFormat) throws MalformedURLException
@@ -223,13 +227,30 @@ public class WMSBasicElevationModel extends BasicElevationModel
 
             Sector s = tile.getSector();
             sb.append("&bbox=");
-            sb.append(s.getMinLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMinLatitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLongitude().getDegrees());
-            sb.append(",");
-            sb.append(s.getMaxLatitude().getDegrees());
+            // The order of the coordinate specification matters, and it changed with WMS 1.3.0.
+            if (WWUtil.compareVersion(this.wmsVersion, "1.1.1") <= 0 || this.crs.contains("CRS:84"))
+            {
+                // 1.1.1 and earlier and CRS:84 use lon/lat order
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+            }
+            else
+            {
+                // 1.3.0 uses lat/lon ordering
+                sb.append(s.getMinLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMinLongitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLatitude().getDegrees());
+                sb.append(",");
+                sb.append(s.getMaxLongitude().getDegrees());
+            }
+
             sb.append("&"); // terminate the query string
 
             return new java.net.URL(sb.toString().replace(" ", "%20"));
@@ -301,7 +322,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
         }
 
         // Get the layer's extreme elevations.
-        Double[] extremes = caps.getLayerExtremeElevations(caps, names);
+        Double[] extremes = caps.getLayerExtremeElevations(names);
 
         Double d = (Double) params.getValue(AVKey.ELEVATION_MIN);
         if (d == null && extremes != null && extremes[0] != null)

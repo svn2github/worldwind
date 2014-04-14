@@ -1877,7 +1877,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (names == null || names.length == 0)
             return;
 
-        final Long expiryTime = caps.getLayerLatestLastUpdateTime(caps, names);
+        final Long expiryTime = caps.getLayerLatestLastUpdateTime(names);
         if (expiryTime == null)
             return;
 
