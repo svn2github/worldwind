@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#define TAIGA_VERSION (@"0.0032")
-#define TAIGA_VERSION_DATE (@"4/9/14")
+#define TAIGA_VERSION (@"0.0033")
+#define TAIGA_VERSION_DATE (@"4/10/14")
 
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_DATA_FILE_ID (@"gov.nasa.worldwind.taiga.data.file.id")
