@@ -7,7 +7,7 @@
 
 <!-- $Id$ -->
 <jnlp codebase="http://worldwind.arc.nasa.gov/java/2.0.0/webstart/"
-      href="gluegen-rt.jnlp" version="v2.1.0">
+      href="gluegen-rt.jnlp" version="v2.1.5">
 
     <!--
         Provides a description of the GlueGen library.

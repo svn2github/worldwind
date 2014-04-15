@@ -16,8 +16,8 @@ The JOGL library provides World Wind Java with (1) a Java binding to the OpenGL 
 with Java's AWT and Swing windowing toolkits:
 http://jogamp.org/jogl/www/
 
-World Wind Java uses JOGL v2.1.0, released on 10 October 2013 and downloaded from:
-http://jogamp.org/deployment/v2.1.0/archive/jogamp-all-platforms.7z
+World Wind Java uses JOGL v2.1.5, released on 11 March 2014 and downloaded from:
+http://jogamp.org/deployment/v2.1.5/archive/jogamp-all-platforms.7z
 
 The JOGL library compiled JAR files and README files are checked into the World Wind Java source, distributed with all
 World Wind Java builds and included in the World Wind Java Web Start deployment. This is necessary in order ensure
@@ -65,5 +65,6 @@ and JOGL JAR files.
 4) Update the JOGL version in the following files:
 webstart/gluegen-rt.jnlp
 webstart/jogl-all.jnlp
+README.txt
 README_DEVELOPER.txt (this document)
 build.xml (JOGL link in javadocs target)

@@ -98,7 +98,7 @@
                 <pathelement location="plugin.jar"/>
             </classpath>
             <link href="http://download.oracle.com/javase/6/docs/api/"/>
-            <link href="http://jogamp.org/deployment/v2.1.0/javadoc/jogl/javadoc/"/>
+            <link href="http://jogamp.org/deployment/v2.1.5/javadoc/jogl/javadoc/"/>
         </javadoc>
     </target>
 
