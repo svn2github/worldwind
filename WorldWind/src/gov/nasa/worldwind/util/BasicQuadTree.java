@@ -29,7 +29,6 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
     protected Map<String, List<T>> items; // the tree's list of items
     protected T currentItem; // used during add() to pass the added item to doOperation().
     protected String currentName; // used during add() to pass the optional name of the added item to doOperation().
-    protected boolean currentHasBeenAdded;
     protected HashMap<String, T> nameMap = new HashMap<String, T>(); // maps names to items
     protected boolean allowDuplicates = true;
 
@@ -206,7 +205,8 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
 
         this.currentItem = item;
         this.currentName = name;
-        this.currentHasBeenAdded = false;
+
+        this.start();
 
         for (int i = 0; i < levelZeroCells.size(); i++)
         {
@@ -574,9 +574,6 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
      */
     protected boolean doOperation(int level, int position, double[] cellRegion, double[] itemCoords)
     {
-        if (!this.allowDuplicates && this.currentHasBeenAdded)
-            return false;
-
         int bitNum = this.computeBitPosition(level, position);
 
         this.bits.set(bitNum);
@@ -594,10 +591,12 @@ public class BasicQuadTree<T> extends BitSetQuadTreeFilter implements Iterable<T
         }
 
         regionItems.add(this.currentItem);
-        this.currentHasBeenAdded = true;
 
         if (this.currentName != null)
             this.nameMap.put(this.currentName, this.currentItem);
+
+        if (!this.allowDuplicates)
+            this.stop();
 
         return false;
     }

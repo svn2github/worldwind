@@ -31,6 +31,7 @@ public abstract class BitSetQuadTreeFilter
     protected int[] powersOf4;
     protected int[] levelSizes; // Cumulative bits at start of each level. Used for position calculations.
     protected int[] path; // valid only during traversal. Maintains the path to a cell from level 0.
+    protected boolean stopped;
 
     /**
      * A method implemented by subclasses and called during tree traversal to perform an operation on an intersecting
@@ -92,6 +93,21 @@ public abstract class BitSetQuadTreeFilter
         return this.numLevels;
     }
 
+    public void stop()
+    {
+        this.stopped = true;
+    }
+
+    public boolean isStopped()
+    {
+        return stopped;
+    }
+
+    public void start()
+    {
+        this.stopped = false;
+    }
+
     /**
      * An internal method that computes the number of ancestor cells at each level. Level 0 has 0 ancestor cells, level
      * 1 has 4, level 2 has 20 (16 + 4), etc.
@@ -135,12 +151,15 @@ public abstract class BitSetQuadTreeFilter
      */
     protected void testAndDo(int level, int position, double[] cellRegion, double[] itemCoords)
     {
+        if (this.stopped)
+            return;
+
         if (this.intersects(cellRegion, itemCoords) == 0)
             return;
 
         this.path[level] = position;
 
-        if (!this.doOperation(level, position, cellRegion, itemCoords))
+        if (!this.doOperation(level, position, cellRegion, itemCoords) || this.stopped)
             return;
 
         if (level == this.maxLevel)
@@ -156,14 +175,20 @@ public abstract class BitSetQuadTreeFilter
         subRegion[2] = cellRegion[2];
         subRegion[3] = lonMid;
         this.testAndDo(level + 1, 0, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[2] = lonMid;
         subRegion[3] = cellRegion[3];
         this.testAndDo(level + 1, 1, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[0] = latMid;
         subRegion[1] = cellRegion[1];
         this.testAndDo(level + 1, 2, subRegion, itemCoords);
+        if (this.stopped)
+            return;
 
         subRegion[2] = cellRegion[2];
         subRegion[3] = lonMid;
