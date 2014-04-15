@@ -93,16 +93,29 @@ public abstract class BitSetQuadTreeFilter
         return this.numLevels;
     }
 
+    /**
+     * Stop the current traversal of the quadtree. {@link #start()} must be called before attempting a subsequent
+     * traversal.
+     */
     public void stop()
     {
         this.stopped = true;
     }
 
+    /**
+     * Indicates whether traversal has been stopped.
+     *
+     * @return <code>true</code> if traversal has been stopped, otherwise false.
+     */
     public boolean isStopped()
     {
         return stopped;
     }
 
+    /**
+     * Re-initialize for traversal. Must be called to perform subsequent traversals after having called {@link
+     * #stop()}.
+     */
     public void start()
     {
         this.stopped = false;
