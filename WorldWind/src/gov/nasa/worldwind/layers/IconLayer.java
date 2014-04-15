@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class IconLayer extends AbstractLayer
 {
-    protected final BasicQuadTree<WWIcon> icons = new BasicQuadTree<WWIcon>(8, Sector.FULL_SPHERE, null);
+    protected final BasicQuadTree<WWIcon> icons = new BasicQuadTree<WWIcon>(8, Sector.FULL_SPHERE, null, false);
     protected Iterable<WWIcon> iconsOverride;
     protected IconRenderer iconRenderer = new IconRenderer();
     private Pedestal pedestal;
