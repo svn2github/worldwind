@@ -1317,8 +1317,19 @@ public class PointPlacemark extends WWObjectImpl
     protected WWTexture initializeTexture(String address)
     {
         URL localUrl = WorldWind.getDataFileStore().requestFile(address);
+
+        // WWJ-434 (http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-434) includes a stack trace showing HTTP
+        // access from BasicWWTexture on the EDT. This should not occur and I (tag) can find no path through the
+        // code that would cause it. Nevertheless, I've added guard code here to prevent anything other than a file
+        // based URL to be passed to the BasicWWTexture constructor.
         if (localUrl != null)
         {
+            if (!"file".equals(localUrl.getProtocol()))
+            {
+                Logging.logger().warning(Logging.getMessage("generic.URLProtocolNotFile", localUrl));
+                return null;
+            }
+
             return new BasicWWTexture(localUrl, true);
         }
         return null;

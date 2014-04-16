@@ -101,6 +101,7 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Fixed WWJ-454, WMS requests use incorrect version string.
 - Fixed WWJ-441, Duplicate picked objects from IconLayer. Modified IconLayer to prevent duplicates in quadtree.
 - Added IconPicking example.
+- Fixed WWJ-434, KML rendering will freeze while having bad internet connection.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
