@@ -81,7 +81,22 @@ public class IconPicking extends ApplicationTemplate
             }
             this.getLayerPanel().update(this.getWwd());
 
-            this.getWwd().addSelectListener(new SelectEventListener());
+            this.getWwd().addSelectListener(new SelectListener()
+            {
+                @Override
+                public void selected(SelectEvent event)
+                {
+                    if (event.getEventAction().equals(SelectEvent.ROLLOVER))
+                    {
+                        PickedObjectList pol = event.getObjects();
+                        System.out.println(" Picked Objects Size " + pol.size());
+                        for (PickedObject po : pol)
+                        {
+                            System.out.println(" Class " + po.getObject().getClass().getName() + "  isTerrian=" + po.isTerrain());
+                        }
+                    }
+                }
+            });
             this.getWwd().getSceneController().setDeepPickEnabled(true);
             // Add flat world projection control panel
             this.getLayerPanel().add(new FlatWorldPanel(this.getWwd()), BorderLayout.SOUTH);
@@ -99,21 +114,3 @@ public class IconPicking extends ApplicationTemplate
         ApplicationTemplate.start("World Wind Flat World", AppFrame.class);
     }
 }
-
-class SelectEventListener implements SelectListener
-{
-    @Override
-    public void selected(SelectEvent event)
-    {
-        if (event.getEventAction().equals(SelectEvent.ROLLOVER))
-        {
-            PickedObjectList pol = event.getObjects();
-            System.out.println(" Picked Objects Size " + pol.size());
-            for (PickedObject po : pol)
-            {
-                System.out.println(" Class " + po.getObject().getClass().getName() + "  isTerrian=" + po.isTerrain());
-            }
-        }
-    }
-}
-
