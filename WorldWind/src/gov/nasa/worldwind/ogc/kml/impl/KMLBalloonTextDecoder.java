@@ -107,8 +107,7 @@ public class KMLBalloonTextDecoder extends BasicTextDecoder
                 }
             }
 
-            if (r != null)
-                m.appendReplacement(sb, Matcher.quoteReplacement(r));
+            m.appendReplacement(sb, Matcher.quoteReplacement(r != null ? r : ""));
         }
         m.appendTail(sb);
         return sb.toString();
