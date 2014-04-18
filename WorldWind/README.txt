@@ -160,6 +160,7 @@ New features and improvements in World Wind Java SDK 1.5.0 - January 21, 2013
 - Fixed a regression bug where Box ignores the R axis while computing its effective radius.
 - Fixed a bug where enabling Path lighting caused the JVM to crash.
 - Fixed a bug where enabling ExtrudedPolygon side lighting with cap lighting disabled caused a NullPointerException.
+- Fixed a bug where MIL-STD-2525 tactical symbols throw an exception when the OpenGL Context changes.
 - Fixed a bug where the MIL-STD-2525 Fire Support Line graphic appears in the wrong place.
 - Fixed a bug preventing COLLADA models from updating after a position change.
 - Fixed a bug in Triangle.intersectTriangleTypes preventing triangle strip intersection from operating correctly.
