@@ -88,6 +88,7 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Fixed WWJ-443, where enabling stereo rendering on an unsupported GPU caused surface shape picking to fail without warning.
 - Fixed WWJ-449, which corrects the KML parser's interpretation of an unspecified altitudeMode.
 - Fixed WWJ-451, where LevelSet.getTileNumber overflows when the number of tiles is large.
+- Fixed WWJ-432, BrowserBalloon content does not display on Mac with Java Web Start.
 - Repaired non-scoped abstract method declaration in RigidShape class.
 - Added Angle formatting for degrees and decimal minutes. Added degrees and decimal minutes option to LatLonGraticule.
 - Modified shapefile loading to recognize the HGT attribute field as a height and create extruded polygons as a result.
