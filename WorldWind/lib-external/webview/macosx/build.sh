@@ -30,6 +30,7 @@ gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c JNIUtil.m -o JNIUtil.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c MacWebViewJNI.m -o MacWebViewJNI.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c OGLUtil.m -o OGLUtil.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c PropertyChangeListener.m -o PropertyChangeListener.o
+gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c ThreadSupport.m -o ThreadSupport.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c WebDownloadController.m -o WebDownloadController.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c WebDownloadView.m -o WebDownloadView.o
 gcc $COMPILE_PARAMS $FRAMEWORK_PATHS $HEADER_PATHS -c WebResourceResolver.m -o WebResourceResolver.o
@@ -44,6 +45,7 @@ gcc -o libwebview.jnilib $LINK_PARAMS $FRAMEWORK_PATHS $FRAMEWORKS \
     MacWebViewJNI.o \
     OGLUtil.o \
     PropertyChangeListener.o \
+    ThreadSupport.o \
     WebDownloadController.o \
     WebDownloadView.o \
     WebResourceResolver.o \

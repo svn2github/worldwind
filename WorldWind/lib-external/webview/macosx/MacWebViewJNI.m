@@ -5,10 +5,10 @@
  */
 #import "JNIUtil.h"
 #import "PropertyChangeListener.h"
+#import "ThreadSupport.h"
 #import "WebResourceResolver.h"
 #import "WebViewWindow.h"
 #import "WebViewWindowController.h"
-#import <dispatch/dispatch.h>
 #import <JavaVM/jni.h> // Java JNI header.
 #import <JavaNativeFoundation/JavaNativeFoundation.h> // Helper framework for Cocoa and JNI development.
 
@@ -62,7 +62,7 @@ JNF_COCOA_ENTER(env);
     // WebKit classes and the update timer must be synchronized on the AppKit thread. For this reason we send both
     // messages on the AppKit thread using the Grand Central Dispatch queue. Note that UpdateTimer retains its
     // listeners, so we release its reference to the WebViewWindow in releaseWebViewWindow.
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -78,7 +78,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionInitializingWebView", e));
         }
-    });
+    }];
 
 JNF_COCOA_EXIT(env);
 
@@ -109,7 +109,7 @@ JNF_COCOA_ENTER(env);
     // both messages on the AppKit thread using the Grand Central Dispatch queue. Note that The UpdateTimer retains its
     // listeners, so we release its reference to the WebViewWindow here.
     WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -125,7 +125,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionReleasingWebView", e));
         }
-    });
+    }];
     
 JNF_COCOA_EXIT(env);
 }
@@ -160,7 +160,7 @@ JNF_COCOA_ENTER(env);
     // Central Dispatch queue. The window does not retain the htmlString, but the dispatch block retains it until after
     // the block executes.
     WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -175,7 +175,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingHTMLString", e));
         }
-	});
+	}];
 
 JNF_COCOA_EXIT(env);
 }
@@ -219,7 +219,7 @@ JNF_COCOA_ENTER(env);
     // htmlString and the delegate until after  the block executes. The window retains the delegate until it is
     // deallocated or another delegate is specified.
     WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -234,7 +234,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingHTMLString", e));
         }
-	});
+	}];
 
 JNF_COCOA_EXIT(env);
 }
@@ -280,7 +280,7 @@ JNF_COCOA_ENTER(env);
     // setHtmlString* replaces it. The window does not retain the htmlString, but the dispatch block it until after the
     // block executes.
     WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -295,7 +295,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingHTMLString", e));
         }
-	});
+	}];
 
 JNF_COCOA_EXIT(env);
 }
@@ -356,7 +356,7 @@ JNF_COCOA_ENTER(env);
         @throw [NSException exceptionWithName:@"IllegalArgumentException" reason:message userInfo:nil];
     }
 
-    // Convert the Java Dimension to a Cocoa NSSize. We perform this step outside of the dispatch_async block to ensure
+    // Convert the Java Dimension to a Cocoa NSSize. We perform this step outside of the AppKit thread block to ensure
     // that the memory referenced by JNIEnv is valid.
     NSSize nsSize = NSSizeFromJavaDimension(env, size);
 
@@ -364,7 +364,7 @@ JNF_COCOA_ENTER(env);
     // synchronized on the AppKit thread. For this reason we send the message on the AppKit thread using the Grand
     // Central Dispatch queue.
 	WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-	dispatch_async(dispatch_get_main_queue(),
+	[[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -379,7 +379,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingFrameSize", e));
         }
-	});
+	}];
 
 JNF_COCOA_EXIT(env);
 }
@@ -464,7 +464,7 @@ JNF_COCOA_ENTER(env);
     NSSize nsSize;
     if (size != NULL)
     {
-        // Convert the Java Dimension to a Cocoa NSSize. We perform this step outside of the dispatch_async block to
+        // Convert the Java Dimension to a Cocoa NSSize. We perform this step outside of the AppKit thread block to
         // ensure that the memory referenced by JNIEnv is valid.
         nsSize = NSSizeFromJavaDimension(env, size);
     }
@@ -479,7 +479,7 @@ JNF_COCOA_ENTER(env);
     // synchronized on the AppKit thread. For this reason we send the message on the AppKit thread using the Grand
     // Central Dispatch queue.
 	WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-	dispatch_async(dispatch_get_main_queue(),
+	[[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -494,7 +494,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingFrameSize", e));
         }
-	});
+	}];
 
 JNF_COCOA_EXIT(env);
 }
@@ -647,7 +647,7 @@ JNF_COCOA_ENTER(env);
     // synchronized on the AppKit thread. For this reason we send the message on the AppKit thread using the Grand
     // Central Dispatch queue.
 	WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-	dispatch_async(dispatch_get_main_queue(),
+	[[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -662,7 +662,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionExecutingGoBack", e));
         }
-    });
+    }];
 
 JNF_COCOA_EXIT(env);
 }
@@ -688,7 +688,7 @@ JNF_COCOA_ENTER(env);
     // synchronized on the AppKit thread. For this reason we send the message on the AppKit thread using the Grand
     // Central Dispatch queue.
 	WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-	dispatch_async(dispatch_get_main_queue(),
+	[[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -703,7 +703,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionExecutingGoForward", e));
         }
-    });
+    }];
 
 JNF_COCOA_EXIT(env);
 }
@@ -763,7 +763,7 @@ JNF_COCOA_ENTER(env);
         // synchronized on the AppKit thread. For this reason we send the message on the AppKit thread using the Grand
         // Central Dispatch queue. Note that the window does not retain the event, but the dispatch block retains it
         // until after the block executes.
-        dispatch_async(dispatch_get_main_queue(),
+        [[ThreadSupport sharedInstance] performBlockOnMainThread:
         ^{
             @try
             {
@@ -778,7 +778,7 @@ JNF_COCOA_ENTER(env);
                 // own it; we let the autorelease pool release it instead.
                 LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSendingEvent", e));
             }
-        });
+        }];
     }
 
 JNF_COCOA_EXIT(env);
@@ -870,7 +870,7 @@ JNF_COCOA_ENTER(env);
     // Central Dispatch queue. Note that the window retains the listener until the window is deallocated, and the
     // dispatch block retains it until after the block executes.
 	WebViewWindow *window = (WebViewWindow *) jlong_to_ptr(webViewWindowPtr);
-	dispatch_async(dispatch_get_main_queue(),
+	[[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         @try
         {
@@ -885,7 +885,7 @@ JNF_COCOA_ENTER(env);
             // it; we let the autorelease pool release it instead.
             LogSevereObtainEnv(GetLogMessageWithExceptionObtainEnv(@"WebView.NativeExceptionSettingUpdateListener", e));
         }
-    });
+    }];
 
 JNF_COCOA_EXIT(env);
 }

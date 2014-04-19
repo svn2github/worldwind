@@ -6,6 +6,7 @@
 #import "WebViewWindow.h"
 #import "WebViewWindowController.h"
 #import "OGLUtil.h"
+#import "ThreadSupport.h"
 #import "WebDownloadController.h"
 #import "WebResourceResolver.h"
 
@@ -1009,10 +1010,10 @@ static const CGFloat MIN_WINDOW_POS = -16000;
     // The texture is now up-to-date with this window's display, so the display can be regenerated if necessary.
     // Schedule a call to makeDisplay display to ensure that this window gets a chance to regenerate its display buffer.
     // See the inline documentation in doMakeDisplay for details.
-    dispatch_async(dispatch_get_main_queue(),
+    [[ThreadSupport sharedInstance] performBlockOnMainThread:
     ^{
         [[WebViewWindowController sharedInstance] displayWindowsAfterDelay:DISPLAY_WINDOWS_DELAY];
-    });
+    }];
 }
 
 - (void)makeContentInfo
