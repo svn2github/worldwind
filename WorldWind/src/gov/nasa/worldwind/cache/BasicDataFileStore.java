@@ -351,7 +351,14 @@ public class BasicDataFileStore extends AbstractFileStore
         {
             File f = new File(address);
             if (f.exists())
-                cacheFileUrl = WWIO.makeURL(address, "file"); // makes a file URL if the address is not yet a URL
+                try
+                {
+                    cacheFileUrl = f.toURI().toURL();  // makes a file URL
+                }
+                catch (MalformedURLException e)
+                {
+                    // The toURL call shouldn't fail, but continue on if it does.
+                }
         }
 
         // If the address is a file, look for the file in the classpath and World Wind disk cache. We perform this step
