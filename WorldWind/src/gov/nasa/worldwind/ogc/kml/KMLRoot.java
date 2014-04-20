@@ -877,7 +877,7 @@ public class KMLRoot extends KMLAbstractObject implements KMLRenderable
      *                        store remote files in a temporary location. Has no effect if the address is a local file.
      * @param updateTime      the time at which the link was last updated. If a cached file exists for the specified
      *                        resource, the file must have been retrieved after the link update time. Otherwise, the
-     *                        cache entry is considered invalid, and the file is retrieved again.
+     *                        cache entry is considered invalid, and the file is deleted and retrieved again.
      *
      * @return URL to the requested file, parsed KMLRoot, or KML feature. Returns null if the document is not yet
      *         available in the FileStore.
