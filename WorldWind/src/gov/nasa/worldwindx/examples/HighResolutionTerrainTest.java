@@ -32,7 +32,9 @@ public class HighResolutionTerrainTest
             {
                 double lon = sector.getMinLongitude().degrees + i * dLon;
 
-                locations.add(Position.fromDegrees(lat, lon, 0));
+                // Specify angles to five decimal places.
+                locations.add(
+                    Position.fromDegrees(Math.round(lat * 100000.0) / 100000.0, Math.round(lon * 100000.0) / 100000.0, 0));
             }
         }
 
@@ -46,7 +48,7 @@ public class HighResolutionTerrainTest
 
         for (Position pos : positions)
         {
-            os.format("%.4f %.4f %.4f\n", pos.getLatitude().degrees, pos.getLongitude().degrees, pos.getElevation());
+            os.format("%.5f %.5f %.4f\n", pos.getLatitude().degrees, pos.getLongitude().degrees, pos.getElevation());
         }
 
         os.flush();
@@ -83,7 +85,8 @@ public class HighResolutionTerrainTest
         return computedPositions;
     }
 
-    protected static void testPositions(ArrayList<Position> referencePositions, ArrayList<Position> testPositions)
+    protected static void testPositions(String name, ArrayList<Position> referencePositions,
+        ArrayList<Position> testPositions)
     {
         int numMatches = 0;
 
@@ -96,12 +99,11 @@ public class HighResolutionTerrainTest
                 ++numMatches;
         }
 
-        System.out.println(numMatches + " Matches");
+        System.out.println(numMatches + " Matches for " + name);
     }
 
-    protected static void generateReferenceValues(String filePath) throws FileNotFoundException
+    protected static void generateReferenceValues(String filePath, Sector sector) throws FileNotFoundException
     {
-        Sector sector = Sector.fromDegrees(37.8, 38.3, -120, -119.3);
         HighResolutionTerrain hrt = new HighResolutionTerrain(new Earth(), sector, null, 1.0);
 
         ArrayList<Position> referenceLocations = generateReferenceLocations(hrt.getSector(), 5, 5);
@@ -111,15 +113,34 @@ public class HighResolutionTerrainTest
 
     public static void main(String[] args)
     {
+        String testDataLocation = "testData/HighResolutionTerrain/";
+        HashMap<String, Sector> sectors = new HashMap<String, Sector>();
+        sectors.put(testDataLocation + "HRTOutputTest01.txt", Sector.fromDegrees(37.8, 38.3, -120, -119.3));
+        sectors.put(testDataLocation + "HRTOutputTest02.txt",
+            Sector.fromDegrees(32.34767, 32.77991, 70.88239, 71.47658));
+        sectors.put(testDataLocation + "HRTOutputTest03.txt",
+            Sector.fromDegrees(32.37825, 71.21130, 32.50050, 71.37926));
+
         try
         {
-            String filePath = "HRTOutput.txt";
+            if (args.length > 0 && args[0].equals("-generateTestData"))
+            {
+                for (Map.Entry<String, Sector> sector : sectors.entrySet())
+                {
+                    String filePath = sector.getKey();
 
-//            generateReferenceValues(filePath);
+                    generateReferenceValues(filePath, sector.getValue());
+                }
+            }
 
-            ArrayList<Position> referencePositions = readReferencePositions(filePath);
-            ArrayList<Position> computedPositions = computeElevations(referencePositions);
-            testPositions(referencePositions, computedPositions);
+            for (Map.Entry<String, Sector> sector : sectors.entrySet())
+            {
+                String filePath = sector.getKey();
+
+                ArrayList<Position> referencePositions = readReferencePositions(filePath);
+                ArrayList<Position> computedPositions = computeElevations(referencePositions);
+                testPositions(filePath, referencePositions, computedPositions);
+            }
         }
         catch (FileNotFoundException e)
         {
