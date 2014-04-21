@@ -361,6 +361,11 @@ public class WorldMapLayer extends AbstractLayer
             }
             gl.glDisable(GL.GL_DEPTH_TEST);
 
+            // Need to assign the width and height here to address the case in which the texture was already
+            // loaded into the cache by another layer or a previous instance of this one.
+            this.iconWidth = iconTexture.getWidth();
+            this.iconHeight = iconTexture.getHeight();
+
             double width = this.getScaledIconWidth();
             double height = this.getScaledIconHeight();
 

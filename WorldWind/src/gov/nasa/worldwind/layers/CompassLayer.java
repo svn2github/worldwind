@@ -303,6 +303,24 @@ public class CompassLayer extends AbstractLayer
         {
             gl.glDisable(GL.GL_DEPTH_TEST);
 
+            Texture iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
+            if (iconTexture == null)
+            {
+                this.initializeTexture(dc);
+                iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
+                if (iconTexture == null)
+                {
+                    String msg = Logging.getMessage("generic.ImageReadFailed");
+                    Logging.logger().finer(msg);
+                    return;
+                }
+            }
+
+            // Need to assign the width and height here to address the case in which the texture was already
+            // loaded into the cache by another layer or a previous instance of this one.
+            this.iconWidth = iconTexture.getWidth();
+            this.iconHeight = iconTexture.getHeight();
+
             double width = this.getScaledIconWidth();
             double height = this.getScaledIconHeight();
 
@@ -332,36 +350,15 @@ public class CompassLayer extends AbstractLayer
                 gl.glRotated(heading, 0d, 0d, 1d);
                 gl.glTranslated(-width / 2, -height / 2, 0);
 
-                Texture iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
-                if (iconTexture == null)
-                {
-                    this.initializeTexture(dc);
-                    iconTexture = dc.getTextureCache().getTexture(this.getIconFilePath());
-                    if (iconTexture == null)
-                    {
-                        String msg = Logging.getMessage("generic.ImageReadFailed");
-                        Logging.logger().finer(msg);
-                        return;
-                    }
-                }
+                gl.glEnable(GL.GL_TEXTURE_2D);
+                iconTexture.bind(gl);
 
-                // Need to assign the width and height here to address the case in which the texture was already
-                // loaded into the cache by another layer or a previous instance of this one.
-                this.iconWidth = iconTexture.getWidth();
-                this.iconHeight = iconTexture.getHeight();
-
-                if (iconTexture != null)
-                {
-                    gl.glEnable(GL.GL_TEXTURE_2D);
-                    iconTexture.bind(gl);
-
-                    gl.glColor4d(1d, 1d, 1d, this.getOpacity());
-                    gl.glEnable(GL.GL_BLEND);
-                    gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-                    TextureCoords texCoords = iconTexture.getImageTexCoords();
-                    gl.glScaled(width, height, 1d);
-                    dc.drawUnitQuad(texCoords);
-                }
+                gl.glColor4d(1d, 1d, 1d, this.getOpacity());
+                gl.glEnable(GL.GL_BLEND);
+                gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+                TextureCoords texCoords = iconTexture.getImageTexCoords();
+                gl.glScaled(width, height, 1d);
+                dc.drawUnitQuad(texCoords);
             }
             else
             {
@@ -380,7 +377,8 @@ public class CompassLayer extends AbstractLayer
                         // If the pick point is not null, compute the pick point 'heading' relative to the compass
                         // center and set the picked heading on our picked object. The pick point is null if a pick
                         // rectangle is specified but a pick point is not.
-                        Vec4 center = new Vec4(locationSW.x + width * scale / 2, locationSW.y + height * scale / 2, 0);
+                        Vec4 center = new Vec4(locationSW.x + width * scale / 2, locationSW.y + height * scale / 2,
+                            0);
                         double px = dc.getPickPoint().x - center.x;
                         double py = viewport.getHeight() - dc.getPickPoint().y - center.y;
                         Angle pickHeading = Angle.fromRadians(Math.atan2(px, py));
