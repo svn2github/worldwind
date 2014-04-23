@@ -175,19 +175,22 @@ public class WMSBasicElevationModel extends BasicElevationModel
             this.imageFormat = params.getStringValue(AVKey.IMAGE_FORMAT);
 
             String coordSystemKey;
-            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0)
+            String defaultCS;
+            if (version == null || WWUtil.compareVersion(version, "1.3.0") >= 0) // version 1.3.0 or greater
             {
                 this.wmsVersion = MAX_VERSION;
                 coordSystemKey = "&crs=";
+                defaultCS = "CRS:84"; // would like to do EPSG:4326 but that's incompatible with our old WMS server, see WWJ-474
             }
             else
             {
                 this.wmsVersion = version;
                 coordSystemKey = "&srs=";
+                defaultCS = "EPSG:4326";
             }
 
             String coordinateSystem = params.getStringValue(AVKey.COORDINATE_SYSTEM);
-            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : "EPSG:4326");
+            this.crs = coordSystemKey + (coordinateSystem != null ? coordinateSystem : defaultCS);
         }
 
         public URL getURL(gov.nasa.worldwind.util.Tile tile, String altImageFormat) throws MalformedURLException
