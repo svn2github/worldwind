@@ -60,7 +60,6 @@ than the graphics card manufacturer's.
 Known issues in World Wind Java SDK 2.0.0
 ------------------------------------------------------------
 
-- Multi-window examples display the wrong textures. See http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-379
 - Videos in browser balloons do not play on Mac OS X. See http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-215
 - World Wind Java Applets display an empty frame on Mac OS X. See http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-464
 
