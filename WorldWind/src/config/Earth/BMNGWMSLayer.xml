@@ -7,6 +7,7 @@
 
 <!--Blue Marble Next generation 2004 + Bathymetry imagery, using the default month (May).-->
 <!--$Id$-->
+<!--DEPRECATED. Use BMNGWMSLayer2.xml-->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>Blue Marble (WMS) 2004</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">

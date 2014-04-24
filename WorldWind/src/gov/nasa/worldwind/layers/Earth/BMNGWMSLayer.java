@@ -22,6 +22,6 @@ public class BMNGWMSLayer extends WMSTiledImageLayer
 
     protected static Document getConfigurationDocument()
     {
-        return WWXML.openDocumentFile("config/Earth/BMNGWMSLayer.xml", null);
+        return WWXML.openDocumentFile("config/Earth/BMNGWMSLayer2.xml", null);
     }
 }

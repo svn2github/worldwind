@@ -73,7 +73,7 @@ public class FlatAndRoundGlobes
         layerList.add(new BMNGOneImage());
 
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
-        Layer layer = (Layer) factory.createFromConfigSource("config/Earth/BMNGWMSLayer.xml", null);
+        Layer layer = (Layer) factory.createFromConfigSource("config/Earth/BMNGWMSLayer2.xml", null);
         layer.setEnabled(true);
         layerList.add(layer);
 

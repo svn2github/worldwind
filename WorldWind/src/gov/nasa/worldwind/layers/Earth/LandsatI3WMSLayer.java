@@ -23,6 +23,6 @@ public class LandsatI3WMSLayer extends WMSTiledImageLayer
 
     protected static Document getConfigurationDocument()
     {
-        return WWXML.openDocumentFile("config/Earth/LandsatI3WMSLayer.xml", null);
+        return WWXML.openDocumentFile("config/Earth/LandsatI3WMSLayer2.xml", null);
     }
 }

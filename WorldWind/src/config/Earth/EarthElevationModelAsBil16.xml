@@ -5,6 +5,8 @@
   ~ All Rights Reserved.
   -->
 
+<!--$Id$-->
+<!--DEPRECATED: Use EarthElevations2.xml-->
 <ElevationModel version="1" modelType="Compound">
     <ElevationModel version="1">
         <DisplayName>USA 10m, World 30m, Ocean 900m</DisplayName>

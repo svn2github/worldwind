@@ -6,6 +6,7 @@
   -->
 
 <!--$Id$-->
+<!--DEPRECATED. Use LandsatI3WMSLayer2.xml-->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>i-cubed Landsat</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">

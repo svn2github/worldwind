@@ -25,7 +25,7 @@ public class EarthFlat extends FlatGlobe
     {
         super(WGS84_EQUATORIAL_RADIUS, WGS84_POLAR_RADIUS, WGS84_ES,
             EllipsoidalGlobe.makeElevationModel(AVKey.EARTH_ELEVATION_MODEL_CONFIG_FILE,
-                "config/Earth/EarthMergedElevationModel.xml"));
+                "config/Earth/EarthElevations2.xml"));
     }
 
     public String toString()

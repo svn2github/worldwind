@@ -5,6 +5,8 @@
   ~ All Rights Reserved.
   -->
 
+<!--$Id$-->
+<!--DEPRECATED: Use EarthElevations2.xml-->
 <ElevationModel version="1" modelType="Compound">
     <ElevationModel version="1">
         <DisplayName>Earth Elevation Model (SRTM30, SRTM3, NED 10m, BIL16)</DisplayName>

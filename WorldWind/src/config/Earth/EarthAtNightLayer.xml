@@ -5,7 +5,7 @@
   ~ All Rights Reserved.
   -->
 
-<!--$Id: BMNGWMSLayer.xml 1171 2013-02-11 21:45:02Z dcollins $-->
+<!--$Id$-->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>Earth at Night</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">

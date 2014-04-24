@@ -26,7 +26,7 @@ public class DatumTransformation
     public static Globe CLARKE1866_GLOBE = new EllipsoidalGlobe(Clarke1866_EQUATORIAL_RADIUS, Clarke1866_POLAR_RADIUS,
         Clarke1866_ES,
         EllipsoidalGlobe.makeElevationModel(AVKey.EARTH_ELEVATION_MODEL_CONFIG_FILE,
-            "config/Earth/EarthMergedElevationModel.xml"));
+            "config/Earth/EarthElevations2.xml"));
 
     /**
      * Shift datum from NAD27 to WGS84
