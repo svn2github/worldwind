@@ -933,7 +933,7 @@ public class KMLTest
 
             KMLIcon icon = overlay.getIcon();
             assertNotNull("Overlay icon is null", icon);
-            assertEquals("Incorrect icon href", "http://code.google.com/apis/kml/documentation/etna.jpg",
+            assertEquals("Incorrect icon href", "https://developers.google.com/kml/documentation/images/etna.jpg",
                 icon.getHref());
 
             KMLLatLonBox box = overlay.getLatLonBox();
