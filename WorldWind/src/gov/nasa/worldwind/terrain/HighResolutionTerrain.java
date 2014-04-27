@@ -420,11 +420,30 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         return this.intersect(new Position(pA, altitudeA), new Position(pB, altitudeB));
     }
 
+    /** Defines an interface for returning computed intersections. */
     public interface IntersectionCallback
     {
+        /**
+         * Called with the computed intersections for a line. This method is called only for lines along which
+         * intersections occur.
+         *
+         * @param pA            The line's start point.
+         * @param pB            The line's end point.
+         * @param intersections An array of intersections.
+         */
         void intersection(Position pA, Position pB, Intersection[] intersections);
     }
 
+    /**
+     * Intersects a specified list of geographic two-position lines with the terrain.
+     *
+     * @param positions The positions to intersect, with the line segments formed by each pair of positions, e.g. the
+     *                  first line in formed by positions[0] and positions[1], the second by positions[2] and
+     *                  positions[3], etc.
+     * @param callback  An object to call in order to return the computed intersections.
+     *
+     * @throws InterruptedException
+     */
     public void intersect(List<Position> positions, final IntersectionCallback callback) throws InterruptedException
     {
         for (int i = 0; i < positions.size(); i += 2)
