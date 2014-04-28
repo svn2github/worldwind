@@ -504,7 +504,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         {
             this.startTime.set(System.currentTimeMillis());
 
-            List<RectTile> tiles = this.getIntersectingTiles(pA, pB);
+            Set<RectTile> tiles = this.getIntersectingTiles(pA, pB);
             if (tiles == null)
                 return;
 
@@ -565,7 +565,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 
     public List<Sector> getIntersectionTiles(Position pA, Position pB)
     {
-        List<RectTile> tiles = this.getIntersectingTiles(pA, pB);
+        Set<RectTile> tiles = this.getIntersectingTiles(pA, pB);
         if (tiles == null || tiles.size() == 0)
             return null;
 
@@ -737,7 +737,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
             throw new IllegalArgumentException(msg);
         }
 
-        List<RectTile> tiles = this.getIntersectingTiles(pA, pB);
+        Set<RectTile> tiles = this.getIntersectingTiles(pA, pB);
         if (tiles == null)
             return null;
 
@@ -809,7 +809,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @return a list of tiles that likely intersect the line. Some returned tiles may not intersect the line but will
      *         only be near it.
      */
-    protected List<RectTile> getIntersectingTiles(LatLon pA, LatLon pB)
+    protected Set<RectTile> getIntersectingTiles(LatLon pA, LatLon pB)
     {
         int rowA = this.computeRow(this.sector, pA.getLatitude());
         int colA = this.computeColumn(this.sector, pA.getLongitude());
@@ -820,7 +820,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         if (cells == null || cells.size() == 0)
             return null;
 
-        List<RectTile> tiles = new ArrayList<RectTile>(3 * cells.size());
+        Set<RectTile> tiles = new HashSet<>(3 * cells.size());
         for (Point cell : cells)
         {
             RectTile centerCell = this.createTile(cell.y, cell.x);
