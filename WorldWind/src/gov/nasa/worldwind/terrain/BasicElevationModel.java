@@ -216,7 +216,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         }
         else
         {
-            long size = Configuration.getLongValue(AVKey.ELEVATION_TILE_CACHE_SIZE, 5000000L);
+            long size = Configuration.getLongValue(AVKey.ELEVATION_TILE_CACHE_SIZE, 20000000L);
             MemoryCache mc = new BasicMemoryCache((long) (0.85 * size), size);
             mc.setName("Elevation Tiles");
             WorldWind.getMemoryCacheSet().addCache(cacheName, mc);
@@ -847,6 +847,46 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             return super.handleTextContent();
         }
+//
+//        @Override
+//        protected ByteBuffer handleImageContent() throws IOException
+//        {
+//            if (!this.getRetriever().getContentType().contains("tiff"))
+//                return super.handleImageContent();
+//
+//            File tmpFile = WWIO.saveBufferToTempFile(this.getRetriever().getBuffer(), ".tif");
+//
+//            DataRasterReaderFactory readerFactory = (DataRasterReaderFactory) WorldWind.createConfigurationComponent(
+//                AVKey.DATA_RASTER_READER_FACTORY_CLASS_NAME);
+//            DataRasterReader reader = readerFactory.findReaderFor(tmpFile, null);
+//
+//            // Before reading the raster, verify that the file contains elevations.
+//            AVList metadata = reader.readMetadata(tmpFile, null);
+//            if (metadata == null || !AVKey.ELEVATION.equals(metadata.getStringValue(AVKey.PIXEL_FORMAT)))
+//            {
+//                String msg = Logging.getMessage("ElevationModel.SourceNotElevations", tmpFile.getAbsolutePath());
+//                Logging.logger().severe(msg);
+//                throw new IllegalArgumentException(msg);
+//            }
+//
+//            // Read the file into the raster.
+//            DataRaster[] rasters = reader.read(tmpFile, null);
+//            if (rasters == null || rasters.length == 0)
+//            {
+//                String msg = Logging.getMessage("ElevationModel.CannotReadElevations", tmpFile.getAbsolutePath());
+//                Logging.logger().severe(msg);
+//                throw new WWRuntimeException(msg);
+//            }
+//
+//            DataRaster raster = rasters[0];
+//
+//            ByteBuffer byteBuffer =
+//                ((BufferWrapper.ByteBufferWrapper)((BufferWrapperRaster) raster).getBuffer()).getBackingByteBuffer();
+//
+//            WWIO.saveBuffer(byteBuffer, this.getOutputFile());
+//
+//            return byteBuffer;
+//        }
     }
 
     /** Internal class to hold collections of elevation tiles that provide elevations for a specific sector. */
@@ -970,6 +1010,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         /**
          * Returns the extreme values among all the tiles in this object.
+         *
          * @return the extreme values.
          */
         protected double[] getTileExtremes()
@@ -1438,9 +1479,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         if (this.extremesLookupCache == null)
         {
-            // Default cache size holds 1250 min/max pairs. This size was experimentally determined to hold enough
-            // value lookups to prevent cache thrashing.
-            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 20000L);
+            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 2000000L);
             this.extremesLookupCache = new BasicMemoryCache((long) (0.85 * size), size);
         }
 
