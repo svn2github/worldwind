@@ -820,7 +820,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         if (cells == null || cells.size() == 0)
             return null;
 
-        Set<RectTile> tiles = new HashSet<>(3 * cells.size());
+        Set<RectTile> tiles = new HashSet<RectTile>(3 * cells.size());
         for (Point cell : cells)
         {
             RectTile centerCell = this.createTile(cell.y, cell.x);

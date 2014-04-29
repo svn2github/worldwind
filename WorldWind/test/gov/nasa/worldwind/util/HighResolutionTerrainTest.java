@@ -62,8 +62,8 @@ public class HighResolutionTerrainTest
 
             ArrayList<Position> referencePositions = generateReferenceLocations(sector, 10, 10);
 
-            final HashMap<Position, Intersection[]> currentIntersections = new HashMap<>();
-            final HashMap<Position, Intersection[]> previousIntersections = new HashMap<>();
+            final HashMap<Position, Intersection[]> currentIntersections = new HashMap<Position, Intersection[]>();
+            final HashMap<Position, Intersection[]> previousIntersections = new HashMap<Position, Intersection[]>();
 
             Globe globe = new Earth();
             CompoundElevationModel cem = (CompoundElevationModel) globe.getElevationModel();
