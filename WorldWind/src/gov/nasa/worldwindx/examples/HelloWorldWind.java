@@ -25,6 +25,7 @@ public class HelloWorldWind
         {
             WorldWindowGLCanvas wwd = new WorldWindowGLCanvas();
             wwd.setPreferredSize(new java.awt.Dimension(1000, 800));
+            this.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
             this.getContentPane().add(wwd, java.awt.BorderLayout.CENTER);
             this.pack();
 
