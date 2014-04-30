@@ -9,7 +9,7 @@ The 'WorldWind' folder contains the World Wind Java SDK project. Many resources 
 - lib-external/gdal: Contains the GDAL native binary libraries that may optionally be distributed with World Wind.
 
 WorldWindIOS
-The ‘WorldWindIOS’ folder contains the World Wind iOS SDK project. Many resource are available at http://goworldwind.org/world-wind-ios to help you understand and use World Wind on iOS. Key files and folders in the World Wind iOS SDK:
+The 'WorldWindIOS' folder contains the World Wind iOS SDK project. Many resource are available at http://goworldwind.org/world-wind-ios to help you understand and use World Wind on iOS. Key files and folders in the World Wind iOS SDK:
 - WorldWind/WorldWind: Contains all Objective-C source files for the World Wind iOS SDK.
 - WorldWind/WorldWind.xcodeproj: Xcode project file for the World Wind iOS SDK.
 - HelloWorldWind: Universal iOS app demonstrating basic usage of the World Wind iOS SDK.
