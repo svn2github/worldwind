@@ -280,15 +280,15 @@ Note: to view the current frame rate in Google Earth, press Control+Shift+A.
 <li>
     <a href="http://wwdev.tomgaskins.net/KMLTestFiles/NetworkLinksLocal.kmz">NetworkLinksLocal.kmz</a>
 
-    <p><b>Expected Result</b> <br/> Displays a red surface polygon, green extruded polygon, rotated ground overlay, and
-                                    two placemarks beneath the green polygon. Clicking the link on the green polygon's
-                                    balloon flys the view to Sicily and displays a ground overlay of an erupting
-                                    volcano.
+    <p><b>Expected Result</b> <br/> Displays a KML icon placemark, a red surface polygon, a green extruded polygon, a
+                                    rotated ground overlay, and a building icon placemark. Clicking the link in the KML
+                                    icon placemark's balloon loads a ground overlay in Sicily.
 
     <p><b>Source</b> <br/> WWJ development team.
 
     <p><b>Issues</b> <br/> KML files embedded in a KMZ and loaded via NetworkLink cannot access KMZ resources: <a
-            href="http://issues.worldwind.arc.nasa.gov/browse/WWJINT-292">WWJINT-292</a>.
+            href="http://issues.worldwind.arc.nasa.gov/jira/browse/WWJINT-292">WWJINT-292</a>. NetworkLinksLocal.kmz was
+                           modified to use standard KML network link patterns after resolving WWJINT-292 as Won't Fix.
 </li>
 
 <!-- NetworkLinksRemote.kml -->
