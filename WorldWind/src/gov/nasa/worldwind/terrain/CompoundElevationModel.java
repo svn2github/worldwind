@@ -412,7 +412,7 @@ public class CompoundElevationModel extends AbstractElevationModel
      * @param buffer           an array in which to place the returned elevations. The array must be pre-allocated and
      *                         contain at least as many elements as the list of locations.
      *
-     * @return the worst resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
+     * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
      *         determined for all of the locations.
      */
     public double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] buffer)
@@ -437,7 +437,7 @@ public class CompoundElevationModel extends AbstractElevationModel
      * @param buffer           an array in which to place the returned elevations. The array must be pre-allocated and
      *                         contain at least as many elements as the list of locations.
      *
-     * @return the worst resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
+     * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
      *         determined for all of the locations.
      */
     public double getUnmappedElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
@@ -496,7 +496,7 @@ public class CompoundElevationModel extends AbstractElevationModel
             else
                 r = em.getUnmappedElevations(sector, latlons, targetResolution, buffer);
 
-            if (r > resolutionAchieved || resolutionAchieved == 0)
+            if (r < resolutionAchieved || resolutionAchieved == 0)
                 resolutionAchieved = r;
         }
 

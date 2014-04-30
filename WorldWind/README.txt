@@ -106,7 +106,6 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Fixed WWJ-466, KML balloon text showing entity reference instead of blank field.
 - Fixed WWJ-467, StatusBar altitude display below 1 km gives 0 km.
 - Fixed WWJ-469, Warning from KMLRoot evictIfExpired.
-- Fixed WWJ-481, CompoundElevationModel.getElevations methods returning incorrect resolution.
 - Added a batch intersection method to HighResolutionTerrain. See intersect(List<Position> positions ...
 - Fixed WWJ-482, RigidShapes not regenerating geometry when detail hint changes.
 - Fixed WWJ-483, GeoTIFF elevations created by ExportImageOrElevations example are incorrect.
