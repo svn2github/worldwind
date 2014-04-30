@@ -115,7 +115,8 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Fixed WWJ-469, Warning from KMLRoot evictIfExpired.
 - Fixed WWJ-481, CompoundElevationModel.getElevations methods returning incorrect resolution.
 - Added a batch intersection method to HighResolutionTerrain. See intersect(List<Position> positions ...
-- Fixed WW-482, RigidShapes not regenerating geometry when detail hint changes.
+- Fixed WWJ-482, RigidShapes not regenerating geometry when detail hint changes.
+- Fixed WWJ-483, GeoTIFF elevations created by ExportImageOrElevations example are incorrect.
 
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library

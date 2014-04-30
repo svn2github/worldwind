@@ -503,7 +503,7 @@ public class ExportImageOrElevations extends ApplicationTemplate
             ByteBufferRaster raster = (ByteBufferRaster) ByteBufferRaster.createGeoreferencedRaster(elev32);
             // copy elevation values to the elevation raster
             int i = 0;
-            for (int y = 0; y < height; y++)
+            for (int y = height - 1; y >= 0; y--)
             {
                 for (int x = 0; x < width; x++)
                 {
