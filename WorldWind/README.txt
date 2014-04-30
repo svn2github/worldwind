@@ -118,6 +118,9 @@ New features and improvements in World Wind Java SDK 2.0.0
 - Fixed WWJ-482, RigidShapes not regenerating geometry when detail hint changes.
 - Fixed WWJ-483, GeoTIFF elevations created by ExportImageOrElevations example are incorrect.
 
+The outstanding bugs and improvement requests can be viewed with the following URL:
+http://issues.worldwind.arc.nasa.gov/jira/issues/?jql=project%20%3D%20WWJ%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)
+
   Note on using the JOGL libraries without the default runtime extraction of native binaries.
     This is accomplished by modifying World Wind's JOGL distribution to load native binaries directly from the library
     path instead of dynamically using the native binary JAR files. Here are instructions on how to implement this:
