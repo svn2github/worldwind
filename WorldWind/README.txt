@@ -57,13 +57,6 @@ This will most likely be either NVIDIA, ATI or Intel. The drivers are typically 
 than the graphics card manufacturer's.
 
 
-Known issues in World Wind Java SDK 2.0.0
-------------------------------------------------------------
-
-- Videos in browser balloons do not play on Mac OS X. See http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-215
-- World Wind Java Applets display an empty frame on Mac OS X. See http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-464
-
-
 New features and improvements in World Wind Java SDK 2.0.0
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.
