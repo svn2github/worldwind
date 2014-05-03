@@ -35,6 +35,11 @@
     return self;
 }
 
+- (NSInteger) httpStatusCode
+{
+    return _response != nil ? [((NSHTTPURLResponse*) _response) statusCode] : 0;
+}
+
 - (void) main
 {
     [self performRetrieval];
@@ -93,6 +98,8 @@
 - (void) connection:(NSURLConnection*)connection didReceiveResponse:(NSURLResponse*)response
 {
     [_retrievedData setLength:0];
+
+    _response = response;
 }
 
 - (void) connection:(NSURLConnection*)connection didReceiveData:(NSData*)data

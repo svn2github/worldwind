@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SettingsScreenController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+@interface SettingsScreenController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate>
 
 - (SettingsScreenController*) initWithFrame:(CGRect)frame;
 

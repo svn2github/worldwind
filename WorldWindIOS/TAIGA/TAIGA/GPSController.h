@@ -7,10 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-
 @interface GPSController : NSObject
 
 - (GPSController*) init;
 - (void) dispose;
+
++ (void) setDefaultGPSDeviceAddress;
 
 @end

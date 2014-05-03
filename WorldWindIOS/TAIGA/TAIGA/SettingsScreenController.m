@@ -14,9 +14,15 @@
 #define GPS_CONTROLLER_SECTION (1)
 #define DATA_INSTALLATION_SECTION (2)
 
+#define GPS_DEVICE_ROW (0)
+#define LOCATION_SERVICES_DEVICE_ROW (1)
+
 #define GPS_SOURCE_NONE (0)
 #define GPS_SOURCE_DEVICE (1)
 #define GPS_SOURCE_LOCATION_SERVICES (2)
+
+#define TABLE_VIEW_TAG (0)
+#define GPS_ADDRESS_VIEW_TAG (1)
 
 @implementation SettingsScreenController
 {
@@ -24,6 +30,8 @@
     int gpsSource;
 
     GPSController* gpsController;
+
+    UITextField* fieldBeingEdited;
 }
 
 - (SettingsScreenController*) initWithFrame:(CGRect)frame
@@ -46,12 +54,18 @@
     tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     tableView.delegate = self;
     tableView.dataSource = self;
+    tableView.tag = TABLE_VIEW_TAG;
     [tableView reloadData];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
                                                  name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
 
     [self.view addSubview:tableView];
+}
+
+- (UITableView*) myTableView
+{
+    return (UITableView*) [self.view viewWithTag:TABLE_VIEW_TAG];
 }
 
 - (void) updateTable:(NSNotification*)notification
@@ -84,7 +98,7 @@
         return 1;
 
     else if (section == GPS_CONTROLLER_SECTION)
-        return 1; // TODO: Change this to 2 when the Location Services GPS source is implemented.
+        return 1; // TODO: Set to 2 when Location Services option is implemented
 
     else if (section == DATA_INSTALLATION_SECTION)
         return 1;
@@ -135,28 +149,95 @@
 
 - (UITableViewCell*) cellForGPSControllerSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
 {
-    static NSString* cellIdentifier = @"GPSControllerCell";
+    UITableViewCell* cell;
 
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    if (cell == nil)
+    if ([indexPath row] == GPS_DEVICE_ROW)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
-        [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
-        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-    }
+        static NSString* cellIdentifier = @"GPSControllerDeviceCell";
 
-    if ([indexPath row] == 0)
-    {
-        [[cell textLabel] setText:@"GPS Device"];
+        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            [[cell textLabel] setText:@"GPS Device"];
+
+            // TODO: Determine how to make the address view auto resize without running off the right side of the
+            // screen.
+            UITextField* addressView = [[UITextField alloc] initWithFrame:CGRectMake(
+                    200,
+                    cell.textLabel.frame.origin.y,
+                    600, cell.contentView.bounds.size.height)];
+            [addressView setTag:GPS_ADDRESS_VIEW_TAG];
+            [addressView setFont:cell.textLabel.font];
+            [addressView setAutoresizingMask:UIViewAutoresizingFlexibleWidth]; // TODO: this seems to have no effect
+            [addressView setDelegate:self];
+            [addressView setClearButtonMode:UITextFieldViewModeWhileEditing];
+            [cell.contentView addSubview:addressView];
+
+            UIButton* defaultButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+            [defaultButton setFrame:CGRectMake(0, 0, 100, cell.bounds.size.height)];
+            [defaultButton setTitle:@"Default URL" forState:UIControlStateNormal];
+            [defaultButton setBackgroundColor:[UIColor clearColor]];
+            [[defaultButton titleLabel] setFont:[[cell textLabel] font]];
+            [defaultButton addTarget:self action:@selector(handleDefaultAddressButton)
+                    forControlEvents:UIControlEventTouchUpInside];
+            [cell setAccessoryView:defaultButton];
+        }
+
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_DEVICE];
+
+        NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
+        UITextField* addressView = (UITextField*) [[cell contentView] viewWithTag:GPS_ADDRESS_VIEW_TAG];
+        [addressView setText:address != nil ? address : @""];
     }
-    else if ([indexPath row] == 1)
+    else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
     {
+        static NSString* cellIdentifier = @"GPSControllerLocationServicesCell";
+
+        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            [[cell textLabel] setTextColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5]];
+        }
+
         [[cell textLabel] setText:@"Location Services"];
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
     }
 
     return cell;
+}
+
+- (void) handleDefaultAddressButton
+{
+    if (fieldBeingEdited != nil)
+        [fieldBeingEdited resignFirstResponder];
+
+    [GPSController setDefaultGPSDeviceAddress];
+    [[self myTableView] reloadData];
+}
+
+- (void) textFieldDidBeginEditing:(UITextField*)textField
+{
+    fieldBeingEdited = textField;
+}
+
+- (BOOL) textFieldShouldReturn:(UITextField*)textField
+{
+    [textField resignFirstResponder];
+
+    return NO;
+}
+
+- (void) textFieldDidEndEditing:(UITextField*)textField
+{
+    fieldBeingEdited = nil;
+
+    [Settings setObject:[textField text] forName:TAIGA_GPS_DEVICE_ADDRESS];
 }
 
 - (UITableViewCell*) cellForDataInstallationSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
@@ -195,7 +276,7 @@
             gpsController = nil;
         }
 
-        if ([indexPath row] == 0)
+        if ([indexPath row] == GPS_DEVICE_ROW)
         {
             gpsSource = gpsSource == GPS_SOURCE_DEVICE ? GPS_SOURCE_NONE : GPS_SOURCE_DEVICE;
 
@@ -204,7 +285,7 @@
                 gpsController = [[GPSController alloc] init];
             }
         }
-        else if ([indexPath row] == 1)
+        else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
         {
             gpsSource = gpsSource == GPS_SOURCE_LOCATION_SERVICES ? GPS_SOURCE_NONE : GPS_SOURCE_LOCATION_SERVICES;
         }

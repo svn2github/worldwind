@@ -37,6 +37,9 @@
 /// The retrieved data. Available only once the finished block is called.
 @property(nonatomic, readonly) NSMutableData* retrievedData;
 
+/// The response from the retrieval.
+@property (nonatomic, readonly) NSURLResponse* response;
+
 @property (nonatomic) id userData;
 
 /// @name Initializing Retrievers
@@ -68,5 +71,12 @@
 * thread that the call to performRetrieval is made.
 */
 - (void) performRetrieval;
+
+/**
+* Returns the HTTP status code from the retrieval response.
+*
+* @return The HTTP retrieval status code, or 0 if there is no HTTP response available.
+*/
+- (NSUInteger) httpStatusCode;
 
 @end

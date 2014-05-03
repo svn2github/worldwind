@@ -11,11 +11,19 @@
 #import "WorldWindConstants.h"
 #import "NMEASentence.h"
 #import "AppConstants.h"
+#import "Settings.h"
+
+#define DEFAULT_GPS_DEVICE_ADDRESS @"http://worldwind.arc.nasa.gov/alaska/gps/gps.txt"
 
 @implementation GPSController
 {
     NSTimer* timer;
     NSDateFormatter* dateFormatter;
+}
+
++ (void) setDefaultGPSDeviceAddress
+{
+    [Settings setObject:DEFAULT_GPS_DEVICE_ADDRESS forName:TAIGA_GPS_DEVICE_ADDRESS];
 }
 
 - (GPSController*) init
@@ -41,7 +49,14 @@
 
 - (void) pollDevice
 {
-    NSURL* url = [[NSURL alloc] initWithString:@"http://worldwind.arc.nasa.gov/alaska/gps/gps.txt"];
+    NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
+    if (address == nil || address.length == 0)
+        return;
+
+    NSURL* url = [[NSURL alloc] initWithString:address];
+    if (url == nil)
+        return;
+
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
@@ -52,7 +67,9 @@
 
 - (void) processRetrieval:(WWRetriever*)retriever
 {
-    if (![[retriever status] isEqualToString:WW_SUCCEEDED] || [[retriever retrievedData] length] == 0)
+    if (![[retriever status] isEqualToString:WW_SUCCEEDED]
+            || [[retriever retrievedData] length] == 0
+            || [retriever httpStatusCode] != 200)
     {
         // Send a notification that the GPS fix is not available.
         [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
