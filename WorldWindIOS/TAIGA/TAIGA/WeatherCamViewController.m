@@ -105,7 +105,8 @@
 
     // Get the reference image. TODO: Use the correct URL when the reference images are added to the server.
     imageURLString = [[NSString alloc]
-            initWithFormat:@"http://avcams.faa.gov/images/clearday/%@-clearday.jpg", cameraID];
+//            initWithFormat:@"http://avcams.faa.gov/images/clearday/%@-clearday.jpg", cameraID];
+            initWithFormat:@"http://worldwind.arc.nasa.gov/alaska/%@/referenceimage.jpg", cameraID];
     imageURL = [[NSURL alloc] initWithString:imageURLString];
     retriever = [[WWRetriever alloc] initWithUrl:imageURL timeout:5
                                    finishedBlock:^(WWRetriever* myRetriever)
