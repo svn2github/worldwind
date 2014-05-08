@@ -6,8 +6,6 @@
 
 package gov.nasa.worldwind.util.xml;
 
-import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
-
 /**
  * Holds the content of unrecognized elements. There are no field-specific accessors because the field names are
  * unknown, but all fields can be accessed via the inherited {@link gov.nasa.worldwind.util.xml.AbstractXMLEventParser#getField(javax.xml.namespace.QName)}
@@ -16,7 +14,7 @@ import gov.nasa.worldwind.ogc.kml.KMLAbstractObject;
  * @author tag
  * @version $Id$
  */
-public class UnrecognizedXMLEventParser extends KMLAbstractObject
+public class UnrecognizedXMLEventParser extends AbstractXMLEventParser
 {
     public UnrecognizedXMLEventParser()
     {

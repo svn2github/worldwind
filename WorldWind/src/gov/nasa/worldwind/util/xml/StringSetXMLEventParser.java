@@ -46,6 +46,16 @@ public class StringSetXMLEventParser extends AbstractXMLEventParser implements I
         this.elementName = elementName;
     }
 
+    @Override
+    public XMLEventParser newInstance() throws Exception
+    {
+        StringSetXMLEventParser copy = (StringSetXMLEventParser) super.newInstance();
+        if (copy != null)
+            copy.elementName = this.elementName;
+
+        return copy;
+    }
+
     public Object parse(XMLEventParserContext ctx, XMLEvent listEvent, Object... args) throws XMLStreamException
     {
         this.strings.clear();
