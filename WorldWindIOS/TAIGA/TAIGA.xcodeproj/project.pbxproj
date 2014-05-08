@@ -163,6 +163,7 @@
 		1BF9AE924F7D3B5C39F75D8C /* 401-globe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA5FBAE5EE387940CC9F /* 401-globe@2x.png */; };
 		1BF9AE996FE074293307B682 /* ChartsListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADC6374E2CD340E235AD /* ChartsListController.m */; };
 		1BF9AEB497E2DECFE809A12E /* PIREP_ICONS_0004_Layer-6.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AA8BC69476B78C51EB65 /* PIREP_ICONS_0004_Layer-6.png */; };
+		1BF9AED8403FC0C3C16C7697 /* LocationServicesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AE2C2FACD14BCDA3E716 /* LocationServicesController.m */; };
 		1BF9AF0E2106E053989367BE /* 431-yes.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF809ACE39D5ACB6A77C /* 431-yes.png */; };
 		1BF9AF209840952651C41FC2 /* 42-photos@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A78026D02F971C2CD0D7 /* 42-photos@2x.png */; };
 		1BF9AF269E904A6912CCC716 /* DotsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A60283D89A0A8E919E16 /* DotsView.m */; };
@@ -242,6 +243,7 @@
 		0BCBC77317CEA40A00709B37 /* alaska-72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72.png"; sourceTree = "<group>"; };
 		0BCBC77517CEA41600709B37 /* alaska-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "alaska-72@2x.png"; sourceTree = "<group>"; };
 		0BCBC77B17D559B000709B37 /* libWorldWind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libWorldWind.a; path = "../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos/libWorldWind.a"; sourceTree = "<group>"; };
+		1BF9A0007E4D9E03162C44C6 /* LocationServicesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationServicesController.h; sourceTree = "<group>"; };
 		1BF9A01C508D7227F59A7F2A /* FAASectionalsLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FAASectionalsLayer.m; sourceTree = "<group>"; };
 		1BF9A03B5AA46BD30ECAC594 /* WX_SN_MIN_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_SN_MIN_128.png; sourceTree = "<group>"; };
 		1BF9A042BB803EAA98988E4E /* SliderCellWithReadout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderCellWithReadout.h; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 		1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPSController.m; sourceTree = "<group>"; };
 		1BF9AE2B724A7892BACAFA44 /* 01-refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh.png"; sourceTree = "<group>"; };
 		1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast@2x.png"; sourceTree = "<group>"; };
+		1BF9AE2C2FACD14BCDA3E716 /* LocationServicesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationServicesController.m; sourceTree = "<group>"; };
 		1BF9AE37E84B7A21B3888FAA /* ViewSelectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewSelectionController.h; sourceTree = "<group>"; };
 		1BF9AE7E266D3CDDF03C5FCF /* PIREP_ICONS_0011_Layer-13.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0011_Layer-13.png"; sourceTree = "<group>"; };
 		1BF9AEB3F325C744DF040CF9 /* PIREP_ICONS_0002_Layer-4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0002_Layer-4.png"; sourceTree = "<group>"; };
@@ -674,6 +677,8 @@
 				CC8CF21F1A2C236BE5A3D358 /* MutableWaypoint.h */,
 				CC8CFD4108F2825ADA8A1780 /* DraggablePopoverController.m */,
 				CC8CF88AF00F4659F3EC5600 /* DraggablePopoverController.h */,
+				1BF9AE2C2FACD14BCDA3E716 /* LocationServicesController.m */,
+				1BF9A0007E4D9E03162C44C6 /* LocationServicesController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1082,6 +1087,7 @@
 				CC8CFC9C00CE029B005892D8 /* EditWaypointPopoverController.m in Sources */,
 				CC8CFC9DAC09B3D9B7195CBD /* MutableWaypoint.m in Sources */,
 				CC8CFC517B7AC990D9874242 /* DraggablePopoverController.m in Sources */,
+				1BF9AED8403FC0C3C16C7697 /* LocationServicesController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

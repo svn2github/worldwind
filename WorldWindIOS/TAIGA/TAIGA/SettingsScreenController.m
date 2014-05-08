@@ -9,13 +9,14 @@
 #import "AppConstants.h"
 #import "GPSController.h"
 #import "Settings.h"
+#import "LocationServicesController.h"
 
 #define ABOUT_SECTION (0)
 #define GPS_CONTROLLER_SECTION (1)
 #define DATA_INSTALLATION_SECTION (2)
 
-#define GPS_DEVICE_ROW (0)
-#define LOCATION_SERVICES_DEVICE_ROW (1)
+#define GPS_DEVICE_ROW (1)
+#define LOCATION_SERVICES_DEVICE_ROW (0)
 
 #define GPS_SOURCE_NONE (0)
 #define GPS_SOURCE_DEVICE (1)
@@ -30,6 +31,7 @@
     int gpsSource;
 
     GPSController* gpsController;
+    LocationServicesController* locationServicesController;
 
     UITextField* fieldBeingEdited;
 }
@@ -39,6 +41,18 @@
     self = [super initWithNibName:nil bundle:nil];
 
     myFrame = frame;
+
+    int sourceDevice = [Settings getIntForName:TAIGA_GPS_SOURCE];
+    if (sourceDevice == GPS_SOURCE_DEVICE)
+    {
+        gpsSource = GPS_SOURCE_DEVICE;
+        gpsController = [[GPSController alloc] init];
+    }
+    else if (sourceDevice == GPS_SOURCE_LOCATION_SERVICES)
+    {
+        gpsSource = GPS_SOURCE_LOCATION_SERVICES;
+        locationServicesController = [[LocationServicesController alloc] init];
+    }
 
     return self;
 }
@@ -98,7 +112,7 @@
         return 1;
 
     else if (section == GPS_CONTROLLER_SECTION)
-        return 1; // TODO: Set to 2 when Location Services option is implemented
+        return 2;
 
     else if (section == DATA_INSTALLATION_SECTION)
         return 1;
@@ -202,10 +216,9 @@
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
             [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
             [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-            [[cell textLabel] setTextColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5]];
         }
 
-        [[cell textLabel] setText:@"Location Services"];
+        [[cell textLabel] setText:@"iPad"];
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
     }
 
@@ -275,6 +288,10 @@
             [gpsController dispose];
             gpsController = nil;
         }
+        else if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
+        {
+            [locationServicesController setMode:LocationServicesControllerModeDisabled];
+        }
 
         if ([indexPath row] == GPS_DEVICE_ROW)
         {
@@ -288,7 +305,16 @@
         else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
         {
             gpsSource = gpsSource == GPS_SOURCE_LOCATION_SERVICES ? GPS_SOURCE_NONE : GPS_SOURCE_LOCATION_SERVICES;
+
+            if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
+            {
+                locationServicesController = [[LocationServicesController alloc] init];
+
+                [locationServicesController setMode:LocationServicesControllerModeSignificantChanges];
+            }
         }
+
+        [Settings setInt:gpsSource forName:TAIGA_GPS_SOURCE];
 
         [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
                  withRowAnimation:UITableViewRowAnimationAutomatic];

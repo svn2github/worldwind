@@ -17,6 +17,7 @@
 #define TAIGA_EARTH_RADIUS (6378137.0)
 #define TAIGA_GPS_DEVICE_ADDRESS (@"gov.nasa.worldwind.taiga.gpsaddress")
 #define TAIGA_GPS_QUALITY (@"gov.nasa.worldwind.taiga.gpsfixquality")
+#define TAIGA_GPS_SOURCE (@"gov.nasa.worldwind.taiga.gpssource")
 #define TAIGA_HIDDEN_LAYER (@"gov.nasa.worldwind.taiga.hiddenlayer")
 #define TAIGA_KNOTS_TO_METERS_PER_SECOND (0.51444444444)
 #define TAIGA_METERS_TO_FEET (3.28083989501)
