@@ -20,7 +20,7 @@
 #define COCKPIT_MIN_TILT (65)
 #define COCKPIT_MAX_TILT (90)
 #define HEADING_SMOOTHING_AMOUNT (0.4)
-#define MIN_RANGE (10000)
+#define MIN_RANGE (1)
 #define MAX_RANGE (6000000)
 #define TRACK_UP_MIN_TILT (0)
 #define TRACK_UP_MAX_TILT (45)
@@ -248,7 +248,7 @@
     {
         currentCockpitTilt = WWCLAMP([[_wwv navigator] tilt], COCKPIT_MIN_TILT, COCKPIT_MAX_TILT);
         currentTrackUpTilt = 0;
-        currentRange = WWCLAMP([[(WWFirstPersonNavigator*) [_wwv navigator] eyePosition] altitude], MIN_RANGE, MAX_RANGE);
+        currentRange = [[(WWFirstPersonNavigator*) [_wwv navigator] eyePosition] altitude] * 2;
     }
     else if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP])
     {
