@@ -30,6 +30,8 @@
 
 @property (nonatomic) double maxSize;
 
+@property (nonatomic) BOOL alwaysOnTop;
+
 /// Indicates whether this aircraft's size was specified in pixels rather than meters.
 - (BOOL) isSizeInPixels;
 

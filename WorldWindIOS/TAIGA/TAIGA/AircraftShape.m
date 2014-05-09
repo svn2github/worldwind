@@ -32,6 +32,7 @@ static const GLsizei AircraftShapeVertexCount = 3;
     _size = size;
     _minSize = 0;
     _maxSize = DBL_MAX;
+    _alwaysOnTop = NO;
     sizeIsPixels = NO;
     position = [[WWPosition alloc] initWithZeroPosition];
 
@@ -144,6 +145,11 @@ static const GLsizei AircraftShapeVertexCount = 3;
 
     // Bind vertex attributes and element array buffers.
     [self bindVertexAttributes:dc];
+
+    if (_alwaysOnTop)
+    {
+        glDisable(GL_DEPTH_TEST);
+    }
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
@@ -153,6 +159,11 @@ static const GLsizei AircraftShapeVertexCount = 3;
     // Clean up vertex attribute bindings.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    if (_alwaysOnTop)
+    {
+        glEnable(GL_DEPTH_TEST);
+    }
 }
 
 - (void) bindVertexAttributes:(WWDrawContext*)dc

@@ -50,6 +50,7 @@
     [shapeAttrs setOutlineWidth:2];
 
     AircraftShape* shape = [[AircraftShape alloc] initWithSizeInPixels:30 minSize:10 maxSize:DBL_MAX];
+    [shape setAlwaysOnTop:YES];
     [shape setAttributes:shapeAttrs];
 
     return shape;
