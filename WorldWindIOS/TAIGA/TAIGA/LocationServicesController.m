@@ -25,7 +25,7 @@
     [locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
     [locationManager setDelegate:self];
 
-    [self setMode:LocationServicesControllerModeSignificantChanges];
+    [self setMode:LocationServicesControllerModeAllChanges];
 
     return self;
 }
@@ -66,13 +66,6 @@
 
 - (void) locationManager:(CLLocationManager*)manager didUpdateLocations:(NSArray*)locations
 {
-    // Disable the controller if the Core Location service has been disabled while this application was in the
-    // background.
-    if (![CLLocationManager locationServicesEnabled])
-    {
-        [self setMode:LocationServicesControllerModeDisabled];
-    }
-
     CLLocation* location = [locations lastObject]; // The last list item contains the most recent location.
     if ([self locationMeetsCriteria:location])
     {
@@ -83,12 +76,12 @@
 
 - (void) locationManager:(CLLocationManager*)manager didFailWithError:(NSError*)error
 {
-    // Disable the controller if this application has been denied access to location services. This can happen either
+    // Notify if this application has been denied access to location services. This can happen either
     // when the application first attempts to use Core Location services or while the application was in the
     // background.
     if ([error code] == kCLErrorDenied)
     {
-        [self setMode:LocationServicesControllerModeDisabled];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
     }
 }
 
@@ -105,6 +98,7 @@
 
 - (void) postCurrentPosition
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:[[NSNumber alloc] initWithFloat:100]];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION object:currentLocation];
 }
 

@@ -111,6 +111,9 @@
 
 - (void) startLocationTracking
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_LOCATION_TRACKING_ENABLED object:[NSNumber
+            numberWithBool:YES]];
+
     if (currentLocation == nil) // Wait to start tracking until we have a location fix.
         return;
 
@@ -120,7 +123,7 @@
     [[_wwv navigator] animateWithDuration:WWNavigatorDurationAutomatic animations:^
     {
         [self doStartLocationTracking];
-    } completion:^(BOOL finished)
+    }                          completion:^(BOOL finished)
     {
         // Disable this controller when its navigator animation is interrupted. The user has performed a navigation
         // gesture, or another object has initiated an animation at the user's request.
@@ -137,6 +140,10 @@
 
 - (void) stopLocationTracking
 {
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_LOCATION_TRACKING_ENABLED object:[NSNumber
+            numberWithBool:NO]];
+
     [[_wwv navigator] stopAnimations]; // interrupts animations performed by this controller
     trackingLocation = NO;
 }
@@ -158,7 +165,7 @@
         {
             [self doTrackLocation];
         }
-    } completion:^(BOOL finished)
+    }                       completion:^(BOOL finished)
     {
         trackingLocation = NO;
 
@@ -226,8 +233,8 @@
 
 - (void) setupTrackingNavigator
 {
-    id<WWNavigator> oldNavigator = [_wwv navigator];
-    id<WWNavigator> newNavigator = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT] ?
+    id <WWNavigator> oldNavigator = [_wwv navigator];
+    id <WWNavigator> newNavigator = [_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT] ?
             [[WWFirstPersonNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator] :
             [[WWLookAtNavigator alloc] initWithView:_wwv navigatorToMatch:oldNavigator];
     [oldNavigator dispose];
@@ -241,7 +248,7 @@
     {
         currentCockpitTilt = WWCLAMP([[_wwv navigator] tilt], COCKPIT_MIN_TILT, COCKPIT_MAX_TILT);
         currentTrackUpTilt = 0;
-        currentRange = WWCLAMP([[(WWFirstPersonNavigator *) [_wwv navigator] eyePosition] altitude], MIN_RANGE, MAX_RANGE);
+        currentRange = WWCLAMP([[(WWFirstPersonNavigator*) [_wwv navigator] eyePosition] altitude], MIN_RANGE, MAX_RANGE);
     }
     else if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP])
     {

@@ -32,6 +32,7 @@
 
     GPSController* gpsController;
     LocationServicesController* locationServicesController;
+    bool locationTrackingEnabled;
 
     UITextField* fieldBeingEdited;
 }
@@ -42,17 +43,12 @@
 
     myFrame = frame;
 
-    int sourceDevice = [Settings getIntForName:TAIGA_GPS_SOURCE];
-    if (sourceDevice == GPS_SOURCE_DEVICE)
-    {
-        gpsSource = GPS_SOURCE_DEVICE;
-        gpsController = [[GPSController alloc] init];
-    }
-    else if (sourceDevice == GPS_SOURCE_LOCATION_SERVICES)
-    {
-        gpsSource = GPS_SOURCE_LOCATION_SERVICES;
-        locationServicesController = [[LocationServicesController alloc] init];
-    }
+    gpsSource = [Settings getIntForName:TAIGA_GPS_SOURCE];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
+                                                 name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(locationTrackingChanged:)
+                                                 name:TAIGA_LOCATION_TRACKING_ENABLED object:nil];
 
     return self;
 }
@@ -71,9 +67,6 @@
     tableView.tag = TABLE_VIEW_TAG;
     [tableView reloadData];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
-                                                 name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
-
     [self.view addSubview:tableView];
 }
 
@@ -91,6 +84,53 @@
     else
     {
         [(UITableView*) [self.view subviews][0] reloadData];
+    }
+}
+
+- (void) locationTrackingChanged:(NSNotification*)notification
+{
+    if (locationTrackingEnabled)
+        [self disableCurrentTrackingSource];
+
+    locationTrackingEnabled = ((NSNumber*) [notification object]).boolValue;
+
+    if (locationTrackingEnabled)
+    {
+        if (gpsSource != GPS_SOURCE_NONE)
+            [self enableCurrentTrackingSource];
+        else // Notify that there is no GPS device active
+            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
+
+    }
+}
+
+- (void) enableCurrentTrackingSource
+{
+    if (gpsSource == GPS_SOURCE_DEVICE)
+    {
+        if (gpsController == nil)
+            gpsController = [[GPSController alloc] init];
+    }
+    else if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
+    {
+        if (locationServicesController == nil)
+            locationServicesController = [[LocationServicesController alloc] init];
+
+        [locationServicesController setMode:LocationServicesControllerModeAllChanges];
+    }
+}
+
+- (void) disableCurrentTrackingSource
+{
+    if (gpsSource == GPS_SOURCE_DEVICE)
+    {
+        [gpsController dispose];
+        gpsController = nil;
+    }
+    else if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
+    {
+        if (locationServicesController != nil)
+            [locationServicesController setMode:LocationServicesControllerModeDisabled];
     }
 }
 
@@ -281,44 +321,26 @@
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
+    [self disableCurrentTrackingSource];
+
     if ([indexPath section] == GPS_CONTROLLER_SECTION)
     {
-        if (gpsSource == GPS_SOURCE_DEVICE)
-        {
-            [gpsController dispose];
-            gpsController = nil;
-        }
-        else if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
-        {
-            [locationServicesController setMode:LocationServicesControllerModeDisabled];
-        }
-
         if ([indexPath row] == GPS_DEVICE_ROW)
-        {
             gpsSource = gpsSource == GPS_SOURCE_DEVICE ? GPS_SOURCE_NONE : GPS_SOURCE_DEVICE;
-
-            if (gpsSource == GPS_SOURCE_DEVICE)
-            {
-                gpsController = [[GPSController alloc] init];
-            }
-        }
         else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
-        {
             gpsSource = gpsSource == GPS_SOURCE_LOCATION_SERVICES ? GPS_SOURCE_NONE : GPS_SOURCE_LOCATION_SERVICES;
-
-            if (gpsSource == GPS_SOURCE_LOCATION_SERVICES)
-            {
-                locationServicesController = [[LocationServicesController alloc] init];
-
-                [locationServicesController setMode:LocationServicesControllerModeSignificantChanges];
-            }
-        }
 
         [Settings setInt:gpsSource forName:TAIGA_GPS_SOURCE];
 
         [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
                  withRowAnimation:UITableViewRowAnimationAutomatic];
+
+        if (gpsSource != GPS_SOURCE_NONE && locationTrackingEnabled)
+            [self enableCurrentTrackingSource];
     }
+
+    if (gpsSource == GPS_SOURCE_NONE)
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
 }
 
 @end

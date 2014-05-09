@@ -73,6 +73,9 @@
     UIBarButtonItem* splitViewButton;
     UIBarButtonItem* routeViewButton;
 
+    bool trackingLocation;
+    UILabel* noGPSLabel;
+
     LocationTrackingViewController* locationTrackingViewController;
     ScaleBarView* scaleBarView;
     LayerListController* layerListController;
@@ -121,6 +124,11 @@
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(locationTrackingChanged:)
+                                                 name:TAIGA_LOCATION_TRACKING_ENABLED object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gpsQualityNotification:)
+                                                 name:TAIGA_GPS_QUALITY object:nil];
 
     return self;
 }
@@ -307,7 +315,7 @@
     flightRouteLayer = [[WWRenderableLayer alloc] init];
     [flightRouteLayer addRenderable:routeViewController]; // the flight route controller draws its flight routes on the map
     [flightRouteLayer setDisplayName:@"Routes"];
-    [flightRouteLayer setEnabled:[Settings getBoolForName:
+    [flightRouteLayer setEnabled:[Settings                                 getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
                                              [flightRouteLayer displayName]] defaultValue:YES]];
     [layers addLayer:flightRouteLayer];
@@ -327,7 +335,7 @@
     [layers addLayer:layer];
 
     layer = [[WWBingLayer alloc] init];
-    [layer setEnabled:[Settings                                         getBoolForName:
+    [layer setEnabled:[Settings                                 getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
                                              [layer displayName]] defaultValue:YES]];
     [layers addLayer:layer];
@@ -873,7 +881,7 @@
     Waypoint* waypoint = [po userObject];
     addWaypointPopoverController = [[AddWaypointPopoverController alloc] initWithWaypoint:waypoint mapViewController:self];
     [addWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
-                                permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+                                    permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 - (void) showAddWaypointAtPickPosition:(WWPickedObject*)po
@@ -890,7 +898,7 @@
     NSUInteger waypointIndex = [[[po userObject] objectForKey:@"waypointIndex"] unsignedIntegerValue];
     editWaypointPopoverController = [[EditWaypointPopoverController alloc] initWithFlightRoute:flightRoute waypointIndex:waypointIndex mapViewController:self];
     [editWaypointPopoverController presentPopoverFromPosition:[po position] inView:_wwv
-                                         permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+                                     permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 - (void) showMETARData:(WWPointPlacemark*)pm
@@ -940,6 +948,48 @@
 {
     FlightRoute* flightRoute = [[po userObject] objectForKey:@"flightRoute"];
     [self presentSimulationControllerWithFlightRoute:flightRoute];
+}
+
+- (void) locationTrackingChanged:(NSNotification*)notification
+{
+    trackingLocation = ((NSNumber*) [notification object]).boolValue;
+
+    if (!trackingLocation)
+        [self showNoGPSSign:NO];
+}
+
+- (void) gpsQualityNotification:(NSNotification*)notification
+{
+    [self showNoGPSSign:trackingLocation && [notification object] == nil];
+}
+
+- (void) showNoGPSSign:(bool)yn
+{
+    if (yn)
+    {
+        if (noGPSLabel == nil)
+        {
+            noGPSLabel = [[UILabel alloc] init];
+            [noGPSLabel setText:@"NO GPS"];
+            [noGPSLabel setBackgroundColor:[UIColor redColor]];
+            [noGPSLabel setTextColor:[UIColor whiteColor]];
+            [noGPSLabel setFont:[UIFont boldSystemFontOfSize:30]];
+            [noGPSLabel sizeToFit];
+            [noGPSLabel setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin];
+        }
+
+        CGRect viewFrame = [_wwv frame];
+        CGRect labelBounds = [noGPSLabel bounds];
+        float labelX = viewFrame.size.width / 2 - labelBounds.size.width / 2;
+        [noGPSLabel setFrame:CGRectMake(labelX, viewFrame.origin.y, labelBounds.size.width, labelBounds.size.height)];
+
+        [[self view] addSubview:noGPSLabel];
+    }
+    else
+    {
+        if (noGPSLabel != nil)
+            [noGPSLabel removeFromSuperview];
+    }
 }
 
 @end
