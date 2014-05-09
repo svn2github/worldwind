@@ -43,7 +43,7 @@
 
     myFrame = frame;
 
-    gpsSource = [Settings getIntForName:TAIGA_GPS_SOURCE];
+    gpsSource = [Settings getIntForName:TAIGA_GPS_SOURCE defaultValue:GPS_SOURCE_LOCATION_SERVICES];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
                                                  name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];

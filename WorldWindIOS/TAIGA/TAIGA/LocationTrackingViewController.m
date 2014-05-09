@@ -207,9 +207,10 @@
 
 - (void) doTrackLocation
 {
-    double smoothedHeading = [WWMath interpolateDegrees1:[[_wwv navigator] heading]
-                                                degrees2:[currentLocation course]
-                                                  amount:HEADING_SMOOTHING_AMOUNT];
+    double smoothedHeading = [currentLocation course] < 0 ? [[_wwv navigator] heading] :
+            [WWMath interpolateDegrees1:[[_wwv navigator] heading]
+                               degrees2:[currentLocation course]
+                                 amount:HEADING_SMOOTHING_AMOUNT];
 
     if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT])
     {

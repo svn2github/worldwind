@@ -960,7 +960,8 @@
 
 - (void) gpsQualityNotification:(NSNotification*)notification
 {
-    [self showNoGPSSign:trackingLocation && [notification object] == nil];
+    CLLocation* location = (CLLocation*) [notification object];
+    [self showNoGPSSign:trackingLocation && ([notification object] == nil || [location horizontalAccuracy] < 0)];
 }
 
 - (void) showNoGPSSign:(bool)yn

@@ -89,8 +89,17 @@
 {
     if (_mode == LocationServicesControllerModeAllChanges)
     {
-        return [location horizontalAccuracy] <= LOCATION_REQUIRED_ACCURACY
-                && fabs([[location timestamp] timeIntervalSinceNow]) <= LOCATION_REQUIRED_AGE;
+        double horizontalAccuracy = [location horizontalAccuracy];
+        if (horizontalAccuracy < 0)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:location];
+            return NO;
+        }
+        else
+        {
+            return horizontalAccuracy <= LOCATION_REQUIRED_ACCURACY
+                    && fabs([[location timestamp] timeIntervalSinceNow]) <= LOCATION_REQUIRED_AGE;
+        }
     }
 
     return YES;
@@ -98,7 +107,7 @@
 
 - (void) postCurrentPosition
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:[[NSNumber alloc] initWithFloat:100]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:currentLocation];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION object:currentLocation];
 }
 
