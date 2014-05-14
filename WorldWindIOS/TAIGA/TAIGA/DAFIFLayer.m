@@ -26,7 +26,8 @@
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:TAIGA_REFRESH] && [notification object] == self)
+    if ([[notification name] isEqualToString:TAIGA_REFRESH]
+            && ([notification object] == self || [notification object] == nil))
     {
         NSDate* justBeforeNow = [[NSDate alloc] initWithTimeIntervalSinceNow:-1];
 
