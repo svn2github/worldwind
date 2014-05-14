@@ -22,6 +22,7 @@
 #import "RenderableLayerDetailController.h"
 #import "WorldWind.h"
 #import "WeatherCamLayer.h"
+#import "DAFIFLayer.h"
 
 @implementation LayerListController
 
@@ -149,9 +150,10 @@
     }
     else if ([layer isKindOfClass:[WWRenderableLayer class]])
     {
+        bool showRefreshButton = [layer isKindOfClass:[DAFIFLayer class]];
         RenderableLayerDetailController* detailController =
                 [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer
-                                                  refreshButtonEnabled:NO];
+                                                  refreshButtonEnabled:showRefreshButton];
         [detailController setTitle:[layer displayName]];
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];

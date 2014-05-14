@@ -52,6 +52,7 @@
 #import "EditWaypointPopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
+#import "DAFIFLayer.h"
 
 @implementation MovingMapViewController
 {
@@ -346,7 +347,7 @@
                                              [faaChartsLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
 
-    dafifLayer = [[WWDAFIFLayer alloc] init];
+    dafifLayer = [[DAFIFLayer alloc] init];
     [dafifLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [dafifLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:dafifLayer];
