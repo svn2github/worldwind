@@ -7,12 +7,11 @@
 
 #import "EditWaypointPopoverController.h"
 #import "FlightRoute.h"
-#import "MutableWaypoint.h"
+#import "Waypoint.h"
 #import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 #import "TAIGA.h"
-#import "UnitsFormatter.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -123,9 +122,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
         // The waypoint will be dragged to a new location. Create a new marker waypoint at the current position and
         // replace the old waypoint with the new waypoint. The new waypoint is added to the waypoint database when the
         // change is committed by dismissing this popover.
-        newWaypoint = [[MutableWaypoint alloc] initWithType:WaypointTypeMarker
-                                            degreesLatitude:[oldWaypoint latitude]
-                                                  longitude:[oldWaypoint longitude]];
+        newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
         [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
 
         // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change smoothly.
@@ -167,9 +164,8 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     // location is saved in the waypoint database when popover dragging ends.
     WWPosition* pos = [[WWPosition alloc] init];
     [[[wwv sceneController] globe] computePositionFromPoint:[point x] y:[point y] z:[point z] outputPosition:pos];
-    [newWaypoint setDegreesLatitude:[pos latitude] longitude:[pos longitude]];
-    [newWaypoint setDisplayName:[[TAIGA unitsFormatter] formatDegreesLatitude:[pos latitude] longitude:[pos longitude]]];
-    [_flightRoute updateWaypointAtIndex:_waypointIndex];
+    newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[pos latitude] longitude:[pos longitude]];
+    [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
 
     // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change instantly.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];

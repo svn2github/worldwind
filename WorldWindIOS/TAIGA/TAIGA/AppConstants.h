@@ -23,7 +23,6 @@
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.removed")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.replaced")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.moved")
-#define TAIGA_FLIGHT_ROUTE_WAYPOINT_UPDATED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.updated")
 #define TAIGA_GPS_DEVICE_ADDRESS (@"gov.nasa.worldwind.taiga.gpsaddress")
 #define TAIGA_GPS_QUALITY (@"gov.nasa.worldwind.taiga.gpsfixquality")
 #define TAIGA_GPS_SOURCE (@"gov.nasa.worldwind.taiga.gpssource")

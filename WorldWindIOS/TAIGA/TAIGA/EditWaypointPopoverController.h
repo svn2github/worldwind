@@ -11,7 +11,6 @@
 @class FlightRoute;
 @class MovingMapViewController;
 @class Waypoint;
-@class MutableWaypoint;
 
 @interface EditWaypointPopoverController : DraggablePopoverController <UITableViewDataSource, UITableViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate>
 {
@@ -21,7 +20,7 @@
     UIBarButtonItem* cancelButtonItem;
     NSMutableArray* tableCells;
     Waypoint* oldWaypoint;
-    MutableWaypoint* newWaypoint;
+    Waypoint* newWaypoint;
 }
 
 @property (nonatomic, readonly) FlightRoute* flightRoute;

@@ -208,7 +208,6 @@
 		CC8CFC66EF18CB4B4697BC96 /* 07-map-marker@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */; };
 		CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */; };
 		CC8CFC9C00CE029B005892D8 /* EditWaypointPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF763B4505131EE0308CC /* EditWaypointPopoverController.m */; };
-		CC8CFC9DAC09B3D9B7195CBD /* MutableWaypoint.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF3F39C192FCF00B8D688 /* MutableWaypoint.m */; };
 		CC8CFCA019F38C7B092CFB81 /* AltitudePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAEBEA443065D7238A72 /* AltitudePicker.m */; };
 		CC8CFCE3F1BE13D6F074FDF2 /* 07-map-marker.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */; };
 		CC8CFD34C63521CFBEAB0EDF /* 433-x@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */; };
@@ -435,14 +434,12 @@
 		CC8CF11ADFC19FF9E4A0BE9D /* UnitsFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitsFormatter.h; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
-		CC8CF21F1A2C236BE5A3D358 /* MutableWaypoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MutableWaypoint.h; sourceTree = "<group>"; };
 		CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverController+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF2A1449A236B9E911B54 /* route-end@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end@2x.png"; sourceTree = "<group>"; };
 		CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
 		CC8CF359E600DCDA4DD184B7 /* UnitsFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnitsFormatter.m; sourceTree = "<group>"; };
 		CC8CF395F1297FACD384E75B /* AddWaypointPopoverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddWaypointPopoverController.m; sourceTree = "<group>"; };
-		CC8CF3F39C192FCF00B8D688 /* MutableWaypoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MutableWaypoint.m; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
 		CC8CF5A11B77C5F3CE1CD9CD /* 433-x@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "433-x@2x.png"; sourceTree = "<group>"; };
@@ -673,8 +670,6 @@
 				CC8CF11ADFC19FF9E4A0BE9D /* UnitsFormatter.h */,
 				CC8CF763B4505131EE0308CC /* EditWaypointPopoverController.m */,
 				CC8CFD2993C6DD369FB2EB80 /* EditWaypointPopoverController.h */,
-				CC8CF3F39C192FCF00B8D688 /* MutableWaypoint.m */,
-				CC8CF21F1A2C236BE5A3D358 /* MutableWaypoint.h */,
 				CC8CFD4108F2825ADA8A1780 /* DraggablePopoverController.m */,
 				CC8CF88AF00F4659F3EC5600 /* DraggablePopoverController.h */,
 				1BF9AE2C2FACD14BCDA3E716 /* LocationServicesController.m */,
@@ -1085,7 +1080,6 @@
 				1BF9A3C5B6540C448DD1538E /* FAASectionalsLayer.m in Sources */,
 				CC8CF537CC135243ADA34C30 /* UnitsFormatter.m in Sources */,
 				CC8CFC9C00CE029B005892D8 /* EditWaypointPopoverController.m in Sources */,
-				CC8CFC9DAC09B3D9B7195CBD /* MutableWaypoint.m in Sources */,
 				CC8CFC517B7AC990D9874242 /* DraggablePopoverController.m in Sources */,
 				1BF9AED8403FC0C3C16C7697 /* LocationServicesController.m in Sources */,
 			);

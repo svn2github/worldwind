@@ -80,14 +80,25 @@
 
 - (void) handleFlightRouteNotification:(NSNotification*)notification
 {
-    FlightRoute* flightRoute = [notification object];
-
     // Ignore notifications for flight routes not in this controller's layer. This also avoids saving state or
     // refreshing the screen for during flight route initialization or restoration.
-    if ([flightRoutes containsObject:flightRoute])
+    FlightRoute* flightRoute = [notification object];
+    if (![flightRoutes containsObject:flightRoute])
+        return;
+
+    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
+    if ([[notification name] isEqualToString:TAIGA_FLIGHT_ROUTE_CHANGED])
     {
-        [self flightRouteDidChange:flightRoute];
+        NSInteger index  = [flightRoutes indexOfObject:flightRoute];
+        NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        [[self tableView] reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
+
+    // Save the flight route model state.
+    [self saveFlightRouteState:flightRoute];
+
+    // Redraw any WorldWindViews that might be displaying the flight route.
+    [WorldWindView requestRedraw];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -240,21 +251,6 @@
 {
     // Remove the flight route list state.
     [self saveFlightRouteListState];
-
-    // Redraw any WorldWindViews that might be displaying the flight route.
-    [WorldWindView requestRedraw];
-}
-
-- (void) flightRouteDidChange:(FlightRoute*)flightRoute
-{
-    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
-    NSInteger index  = [flightRoutes indexOfObject:flightRoute];
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [[self tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
-
-    // Save the flight route model state.
-    [self saveFlightRouteState:flightRoute];
 
     // Redraw any WorldWindViews that might be displaying the flight route.
     [WorldWindView requestRedraw];
