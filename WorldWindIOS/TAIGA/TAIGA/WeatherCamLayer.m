@@ -83,7 +83,7 @@
         [docParser setDelegate:layer];
 
         BOOL status = [docParser parse];
-        if (status == NO)
+        if (status)
         {
             WWLog(@"Weather Cam data parsing failed");
         }
@@ -116,6 +116,11 @@
     iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"slr_camera.png"];
     sitesInfo = [[NSMutableDictionary alloc] init];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:WW_REFRESH
+                                               object:self];
+
     return self;
 }
 
@@ -130,10 +135,16 @@
     [super setEnabled:enabled];
 }
 
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    {
+        [self refreshData];
+    }
+}
+
 - (void) refreshData
 {
-    [self removeAllRenderables];
-
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://worldwindserver.net/taiga/cameras/sites-update.xml";
     WeatherCamLayerRetriever* retriever = [[WeatherCamLayerRetriever alloc] initWithUrl:urlString layer:self];
@@ -229,6 +240,8 @@
 
 - (void) createPlacemarks
 {
+    [self removeAllRenderables];
+
     NSEnumerator* enumerator = [sitesInfo objectEnumerator];
     NSArray* siteCameras;
     while ((siteCameras = [enumerator nextObject]) != nil)

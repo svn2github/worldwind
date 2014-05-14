@@ -136,8 +136,6 @@
 
 - (void) refreshData
 {
-    [self removeAllRenderables];
-
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://www.aviationweather"
             ".gov/adds/dataserver_current/httpparam?dataSource=aircraftreports&requestType=retrieve&format=xml&minLat"
@@ -225,6 +223,8 @@
 {
     @try
     {
+        [self removeAllRenderables];
+
         [self addRenderables:placemarks];
 
         placemarks = nil; // placemark list is needed only during parsing

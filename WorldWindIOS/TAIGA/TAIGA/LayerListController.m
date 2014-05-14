@@ -13,13 +13,15 @@
 #import "WWSceneController.h"
 #import "WWLayerList.h"
 #import "ImageLayerDetailController.h"
-#import "RenderableLayerDetailController.h"
 #import "WWElevationShadingLayer.h"
 #import "TerrainAltitudeDetailController.h"
 #import "AppConstants.h"
-#import "METARLayer.h"
-#import "PIREPLayer.h"
 #import "Settings.h"
+#import "PIREPLayer.h"
+#import "METARLayer.h"
+#import "RenderableLayerDetailController.h"
+#import "WorldWind.h"
+#import "WeatherCamLayer.h"
 
 @implementation LayerListController
 
@@ -83,20 +85,50 @@
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    static NSString* cellIdentifier = @"cell";
+    UITableViewCell* cell;
+    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
 
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    if (cell == nil)
+    if ([layer isKindOfClass:[METARLayer class]]
+            || [layer isKindOfClass:[PIREPLayer class]]
+            || [layer isKindOfClass:[WeatherCamLayer class]])
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
-        [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
-        [cell setAccessoryType: UITableViewCellAccessoryDetailButton];
-        [cell setShowsReorderControl:YES];
+        static NSString* cellWithRefreshIdentifier = @"cellWithRefreshButton";
+        cell = [tableView dequeueReusableCellWithIdentifier:cellWithRefreshIdentifier];
+
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                          reuseIdentifier:cellWithRefreshIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+            [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
+            [cell setShowsReorderControl:YES];
+
+            UIImage* image = [[UIImage imageNamed:@"01-refresh.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            UIButton* refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 25, 30)];
+            [refreshButton setImage:image forState:UIControlStateNormal];
+            [[refreshButton imageView] setTintColor:[[cell accessoryView] tintColor]];
+            [refreshButton addTarget:self action:@selector(handleRefreshButtonTap:)
+                    forControlEvents:UIControlEventTouchUpInside];
+            [cell setAccessoryView:refreshButton];
+        }
+    }
+    else
+    {
+        static NSString* cellIdentifier = @"cell";
+        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
+            [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
+            [cell setShowsReorderControl:YES];
+        }
     }
 
-    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
     [[cell textLabel] setText:[layer displayName]];
     [[cell imageView] setHidden:![layer enabled]];
+    [[cell accessoryView] setTag:[indexPath row]];
 
     return cell;
 }
@@ -117,10 +149,9 @@
     }
     else if ([layer isKindOfClass:[WWRenderableLayer class]])
     {
-        BOOL showRefreshButton = [layer isKindOfClass:[METARLayer class]] || [layer isKindOfClass:[PIREPLayer class]];
         RenderableLayerDetailController* detailController =
                 [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer
-                                                  refreshButtonEnabled:showRefreshButton];
+                                                  refreshButtonEnabled:NO];
         [detailController setTitle:[layer displayName]];
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
@@ -132,6 +163,28 @@
 
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
+}
+
+- (void) handleRefreshButtonTap:(UIButton*)button
+{
+    WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [button tag]];
+
+    if (![WorldWind isNetworkAvailable])
+    {
+        NSString* msg = [[NSString alloc] initWithFormat:@"Cannot refresh %@ because network is unavailable",
+                                                         [layer displayName]];
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
+                                                            message:msg
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Dismiss"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+    }
+    else
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH object:layer];
+    }
+
 }
 
 - (NSArray*) nonHiddenLayers
