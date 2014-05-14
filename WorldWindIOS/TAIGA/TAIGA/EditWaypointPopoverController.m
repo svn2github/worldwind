@@ -96,7 +96,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     if (newWaypoint != nil)
     {
         // Add the new waypoint to the waypoint database.
-        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
+        [[TAIGA waypointDatabase] addWaypoint:newWaypoint];
         newWaypoint = nil;
     }
 }

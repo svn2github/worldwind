@@ -11,10 +11,11 @@
 #import "Waypoint.h"
 #import "WaypointDatabase.h"
 #import "AppConstants.h"
+#import "TAIGA.h"
+#import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Layer/WWRenderableLayer.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
-#import "UITableViewCell+TAIGAAdditions.h"
 
 @implementation FlightRouteController
 
@@ -22,14 +23,13 @@
 //-- Initializing FlightRouteController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv waypointDatabase:(WaypointDatabase*)waypointDatabase
+- (id) initWithWorldWindView:(WorldWindView*)wwv
 {
     self = [super initWithStyle:UITableViewStylePlain];
 
     _displayName = @"Flight Routes";
     _enabled = YES;
     _wwv = wwv;
-    _waypointDatabase = waypointDatabase;
 
     flightRoutes = [[NSMutableArray alloc] init];
 
@@ -328,7 +328,7 @@
     }
 
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
-    UIViewController* detailController = [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute waypointDatabase:_waypointDatabase view:_wwv];
+    UIViewController* detailController = [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute worldWindView:_wwv];
     [detailController setEditing:editing animated:NO]; // The detail controller is not yet visible. No need to animate to the editing state.
     [[self navigationController] pushViewController:detailController animated:YES];
 }
@@ -386,6 +386,7 @@
 {
     NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
     NSMutableArray* waypoints = [[NSMutableArray alloc] initWithCapacity:8];
+    WaypointDatabase* waypointDB = [TAIGA waypointDatabase];
 
     NSArray* flightRouteKeys = [userState objectForKey:@"gov.nasa.worldwind.taiga.flightPathKeys"];
     for (NSString* frKey in flightRouteKeys)
@@ -394,7 +395,7 @@
         NSArray* waypointKeys = [userState arrayForKey:[NSString stringWithFormat:@"gov.nasa.worldwind.taiga.flightpath.%@.waypointKeys", frKey]];
         for (NSString* wpKey in waypointKeys)
         {
-            Waypoint* waypoint = [_waypointDatabase waypointForKey:wpKey];
+            Waypoint* waypoint = [waypointDB waypointForKey:wpKey];
             if (waypoint != nil)
             {
                 [waypoints addObject:waypoint];

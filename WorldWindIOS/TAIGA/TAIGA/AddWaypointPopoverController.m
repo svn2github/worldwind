@@ -10,6 +10,7 @@
 #import "Waypoint.h"
 #import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
+#import "TAIGA.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -99,7 +100,7 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
 
         // Append the new waypoint to the selected flight route then add it to the waypoint database.
         [flightRoute addWaypoint:newWaypoint];
-        [[_mapViewController waypointDatabase] addWaypoint:newWaypoint];
+        [[TAIGA waypointDatabase] addWaypoint:newWaypoint];
     }
 }
 

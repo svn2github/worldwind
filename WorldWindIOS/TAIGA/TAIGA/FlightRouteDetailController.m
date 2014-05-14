@@ -42,9 +42,7 @@
 //-- Initializing FlightRouteDetailController --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute
-                                    waypointDatabase:(WaypointDatabase*)waypointDatabase
-                                                view:(WorldWindView*)wwv
+- (id) initWithFlightRoute:(FlightRoute*)flightRoute worldWindView:(WorldWindView*)wwv
 {
     self = [super initWithNibName:nil bundle:nil];
 
@@ -52,7 +50,6 @@
     [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
 
     _flightRoute = flightRoute;
-    _waypointDatabase = waypointDatabase;
     _wwv = wwv;
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointInserted:)
@@ -141,7 +138,7 @@
     [view addSubview:flightRouteTable];
 
     waypointFileControl = [[WaypointFileControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
-    [waypointFileControl setWaypointDatabase:_waypointDatabase];
+    [waypointFileControl setWaypointDatabase:[TAIGA waypointDatabase]];
     [view addSubview:waypointFileControl];
 
     [self layout];

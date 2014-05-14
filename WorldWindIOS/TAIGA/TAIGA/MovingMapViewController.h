@@ -8,14 +8,11 @@
 #import <UIKit/UIKit.h>
 
 @class FlightRoute;
-@class WaypointDatabase;
 @class WorldWindView;
 
 @interface MovingMapViewController : UIViewController <UINavigationControllerDelegate>
 
 @property (nonatomic, readonly) WorldWindView* wwv;
-
-@property (nonatomic, readonly) WaypointDatabase* waypointDatabase;
 
 /// @name Initializing MovingMapViewController
 

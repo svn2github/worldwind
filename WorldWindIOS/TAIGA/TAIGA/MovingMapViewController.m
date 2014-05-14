@@ -14,6 +14,7 @@
 #import "WWBMNGLandsatCombinedLayer.h"
 #import "LayerListController.h"
 #import "AppConstants.h"
+#import "TAIGA.h"
 #import "WWElevationShadingLayer.h"
 #import "Settings.h"
 #import "ButtonWithImageAndText.h"
@@ -119,8 +120,6 @@
 
     myFrame = frame;
 
-    _waypointDatabase = [[WaypointDatabase alloc] init];
-
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
@@ -186,13 +185,14 @@
 
 - (void) loadWaypoints
 {
-    [_waypointDatabase addWaypointsFromTable:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"
-                             completionBlock:^
-                             {
-                                 [routeViewController restoreFlightRouteState];
-                                 [waypointLayer setWaypointDatabase:_waypointDatabase];
-                                 [WorldWindView requestRedraw];
-                             }];
+    WaypointDatabase* db = [TAIGA waypointDatabase];
+    [db addWaypointsFromTable:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"
+              completionBlock:^
+              {
+                  [routeViewController restoreFlightRouteState];
+                  [waypointLayer setWaypointDatabase:db];
+                  [WorldWindView requestRedraw];
+              }];
 }
 
 - (void) loadView
@@ -474,7 +474,7 @@
 
 - (void) createRouteViewController
 {
-    routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv waypointDatabase:_waypointDatabase];
+    routeViewController = [[FlightRouteController alloc] initWithWorldWindView:_wwv];
     [[routeViewController view] setAlpha:0.95]; // Make the flight route view semi-transparent.
 
     routeViewNavController = [[UINavigationController alloc] initWithRootViewController:routeViewController];

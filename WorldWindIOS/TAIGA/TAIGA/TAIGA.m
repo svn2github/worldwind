@@ -8,11 +8,13 @@
 #import "TAIGA.h"
 #import "AppUpdateController.h"
 #import "UnitsFormatter.h"
+#import "WaypointDatabase.h"
 
 @implementation TAIGA
 
 static AppUpdateController* appUpdateController; // singleton instance
 static UnitsFormatter* unitsFormatter;
+static WaypointDatabase* waypointDatabase;
 
 + (void) initialize
 {
@@ -24,6 +26,7 @@ static UnitsFormatter* unitsFormatter;
 
         appUpdateController = [[AppUpdateController alloc] init];
         unitsFormatter = [[UnitsFormatter alloc] init];
+        waypointDatabase = [[WaypointDatabase alloc] init];
     }
 }
 
@@ -35,6 +38,11 @@ static UnitsFormatter* unitsFormatter;
 + (UnitsFormatter*) unitsFormatter
 {
     return unitsFormatter;
+}
+
++ (WaypointDatabase*) waypointDatabase
+{
+    return waypointDatabase;
 }
 
 @end

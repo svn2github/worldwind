@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 @class FlightRoute;
-@class WaypointDatabase;
 @class WaypointFileControl;
 @class BulkRetrieverController;
 @class WorldWindView;
@@ -25,12 +24,8 @@
 
 @property (nonatomic, readonly, weak) FlightRoute* flightRoute;
 
-@property (nonatomic, readonly, weak) WaypointDatabase* waypointDatabase;
-
 @property (nonatomic, readonly, weak) WorldWindView* wwv;
 
-- (FlightRouteDetailController*) initWithFlightRoute:(FlightRoute*)flightRoute
-                                    waypointDatabase:(WaypointDatabase*)waypointDatabase
-                                                view:(WorldWindView*)wwv;
+- (id) initWithFlightRoute:(FlightRoute*)flightRoute worldWindView:(WorldWindView*)wwv;
 
 @end
