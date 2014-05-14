@@ -49,9 +49,6 @@ static const CGFloat AircraftSliderHeight = 4;
 {
     self = [super initWithNibName:nil bundle:nil];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteNotification:)
-                                                 name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
-
     return self;
 }
 
@@ -69,16 +66,13 @@ static const CGFloat AircraftSliderHeight = 4;
     // Set the aircraft slider to the beginning of the flight route and update the simulation UI elements to match the
     // new flight route.
     [aircraftSlider setValue:0];
-    [self handleFightRouteChanged];
-}
 
-- (void) handleFlightRouteNotification:(NSNotification*)notification
-{
-    FlightRoute* flightRoute = [notification object];
-    if (flightRoute == _flightRoute)
-    {
-        [self handleFightRouteChanged];
-    }
+    // Set the title label to the flight route display name + " Simulation".
+    [titleLabel setText:[[_flightRoute displayName] stringByAppendingString:@" Simulation"]];
+
+    // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
+    // aircraft slider value.
+    [self postAircraftPosition];
 }
 
 - (void) postAircraftPosition
@@ -114,16 +108,6 @@ static const CGFloat AircraftSliderHeight = 4;
 
 - (void) handleAircraftSlider
 {
-    // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
-    // aircraft slider value.
-    [self postAircraftPosition];
-}
-
-- (void) handleFightRouteChanged
-{
-    // Set the title label to the flight route display name + " Simulation", or nil if the flight route is nil.
-    [titleLabel setText:[[_flightRoute displayName] stringByAppendingString:@" Simulation"]];
-
     // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
     // aircraft slider value.
     [self postAircraftPosition];

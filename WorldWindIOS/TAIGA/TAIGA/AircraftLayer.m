@@ -8,7 +8,6 @@
 #import "AircraftLayer.h"
 #import "AircraftShape.h"
 #import "AppConstants.h"
-#import "FlightRoute.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
@@ -27,8 +26,6 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(aircraftPositionDidChange:)
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(flightRouteDidChange:)
-                                                 name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationWillBegin:)
                                                  name:TAIGA_SIMULATION_WILL_BEGIN object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(simulationWillEnd:)
@@ -71,15 +68,6 @@
     CLLocation* location = [notification object];
     [self updateAircraftShape:aircraftShape withLocation:location];
     [WorldWindView requestRedraw];
-}
-
-- (void) flightRouteDidChange:(NSNotification*)notification
-{
-    if (simulatedFlightRoute == [notification object] && [simulatedFlightRoute waypointCount] == 0)
-    {
-        [self setEnabled:NO]; // disable this layer until we have a new fix on the current location
-        [WorldWindView requestRedraw];
-    }
 }
 
 - (void) simulationWillBegin:(NSNotification*)notification
