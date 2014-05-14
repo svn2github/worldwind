@@ -11,6 +11,8 @@
 
 @interface WeatherCamLayer :  WWRenderableLayer <NSXMLParserDelegate>
 
+@property (atomic) NSNumber* refreshInProgress;
+
 - (WeatherCamLayer*) init;
 
 @end

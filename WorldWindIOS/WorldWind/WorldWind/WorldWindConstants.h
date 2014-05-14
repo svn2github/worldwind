@@ -32,8 +32,6 @@ extern NSString* const WW_ORIGIN;
 extern NSString* const WW_ORIGINAL_ASPECT;
 extern NSString* const WW_ORIGINAL_SIZE;
 extern NSString* const WW_PIXELS;
-extern NSString* const WW_REFRESH;
-extern NSString* const WW_REFRESH_COMPLETE;
 extern NSString* const WW_REQUEST_REDRAW;
 extern NSString* const WW_RESPONSE_CODE;
 extern NSString* const WW_RHUMB;

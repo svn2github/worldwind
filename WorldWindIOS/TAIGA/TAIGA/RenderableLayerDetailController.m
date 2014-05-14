@@ -12,6 +12,7 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
+#import "AppConstants.h"
 
 @implementation RenderableLayerDetailController
 {
@@ -38,7 +39,7 @@
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleRefreshNotification:)
-                                                     name:WW_REFRESH_COMPLETE
+                                                     name:TAIGA_REFRESH_COMPLETE
                                                    object:_layer];
     }
 
@@ -149,12 +150,12 @@
 
 - (void) handleRefreshButtonTap
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH object:_layer];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH object:_layer];
 }
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_REFRESH_COMPLETE] && [notification object] == _layer)
+    if ([[notification name] isEqualToString:TAIGA_REFRESH_COMPLETE] && [notification object] == _layer)
     {
         [[self tableView] reloadData];
     }

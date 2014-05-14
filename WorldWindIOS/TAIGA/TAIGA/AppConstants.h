@@ -35,6 +35,8 @@
 #define TAIGA_LOCATION_TRACKING_MODE_TRACK_UP (@"gov.nasa.worldwind.taiga.location.tracking.mode.trackup")
 #define TAIGA_METERS_TO_FEET (3.28083989501)
 #define TAIGA_MILES_TO_METERS (1609.34)
+#define TAIGA_REFRESH (@"gov.nasa.worldwind.taiga.refresh")
+#define TAIGA_REFRESH_COMPLETE (@"gov.nasa.worldwind.taiga.refresh.complete")
 #define TAIGA_SETTING_CHANGED (@"gov.nasa.worldwind.taiga.setting.changed")
 #define TAIGA_SHADED_ELEVATION_OFFSET (@"gov.nasa.worldwind.taiga.shadedelevation.offset")
 #define TAIGA_SHADED_ELEVATION_OPACITY (@"gov.nasa.worldwind.taiga.shadedelevation.opacity")

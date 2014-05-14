@@ -7,8 +7,8 @@
 
 #import "WWRenderableLayer.h"
 #import "DAFIFLayer.h"
-#import "WorldWindConstants.h"
 #import "WorldWindView.h"
+#import "AppConstants.h"
 
 @implementation DAFIFLayer
 
@@ -18,7 +18,7 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
-                                                 name:WW_REFRESH
+                                                 name:TAIGA_REFRESH
                                                object:self];
 
     return self;
@@ -26,7 +26,7 @@
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    if ([[notification name] isEqualToString:TAIGA_REFRESH] && [notification object] == self)
     {
         NSDate* justBeforeNow = [[NSDate alloc] initWithTimeIntervalSinceNow:-1];
 

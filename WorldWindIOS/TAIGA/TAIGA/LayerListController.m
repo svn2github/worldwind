@@ -23,6 +23,7 @@
 #import "WorldWind.h"
 #import "WeatherCamLayer.h"
 #import "DAFIFLayer.h"
+#import "WaypointLayer.h"
 
 @implementation LayerListController
 
@@ -150,7 +151,7 @@
     }
     else if ([layer isKindOfClass:[WWRenderableLayer class]])
     {
-        bool showRefreshButton = [layer isKindOfClass:[DAFIFLayer class]];
+        bool showRefreshButton = [layer isKindOfClass:[DAFIFLayer class]] || [layer isKindOfClass:[WaypointLayer class]];
         RenderableLayerDetailController* detailController =
                 [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer
                                                   refreshButtonEnabled:showRefreshButton];
@@ -184,7 +185,7 @@
     }
     else
     {
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH object:layer];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH object:layer];
     }
 
 }

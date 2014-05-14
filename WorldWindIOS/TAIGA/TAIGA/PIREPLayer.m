@@ -12,6 +12,7 @@
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
+#import "AppConstants.h"
 
 @interface PIREPLayerRetriever : NSOperation
 @end
@@ -77,7 +78,10 @@
         }
 
         if (pirepData == nil || [pirepData length] == 0)
+        {
+            layer.refreshInProgress = [[NSNumber alloc] initWithBool:NO];
             return;
+        }
 
         NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:pirepData];
         [docParser setDelegate:layer];
@@ -92,6 +96,8 @@
     {
         WWLogE(@"Exception loading PIREP data", exception);
     }
+
+    layer.refreshInProgress = [[NSNumber alloc] initWithBool:NO];
 }
 
 @end
@@ -115,9 +121,11 @@
 
     [self setDisplayName:@"PIREPS"];
 
+    _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
-                                                 name:WW_REFRESH
+                                                 name:TAIGA_REFRESH
                                                object:self];
 
     return self;
@@ -141,12 +149,22 @@
             ".gov/adds/dataserver_current/httpparam?dataSource=aircraftreports&requestType=retrieve&format=xml&minLat"
             "=52&minLon=-170&maxLat=72&maxLon=-130&hoursBeforeNow=3&minAltitudeFt=0&maxAltitudeFt=15000";
     PIREPLayerRetriever* retriever = [[PIREPLayerRetriever alloc] initWithUrl:urlString layer:self];
+
+    @synchronized (_refreshInProgress)
+    {
+        if ([_refreshInProgress boolValue])
+            return;
+
+        _refreshInProgress = [[NSNumber alloc] initWithBool:YES];
+    }
+
     [[WorldWind loadQueue] addOperation:retriever];
 }
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    if ([[notification name] isEqualToString:TAIGA_REFRESH]
+            && ([notification object] == self || [notification object] == nil))
     {
         [self refreshData];
     }
@@ -214,9 +232,7 @@
 
 - (void) parserDidEndDocument:(NSXMLParser*)parser
 {
-    [self performSelectorOnMainThread:@selector(addPlacemarksOnMainThread:)
-                           withObject:nil
-                        waitUntilDone:NO];
+    [self performSelectorOnMainThread:@selector(addPlacemarksOnMainThread:) withObject:nil waitUntilDone:NO];
 }
 
 - (void) addPlacemarksOnMainThread:(id)object
@@ -229,7 +245,7 @@
 
         placemarks = nil; // placemark list is needed only during parsing
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH_COMPLETE object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH_COMPLETE object:self];
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
         [WorldWindView requestRedraw];

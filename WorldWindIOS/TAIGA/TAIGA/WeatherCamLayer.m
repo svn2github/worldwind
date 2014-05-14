@@ -12,6 +12,7 @@
 #import "WorldWind/Util/WWRetriever.h"
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
+#import "AppConstants.h"
 
 @interface WeatherCamLayerRetriever : NSOperation
 @end
@@ -77,13 +78,16 @@
         }
 
         if (data == nil || [data length] == 0)
+        {
+            layer.refreshInProgress = [[NSNumber alloc] initWithBool:NO];
             return;
+        }
 
         NSXMLParser* docParser = [[NSXMLParser alloc] initWithData:data];
         [docParser setDelegate:layer];
 
         BOOL status = [docParser parse];
-        if (status)
+        if (status == NO)
         {
             WWLog(@"Weather Cam data parsing failed");
         }
@@ -92,6 +96,8 @@
     {
         WWLogE(@"Exception loading Weather Cam data", exception);
     }
+
+    layer.refreshInProgress = [[NSNumber alloc] initWithBool:NO];
 }
 
 @end
@@ -113,12 +119,14 @@
 
     [self setDisplayName:@"Weather Cams"];
 
+    _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
+
     iconFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"slr_camera.png"];
     sitesInfo = [[NSMutableDictionary alloc] init];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
-                                                 name:WW_REFRESH
+                                                 name:TAIGA_REFRESH
                                                object:self];
 
     return self;
@@ -137,7 +145,8 @@
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
-    if ([[notification name] isEqualToString:WW_REFRESH] && [notification object] == self)
+    if ([[notification name] isEqualToString:TAIGA_REFRESH]
+            && ([notification object] == self || [notification object] == nil))
     {
         [self refreshData];
     }
@@ -148,6 +157,15 @@
     // Retrieve the data on a separate thread because it takes a while to download and parse.
     NSString* urlString = @"http://worldwindserver.net/taiga/cameras/sites-update.xml";
     WeatherCamLayerRetriever* retriever = [[WeatherCamLayerRetriever alloc] initWithUrl:urlString layer:self];
+
+    @synchronized (_refreshInProgress)
+    {
+        if ([_refreshInProgress boolValue])
+            return;
+
+        _refreshInProgress = [[NSNumber alloc] initWithBool:YES];
+    }
+
     [[WorldWind loadQueue] addOperation:retriever];
 }
 
@@ -209,11 +227,13 @@
 {
     @try
     {
+        [self removeAllRenderables];
+
         [self addRenderables:placemarks];
 
         placemarks = nil; // placemark list is needed only during parsing
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:WW_REFRESH_COMPLETE object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH_COMPLETE object:self];
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
         [WorldWindView requestRedraw];
@@ -240,8 +260,6 @@
 
 - (void) createPlacemarks
 {
-    [self removeAllRenderables];
-
     NSEnumerator* enumerator = [sitesInfo objectEnumerator];
     NSArray* siteCameras;
     while ((siteCameras = [enumerator nextObject]) != nil)
@@ -276,8 +294,8 @@
         [placemarks addObject:pointPlacemark];
     }
 
-    // Sites info hash table is no lonber needed.
-    sitesInfo = nil;
+    // Sites info hash table is no longer needed.
+    [sitesInfo removeAllObjects];
 }
 
 @end

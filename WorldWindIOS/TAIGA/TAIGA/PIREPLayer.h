@@ -10,6 +10,8 @@
 
 @interface PIREPLayer : WWRenderableLayer <NSXMLParserDelegate>
 
+@property (atomic) NSNumber* refreshInProgress;
+
 - (PIREPLayer*) init;
 
 @end

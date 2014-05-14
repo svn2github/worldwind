@@ -10,6 +10,8 @@
 
 @interface METARLayer : WWRenderableLayer <NSXMLParserDelegate>
 
+@property (atomic) NSNumber* refreshInProgress;
+
 - (METARLayer*) init;
 
 @end
