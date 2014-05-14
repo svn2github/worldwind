@@ -79,7 +79,7 @@
 
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];
-    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
+    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:5];
 
     // Set up to handle retrieval and image read monitoring.
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -676,6 +676,7 @@
         {
             [currentRetrievals removeObject:imagePath];
         }
+        [absentResources markResourceAbsent:imagePath];
         return;
     }
 
