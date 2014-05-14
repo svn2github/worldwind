@@ -114,6 +114,10 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 
 - (void) popoverDraggingDidBegin
 {
+    [super popoverDraggingDidBegin];
+
+    [WorldWindView startRedrawing];
+
     if (newWaypoint == nil)
     {
         // The waypoint will be dragged to a new location. Create a new marker waypoint at the current position and
@@ -134,12 +138,12 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
         // Display the cancel button in the left side of the navigation bar. This enables the user to undo this change.
         [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
     }
-
-    [WorldWindView startRedrawing];
 }
 
 - (void) popoverDraggingDidEnd
 {
+    [super popoverDraggingDidEnd];
+
     [WorldWindView stopRedrawing];
 }
 

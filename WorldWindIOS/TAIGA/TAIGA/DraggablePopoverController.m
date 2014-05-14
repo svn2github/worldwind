@@ -8,6 +8,8 @@
 #import "DraggablePopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 
+#define DISPLAY_LINK_FRAME_INTERVAL (3)
+
 @implementation DraggablePopoverController
 
 - (id) initWithContentViewController:(UIViewController*)viewController
@@ -58,6 +60,7 @@
     if ([recognizer state] == UIGestureRecognizerStateBegan)
     {
         gestureBeginPoint = _point;
+        gestureNewPoint = _point;
         [self popoverDraggingDidBegin];
     }
     else if ([recognizer state] == UIGestureRecognizerStateEnded || [recognizer state] == UIGestureRecognizerStateCancelled)
@@ -68,26 +71,19 @@
     {
         // Compute the coordinates of the new point based on the current pan translation.
         CGPoint translation = [recognizer translationInView:[[self contentViewController] view]];
-        CGPoint newPoint = CGPointMake(gestureBeginPoint.x + translation.x, gestureBeginPoint.y + translation.y);
+        gestureNewPoint.x = gestureBeginPoint.x + translation.x;
+        gestureNewPoint.y = gestureBeginPoint.y + translation.y;
 
         // Limit the new point's coordinates to the view's bounds.
         CGRect bounds = [_view bounds];
-        if (newPoint.x < CGRectGetMinX(bounds))
-            newPoint.x = CGRectGetMinX(bounds);
-        if (newPoint.x > CGRectGetMaxX(bounds))
-            newPoint.x = CGRectGetMaxX(bounds);
-        if (newPoint.y < CGRectGetMinY(bounds))
-            newPoint.y = CGRectGetMinY(bounds);
-        if (newPoint.y > CGRectGetMaxY(bounds))
-            newPoint.y = CGRectGetMaxY(bounds);
-
-        // Update the popover to display its arrow at the new point's coordinates, provided a subclass does not suppress
-        // this change.
-        if ([self popoverPointWillChange:newPoint])
-        {
-            _point = newPoint;
-            [super presentPopoverFromPoint:_point inView:_view permittedArrowDirections:_arrowDirections animated:NO];
-        }
+        if (gestureNewPoint.x < CGRectGetMinX(bounds))
+            gestureNewPoint.x = CGRectGetMinX(bounds);
+        if (gestureNewPoint.x > CGRectGetMaxX(bounds))
+            gestureNewPoint.x = CGRectGetMaxX(bounds);
+        if (gestureNewPoint.y < CGRectGetMinY(bounds))
+            gestureNewPoint.y = CGRectGetMinY(bounds);
+        if (gestureNewPoint.y > CGRectGetMaxY(bounds))
+            gestureNewPoint.y = CGRectGetMaxY(bounds);
     }
 }
 
@@ -98,12 +94,26 @@
 
 - (void) popoverDraggingDidBegin
 {
-    // Subclasses should implement this method.
+    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkDidFire)];
+    [displayLink setFrameInterval:DISPLAY_LINK_FRAME_INTERVAL];
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 - (void) popoverDraggingDidEnd
 {
-    // Subclasses should implement this method.
+    [displayLink invalidate];
+    displayLink = nil;
+}
+
+- (void) displayLinkDidFire
+{
+    // Update the popover to display its arrow at the new point's coordinates, provided a subclass does not suppress
+    // this change.
+    if ([self popoverPointWillChange:gestureNewPoint])
+    {
+        _point = gestureNewPoint;
+        [super presentPopoverFromPoint:_point inView:_view permittedArrowDirections:_arrowDirections animated:NO];
+    }
 }
 
 - (BOOL) popoverPointWillChange:(CGPoint)newPoint

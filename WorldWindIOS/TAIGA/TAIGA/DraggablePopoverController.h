@@ -10,8 +10,10 @@
 @interface DraggablePopoverController : UIPopoverController <UIPopoverControllerDelegate, UIGestureRecognizerDelegate>
 {
 @protected
+    CADisplayLink* displayLink;
     UIPanGestureRecognizer* panGestureRecognizer;
     CGPoint gestureBeginPoint;
+    CGPoint gestureNewPoint;
 }
 
 @property (nonatomic, readonly) CGPoint point;
