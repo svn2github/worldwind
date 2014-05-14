@@ -91,7 +91,7 @@
         if (entry == nil)
         {
             entry = [[WWAbsentResourceEntry alloc] init];
-            [possiblyAbsent setObject:resourceID forKey:entry];
+            [possiblyAbsent setObject:entry forKey:resourceID];
         }
 
         [entry setNumTries:[entry numTries] + 1];

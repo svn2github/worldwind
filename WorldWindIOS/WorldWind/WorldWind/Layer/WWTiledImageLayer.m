@@ -87,7 +87,7 @@
 
     currentRetrievals = [[NSMutableSet alloc] init];
     currentLoads = [[NSMutableSet alloc] init];
-    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:10];
+    absentResources = [[WWAbsentResourceList alloc] initWithMaxTries:3 minCheckInterval:5];
 
     [super setPickEnabled:NO]; // Must call superclass method since we've overridden this method to do nothing.
 
@@ -624,6 +624,7 @@
         {
             [currentRetrievals removeObject:pathKey];
         }
+        [absentResources markResourceAbsent:pathKey];
         return;
     }
 
