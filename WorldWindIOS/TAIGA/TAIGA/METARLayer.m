@@ -126,7 +126,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
                                                  name:TAIGA_REFRESH
-                                               object:self];
+                                               object:nil];
 
     return self;
 }
@@ -166,7 +166,7 @@
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
     if ([[notification name] isEqualToString:TAIGA_REFRESH]
-            && ([notification object] == self || [notification object] == nil))
+            && ([notification object] == nil || [notification object] == self))
     {
         [self refreshData];
     }

@@ -44,6 +44,11 @@
             @"Hazards,http://aawu.arh.noaa.gov/fcstgraphics/avhazard.gif",
             nil];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:TAIGA_REFRESH
+                                               object:nil];
+
     return self;
 }
 
@@ -170,24 +175,32 @@
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
-                                                    [self loadRetrievedChart:myRetriever];
+                                                    [self loadSelectedChart:myRetriever];
                                                 }];
     [retriever setUserData:chartName];
     [retriever performRetrieval];
 }
 
-- (void) loadRetrievedChart:(WWRetriever*)retriever
+- (void) loadSelectedChart:(WWRetriever*)retriever
+{
+    if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
+    {
+        [self saveChart:retriever];
+
+        NSString* chartFileName = [[retriever url] lastPathComponent];
+        NSString* chartPath = [cachePath stringByAppendingPathComponent:chartFileName];
+
+        [self loadChart:chartPath chartName:[retriever userData]];
+    }
+
+}
+
+- (void) saveChart:(WWRetriever*)retriever
 {
     NSString* chartFileName = [[retriever url] lastPathComponent];
     NSString* chartPath = [cachePath stringByAppendingPathComponent:chartFileName];
 
-    // If the retrieval was successful, cache the retrieved chart.
-    if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
-    {
-        [[retriever retrievedData] writeToFile:chartPath atomically:YES];
-    }
-
-    [self loadChart:chartPath chartName:[retriever userData]];
+    [[retriever retrievedData] writeToFile:chartPath atomically:YES];
 }
 
 - (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName
@@ -204,6 +217,64 @@
         [[NSUserDefaults standardUserDefaults] setObject:chartName forKey:MOST_RECENTLY_USED_WEATHER_CHART_NAME];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+}
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:TAIGA_REFRESH] && [notification object] == nil)
+    {
+        [self retrieveAllCharts];
+    }
+}
+
+- (void) retrieveAllCharts
+{
+    @synchronized (_refreshInProgress)
+    {
+        if ([_refreshInProgress boolValue])
+            return;
+
+        _refreshInProgress = [[NSNumber alloc] initWithBool:YES];
+    }
+
+    for (NSString* chartInfo in charts)
+    {
+        NSString* chartName = [chartInfo componentsSeparatedByString:@","][0];
+        NSString* chartURL = [chartInfo componentsSeparatedByString:@","][1];
+        if (chartURL != nil)
+        {
+            NSURL* url = [[NSURL alloc] initWithString:chartURL];
+            WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
+                                                        finishedBlock:^(WWRetriever* myRetriever)
+                                                        {
+                                                            [self performSelectorOnMainThread:@selector(saveRefreshedChart:)
+                                                                                   withObject:myRetriever
+                                                                                waitUntilDone:NO];
+                                                        }];
+            [retriever setUserData:chartName];
+            [retriever performRetrieval];
+        }
+    }
+
+    _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
+}
+
+- (void) saveRefreshedChart:(WWRetriever*)retriever
+{
+    if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
+    {
+        [self saveChart:retriever];
+
+        NSString* chartName = [retriever userData];
+        if (chartNameLabel != nil && [[chartNameLabel text] isEqualToString:chartName])
+        {
+            NSString* chartFileName = [[retriever url] lastPathComponent];
+            NSString* chartPath = [cachePath stringByAppendingPathComponent:chartFileName];
+
+            [self loadChart:chartPath chartName:[retriever userData]];
+        }
+    }
+
 }
 
 @end

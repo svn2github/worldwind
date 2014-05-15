@@ -14,4 +14,6 @@
 
 - (void) selectChart:(NSString*)chartFileName chartName:(NSString*)chartName;
 
+- (void) refreshAll;
+
 @end

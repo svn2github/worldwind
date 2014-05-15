@@ -127,7 +127,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
                                                  name:TAIGA_REFRESH
-                                               object:self];
+                                               object:nil];
 
     return self;
 }

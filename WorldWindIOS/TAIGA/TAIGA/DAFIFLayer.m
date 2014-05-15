@@ -9,6 +9,7 @@
 #import "DAFIFLayer.h"
 #import "WorldWindView.h"
 #import "AppConstants.h"
+#import "WorldWind.h"
 
 @implementation DAFIFLayer
 
@@ -19,15 +20,33 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
                                                  name:TAIGA_REFRESH
-                                               object:self];
+                                               object:nil];
 
     return self;
 }
 
 - (void) handleRefreshNotification:(NSNotification*)notification
 {
+    if ([WorldWind isNetworkAvailable])
+    {
+        [self performSelectorOnMainThread:@selector(doHandleRefreshNotification:) withObject:notification
+                            waitUntilDone:NO];
+    }
+    else
+    {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
+                                                            message:@"Cannot refresh DAFIF data because network is unavailable"
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Dismiss"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+    }
+}
+
+- (void) doHandleRefreshNotification:(NSNotification*)notification
+{
     if ([[notification name] isEqualToString:TAIGA_REFRESH]
-            && ([notification object] == self || [notification object] == nil))
+            && ([notification object] == nil || [notification object] == self))
     {
         NSDate* justBeforeNow = [[NSDate alloc] initWithTimeIntervalSinceNow:-1];
 

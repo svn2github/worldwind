@@ -11,6 +11,7 @@
 #import "WorldWind/Layer/WWTiledImageLayer.h"
 #import "WorldWind/WorldWindView.h"
 #import "WorldWind/WWLog.h"
+#import "WorldWind.h"
 
 @implementation ImageLayerDetailController
 
@@ -25,10 +26,11 @@
 
     _layer = layer;
 
-    UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"01-refresh"]
-                                                                      style:UIBarButtonItemStylePlain
-                                                                     target:self action:@selector(handleRefreshButtonTap)];
-    [[self navigationItem] setRightBarButtonItem:refreshButton];
+    // Uncomment below four lines to implement a refresh button. Currently see no reason to do that.
+//    UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"01-refresh"]
+//                                                                      style:UIBarButtonItemStylePlain
+//                                                                     target:self action:@selector(handleRefreshButtonTap)];
+//    [[self navigationItem] setRightBarButtonItem:refreshButton];
 
     return self;
 }
@@ -100,8 +102,20 @@
 
 - (void) handleRefreshButtonTap
 {
-    [_layer setExpiration:[[NSDate alloc] initWithTimeIntervalSinceNow:-1]];
-    [WorldWindView requestRedraw];
+    if ([WorldWind isNetworkAvailable])
+    {
+        [_layer setExpiration:[[NSDate alloc] initWithTimeIntervalSinceNow:-1]];
+        [WorldWindView requestRedraw];
+    }
+    else
+    {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
+                                                            message:@"Cannot refresh layer because network is unavailable"
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Dismiss"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+    }
 }
 
 @end

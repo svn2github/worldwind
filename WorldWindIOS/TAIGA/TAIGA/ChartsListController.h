@@ -15,5 +15,6 @@
 
 - (ChartsListController*)initWithParent:(id)parent;
 - (void) selectChart:(NSString*)chartFileName chartName:(NSString*)chartName;
+- (void) refreshAll;
 
 @end

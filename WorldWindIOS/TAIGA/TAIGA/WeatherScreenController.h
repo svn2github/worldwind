@@ -11,6 +11,8 @@
 
 @interface WeatherScreenController : UIViewController <UIGestureRecognizerDelegate,  UIScrollViewDelegate>
 
+@property (atomic) NSNumber* refreshInProgress;
+
 - (WeatherScreenController*) initWithFrame:(CGRect)frame;
 
 @end

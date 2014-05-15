@@ -10,6 +10,9 @@
 #import "WorldWindConstants.h"
 #import "WWLog.h"
 #import "ChartsScreenController.h"
+#import "AppConstants.h"
+
+#define CHARTS_TOC_FILE_NAME @"TOC.txt"
 
 @implementation ChartsListController
 {
@@ -72,14 +75,13 @@
 
 - (void) loadChartsTOC
 {
-    NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/TOC.txt", chartsServer]];
+    NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/%@", chartsServer, CHARTS_TOC_FILE_NAME]];
     WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
                                                     [self makeAirportChartsTOC:myRetriever];
                                                 }];
     [retriever performRetrieval];
-
 }
 
 - (void) handleRefresh
@@ -126,7 +128,8 @@
 
     [filteredCharts addObjectsFromArray:airportCharts];
 
-    [[self tableView] reloadData];
+    if ([self tableView] != nil)
+        [[self tableView] reloadData];
 
     [refreshControl endRefreshing];
 }
@@ -183,24 +186,69 @@
     NSString* chartFileName = [[retriever url] lastPathComponent];
     NSString* chartPath = [airportsCachePath stringByAppendingPathComponent:chartFileName];
 
+    // If the retrieval was successful, cache the retrieved chart then display it.
+    if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
+    {
+        [[retriever retrievedData] writeToFile:chartPath atomically:YES];
+
+        [parentController loadChart:chartPath chartName:[retriever userData]];
+    }
+}
+
+- (void) refreshAll
+{
+    NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/%@", chartsServer, CHARTS_TOC_FILE_NAME]];
+    WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
+                                                finishedBlock:^(WWRetriever* myRetriever)
+                                                {
+                                                    [self performSelectorOnMainThread:@selector(handelRefresh:)
+                                                                           withObject:retriever
+                                                                        waitUntilDone:NO];
+                                                }];
+    [retriever performRetrieval];
+}
+
+- (void) handelRefresh:(WWRetriever*)retriever
+{
+    [self makeAirportChartsTOC:retriever];
+    [self downloadAllCharts];
+}
+
+- (void) downloadAllCharts
+{
+    for (NSString* chartInfo in airportCharts)
+    {
+        NSString* chartFileName = [chartInfo componentsSeparatedByString:@","][0];
+        NSString* chartName = [chartInfo componentsSeparatedByString:@","][1];
+
+        NSURL* url = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@/%@", chartsServer, chartFileName]];
+        WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:5
+                                                    finishedBlock:^(WWRetriever* myRetriever)
+                                                    {
+                                                        [self saveChart:myRetriever];
+                                                    }];
+        [retriever setUserData:chartName];
+        [retriever performRetrieval];
+    }
+}
+
+- (void) saveChart:(WWRetriever*)retriever
+{
+    NSString* chartFileName = [[retriever url] lastPathComponent];
+    NSString* chartPath = [airportsCachePath stringByAppendingPathComponent:chartFileName];
+
     // If the retrieval was successful, cache the retrieved chart.
     if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
     {
         [[retriever retrievedData] writeToFile:chartPath atomically:YES];
+
+        NSString* chartName = [retriever userData];
+        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+        [dict setValue:chartPath forKey:TAIGA_PATH];
+        [dict setValue:chartName forKey:TAIGA_NAME];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH_CHART object:nil userInfo:dict];
     }
-
-    [parentController loadChart:chartPath chartName:[retriever userData]];
-
-//
-//    for (NSUInteger i = 0; i < [airportCharts count]; i++)
-//    {
-//        if ([[airportCharts objectAtIndex:i] hasPrefix:chartFileName])
-//        {
-//            NSIndexPath* indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-//            [[self tableView] selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
-//            break;
-//        }
-//    }
 }
 
 @end

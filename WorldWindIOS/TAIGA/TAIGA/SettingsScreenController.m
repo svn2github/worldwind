@@ -10,10 +10,12 @@
 #import "GPSController.h"
 #import "Settings.h"
 #import "LocationServicesController.h"
+#import "WorldWind.h"
 
 #define ABOUT_SECTION (0)
 #define GPS_CONTROLLER_SECTION (1)
 #define DATA_INSTALLATION_SECTION (2)
+#define REFRESH_SECTION (3)
 
 #define GPS_DEVICE_ROW (1)
 #define LOCATION_SERVICES_DEVICE_ROW (0)
@@ -143,7 +145,7 @@
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 3;
+    return 4;
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
@@ -157,6 +159,9 @@
     else if (section == DATA_INSTALLATION_SECTION)
         return 1;
 
+    else if (section == REFRESH_SECTION)
+        return 1;
+
     return 0;
 }
 
@@ -164,10 +169,15 @@
 {
     if (section == ABOUT_SECTION)
         return @"About";
+
     else if (section == GPS_CONTROLLER_SECTION)
         return @"GPS Source";
+
     else if (section == DATA_INSTALLATION_SECTION)
         return @"Data Installation";
+
+    else if (section == REFRESH_SECTION)
+        return @"Refresh";
 
     return nil;
 }
@@ -180,6 +190,8 @@
         return [self cellForGPSControllerSection:tableView inddexPath:indexPath];
     else if ([indexPath section] == DATA_INSTALLATION_SECTION)
         return [self cellForDataInstallationSection:tableView inddexPath:indexPath];
+    else if ([indexPath section] == REFRESH_SECTION)
+        return [self cellForRefreshSection:tableView inddexPath:indexPath];
 
     return nil;
 }
@@ -263,6 +275,51 @@
     }
 
     return cell;
+}
+
+- (UITableViewCell*) cellForRefreshSection:(UITableView*)tableView inddexPath:(NSIndexPath*)indexPath
+{
+    UITableViewCell* cell;
+
+    static NSString* cellIdentifier = @"RefreshInformationCell";
+
+    cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+
+        UIButton* refreshButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [refreshButton setFrame:CGRectMake(15, 10, 100, 30)];
+        [refreshButton setTitle:@"  Refresh All Information" forState:UIControlStateNormal];
+        [refreshButton setImage:[UIImage imageNamed:@"01-refresh.png"] forState:UIControlStateNormal];
+        [refreshButton setBackgroundColor:[UIColor clearColor]];
+        [[refreshButton titleLabel] setFont:[[cell textLabel] font]];
+        [refreshButton addTarget:self action:@selector(handleDefaultAddressButton)
+                forControlEvents:UIControlEventTouchUpInside];
+        [refreshButton sizeToFit];
+        [refreshButton addTarget:self action:@selector(handleRefreshButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+        [cell.contentView addSubview:refreshButton];
+    }
+
+    return cell;
+}
+
+- (void) handleRefreshButtonPressed
+{
+    if ([WorldWind isNetworkAvailable])
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH object:nil];
+    }
+    else
+    {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
+                                                            message:@"Cannot refresh because network is unavailable"
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Dismiss"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+    }
 }
 
 - (void) handleDefaultAddressButton

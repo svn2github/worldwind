@@ -72,4 +72,9 @@
     [chartsListController setFilter:[bar text]];
 }
 
+- (void) refreshAll
+{
+    [chartsListController refreshAll];
+}
+
 @end

@@ -22,7 +22,7 @@
     UIToolbar* topToolBar;
     UIBarButtonItem* connectivityButton;
 
-    ChartsTableController* chartsListController;
+    ChartsTableController* chartsTableController;
     UILabel* chartNameLabel;
     ChartViewController* chartViewController;
 }
@@ -32,6 +32,18 @@
     self = [super initWithNibName:nil bundle:nil];
 
     myFrame = frame;
+
+    chartsTableController = [[ChartsTableController alloc] initWithParent:self];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:TAIGA_REFRESH
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:TAIGA_REFRESH_CHART
+                                               object:nil];
 
     return self;
 }
@@ -44,12 +56,11 @@
 
     [self createTopToolbar];
 
-    chartsListController = [[ChartsTableController alloc] initWithParent:self];
     CGRect listFrame = CGRectMake(0, TAIGA_TOOLBAR_HEIGHT, 0.35 * myFrame.size.width,
             myFrame.size.height - (TAIGA_TOOLBAR_HEIGHT));
-    [[chartsListController view] setFrame:listFrame];
-    [self addChildViewController:chartsListController];
-    [[self view] addSubview:[chartsListController view]];
+    [[chartsTableController view] setFrame:listFrame];
+    [self addChildViewController:chartsTableController];
+    [[self view] addSubview:[chartsTableController view]];
 
     CGRect nameFrame = CGRectMake(0.35 * myFrame.size.width, TAIGA_TOOLBAR_HEIGHT,
             0.66 * myFrame.size.width, 44);
@@ -99,11 +110,6 @@
     [self.view addSubview:topToolBar];
 }
 
-- (void) handleButtonTap
-{
-    NSLog(@"BUTTON TAPPED");
-}
-
 - (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName
 {
     if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
@@ -130,7 +136,24 @@
 
     NSString* chartName = [[NSUserDefaults standardUserDefaults] objectForKey:MOST_RECENTLY_USED_CHART_NAME];
 
-    [chartsListController selectChart:chartFileName chartName:chartName];
+    [chartsTableController selectChart:chartFileName chartName:chartName];
+}
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:TAIGA_REFRESH] && [notification object] == nil)
+    {
+        [chartsTableController refreshAll];
+    }
+    else if ([[notification name] isEqualToString:TAIGA_REFRESH_CHART] && chartNameLabel != nil)
+    {
+        NSDictionary* chartInfo = [notification userInfo];
+        NSString* chartName = [chartNameLabel text];
+        if ([chartName isEqualToString:[chartInfo objectForKey:TAIGA_NAME]])
+        {
+            [self loadChart:[chartInfo objectForKey:TAIGA_PATH] chartName:chartName];
+        }
+    }
 }
 
 @end

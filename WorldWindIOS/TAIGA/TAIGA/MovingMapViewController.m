@@ -129,6 +129,10 @@
                                                  name:TAIGA_LOCATION_TRACKING_ENABLED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gpsQualityNotification:)
                                                  name:TAIGA_GPS_QUALITY object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleChartRefreshNotification:)
+                                                 name:TAIGA_REFRESH_CHART
+                                               object:nil];
 
     return self;
 }
@@ -444,6 +448,20 @@
     [self.view addSubview:[chartListNavController view]];
 }
 
+- (void) handleChartRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:TAIGA_REFRESH_CHART]
+            && [chartListNavController visibleViewController] == chartViewController)
+    {
+        NSDictionary* chartInfo = [notification userInfo];
+        NSString* chartName = [chartViewController title];
+        if ([chartName isEqualToString:[chartInfo objectForKey:TAIGA_NAME]])
+        {
+            [self loadChart:[chartInfo objectForKey:TAIGA_PATH] chartName:chartName];
+        }
+    }
+}
+
 - (void) loadChart:(NSString*)chartPath chartName:(NSString*)chartName
 {
     if ([[NSFileManager defaultManager] fileExistsAtPath:chartPath])
@@ -464,7 +482,8 @@
                                                   forKey:@"gov.nasa.worldwind.taiga.splitview.chartname"];
         [[NSUserDefaults standardUserDefaults] synchronize];
 
-        [self performSelectorOnMainThread:@selector(pushChart) withObject:nil waitUntilDone:NO];
+        if ([chartListNavController visibleViewController] != chartViewController)
+            [self performSelectorOnMainThread:@selector(pushChart) withObject:nil waitUntilDone:NO];
     }
 }
 
