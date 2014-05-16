@@ -8,7 +8,7 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointFileControl.h"
+#import "WaypointPicker.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
 #import "BulkRetrieverController.h"
@@ -70,7 +70,7 @@
 - (void) flashScrollIndicators
 {
     [flightRouteTable flashScrollIndicators];
-    [waypointFileControl flashScrollIndicators];
+    [waypointPicker flashScrollIndicators];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -121,9 +121,9 @@
     [flightRouteTable setAllowsSelectionDuringEditing:YES];
     [view addSubview:flightRouteTable];
 
-    waypointFileControl = [[WaypointFileControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
-    [waypointFileControl setWaypoints:[TAIGA waypoints]];
-    [view addSubview:waypointFileControl];
+    waypointPicker = [[WaypointPicker alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didPickWaypoint:)];
+    [waypointPicker setWaypoints:[TAIGA waypoints]];
+    [view addSubview:waypointPicker];
 
     [self layout];
 }
@@ -131,20 +131,20 @@
 - (void) layout
 {
     UIView* view = [self view];
-    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightRouteTable, waypointFileControl);
+    NSDictionary* viewsDictionary = NSDictionaryOfVariableBindings(view, flightRouteTable, waypointPicker);
 
     // Disable automatic translation of autoresizing mask into constraints. We're using explicit layout constraints
     // below.
     [flightRouteTable setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [waypointFileControl setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [waypointPicker setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[flightRouteTable]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointFileControl]|"
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[waypointPicker]|"
                                                                  options:0 metrics:nil views:viewsDictionary]];
-    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)][waypointFileControl(==176)]"
+    normalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable(==view)][waypointPicker(==176)]"
                                                                 options:0 metrics:nil views:viewsDictionary];
-    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable][waypointFileControl(==176)]|"
+    editingConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[flightRouteTable][waypointPicker(==176)]|"
                                                                  options:0 metrics:nil views:viewsDictionary];
     [view addConstraints:normalConstraints];
 }
@@ -187,7 +187,7 @@
 
     if (!editing)
     {
-        [waypointFileControl resignFirstResponder];
+        [waypointPicker resignFirstResponder];
     }
 }
 
@@ -508,7 +508,7 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     [_flightRoute replaceWaypointAtIndex:index withWaypoint:newWaypoint];
 }
 
-- (void) didChooseWaypoint:(Waypoint*)waypoint
+- (void) didPickWaypoint:(Waypoint*)waypoint
 {
     // Append the waypoint to the flight route model. The waypoint table is updated in response to a notification
     // posted by the flight route.

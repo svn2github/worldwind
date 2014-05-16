@@ -5,17 +5,17 @@
  @version $Id$
  */
 
-#import "WaypointFileControl.h"
+#import "WaypointPicker.h"
 #import "Waypoint.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 
-@implementation WaypointFileControl
+@implementation WaypointPicker
 
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Initializing WaypointTableViews --//
 //--------------------------------------------------------------------------------------------------------------------//
 
-- (WaypointFileControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action
+- (id) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action
 {
     self = [super initWithFrame:frame];
 

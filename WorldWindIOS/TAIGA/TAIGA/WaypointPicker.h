@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface WaypointFileControl : UIView<UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate>
+@interface WaypointPicker : UIView<UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate>
 {
 @protected
     NSMutableArray* filteredWaypoints;
@@ -21,7 +21,7 @@
 
 @property (nonatomic) NSArray* waypoints;
 
-- (WaypointFileControl*) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action;
+- (id) initWithFrame:(CGRect)frame target:(id)target action:(SEL)action;
 
 - (void) flashScrollIndicators;
 

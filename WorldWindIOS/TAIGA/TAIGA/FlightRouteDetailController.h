@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class FlightRoute;
-@class WaypointFileControl;
+@class WaypointPicker;
 @class BulkRetrieverController;
 @class WorldWindView;
 
@@ -16,7 +16,7 @@
 {
 @protected
     UITableView* flightRouteTable;
-    WaypointFileControl* waypointFileControl;
+    WaypointPicker* waypointPicker;
     BulkRetrieverController* bulkRetrieverController;
     NSArray* normalConstraints;
     NSArray* editingConstraints;
