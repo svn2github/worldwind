@@ -7,51 +7,32 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLocation;
-
-typedef enum
-{
-    WaypointTypeAirport,
-    WaypointTypeMarker
-} WaypointType;
-
 @interface Waypoint : NSObject
 {
 @protected
-    NSString* _key;
-    WaypointType _type;
-    double _latitude;
-    double _longitude;
-    NSString* _displayName;
-    NSString* _iconPath;
-    UIImage* _iconImage;
-    NSDictionary* _properties;
+    NSString* iconType;
 }
 
-- (NSString*) key;
+@property (nonatomic, readonly) double latitude;
 
-- (WaypointType) type;
+@property (nonatomic, readonly) double longitude;
 
-- (double) latitude;
+@property (nonatomic, readonly) double altitude;
 
-- (double) longitude;
+@property (nonatomic, readonly) NSString* displayName;
 
-- (NSString*) displayName;
+@property (nonatomic, readonly) NSDictionary* properties;
 
-- (NSString*) iconPath;
+@property (nonatomic, readonly) UIImage* iconImage;
 
-- (UIImage*) iconImage;
+- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude;
 
-- (NSDictionary*) properties;
-
-- (id) initWithKey:(NSString*)key type:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude;
-
-- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude;
+- (id) initWithWaypoint:(Waypoint*)waypoint metersAltitude:(double)altitude;
 
 - (id) initWithWaypointTableRow:(NSDictionary*)values;
 
 - (id) initWithPropertyList:(NSDictionary*)propertyList;
 
-- (NSDictionary*) propertyList;
+- (NSDictionary*) asPropertyList;
 
 @end

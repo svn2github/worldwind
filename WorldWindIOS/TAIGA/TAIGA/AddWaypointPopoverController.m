@@ -8,9 +8,7 @@
 #import "AddWaypointPopoverController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
-#import "TAIGA.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -88,19 +86,17 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
 {
     if ([_waypointSource isKindOfClass:[Waypoint class]])
     {
-        [flightRoute addWaypoint:(Waypoint*) _waypointSource];
+        Waypoint* waypoint = (Waypoint*) _waypointSource;
+        Waypoint* newWaypoint = [[Waypoint alloc] initWithWaypoint:waypoint metersAltitude:[flightRoute defaultAltitude]];
+        NSUInteger index = [flightRoute waypointCount];
+        [flightRoute insertWaypoint:newWaypoint atIndex:index];
     }
     else
     {
-        // The waypoint source is a terrain position. Create a new marker waypoint at the position.
-        WWPosition* position = (WWPosition*) _waypointSource;
-        Waypoint* newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker
-                                               degreesLatitude:[position latitude]
-                                                     longitude:[position longitude]];
-
-        // Append the new waypoint to the selected flight route then add it to the waypoint database.
-        [flightRoute addWaypoint:newWaypoint];
-        [[TAIGA waypointDatabase] addWaypoint:newWaypoint];
+        WWLocation* location = (WWLocation*) _waypointSource;
+        Waypoint* newWaypoint = [[Waypoint alloc] initWithDegreesLatitude:[location latitude] longitude:[location longitude] metersAltitude:[flightRoute defaultAltitude]];
+        NSUInteger index = [flightRoute waypointCount];
+        [flightRoute insertWaypoint:newWaypoint atIndex:index];
     }
 }
 
@@ -142,11 +138,10 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     // change instantaneously if the waypoint source was already a location, and smooth the change if the waypoint
     // source has changed type.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
     UITableViewRowAnimation animation = [oldWaypointSource isKindOfClass:[Waypoint class]] ?
             UITableViewRowAnimationAutomatic : UITableViewRowAnimationNone;
     [[addWaypointTableCells objectAtIndex:0] setToPosition:(WWPosition*) newWaypointSource];
-    [[addWaypointController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:animation];
+    [[addWaypointController tableView] reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:animation];
 
     return YES;
 }
@@ -243,7 +238,6 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     CGSize navBarSize = [navController navigationBar].bounds.size;
     [self setPopoverContentSize:CGSizeMake(viewSize.width, viewSize.height + navBarSize.height) animated:animated];
     [self setDragEnabled:viewController == addWaypointController];
-
 }
 
 @end

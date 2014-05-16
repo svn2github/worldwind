@@ -194,7 +194,6 @@
     [db addWaypointsFromTable:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"
               completionBlock:^
               {
-                  [routeViewController restoreFlightRouteState];
                   [waypointLayer setWaypointDatabase:db];
                   [WorldWindView requestRedraw];
               }];

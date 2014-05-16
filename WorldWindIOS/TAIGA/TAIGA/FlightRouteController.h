@@ -11,12 +11,12 @@
 @class FlightRoute;
 @class WorldWindView;
 
-@interface FlightRouteController : UITableViewController <UINavigationControllerDelegate, UIAlertViewDelegate, WWRenderable>
+@interface FlightRouteController : UITableViewController <UINavigationControllerDelegate, WWRenderable>
 {
 @protected
     NSMutableArray* flightRoutes;
     NSUInteger newFlightRouteColorIndex;
-    void (^newFlightRouteCompletionBlock)(FlightRoute* newFlightRoute);
+    BOOL isSavingState;
 }
 
 /// @name Attributes
@@ -29,7 +29,7 @@
 
 /// @name Initializing FlightRouteController
 
-- (id) initWithWorldWindView:(WorldWindView*)wwv;
+- (FlightRouteController*) initWithWorldWindView:(WorldWindView*)wwv;
 
 /// @name Managing the Flight Route List
 
@@ -58,9 +58,5 @@
 - (FlightRoute*) presentedFlightRoute;
 
 - (void) presentFlightRouteAtIndex:(NSUInteger)index editing:(BOOL)editing;
-
-/// @name Saving and Restoring Flight Route State
-
-- (void) restoreFlightRouteState;
 
 @end

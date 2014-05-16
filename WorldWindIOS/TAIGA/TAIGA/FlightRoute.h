@@ -35,16 +35,18 @@
 /// Indicates whether this flight route should be displayed.
 @property (nonatomic) BOOL enabled;
 
-@property (nonatomic) double altitude;
-
 @property (nonatomic) NSUInteger colorIndex;
+
+@property (nonatomic) double defaultAltitude;
 
 /// A field for application-specific use, typically used to associate application data with the shape.
 @property (nonatomic) id userObject;
 
-- (FlightRoute*) init;
+- (id) initWithDisplayName:(NSString*)displayName colorIndex:(NSUInteger)colorIndex defaultAltitude:(double)defaultAltitude;
 
-- (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray;
+- (id) initWithPropertyList:(NSDictionary*)propertyList;
+
+- (NSDictionary*) asPropertyList;
 
 - (id<WWExtent>) extentOnGlobe:(WWGlobe*)globe;
 
@@ -60,13 +62,7 @@
 
 - (NSUInteger) indexOfWaypoint:(Waypoint*)waypoint;
 
-- (BOOL) containsWaypoint:(Waypoint*)waypoint;
-
-- (void) addWaypoint:(Waypoint*)waypoint;
-
 - (void) insertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index;
-
-- (void) removeWaypoint:(Waypoint*)waypoint;
 
 - (void) removeWaypointAtIndex:(NSUInteger)index;
 

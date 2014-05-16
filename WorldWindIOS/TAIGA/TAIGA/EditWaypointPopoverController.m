@@ -8,10 +8,10 @@
 #import "EditWaypointPopoverController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointDatabase.h"
 #import "MovingMapViewController.h"
+#import "AltitudePicker.h"
+#import "UIPopoverController+TAIGAAdditions.h"
 #import "UITableViewCell+TAIGAAdditions.h"
-#import "TAIGA.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -36,26 +36,67 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     UIImage* rightButtonImage = [UIImage imageNamed:@"all-directions"];
     UIBarButtonItem* rightButtonItem = [[UIBarButtonItem alloc] initWithImage:rightButtonImage style:UIBarButtonItemStylePlain target:nil action:NULL];
     tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [tableViewController setPreferredContentSize:CGSizeMake(240, 44 * [tableCells count])];
+    [tableViewController setPreferredContentSize:CGSizeMake(300, 44 * [tableCells count])];
     [[tableViewController navigationItem] setTitle:@"Waypoint"];
     [[tableViewController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[tableViewController tableView] setDataSource:self];
     [[tableViewController tableView] setDelegate:self];
     [[tableViewController tableView] setBounces:NO];
     [[tableViewController tableView] setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+
     navigationController = [[UINavigationController alloc] initWithRootViewController:tableViewController];
-    cancelButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelSelected)];
+    [navigationController setDelegate:self];
 
     self = [super initWithContentViewController:navigationController];
-    [self setDelegate:self];
 
     return self;
+}
+
+- (void) showCancelButton
+{
+    UIBarButtonItem* cancelButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelSelected)];
+    [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
 }
 
 - (void) cancelSelected
 {
     [self dismissPopoverAnimated:YES];
-    [self rejectChanges];
+    [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:oldWaypoint];
+}
+
+- (void) waypointSelected
+{
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:_waypointIndex];
+
+    AltitudePicker* picker = [[AltitudePicker alloc] initWithFrame:CGRectMake(0, 0, 320, 216)];
+    [picker addTarget:self action:@selector(altitudeSelected:) forControlEvents:UIControlEventValueChanged];
+    [picker setToVFRAltitudes];
+    [picker setAltitude:[waypoint altitude]];
+
+    UIViewController* viewController = [[UIViewController alloc] init];
+    [viewController setPreferredContentSize:CGSizeMake(320, 216)];
+    [viewController setView:picker];
+    [viewController setTitle:@"Waypoint Altitude"];
+    [navigationController pushViewController:viewController animated:YES];
+}
+
+- (void) altitudeSelected:(id)sender
+{
+    // Replace the flight route waypoint with a waypoint at the new altitude.
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:_waypointIndex];
+    Waypoint* newWaypoint = [[Waypoint alloc] initWithWaypoint:waypoint metersAltitude:[sender altitude]];
+    [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
+
+    // Update the waypoint cell to match the change in the waypoint altitude.
+    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+    [[tableViewController tableView] reloadData];
+
+    // Update the popover point to match the change in the waypoint altitude.
+    WWPosition* newPosition = [[WWPosition alloc] initWithDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude] altitude:[newWaypoint altitude]];
+    [self presentPopoverFromPosition:newPosition inView:(WorldWindView*) [self view] permittedArrowDirections:[self arrowDirections] animated:YES];
+
+    // Display the cancel button in the left side of the navigation bar. This enables the user to undo this change.
+    [self showCancelButton];
 }
 
 - (void) removeSelected
@@ -72,7 +113,6 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     [self dismissPopoverAnimated:YES];
     [_flightRoute removeWaypointAtIndex:_waypointIndex];
-    newWaypoint = nil;
 }
 
 - (void) alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -83,58 +123,14 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     }
 }
 
-- (void) popoverControllerDidDismissPopover:(UIPopoverController*)popoverController
-{
-    // End editing and keep the changes when the user soft-dismisses this popover. Note that this method is not called
-    // when dismissPopoverAnimated is called directly.
-    [self commitChanges];
-}
-
-- (void) commitChanges
-{
-    if (newWaypoint != nil)
-    {
-        // Add the new waypoint to the waypoint database.
-        [[TAIGA waypointDatabase] addWaypoint:newWaypoint];
-        newWaypoint = nil;
-    }
-}
-
-- (void) rejectChanges
-{
-    if (newWaypoint != nil)
-    {
-        // Replace the new waypoint with the old waypoint. There's no need to update the waypoint database, since the
-        // new waypoint was never added to the database.
-        [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:oldWaypoint];
-        newWaypoint = nil;
-    }
-}
-
 - (void) popoverDraggingDidBegin
 {
     [super popoverDraggingDidBegin];
 
     [WorldWindView startRedrawing];
 
-    if (newWaypoint == nil)
-    {
-        // The waypoint will be dragged to a new location. Create a new marker waypoint at the current position and
-        // replace the old waypoint with the new waypoint. The new waypoint is added to the waypoint database when the
-        // change is committed by dismissing this popover.
-        newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[oldWaypoint latitude] longitude:[oldWaypoint longitude]];
-        [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
-
-        // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change smoothly.
-        NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-        NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-        [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
-        [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray
-                                               withRowAnimation:UITableViewRowAnimationAutomatic];
-
-        // Display the cancel button in the left side of the navigation bar. This enables the user to undo this change.
-        [[tableViewController navigationItem] setLeftBarButtonItem:cancelButtonItem animated:YES];
-    }
+    // Display the cancel button in the left side of the navigation bar. This enables the user to undo this change.
+    [self showCancelButton];
 }
 
 - (void) popoverDraggingDidEnd
@@ -146,6 +142,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 
 - (BOOL) popoverPointWillChange:(CGPoint)newPoint
 {
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:_waypointIndex];
     WorldWindView* wwv = [_mapViewController wwv];
     WWGlobe* globe = [[wwv sceneController] globe];
     WWLine* ray = [[[wwv sceneController] navigatorState] rayFromScreenPoint:newPoint];
@@ -153,25 +150,24 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 
     // Compute the intersection of a ray through the popover's screen point against a larger ellipsoid that passes
     // through the waypoint altitude. This ensures that the waypoint's new location accurately tracks with the popover.
-    double equatorialRadius = [globe equatorialRadius] + [_flightRoute altitude];
-    double polarRadius = [globe polarRadius] + [_flightRoute altitude];
+    double equatorialRadius = [globe equatorialRadius] + [waypoint altitude];
+    double polarRadius = [globe polarRadius] + [waypoint altitude];
     if (![WWMath computeEllipsoidalGlobeIntersection:ray equatorialRadius:equatorialRadius polarRadius:polarRadius result:point])
     {
         return NO;
     }
 
-    // Update the waypoint's location and display name to match the popover arrow's screen point. The waypoint's
-    // location is saved in the waypoint database when popover dragging ends.
+    // Replace the flight route waypoint with a waypoint at the popover's new screen point. Force the new waypoint's
+    // altitude to match the old waypoint altitude, as we only want to change waypoint location.
     WWPosition* pos = [[WWPosition alloc] init];
     [[[wwv sceneController] globe] computePositionFromPoint:[point x] y:[point y] z:[point z] outputPosition:pos];
-    newWaypoint = [[Waypoint alloc] initWithType:WaypointTypeMarker degreesLatitude:[pos latitude] longitude:[pos longitude]];
+    Waypoint* newWaypoint = [[Waypoint alloc] initWithDegreesLatitude:[pos latitude] longitude:[pos longitude] metersAltitude:[waypoint altitude]];
     [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
 
-    // Make the waypoint cell match the change in the waypoint. Use UIKit animations to display the change instantly.
+    // Update the waypoint cell to match the change in the waypoint location without animating.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
     [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
-    [[tableViewController tableView] reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationNone];
+    [[tableViewController tableView] reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 
     return YES;
 }
@@ -184,9 +180,9 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     tableCells = [[NSMutableArray alloc] init];
 
-    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+    [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
     [cell setToWaypoint:[_flightRoute waypointAtIndex:_waypointIndex]];
-    [cell setUserInteractionEnabled:NO];
     [tableCells addObject:cell];
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -219,7 +215,22 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     {
         [self removeSelected];
     }
+    else
+    {
+        [self waypointSelected];
+    }
+}
 
+//--------------------------------------------------------------------------------------------------------------------//
+//-- UINavigationControllerDelegate --//
+//--------------------------------------------------------------------------------------------------------------------//
+
+- (void) navigationController:(UINavigationController*)navController didShowViewController:(UIViewController*)viewController animated:(BOOL)animated
+{
+    CGSize viewSize = [viewController preferredContentSize];
+    CGSize navBarSize = [navController navigationBar].bounds.size;
+    [self setPopoverContentSize:CGSizeMake(viewSize.width, viewSize.height + navBarSize.height) animated:animated];
+    [self setDragEnabled:viewController == tableViewController];
 }
 
 @end

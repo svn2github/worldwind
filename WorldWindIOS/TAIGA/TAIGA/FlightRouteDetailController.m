@@ -8,7 +8,6 @@
 #import "FlightRouteDetailController.h"
 #import "FlightRoute.h"
 #import "Waypoint.h"
-#import "WaypointDatabase.h"
 #import "WaypointFileControl.h"
 #import "AltitudePicker.h"
 #import "ColorPicker.h"
@@ -33,7 +32,7 @@
 #define SECTION_PROPERTIES (0)
 #define SECTION_WAYPOINTS (1)
 #define ROW_COLOR (0)
-#define ROW_ALTITUDE (1)
+#define ROW_DEFAULT_ALTITUDE (1)
 #define ROW_DOWNLOAD (2)
 
 @implementation FlightRouteDetailController
@@ -84,8 +83,7 @@
     // The waypoint index indicates the row index that has been inserted.
     NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [flightRouteTable insertRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationFade];
+    [flightRouteTable insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     [flightRouteTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
@@ -95,8 +93,7 @@
     // The waypoint index indicates the row index that has been removed.
     NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [flightRouteTable deleteRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationAutomatic];
+    [flightRouteTable deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void) handleFlightRouteWaypointReplaced:(NSNotification*)notification
@@ -105,8 +102,7 @@
     // The waypoint index indicates the row index that has been replaced.
     NSUInteger index = [[[notification userInfo] objectForKey:TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX] unsignedIntegerValue];
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:SECTION_WAYPOINTS];
-    NSArray* indexPathArray = [NSArray arrayWithObject:indexPath];
-    [flightRouteTable reloadRowsAtIndexPaths:indexPathArray withRowAnimation:UITableViewRowAnimationNone];
+    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -275,10 +271,10 @@
         [[cell detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
         [[cell detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
     }
-    else if ([indexPath row] == ROW_ALTITUDE)
+    else if ([indexPath row] == ROW_DEFAULT_ALTITUDE)
     {
-        double altitude = [_flightRoute altitude];
-        [[cell textLabel] setText:@"Altitude"];
+        double altitude = [_flightRoute defaultAltitude];
+        [[cell textLabel] setText:@"Default Altitude"];
         [[cell detailTextLabel] setText:[[TAIGA unitsFormatter] formatMetersAltitude:altitude]];
         [[cell detailTextLabel] setTextColor:detailTextColor]; // show altitude detail text in the default color
     }
@@ -297,7 +293,8 @@
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
     if (cell == nil)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:waypointCellId];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:waypointCellId];
+        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
     }
 
     Waypoint* waypoint = [_flightRoute waypointAtIndex:(NSUInteger) [indexPath row]];
@@ -322,18 +319,16 @@
         [viewController setTitle:@"Color"];
         [[self navigationController] pushViewController:viewController animated:YES];
     }
-    else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_ALTITUDE)
+    else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_DEFAULT_ALTITUDE)
     {
         AltitudePicker* picker = [[AltitudePicker alloc] initWithFrame:CGRectMake(0, 44, 1, 216)];
-        [picker addTarget:self action:@selector(didPickAltitude:) forControlEvents:UIControlEventValueChanged];
-        [picker setMinimumAltitude:152.4];
-        [picker setMaximumAltitude:6096]; // 100,000ft maximum
-        [picker setAltitudeInterval:152.4]; // 500ft interval
-        [picker setAltitude:[_flightRoute altitude]];
+        [picker addTarget:self action:@selector(didPickDefaultAltitude:) forControlEvents:UIControlEventValueChanged];
+        [picker setToVFRAltitudes];
+        [picker setAltitude:[_flightRoute defaultAltitude]];
 
         UIViewController* viewController = [[UIViewController alloc] init];
         [viewController setView:picker];
-        [viewController setTitle:@"Altitude"];
+        [viewController setTitle:@"Default Altitude"];
         [[self navigationController] pushViewController:viewController animated:YES];
     }
     else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_DOWNLOAD)
@@ -397,7 +392,22 @@
 //            [bulkRetrieverController setSectors:sectors];
 //        }
     }
+    else if ([indexPath section] == SECTION_WAYPOINTS)
+    {
+        NSUInteger index = (NSUInteger) [indexPath row];
+        Waypoint* waypoint = [_flightRoute waypointAtIndex:index];
 
+        AltitudePicker* picker = [[AltitudePicker alloc] initWithFrame:CGRectMake(0, 44, 1, 216)];
+        [picker addTarget:self action:@selector(didPickWaypointAltitude:) forControlEvents:UIControlEventValueChanged];
+        [picker setToVFRAltitudes];
+        [picker setAltitude:[waypoint altitude]];
+        [picker setUserObject:[NSNumber numberWithUnsignedInteger:index]];
+
+        UIViewController* viewController = [[UIViewController alloc] init];
+        [viewController setView:picker];
+        [viewController setTitle:@"Waypoint Altitude"];
+        [[self navigationController] pushViewController:viewController animated:YES];
+    }
 }
 
 - (BOOL) tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)indexPath
@@ -474,28 +484,37 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
     }
 }
 
-- (void) didPickAltitude:(AltitudePicker*)sender
-{
-    [_flightRoute setAltitude:[sender altitude]];
-
-    NSArray* indexPath = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:ROW_ALTITUDE inSection:SECTION_PROPERTIES]];
-    [flightRouteTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
 - (void) didPickColor:(ColorPicker*)sender
 {
     [_flightRoute setColorIndex:(NSUInteger) [sender selectedColorIndex]];
 
-    NSArray* indexPath = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:ROW_COLOR inSection:SECTION_PROPERTIES]];
-    [flightRouteTable reloadRowsAtIndexPaths:indexPath withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:ROW_COLOR inSection:SECTION_PROPERTIES];
+    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+- (void) didPickDefaultAltitude:(AltitudePicker*)sender
+{
+    [_flightRoute setDefaultAltitude:[sender altitude]];
+
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:ROW_DEFAULT_ALTITUDE inSection:SECTION_PROPERTIES];
+    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+- (void) didPickWaypointAltitude:(AltitudePicker*)sender
+{
+    NSUInteger index = [[sender userObject] unsignedIntegerValue];
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:index];
+    Waypoint* newWaypoint = [[Waypoint alloc] initWithWaypoint:waypoint metersAltitude:[sender altitude]];
+    [_flightRoute replaceWaypointAtIndex:index withWaypoint:newWaypoint];
 }
 
 - (void) didChooseWaypoint:(Waypoint*)waypoint
 {
     // Append the waypoint to the flight route model. The waypoint table is updated in response to a notification
     // posted by the flight route.
+    Waypoint* newWaypoint = [[Waypoint alloc] initWithWaypoint:waypoint metersAltitude:[_flightRoute defaultAltitude]];
     NSUInteger index = [_flightRoute waypointCount];
-    [_flightRoute insertWaypoint:waypoint atIndex:index];
+    [_flightRoute insertWaypoint:newWaypoint atIndex:index];
 
     // Navigate to the the flight route in the WorldWindView.
     [self navigateToFlightRoute:_flightRoute];

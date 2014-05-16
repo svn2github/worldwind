@@ -49,9 +49,6 @@
 
     for (Waypoint* waypoint in [waypointDatabase waypoints])
     {
-        if ([waypoint type] != WaypointTypeAirport)
-            continue;
-
         WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:0];
         WWPointPlacemark* placemark = [[WWPointPlacemark alloc] initWithPosition:pos];
         [placemark setUserObject:waypoint];

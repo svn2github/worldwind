@@ -46,36 +46,69 @@ const float ShapePickRadius = 22.0;
     return colors;
 }
 
-- (FlightRoute*) init
+- (id) initWithDisplayName:(NSString*)displayName colorIndex:(NSUInteger)colorIndex defaultAltitude:(double)defaultAltitude
 {
+    if (displayName == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Display name is nil")
+    }
+
     self = [super init];
 
-    _displayName = @"Flight Route";
+    _displayName = displayName;
     _enabled = YES;
-    _altitude = 0;
-    _colorIndex = 0;
+    _colorIndex = colorIndex;
+    _defaultAltitude = defaultAltitude;
 
     waypoints = [[NSMutableArray alloc] initWithCapacity:8];
-    currentPosition = [[WWPosition alloc] initWithZeroPosition];
     [self initShapes];
 
     return self;
 }
 
-- (FlightRoute*) initWithWaypoints:(NSArray*)waypointArray
+- (id) initWithPropertyList:(NSDictionary*)propertyList
 {
+    if (propertyList == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Property list is nil")
+    }
+
     self = [super init];
 
-    _displayName = @"Flight Route";
-    _enabled = YES;
-    _altitude = 0;
-    _colorIndex = 0;
+    _displayName = [propertyList objectForKey:@"displayName"];
+    _enabled = [[propertyList objectForKey:@"enabled"] boolValue];
+    _colorIndex = [[propertyList objectForKey:@"colorIndex"] unsignedIntegerValue];
+    _defaultAltitude = [[propertyList objectForKey:@"defaultAltitude"] doubleValue];
 
-    waypoints = [[NSMutableArray alloc] initWithArray:waypointArray];
-    currentPosition = [[WWPosition alloc] initWithZeroPosition];
+    NSArray* waypointPropertyLists = [propertyList objectForKey:@"waypoints"];
+    waypoints = [[NSMutableArray alloc] initWithCapacity:[waypointPropertyLists count]];
+
+    for (NSDictionary* waypointPropertyList in waypointPropertyLists)
+    {
+        Waypoint* waypoint = [[Waypoint alloc] initWithPropertyList:waypointPropertyList];
+        [waypoints addObject:waypoint];
+    }
+
     [self initShapes];
 
     return self;
+}
+
+- (NSDictionary*) asPropertyList
+{
+    NSMutableArray* waypointPropertyLists = [NSMutableArray arrayWithCapacity:[waypoints count]];
+    for (Waypoint* waypoint in waypoints)
+    {
+        [waypointPropertyLists addObject:[waypoint asPropertyList]];
+    }
+
+    return @{
+        @"displayName" : _displayName,
+        @"enabled" : [NSNumber numberWithBool:_enabled],
+        @"colorIndex" : [NSNumber numberWithUnsignedInteger:_colorIndex],
+        @"defaultAltitude" : [NSNumber numberWithDouble:_defaultAltitude],
+        @"waypoints" : waypointPropertyLists
+    };
 }
 
 - (void) initShapes
@@ -89,13 +122,14 @@ const float ShapePickRadius = 22.0;
 
     waypointPositions = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
     waypointShapes = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
+    currentPosition = [[WWPosition alloc] initWithZeroPosition];
 
     for (Waypoint* waypoint in waypoints)
     {
-        WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude];
+        WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:[waypoint altitude]];
         [waypointPositions addObject:pos];
 
-        id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
+        id shape = [self createShapeWithPosition:pos];
         [waypointShapes addObject:shape];
     }
 
@@ -108,17 +142,15 @@ const float ShapePickRadius = 22.0;
     [path setPathType:WW_RHUMB];
     [path setNumSubsegments:100];
     [path setAttributes:shapeAttrs];
-    [path setHighlightAttributes:[[WWShapeAttributes alloc] initWithAttributes:shapeAttrs]];
     [path setPickDelegate:@{@"flightRoute":self}];
 
     return path;
 }
 
-- (id) createShapeForWaypoint:(Waypoint*)waypoint withPosition:(WWPosition*)position
+- (id) createShapeWithPosition:(WWPosition*)position
 {
     WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:ShapeRadius];
     [shape setAttributes:shapeAttrs];
-    [shape setHighlightAttributes:[[WWShapeAttributes alloc] initWithAttributes:shapeAttrs]];
 
     return shape;
 }
@@ -131,25 +163,34 @@ const float ShapePickRadius = 22.0;
 - (void) setDisplayName:(NSString*)displayName
 {
     _displayName = displayName;
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+
+    [self didChangeAttribute];
 }
 
 - (void) setEnabled:(BOOL)enabled
 {
     _enabled = enabled;
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
-}
 
-- (void) setAltitude:(double)altitude
-{
-    _altitude = altitude;
-    [self didChangeAltitude];
+    [self didChangeAttribute];
 }
 
 - (void) setColorIndex:(NSUInteger)colorIndex
 {
     _colorIndex = colorIndex;
-    [self didChangeColor];
+
+    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:_colorIndex];
+    WWColor* color = [colorAttrs objectForKey:@"color"];
+    [shapeAttrs setInteriorColor:color];
+    [shapeAttrs setOutlineColor:color];
+
+    [self didChangeAttribute];
+}
+
+- (void) setDefaultAltitude:(double)defaultAltitude
+{
+    _defaultAltitude = defaultAltitude;
+
+    [self didChangeAttribute];
 }
 
 - (void) render:(WWDrawContext*)dc
@@ -196,7 +237,7 @@ const float ShapePickRadius = 22.0;
     for (Waypoint* waypoint in waypoints)
     {
         WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
-        [globe computePointFromPosition:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude outputPoint:point];
+        [globe computePointFromPosition:[waypoint latitude] longitude:[waypoint longitude] altitude:[waypoint altitude] outputPoint:point];
         [waypointPoints addObject:point];
     }
 
@@ -294,28 +335,6 @@ const float ShapePickRadius = 22.0;
     return [waypoints indexOfObject:waypoint];
 }
 
-- (BOOL) containsWaypoint:(Waypoint*)waypoint
-{
-    if (waypoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
-    }
-
-    return [waypoints containsObject:waypoint];
-}
-
-- (void) addWaypoint:(Waypoint*)waypoint
-{
-    if (waypoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
-    }
-
-    NSUInteger index = [waypoints count];
-    [waypoints insertObject:waypoint atIndex:index];
-    [self didInsertWaypoint:waypoint atIndex:index];
-}
-
 - (void) insertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
 {
     if (waypoint == nil)
@@ -329,23 +348,15 @@ const float ShapePickRadius = 22.0;
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
+    WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:[waypoint altitude]];
+    id shape = [self createShapeWithPosition:pos];
+
     [waypoints insertObject:waypoint atIndex:index];
-    [self didInsertWaypoint:waypoint atIndex:index];
-}
+    [waypointPositions insertObject:pos atIndex:index];
+    [waypointShapes insertObject:shape atIndex:index];
+    [waypointPath setPositions:waypointPositions];
 
-- (void) removeWaypoint:(Waypoint*)waypoint
-{
-    if (waypoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
-    }
-
-    NSUInteger index = [waypoints indexOfObject:waypoint];
-    if (index != NSNotFound)
-    {
-        [waypoints removeObjectAtIndex:index];
-        [self didRemoveWaypoint:waypoint atIndex:index];
-    }
+    [self didInsertWaypointAtIndex:index];
 }
 
 - (void) removeWaypointAtIndex:(NSUInteger)index
@@ -356,9 +367,12 @@ const float ShapePickRadius = 22.0;
         WWLOG_AND_THROW(NSInvalidArgumentException, msg)
     }
 
-    Waypoint* waypoint = [waypoints objectAtIndex:index];
     [waypoints removeObjectAtIndex:index];
-    [self didRemoveWaypoint:waypoint atIndex:index];
+    [waypointPositions removeObjectAtIndex:index];
+    [waypointShapes removeObjectAtIndex:index];
+    [waypointPath setPositions:waypointPositions];
+
+    [self didRemoveWaypointAtIndex:index];
 }
 
 - (void) replaceWaypointAtIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint
@@ -374,9 +388,16 @@ const float ShapePickRadius = 22.0;
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
     }
 
-    Waypoint* waypoint = [waypoints objectAtIndex:index];
+    WWPosition* pos = [waypointPositions objectAtIndex:index];
+    [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude] altitude:[newWaypoint altitude]];
+
+    id shape = [waypointShapes objectAtIndex:index];
+    [self updateShape:shape withPosition:pos];
+
     [waypoints replaceObjectAtIndex:index withObject:newWaypoint];
-    [self didReplaceWaypoint:waypoint atIndex:index withWaypoint:newWaypoint];
+    [waypointPath setPositions:waypointPositions];
+
+    [self didReplaceWaypointAtIndex:index];
 }
 
 - (void) moveWaypointAtIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
@@ -396,75 +417,7 @@ const float ShapePickRadius = 22.0;
     Waypoint* waypoint = [waypoints objectAtIndex:fromIndex];
     [waypoints removeObjectAtIndex:fromIndex];
     [waypoints insertObject:waypoint atIndex:toIndex];
-    [self didMoveWaypoint:waypoint fromIndex:fromIndex toIndex:toIndex];
-}
 
-- (void) didChangeAltitude
-{
-    for (NSUInteger i = 0; i < [waypointPositions count]; i++)
-    {
-        WWPosition* pos = [waypointPositions objectAtIndex:i];
-        [pos setAltitude:_altitude];
-
-        id shape = [waypointShapes objectAtIndex:i];
-        [self updateShape:shape withPosition:pos];
-    }
-
-    [waypointPath setPositions:waypointPositions];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
-}
-
-- (void) didChangeColor
-{
-    NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:_colorIndex];
-    WWColor* color = [colorAttrs objectForKey:@"color"];
-    [shapeAttrs setInteriorColor:color];
-    [shapeAttrs setOutlineColor:color];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
-}
-
-- (void) didInsertWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
-{
-    WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:_altitude];
-    [waypointPositions insertObject:pos atIndex:index];
-    [waypointPath setPositions:waypointPositions];
-
-    id shape = [self createShapeForWaypoint:waypoint withPosition:pos];
-    [waypointShapes insertObject:shape atIndex:index];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
-}
-
-- (void) didRemoveWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index
-{
-    [waypointPositions removeObjectAtIndex:index];
-    [waypointShapes removeObjectAtIndex:index];
-    [waypointPath setPositions:waypointPositions];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
-}
-
-- (void) didReplaceWaypoint:(Waypoint*)waypoint atIndex:(NSUInteger)index withWaypoint:(Waypoint*)newWaypoint
-{
-    WWPosition* pos = [waypointPositions objectAtIndex:index];
-    [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude] altitude:_altitude];
-
-    id shape = [waypointShapes objectAtIndex:index];
-    [self updateShape:shape withPosition:pos];
-
-    [waypoints replaceObjectAtIndex:index withObject:newWaypoint];
-    [waypointPath setPositions:waypointPositions];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:self
-                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
-}
-
-- (void) didMoveWaypoint:(Waypoint*)waypoint fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
-{
     id pos = [waypointPositions objectAtIndex:fromIndex];
     [waypointPositions removeObjectAtIndex:fromIndex];
     [waypointPositions insertObject:pos atIndex:toIndex];
@@ -474,6 +427,34 @@ const float ShapePickRadius = 22.0;
     [waypointShapes removeObjectAtIndex:fromIndex];
     [waypointShapes insertObject:shape atIndex:toIndex];
 
+    [self didMoveWaypointFromIndex:fromIndex toIndex:toIndex];
+}
+
+- (void) didChangeAttribute
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+}
+
+- (void) didInsertWaypointAtIndex:(NSUInteger)index
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
+}
+
+- (void) didRemoveWaypointAtIndex:(NSUInteger)index
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
+}
+
+- (void) didReplaceWaypointAtIndex:(NSUInteger)index
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:self
+                                                      userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
+}
+
+- (void) didMoveWaypointFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
+{
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:toIndex]}];
 }

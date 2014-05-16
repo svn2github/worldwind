@@ -7,21 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class Waypoint;
-
 @interface WaypointDatabase : NSObject
 {
 @protected
-    NSMutableDictionary* waypoints;
-    NSMutableSet* waypointStateKeys;
+    NSMutableArray* waypoints;
 }
-
-- (void) addWaypoint:(Waypoint*)waypoint;
 
 - (void) addWaypointsFromTable:(NSString*)urlString completionBlock:(void(^)(void))completionBlock;
 
 - (NSArray*) waypoints;
-
-- (Waypoint*) waypointForKey:(NSString*)key;
 
 @end

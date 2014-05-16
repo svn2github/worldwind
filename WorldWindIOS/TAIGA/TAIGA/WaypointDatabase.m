@@ -17,37 +17,9 @@
 {
     self = [super init];
 
-    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
-    waypoints = [[NSMutableDictionary alloc] init];
-    waypointStateKeys = [[NSMutableSet alloc] initWithArray:[userState objectForKey:@"gov.nasa.worldwind.taiga.waypointKeys"]];
-
-    for (NSString* stateKey in waypointStateKeys)
-    {
-        NSDictionary* stateValues = [userState objectForKey:stateKey];
-        Waypoint* waypoint = [[Waypoint alloc] initWithPropertyList:stateValues];
-        [waypoints setObject:waypoint forKey:[waypoint key]];
-    }
+    waypoints = [[NSMutableArray alloc] init];
 
     return self;
-}
-
-- (void) addWaypoint:(Waypoint*)waypoint
-{
-    if (waypoint == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
-    }
-
-    NSString* stateKey = [NSString stringWithFormat:@"gov.nasa.worldwind.taiga.waypoint.%@", [waypoint key]];
-    NSDictionary* stateValues = [waypoint propertyList];
-
-    [waypoints setObject:waypoint forKey:[waypoint key]];
-    [waypointStateKeys addObject:stateKey];
-
-    NSUserDefaults* userState = [NSUserDefaults standardUserDefaults];
-    [userState setObject:stateValues forKey:stateKey];
-    [userState setObject:[waypointStateKeys allObjects] forKey:@"gov.nasa.worldwind.taiga.waypointKeys"];
-    [userState synchronize];
 }
 
 - (void) addWaypointsFromTable:(NSString*)urlString completionBlock:(void(^)(void))completionBlock
@@ -119,7 +91,6 @@
 {
     NSString* string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSMutableArray* fieldNames = [[NSMutableArray alloc] initWithCapacity:8];
-    NSMutableArray* tableRows = [[NSMutableArray alloc] initWithCapacity:8];
 
     [string enumerateLinesUsingBlock:^(NSString* line, BOOL* stop)
     {
@@ -137,30 +108,15 @@
                 [rowValues setObject:[lineComponents objectAtIndex:i] forKey:[fieldNames objectAtIndex:i]];
             }
 
-            [tableRows addObject:rowValues];
+            Waypoint* waypoint = [[Waypoint alloc] initWithWaypointTableRow:rowValues];
+            [waypoints addObject:waypoint];
         }
     }];
-
-    for (NSDictionary* row in tableRows)
-    {
-        Waypoint* waypoint = [[Waypoint alloc] initWithWaypointTableRow:row];
-        [waypoints setObject:waypoint forKey:[waypoint key]];
-    }
 }
 
 - (NSArray*) waypoints
 {
-    return [waypoints allValues];
-}
-
-- (Waypoint*) waypointForKey:(NSString*)key
-{
-    if (key == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
-    }
-
-    return [waypoints objectForKey:key];
+    return waypoints;
 }
 
 @end

@@ -64,7 +64,6 @@
 {
     [waypoints removeAllObjects];
     [waypoints addObjectsFromArray:[_waypointDatabase waypoints]];
-    [waypoints filterUsingPredicate:[NSPredicate predicateWithFormat:@"type != %d", (int) WaypointTypeMarker]];
 
     NSString* searchText = [waypointSearchBar text];
     if ([searchText length] > 0)

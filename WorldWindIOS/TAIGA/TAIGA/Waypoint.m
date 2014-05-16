@@ -8,85 +8,44 @@
 #import "Waypoint.h"
 #import "TAIGA.h"
 #import "UnitsFormatter.h"
-#import "WorldWind/Util/WWUtil.h"
 #import "WorldWind/WWLog.h"
+
+static NSString* IconTypeAirport = @"taiga.IconTypeAirport";
+static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
 
 @implementation Waypoint
 
-- (NSString*) key
+- (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude
 {
-    return _key;
-}
-
-- (WaypointType) type
-{
-    return _type;
-}
-
-- (double) latitude
-{
-    return _latitude;
-}
-
-- (double) longitude
-{
-    return _longitude;
-}
-
-- (NSString*) displayName
-{
-    return _displayName;
-}
-
-- (NSString*) iconPath
-{
-    return _iconPath;
-}
-
-- (UIImage*) iconImage
-{
-    return _iconImage;
-}
-
-- (NSDictionary*) properties
-{
-    return _properties;
-}
-
-- (id) initWithKey:(NSString*)key type:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude
-{
-    if (key == nil)
-    {
-        WWLOG_AND_THROW(NSInvalidArgumentException, @"Key is nil")
-    }
-
     self = [super init];
 
-    _key = key;
-    _type  = type;
     _latitude = latitude;
     _longitude = longitude;
+    _altitude = altitude;
     _displayName = [[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude];
     _properties = [NSDictionary dictionary];
-
-    switch (_type)
-    {
-    case WaypointTypeAirport:
-        _iconPath = [[NSBundle mainBundle] pathForResource:@"38-airplane" ofType:@"png"];
-        _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        break;
-    case WaypointTypeMarker :
-        _iconPath = [[NSBundle mainBundle] pathForResource:@"07-map-marker" ofType:@"png"];
-        _iconImage = [[UIImage imageWithContentsOfFile:_iconPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        break;
-    }
+    iconType = IconTypeMarker;
+    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
 
-- (id) initWithType:(WaypointType)type degreesLatitude:(double)latitude longitude:(double)longitude
+- (id) initWithWaypoint:(Waypoint*)waypoint metersAltitude:(double)altitude
 {
-    self = [self initWithKey:[WWUtil generateUUID] type:type degreesLatitude:latitude longitude:longitude];
+    if (waypoint == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Waypoint is nil")
+    }
+
+    self = [super init];
+
+    _latitude = waypoint->_latitude;
+    _longitude = waypoint->_longitude;
+    _altitude = altitude;
+    _displayName = waypoint->_displayName;
+    _properties = waypoint->_properties;
+    iconType = waypoint->iconType;
+    _iconImage = waypoint->_iconImage;
 
     return self;
 }
@@ -98,21 +57,15 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Values is nil")
     }
 
-    NSString* id = [values objectForKey:@"ARPT_IDENT"];
-    NSNumber* latDegrees = [values objectForKey:@"WGS_DLAT"];
-    NSNumber* lonDegrees = [values objectForKey:@"WGS_DLONG"];
-    NSString* icao = [values objectForKey:@"ICAO"];
-    NSString* name = [values objectForKey:@"NAME"];
+    self = [super init];
 
-    self = [self initWithKey:id type:WaypointTypeAirport degreesLatitude:[latDegrees doubleValue] longitude:[lonDegrees doubleValue]];
-
-    NSMutableString* displayName = [[NSMutableString alloc] init];
-    [displayName appendString:icao];
-    [displayName appendString:@": "];
-    [displayName appendString:[name capitalizedString]];
-
-    _displayName = displayName;
+    _latitude = [[values objectForKey:@"WGS_DLAT"] doubleValue];
+    _longitude = [[values objectForKey:@"WGS_DLONG"] doubleValue];
+    _altitude = [[values objectForKey:@"ELEV"] doubleValue];
+    _displayName = [NSString stringWithFormat:@"%@: %@", [values objectForKey:@"ICAO"], [[values objectForKey:@"NAME"] capitalizedString]];
     _properties = values;
+    iconType = IconTypeAirport;
+    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
@@ -124,45 +77,43 @@
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Property list is nil")
     }
 
-    NSString* key = [propertyList objectForKey:@"key"];
-    NSNumber* type = [propertyList objectForKey:@"type"];
-    NSNumber* latitude = [propertyList objectForKey:@"latitude"];
-    NSNumber* longitude = [propertyList objectForKey:@"longitude"];
-
-    self = [self initWithKey:key type:(WaypointType) [type intValue] degreesLatitude:[latitude doubleValue] longitude:[longitude doubleValue]];
-
+    _latitude = [[propertyList objectForKey:@"latitude"] doubleValue];
+    _longitude = [[propertyList objectForKey:@"longitude"] doubleValue];
+    _altitude = [[propertyList objectForKey:@"altitude"] doubleValue];
     _displayName = [propertyList objectForKey:@"displayName"];
     _properties = [propertyList objectForKey:@"properties"];
+    iconType = [propertyList objectForKey:@"iconType"];
+    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
 
-- (NSDictionary*) propertyList
+- (NSDictionary*) asPropertyList
 {
     return @{
-        @"key" : _key,
-        @"type" : [NSNumber numberWithInt:_type],
         @"latitude" : [NSNumber numberWithDouble:_latitude],
         @"longitude" : [NSNumber numberWithDouble:_longitude],
+        @"altitude" : [NSNumber numberWithDouble:_altitude],
         @"displayName" : _displayName,
-        @"properties" : _properties
+        @"properties" : _properties,
+        @"iconType" : iconType,
     };
 }
 
-- (BOOL) isEqual:(id __unsafe_unretained)anObject // Suppress unnecessary ARC retain/release calls.
++ (UIImage*) iconForType:(NSString*)type
 {
-    if (anObject == nil || [anObject class] != [Waypoint class])
+    if ([IconTypeAirport isEqualToString:type])
     {
-        return NO;
+        return [[UIImage imageNamed:@"38-airplane"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
-
-    Waypoint* __unsafe_unretained other = (Waypoint*) anObject; // Suppress unnecessary ARC retain/release calls.
-    return [_key isEqualToString:other->_key];
-}
-
-- (NSUInteger) hash
-{
-    return [_key hash];
+    else if ([IconTypeMarker isEqualToString:type])
+    {
+        return [[UIImage imageNamed:@"07-map-marker"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+    else
+    {
+        return nil;
+    }
 }
 
 @end

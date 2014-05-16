@@ -77,7 +77,7 @@
     [[self textLabel] setText:[waypoint displayName]];
     [[self textLabel] setTextAlignment:NSTextAlignmentLeft];
     [[self textLabel] setAdjustsFontSizeToFitWidth:YES];
-    [[self detailTextLabel] setText:nil];
+    [[self detailTextLabel] setText:[[TAIGA unitsFormatter] formatMetersAltitude:[waypoint altitude]]];
 }
 
 @end
