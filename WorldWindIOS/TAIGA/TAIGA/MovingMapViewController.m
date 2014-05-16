@@ -14,7 +14,6 @@
 #import "WWBMNGLandsatCombinedLayer.h"
 #import "LayerListController.h"
 #import "AppConstants.h"
-#import "TAIGA.h"
 #import "WWElevationShadingLayer.h"
 #import "Settings.h"
 #import "ButtonWithImageAndText.h"
@@ -35,7 +34,6 @@
 #import "WeatherCamLayer.h"
 #import "WeatherCamViewController.h"
 #import "Waypoint.h"
-#import "WaypointDatabase.h"
 #import "WaypointLayer.h"
 #import "FlightRoute.h"
 #import "FlightRouteController.h"
@@ -188,17 +186,6 @@
     }
 }
 
-- (void) loadWaypoints
-{
-    WaypointDatabase* db = [TAIGA waypointDatabase];
-    [db addWaypointsFromTable:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"
-              completionBlock:^
-              {
-                  [waypointLayer setWaypointDatabase:db];
-                  [WorldWindView requestRedraw];
-              }];
-}
-
 - (void) loadView
 {
     self.view = [[UIView alloc] initWithFrame:myFrame];
@@ -325,7 +312,6 @@
     [layers addLayer:flightRouteLayer];
 
     waypointLayer = [[WaypointLayer alloc] init];
-    [waypointLayer setDisplayName:@"Airports"];
     [waypointLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
     [layers addLayer:waypointLayer];
@@ -396,8 +382,6 @@
         float opacity = [Settings getFloatForName:settingName defaultValue:[wwLayer opacity]];
         [wwLayer setOpacity:opacity];
     }
-
-    [self loadWaypoints];
 }
 
 - (void) viewWillAppear:(BOOL)animated

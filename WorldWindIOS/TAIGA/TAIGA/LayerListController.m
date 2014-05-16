@@ -92,6 +92,7 @@
 
     if ([layer isKindOfClass:[METARLayer class]]
             || [layer isKindOfClass:[PIREPLayer class]]
+            || [layer isKindOfClass:[WaypointLayer class]]
             || [layer isKindOfClass:[WeatherCamLayer class]])
     {
         static NSString* cellWithRefreshIdentifier = @"cellWithRefreshButton";

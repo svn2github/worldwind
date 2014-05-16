@@ -122,7 +122,7 @@
     [view addSubview:flightRouteTable];
 
     waypointFileControl = [[WaypointFileControl alloc] initWithFrame:CGRectMake(0, 0, 1, 1) target:self action:@selector(didChooseWaypoint:)];
-    [waypointFileControl setWaypointDatabase:[TAIGA waypointDatabase]];
+    [waypointFileControl setWaypoints:[TAIGA waypoints]];
     [view addSubview:waypointFileControl];
 
     [self layout];

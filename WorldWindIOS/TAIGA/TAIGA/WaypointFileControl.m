@@ -6,7 +6,6 @@
  */
 
 #import "WaypointFileControl.h"
-#import "WaypointDatabase.h"
 #import "Waypoint.h"
 #import "UITableViewCell+TAIGAAdditions.h"
 
@@ -22,7 +21,7 @@
 
     _target = target;
     _action = action;
-    waypoints = [[NSMutableArray alloc] init];
+    filteredWaypoints = [[NSMutableArray alloc] init];
 
     waypointSearchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
     [waypointSearchBar setPlaceholder:@"Search or enter an ICAO code"];
@@ -52,9 +51,9 @@
     return self;
 }
 
-- (void) setWaypointDatabase:(WaypointDatabase*)waypointDatabase
+- (void) setWaypoints:(NSArray*)waypoints
 {
-    _waypointDatabase = waypointDatabase;
+    _waypoints = waypoints;
 
     [self filterWaypoints];
     [waypointTable reloadData];
@@ -62,18 +61,18 @@
 
 - (void) filterWaypoints
 {
-    [waypoints removeAllObjects];
-    [waypoints addObjectsFromArray:[_waypointDatabase waypoints]];
+    [filteredWaypoints removeAllObjects];
+    [filteredWaypoints addObjectsFromArray:_waypoints];
 
     NSString* searchText = [waypointSearchBar text];
     if ([searchText length] > 0)
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
         NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ ", wildSearchText];
-        [waypoints filterUsingPredicate:predicate];
+        [filteredWaypoints filterUsingPredicate:predicate];
     }
 
-    [waypoints sortUsingComparator:^(id waypointA, id waypointB)
+    [filteredWaypoints sortUsingComparator:^(id waypointA, id waypointB)
     {
         return [[waypointA displayName] compare:[waypointB displayName]];
     }];
@@ -83,7 +82,7 @@
 
 - (void) didSelectWaypointForIndex:(NSUInteger)index
 {
-    Waypoint* waypoint = [waypoints objectAtIndex:index];
+    Waypoint* waypoint = [filteredWaypoints objectAtIndex:index];
     [self sendActionForWaypoint:waypoint];
 
     [waypointSearchBar setText:nil]; // clear search field after waypoint selection
@@ -134,7 +133,7 @@
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [waypoints count];
+    return [filteredWaypoints count];
 }
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath
@@ -146,7 +145,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
 
-    Waypoint* waypoint = [waypoints objectAtIndex:(NSUInteger) [indexPath row]];
+    Waypoint* waypoint = [filteredWaypoints objectAtIndex:(NSUInteger) [indexPath row]];
     [cell setToWaypoint:waypoint];
 
     return cell;

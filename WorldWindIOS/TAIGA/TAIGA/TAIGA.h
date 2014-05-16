@@ -9,7 +9,6 @@
 
 @class AppUpdateController;
 @class UnitsFormatter;
-@class WaypointDatabase;
 
 @interface TAIGA : NSObject
 
@@ -17,6 +16,8 @@
 
 + (UnitsFormatter*) unitsFormatter;
 
-+ (WaypointDatabase*) waypointDatabase;
++ (NSArray*) waypoints;
+
++ (void) setWaypoints:(NSArray*)waypoints;
 
 @end

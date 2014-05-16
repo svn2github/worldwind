@@ -8,13 +8,13 @@
 #import "TAIGA.h"
 #import "AppUpdateController.h"
 #import "UnitsFormatter.h"
-#import "WaypointDatabase.h"
+#import "WorldWind/WWLog.h"
 
 @implementation TAIGA
 
 static AppUpdateController* appUpdateController; // singleton instance
 static UnitsFormatter* unitsFormatter;
-static WaypointDatabase* waypointDatabase;
+static NSArray* waypoints;
 
 + (void) initialize
 {
@@ -26,7 +26,7 @@ static WaypointDatabase* waypointDatabase;
 
         appUpdateController = [[AppUpdateController alloc] init];
         unitsFormatter = [[UnitsFormatter alloc] init];
-        waypointDatabase = [[WaypointDatabase alloc] init];
+        waypoints = [NSArray array];
     }
 }
 
@@ -40,9 +40,19 @@ static WaypointDatabase* waypointDatabase;
     return unitsFormatter;
 }
 
-+ (WaypointDatabase*) waypointDatabase
++ (NSArray*) waypoints
 {
-    return waypointDatabase;
+    return waypoints;
+}
+
++ (void) setWaypoints:(NSArray*)array
+{
+    if (array == nil)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Array is nil")
+    }
+
+    waypoints = array;
 }
 
 @end
