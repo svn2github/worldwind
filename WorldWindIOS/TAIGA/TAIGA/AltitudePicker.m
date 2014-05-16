@@ -54,6 +54,14 @@
     [self selectAltitude:_altitude animated:YES];
 }
 
+- (void) setToVFRAltitudes
+{
+    _minimumAltitude = 152.4; // 500ft
+    _maximumAltitude = 6096; // 20,000ft
+    _altitudeInterval = 152.4; // 500ft interval
+    [picker reloadAllComponents];
+}
+
 - (double) altitudeForRow:(NSInteger)row
 {
     return _minimumAltitude + _altitudeInterval * row;

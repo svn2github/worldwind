@@ -23,6 +23,10 @@
 
 @property (nonatomic) double altitude;
 
+@property (nonatomic) id userObject;
+
 - (AltitudePicker*) initWithFrame:(CGRect)frame;
+
+- (void) setToVFRAltitudes;
 
 @end
