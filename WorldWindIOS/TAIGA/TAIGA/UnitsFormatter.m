@@ -33,8 +33,8 @@
     altitudeFormatter = [[NSNumberFormatter alloc] init];
     [altitudeFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [altitudeFormatter setMaximumFractionDigits:0];
-    [altitudeFormatter setPositiveSuffix:@"\u2032 MSL"];
-    [altitudeFormatter setNegativeSuffix:@"\u2032 MSL"];
+    [altitudeFormatter setPositiveSuffix:@"\u2032"];
+    [altitudeFormatter setNegativeSuffix:@"\u2032"];
 
     return self;
 }
