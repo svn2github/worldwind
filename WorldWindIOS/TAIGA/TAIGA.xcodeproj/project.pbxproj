@@ -205,6 +205,7 @@
 		CC8CFA200103E7314004C4AF /* 193-location-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF919D529AE9E788447D6 /* 193-location-arrow@2x.png */; };
 		CC8CFA530B346D44738BF7DC /* airport@small.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF95DB4FB13AD332B4BC2 /* airport@small.png */; };
 		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
+		CC8CFA76E9345B0A2DF0A317 /* NewFlightRouteController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF139FF8DE7488AA3B2D4 /* NewFlightRouteController.m */; };
 		CC8CFC517B7AC990D9874242 /* DraggablePopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD4108F2825ADA8A1780 /* DraggablePopoverController.m */; };
 		CC8CFC66EF18CB4B4697BC96 /* 07-map-marker@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */; };
 		CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */; };
@@ -435,6 +436,7 @@
 		CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
 		CC8CF11ADFC19FF9E4A0BE9D /* UnitsFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitsFormatter.h; sourceTree = "<group>"; };
+		CC8CF139FF8DE7488AA3B2D4 /* NewFlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NewFlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
 		CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverController+TAIGAAdditions.h"; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 		CC8CF920AC4D6B8DCBFE7015 /* 193-location-arrow-outline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "193-location-arrow-outline.png"; sourceTree = "<group>"; };
 		CC8CF942C767E4A7E4EBE9C0 /* airport@large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "airport@large.png"; sourceTree = "<group>"; };
 		CC8CF95DB4FB13AD332B4BC2 /* airport@small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "airport@small.png"; sourceTree = "<group>"; };
+		CC8CF99EB7867E8AD8FB8EF8 /* NewFlightRouteController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NewFlightRouteController.h; sourceTree = "<group>"; };
 		CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TAIGADistributionSite.dcproj; sourceTree = "<group>"; };
 		CC8CFA2383D923D871357C39 /* AircraftLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftLayer.h; sourceTree = "<group>"; };
 		CC8CFA81302B248110B5B84F /* LocationTrackingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationTrackingViewController.h; sourceTree = "<group>"; };
@@ -679,6 +682,8 @@
 				1BF9A0007E4D9E03162C44C6 /* LocationServicesController.h */,
 				1BF9A7041A2C30227039F4EA /* DAFIFLayer.m */,
 				1BF9A14C581E9C5CB7C2DFA1 /* DAFIFLayer.h */,
+				CC8CF99EB7867E8AD8FB8EF8 /* NewFlightRouteController.h */,
+				CC8CF139FF8DE7488AA3B2D4 /* NewFlightRouteController.m */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1088,6 +1093,7 @@
 				CC8CFC517B7AC990D9874242 /* DraggablePopoverController.m in Sources */,
 				1BF9AED8403FC0C3C16C7697 /* LocationServicesController.m in Sources */,
 				1BF9A1EDA8774EADB9A1F056 /* DAFIFLayer.m in Sources */,
+				CC8CFA76E9345B0A2DF0A317 /* NewFlightRouteController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
