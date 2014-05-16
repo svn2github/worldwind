@@ -17,6 +17,7 @@
     self = [super initWithContentViewController:viewController];
 
     panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
+    [panGestureRecognizer setDelegate:self];
     [[viewController view] addGestureRecognizer:panGestureRecognizer];
 
     _dragEnabled = YES;
