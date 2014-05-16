@@ -17,7 +17,7 @@
 #define TAIGA_DEFAULT_LOCATION_TRACKING_MODE (TAIGA_LOCATION_TRACKING_MODE_NORTH_UP)
 #define TAIGA_EARTH_RADIUS (6378137.0)
 #define TAIGA_FLIGHT_ROUTE_REMOVED (@"gov.nasa.worldwind.taiga.flightroute.removed")
-#define TAIGA_FLIGHT_ROUTE_CHANGED (@"gov.nasa.worldwind.taiga.flightroute.changed")
+#define TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED (@"gov.nasa.worldwind.taiga.flightroute.attribute.changed")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX (@"gov.nasa.worldwind.taiga.flightroute.waypoint.index")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.inserted")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.removed")

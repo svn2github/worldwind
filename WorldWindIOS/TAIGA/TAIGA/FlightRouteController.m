@@ -41,7 +41,7 @@
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
     NSNotificationCenter* ns = [NSNotificationCenter defaultCenter];
-    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_CHANGED object:nil];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:nil];
@@ -85,7 +85,7 @@
         return;
 
     // Make the flight route table view match the change in the model, using UIKit animations to display the change.
-    if ([[notification name] isEqualToString:TAIGA_FLIGHT_ROUTE_CHANGED])
+    if ([[notification name] isEqualToString:TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED])
     {
         NSInteger index  = [flightRoutes indexOfObject:flightRoute];
         NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];

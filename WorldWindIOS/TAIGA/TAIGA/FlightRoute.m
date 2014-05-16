@@ -432,7 +432,7 @@ const float ShapePickRadius = 22.0;
 
 - (void) didChangeAttribute
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_CHANGED object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED object:self];
 }
 
 - (void) didInsertWaypointAtIndex:(NSUInteger)index
