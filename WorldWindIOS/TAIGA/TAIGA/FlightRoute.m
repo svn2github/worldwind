@@ -292,7 +292,7 @@ const float ShapePickRadius = 22.0;
                 *latitude = [currentPosition latitude];
                 *longitude = [currentPosition longitude];
                 *altitude = [currentPosition altitude];
-                *course = [WWPosition rhumbAzimuth:begin endLocation:end];
+                *course = [self convertAzimuthToCourse:[WWPosition rhumbAzimuth:currentPosition endLocation:end]]; // convert from [-180,180] to [0,360]
                 return;
             }
 
@@ -305,8 +305,13 @@ const float ShapePickRadius = 22.0;
         *latitude = [end latitude];
         *longitude = [end longitude];
         *altitude = [end altitude];
-        *course = [WWPosition rhumbAzimuth:begin endLocation:end];
+        *course = [self convertAzimuthToCourse:[WWPosition rhumbAzimuth:begin endLocation:end]]; // convert from [-180,180] to [0,360]
     }
+}
+
+- (CLLocationDirection) convertAzimuthToCourse:(double)degreesAzimuth
+{
+    return (degreesAzimuth < 0) ? 360 + degreesAzimuth : degreesAzimuth;
 }
 
 - (NSUInteger) waypointCount

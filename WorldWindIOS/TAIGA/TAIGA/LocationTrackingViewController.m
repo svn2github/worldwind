@@ -140,7 +140,6 @@
 
 - (void) stopLocationTracking
 {
-
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_LOCATION_TRACKING_ENABLED object:[NSNumber
             numberWithBool:NO]];
 
@@ -180,11 +179,13 @@
 
 - (void) doStartLocationTracking
 {
+    double currentCourse = [currentLocation course] < 0 ? [[_wwv navigator] heading] : [currentLocation course];
+
     if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT])
     {
         WWPosition* eyePosition = [[WWPosition alloc] initWithCLPosition:currentLocation];
         [(WWFirstPersonNavigator*) [_wwv navigator] setEyePosition:eyePosition];
-        [(WWFirstPersonNavigator*) [_wwv navigator] setHeading:[currentLocation course]];
+        [(WWFirstPersonNavigator*) [_wwv navigator] setHeading:currentCourse];
         [(WWFirstPersonNavigator*) [_wwv navigator] setTilt:currentCockpitTilt];
     }
     else if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_NORTH_UP])
@@ -200,17 +201,17 @@
         WWLocation* centerLocation = [[WWLocation alloc] initWithCLLocation:currentLocation];
         [(WWLookAtNavigator*) [_wwv navigator] setCenterLocation:centerLocation];
         [(WWLookAtNavigator*) [_wwv navigator] setRange:currentRange];
-        [(WWLookAtNavigator*) [_wwv navigator] setHeading:[currentLocation course]];
+        [(WWLookAtNavigator*) [_wwv navigator] setHeading:currentCourse];
         [(WWLookAtNavigator*) [_wwv navigator] setTilt:currentTrackUpTilt];
     }
 }
 
 - (void) doTrackLocation
 {
-    double smoothedHeading = [currentLocation course] < 0 ? [[_wwv navigator] heading] :
-            [WWMath interpolateDegrees1:[[_wwv navigator] heading]
-                               degrees2:[currentLocation course]
-                                 amount:HEADING_SMOOTHING_AMOUNT];
+    double currentCourse = [currentLocation course] < 0 ? [[_wwv navigator] heading] : [currentLocation course];
+    double smoothedHeading = [WWMath interpolateDegrees1:[[_wwv navigator] heading]
+                                                degrees2:currentCourse
+                                                  amount:HEADING_SMOOTHING_AMOUNT];
 
     if ([_mode isEqualToString:TAIGA_LOCATION_TRACKING_MODE_COCKPIT])
     {
