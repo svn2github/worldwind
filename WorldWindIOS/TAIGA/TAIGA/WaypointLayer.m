@@ -33,7 +33,7 @@
 {
     self = [super init];
 
-    [self setDisplayName:@"Waypoints"];
+    [self setDisplayName:@"Airports"];
     [self refreshWaypoints];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRefreshNotification:)
