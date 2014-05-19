@@ -15,6 +15,7 @@
 
 #define COLOR_ID (@"color")
 #define ALTITUDE_ID (@"altitude")
+#define DEFAULT_FLIGHT_ROUTE_NAME (@"New Route")
 
 @implementation NewFlightRouteController
 
@@ -33,7 +34,7 @@
     [[self navigationItem] setRightBarButtonItem:doneButtonItem];
     [[self tableView] setBounces:NO];
 
-    _displayName = @"New Flight Route";
+    _displayName = DEFAULT_FLIGHT_ROUTE_NAME;
     _colorIndex = 0;
     _defaultAltitude = 0;
     _completionBlock = NULL;
@@ -49,8 +50,7 @@
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     UITextField* textField = [[UITextField alloc] init];
     [textField addTarget:self action:@selector(actionPickName:) forControlEvents:UIControlEventAllEvents];
-    [textField setText:_displayName];
-    [textField setPlaceholder:_displayName];
+    [textField setPlaceholder:@"Route Name"];
     [textField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
     [textField setClearButtonMode:UITextFieldViewModeAlways];
     [textField setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -97,7 +97,8 @@
 
 - (void) actionPickName:(id)sender
 {
-    _displayName = [[sender text] isEqualToString:@""] ? [sender placeholder] : [sender text];
+    NSString* trimmedText = [[sender text] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    _displayName = [trimmedText length] > 0 ? trimmedText : DEFAULT_FLIGHT_ROUTE_NAME;
 }
 
 - (void) actionPickColor:(id)sender
