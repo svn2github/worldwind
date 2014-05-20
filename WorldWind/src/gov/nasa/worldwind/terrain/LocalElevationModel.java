@@ -144,6 +144,17 @@ public class LocalElevationModel extends AbstractElevationModel
         return res;
     }
 
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return false;
+    }
+
     public double getUnmappedElevation(Angle latitude, Angle longitude)
     {
         if (latitude == null || longitude == null)

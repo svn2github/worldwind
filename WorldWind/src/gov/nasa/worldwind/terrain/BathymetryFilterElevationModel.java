@@ -179,4 +179,16 @@ public class BathymetryFilterElevationModel extends AbstractElevationModel
 
         return o != null ? o : this.sourceModel != null ? this.sourceModel.getValue(key) : null;
     }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+        this.sourceModel.setExtremesCachingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return this.sourceModel.isExtremesCachingEnabled();
+    }
 }

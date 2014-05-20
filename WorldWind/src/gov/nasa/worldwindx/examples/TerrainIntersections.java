@@ -88,7 +88,6 @@ public class TerrainIntersections extends ApplicationTemplate
 
             // Be sure to re-use the Terrain object to take advantage of its caching.
             this.terrain = new HighResolutionTerrain(getWwd().getModel().getGlobe(), TARGET_RESOLUTION);
-            this.terrain.setCacheCapacity((long) 200e6); // larger cache speeds up repeat calculations
 
             this.gridLayer = new RenderableLayer();
             this.gridLayer.setName("Grid");

@@ -78,4 +78,15 @@ public class ZeroElevationModel extends AbstractElevationModel
     {
         return 0;
     }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return false;
+    }
 }

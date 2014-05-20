@@ -62,6 +62,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         new java.util.concurrent.ConcurrentHashMap<TileKey, ElevationTile>();
     protected MemoryCache memoryCache;
     protected int extremesLevel = -1;
+    protected boolean extremesCachingEnabled = true;
     protected BufferWrapper extremes = null;
     protected MemoryCache extremesLookupCache;
     // Model resource properties.
@@ -348,7 +349,18 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         return this.levels.getSector().contains(latitude, longitude);
     }
 
-    //**************************************************************//
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+        this.extremesCachingEnabled = enabled;
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        return this.extremesCachingEnabled;
+    }
+//**************************************************************//
     //********************  Elevation Tile Management  *************//
     //**************************************************************//
 
@@ -1318,7 +1330,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         try
         {
-            double[] extremes = (double[]) this.getExtremesLookupCache().getObject(sector);
+            double[] extremes = this.extremesCachingEnabled
+                ? (double[]) this.getExtremesLookupCache().getObject(sector) : null;
             if (extremes != null)
                 return new double[] {extremes[0], extremes[1]}; // return defensive copy
 
@@ -1327,8 +1340,8 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
             // Compute the extremes from the extreme-elevations file.
             extremes = this.computeExtremeElevations(sector);
-            if (extremes != null)
-                this.getExtremesLookupCache().add(sector, extremes, 16);
+            if (extremes != null && this.isExtremesCachingEnabled())
+                this.getExtremesLookupCache().add(sector, extremes, 64);
 
             // Return a defensive copy of the array to prevent the caller from modifying the cache contents.
             return extremes != null ? new double[] {extremes[0], extremes[1]} : null;
@@ -1479,7 +1492,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
         if (this.extremesLookupCache == null)
         {
-            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 2000000L);
+            long size = Configuration.getLongValue(AVKey.ELEVATION_EXTREMES_LOOKUP_CACHE_SIZE, 20000000L);
             this.extremesLookupCache = new BasicMemoryCache((long) (0.85 * size), size);
         }
 
@@ -1694,13 +1707,13 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
             {
                 elevations.tiles = tiles;
                 double[] extremes = elevations.getTileExtremes();
-                if (extremes != null)
+                if (extremes != null && this.isExtremesCachingEnabled())
                 {
                     // Cache the newly computed extremes if they're different from the currently cached ones.
                     double[] currentExtremes = (double[]) this.getExtremesLookupCache().getObject(requestedSector);
                     if (currentExtremes == null || currentExtremes[0] != extremes[0]
                         || currentExtremes[1] != extremes[1])
-                        this.getExtremesLookupCache().add(requestedSector, extremes, 16);
+                        this.getExtremesLookupCache().add(requestedSector, extremes, 64);
                 }
             }
         }

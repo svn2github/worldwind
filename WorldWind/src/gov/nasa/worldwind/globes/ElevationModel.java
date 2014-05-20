@@ -243,7 +243,7 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      *
      * @see #setMissingDataSignal(double)
      */
-    @SuppressWarnings( {"JavadocReference"})
+    @SuppressWarnings({"JavadocReference"})
     double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] buffer);
 
     /**
@@ -334,4 +334,23 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      * @return true if this elevation model is used, otherwise false.
      */
     boolean isEnabled();
+
+    /**
+     * Indicates whether extreme values of sectors should be cached as they're computed. Caching should be disabled if
+     * especially many sectors are to be used when querying extreme elevations of this elevation model, such as during
+     * terrain intersection calculations. The default is for caching to be enabled. During normal operation caching
+     * enhances performance, but during terrain intersection computation it can hamper performance.
+     *
+     * @param enabled true if extreme value caching should be performed.
+     */
+    void setExtremesCachingEnabled(boolean enabled);
+
+    /**
+     * Indicates whether extreme value caching is enabled.
+     *
+     * @return true if extreme values caching is enabled, otherwise false.
+     *
+     * @see {@link #setExtremesCachingEnabled(boolean)}.
+     */
+    boolean isExtremesCachingEnabled();
 }

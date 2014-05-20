@@ -579,4 +579,25 @@ public class CompoundElevationModel extends AbstractElevationModel
 
         return models > 0 ? availability / models : 1d;
     }
+
+    @Override
+    public void setExtremesCachingEnabled(boolean enabled)
+    {
+        for (ElevationModel em : this.elevationModels)
+        {
+            em.setExtremesCachingEnabled(enabled);
+        }
+    }
+
+    @Override
+    public boolean isExtremesCachingEnabled()
+    {
+        for (ElevationModel em : this.elevationModels)
+        {
+            if (em.isExtremesCachingEnabled())
+                return true;
+        }
+
+        return false;
+    }
 }
