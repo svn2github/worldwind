@@ -8,10 +8,6 @@
 #import <Foundation/Foundation.h>
 
 @interface Waypoint : NSObject
-{
-@protected
-    NSString* iconType;
-}
 
 @property (nonatomic, readonly) double latitude;
 
@@ -19,11 +15,7 @@
 
 @property (nonatomic, readonly) double altitude;
 
-@property (nonatomic, readonly) NSString* displayName;
-
 @property (nonatomic, readonly) NSDictionary* properties;
-
-@property (nonatomic, readonly) UIImage* iconImage;
 
 - (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude;
 
@@ -34,5 +26,9 @@
 - (id) initWithPropertyList:(NSDictionary*)propertyList;
 
 - (NSDictionary*) asPropertyList;
+
+- (NSString*) description;
+
+- (NSString*) descriptionWithAltitude;
 
 @end

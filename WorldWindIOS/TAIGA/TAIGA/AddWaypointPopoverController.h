@@ -22,7 +22,7 @@
     NSMutableArray* flightRouteTableCells;
 }
 
-@property (nonatomic, readonly) id waypointSource;
+@property (nonatomic, readonly) Waypoint* waypoint;
 
 @property (nonatomic, readonly) MovingMapViewController* mapViewController;
 

@@ -15,7 +15,6 @@
 #import "AppConstants.h"
 #import "TAIGA.h"
 #import "UnitsFormatter.h"
-#import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Geometry/WWExtent.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -295,10 +294,12 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:waypointCellId];
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+        [[cell textLabel] setAdjustsFontSizeToFitWidth:YES];
     }
 
     Waypoint* waypoint = [_flightRoute waypointAtIndex:(NSUInteger) [indexPath row]];
-    [cell setToWaypoint:waypoint];
+    [[cell textLabel] setText:[waypoint description]];
+    [[cell detailTextLabel] setText:[[TAIGA unitsFormatter] formatMetersAltitude:[waypoint altitude]]];
 
     return cell;
 }

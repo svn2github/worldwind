@@ -7,19 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@class WWLocation;
-@class WWPosition;
 @class FlightRoute;
-@class Waypoint;
 
 @interface UITableViewCell (TAIGAAdditions)
 
-- (void) setToLocation:(WWLocation*)location;
-
-- (void) setToPosition:(WWPosition*)position;
-
 - (void) setToFlightRoute:(FlightRoute*)flightRoute;
-
-- (void) setToWaypoint:(Waypoint*)waypoint;
 
 @end

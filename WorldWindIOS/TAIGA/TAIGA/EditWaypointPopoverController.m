@@ -11,7 +11,6 @@
 #import "MovingMapViewController.h"
 #import "AltitudePicker.h"
 #import "UIPopoverController+TAIGAAdditions.h"
-#import "UITableViewCell+TAIGAAdditions.h"
 #import "WorldWind/Geometry/WWLocation.h"
 #import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Geometry/WWVec4.h"
@@ -36,7 +35,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     UIImage* rightButtonImage = [UIImage imageNamed:@"all-directions"];
     UIBarButtonItem* rightButtonItem = [[UIBarButtonItem alloc] initWithImage:rightButtonImage style:UIBarButtonItemStylePlain target:nil action:NULL];
     tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    [tableViewController setPreferredContentSize:CGSizeMake(300, 44 * [tableCells count])];
+    [tableViewController setPreferredContentSize:CGSizeMake(240, 44 * [tableCells count])];
     [[tableViewController navigationItem] setTitle:@"Waypoint"];
     [[tableViewController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[tableViewController tableView] setDataSource:self];
@@ -88,7 +87,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     [_flightRoute replaceWaypointAtIndex:_waypointIndex withWaypoint:newWaypoint];
 
     // Update the waypoint cell to match the change in the waypoint altitude.
-    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+    [[[tableCells objectAtIndex:0] textLabel] setText:[newWaypoint descriptionWithAltitude]];
     [[tableViewController tableView] reloadData];
 
     // Update the popover point to match the change in the waypoint altitude.
@@ -166,7 +165,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 
     // Update the waypoint cell to match the change in the waypoint location without animating.
     NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    [[tableCells objectAtIndex:0] setToWaypoint:newWaypoint];
+    [[[tableCells objectAtIndex:0] textLabel] setText:[newWaypoint descriptionWithAltitude]];
     [[tableViewController tableView] reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 
     return YES;
@@ -180,9 +179,12 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 {
     tableCells = [[NSMutableArray alloc] init];
 
-    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
-    [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-    [cell setToWaypoint:[_flightRoute waypointAtIndex:_waypointIndex]];
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    Waypoint* waypoint = [_flightRoute waypointAtIndex:_waypointIndex];
+    [[cell textLabel] setText:[waypoint descriptionWithAltitude]];
+    [[cell textLabel] setTextColor:[cell tintColor]];
+    [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
+    [[cell textLabel] setAdjustsFontSizeToFitWidth:YES];
     [tableCells addObject:cell];
 
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];

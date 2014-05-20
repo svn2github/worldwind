@@ -170,7 +170,7 @@
         WWPointPlacemark* placemark = [[WWPointPlacemark alloc] initWithPosition:pos];
         [placemark setUserObject:waypoint];
         [placemark setPickDelegate:waypoint]; // make the waypoint the picked object
-        [placemark setDisplayName:[waypoint displayName]];
+        [placemark setDisplayName:[waypoint description]];
         [placemark setAltitudeMode:WW_ALTITUDE_MODE_CLAMP_TO_GROUND];
         [placemark setAttributes:attrs];
         [placemarks addObject:placemark];

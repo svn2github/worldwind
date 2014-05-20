@@ -7,7 +7,6 @@
 
 #import "WaypointPicker.h"
 #import "Waypoint.h"
-#import "UITableViewCell+TAIGAAdditions.h"
 
 @implementation WaypointPicker
 
@@ -68,13 +67,13 @@
     if ([searchText length] > 0)
     {
         NSString* wildSearchText = [NSString stringWithFormat:@"*%@*", searchText];
-        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"displayName LIKE[cd] %@ ", wildSearchText];
+        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"description LIKE[cd] %@ ", wildSearchText];
         [filteredWaypoints filterUsingPredicate:predicate];
     }
 
     [filteredWaypoints sortUsingComparator:^(id waypointA, id waypointB)
     {
-        return [[waypointA displayName] compare:[waypointB displayName]];
+        return [[waypointA description] compare:[waypointB description]];
     }];
 
     [waypointTable reloadData];
@@ -143,10 +142,11 @@
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        [[cell textLabel] setAdjustsFontSizeToFitWidth:YES];
     }
 
     Waypoint* waypoint = [filteredWaypoints objectAtIndex:(NSUInteger) [indexPath row]];
-    [cell setToWaypoint:waypoint];
+    [[cell textLabel] setText:[waypoint description]];
 
     return cell;
 }

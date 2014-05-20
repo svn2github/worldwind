@@ -6,12 +6,10 @@
  */
 
 #import "Waypoint.h"
-#import "TAIGA.h"
 #import "UnitsFormatter.h"
+#import "TAIGA.h"
+#import "AppConstants.h"
 #import "WorldWind/WWLog.h"
-
-static NSString* IconTypeAirport = @"taiga.IconTypeAirport";
-static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
 
 @implementation Waypoint
 
@@ -22,10 +20,7 @@ static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
     _latitude = latitude;
     _longitude = longitude;
     _altitude = altitude;
-    _displayName = [[TAIGA unitsFormatter] formatDegreesLatitude:latitude longitude:longitude];
     _properties = [NSDictionary dictionary];
-    iconType = IconTypeMarker;
-    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
@@ -42,10 +37,7 @@ static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
     _latitude = waypoint->_latitude;
     _longitude = waypoint->_longitude;
     _altitude = altitude;
-    _displayName = waypoint->_displayName;
     _properties = waypoint->_properties;
-    iconType = waypoint->iconType;
-    _iconImage = waypoint->_iconImage;
 
     return self;
 }
@@ -61,11 +53,8 @@ static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
 
     _latitude = [[values objectForKey:@"WGS_DLAT"] doubleValue];
     _longitude = [[values objectForKey:@"WGS_DLONG"] doubleValue];
-    _altitude = [[values objectForKey:@"ELEV"] doubleValue];
-    _displayName = [NSString stringWithFormat:@"%@: %@", [values objectForKey:@"ICAO"], [[values objectForKey:@"NAME"] capitalizedString]];
+    _altitude = [[values objectForKey:@"ELEV"] doubleValue] / TAIGA_METERS_TO_FEET;
     _properties = values;
-    iconType = IconTypeAirport;
-    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
@@ -80,10 +69,7 @@ static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
     _latitude = [[propertyList objectForKey:@"latitude"] doubleValue];
     _longitude = [[propertyList objectForKey:@"longitude"] doubleValue];
     _altitude = [[propertyList objectForKey:@"altitude"] doubleValue];
-    _displayName = [propertyList objectForKey:@"displayName"];
     _properties = [propertyList objectForKey:@"properties"];
-    iconType = [propertyList objectForKey:@"iconType"];
-    _iconImage = [Waypoint iconForType:iconType];
 
     return self;
 }
@@ -94,25 +80,41 @@ static NSString* IconTypeMarker = @"taiga.IconTypeMarker";
         @"latitude" : [NSNumber numberWithDouble:_latitude],
         @"longitude" : [NSNumber numberWithDouble:_longitude],
         @"altitude" : [NSNumber numberWithDouble:_altitude],
-        @"displayName" : _displayName,
         @"properties" : _properties,
-        @"iconType" : iconType,
     };
 }
 
-+ (UIImage*) iconForType:(NSString*)type
+- (NSString*) description
 {
-    if ([IconTypeAirport isEqualToString:type])
+    if ([_properties count] > 0)
     {
-        return [[UIImage imageNamed:@"38-airplane"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
-    else if ([IconTypeMarker isEqualToString:type])
-    {
-        return [[UIImage imageNamed:@"07-map-marker"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        NSMutableString* ms = [[NSMutableString alloc] init];
+        [ms appendString:[_properties objectForKey:@"ICAO"]];
+        [ms appendString:@": "];
+        [ms appendString:[[_properties objectForKey:@"NAME"] capitalizedString]];
+        return ms;
     }
     else
     {
-        return nil;
+        return [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude];
+    }
+}
+
+- (NSString*) descriptionWithAltitude
+{
+    if ([_properties count] > 0)
+    {
+        NSMutableString* ms = [[NSMutableString alloc] init];
+        [ms appendString:[_properties objectForKey:@"ICAO"]];
+        [ms appendString:@": "];
+        [ms appendString:[[_properties objectForKey:@"NAME"] capitalizedString]];
+        [ms appendString:@"  "];
+        [ms appendString:[[TAIGA unitsFormatter] formatMetersAltitude:_altitude] ];
+        return ms;
+    }
+    else
+    {
+        return [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude metersAltitude:_altitude];
     }
 }
 
