@@ -181,8 +181,8 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
 
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     Waypoint* waypoint = [_flightRoute waypointAtIndex:_waypointIndex];
+    [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
     [[cell textLabel] setText:[waypoint descriptionWithAltitude]];
-    [[cell textLabel] setTextColor:[cell tintColor]];
     [[cell textLabel] setTextAlignment:NSTextAlignmentCenter];
     [[cell textLabel] setAdjustsFontSizeToFitWidth:YES];
     [tableCells addObject:cell];
