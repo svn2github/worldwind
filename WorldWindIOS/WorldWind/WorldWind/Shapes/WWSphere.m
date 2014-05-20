@@ -15,6 +15,7 @@
 #import "WorldWind/Shaders/WWBasicProgram.h"
 #import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/Util/WWGpuResourceCache.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
@@ -39,6 +40,8 @@ static int numIndices; // the number of indices defining the sphere
 
     _position = position;
     _radius = radius;
+    _minRadius = 0;
+    _maxRadius = DBL_MAX;
 
     [self setReferencePosition:position];
 
@@ -50,9 +53,32 @@ static int numIndices; // the number of indices defining the sphere
 
 - (WWSphere*) initWithPosition:(WWPosition*)position radiusInPixels:(double)radius
 {
+    self = [self initWithPosition:position radius:radius];
+
     radiusIsPixels = YES;
 
-    return [self initWithPosition:position radius:radius];
+    return self;
+}
+
+- (WWSphere*) initWithPosition:(WWPosition*)position radiusInPixels:(double)radius minRadius:(double)minRadius maxRadius:(double)maxRadius
+{
+    self = [self initWithPosition:position radius:radius];
+
+    if (minRadius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Minimum radius is less than 0")
+    }
+
+    if (maxRadius <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Maximum radius is less than or equal to 0")
+    }
+
+    _minRadius = minRadius;
+    _maxRadius = maxRadius;
+    radiusIsPixels = YES;
+
+    return self;
 }
 
 - (void) setPosition:(WWPosition*)position
@@ -77,6 +103,26 @@ static int numIndices; // the number of indices defining the sphere
     _radius = radius;
 }
 
+- (void) setMinRadius:(double)minRadius
+{
+    if (minRadius < 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Minimum radius is less than 0")
+    }
+
+    _minRadius = minRadius;
+}
+
+- (void) setMaxRadius:(double)maxRadius
+{
+    if (maxRadius <= 0)
+    {
+        WWLOG_AND_THROW(NSInvalidArgumentException, @"Maximum radius is less than or equal to 0")
+    }
+
+    _maxRadius = maxRadius;
+}
+
 - (BOOL) isRadiusInPixels
 {
     return radiusIsPixels;
@@ -98,37 +144,36 @@ static int numIndices; // the number of indices defining the sphere
 
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
 {
-    // Set the transformation matrix to correspond to the sphere's position and the current altitude mode and terrain.
+    // Compute the sphere's current reference point and eye distance.
     [[dc terrain] surfacePointAtLatitude:[_position latitude]
                                longitude:[_position longitude]
                                   offset:[_position altitude]
                             altitudeMode:[self altitudeMode]
                                   result:referencePoint];
-    WWVec4* rpt = referencePoint;
-    [transformationMatrix setTranslation:[rpt x] y:[rpt y] z:[rpt z]];
-    [self setEyeDistance:[[[dc navigatorState] eyePoint] distanceTo3:rpt]];
+
+    double eyeDistance = [[[dc navigatorState] eyePoint] distanceTo3:referencePoint];
+    [self setEyeDistance:eyeDistance];
 
     // Determine the actual radius in meters, which if screen dependent could change every frame.
     radiusInMeters = _radius;
-
     if (radiusIsPixels)
     {
-        double d = [[[dc navigatorState] eyePoint] distanceTo3:referencePoint];
-        double ps = [[dc navigatorState] pixelSizeAtDistance:d];
-        radiusInMeters *= ps;
+        radiusInMeters *= [[dc navigatorState] pixelSizeAtDistance:eyeDistance];
+        radiusInMeters = WWCLAMP(radiusInMeters, _minRadius, _maxRadius);
     }
 
-    double r = radiusInMeters;
-    if (r <= 0)
+    if (radiusInMeters <= 0)
     {
         return;
     }
 
-    // Scale the unit sphere to the actual radius.
-    [transformationMatrix setScale:r y:r z:r];
+    // Set the transformation matrix to transform the unit sphere to this sphere's location coordinate system on the
+    // globe, and scale the unit sphere to this sphere's radius.
+    [transformationMatrix setTranslation:[referencePoint x] y:[referencePoint y] z:[referencePoint z]];
+    [transformationMatrix setScale:radiusInMeters y:radiusInMeters z:radiusInMeters];
 
     // Create the extent.
-    [self setExtent:[[WWBoundingSphere alloc] initWithPoint:rpt radius:r]];
+    [self setExtent:[[WWBoundingSphere alloc] initWithPoint:referencePoint radius:radiusInMeters]];
 }
 
 - (BOOL) isOrderedRenderableValid:(WWDrawContext*)dc

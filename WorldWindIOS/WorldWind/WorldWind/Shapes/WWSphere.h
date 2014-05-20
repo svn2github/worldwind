@@ -41,6 +41,12 @@
 /// This sphere's radius. Use isRadiusInPixels to determine whether the value is in pixels rather than meters.
 @property(nonatomic) double radius;
 
+/// This sphere's minimum radius in meters. Limits the sphere's radius when the value is in pixels.
+@property (nonatomic) double minRadius;
+
+/// This sphere's maximum radius in meters. Limits the sphere's radius when the value is in pixels.
+@property (nonatomic) double maxRadius;
+
 /// Indicates whether the radius was specified in pixels rather than meters.
 - (BOOL) isRadiusInPixels;
 
@@ -52,7 +58,7 @@
 *  @param position The sphere's center position.
 *  @param radius The sphere's radius in meters.
 *
-*  @return This sphere initialized to the specified position and radius.
+*  @return This sphere initialized to the specified position and radius in meters.
 *
 *  @exception NSInvalidArgumentException If the specified position is nil or the radius is less than or equal to 0.
 */
@@ -64,11 +70,26 @@
 *  @param position The sphere's center position.
 *  @param radius The sphere's radius in pixels.
 *
-*  @return This sphere initialized to the specified position and radius.
+*  @return This sphere initialized to the specified position and radius in pixels.
 *
 *  @exception NSInvalidArgumentException If the specified position is nil or the radius is less than or equal to 0.
 */
 - (WWSphere*) initWithPosition:(WWPosition*)position radiusInPixels:(double)radius;
+
+/**
+*  Initialize this sphere with a specified position, a radius in pixels, and a minimum/maximum radius in meters.
+*
+*  @param position The sphere's center position.
+*  @param radius The sphere's radius in pixels.
+*  @param minRadius The sphere's minimum radius in meters.
+*  @param maxRadius The sphere's maximum radius in meters.
+*
+*  @return This sphere initialized to the specified position, radius in pixels, and minimum/maximum radius in meters.
+*
+*  @exception NSInvalidArgumentException If the specified position is nil if the radius is less than or equal to 0,
+*  if the minimum radius is less than 0, or if the maximum radius is less than or equal to 0.
+*/
+- (WWSphere*) initWithPosition:(WWPosition*)position radiusInPixels:(double)radius minRadius:(double)minRadius maxRadius:(double)maxRadius;
 
 /// @name Methods of Interest Only to Subclasses
 
