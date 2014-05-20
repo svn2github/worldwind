@@ -11,6 +11,7 @@
 @interface METARLayer : WWRenderableLayer <NSXMLParserDelegate>
 
 @property (atomic) NSNumber* refreshInProgress;
+@property (atomic) NSDate* lastUpdate;
 
 - (METARLayer*) init;
 

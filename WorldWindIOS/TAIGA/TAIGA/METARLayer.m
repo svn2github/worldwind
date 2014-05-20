@@ -96,6 +96,10 @@
         {
             WWLog(@"METAR data parsing failed");
         }
+        else
+        {
+            [layer setLastUpdate:[[NSDate alloc] init]];
+        }
     }
     @catch (NSException* exception)
     {
@@ -128,6 +132,13 @@
                                                  name:TAIGA_REFRESH
                                                object:nil];
 
+    NSTimer* refreshTimer = [NSTimer scheduledTimerWithTimeInterval:1800
+                                                    target:self
+                                                  selector:@selector(handleRefreshTimer:)
+                                                  userInfo:nil
+                                                   repeats:YES];
+    [refreshTimer setTolerance:180];
+
     return self;
 }
 
@@ -140,6 +151,12 @@
     }
 
     [super setEnabled:enabled];
+}
+
+- (void) handleRefreshTimer:(NSTimer*)timer
+{
+    NSLog(@"TIMER FIRED");
+    [self refreshData];
 }
 
 - (void) refreshData
@@ -285,7 +302,8 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH_COMPLETE object:self];
 
         // Redraw in case the layer was enabled before all the placemarks were loaded.
-        [WorldWindView requestRedraw];
+        if ([self enabled])
+            [WorldWindView requestRedraw];
     }
     @catch (NSException* exception)
     {

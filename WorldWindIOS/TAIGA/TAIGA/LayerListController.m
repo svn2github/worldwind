@@ -42,6 +42,11 @@
                                                  name:WW_LAYER_LIST_CHANGED
                                                object:nil];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleRefreshNotification:)
+                                                 name:TAIGA_REFRESH_COMPLETE
+                                               object:nil];
+
     return self;
 }
 
@@ -100,7 +105,10 @@
 
         if (cell == nil)
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+            UITableViewCellStyle cellStyle = ([layer isKindOfClass:[METARLayer class]]
+                    || [layer isKindOfClass:[PIREPLayer class]])
+                    ? UITableViewCellStyleSubtitle : UITableViewCellStyleDefault;
+            cell = [[UITableViewCell alloc] initWithStyle:cellStyle
                                           reuseIdentifier:cellWithRefreshIdentifier];
             [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]];
             [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
@@ -133,7 +141,24 @@
     [[cell imageView] setHidden:![layer enabled]];
     [[cell accessoryView] setTag:[indexPath row]];
 
+    if ([layer isKindOfClass:[METARLayer class]])
+        [[cell detailTextLabel] setText:[self formatDate:[((METARLayer*) layer) lastUpdate]]];
+    else if ([layer isKindOfClass:[PIREPLayer class]])
+        [[cell detailTextLabel] setText:[self formatDate:[((PIREPLayer*) layer) lastUpdate]]];
+
     return cell;
+}
+
+- (NSString*) formatDate:(NSDate*)date
+{
+    if (date == nil)
+        return @"";
+
+    NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateStyle:NSDateFormatterShortStyle];
+    [formatter setTimeStyle:NSDateFormatterShortStyle];
+
+    return [NSString stringWithFormat:@"Updated %@", [formatter stringFromDate:date]];
 }
 
 - (void) tableView:(UITableView*)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath
@@ -215,4 +240,14 @@
         [[self tableView] reloadData];
     }
 }
+
+
+- (void) handleRefreshNotification:(NSNotification*)notification
+{
+    if ([[notification name] isEqualToString:TAIGA_REFRESH_COMPLETE])
+    {
+        [[self tableView] reloadData];
+    }
+}
+
 @end
