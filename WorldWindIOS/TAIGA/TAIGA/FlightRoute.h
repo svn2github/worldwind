@@ -22,7 +22,9 @@
     NSMutableArray* waypoints;
     NSMutableArray* waypointPositions;
     NSMutableArray* waypointShapes;
+    NSMutableArray* arrowShapes;
     WWPath* waypointPath;
+    WWShapeAttributes* pathAttrs;
     WWShapeAttributes* shapeAttrs;
     WWPosition* currentPosition;
 }

@@ -14,11 +14,13 @@
 @protected
     BOOL sizeIsPixels; // indicates whether the size was specified in pixels
     double sizeInMeters; // value used to scale the unit-length aircraft shape
-    WWPosition* position;
 }
 
-/// This aircraft's geographic position and course.
-@property (nonatomic) CLLocation* location;
+/// This aircraft's geographic position.
+@property (nonatomic) WWPosition* position;
+
+/// This aircraft's geographic heading.
+@property (nonatomic) double heading;
 
 /// This aircraft's size. Use isSizeInPixels to determine whether the value is in pixels rather than meters.
 ///

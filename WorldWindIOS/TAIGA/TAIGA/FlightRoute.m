@@ -7,6 +7,7 @@
 
 #import <CoreLocation/CoreLocation.h>
 #import "FlightRoute.h"
+#import "AircraftShape.h"
 #import "Waypoint.h"
 #import "AppConstants.h"
 #import "WorldWind/Geometry/WWBoundingSphere.h"
@@ -19,12 +20,18 @@
 #import "WorldWind/Shapes/WWSphere.h"
 #import "WorldWind/Terrain/WWGlobe.h"
 #import "WorldWind/Util/WWColor.h"
+#import "WorldWind/Util/WWMath.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
 
 const float PathWidth = 4.0;
-const float ShapeRadius = 6.0;
-const float ShapePickRadius = 22.0;
+const double WaypointRadius = 6.0;
+const double WaypointMinRadius = 20.0;
+const double WaypointMaxRadius = 20000.0;
+const double WaypointPickRadius = 22.0;
+const double ArrowSize = 24;
+const double ArrowMinSize = 40.0;
+const double ArrowMaxSize = 100000.0;
 
 @implementation FlightRoute
 
@@ -115,13 +122,18 @@ const float ShapePickRadius = 22.0;
 {
     NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:_colorIndex];
     WWColor* color = [colorAttrs objectForKey:@"color"];
+
+    pathAttrs = [[WWShapeAttributes alloc] init];
+    [pathAttrs setOutlineColor:color];
+    [pathAttrs setOutlineWidth:PathWidth];
+
     shapeAttrs = [[WWShapeAttributes alloc] init];
     [shapeAttrs setInteriorColor:color];
-    [shapeAttrs setOutlineColor:color];
-    [shapeAttrs setOutlineWidth:PathWidth];
+    [shapeAttrs setOutlineEnabled:NO];
 
     waypointPositions = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
     waypointShapes = [[NSMutableArray alloc] initWithCapacity:[waypoints count]];
+    arrowShapes = [[NSMutableArray alloc] initWithCapacity:[waypoints count] > 0 ? [waypoints count] - 1 : 0];
     currentPosition = [[WWPosition alloc] initWithZeroPosition];
 
     for (Waypoint* waypoint in waypoints)
@@ -129,33 +141,43 @@ const float ShapePickRadius = 22.0;
         WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:[waypoint altitude]];
         [waypointPositions addObject:pos];
 
-        id shape = [self createShapeWithPosition:pos];
+        id shape = [self createWaypointShapeWithPosition:pos];
         [waypointShapes addObject:shape];
     }
 
-    waypointPath = [self createPathForRoute:waypointPositions];
+    waypointPath = [self createPathWithPositions:waypointPositions];
 }
 
-- (WWPath*) createPathForRoute:(NSArray*)positions
+- (WWPath*) createPathWithPositions:(NSArray*)positions
 {
     WWPath* path = [[WWPath alloc] initWithPositions:positions];
+    [path setAttributes:pathAttrs];
     [path setPathType:WW_RHUMB];
     [path setNumSubsegments:100];
-    [path setAttributes:shapeAttrs];
     [path setPickDelegate:@{@"flightRoute":self}];
 
     return path;
 }
 
-- (id) createShapeWithPosition:(WWPosition*)position
+- (id) createWaypointShapeWithPosition:(WWPosition*)position
 {
-    WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:ShapeRadius];
+    WWSphere* shape = [[WWSphere alloc] initWithPosition:position radiusInPixels:WaypointRadius minRadius:WaypointMinRadius maxRadius:WaypointMaxRadius];
     [shape setAttributes:shapeAttrs];
 
     return shape;
 }
 
-- (void) updateShape:(id)shape withPosition:(WWPosition*)position
+- (id) createArrowShapeWithPosition:(WWPosition*)position heading:(double)heading legLength:(double)legLength
+{
+    AircraftShape* shape = [[AircraftShape alloc] initWithSizeInPixels:ArrowSize minSize:ArrowMinSize maxSize:MIN(ArrowMaxSize, legLength / 2.0)];
+    [shape setAttributes:shapeAttrs];
+    [shape setPosition:position];
+    [shape setHeading:heading];
+
+    return shape;
+}
+
+- (void) updateWaypointShape:(id)shape withPosition:(WWPosition*)position
 {
     [(WWSphere*) shape setPosition:position];
 }
@@ -180,8 +202,8 @@ const float ShapePickRadius = 22.0;
 
     NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:_colorIndex];
     WWColor* color = [colorAttrs objectForKey:@"color"];
+    [pathAttrs setOutlineColor:color];
     [shapeAttrs setInteriorColor:color];
-    [shapeAttrs setOutlineColor:color];
 
     [self didChangeAttribute];
 }
@@ -202,13 +224,53 @@ const float ShapePickRadius = 22.0;
 
     [waypointPath render:dc];
 
+    if (![dc pickingMode])
+    {
+        [self drawArrows:dc];
+    }
+
+    [self drawWaypoints:dc];
+}
+
+- (void) drawArrows:(WWDrawContext*)dc
+{
+    if ([arrowShapes count] == 0 && [waypointPositions count] > 1)
+    {
+        WWGlobe* globe = [dc globe];
+        double globeRadius = MAX([globe equatorialRadius], [globe polarRadius]);
+
+        for (NSUInteger i = 0; i < [waypointPositions count] - 1; i++)
+        {
+            WWPosition* begin = [waypointPositions objectAtIndex:i];
+            WWPosition* end = [waypointPositions objectAtIndex:i + 1];
+
+            double azimuth = [WWLocation rhumbAzimuth:begin endLocation:end];
+            double distance = [WWLocation rhumbDistance:begin endLocation:end];
+            double distanceMeters = RADIANS(distance) * globeRadius;
+            WWPosition* pos = [[WWPosition alloc] init];
+            [WWLocation rhumbLocation:begin azimuth:azimuth distance:0.5 * distance outputLocation:pos];
+            [pos setAltitude:[WWMath interpolateValue1:[begin altitude] value2:[end altitude] amount:0.5]];
+
+            id shape = [self createArrowShapeWithPosition:pos heading:azimuth legLength:distanceMeters];
+            [arrowShapes addObject:shape];
+        }
+    }
+
+    for (id shape in arrowShapes)
+    {
+        [shape render:dc];
+    }
+}
+
+- (void) drawWaypoints:(WWDrawContext*)dc
+{
     NSUInteger index = 0;
     for (id shape in waypointShapes)
     {
         double originalRadius = [shape radius];
         if ([dc pickingMode])
         {
-            [shape setRadius:ShapePickRadius];
+            [shape setRadius:WaypointPickRadius];
             [shape setPickDelegate:@{@"flightRoute":self, @"waypointIndex":[NSNumber numberWithUnsignedInteger:index]}];
         }
 
@@ -354,7 +416,7 @@ const float ShapePickRadius = 22.0;
     }
 
     WWPosition* pos = [[WWPosition alloc] initWithDegreesLatitude:[waypoint latitude] longitude:[waypoint longitude] altitude:[waypoint altitude]];
-    id shape = [self createShapeWithPosition:pos];
+    id shape = [self createWaypointShapeWithPosition:pos];
 
     [waypoints insertObject:waypoint atIndex:index];
     [waypointPositions insertObject:pos atIndex:index];
@@ -397,7 +459,7 @@ const float ShapePickRadius = 22.0;
     [pos setDegreesLatitude:[newWaypoint latitude] longitude:[newWaypoint longitude] altitude:[newWaypoint altitude]];
 
     id shape = [waypointShapes objectAtIndex:index];
-    [self updateShape:shape withPosition:pos];
+    [self updateWaypointShape:shape withPosition:pos];
 
     [waypoints replaceObjectAtIndex:index withObject:newWaypoint];
     [waypointPath setPositions:waypointPositions];
@@ -442,24 +504,28 @@ const float ShapePickRadius = 22.0;
 
 - (void) didInsertWaypointAtIndex:(NSUInteger)index
 {
+    [arrowShapes removeAllObjects];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didRemoveWaypointAtIndex:(NSUInteger)index
 {
+    [arrowShapes removeAllObjects];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didReplaceWaypointAtIndex:(NSUInteger)index
 {
+    [arrowShapes removeAllObjects];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:index]}];
 }
 
 - (void) didMoveWaypointFromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex
 {
+    [arrowShapes removeAllObjects];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:toIndex]}];
 }

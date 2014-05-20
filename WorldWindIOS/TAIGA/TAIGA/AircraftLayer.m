@@ -9,6 +9,7 @@
 #import "AircraftShape.h"
 #import "AppConstants.h"
 #import "WorldWind/Geometry/WWLocation.h"
+#import "WorldWind/Geometry/WWPosition.h"
 #import "WorldWind/Shapes/WWShapeAttributes.h"
 #import "WorldWind/Util/WWColor.h"
 #import "WorldWind/WorldWindView.h"
@@ -55,7 +56,9 @@
 
 - (void) updateAircraftShape:(id)shape withLocation:(CLLocation*)location
 {
-    [shape setLocation:location];
+    WWPosition* position = [[WWPosition alloc] initWithCLPosition:location];
+    [(AircraftShape*) shape setPosition:position];
+    [(AircraftShape*) shape setHeading:[location course]];
 }
 
 - (void) aircraftPositionDidChange:(NSNotification*)notification

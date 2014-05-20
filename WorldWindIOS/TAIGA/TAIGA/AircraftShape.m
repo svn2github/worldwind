@@ -29,12 +29,12 @@ static const GLsizei AircraftShapeVertexCount = 3;
 {
     self = [super init];
 
+    _position = [[WWPosition alloc] initWithZeroPosition];
     _size = size;
     _minSize = 0;
     _maxSize = DBL_MAX;
     _alwaysOnTop = NO;
     sizeIsPixels = NO;
-    position = [[WWPosition alloc] initWithZeroPosition];
 
     return self;
 }
@@ -48,25 +48,23 @@ static const GLsizei AircraftShapeVertexCount = 3;
 {
     self = [super init];
 
+    _position = [[WWPosition alloc] initWithZeroPosition];
     _size = size;
     _minSize = minSize;
     _maxSize = maxSize;
     sizeIsPixels = YES;
-    position = [[WWPosition alloc] initWithZeroPosition];
 
     return self;
 }
 
-- (void) setLocation:(CLLocation*)location
+- (void) setPosition:(WWPosition*)position
 {
-    if (location == nil)
+    if (position == nil)
     {
         WWLOG_AND_THROW(NSInvalidArgumentException, @"Position is nil")
     }
 
-    _location = location;
-
-    [position setCLLocation:location altitude:[location altitude]];
+    _position = position;
     [self setReferencePosition:position];
 }
 
@@ -102,11 +100,12 @@ static const GLsizei AircraftShapeVertexCount = 3;
 - (void) doMakeOrderedRenderable:(WWDrawContext*)dc
 {
     // Compute the shape's current reference point and eye distance.
-    [[dc terrain] surfacePointAtLatitude:[position latitude]
-                               longitude:[position longitude]
-                                  offset:[position altitude]
+    [[dc terrain] surfacePointAtLatitude:[_position latitude]
+                               longitude:[_position longitude]
+                                  offset:[_position altitude]
                             altitudeMode:[self altitudeMode]
                                   result:referencePoint];
+
     double eyeDistance = [[[dc navigatorState] eyePoint] distanceTo3:referencePoint];
     [self setEyeDistance:eyeDistance];
 
@@ -127,7 +126,7 @@ static const GLsizei AircraftShapeVertexCount = 3;
     // coordinate origin on the globe, and scale the shape's unit-length coordinates to their actual size.
     [transformationMatrix setToIdentity];
     [transformationMatrix multiplyByLocalCoordinateTransform:referencePoint onGlobe:[dc globe]];
-    [transformationMatrix multiplyByRotationAxis:0 y:0 z:1 angleDegrees:-[_location course]];
+    [transformationMatrix multiplyByRotationAxis:0 y:0 z:1 angleDegrees:-_heading];
     [transformationMatrix multiplyByScale:sizeInMeters y:sizeInMeters z:sizeInMeters];
 
     // Create the extent.
