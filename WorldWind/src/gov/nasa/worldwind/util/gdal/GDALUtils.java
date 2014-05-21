@@ -795,7 +795,8 @@ public class GDALUtils
         ColorModel cm;
 
         Band band1 = ds.GetRasterBand(1);
-        if (band1.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
+        if (band1.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex
+            && band1.GetRasterColorTable()!=null)
         {
             cm = band1.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandDataType));
             img = new BufferedImage(cm, raster, false, null);
