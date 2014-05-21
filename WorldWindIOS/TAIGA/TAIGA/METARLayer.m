@@ -18,6 +18,9 @@
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
 #import "AppConstants.h"
+#import "Settings.h"
+
+#define METAR_REFRESH_DATE (@"gov.nasa.worldwind.taiga.metarlayer.refreshdate")
 
 @interface METARLayerRetriever : NSOperation
 @end
@@ -99,6 +102,7 @@
         else
         {
             [layer setLastUpdate:[[NSDate alloc] init]];
+            [Settings setObject:[layer lastUpdate] forName:METAR_REFRESH_DATE];
         }
     }
     @catch (NSException* exception)
@@ -126,6 +130,7 @@
     [self setDisplayName:@"METAR Weather"];
 
     _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
+    _lastUpdate = (NSDate*) [Settings getObjectForName:METAR_REFRESH_DATE];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
@@ -155,7 +160,6 @@
 
 - (void) handleRefreshTimer:(NSTimer*)timer
 {
-    NSLog(@"TIMER FIRED");
     [self refreshData];
 }
 

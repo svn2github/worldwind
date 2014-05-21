@@ -13,6 +13,9 @@
 #import "WorldWind/WorldWind.h"
 #import "WorldWind/WorldWindView.h"
 #import "AppConstants.h"
+#import "Settings.h"
+
+#define PIREP_REFRESH_DATE (@"gov.nasa.worldwind.taiga.pireplayer.refreshdate")
 
 @interface PIREPLayerRetriever : NSOperation
 @end
@@ -94,6 +97,7 @@
         else
         {
             [layer setLastUpdate:[[NSDate alloc] init]];
+            [Settings setObject:[layer lastUpdate] forName:PIREP_REFRESH_DATE];
         }
     }
     @catch (NSException* exception)
@@ -126,6 +130,7 @@
     [self setDisplayName:@"PIREPS"];
 
     _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
+    _lastUpdate = (NSDate*) [Settings getObjectForName:PIREP_REFRESH_DATE];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRefreshNotification:)
@@ -155,7 +160,6 @@
 
 - (void) handleRefreshTimer:(NSTimer*)timer
 {
-    NSLog(@"TIMER FIRED");
     [self refreshData];
 }
 
