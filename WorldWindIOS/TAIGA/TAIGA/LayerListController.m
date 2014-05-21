@@ -96,9 +96,7 @@
     WWLayer* layer = [[self nonHiddenLayers] objectAtIndex:(NSUInteger) [indexPath row]];
 
     if ([layer isKindOfClass:[METARLayer class]]
-            || [layer isKindOfClass:[PIREPLayer class]]
-            || [layer isKindOfClass:[WaypointLayer class]]
-            || [layer isKindOfClass:[WeatherCamLayer class]])
+            || [layer isKindOfClass:[PIREPLayer class]])
     {
         static NSString* cellWithRefreshIdentifier = @"cellWithRefreshButton";
         cell = [tableView dequeueReusableCellWithIdentifier:cellWithRefreshIdentifier];
@@ -177,7 +175,9 @@
     }
     else if ([layer isKindOfClass:[WWRenderableLayer class]])
     {
-        bool showRefreshButton = [layer isKindOfClass:[DAFIFLayer class]] || [layer isKindOfClass:[WaypointLayer class]];
+        bool showRefreshButton = [layer isKindOfClass:[DAFIFLayer class]]
+                || [layer isKindOfClass:[WaypointLayer class]]
+                || [layer isKindOfClass:[WeatherCamLayer class]];
         RenderableLayerDetailController* detailController =
                 [[RenderableLayerDetailController alloc] initWithLayer:(WWRenderableLayer*) layer
                                                   refreshButtonEnabled:showRefreshButton];
