@@ -49,6 +49,13 @@ static const CGFloat AircraftSliderHeight = 4;
 {
     self = [super initWithNibName:nil bundle:nil];
 
+    NSNotificationCenter* ns = [NSNotificationCenter defaultCenter];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_ALL_WAYPOINTS_CHANGED object:nil];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:nil];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:nil];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED object:nil];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:nil];
+
     return self;
 }
 
@@ -72,6 +79,14 @@ static const CGFloat AircraftSliderHeight = 4;
 
     // Post the simulated aircraft position as the percentage along the flight route corresponding to the current
     // aircraft slider value.
+    [self postAircraftPosition];
+}
+
+- (void) flightRouteDidChange:(NSNotification*)notification
+{
+    if (_flightRoute == nil || _flightRoute != [notification object])
+        return;
+
     [self postAircraftPosition];
 }
 
