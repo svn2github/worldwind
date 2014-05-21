@@ -16,6 +16,7 @@
 {
 @protected
     UITableView* flightRouteTable;
+    NSMutableArray* propertySectionCells;
     WaypointPicker* waypointPicker;
     BulkRetrieverController* bulkRetrieverController;
     NSArray* normalConstraints;

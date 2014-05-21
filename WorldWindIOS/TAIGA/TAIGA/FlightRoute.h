@@ -72,4 +72,6 @@
 
 - (void) moveWaypointAtIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex;
 
+- (void) reverseWaypoints;
+
 @end

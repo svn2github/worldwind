@@ -41,6 +41,7 @@
     [self setPreferredContentSize:CGSizeMake(350, 1000)];
 
     NSNotificationCenter* ns = [NSNotificationCenter defaultCenter];
+    [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_ALL_WAYPOINTS_CHANGED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:nil];
     [ns addObserver:self selector:@selector(flightRouteDidChange:) name:TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED object:nil];
@@ -350,7 +351,14 @@
 
     FlightRoute* flightRoute = [self flightRouteAtIndex:index];
     UIViewController* detailController = [[FlightRouteDetailController alloc] initWithFlightRoute:flightRoute worldWindView:_wwv];
-    [detailController setEditing:editing animated:NO]; // The detail controller is not yet visible. No need to animate to the editing state.
+
+    // Set the route detail controller in the editing state when requested. The controller is not yet visible so there's
+    // no need to animate to the editing state.
+    if (editing)
+    {
+        [detailController setEditing:YES animated:NO];
+    }
+
     [[self navigationController] pushViewController:detailController animated:YES];
 }
 

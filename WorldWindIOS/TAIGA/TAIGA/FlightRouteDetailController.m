@@ -30,9 +30,11 @@
 #define EDIT_ANIMATION_DURATION (0.3)
 #define SECTION_PROPERTIES (0)
 #define SECTION_WAYPOINTS (1)
-#define ROW_COLOR (0)
-#define ROW_DEFAULT_ALTITUDE (1)
-#define ROW_DOWNLOAD (2)
+#define COLOR_CELL_ID (@"colorCellId")
+#define DEFAULT_ALTITUDE_CELL_ID (@"defaultAltitudeCellId")
+#define DOWNLOAD_CELL_ID (@"downloadCellId")
+#define REVERSE_WAYPOINTS_CELL_ID (@"reverseWaypointsCellId")
+#define WAYPOINT_CELL_ID (@"waypointCellId")
 
 @implementation FlightRouteDetailController
 
@@ -44,12 +46,15 @@
 {
     self = [super initWithNibName:nil bundle:nil];
 
-    [[self navigationItem] setTitle:[flightRoute displayName]];
-    [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
-
     _flightRoute = flightRoute;
     _wwv = wwv;
 
+    [[self navigationItem] setTitle:[flightRoute displayName]];
+    [[self navigationItem] setRightBarButtonItem:[self editButtonItem]];
+    [self assemblePropertyCells];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteAllWaypointsChanged:)
+                                                 name:TAIGA_FLIGHT_ROUTE_ALL_WAYPOINTS_CHANGED object:_flightRoute];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointInserted:)
                                                  name:TAIGA_FLIGHT_ROUTE_WAYPOINT_INSERTED object:_flightRoute];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFlightRouteWaypointRemoved:)
@@ -75,6 +80,13 @@
 //--------------------------------------------------------------------------------------------------------------------//
 //-- Flight Route Notifications --//
 //--------------------------------------------------------------------------------------------------------------------//
+
+- (void) handleFlightRouteAllWaypointsChanged:(NSNotification*)notification
+{
+    // Make the flight route table view match the change in the model, using UIKit animations to display the change.
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:SECTION_WAYPOINTS];
+    [flightRouteTable reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+}
 
 - (void) handleFlightRouteWaypointInserted:(NSNotification*)notification
 {
@@ -158,7 +170,10 @@
 
 - (void) setEditing:(BOOL)editing animated:(BOOL)animated
 {
+    // Place the flight route table in editing mode.
     [super setEditing:editing animated:animated];
+    [flightRouteTable setEditing:editing animated:animated];
+    [self setPropertySectionCellsEditing:editing animated:animated];
 
     if (animated)
     {
@@ -181,9 +196,6 @@
         [self flashScrollIndicators];
     }
 
-    // Place the table in editing mode and refresh the properties section, which has custom editing controls.
-    [flightRouteTable setEditing:editing animated:animated];
-
     if (!editing)
     {
         [waypointPicker resignFirstResponder];
@@ -193,6 +205,62 @@
 //--------------------------------------------------------------------------------------------------------------------//
 //-- UITableViewDataSource and UITableViewDelegate --//
 //--------------------------------------------------------------------------------------------------------------------//
+
+- (void) assemblePropertyCells
+{
+    UITableViewCell* colorCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:COLOR_CELL_ID];
+    [colorCell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    [[colorCell textLabel] setText:@"Color"];
+
+    UITableViewCell* altitudeCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:DEFAULT_ALTITUDE_CELL_ID];
+    [altitudeCell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    [[altitudeCell textLabel] setText:@"Default Altitude"];
+
+    UITableViewCell* downloadCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:DOWNLOAD_CELL_ID];
+    [downloadCell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    [[downloadCell textLabel] setText:@"Download data"];
+
+    propertySectionCells = [@[colorCell, altitudeCell, downloadCell] mutableCopy];
+}
+
+- (NSIndexPath*) indexPathForReuseIdentifier:(NSString*)reuseIdentifier inTableView:(UITableView*)tableView
+{
+    for (NSInteger section = 0; section < [tableView numberOfSections]; section++)
+    {
+        for (NSInteger row = 0; row < [tableView numberOfRowsInSection:section]; row++)
+        {
+            NSIndexPath* indexPath = [NSIndexPath indexPathForRow:row inSection:section];
+            UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
+            if ([[cell reuseIdentifier] isEqualToString:reuseIdentifier])
+            {
+                return indexPath;
+            }
+        }
+    }
+
+    return nil;
+}
+
+- (void) setPropertySectionCellsEditing:(BOOL)editing animated:(BOOL)animated
+{
+    NSIndexPath* indexPath = [self indexPathForReuseIdentifier:REVERSE_WAYPOINTS_CELL_ID inTableView:flightRouteTable];
+
+    if (editing && indexPath == nil)
+    {
+        UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:REVERSE_WAYPOINTS_CELL_ID];
+        [[cell textLabel] setText:@"Reverse Waypoints"];
+        [[cell textLabel] setTextColor:[cell tintColor]];
+
+        indexPath = [NSIndexPath indexPathForRow:[propertySectionCells count] inSection:SECTION_PROPERTIES];
+        [propertySectionCells insertObject:cell atIndex:(NSUInteger) [indexPath row]];
+        [flightRouteTable insertRowsAtIndexPaths:@[indexPath] withRowAnimation:animated ? UITableViewRowAnimationAutomatic : UITableViewRowAnimationNone];
+    }
+    else if (indexPath != nil)
+    {
+        [propertySectionCells removeObjectAtIndex:(NSUInteger) [indexPath row]];
+        [flightRouteTable deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:animated ? UITableViewRowAnimationAutomatic : UITableViewRowAnimationNone];
+    }
+}
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
@@ -204,7 +272,7 @@
     switch (section)
     {
         case SECTION_PROPERTIES:
-            return 3;
+            return [propertySectionCells count];
         case SECTION_WAYPOINTS:
             return [_flightRoute waypointCount];
         default:
@@ -253,34 +321,19 @@
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForProperty:(NSIndexPath*)indexPath
 {
-    static NSString* propertyCellId = @"propertyCellId";
-    static UIColor* detailTextColor;
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:propertyCellId];
-    if (cell == nil)
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:propertyCellId];
-        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-        detailTextColor = [[cell detailTextLabel] textColor];
-    }
+    UITableViewCell* cell = [propertySectionCells objectAtIndex:(NSUInteger) [indexPath row]];
+    NSString* cellId = [cell reuseIdentifier];
 
-    if ([indexPath row] == ROW_COLOR)
+    if ([cellId isEqualToString:COLOR_CELL_ID])
     {
         NSDictionary* colorAttrs = [[FlightRoute flightRouteColors] objectAtIndex:[_flightRoute colorIndex]];
-        [[cell textLabel] setText:@"Color"];
         [[cell detailTextLabel] setText:[colorAttrs objectForKey:@"displayName"]];
         [[cell detailTextLabel] setTextColor:[[colorAttrs objectForKey:@"color"] uiColor]];
     }
-    else if ([indexPath row] == ROW_DEFAULT_ALTITUDE)
+    else if ([cellId isEqualToString:DEFAULT_ALTITUDE_CELL_ID])
     {
         double altitude = [_flightRoute defaultAltitude];
-        [[cell textLabel] setText:@"Default Altitude"];
         [[cell detailTextLabel] setText:[[TAIGA unitsFormatter] formatMetersAltitude:altitude]];
-        [[cell detailTextLabel] setTextColor:detailTextColor]; // show altitude detail text in the default color
-    }
-    else if ([indexPath row] == ROW_DOWNLOAD)
-    {
-        [[cell textLabel] setText:@"Download data"];
-        [[cell detailTextLabel] setText:nil];
     }
 
     return cell;
@@ -288,11 +341,10 @@
 
 - (UITableViewCell*) tableView:(UITableView*)tableView cellForWaypoint:(NSIndexPath*)indexPath
 {
-    static NSString* waypointCellId = @"waypointCellId";
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:waypointCellId];
+    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:WAYPOINT_CELL_ID];
     if (cell == nil)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:waypointCellId];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:WAYPOINT_CELL_ID];
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
         [[cell textLabel] setAdjustsFontSizeToFitWidth:YES];
     }
@@ -308,7 +360,9 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_COLOR)
+    NSString* cellId = [[tableView cellForRowAtIndexPath:indexPath] reuseIdentifier];
+
+    if ([cellId isEqualToString:COLOR_CELL_ID])
     {
         ColorPicker* picker = [[ColorPicker alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
         [picker addTarget:self action:@selector(didPickColor:) forControlEvents:UIControlEventValueChanged];
@@ -320,7 +374,7 @@
         [viewController setTitle:@"Color"];
         [[self navigationController] pushViewController:viewController animated:YES];
     }
-    else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_DEFAULT_ALTITUDE)
+    else if ([cellId isEqualToString:DEFAULT_ALTITUDE_CELL_ID])
     {
         AltitudePicker* picker = [[AltitudePicker alloc] initWithFrame:CGRectMake(0, 44, 1, 216)];
         [picker addTarget:self action:@selector(didPickDefaultAltitude:) forControlEvents:UIControlEventValueChanged];
@@ -332,7 +386,7 @@
         [viewController setTitle:@"Default Altitude"];
         [[self navigationController] pushViewController:viewController animated:YES];
     }
-    else if ([indexPath section] == SECTION_PROPERTIES && [indexPath row] == ROW_DOWNLOAD)
+    else if ([cellId isEqualToString:DOWNLOAD_CELL_ID])
     {
         if (bulkRetrieverController == nil)
             bulkRetrieverController = [[BulkRetrieverController alloc] initWithWorldWindView:_wwv];
@@ -393,7 +447,11 @@
 //            [bulkRetrieverController setSectors:sectors];
 //        }
     }
-    else if ([indexPath section] == SECTION_WAYPOINTS)
+    else if ([cellId isEqualToString:REVERSE_WAYPOINTS_CELL_ID])
+    {
+        [_flightRoute reverseWaypoints];
+    }
+    else if ([cellId isEqualToString:WAYPOINT_CELL_ID])
     {
         NSUInteger index = (NSUInteger) [indexPath row];
         Waypoint* waypoint = [_flightRoute waypointAtIndex:index];
@@ -489,16 +547,16 @@ moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
 {
     [_flightRoute setColorIndex:(NSUInteger) [sender selectedColorIndex]];
 
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:ROW_COLOR inSection:SECTION_PROPERTIES];
-    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSIndexPath* indexPath = [self indexPathForReuseIdentifier:COLOR_CELL_ID inTableView:flightRouteTable];
+    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void) didPickDefaultAltitude:(AltitudePicker*)sender
 {
     [_flightRoute setDefaultAltitude:[sender altitude]];
 
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:ROW_DEFAULT_ALTITUDE inSection:SECTION_PROPERTIES];
-    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSIndexPath* indexPath = [self indexPathForReuseIdentifier:DEFAULT_ALTITUDE_CELL_ID inTableView:flightRouteTable];
+    [flightRouteTable reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void) didPickWaypointAltitude:(AltitudePicker*)sender

@@ -497,6 +497,21 @@ const double ArrowMaxSize = 100000.0;
     [self didMoveWaypointFromIndex:fromIndex toIndex:toIndex];
 }
 
+- (void) reverseWaypoints
+{
+    NSArray* reversedWaypoints = [[waypoints reverseObjectEnumerator] allObjects];
+    NSArray* reversedPositions = [[waypointPositions reverseObjectEnumerator] allObjects];
+    NSArray* reversedShapes = [[waypointShapes reverseObjectEnumerator] allObjects];
+
+    NSRange allObjects = NSMakeRange(0, [waypoints count]);
+    [waypoints replaceObjectsInRange:allObjects withObjectsFromArray:reversedWaypoints];
+    [waypointPositions replaceObjectsInRange:allObjects withObjectsFromArray:reversedPositions];
+    [waypointShapes replaceObjectsInRange:allObjects withObjectsFromArray:reversedShapes];
+    [waypointPath setPositions:waypointPositions];
+
+    [self didReverseWaypoints];
+}
+
 - (void) didChangeAttribute
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_ATTRIBUTE_CHANGED object:self];
@@ -528,6 +543,12 @@ const double ArrowMaxSize = 100000.0;
     [arrowShapes removeAllObjects];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED object:self
                                                       userInfo:@{TAIGA_FLIGHT_ROUTE_WAYPOINT_INDEX : [NSNumber numberWithUnsignedInteger:toIndex]}];
+}
+
+- (void) didReverseWaypoints
+{
+    [arrowShapes removeAllObjects];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_FLIGHT_ROUTE_ALL_WAYPOINTS_CHANGED object:self];
 }
 
 @end
