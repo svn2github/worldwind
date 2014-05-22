@@ -931,8 +931,11 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 
         // In general, the best attainable resolution varies over the elevation model, so determine the best
         // attainable ^for this tile^ and use that as the convergence criteria.
-        double localTargetResolution =
-            Math.max(this.globe.getElevationModel().getBestResolution(tile.sector), this.targetResolution);
+        double[] localTargetResolution = this.getGlobe().getElevationModel().getBestResolutions(sector);
+        for (int i = 0; i < localTargetResolution.length; i++)
+        {
+            localTargetResolution[i] = Math.max(localTargetResolution[i], this.targetResolution);
+        }
         this.getElevations(tile.sector, latlons, localTargetResolution, elevations);
 
         LatLon centroid = tile.sector.getCentroid();
@@ -975,18 +978,18 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
             new Position(maxElevationLocation, maxElevation));
     }
 
-    protected void getElevations(Sector sector, List<LatLon> latlons, double targetResolution, double[] elevations)
+    protected void getElevations(Sector sector, List<LatLon> latlons, double[] targetResolution, double[] elevations)
         throws InterruptedException
     {
-        double actualResolution = Double.MAX_VALUE;
-        while (actualResolution > targetResolution)
+        double[] actualResolution = new double[targetResolution.length];
+        for (int i = 0; i < targetResolution.length; i++)
+        {
+            actualResolution[i] = Double.MAX_VALUE;
+        }
+        while (!this.resolutionsMeetCriteria(actualResolution, targetResolution))
         {
             actualResolution = this.globe.getElevations(sector, latlons, targetResolution, elevations);
-            // Uncomment the two lines below if you want to watch the resolution converge
-//            System.out.printf("Target resolution = %s, Actual resolution = %s\n",
-//                Double.toString(targetResolution), Double.toString(actualResolution));
-
-            if (actualResolution <= targetResolution)
+            if (resolutionsMeetCriteria(actualResolution, targetResolution))
                 break;
 
             // Give the system a chance to retrieve data from the disk cache or the server. Also catches interrupts
@@ -1000,6 +1003,18 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
                     throw new WWRuntimeException("Terrain convergence timed out");
             }
         }
+    }
+
+    protected boolean resolutionsMeetCriteria(double[] actualResolution, double[] targetResolution)
+    {
+        for (int i = 0; i < actualResolution.length; i++)
+        {
+            if (actualResolution[i] > targetResolution[i])
+                return false;
+
+        }
+
+        return true;
     }
 
     /**

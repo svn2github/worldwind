@@ -139,6 +139,23 @@ abstract public class AbstractElevationModel extends WWObjectImpl implements Ele
         return e == this.missingDataFlag ? this.missingDataValue : e;
     }
 
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return new double[] {this.getElevations(sector, latLons, targetResolutions[0], elevations)};
+    }
+
+    public double[] getUnmappedElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return new double[] {this.getElevations(sector, latLons, targetResolutions[0], elevations)};
+    }
+
+    public double[] getBestResolutions(Sector sector)
+    {
+        return new double[] {this.getBestResolution(sector)};
+    }
+
     public String getRestorableState()
     {
         return null;

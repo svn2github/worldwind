@@ -176,6 +176,8 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      */
     double getBestResolution(Sector sector);
 
+    double[] getBestResolutions(Sector sector);
+
     /**
      * Returns the detail hint associated with the specified sector. If the elevation model does not have any detail
      * hint for the sector, this method returns zero.
@@ -241,10 +243,41 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
      *         determined for all of the locations.
      *
+     * @throws IllegalArgumentException if either the sector, latlons list or elevations array is null.
      * @see #setMissingDataSignal(double)
      */
     @SuppressWarnings({"JavadocReference"})
     double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] buffer);
+
+    /**
+     * Returns the elevations of a collection of locations. Replaces any elevation values corresponding to the missing
+     * data signal with the elevation model's missing data replacement value. If a location within the elevation model's
+     * coverage area cannot currently be determined, the elevation model's minimum extreme elevation for that location
+     * is returned in the output buffer. If a location is outside the elevation model's coverage area, the output buffer
+     * for that location is not modified; it retains the buffer's original value.
+     *
+     * @param sector           the sector in question.
+     * @param latlons          the locations to return elevations for. If a location is null, the output buffer for that
+     *                         location is not modified.
+     * @param targetResolution the desired horizontal resolution, in radians, of the raster or other elevation sample
+     *                         from which elevations are drawn. (To compute radians from a distance, divide the distance
+     *                         by the radius of the globe, ensuring that both the distance and the radius are in the
+     *                         same units.) This is an array to enable specification of a target resolution per
+     *                         elevation model for {@link gov.nasa.worldwind.terrain.CompoundElevationModel}. The
+     *                         entries must be in the same order as the elevations in {@link
+     *                         gov.nasa.worldwind.terrain.CompoundElevationModel}.
+     * @param buffer           an array in which to place the returned elevations. The array must be pre-allocated and
+     *                         contain at least as many elements as the list of locations.
+     *
+     * @return the resolutions achieved, in radians, which will be {@link Double#MAX_VALUE} if individual elevations
+     *         cannot be determined for all of the locations. The entries are in the same order as the elevations in
+     *         {@link gov.nasa.worldwind.terrain.CompoundElevationModel}.
+     *
+     * @throws IllegalArgumentException if either the sector, latlons list, target resolutions array or elevations array
+     *                                  is null.
+     * @see #setMissingDataSignal(double)
+     */
+    double[] getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution[], double[] buffer);
 
     /**
      * Returns the elevations of a collection of locations. <em>Does not</em> replace any elevation values corresponding
@@ -269,6 +302,37 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      * @see #setMissingDataSignal(double)
      */
     double getUnmappedElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
+        double[] buffer);
+
+    /**
+     * Returns the elevations of a collection of locations. <em>Does not</em> replace any elevation values corresponding
+     * to the missing data signal with the elevation model's missing data replacement value. If a location within the
+     * elevation model's coverage area cannot currently be determined, the elevation model's minimum extreme elevation
+     * for that location is returned in the output buffer. If a location is outside the elevation model's coverage area,
+     * the output buffer for that location is not modified; it retains the buffer's original value.
+     *
+     * @param sector           the sector in question.
+     * @param latlons          the locations to return elevations for. If a location is null, the output buffer for that
+     *                         location is not modified.
+     * @param targetResolution the desired horizontal resolution, in radians, of the raster or other elevation sample
+     *                         from which elevations are drawn. (To compute radians from a distance, divide the distance
+     *                         by the radius of the globe, ensuring that both the distance and the radius are in the
+     *                         same units.) This is an array to enable specification of a target resolution per
+     *                         elevation model for {@link gov.nasa.worldwind.terrain.CompoundElevationModel}. The
+     *                         entries must be in the same order as the elevations in {@link
+     *                         gov.nasa.worldwind.terrain.CompoundElevationModel}.
+     * @param buffer           an array in which to place the returned elevations. The array must be pre-allocated and
+     *                         contain at least as many elements as the list of locations.
+     *
+     * @return the resolutions achieved, in radians, which will be {@link Double#MAX_VALUE} if individual elevations
+     *         cannot be determined for all of the locations. The entries are in the same order as the elevations in
+     *         {@link gov.nasa.worldwind.terrain.CompoundElevationModel}.
+     *
+     * @throws IllegalArgumentException if either the sector, latlons list, target resolutions array or elevations
+     *                                  array
+     * @see #setMissingDataSignal(double)
+     */
+    double[] getUnmappedElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution[],
         double[] buffer);
 
     /**

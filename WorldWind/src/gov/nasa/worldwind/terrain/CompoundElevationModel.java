@@ -284,6 +284,19 @@ public class CompoundElevationModel extends AbstractElevationModel
         return res != 0 ? res : Double.MAX_VALUE;
     }
 
+    @Override
+    public double[] getBestResolutions(Sector sector)
+    {
+        double[] res = new double[this.elevationModels.size()];
+
+        for (int i = 0; i < this.elevationModels.size(); i++)
+        {
+            res[i] = this.elevationModels.get(i).getBestResolution(sector);
+        }
+
+        return res;
+    }
+
     public double getDetailHint(Sector sector)
     {
         if (sector == null)
@@ -417,7 +430,13 @@ public class CompoundElevationModel extends AbstractElevationModel
      */
     public double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] buffer)
     {
-        return this.doGetElevations(sector, latlons, targetResolution, buffer, false);
+        double[] targetResolutions = new double[this.elevationModels.size()];
+        for (int i = 0; i < targetResolutions.length; i++)
+        {
+            targetResolutions[i] = targetResolution;
+        }
+
+        return this.doGetElevations(sector, latlons, targetResolutions, buffer, false)[0];
     }
 
     /**
@@ -443,10 +462,30 @@ public class CompoundElevationModel extends AbstractElevationModel
     public double getUnmappedElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
         double[] buffer)
     {
-        return this.doGetElevations(sector, latlons, targetResolution, buffer, false);
+        double[] targetResolutions = new double[this.elevationModels.size()];
+        for (int i = 0; i < targetResolutions.length; i++)
+        {
+            targetResolutions[i] = targetResolution;
+        }
+
+        return this.doGetElevations(sector, latlons, targetResolutions, buffer, false)[0];
     }
 
-    protected double doGetElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution,
+    @Override
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return this.doGetElevations(sector, latLons, targetResolutions, elevations, false);
+    }
+
+    @Override
+    public double[] getUnmappedElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolutions,
+        double[] elevations)
+    {
+        return this.doGetElevations(sector, latLons, targetResolutions, elevations, false);
+    }
+
+    protected double[] doGetElevations(Sector sector, List<? extends LatLon> latlons, double[] targetResolution,
         double[] buffer, boolean mapMissingData)
     {
         if (sector == null)
@@ -459,6 +498,13 @@ public class CompoundElevationModel extends AbstractElevationModel
         if (latlons == null)
         {
             String msg = Logging.getMessage("nullValue.LatLonListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (targetResolution == null)
+        {
+            String msg = Logging.getMessage("nullValue.TargetElevationsArrayIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -480,9 +526,12 @@ public class CompoundElevationModel extends AbstractElevationModel
         // Fill the buffer with ElevationModel contents from lowest resolution to highest, potentially overwriting
         // values at each step. ElevationModels are expected to leave the buffer untouched for locations outside their
         // coverage area.
-        double resolutionAchieved = 0;
-        for (ElevationModel em : this.elevationModels)
+        double[] resolutionAchieved = new double[this.elevationModels.size()];
+        for (int i = 0; i < this.elevationModels.size(); i++)
         {
+            ElevationModel em = this.elevationModels.get(i);
+            resolutionAchieved[i] = 0;
+
             if (!em.isEnabled())
                 continue;
 
@@ -492,12 +541,12 @@ public class CompoundElevationModel extends AbstractElevationModel
 
             double r;
             if (mapMissingData || this.elevationModels.size() == 1)
-                r = em.getElevations(sector, latlons, targetResolution, buffer);
+                r = em.getElevations(sector, latlons, targetResolution[i], buffer);
             else
-                r = em.getUnmappedElevations(sector, latlons, targetResolution, buffer);
+                r = em.getUnmappedElevations(sector, latlons, targetResolution[i], buffer);
 
-            if (r < resolutionAchieved || resolutionAchieved == 0)
-                resolutionAchieved = r;
+            if (r < resolutionAchieved[i] || resolutionAchieved[i] == 0)
+                resolutionAchieved[i] = r;
         }
 
         return resolutionAchieved;

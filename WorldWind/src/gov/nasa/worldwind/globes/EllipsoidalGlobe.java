@@ -458,6 +458,26 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         return resolution;
     }
 
+    public double[] getElevations(Sector sector, List<? extends LatLon> latLons, double[] targetResolution,
+        double[] elevations)
+    {
+        if (this.elevationModel == null)
+            return new double[] {0};
+
+        double[] resolution = this.elevationModel.getElevations(sector, latLons, targetResolution, elevations);
+
+        if (this.egm96 != null)
+        {
+            for (int i = 0; i < elevations.length; i++)
+            {
+                LatLon latLon = latLons.get(i);
+                elevations[i] = elevations[i] + this.egm96.getOffset(latLon.getLatitude(), latLon.getLongitude());
+            }
+        }
+
+        return resolution;
+    }
+
     public double getElevation(Angle latitude, Angle longitude)
     {
         if (latitude == null || longitude == null)

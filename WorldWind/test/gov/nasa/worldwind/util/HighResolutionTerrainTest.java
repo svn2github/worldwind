@@ -8,7 +8,7 @@ package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
-import gov.nasa.worldwind.terrain.HighResolutionTerrain;
+import gov.nasa.worldwind.terrain.*;
 import junit.framework.*;
 import junit.textui.TestRunner;
 
@@ -23,7 +23,7 @@ public class HighResolutionTerrainTest
 {
     public static class Tests extends TestCase
     {
-        protected int GRID_SIZE = 100;
+        protected int GRID_SIZE = 50;
 
         protected static ArrayList<Position> generateReferenceLocations(Sector sector, int numLats, int numLons)
         {
@@ -70,9 +70,9 @@ public class HighResolutionTerrainTest
             final HashMap<Position, Intersection[]> previousIntersections = new HashMap<Position, Intersection[]>();
 
             Globe globe = new Earth();
-//            CompoundElevationModel cem = (CompoundElevationModel) globe.getElevationModel();
-//            cem.addElevationModel(EllipsoidalGlobe.makeElevationModel(
-//                "", "config/Earth/EarthMergedElevationModel.xml"));
+            CompoundElevationModel cem = (CompoundElevationModel) globe.getElevationModel();
+            cem.addElevationModel(EllipsoidalGlobe.makeElevationModel(
+                "", "config/Earth/EarthMergedElevationModel.xml"));
 
             for (int i = 0; i < 5; i++)
             {

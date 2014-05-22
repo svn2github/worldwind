@@ -99,9 +99,39 @@ public interface Globe extends WWObject, Extent
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
      *         determined for all of the locations. Returns zero if an elevation model is not available.
      *
+     * @throws IllegalArgumentException if either the sector, latlons list or elevations array is null.
+     *
      * @see #getElevationModel()
      */
     double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] elevations);
+
+    /**
+     * Indicates the elevations of a collection of locations. Replaces any elevation values corresponding to the missing
+     * data signal with the elevation model's missing data replacement value. If a location within the elevation model's
+     * coverage area cannot currently be determined, the elevation model's minimum extreme elevation for that location
+     * is returned in the output buffer. If a location is outside the elevation model's coverage area, the output buffer
+     * for that location is not modified; it retains the buffer's original value.
+     *
+     * @param sector           the sector in question.
+     * @param latlons          the locations to return elevations for. If a location is null, the output buffer for that
+     *                         location is not modified.
+     * @param targetResolution the desired horizontal resolution, in radians, of the raster or other elevation sample
+     *                         from which elevations are drawn. (To compute radians from a distance, divide the distance
+     *                         by the radius of the globe, ensuring that both the distance and the radius are in the
+     *                         same units.) This parameter is an array to allow varying resolutions to be specified for
+     *                         {@link CompoundElevationModel}.
+     * @param elevations       an array in which to place the returned elevations. The array must be pre-allocated and
+     *                         contain at least as many elements as the list of locations.
+     *
+     * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
+     *         determined for all of the locations. Returns zero if an elevation model is not available.
+     *
+     * @throws IllegalArgumentException if either the sector, latlons list, target resolutions array or elevations array
+     *                                  is null.
+     * @see #getElevationModel()
+     */
+    double[] getElevations(Sector sector, List<? extends LatLon> latlons, double[] targetResolution,
+        double[] elevations);
 
     /**
      * Indicates the maximum elevation on this globe, in meters.
