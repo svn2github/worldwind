@@ -202,7 +202,7 @@
                                                 finishedBlock:^(WWRetriever* myRetriever)
                                                 {
                                                     [self performSelectorOnMainThread:@selector(handelRefresh:)
-                                                                           withObject:retriever
+                                                                           withObject:myRetriever
                                                                         waitUntilDone:NO];
                                                 }];
     [retriever performRetrieval];
