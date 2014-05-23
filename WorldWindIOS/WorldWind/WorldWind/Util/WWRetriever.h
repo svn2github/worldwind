@@ -77,6 +77,6 @@
 *
 * @return The HTTP retrieval status code, or 0 if there is no HTTP response available.
 */
-- (NSUInteger) httpStatusCode;
+- (NSInteger) httpStatusCode;
 
 @end
