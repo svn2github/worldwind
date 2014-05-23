@@ -291,7 +291,7 @@
 
         UIButton* refreshButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         [refreshButton setFrame:CGRectMake(15, 10, 100, 30)];
-        [refreshButton setTitle:@"  Refresh All Information" forState:UIControlStateNormal];
+        [refreshButton setTitle:@"  Refresh all information" forState:UIControlStateNormal];
         [refreshButton setImage:[UIImage imageNamed:@"01-refresh.png"] forState:UIControlStateNormal];
         [refreshButton setBackgroundColor:[UIColor clearColor]];
         [[refreshButton titleLabel] setFont:[[cell textLabel] font]];
