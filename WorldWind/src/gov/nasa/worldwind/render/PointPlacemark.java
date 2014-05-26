@@ -1324,11 +1324,11 @@ public class PointPlacemark extends WWObjectImpl
         // based URL to be passed to the BasicWWTexture constructor.
         if (localUrl != null)
         {
-            if (!"file".equals(localUrl.getProtocol()))
-            {
-                Logging.logger().warning(Logging.getMessage("generic.URLProtocolNotFile", localUrl));
-                return null;
-            }
+//            if (!"file".equals(localUrl.getProtocol()))
+//            {
+//                Logging.logger().warning(Logging.getMessage("generic.URLProtocolNotFile", localUrl));
+//                return null;
+//            }
 
             return new BasicWWTexture(localUrl, true);
         }
