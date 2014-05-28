@@ -33,9 +33,8 @@
 
     boundaries = [[NSMutableArray alloc] init];
     [boundaries addObject:positions];
-    [self setReferencePosition:[positions count] < 1 ? nil : [positions objectAtIndex:0]];
-
     referenceNormal = [[WWVec4 alloc] initWithZeroVector];
+    [self setReferencePosition:[positions firstObject]]; // nil if the array is empty
 
     return self;
 }
@@ -79,7 +78,7 @@
     }
 
     [boundaries setObject:positions atIndexedSubscript:0];
-    [self setReferencePosition:[positions count] < 1 ? nil : [positions objectAtIndex:0]];
+    [self setReferencePosition:[positions firstObject]]; // nil if the array is empty
     [self reset];
 }
 
@@ -266,6 +265,7 @@
         *index++ = [tessIndex unsignedShortValue];
     }
 
+    tess = nil;
     tessVertices = nil;
 }
 

@@ -20,8 +20,8 @@
 * by adding an inner boundary using [WWPolygon addInnerBoundary:]. Inner boundaries placed inside the polygon's
 * positions cause the inner region to be removed from the polygon's filled interior, while inner boundaries placed
 * inside another inner boundary cause the innermost region to be added back to the polygon's filled interior. This makes
-* it possible to create a polygons with complex interiors, such as a state boundary omitting a lake but including
-* islands on that lake. In either case, the winding order of the outer boundary and the inner boundaries is irrelevant.
+* it possible to create polygons with complex interiors, such as a state boundary omitting a lake but including islands
+* on that lake. In either case, the winding order of the outer boundary and the inner boundaries is irrelevant.
 *
 * The positions and inner boundaries may be in any winding order, and need not describe a closed contour. WWPolygon
 * correctly displays its outer boundary and its inner boundaries regardless of whether they are arranged in a clockwise
@@ -58,7 +58,7 @@
 /// @name Attributes
 
 /**
-* Returns an array indicating the polygon's outer boundary vertices.
+* Returns an array indicating the polygon's outer boundary positions.
 *
 * @return The positions indicating the polygon's outer boundary vertices.
 */
