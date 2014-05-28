@@ -7,6 +7,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "WorldWind/Shapes/WWPolygon.h"
+#import "WorldWind/Shapes/WWPolygonTessellator.h"
 #import "WorldWind/Geometry/WWBoundingBox.h"
 #import "WorldWind/Geometry/WWMatrix.h"
 #import "WorldWind/Geometry/WWPosition.h"
@@ -18,26 +19,6 @@
 #import "WorldWind/Terrain/WWTerrain.h"
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WWLog.h"
-
-void WWPolygonTessBegin(GLenum type, void* userData)
-{
-    [(__bridge WWPolygon*) userData tessBegin:type];
-}
-
-void WWPolygonTessVertex(void* vertexData, void* userData)
-{
-    [(__bridge WWPolygon*) userData tessVertex:vertexData];
-}
-
-void WWPolygonTessEnd(void* userData)
-{
-    [(__bridge WWPolygon*) userData tessEnd];
-}
-
-void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weight[4], void** outData, void* userData)
-{
-    [(__bridge WWPolygon*) userData tessCombine:coords vertexData:vertexData weight:weight outData:outData];
-}
 
 @implementation WWPolygon
 
@@ -55,7 +36,6 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
     [self setReferencePosition:[positions count] < 1 ? nil : [positions objectAtIndex:0]];
 
     referenceNormal = [[WWVec4 alloc] initWithZeroVector];
-    vertexStride = 3;
 
     return self;
 }
@@ -80,7 +60,10 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
     }
 
     vertexCount = 0;
+    vertexStride = 0;
     indexCount = 0;
+    interiorIndexRange = NSMakeRange(0, 0);
+    outlineIndexRange = NSMakeRange(0, 0);
 }
 
 - (NSArray*) positions
@@ -154,10 +137,10 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
     [[dc globe] surfaceNormalAtPoint:[p x] y:[p y] z:[p z] result:referenceNormal];
     [self setEyeDistance:[[[dc navigatorState] eyePoint] distanceTo3:p]];
 
-    // Create the polygon's model-coordinate points and compute indices that tessellate the interior as a list of
-    // triangles.
+    // Create the polygon's model-coordinate points, tessellate the polygon's interior regions, and tessellate the
+    // boundaries between the polygon's interior regions.
     [self tessellatePolygon:dc];
-    if ([tessIndices count] < 3)
+    if ([[tess boundaryIndices] count] < 2)
     {
         return;
     }
@@ -176,7 +159,7 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
 
 - (BOOL) isOrderedRenderableValid:(WWDrawContext *)dc
 {
-    return indices != nil && indexCount >= 3;
+    return outlineIndexRange.length >= 2;
 }
 
 - (void) beginDrawing:(WWDrawContext*)dc
@@ -187,151 +170,75 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
     WWBasicProgram* program = (WWBasicProgram*) [dc currentProgram];
     glVertexAttribPointer([program vertexPointLocation], 3, GL_FLOAT, GL_FALSE, vertexStride * sizeof(GLfloat), vertices);
 
-    // Disable OpenGL backface culling to make both sides of the polygon interior visible, and to make the polygon
-    // interior visible regardless its winding order.
+    // Disable OpenGL backface culling to make both sides of the polygon interior visible regardless of its winding
+    // order.
     glDisable(GL_CULL_FACE);
 }
 
 - (void) endDrawing:(WWDrawContext*)dc
 {
+    [super endDrawing:dc];
+
     // Restore OpenGL state to the values established by WWSceneController.
     glEnable(GL_CULL_FACE);
 }
 
 - (void) doDrawInterior:(WWDrawContext*)dc
 {
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, indices);
+    glDrawElements(GL_TRIANGLES, interiorIndexRange.length, GL_UNSIGNED_SHORT, &indices[interiorIndexRange.location]);
 }
 
 - (void) doDrawOutline:(WWDrawContext*)dc
 {
-    GLint first = 0;
-    GLsizei count;
-
-    for (NSArray* __unsafe_unretained positions in boundaries)
-    {
-        count = [positions count];
-        glDrawArrays(GL_LINE_LOOP, first, count);
-        first += count;
-    }
+    glDrawElements(GL_LINES, outlineIndexRange.length, GL_UNSIGNED_SHORT, &indices[outlineIndexRange.location]);
 }
 
 - (void) tessellatePolygon:(WWDrawContext*)dc
 {
+    tess = [[WWPolygonTessellator alloc] init];
     tessVertices = [[NSMutableArray alloc] init];
-    tessIndices = [[NSMutableArray alloc] init];
-    vertexIndices = [[NSMutableArray alloc] init];
 
-    GLUtesselator* tess = gluNewTess();
-    gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (_GLUfuncptr) &WWPolygonTessBegin);
-    gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (_GLUfuncptr) &WWPolygonTessVertex);
-    gluTessCallback(tess, GLU_TESS_END_DATA, (_GLUfuncptr) &WWPolygonTessEnd);
-    gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (_GLUfuncptr) &WWPolygonTessCombine);
-    gluTessNormal(tess, [referenceNormal x], [referenceNormal y], [referenceNormal z]);
-    gluTessBeginPolygon(tess, (__bridge void*) self); // Use self as the polygon user data to enable callbacks to this instance.
+    [tess setCombineBlock:^(double x, double y, double z, GLushort* outIndex) {
+        [self tessellatePolygon:dc combineVertex:x y:y z:z outIndex:outIndex];
+    }];
+    [tess setPolygonNormal:[referenceNormal x] y:[referenceNormal y] z:[referenceNormal z]];
+    [tess beginPolygon];
 
-    for (NSArray* __unsafe_unretained positions in boundaries)
+    for (NSArray* __unsafe_unretained boundaryPositions in boundaries)
     {
-        gluTessBeginContour(tess);
+        [tess beginContour];
 
-        for (WWPosition* __unsafe_unretained pos in positions)
+        for (WWPosition* __unsafe_unretained pos in boundaryPositions)
         {
             WWVec4* point = [[WWVec4 alloc] initWithZeroVector];
             [[dc terrain] surfacePointAtLatitude:[pos latitude] longitude:[pos longitude] offset:[pos altitude]
                                altitudeMode:[self altitudeMode] result:point];
             [point subtract3:referencePoint];
             [tessVertices addObject:point];
-
-            NSNumber* index = [NSNumber numberWithInt:[tessVertices count] - 1];
-            [vertexIndices addObject:index];
-
-            GLdouble coord[3];
-            coord[0] = [point x];
-            coord[1] = [point y];
-            coord[2] = [point z];
-
-            gluTessVertex(tess, coord, (__bridge void*) index); // Associate the vertex with its index in the vertex array.
+            [tess addVertex:[point x] y:[point y] z:[point z] withIndex:(GLushort) [tessVertices count] - 1];
         }
 
-        gluTessEndContour(tess);
+        [tess endContour];
     }
 
-    gluTessEndPolygon(tess);
-    gluDeleteTess(tess);
-    vertexIndices = nil;
+    [tess endPolygon];
 }
 
-- (void) tessBegin:(GLenum)type
-{
-    // Reset the tessellation primitive type and index count.
-    tessPrimType = type;
-    tessIndexCount = 0;
-}
-
-- (void) tessVertex:(GLvoid*)vertex
-{
-    NSNumber* index = (__bridge NSNumber*) vertex;
-    tessIndexCount++;
-
-    if (tessPrimType == GL_TRIANGLES)
-    {
-        [tessIndices addObject:index];
-    }
-    else if (tessPrimType == GL_TRIANGLE_FAN)
-    {
-        if (tessIndexCount == 1)
-            tessIndex1 = index;
-        else if (tessIndexCount == 2)
-            tessIndex2 = index;
-        else // tessIndexCount >= 3
-        {
-            [tessIndices addObject:tessIndex1];
-            [tessIndices addObject:tessIndex2];
-            [tessIndices addObject:index];
-            tessIndex2 = index;
-        }
-    }
-    else if (tessPrimType == GL_TRIANGLE_STRIP)
-    {
-        if (tessIndexCount == 1)
-            tessIndex1 = index;
-        else if (tessIndexCount == 2)
-            tessIndex2 = index;
-        else // tessIndexCount >= 3
-        {
-            [tessIndices addObject:(tessIndexCount % 1) == 0 ? tessIndex1 : tessIndex2];
-            [tessIndices addObject:(tessIndexCount % 1) == 0 ? tessIndex2 : tessIndex1];
-            [tessIndices addObject:index];
-            tessIndex1 = tessIndex2;
-            tessIndex2 = index;
-        }
-    }
-}
-
-- (void) tessEnd
-{
-    // Release index pointers using during tessellation.
-    tessIndex1 = nil;
-    tessIndex2 = nil;
-}
-
-- (void) tessCombine:(GLdouble[3])coords vertexData:(void*[4])vertexData weight:(GLdouble[4])weight outData:(void**)outData
+- (void) tessellatePolygon:(WWDrawContext*)dc combineVertex:(double)x y:(double)y z:(double)z outIndex:(GLushort*)outIndex
 {
     // Add a vertex using the coordinates computed by the tessellator.
-    WWVec4* point = [[WWVec4 alloc] initWithCoordinates:coords[0] y:coords[1] z:coords[2]];
+    WWVec4* point = [[WWVec4 alloc] initWithCoordinates:x y:y z:z];
     [tessVertices addObject:point];
 
-    NSNumber* index = [NSNumber numberWithInt:[tessVertices count] - 1];
-    [vertexIndices addObject:index];
-
-    // Associate the tessellated vertex with its index in the vertex array.
-    *outData = (__bridge void*) index;
+    *outIndex = (GLushort) [tessVertices count] - 1;
 }
 
 - (void) makeRenderedPolygon:(WWDrawContext*)dc
 {
     vertexCount = [tessVertices count];
+    vertexStride = 3;
     vertices = malloc((size_t) vertexCount * vertexStride * sizeof(GLfloat));
+
     GLfloat* vertex = vertices;
     for (WWVec4* __unsafe_unretained tessVertex in tessVertices)
     {
@@ -341,17 +248,25 @@ void WWPolygonTessCombine(GLdouble coords[3], void* vertexData[4], GLdouble weig
         vertex += vertexStride;
     }
 
-    indexCount = [tessIndices count];
+    interiorIndexRange = NSMakeRange(0, [[tess interiorIndices] count]);
+    outlineIndexRange = NSMakeRange(0, [[tess boundaryIndices] count]);
+    indexCount = interiorIndexRange.length + outlineIndexRange.length;
     indices = malloc((size_t) indexCount * sizeof(GLushort));
+
     GLushort* index = indices;
-    for (NSNumber* __unsafe_unretained tessIndex in tessIndices)
+    interiorIndexRange.location = index - indices;
+    for (NSNumber* __unsafe_unretained tessIndex in [tess interiorIndices])
     {
-        index[0] = [tessIndex unsignedShortValue];
-        index++;
+        *index++ = [tessIndex unsignedShortValue];
+    }
+
+    outlineIndexRange.location = index - indices;
+    for (NSNumber* __unsafe_unretained tessIndex in [tess boundaryIndices])
+    {
+        *index++ = [tessIndex unsignedShortValue];
     }
 
     tessVertices = nil;
-    tessIndices = nil;
 }
 
 @end

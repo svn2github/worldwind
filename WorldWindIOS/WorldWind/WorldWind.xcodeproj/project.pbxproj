@@ -224,6 +224,7 @@
 		CC8CF063D6969485627E4B1B /* WWBasicNavigatorState.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF74FABB1CA1A2D9D1DA5 /* WWBasicNavigatorState.m */; };
 		CC8CF11A6FDFD05C06E27FEF /* WWPointPlacemarkAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFAA9D70EA3EB7B912854 /* WWPointPlacemarkAttributes.m */; };
 		CC8CF1DC410C2407ACF32D39 /* WWTileKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD416B0A6BFC14B0D424 /* WWTileKey.m */; };
+		CC8CF22FCC6837374EBBEBA7 /* WWPolygonTessellator.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF02D9197077117B7D217 /* WWPolygonTessellator.m */; };
 		CC8CF25FC4A5BCE3549902DC /* priorityq-heap.c in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFEFD26C1ECCC22469A43 /* priorityq-heap.c */; };
 		CC8CF26EA05AFC8A913C72CC /* WWLine.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5DAF750A3F415928ECA /* WWLine.m */; };
 		CC8CF2CE5D811272FB790AC0 /* WWFrameStatistics.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFFE43D5EAD054B1DE159 /* WWFrameStatistics.m */; };
@@ -603,6 +604,7 @@
 		1BF9AFDFF388F5BB6D7E606D /* WWPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPath.m; sourceTree = "<group>"; };
 		1BF9AFE83BDA11A7E0218B48 /* WWGpuShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWGpuShader.m; sourceTree = "<group>"; };
 		CC8CF01F8BAA4D136A3AD1E8 /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mesh.h; sourceTree = "<group>"; };
+		CC8CF02D9197077117B7D217 /* WWPolygonTessellator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWPolygonTessellator.m; sourceTree = "<group>"; };
 		CC8CF03D674994733EBFD2F0 /* glue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glue.c; sourceTree = "<group>"; };
 		CC8CF04784FC503FD556FC89 /* gluos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gluos.h; sourceTree = "<group>"; };
 		CC8CF08CF81FAE19C0E80D2B /* WWNavigator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWNavigator.h; sourceTree = "<group>"; };
@@ -611,6 +613,7 @@
 		CC8CF0FEA2510D74288768A7 /* WWLookAtNavigator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWLookAtNavigator.m; sourceTree = "<group>"; };
 		CC8CF1B3205567F6609F9936 /* WWBulkRetriever.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWBulkRetriever.m; sourceTree = "<group>"; };
 		CC8CF1EC84119508DA0479D6 /* WWOffset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WWOffset.m; sourceTree = "<group>"; };
+		CC8CF1EC97749B9648DED7A9 /* WWPolygonTessellator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPolygonTessellator.h; sourceTree = "<group>"; };
 		CC8CF20F180F1AED78FDFA99 /* tess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tess.c; sourceTree = "<group>"; };
 		CC8CF2501BDFB987AE9C89D1 /* WWPointPlacemark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WWPointPlacemark.h; sourceTree = "<group>"; };
 		CC8CF2A182765E97051FC899 /* sweep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sweep.c; sourceTree = "<group>"; };
@@ -1109,6 +1112,8 @@
 				CC8CF35714B1052C415FC2E5 /* WWScreenImage.m */,
 				CC8CF7858A16A3760771659F /* WWPolygon.h */,
 				CC8CF64C406A5C50BD16FDA9 /* WWPolygon.m */,
+				CC8CF02D9197077117B7D217 /* WWPolygonTessellator.m */,
+				CC8CF1EC97749B9648DED7A9 /* WWPolygonTessellator.h */,
 			);
 			path = Shapes;
 			sourceTree = "<group>";
@@ -1439,6 +1444,7 @@
 				CC8CF4CDDD34E958D91E2944 /* error.c in Sources */,
 				CC8CFD4AB2386F883A3FA7FE /* registry.c in Sources */,
 				CC8CFFD5355B00B05D31E39E /* WWPolygon.m in Sources */,
+				CC8CF22FCC6837374EBBEBA7 /* WWPolygonTessellator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

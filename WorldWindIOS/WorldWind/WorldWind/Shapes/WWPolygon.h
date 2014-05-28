@@ -7,8 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #import <OpenGLES/ES2/gl.h>
-#import "WorldWind/GLU/glu.h"
 #import "WorldWind/Shapes/WWAbstractShape.h"
+
+@class WWPolygonTessellator;
 
 /**
 * Displays a polygon who's vertices are specified by an array of positions. Polygons have separate attributes for normal
@@ -41,13 +42,8 @@
     WWVec4* referenceNormal;
 
     // Data structures used during polygon tessellation.
-    GLenum tessPrimType; // indicates the current OpenGL primitive type used during tessellation
-    GLsizei tessIndexCount; // the number of primitive indices output by tessellation
-    NSMutableArray* tessVertices; // vertices collected during tessellation
-    NSMutableArray* tessIndices; // indices collected during tessellation
-    NSMutableArray* vertexIndices; // locations of vertices in the vertex array
-    NSNumber* tessIndex1; // placeholder to one of the indices that defines a tri-fan or tri-strip primitive
-    NSNumber* tessIndex2; // placeholder to one of the indices that defines a tri-fan or tri-strip primitive
+    WWPolygonTessellator* tess;
+    NSMutableArray* tessVertices;
 
     // Data structures submitted to OpenGL during rendering.
     GLsizei vertexCount; // the number of vertices in the vertex array
@@ -55,6 +51,8 @@
     GLfloat* vertices; // the vertex array
     GLsizei indexCount; // the number of values in the index array
     GLushort* indices; // the index array
+    NSRange interiorIndexRange; // the range of interior indices in the index array
+    NSRange outlineIndexRange; // the range of outline indices in the index array
 }
 
 /// @name Attributes
@@ -112,13 +110,7 @@
 
 - (void) tessellatePolygon:(WWDrawContext*)dc;
 
-- (void) tessBegin:(GLenum)type;
-
-- (void) tessVertex:(void*)vertexData;
-
-- (void) tessEnd;
-
-- (void) tessCombine:(GLdouble[3])coords vertexData:(void*[4])vertexData weight:(GLdouble[4])weight outData:(void**)outData;
+- (void) tessellatePolygon:(WWDrawContext*)dc combineVertex:(double)x y:(double)y z:(double)z outIndex:(GLushort*)outIndex;
 
 - (void) makeRenderedPolygon:(WWDrawContext*)dc;
 
