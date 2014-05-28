@@ -36,7 +36,7 @@
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.autoresizesSubviews = YES;
 
-    chartsServer = @"http://worldwindserver.net/taiga/charts/airports";
+    chartsServer = [NSString stringWithFormat:@"http://%@/taiga/charts/airports", TAIGA_DATA_HOST];
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     airportsCachePath = [cacheDir stringByAppendingPathComponent:@"charts/airports"];

@@ -99,7 +99,8 @@
 
 - (void) retrieveWaypoints
 {
-    NSURL* url = [NSURL URLWithString:@"http://worldwindserver.net/taiga/dafif/ARPT2_ALASKA.TXT"];
+    NSString* location = [NSString stringWithFormat:@"http://%@/taiga/dafif/ARPT2_ALASKA.TXT", TAIGA_DATA_HOST];
+    NSURL* url = [NSURL URLWithString:location];
     WWRetriever* waypointRetriever = [[WWRetriever alloc] initWithUrl:url timeout:10
                                                         finishedBlock:^(WWRetriever* retriever)
                                                         {

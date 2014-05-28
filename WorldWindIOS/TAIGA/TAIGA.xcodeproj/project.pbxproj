@@ -80,6 +80,7 @@
 		1BF9A64449D9D4044839EDB1 /* WB_15kt_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A51E0EE853DDBE7A3752 /* WB_15kt_128.png */; };
 		1BF9A664AA0532C0BEB5CA0F /* 328-layers2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AB83CC964A3E4B30D1C5 /* 328-layers2.png */; };
 		1BF9A66D6522A49CF15A8F88 /* ImageLayerDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A331C746BA5DFAD2916E /* ImageLayerDetailController.m */; };
+		1BF9A6CD1515DB5A6E5F86D6 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AF366FFDAFDD1FCE573B /* README.txt */; };
 		1BF9A6D9AFFD3A7100342050 /* ChartsTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A0534655BD0CD4AC689B /* ChartsTableController.m */; };
 		1BF9A6DA06568D6114C20892 /* 361-1up.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3F10314E2E43C3F237C /* 361-1up.png */; };
 		1BF9A6F5BD585AD56E6470CD /* SliderCellWithReadout.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A8270527B9CFF9338DD8 /* SliderCellWithReadout.m */; };
@@ -418,6 +419,7 @@
 		1BF9AEFDB195674DB617FC66 /* CompassLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompassLayer.h; sourceTree = "<group>"; };
 		1BF9AF1592F0950C392748B9 /* ChartsListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChartsListController.h; sourceTree = "<group>"; };
 		1BF9AF2E051E84393D1469A4 /* 314-move-point@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point@2x.png"; sourceTree = "<group>"; };
+		1BF9AF366FFDAFDD1FCE573B /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		1BF9AF5B720CE3ED746F5269 /* PAJN.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = PAJN.pdf; sourceTree = "<group>"; };
 		1BF9AF5DA2126401970FECA9 /* WB_20kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_20kt_128.png; sourceTree = "<group>"; };
 		1BF9AF5DC263F523CA577775 /* TerrainProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainProfileView.m; sourceTree = "<group>"; };
@@ -529,6 +531,7 @@
 				0BCBC60917C68E6D00709B37 /* Frameworks */,
 				0BCBC60817C68E6D00709B37 /* Products */,
 				CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */,
+				1BF9AF366FFDAFDD1FCE573B /* README.txt */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1016,6 +1019,7 @@
 				CC8CF4742E28C3B51D0E334F /* 193-location-arrow-outline@2x.png in Resources */,
 				CC8CF0635E94C5A31F226F50 /* all-directions.png in Resources */,
 				CC8CF89D248325D99EFDA0A8 /* all-directions@2x.png in Resources */,
+				1BF9A6CD1515DB5A6E5F86D6 /* README.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

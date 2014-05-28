@@ -54,7 +54,8 @@
 {
     dispatch_async(dispatch_get_main_queue(), ^
     {
-        NSURL* url = [[NSURL alloc] initWithString:@"http://worldwindserver.net/taiga/install/taigaversion.txt"];
+        NSString* location = [NSString stringWithFormat:@"http://%@/taiga/install/taigaversion.txt", TAIGA_DATA_HOST];
+        NSURL* url = [[NSURL alloc] initWithString:location];
         WWRetriever* retriever = [[WWRetriever alloc] initWithUrl:url timeout:10
                                                     finishedBlock:^(WWRetriever* myRetriever)
                                                     {

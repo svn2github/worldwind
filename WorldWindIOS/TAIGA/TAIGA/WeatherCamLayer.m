@@ -155,7 +155,7 @@
 - (void) refreshData
 {
     // Retrieve the data on a separate thread because it takes a while to download and parse.
-    NSString* urlString = @"http://worldwindserver.net/taiga/cameras/sites-update.xml";
+    NSString* urlString = [NSString stringWithFormat:@"http://%@/taiga/cameras/sites-update.xml", TAIGA_DATA_HOST];
     WeatherCamLayerRetriever* retriever = [[WeatherCamLayerRetriever alloc] initWithUrl:urlString layer:self];
 
     @synchronized (_refreshInProgress)

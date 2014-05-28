@@ -10,6 +10,8 @@
 #define TAIGA_VERSION (@"0.0035")
 #define TAIGA_VERSION_DATE (@"5/21/14")
 
+#define TAIGA_DATA_HOST @"worldwindserver.net"
+
 #define TAIGA_CURRENT_AIRCRAFT_POSITION (@"gov.nasa.worldwind.taiga.currentaircraftposition")
 #define TAIGA_DATA_FILE_ID (@"gov.nasa.worldwind.taiga.data.file.id")
 #define TAIGA_DATA_FILE_NUM_FILES_EXTRACTED (@"gov.nasa.worldwind.taiga.data.file.num.files.extracted")
