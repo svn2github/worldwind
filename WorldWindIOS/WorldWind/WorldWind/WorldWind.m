@@ -27,10 +27,10 @@ static NSLock* wwOfflineModeLock;
         initialized = YES;
 
         wwRetrievalQueue = [[NSOperationQueue alloc] init];
-        [wwRetrievalQueue setMaxConcurrentOperationCount:4];
+        [wwRetrievalQueue setMaxConcurrentOperationCount:10];
 
         wwLoadQueue = [[NSOperationQueue alloc] init];
-        [wwLoadQueue setMaxConcurrentOperationCount:4];
+        [wwLoadQueue setMaxConcurrentOperationCount:10];
 
         wwResourceLoader = [[WWResourceLoader alloc] init];
 
