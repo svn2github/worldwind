@@ -150,7 +150,7 @@
 - (NSString*) formatDate:(NSDate*)date
 {
     if (date == nil)
-        return @"";
+        return @"Select to update";
 
     NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
     [formatter setDateStyle:NSDateFormatterShortStyle];
