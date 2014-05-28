@@ -119,6 +119,7 @@
 		1BF9AA7FA44118D1DB93105A /* 122-stats.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A0B14865AFB0F52D6E94 /* 122-stats.png */; };
 		1BF9AA91445A4097FB2ECB95 /* 275-broadcast.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A74C01F7EB72AA45468B /* 275-broadcast.png */; };
 		1BF9AAA876B2379FF991C877 /* NMEASentence.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AB9A65C92CBB14A98EE4 /* NMEASentence.m */; };
+		1BF9AABF243F6992BFBB44AB /* WxCamFetcher.java in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9ADF90B762EBBCEA86F1F /* WxCamFetcher.java */; };
 		1BF9AAC783C12B810FE0C6A1 /* METARLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A5A7CF17C214EAB918B1 /* METARLayer.m */; };
 		1BF9AAD19F506395476E4D00 /* PIREP_ICONS_0006_Layer-8.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AC62274413AAB34740F4 /* PIREP_ICONS_0006_Layer-8.png */; };
 		1BF9AAD28E5FC9D540603E1D /* 328-layers2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A5DFDCCBB5929281A819 /* 328-layers2@2x.png */; };
@@ -409,6 +410,7 @@
 		1BF9ADC6374E2CD340E235AD /* ChartsListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChartsListController.m; sourceTree = "<group>"; };
 		1BF9ADEB0ACCD63030C1E160 /* GPSController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPSController.h; sourceTree = "<group>"; };
 		1BF9ADEEF78D72A8CA597BAA /* MainScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainScreenController.h; sourceTree = "<group>"; };
+		1BF9ADF90B762EBBCEA86F1F /* WxCamFetcher.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = WxCamFetcher.java; sourceTree = "<group>"; };
 		1BF9AE1C97BC8CE075AB1F30 /* GPSController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPSController.m; sourceTree = "<group>"; };
 		1BF9AE2B724A7892BACAFA44 /* 01-refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh.png"; sourceTree = "<group>"; };
 		1BF9AE2BA78C1B43F74D2BB2 /* 275-broadcast@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "275-broadcast@2x.png"; sourceTree = "<group>"; };
@@ -532,6 +534,7 @@
 				0BCBC60817C68E6D00709B37 /* Products */,
 				CC8CFA07DDAC6B7CB74A01B7 /* TAIGADistributionSite.dcproj */,
 				1BF9AF366FFDAFDD1FCE573B /* README.txt */,
+				1BF9ADF90B762EBBCEA86F1F /* WxCamFetcher.java */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1092,6 +1095,7 @@
 				1BF9AED8403FC0C3C16C7697 /* LocationServicesController.m in Sources */,
 				1BF9A1EDA8774EADB9A1F056 /* DAFIFLayer.m in Sources */,
 				CC8CFA76E9345B0A2DF0A317 /* NewFlightRouteController.m in Sources */,
+				1BF9AABF243F6992BFBB44AB /* WxCamFetcher.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
