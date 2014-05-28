@@ -5,7 +5,7 @@
  @version $Id$
  */
 
-#import "WWPolygonTessellator.h"
+#import "WorldWind/Shapes/WWPolygonTessellator.h"
 #import "WorldWind/WWLog.h"
 
 void WWPolygonTessellatorBegin(GLenum type, void* userData)
