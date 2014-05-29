@@ -48,7 +48,7 @@
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView*)tableView
 {
-    return 2;
+    return 1; // See TAIGA-95, Remove ability to turn on/off individual elements
 }
 
 - (NSInteger) tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section
