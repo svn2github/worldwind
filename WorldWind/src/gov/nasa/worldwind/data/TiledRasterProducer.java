@@ -413,9 +413,9 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
     {
         // Compute the number of levels needed to achieve the given last level tile delta, starting from the given
         // level zero tile delta.
-        double numLatLevels = WWMath.logBase2(levelZeroDelta.getLatitude().getDegrees())
+        double numLatLevels = 1 + WWMath.logBase2(levelZeroDelta.getLatitude().getDegrees())
             - WWMath.logBase2(lastLevelDelta.getLatitude().getDegrees());
-        double numLonLevels = WWMath.logBase2(levelZeroDelta.getLongitude().getDegrees())
+        double numLonLevels = 1 + WWMath.logBase2(levelZeroDelta.getLongitude().getDegrees())
             - WWMath.logBase2(lastLevelDelta.getLongitude().getDegrees());
 
         // Compute the maximum number of levels needed, but limit the number of levels to positive integers greater
@@ -630,23 +630,17 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
                     {
                         // Render the sub-tile raster to this this tile raster.
                         subRasters[index].drawOnTo(tileRaster);
-                        // Write the sub-tile raster to disk.
-                        this.installTileRasterLater(levelSet, subTiles[index], subRasters[index], params);
                     }
                 }
             }
         }
 
-        // Make the sub-tiles and sub-rasters available for garbage collection.
+        // Write the sub-rasters to disk.
         for (int index = 0; index < subTiles.length; index++)
         {
-            subTiles[index] = null;
-            subRasters[index] = null;
+            if (subRasters[index] != null)
+                this.installTileRasterLater(levelSet, subTiles[index], subRasters[index], params);
         }
-        //noinspection UnusedAssignment
-        subTiles = null;
-        //noinspection UnusedAssignment
-        subRasters = null;
 
         return tileRaster;
     }
@@ -679,36 +673,35 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
             return true;
 
         int maxNumOfLevels = levelSet.getLastLevel().getLevelNumber();
-        int limit = this.extractMaxLevelLimit( params, maxNumOfLevels );
+        int limit = this.extractMaxLevelLimit(params, maxNumOfLevels);
         return (levelNumber >= limit);
     }
 
     /**
      * Extracts a maximum level limit from the AVList if the AVList contains AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL.
      * This method requires <code>maxNumOfLevels</code> - the actual maximum numbers of levels.
-     *
+     * <p/>
      * The AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL could specify multiple things:
-     *
-     * If the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL is "Auto" (as String),
-     * the calculated limit of levels will be 70% of the actual maximum numbers of levels <code>maxNumOfLevels</code>.
-     *
-     * If the type of the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL is Integer,
-     * it should contain an integer number between 0 (for level 0 only) and the actual maximum
-     * numbers of levels <code>maxNumOfLevels</code>.
-     *
+     * <p/>
+     * If the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL is "Auto" (as String), the calculated limit of
+     * levels will be 70% of the actual maximum numbers of levels <code>maxNumOfLevels</code>.
+     * <p/>
+     * If the type of the value of the AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL is Integer, it should contain an
+     * integer number between 0 (for level 0 only) and the actual maximum numbers of levels
+     * <code>maxNumOfLevels</code>.
+     * <p/>
      * It is also possible to specify the limit as percents, in this case the type of the
-     * AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL value must be "String", have a numeric value as text and
-     * the "%" percent sign in the end. Examples: "100%", "25%", "50%", etc.
+     * AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL value must be "String", have a numeric value as text and the "%"
+     * percent sign in the end. Examples: "100%", "25%", "50%", etc.
+     * <p/>
+     * Value of AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL could be a numeric string (for example, "3"), or Integer.
+     * The value will be correctly extracted and compared with the <code>maxNumOfLevels</code>. Valid values must be
+     * smaller or equal to <code>maxNumOfLevels</code>.
      *
-     * Value of AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL could be a numeric string (for example, "3"),
-     * or Integer. The value will be correctly extracted and compared with the <code>maxNumOfLevels</code>.
-     * Valid values must be smaller or equal to <code>maxNumOfLevels</code>.
-     *
-     * @param params AVList that may contain AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL property
+     * @param params         AVList that may contain AVKey.TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL property
      * @param maxNumOfLevels The actual maximum numbers of levels
      *
      * @return A limit of numbers of levels that should producer generate.
-     *
      */
     protected int extractMaxLevelLimit(AVList params, int maxNumOfLevels)
     {
@@ -725,19 +718,19 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
                 String strLimit = (String) o;
                 if ("Auto".equalsIgnoreCase(strLimit))
                 {
-                    return (int)Math.floor( 0.5d * (double)maxNumOfLevels ); // 0.5 = half, 0.6 = 60%
+                    return (int) Math.floor(0.5d * (double) maxNumOfLevels); // 0.5 = half, 0.6 = 60%
                 }
-                else if( strLimit.endsWith("%"))
+                else if (strLimit.endsWith("%"))
                 {
                     try
                     {
-                        float percent = Float.parseFloat( strLimit.substring(0, strLimit.length()-1) );
-                        int limit = (int)Math.floor( percent * (double)maxNumOfLevels / 100d );
-                        return (limit <= maxNumOfLevels) ? limit :maxNumOfLevels;
+                        float percent = Float.parseFloat(strLimit.substring(0, strLimit.length() - 1));
+                        int limit = (int) Math.floor(percent * (double) maxNumOfLevels / 100d);
+                        return (limit <= maxNumOfLevels) ? limit : maxNumOfLevels;
                     }
                     catch (Throwable t)
                     {
-                        Logging.logger().finest( WWUtil.extractExceptionReason(t));
+                        Logging.logger().finest(WWUtil.extractExceptionReason(t));
                     }
                 }
                 else
@@ -745,11 +738,11 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
                     try
                     {
                         int limit = Integer.parseInt(strLimit);
-                        return (limit <= maxNumOfLevels) ? limit :maxNumOfLevels;
+                        return (limit <= maxNumOfLevels) ? limit : maxNumOfLevels;
                     }
                     catch (Throwable t)
                     {
-                        Logging.logger().finest( WWUtil.extractExceptionReason(t));
+                        Logging.logger().finest(WWUtil.extractExceptionReason(t));
                     }
                 }
             }
