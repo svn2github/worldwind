@@ -9,6 +9,9 @@ requires the following steps:
 1) Follow the instructions at the following URL to install the base imagery and elevations: http://goworldwind
 .org/mapserver-and-data-installation/
 
+2) Obtain the FAA sectional charts from here: http://worldwind.arc.nasa.gov/temp/FAAchartreprojectcombined.zip then
+follow the instructions in the "Adding Your Own Imagery" section at the bottom of the web page referred to above.
+
 2) Copy the following zip flie to your host site and unzip it into your web server's data directory:
 http://worldwindserver.net/taiga/AllTAIGAData.zip. The zip file's top-level directory is "taiga". The data must be
 located such that URLs of the following form are accurate:
