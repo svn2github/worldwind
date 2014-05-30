@@ -8,6 +8,11 @@
 #import <Foundation/Foundation.h>
 
 @interface Waypoint : NSObject
+{
+@protected
+    NSString* description;
+    NSString* descriptionWithAltitude;
+}
 
 @property (nonatomic, readonly) double latitude;
 

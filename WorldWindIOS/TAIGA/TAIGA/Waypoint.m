@@ -11,7 +11,19 @@
 #import "AppConstants.h"
 #import "WorldWind/WWLog.h"
 
+static NSSet* WaypointNameAcronyms;
+
 @implementation Waypoint
+
++ (void) initialize
+{
+    static BOOL initialized = NO;
+    if (!initialized)
+    {
+        WaypointNameAcronyms = [NSSet setWithObjects:@"AAF", @"AFB", @"AFS", @"AS", @"CGS", @"LRRS", nil];
+        initialized = YES;
+    }
+}
 
 - (id) initWithDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude
 {
@@ -86,35 +98,63 @@
 
 - (NSString*) description
 {
+    if (description != nil)
+    {
+        return description;
+    }
+
     if ([_properties count] > 0)
     {
         NSMutableString* ms = [[NSMutableString alloc] init];
         [ms appendString:[_properties objectForKey:@"ICAO"]];
         [ms appendString:@": "];
-        [ms appendString:[[_properties objectForKey:@"NAME"] capitalizedString]];
-        return ms;
+        [self appendWaypointName:[_properties objectForKey:@"NAME"] toString:ms];
+        description = ms;
+        return description;
     }
     else
     {
-        return [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude];
+        description = [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude];
+        return description;
     }
 }
 
 - (NSString*) descriptionWithAltitude
 {
+    if (descriptionWithAltitude != nil)
+    {
+        return descriptionWithAltitude;
+    }
+
     if ([_properties count] > 0)
     {
         NSMutableString* ms = [[NSMutableString alloc] init];
         [ms appendString:[_properties objectForKey:@"ICAO"]];
         [ms appendString:@": "];
-        [ms appendString:[[_properties objectForKey:@"NAME"] capitalizedString]];
+        [self appendWaypointName:[_properties objectForKey:@"NAME"] toString:ms];
         [ms appendString:@"  "];
         [ms appendString:[[TAIGA unitsFormatter] formatMetersAltitude:_altitude] ];
-        return ms;
+        descriptionWithAltitude = ms;
+        return descriptionWithAltitude;
     }
     else
     {
-        return [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude metersAltitude:_altitude];
+        descriptionWithAltitude = [[TAIGA unitsFormatter] formatDegreesLatitude:_latitude longitude:_longitude metersAltitude:_altitude];
+        return descriptionWithAltitude;
+    }
+}
+
+- (void) appendWaypointName:(NSString*)nameString toString:(NSMutableString*)outString
+{
+    NSUInteger index = 0;
+    for (NSString* str in [nameString componentsSeparatedByString:@" "])
+    {
+        if (index++ > 0)
+        {
+            [outString appendString:@" "];
+        }
+
+        [outString appendString:[WaypointNameAcronyms containsObject:str] ? str : [str capitalizedString]];
     }
 }
 
