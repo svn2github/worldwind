@@ -51,6 +51,8 @@
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
 #import "DAFIFLayer.h"
+#import "SUALayer.h"
+#import "SUADataViewController.h"
 
 @implementation MovingMapViewController
 {
@@ -101,6 +103,7 @@
     WeatherCamLayer* weatherCamLayer;
     CompassLayer* compassLayer;
     WWDAFIFLayer* dafifLayer;
+    SUALayer* suaLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
     METARDataViewController* metarDataViewController;
@@ -109,6 +112,8 @@
     UIPopoverController* pirepDataPopoverController;
     WeatherCamViewController* weatherCamViewController;
     UIPopoverController* weatherCamPopoverController;
+    SUADataViewController* suaDataViewController;
+    UIPopoverController* suaDataPopoverController;
     AddWaypointPopoverController* addWaypointPopoverController;
     EditWaypointPopoverController* editWaypointPopoverController;
 }
@@ -122,6 +127,7 @@
     metarDataViewController = [[METARDataViewController alloc] init];
     pirepDataViewController = [[PIREPDataViewController alloc] init];
     weatherCamViewController = [[WeatherCamViewController alloc] init];
+    suaDataViewController = [[SUADataViewController alloc] init];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(locationTrackingChanged:)
                                                  name:TAIGA_LOCATION_TRACKING_ENABLED object:nil];
@@ -340,6 +346,11 @@
     [dafifLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [dafifLayer displayName]] defaultValue:YES]];
     [[[_wwv sceneController] layers] addLayer:dafifLayer];
+
+    suaLayer = [[SUALayer alloc] init];
+    [suaLayer setEnabled:[Settings                                                                               getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [suaLayer displayName]] defaultValue:YES]];
+    [[[_wwv sceneController] layers] addLayer:suaLayer];
 
     [self createTerrainAltitudeLayer];
     [terrainAltitudeLayer setEnabled:[Settings                                                                               getBoolForName:
@@ -861,6 +872,10 @@
                     [self showWeatherCam:pm];
             }
         }
+        else if ([[[topObject parentLayer] displayName] isEqualToString:@"Airspaces"])
+        {
+            [self showSpecialUseAirspace:topObject];
+        }
         else if ([[topObject userObject] isKindOfClass:[Waypoint class]])
         {
             [self showAddWaypoint:topObject];
@@ -945,6 +960,22 @@
         weatherCamPopoverController = [[UIPopoverController alloc] initWithContentViewController:weatherCamViewController];
     [weatherCamPopoverController presentPopoverFromPosition:[pm position] inView:_wwv
                                    permittedArrowDirections:0 animated:YES];
+}
+
+- (void) showSpecialUseAirspace:(WWPickedObject*)po
+{
+    // Give the controller the airspace's dictionary.
+    [suaDataViewController setEntries:[[po userObject] userObject]];
+
+    // Ensure that the first line of the data is at the top of the data table.
+    [[suaDataViewController tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                               atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    if (suaDataPopoverController == nil)
+        suaDataPopoverController = [[UIPopoverController alloc] initWithContentViewController:suaDataViewController];
+    [suaDataPopoverController presentPopoverFromPoint:[po pickPoint] inView:_wwv
+                             permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [suaDataViewController flashScrollIndicator];
 }
 
 - (void) selectFlightRoute:(WWPickedObject*)po
