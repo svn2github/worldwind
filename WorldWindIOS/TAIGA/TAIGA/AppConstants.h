@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#define TAIGA_VERSION (@"0.0036")
-#define TAIGA_VERSION_DATE (@"5/28/14")
+#define TAIGA_VERSION (@"0.0037")
+#define TAIGA_VERSION_DATE (@"5/30/14")
 
 #define TAIGA_DATA_HOST @"worldwindserver.net"
 
