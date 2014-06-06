@@ -237,4 +237,22 @@ public interface WorldWindow extends AVList
      * @return the <code>GLContext</code> associated with this window. May be null.
      */
     GLContext getContext();
+
+    /**
+     * Indicates whether the GPU resource cache is reinitialized when this window is reinitialized.
+     *
+     * @return <code>true</code> if reinitialization is enabled, otherwise <code>false</code>.
+     */
+    boolean isEnableGpuCacheReinitialization();
+
+    /**
+     * Specifies whether to reinitialize the GPU resource cache when this window is reinitialized. A value of
+     * <code>true</code> indicates that the GPU resource cache this window is using should be cleared when its init()
+     * method is called, typically when re-parented. Set this to <code>false</code> when this window is sharing context
+     * with other windows and is likely to be re-parented. It prevents the flashing caused by clearing and
+     * re-populating the GPU resource cache during re-parenting. The default value is <code>true</code>.
+     *
+     * @param enableGpuCacheReinitialization <code>true</code> to enable reinitialization, otherwise <code>false</code>.
+     */
+    void setEnableGpuCacheReinitialization(boolean enableGpuCacheReinitialization);
 }
