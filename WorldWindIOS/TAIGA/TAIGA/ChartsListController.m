@@ -190,9 +190,9 @@
     if ([[retriever status] isEqualToString:WW_SUCCEEDED] && [[retriever retrievedData] length] > 0)
     {
         [[retriever retrievedData] writeToFile:chartPath atomically:YES];
-
-        [parentController loadChart:chartPath chartName:[retriever userData]];
     }
+
+    [parentController loadChart:chartPath chartName:[retriever userData]];
 }
 
 - (void) refreshAll
