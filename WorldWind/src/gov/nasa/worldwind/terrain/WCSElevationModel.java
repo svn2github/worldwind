@@ -8,10 +8,12 @@ package gov.nasa.worldwind.terrain;
 
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
 
 import java.net.*;
+import java.util.List;
 
 /**
  * @author tag
@@ -152,4 +154,67 @@ public class WCSElevationModel extends BasicElevationModel
 
         return doc;
     }
+
+    public void composeElevations(Sector sector, List<? extends LatLon> latlons, int tileWidth, double[] buffer)
+        throws Exception
+    {
+        if (sector == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (latlons == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatLonListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (buffer == null)
+        {
+            String msg = Logging.getMessage("nullValue.ElevationsBufferIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (buffer.length < latlons.size() || tileWidth > latlons.size())
+        {
+            String msg = Logging.getMessage("ElevationModel.ElevationsBufferTooSmall", latlons.size());
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        WMSBasicElevationModel.ElevationCompositionTile tile = new WMSBasicElevationModel.ElevationCompositionTile(sector, this.getLevels().getLastLevel(),
+            tileWidth, latlons.size() / tileWidth);
+
+        this.downloadElevations(tile);
+        tile.setElevations(this.readElevations(tile.getFile().toURI().toURL()), this);
+
+        for (int i = 0; i < latlons.size(); i++)
+        {
+            LatLon ll = latlons.get(i);
+            if (ll == null)
+                continue;
+
+            double value = this.lookupElevation(ll.getLatitude(), ll.getLongitude(), tile);
+
+            // If an elevation at the given location is available, then write that elevation to the destination buffer.
+            // Otherwise do nothing.
+            if (value != this.getMissingDataSignal())
+                buffer[i] = value;
+        }
+    }
+
+    protected void downloadElevations(WMSBasicElevationModel.ElevationCompositionTile tile) throws Exception
+    {
+        URL url = tile.getResourceURL();
+
+        Retriever retriever = new HTTPRetriever(url, new WMSBasicElevationModel.CompositionRetrievalPostProcessor(tile.getFile()));
+        retriever.setConnectTimeout(10000);
+        retriever.setReadTimeout(60000);
+        retriever.call();
+    }
+
 }

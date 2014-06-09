@@ -376,7 +376,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
     //********************  Composition  ***************************//
     //**************************************************************//
 
-    private static class ElevationCompositionTile extends ElevationTile
+    protected static class ElevationCompositionTile extends ElevationTile
     {
         private int width;
         private int height;
