@@ -206,6 +206,10 @@ public class BasicElevationModelFactory extends BasicFactory
         {
             em = new WMSBasicElevationModel(domElement, params);
         }
+        else if (serviceName.equals(OGCConstants.WCS_SERVICE_NAME))
+        {
+            em = new WCSElevationModel(domElement, params);
+        }
         else if (AVKey.SERVICE_NAME_LOCAL_RASTER_SERVER.equals(serviceName))
         {
             em = new LocalRasterServerElevationModel(domElement, params);

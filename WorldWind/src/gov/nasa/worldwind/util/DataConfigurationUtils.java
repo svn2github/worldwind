@@ -547,6 +547,81 @@ public class DataConfigurationUtils
     }
 
     /**
+     * Appends WCS layer parameters as elements to a specified context. This appends elements for the following
+     * parameters: <table> <th><td>Parameter</td><td>Element Path</td><td>Type</td></th> <tr><td>{@link
+     * AVKey#WCS_VERSION}</td><td>Service/@version</td><td>String</td></tr> <tr><td>{@link
+     * AVKey#COVERAGE_IDENTIFIERS}</td><td>Service/coverageIdentifiers</td><td>String</td></tr> <tr><td>{@link
+     * AVKey#GET_COVERAGE_URL}</td><td>Service/GetCoverageURL</td><td>String</td></tr> <tr><td>{@link
+     * AVKey#GET_CAPABILITIES_URL}</td><td>Service/GetCapabilitiesURL</td><td>String</td></tr> <tr><td>{@link
+     * AVKey#SERVICE}</td><td>AVKey#GET_COVERAGE_URL</td><td>String</td></tr> <tr><td>{@link
+     * AVKey#DATASET_NAME}</td><td>AVKey.COVERAGE_IDENTIFIERS</td><td>String</td></tr> </table>
+     *
+     * @param params  the key-value pairs which define the WMS layer configuration parameters.
+     * @param context the XML document root on which to append WMS layer configuration elements.
+     *
+     * @return a reference to context.
+     *
+     * @throws IllegalArgumentException if either the parameters or the context are null.
+     */
+    public static Element createWCSLayerConfigElements(AVList params, Element context)
+    {
+        if (params == null)
+        {
+            String message = Logging.getMessage("nullValue.ParametersIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (context == null)
+        {
+            String message = Logging.getMessage("nullValue.ContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        XPath xpath = WWXML.makeXPath();
+
+        // Service properties. The service element may already exist, in which case we want to append the "URL" element
+        // to the existing service element.
+        Element el = WWXML.getElement(context, "Service", xpath);
+        if (el == null)
+        {
+            el = WWXML.appendElementPath(context, "Service");
+        }
+
+        // Try to get the SERVICE_NAME property, but default to "OGC:WCS".
+        String s = AVListImpl.getStringValue(params, AVKey.SERVICE_NAME, OGCConstants.WCS_SERVICE_NAME);
+        if (s != null && s.length() > 0)
+        {
+            WWXML.setTextAttribute(el, "serviceName", s);
+        }
+
+        s = params.getStringValue(AVKey.WCS_VERSION);
+        if (s != null && s.length() > 0)
+        {
+            WWXML.setTextAttribute(el, "version", s);
+        }
+
+        WWXML.checkAndAppendTextElement(params, AVKey.COVERAGE_IDENTIFIERS, el, "CoverageIdentifiers");
+        WWXML.checkAndAppendTextElement(params, AVKey.GET_COVERAGE_URL, el, "GetCoverageURL");
+        WWXML.checkAndAppendTextElement(params, AVKey.GET_CAPABILITIES_URL, el, "GetCapabilitiesURL");
+
+        // Since this is a WCS tiled coverage, we want to express the service URL as a GetCoverage URL. If we have a
+        // GET_COVERAGE_URL property, then remove any existing SERVICE property from the DOM document.
+        s = params.getStringValue(AVKey.GET_COVERAGE_URL);
+        if (s != null && s.length() > 0)
+        {
+            Element urlElement = WWXML.getElement(el, "URL", xpath);
+            if (urlElement != null)
+            {
+                el.removeChild(urlElement);
+            }
+        }
+
+        return context;
+    }
+
+    /**
      * Parses WMS layer parameters from the XML configuration document starting at domElement. This writes output as
      * key-value pairs to params. If a parameter from the XML document already exists in params, that parameter is
      * ignored. Supported key and parameter names are: <table> <th><td>Parameter</td><td>Element
@@ -602,6 +677,46 @@ public class DataConfigurationUtils
         if (layerNames != null)
         {
             params.setValue(AVKey.DATASET_NAME, layerNames);
+        }
+
+        return params;
+    }
+
+    public static AVList getWCSConfigParams(Element domElement, AVList params)
+    {
+        if (domElement == null)
+        {
+            String message = Logging.getMessage("nullValue.DocumentIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (params == null)
+        {
+            params = new AVListImpl();
+        }
+
+        XPath xpath = WWXML.makeXPath();
+
+        // Need to determine these for URLBuilder construction.
+        WWXML.checkAndSetStringParam(domElement, params, AVKey.WCS_VERSION, "Service/@version", xpath);
+        WWXML.checkAndSetStringParam(domElement, params, AVKey.COVERAGE_IDENTIFIERS, "Service/CoverageIdentifiers", xpath);
+        WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_COVERAGE_URL, "Service/GetCoverageURL", xpath);
+        WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_CAPABILITIES_URL, "Service/GetCapabilitiesURL",
+            xpath);
+
+        params.setValue(AVKey.SERVICE, params.getValue(AVKey.GET_COVERAGE_URL));
+        String serviceURL = params.getStringValue(AVKey.SERVICE);
+        if (serviceURL != null)
+        {
+            params.setValue(AVKey.SERVICE, WWXML.fixGetMapString(serviceURL));
+        }
+
+        // The dataset name is the layer-names string for WMS elevation models
+        String coverages = params.getStringValue(AVKey.COVERAGE_IDENTIFIERS);
+        if (coverages != null)
+        {
+            params.setValue(AVKey.DATASET_NAME, coverages);
         }
 
         return params;
@@ -813,15 +928,20 @@ public class DataConfigurationUtils
             return null;
         }
 
-        if (service.equals(OGCConstants.WMS_SERVICE_NAME))
-        {
-            service = "WMS";
-        }
 
         try
         {
-            CapabilitiesRequest request = new CapabilitiesRequest(new URI(uri), service);
-            return request.getUri().toURL();
+            if (service.equals(OGCConstants.WMS_SERVICE_NAME))
+            {
+                service = "WMS";
+                CapabilitiesRequest request = new CapabilitiesRequest(new URI(uri), service);
+                return request.getUri().toURL();
+            }
+            else if (service.equals(OGCConstants.WCS_SERVICE_NAME))
+            {
+                service = "WCS";
+                // TODO: make and issue the request
+            }
         }
         catch (URISyntaxException e)
         {

@@ -67,6 +67,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String COORDINATE_SYSTEM_UNKNOWN = "gov.nasa.worldwind.avkey.CoordinateSystem.Unknown";
 
     final String COUNTER_CLOCKWISE = "gov.nasa.worldwind.avkey.CounterClockWise";
+    final String COVERAGE_IDENTIFIERS = "gov.nasa.worldwind.avkey.CoverageIdentifiers";
 
     final String DATA_CACHE_NAME = "gov.nasa.worldwind.avkey.DataCacheNameKey";
     final String DATA_FILE_STORE_CLASS_NAME = "gov.nasa.worldwind.avkey.DataFileStoreClassName";
@@ -144,6 +145,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String GDAL_PATH = "gov.nasa.worldwind.avkey.GDAL.Path";
 
     final String GET_CAPABILITIES_URL = "gov.nasa.worldwind.avkey.GetCapabilitiesURL";
+    final String GET_COVERAGE_URL = "gov.nasa.worldwind.avkey.GetCoverageURL";
     final String GET_MAP_URL = "gov.nasa.worldwind.avkey.GetMapURL";
     final String GLOBE = "gov.nasa.worldwind.avkey.GlobeObject";
     final String GLOBE_CLASS_NAME = "gov.nasa.worldwind.avkey.GlobeClassName";
@@ -495,6 +497,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String WMS_BACKGROUND_COLOR = "gov.nasa.worldwind.avkey.BackgroundColor";
 
     final String WFS_URL = "gov.nasa.worldwind.avkey.WFS.URL";
+    final String WCS_VERSION = "gov.nasa.worldwind.avkey.WCSVersion";
     final String WMS_VERSION = "gov.nasa.worldwind.avkey.WMSVersion";
     final String WORLD_MAP_IMAGE_PATH = "gov.nasa.worldwind.avkey.WorldMapImagePath";
     final String WORLD_WIND_DOT_NET_LAYER_SET = "gov.nasa.worldwind.avkey.WorldWindDotNetLayerSet";
