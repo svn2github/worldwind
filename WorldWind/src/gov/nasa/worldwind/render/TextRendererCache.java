@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.util.Logging;
 

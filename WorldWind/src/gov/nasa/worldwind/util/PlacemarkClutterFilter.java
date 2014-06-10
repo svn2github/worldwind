@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.util;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
 

@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwind.layers;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;

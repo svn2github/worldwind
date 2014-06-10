@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwindx.examples.analytics;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;

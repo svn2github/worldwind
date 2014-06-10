@@ -7,7 +7,6 @@
 package gov.nasa.worldwindx.applications.antenna;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;

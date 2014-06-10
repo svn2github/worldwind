@@ -5,7 +5,6 @@
  */
 package gov.nasa.worldwindx.examples.util;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.event.*;

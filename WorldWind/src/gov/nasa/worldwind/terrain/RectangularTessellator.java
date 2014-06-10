@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.terrain;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.*;
