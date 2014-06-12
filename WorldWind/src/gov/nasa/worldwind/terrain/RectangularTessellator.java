@@ -11,7 +11,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Cylinder;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
@@ -366,6 +366,16 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
     }
 
+    protected static class TopLevelTiles
+    {
+        protected ArrayList<RectTile> topLevels;
+
+        public TopLevelTiles(ArrayList<RectTile> topLevels)
+        {
+            this.topLevels = topLevels;
+        }
+    }
+
     // TODO: Make all this configurable
     protected static final int DEFAULT_MAX_LEVEL = 30;
     protected static final double DEFAULT_LOG10_RESOLUTION_TARGET = 1.3;
@@ -386,7 +396,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected int numLevel0LatSubdivisions = DEFAULT_NUM_LAT_SUBDIVISIONS;
     protected int numLevel0LonSubdivisions = DEFAULT_NUM_LON_SUBDIVISIONS;
-    protected ArrayList<RectTile> topLevels;
+    protected SessionCache topLevelTilesCache = new BasicSessionCache(3);
     protected PickSupport pickSupport = new PickSupport();
     protected SectorGeometryList currentTiles = new SectorGeometryList();
     protected Frustum currentFrustum;
@@ -424,15 +434,19 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         this.maxLevel = Configuration.getIntegerValue(AVKey.RECTANGULAR_TESSELLATOR_MAX_LEVEL, DEFAULT_MAX_LEVEL);
 
-        if (this.topLevels == null)
-            this.topLevels = this.createTopLevelTiles(dc);
+        TopLevelTiles topLevels = (TopLevelTiles) this.topLevelTilesCache.get(dc.getGlobe().getStateKey(dc));
+        if (topLevels == null)
+        {
+            topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
+            this.topLevelTilesCache.put(dc.getGlobe().getStateKey(dc), topLevels);
+        }
 
         this.currentTiles.clear();
         this.currentLevel = 0;
         this.currentCoverage = null;
 
         this.currentFrustum = dc.getView().getFrustumInModelCoordinates();
-        for (RectTile tile : this.topLevels)
+        for (RectTile tile : topLevels.topLevels)
         {
             this.selectVisibleTiles(dc, tile);
         }
@@ -444,7 +458,11 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             this.makeVerts(dc, (RectTile) tile);
         }
 
-        return this.currentTiles;
+        // Make a copy of the SGL because the tessellator may be called multiple times per frame with a different globe.
+        // See SceneController2D.
+        SectorGeometryList sgl = new SectorGeometryList(this.currentTiles);
+        sgl.setSector(this.currentTiles.getSector());
+        return sgl;
     }
 
     protected ArrayList<RectTile> createTopLevelTiles(DrawContext dc)
@@ -598,7 +616,6 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     {
         // First see if the vertices have been previously computed and are in the cache. Since the elevation model
         // contents can change between frames, regenerate and re-cache vertices every second.
-        // TODO: Go back to event-generated geometry re-computation.
         MemoryCache cache = WorldWind.getMemoryCache(CACHE_ID);
         CacheKey cacheKey = this.createCacheKey(dc, tile);
         tile.ri = (RenderInfo) cache.getObject(cacheKey);
