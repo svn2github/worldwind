@@ -209,7 +209,6 @@ public class FlatWorld extends ApplicationTemplate
         // Adjust configuration values before instantiation
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
         Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
-        Configuration.setValue(AVKey.SCENE_CONTROLLER_CLASS_NAME, SceneController2D.class.getName());
         ApplicationTemplate.start("World Wind Flat World", AppFrame.class);
     }
 }
