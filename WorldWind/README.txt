@@ -57,6 +57,13 @@ This will most likely be either NVIDIA, ATI or Intel. The drivers are typically 
 than the graphics card manufacturer's.
 
 
+New features and improvements in World Wind Java SDK 2.1.0
+------------------------------------------------------------
+- See http://goworldwind.org/releases/ for a description of this release's major features.
+
+- Repaired WWJ-521, LevelSet.getLastLevel not returning correct level for sector resolution limits.
+- Repaired WWJ-522, HighResolutionTerrain bulk intersector not notifying of exceptions. Added notification interface.
+
 New features and improvements in World Wind Java SDK 2.0.0
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.

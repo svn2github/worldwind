@@ -88,6 +88,11 @@ public class HighResolutionTerrainTest
                         {
                             currentIntersections.put(pB, intersections);
                         }
+
+                        public void exception(Exception e)
+                        {
+                            e.printStackTrace();
+                        }
                     });
                 }
                 catch (InterruptedException e)

@@ -316,7 +316,6 @@ public class LevelSet extends WWObjectImpl
                 if (sr.sector.intersects(sector) && sr.levelNumber <= level.getLevelNumber())
                 {
                     level = this.getLevel(sr.levelNumber);
-                    break;
                 }
             }
 
