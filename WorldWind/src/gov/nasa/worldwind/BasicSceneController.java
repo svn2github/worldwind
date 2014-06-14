@@ -6,7 +6,7 @@
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.globes.FlatGlobe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 
@@ -24,7 +24,7 @@ public class BasicSceneController extends AbstractSceneController
         this.initializeFrame(dc);
         try
         {
-            if (dc.getGlobe() instanceof FlatGlobe)
+            if (dc.getGlobe() instanceof Globe2D)
                 this.do2DRepaint(dc);
             else
                 this.do3DRepaint(dc);
@@ -63,7 +63,7 @@ public class BasicSceneController extends AbstractSceneController
 
     protected void makeCurrent(DrawContext dc, int offset)
     {
-        ((FlatGlobe) dc.getGlobe()).setOffset(offset);
+        ((Globe2D) dc.getGlobe()).setOffset(offset);
 
         switch (offset)
         {
@@ -95,7 +95,7 @@ public class BasicSceneController extends AbstractSceneController
 
         this.sglR = null;
         this.visibleSectorR = null;
-        ((FlatGlobe) dc.getGlobe()).setOffset(1);
+        ((Globe2D) dc.getGlobe()).setOffset(1);
         if (dc.getGlobe().intersects(dc.getView().getFrustumInModelCoordinates()))
         {
             this.sglR = dc.getModel().getGlobe().tessellate(dc);
@@ -104,7 +104,7 @@ public class BasicSceneController extends AbstractSceneController
 
         this.sglL = null;
         this.visibleSectorL = null;
-        ((FlatGlobe) dc.getGlobe()).setOffset(-1);
+        ((Globe2D) dc.getGlobe()).setOffset(-1);
         if (dc.getGlobe().intersects(dc.getView().getFrustumInModelCoordinates()))
         {
             this.sglL = dc.getModel().getGlobe().tessellate(dc);

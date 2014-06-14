@@ -22,7 +22,7 @@ import gov.nasa.worldwind.util.Logging;
  * @author Patrick Murris
  * @version $Id$
  */
-public class FlatGlobe extends EllipsoidalGlobe
+public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
 {
     /**
      * <a href="http://en.wikipedia.org/wiki/Plate_carr%C3%A9e_projection" target="_blank">Latitude/Longitude</a>
