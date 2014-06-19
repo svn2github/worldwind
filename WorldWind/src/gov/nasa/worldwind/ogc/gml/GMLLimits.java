@@ -4,9 +4,8 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwind.ogc.ows;
+package gov.nasa.worldwind.ogc.gml;
 
-import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.xml.*;
 
 import javax.xml.stream.XMLStreamException;
@@ -17,28 +16,32 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class OWSAllowedValues extends AbstractXMLEventParser
+public class GMLLimits extends AbstractXMLEventParser
 {
-    protected List<String> values = new ArrayList<String>(2);
+    protected List<GMLGridEnvelope> gridEnvelopes = new ArrayList<GMLGridEnvelope>(1);
 
-    public OWSAllowedValues(String namespaceURI)
+    public GMLLimits(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public List<String> getValues()
+    public List<GMLGridEnvelope> getGridEnvelopes()
     {
-        return this.values;
+        return this.gridEnvelopes;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "Value"))
+        if (ctx.isStartElement(event, "GridEnvelope"))
         {
-            String s = ctx.getStringParser().parseString(ctx, event);
-            if (!WWUtil.isEmpty(s))
-                this.values.add(s);
+            XMLEventParser parser = this.allocate(ctx, event);
+            if (parser != null)
+            {
+                Object o = parser.parse(ctx, event, args);
+                if (o != null && o instanceof GMLGridEnvelope)
+                    this.gridEnvelopes.add((GMLGridEnvelope) o);
+            }
         }
         else
         {

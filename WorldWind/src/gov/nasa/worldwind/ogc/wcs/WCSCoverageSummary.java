@@ -22,19 +22,19 @@ public class WCSCoverageSummary extends AbstractXMLEventParser
 {
     // TODO: metadata
 
-    protected Set<String> abstracts = new HashSet<String>(1);
-    protected Set<OWSWGS84BoundingBox> boundingBoxes = new HashSet<OWSWGS84BoundingBox>(1);
-    protected Set<WCSCoverageSummary> coverageSummaries = new HashSet<WCSCoverageSummary>(1);
-    protected Set<String> supportedCRSs = new HashSet<String>(1);
-    protected Set<String> supportedFormats = new HashSet<String>(1);
-    protected Set<String> titles = new HashSet<String>(1);
+    protected List<String> abstracts = new ArrayList<String>(1);
+    protected List<OWSWGS84BoundingBox> boundingBoxes = new ArrayList<OWSWGS84BoundingBox>(1);
+    protected List<WCSCoverageSummary> coverageSummaries = new ArrayList<WCSCoverageSummary>(1);
+    protected List<String> supportedCRSs = new ArrayList<String>(1);
+    protected List<String> supportedFormats = new ArrayList<String>(1);
+    protected List<String> titles = new ArrayList<String>(1);
 
     public WCSCoverageSummary(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<String> getAbstracts()
+    public List<String> getAbstracts()
     {
         return this.abstracts;
     }
@@ -46,7 +46,7 @@ public class WCSCoverageSummary extends AbstractXMLEventParser
         return iter.hasNext() ? iter.next() : null;
     }
 
-    public Set<OWSWGS84BoundingBox> getBoundingBoxes()
+    public List<OWSWGS84BoundingBox> getBoundingBoxes()
     {
         return this.boundingBoxes;
     }
@@ -58,7 +58,7 @@ public class WCSCoverageSummary extends AbstractXMLEventParser
         return iter.hasNext() ? iter.next() : null;
     }
 
-    public Set<WCSCoverageSummary> getCoverageSummaries()
+    public List<WCSCoverageSummary> getCoverageSummaries()
     {
         return this.coverageSummaries;
     }
@@ -68,22 +68,22 @@ public class WCSCoverageSummary extends AbstractXMLEventParser
         return (String) this.getField("Identifier");
     }
 
-    public Set<String> getKeywords()
+    public List<String> getKeywords()
     {
-        return ((StringSetXMLEventParser) this.getField("Keywords")).getStrings();
+        return ((StringListXMLEventParser) this.getField("Keywords")).getStrings();
     }
 
-    public Set<String> getSupportedCRSs()
+    public List<String> getSupportedCRSs()
     {
         return this.supportedCRSs;
     }
 
-    public Set<String> getSupportedFormats()
+    public List<String> getSupportedFormats()
     {
         return this.supportedFormats;
     }
 
-    public Set<String> getTitles()
+    public List<String> getTitles()
     {
         return this.titles;
     }

@@ -23,14 +23,14 @@ public class WCS100Request extends AbstractXMLEventParser
             "GetCapabilities", "DescribeCoverage", "GetCoverage"
         };
 
-    protected Set<WCS100RequestDescription> requests = new HashSet<WCS100RequestDescription>(2);
+    protected List<WCS100RequestDescription> requests = new ArrayList<WCS100RequestDescription>(2);
 
     public WCS100Request(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<WCS100RequestDescription> getRequests()
+    public List<WCS100RequestDescription> getRequests()
     {
         return this.requests;
     }

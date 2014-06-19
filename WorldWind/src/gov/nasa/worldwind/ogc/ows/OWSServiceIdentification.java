@@ -19,30 +19,30 @@ import java.util.*;
  */
 public class OWSServiceIdentification extends AbstractXMLEventParser
 {
-    protected Set<String> abstracts = new HashSet<String>(1);
-    protected Set<String> accessConstraints = new HashSet<String>(1);
-    protected Set<String> profiles = new HashSet<String>(1);
-    protected Set<String> titles = new HashSet<String>(1);
-    protected Set<String> serviceTypeVersions = new HashSet<String>(1);
+    protected List<String> abstracts = new ArrayList<String>(1);
+    protected List<String> accessConstraints = new ArrayList<String>(1);
+    protected List<String> profiles = new ArrayList<String>(1);
+    protected List<String> titles = new ArrayList<String>(1);
+    protected List<String> serviceTypeVersions = new ArrayList<String>(1);
 
     public OWSServiceIdentification(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<String> getTitles()
+    public List<String> getTitles()
     {
         return this.titles;
     }
 
-    public Set<String> getAbstracts()
+    public List<String> getAbstracts()
     {
         return this.abstracts;
     }
 
-    public Set<String> getKeywords()
+    public List<String> getKeywords()
     {
-        return ((StringSetXMLEventParser) this.getField("Keywords")).getStrings();
+        return ((StringListXMLEventParser) this.getField("Keywords")).getStrings();
     }
 
     public String getServiceType()
@@ -50,7 +50,7 @@ public class OWSServiceIdentification extends AbstractXMLEventParser
         return (String) this.getField("ServiceType");
     }
 
-    public Set<String> getServiceTypeVersions()
+    public List<String> getServiceTypeVersions()
     {
         return this.serviceTypeVersions;
     }
@@ -60,12 +60,12 @@ public class OWSServiceIdentification extends AbstractXMLEventParser
         return (String) this.getField("Fees");
     }
 
-    public Set<String> getAccessConstraints()
+    public List<String> getAccessConstraints()
     {
         return this.accessConstraints;
     }
 
-    public Set<String> getProfiles()
+    public List<String> getProfiles()
     {
         return this.profiles;
     }

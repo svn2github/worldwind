@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwind.ogc.wcs.wcs100;
 
-import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.xml.*;
 
 import javax.xml.stream.XMLStreamException;
@@ -17,18 +16,13 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class WCS100Service extends AbstractXMLEventParser
+public class WCS100RangeSet extends AbstractXMLEventParser
 {
-    protected List<String> accessConstraints = new ArrayList<String>(1);
+    protected List<WCS100AxisDescriptionHolder> axisDescriptions = new ArrayList<WCS100AxisDescriptionHolder>(1);
 
-    public WCS100Service(String namespaceURI)
+    public WCS100RangeSet(String namespaceURI)
     {
         super(namespaceURI);
-    }
-
-    public String getDescription()
-    {
-        return (String) this.getField("description");
     }
 
     public String getName()
@@ -41,14 +35,9 @@ public class WCS100Service extends AbstractXMLEventParser
         return (String) this.getField("label");
     }
 
-    public List<String> getAccessConstraints()
+    public String getDescription()
     {
-        return this.accessConstraints;
-    }
-
-    public String getFees()
-    {
-        return (String) this.getField("fees");
+        return (String) this.getField("description");
     }
 
     public WCS100MetadataLink getMetadataLink()
@@ -56,28 +45,33 @@ public class WCS100Service extends AbstractXMLEventParser
         return (WCS100MetadataLink) this.getField("metadataLink");
     }
 
-    public List<String> getKeywords()
+    public WCS100Values getNullValues()
     {
-        return ((StringListXMLEventParser) this.getField("keywords")).getStrings();
+        return (WCS100Values) this.getField("nullValues");
     }
 
-    public WCS100ResponsibleParty getResponsibleParty()
+    public List<WCS100AxisDescriptionHolder> getAxisDescriptions()
     {
-        return (WCS100ResponsibleParty) this.getField("responsibleParty");
+        return this.axisDescriptions;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "accessConstraints"))
+        if (ctx.isStartElement(event, "axisDescription"))
         {
-            String s = ctx.getStringParser().parseString(ctx, event);
-            if (!WWUtil.isEmpty(s))
-                this.accessConstraints.add(s);
+            XMLEventParser parser = this.allocate(ctx, event);
+            if (parser != null)
+            {
+                Object o = parser.parse(ctx, event, args);
+                if (o != null && o instanceof WCS100AxisDescriptionHolder)
+                    this.axisDescriptions.add((WCS100AxisDescriptionHolder) o);
+            }
         }
         else
         {
             super.doParseEventContent(ctx, event, args);
         }
     }
+
 }

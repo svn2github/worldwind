@@ -12,20 +12,15 @@ import gov.nasa.worldwind.util.xml.AbstractXMLEventParser;
  * @author tag
  * @version $Id$
  */
-public class WCS100Phone extends AbstractXMLEventParser
+public class WCS100AxisDescriptionHolder extends AbstractXMLEventParser
 {
-    public WCS100Phone(String namespaceURI)
+    public WCS100AxisDescriptionHolder(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public String getVoice()
+    public WCS100AxisDescription getAxisDescription()
     {
-        return (String) this.getField("voice");
-    }
-
-    public String getFacsimile()
-    {
-        return (String) this.getField("facsimile");
+        return (WCS100AxisDescription) this.getField("AxisDescription");
     }
 }

@@ -19,20 +19,20 @@ import java.util.*;
  */
 public class OWSPhone extends AbstractXMLEventParser
 {
-    protected Set<String> voices = new HashSet<String>(1);
-    protected Set<String> faxes = new HashSet<String>(1);
+    protected List<String> voices = new ArrayList<String>(1);
+    protected List<String> faxes = new ArrayList<String>(1);
 
     public OWSPhone(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<String> getVoices()
+    public List<String> getVoices()
     {
         return this.voices;
     }
 
-    public Set<String> getFacsimiles()
+    public List<String> getFacsimiles()
     {
         return this.faxes;
     }
@@ -40,13 +40,13 @@ public class OWSPhone extends AbstractXMLEventParser
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "Voice"))
+        if (ctx.isStartElement(event, "Voice") || ctx.isStartElement(event, "voice"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
                 this.voices.add(s);
         }
-        else if (ctx.isStartElement(event, "Facsimile"))
+        else if (ctx.isStartElement(event, "Facsimile") || ctx.isStartElement(event, "facsimile"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))

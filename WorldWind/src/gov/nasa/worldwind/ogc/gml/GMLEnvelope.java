@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwind.ogc.ows;
+package gov.nasa.worldwind.ogc.gml;
 
 import gov.nasa.worldwind.util.xml.*;
 
@@ -16,36 +16,37 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class OWSConstraint extends AbstractXMLEventParser
+public class GMLEnvelope extends AbstractXMLEventParser
 {
-    protected List<OWSAllowedValues> allowedValues = new ArrayList<OWSAllowedValues>(1);
+    List<GMLPos> positions = new ArrayList<GMLPos>(2);
+    List<String> timePositions = new ArrayList<String>(2);
 
-    public OWSConstraint(String namespaceURI)
+    public GMLEnvelope(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public String getName()
+    public String getSRSName()
     {
-        return (String) this.getField("name");
+        return (String) this.getField("srsName");
     }
 
-    public List<OWSAllowedValues> getAllowedValues()
+    public List<GMLPos> getPositions()
     {
-        return this.allowedValues;
+        return this.positions;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "AllowedValues"))
+        if (ctx.isStartElement(event, "pos"))
         {
             XMLEventParser parser = this.allocate(ctx, event);
             if (parser != null)
             {
                 Object o = parser.parse(ctx, event, args);
-                if (o != null && o instanceof OWSAllowedValues)
-                    this.allowedValues.add((OWSAllowedValues) o);
+                if (o != null && o instanceof GMLPos)
+                    this.positions.add((GMLPos) o);
             }
         }
         else

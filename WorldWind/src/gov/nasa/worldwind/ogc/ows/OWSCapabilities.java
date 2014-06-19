@@ -17,7 +17,7 @@ import javax.xml.stream.events.XMLEvent;
  * Parses OGC Capabilities documents and holds the parsed information.
  *
  * @author tag
- * @version $Id:$
+ * @version $Id$
  */
 public abstract class OWSCapabilities extends AbstractXMLEventParser
 {
@@ -209,7 +209,7 @@ public abstract class OWSCapabilities extends AbstractXMLEventParser
             new OWSHTTP(this.getOWSNamespaceURI()));
 
         ctx.registerParser(new QName(this.getOWSNamespaceURI(), "Keywords"),
-            new StringSetXMLEventParser(this.getOWSNamespaceURI(), new QName(this.getOWSNamespaceURI(), "Keyword")));
+            new StringListXMLEventParser(this.getOWSNamespaceURI(), new QName(this.getOWSNamespaceURI(), "Keyword")));
 
         ctx.registerParser(new QName(this.getOWSNamespaceURI(), "OnlineResource"),
             new AttributesOnlyXMLEventParser(this.getOWSNamespaceURI()));

@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwind.ogc.ows;
+package gov.nasa.worldwind.ogc.gml;
 
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.xml.*;
@@ -17,28 +17,40 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class OWSAllowedValues extends AbstractXMLEventParser
+public class GMLRectifiedGrid extends GMLGrid
 {
-    protected List<String> values = new ArrayList<String>(2);
+    protected List<String> axisNames = new ArrayList<String>(2);
+    protected List<String> offsetVectors = new ArrayList<String>(2);
 
-    public OWSAllowedValues(String namespaceURI)
+    public GMLRectifiedGrid(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public List<String> getValues()
+    public List<String> getAxisNames()
     {
-        return this.values;
+        return this.axisNames;
+    }
+
+    public List<String> getOffsetVectors()
+    {
+        return this.offsetVectors;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "Value"))
+        if (ctx.isStartElement(event, "axisName"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
-                this.values.add(s);
+                this.axisNames.add(s);
+        }
+        else if (ctx.isStartElement(event, "offsetVector"))
+        {
+            String s = ctx.getStringParser().parseString(ctx, event);
+            if (!WWUtil.isEmpty(s))
+                this.offsetVectors.add(s);
         }
         else
         {

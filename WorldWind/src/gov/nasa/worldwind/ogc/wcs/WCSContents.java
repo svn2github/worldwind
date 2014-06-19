@@ -19,34 +19,34 @@ import java.util.*;
  */
 public class WCSContents extends AbstractXMLEventParser
 {
-    protected Set<WCSCoverageSummary> coverageSummaries = new HashSet<WCSCoverageSummary>(1);
-    protected Set<AttributesOnlyXMLEventParser> otherSources = new HashSet<AttributesOnlyXMLEventParser>(1);
-    protected Set<String> supportedCRSs = new HashSet<String>(1);
-    protected Set<String> supportedFormats = new HashSet<String>(1);
+    protected List<WCSCoverageSummary> coverageSummaries = new ArrayList<WCSCoverageSummary>(1);
+    protected List<AttributesOnlyXMLEventParser> otherSources = new ArrayList<AttributesOnlyXMLEventParser>(1);
+    protected List<String> supportedCRSs = new ArrayList<String>(1);
+    protected List<String> supportedFormats = new ArrayList<String>(1);
 
     public WCSContents(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<WCSCoverageSummary> getCoverageSummaries()
+    public List<WCSCoverageSummary> getCoverageSummaries()
     {
         return this.coverageSummaries;
     }
 
-    public Set<String> getSupportedCRSs()
+    public List<String> getSupportedCRSs()
     {
         return this.supportedCRSs;
     }
 
-    public Set<String> getSupportedFormats()
+    public List<String> getSupportedFormats()
     {
         return this.supportedFormats;
     }
 
-    public Set<String> getOtherSources()
+    public List<String> getOtherSources()
     {
-        Set<String> strings = new HashSet<String>(1);
+        List<String> strings = new ArrayList<String>(1);
 
         for (AttributesOnlyXMLEventParser parser : this.otherSources)
         {

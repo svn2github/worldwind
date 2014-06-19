@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.wcs.wcs100;
 
+import gov.nasa.worldwind.ogc.ows.OWSContactInfo;
 import gov.nasa.worldwind.util.xml.AbstractXMLEventParser;
 
 /**
@@ -34,8 +35,8 @@ public class WCS100ResponsibleParty extends AbstractXMLEventParser
         return (String) this.getField("positionName");
     }
 
-    public WCS100ContactInfo getContactInfo()
+    public OWSContactInfo getContactInfo()
     {
-        return (WCS100ContactInfo) this.getField("contactInfo");
+        return (OWSContactInfo) this.getField("contactInfo");
     }
 }

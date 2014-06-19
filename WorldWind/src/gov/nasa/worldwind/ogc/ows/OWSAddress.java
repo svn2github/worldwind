@@ -19,10 +19,10 @@ import java.util.*;
  */
 public class OWSAddress extends AbstractXMLEventParser
 {
-    protected Set<String> deliveryPoints = new HashSet<String>(1);
-    protected Set<String> postalCodes = new HashSet<String>(1);
-    protected Set<String> countries = new HashSet<String>(1);
-    protected Set<String> emails = new HashSet<String>(1);
+    protected List<String> deliveryPoints = new ArrayList<String>(1);
+    protected List<String> postalCodes = new ArrayList<String>(1);
+    protected List<String> countries = new ArrayList<String>(1);
+    protected List<String> emails = new ArrayList<String>(1);
 
     public OWSAddress(String namespaceURI)
     {
@@ -31,30 +31,31 @@ public class OWSAddress extends AbstractXMLEventParser
 
     public String getCity()
     {
-        return (String) this.getField("City");
+        return (String) (this.getField("City") != null ? this.getField("City") : this.getField("city"));
     }
 
     public String getAdministrativeArea()
     {
-        return (String) this.getField("AdministrativeArea");
+        return (String) (this.getField("AdministrativeArea") != null
+            ? this.getField("AdministrativeArea") : this.getField("administrativeArea"));
     }
 
-    public Set<String> getDeliveryPoints()
+    public List<String> getDeliveryPoints()
     {
         return this.deliveryPoints;
     }
 
-    public Set<String> getPostalCodes()
+    public List<String> getPostalCodes()
     {
         return this.postalCodes;
     }
 
-    public Set<String> getCountries()
+    public List<String> getCountries()
     {
         return this.countries;
     }
 
-    public Set<String> getElectronicMailAddresses()
+    public List<String> getElectronicMailAddresses()
     {
         return this.emails;
     }
@@ -62,25 +63,26 @@ public class OWSAddress extends AbstractXMLEventParser
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "DeliveryPoint"))
+        if (ctx.isStartElement(event, "DeliveryPoint") || ctx.isStartElement(event, "deliveryPoint"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
                 this.deliveryPoints.add(s);
         }
-        else if (ctx.isStartElement(event, "PostalCode"))
+        else if (ctx.isStartElement(event, "PostalCode") || ctx.isStartElement(event, "postalCode"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
                 this.postalCodes.add(s);
         }
-        else if (ctx.isStartElement(event, "Country"))
+        else if (ctx.isStartElement(event, "Country") || ctx.isStartElement(event, "country"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
                 this.countries.add(s);
         }
-        else if (ctx.isStartElement(event, "ElectronicMailAddress"))
+        else if (ctx.isStartElement(event, "ElectronicMailAddress")
+            || ctx.isStartElement(event, "electronicMailAddress"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))

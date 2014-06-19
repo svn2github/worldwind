@@ -17,18 +17,14 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class WCS100Service extends AbstractXMLEventParser
+public class WCS100AxisDescription extends AbstractXMLEventParser
 {
-    protected List<String> accessConstraints = new ArrayList<String>(1);
+    protected List<String> axisNames = new ArrayList<String>(2);
+    protected List<String> offsetVectors = new ArrayList<String>(2);
 
-    public WCS100Service(String namespaceURI)
+    public WCS100AxisDescription(String namespaceURI)
     {
         super(namespaceURI);
-    }
-
-    public String getDescription()
-    {
-        return (String) this.getField("description");
     }
 
     public String getName()
@@ -41,14 +37,9 @@ public class WCS100Service extends AbstractXMLEventParser
         return (String) this.getField("label");
     }
 
-    public List<String> getAccessConstraints()
+    public String getDescription()
     {
-        return this.accessConstraints;
-    }
-
-    public String getFees()
-    {
-        return (String) this.getField("fees");
+        return (String) this.getField("description");
     }
 
     public WCS100MetadataLink getMetadataLink()
@@ -56,24 +47,25 @@ public class WCS100Service extends AbstractXMLEventParser
         return (WCS100MetadataLink) this.getField("metadataLink");
     }
 
-    public List<String> getKeywords()
+    public WCS100Values getValues()
     {
-        return ((StringListXMLEventParser) this.getField("keywords")).getStrings();
-    }
-
-    public WCS100ResponsibleParty getResponsibleParty()
-    {
-        return (WCS100ResponsibleParty) this.getField("responsibleParty");
+        return (WCS100Values) this.getField("values");
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "accessConstraints"))
+        if (ctx.isStartElement(event, "axisName"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
-                this.accessConstraints.add(s);
+                this.axisNames.add(s);
+        }
+        else if (ctx.isStartElement(event, "offsetVector"))
+        {
+            String s = ctx.getStringParser().parseString(ctx, event);
+            if (!WWUtil.isEmpty(s))
+                this.offsetVectors.add(s);
         }
         else
         {

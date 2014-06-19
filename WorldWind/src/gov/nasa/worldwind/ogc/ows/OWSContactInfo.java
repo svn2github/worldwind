@@ -31,17 +31,19 @@ public class OWSContactInfo extends AbstractXMLEventParser
 
     public OWSAddress getAddress()
     {
-        return (OWSAddress) this.getField("Address");
+        return (OWSAddress) (this.getField("Address") != null ? this.getField("Address") : this.getField("address"));
     }
 
     public OWSPhone getPhone()
     {
-        return (OWSPhone) this.getField("Phone");
+        return (OWSPhone) (this.getField("Phone") != null ? this.getField("Phone") : this.getField("phone"));
     }
 
     public String getOnlineResource()
     {
-        AttributesOnlyXMLEventParser parser = (AttributesOnlyXMLEventParser) this.getField("OnlineResource");
+        AttributesOnlyXMLEventParser parser = (AttributesOnlyXMLEventParser)
+            (this.getField("OnlineResource") != null ? this.getField("OnlineResource")
+            : this.getField("onlineResource"));
 
         return parser != null ? (String) parser.getField("href") : null;
     }

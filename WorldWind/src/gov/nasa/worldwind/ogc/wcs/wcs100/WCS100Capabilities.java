@@ -7,6 +7,8 @@
 package gov.nasa.worldwind.ogc.wcs.wcs100;
 
 import gov.nasa.worldwind.ogc.OGCConstants;
+import gov.nasa.worldwind.ogc.gml.GMLPos;
+import gov.nasa.worldwind.ogc.ows.*;
 import gov.nasa.worldwind.util.WWXML;
 import gov.nasa.worldwind.util.xml.*;
 
@@ -155,18 +157,17 @@ public class WCS100Capabilities extends AbstractXMLEventParser
 
         ctx.addStringParsers(OGCConstants.GML_NAMESPACE_URI, new String[]
             {
-                "pos",
                 "timePosition",
             });
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "address"),
-            new WCS100Address(this.getNamespaceURI()));
+            new OWSAddress(this.getNamespaceURI()));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "Capability"),
             new WCS100Capability(this.getNamespaceURI()));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "contactInfo"),
-            new WCS100ContactInfo(this.getNamespaceURI()));
+            new OWSContactInfo(this.getNamespaceURI()));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "ContentMetadata"),
             new WCS100ContentMetadata(this.getNamespaceURI()));
@@ -196,7 +197,7 @@ public class WCS100Capabilities extends AbstractXMLEventParser
             new WCS100HTTP(this.getNamespaceURI()));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "keywords"),
-            new StringSetXMLEventParser(this.getNamespaceURI(), new QName(this.getNamespaceURI(), "keyword")));
+            new StringListXMLEventParser(this.getNamespaceURI(), new QName(this.getNamespaceURI(), "keyword")));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "lonLatEnvelope"),
             new WCS100LonLatEnvelope(this.getNamespaceURI()));
@@ -211,7 +212,10 @@ public class WCS100Capabilities extends AbstractXMLEventParser
             new AttributesOnlyXMLEventParser(this.getNamespaceURI()));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "phone"),
-            new WCS100Phone(this.getNamespaceURI()));
+            new OWSPhone(this.getNamespaceURI()));
+
+        ctx.registerParser(new QName(OGCConstants.GML_NAMESPACE_URI, "pos"),
+            new GMLPos(OGCConstants.GML_NAMESPACE_URI));
 
         ctx.registerParser(new QName(this.getNamespaceURI(), "Post"),
             new AttributesOnlyXMLEventParser(this.getNamespaceURI()));

@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.wcs.wcs100;
 
 import gov.nasa.worldwind.util.xml.*;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author tag
@@ -41,9 +41,9 @@ public class WCS100CoverageOfferingBrief extends AbstractXMLEventParser
         return (AttributesOnlyXMLEventParser) this.getField("metadataLink");
     }
 
-    public Set<String> getKeywords()
+    public List<String> getKeywords()
     {
-        return ((StringSetXMLEventParser) this.getField("keywords")).getStrings();
+        return ((StringListXMLEventParser) this.getField("keywords")).getStrings();
     }
 
     public WCS100LonLatEnvelope getLonLatEnvelope()

@@ -4,8 +4,9 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwind.ogc.ows;
+package gov.nasa.worldwind.ogc.wcs.wcs100;
 
+import gov.nasa.worldwind.ogc.gml.*;
 import gov.nasa.worldwind.util.xml.*;
 
 import javax.xml.stream.XMLStreamException;
@@ -16,70 +17,63 @@ import java.util.*;
  * @author tag
  * @version $Id$
  */
-public class OWSOperation extends AbstractXMLEventParser
+public class WCS100SpatialDomain extends AbstractXMLEventParser
 {
-    // TODO: Operation Metadata element
+    protected List<GMLEnvelope> envelopes = new ArrayList<GMLEnvelope>(1);
+    protected List<GMLRectifiedGrid> rectifiedGrids = new ArrayList<GMLRectifiedGrid>(1);
+    protected List<GMLGrid> grids = new ArrayList<GMLGrid>(1);
 
-    protected List<OWSDCP> dcps = new ArrayList<OWSDCP>(2);
-    protected List<OWSParameter> parameters = new ArrayList<OWSParameter>(1);
-    protected List<OWSConstraint> constraints = new ArrayList<OWSConstraint>(1);
-
-    public OWSOperation(String namespaceURI)
+    public WCS100SpatialDomain(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public String getName()
+    public List<GMLEnvelope> getEnvelopes()
     {
-        return (String) this.getField("name");
+        return this.envelopes;
     }
 
-    public List<OWSDCP> getDCPs()
+    public List<GMLRectifiedGrid> getRectifiedGrids()
     {
-        return this.dcps;
+        return this.rectifiedGrids;
     }
 
-    public List<OWSParameter> getParameters()
+    public List<GMLGrid> getGrids()
     {
-        return this.parameters;
-    }
-
-    public List<OWSConstraint> getConstraints()
-    {
-        return this.constraints;
+        return this.grids;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)
         throws XMLStreamException
     {
-        if (ctx.isStartElement(event, "DCP"))
+        if (ctx.isStartElement(event, "Envelope") || ctx.isStartElement(event, "EnvelopeWithTimePeriod"))
         {
             XMLEventParser parser = this.allocate(ctx, event);
             if (parser != null)
             {
                 Object o = parser.parse(ctx, event, args);
-                if (o != null && o instanceof OWSDCP)
-                    this.dcps.add((OWSDCP) o);
+                if (o != null && o instanceof GMLEnvelope)
+                    this.envelopes.add((GMLEnvelope) o);
             }
         }
-        else if (ctx.isStartElement(event, "Parameter"))
+        else if (ctx.isStartElement(event, "RectifiedGrid"))
         {
             XMLEventParser parser = this.allocate(ctx, event);
             if (parser != null)
             {
                 Object o = parser.parse(ctx, event, args);
-                if (o != null && o instanceof OWSParameter)
-                    this.parameters.add((OWSParameter) o);
+                if (o != null && o instanceof GMLRectifiedGrid)
+                    this.rectifiedGrids.add((GMLRectifiedGrid) o);
             }
         }
-        else if (ctx.isStartElement(event, "Constraint"))
+        else if (ctx.isStartElement(event, "Grid"))
         {
             XMLEventParser parser = this.allocate(ctx, event);
             if (parser != null)
             {
                 Object o = parser.parse(ctx, event, args);
-                if (o != null && o instanceof OWSConstraint)
-                    this.constraints.add((OWSConstraint) o);
+                if (o != null && o instanceof GMLGrid)
+                    this.grids.add((GMLGrid) o);
             }
         }
         else

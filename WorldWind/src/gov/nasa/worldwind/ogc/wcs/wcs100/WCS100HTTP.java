@@ -18,20 +18,20 @@ import java.util.*;
  */
 public class WCS100HTTP extends AbstractXMLEventParser
 {
-    protected Set<AttributesOnlyXMLEventParser> gets = new HashSet<AttributesOnlyXMLEventParser>(1);
-    protected Set<AttributesOnlyXMLEventParser> posts = new HashSet<AttributesOnlyXMLEventParser>(1);
+    protected List<AttributesOnlyXMLEventParser> gets = new ArrayList<AttributesOnlyXMLEventParser>(1);
+    protected List<AttributesOnlyXMLEventParser> posts = new ArrayList<AttributesOnlyXMLEventParser>(1);
 
     public WCS100HTTP(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<String> getGetAddresses()
+    public List<String> getGetAddresses()
     {
         if (this.gets == null)
             return null;
 
-        Set<String> addresses = new HashSet<String>(this.gets.size());
+        List<String> addresses = new ArrayList<String>(this.gets.size());
         for (AttributesOnlyXMLEventParser parser : this.gets)
         {
             if (parser != null)
@@ -46,12 +46,12 @@ public class WCS100HTTP extends AbstractXMLEventParser
         return addresses;
     }
 
-    public Set<String> getPostAddresses()
+    public List<String> getPostAddresses()
     {
         if (this.posts == null)
             return null;
 
-        Set<String> addresses = new HashSet<String>(this.posts.size());
+        List<String> addresses = new ArrayList<String>(this.posts.size());
         for (AttributesOnlyXMLEventParser parser : this.posts)
         {
             if (parser != null)
@@ -68,7 +68,7 @@ public class WCS100HTTP extends AbstractXMLEventParser
 
     public String getGetAddress()
     {
-        Set<String> addresses = this.getGetAddresses();
+        List<String> addresses = this.getGetAddresses();
         Iterator<String> iter = addresses.iterator();
 
         return iter.hasNext() ? iter.next() : null;
@@ -76,7 +76,7 @@ public class WCS100HTTP extends AbstractXMLEventParser
 
     public String getPostAddress()
     {
-        Set<String> addresses = this.getPostAddresses();
+        List<String> addresses = this.getPostAddresses();
         Iterator<String> iter = addresses.iterator();
 
         return iter.hasNext() ? iter.next() : null;

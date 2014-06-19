@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class OWSParameter extends AbstractXMLEventParser
 {
-    protected Set<OWSAllowedValues> allowedValues = new HashSet<OWSAllowedValues>(1);
+    protected List<OWSAllowedValues> allowedValues = new ArrayList<OWSAllowedValues>(1);
 
     public OWSParameter(String namespaceURI)
     {
@@ -30,7 +30,7 @@ public class OWSParameter extends AbstractXMLEventParser
         return (String) this.getField("name");
     }
 
-    public Set<OWSAllowedValues> getAllowedValues()
+    public List<OWSAllowedValues> getAllowedValues()
     {
         return this.allowedValues;
     }

@@ -18,20 +18,20 @@ import java.util.*;
  */
 public class OWSOperationsMetadata extends AbstractXMLEventParser
 {
-    protected Set<OWSOperation> operations = new HashSet<OWSOperation>(2);
-    protected Set<OWSConstraint> constraints = new HashSet<OWSConstraint>(1);
+    protected List<OWSOperation> operations = new ArrayList<OWSOperation>(2);
+    protected List<OWSConstraint> constraints = new ArrayList<OWSConstraint>(1);
 
     public OWSOperationsMetadata(String namespaceURI)
     {
         super(namespaceURI);
     }
 
-    public Set<OWSOperation> getOperations()
+    public List<OWSOperation> getOperations()
     {
         return this.operations;
     }
 
-    public Set<OWSConstraint> getConstraints()
+    public List<OWSConstraint> getConstraints()
     {
         return this.constraints;
     }

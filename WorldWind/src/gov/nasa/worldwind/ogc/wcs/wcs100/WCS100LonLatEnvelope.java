@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwind.ogc.wcs.wcs100;
 
+import gov.nasa.worldwind.ogc.gml.GMLPos;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.xml.*;
 
@@ -19,7 +20,7 @@ import java.util.*;
  */
 public class WCS100LonLatEnvelope extends AbstractXMLEventParser
 {
-    List<String> positions = new ArrayList<String>(2);
+    List<GMLPos> positions = new ArrayList<GMLPos>(2);
     List<String> timePositions = new ArrayList<String>(2);
 
     public WCS100LonLatEnvelope(String namespaceURI)
@@ -32,7 +33,7 @@ public class WCS100LonLatEnvelope extends AbstractXMLEventParser
         return (String) this.getField("srsName");
     }
 
-    public List<String> getPositions()
+    public List<GMLPos> getPositions()
     {
         return this.positions;
     }
@@ -42,9 +43,13 @@ public class WCS100LonLatEnvelope extends AbstractXMLEventParser
     {
         if (ctx.isStartElement(event, "pos"))
         {
-            String s = ctx.getStringParser().parseString(ctx, event);
-            if (!WWUtil.isEmpty(s))
-                this.positions.add(s);
+            XMLEventParser parser = this.allocate(ctx, event);
+            if (parser != null)
+            {
+                Object o = parser.parse(ctx, event, args);
+                if (o != null && o instanceof GMLPos)
+                    this.positions.add((GMLPos) o);
+            }
         }
         else if (ctx.isStartElement(event, "timePosition"))
         {
