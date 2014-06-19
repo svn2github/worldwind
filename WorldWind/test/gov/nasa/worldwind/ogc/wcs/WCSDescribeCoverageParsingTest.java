@@ -283,6 +283,11 @@ public class WCSDescribeCoverageParsingTest
                 supportedCRSs.getRequestResponseCRSs().size());
             assertEquals("RequestResponse value is incorrect", "EPSG:4326",
                 supportedCRSs.getRequestResponseCRSs().get(0));
+            assertNotNull("SupportedCRSs nativeCRSs is null", supportedCRSs.getNativeCRSs());
+            assertEquals("SupportedCRSs nativeCRSs count is incorrect", 1,
+                supportedCRSs.getRequestResponseCRSs().size());
+            assertEquals("NativeCRSs value is incorrect", "EPSG:4326",
+                supportedCRSs.getRequestResponseCRSs().get(0));
 
             WCS100SupportedInterpolations supportedInterpolations = coverage.getSupportedInterpolations();
             assertNotNull("SupportedInterpolations is null", supportedInterpolations);

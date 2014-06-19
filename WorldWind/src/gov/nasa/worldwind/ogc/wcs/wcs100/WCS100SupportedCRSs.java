@@ -70,7 +70,7 @@ public class WCS100SupportedCRSs extends AbstractXMLEventParser
             if (!WWUtil.isEmpty(s))
                 this.responseCRSs.add(s);
         }
-        else if (ctx.isStartElement(event, "NativeCRSs"))
+        else if (ctx.isStartElement(event, "nativeCRSs"))
         {
             String s = ctx.getStringParser().parseString(ctx, event);
             if (!WWUtil.isEmpty(s))
