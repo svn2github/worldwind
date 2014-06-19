@@ -17,7 +17,7 @@
 - (FAASectionalsLayer*) init
 {
     NSString* layerName = @"FAAchart";
-    NSString* serviceAddress = @"http://worldwind20.arc.nasa.gov/faachart";
+    NSString* serviceAddress = @"http://worldwind25.arc.nasa.gov/wms";
 
     NSString* cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* cachePath = [cacheDir stringByAppendingPathComponent:@"FAASectionals"];
