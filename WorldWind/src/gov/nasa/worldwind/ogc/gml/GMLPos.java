@@ -6,7 +6,10 @@
 
 package gov.nasa.worldwind.ogc.gml;
 
+import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.xml.AbstractXMLEventParser;
+
+import java.util.logging.Level;
 
 /**
  * @author tag
@@ -27,5 +30,24 @@ public class GMLPos extends AbstractXMLEventParser
     public String getPosString()
     {
         return (String) this.getField("CharactersContent");
+    }
+
+    public double[] getPos2()
+    {
+        String[] strings = this.getPosString().split(" ");
+
+        if (strings.length < 2)
+            return null;
+
+        try
+        {
+            return new double[] {Double.parseDouble(strings[0]), Double.parseDouble(strings[1])};
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.NumberFormatException");
+            Logging.logger().log(Level.WARNING, message, e);
+            return null;
+        }
     }
 }

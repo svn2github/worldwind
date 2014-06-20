@@ -96,6 +96,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String DETAIL_HINT = "gov.nasa.worldwind.avkey.DetailHint";
     final String DISPLAY_ICON = "gov.nasa.worldwind.avkey.DisplayIcon";
     final String DISPLAY_NAME = "gov.nasa.worldwind.avkey.DisplayName";
+    final String DOCUMENT = "gov.nasa.worldwind.avkey.Document";
 
     final String DTED_LEVEL = "gov.nasa.worldwind.avkey.DTED.Level";
 

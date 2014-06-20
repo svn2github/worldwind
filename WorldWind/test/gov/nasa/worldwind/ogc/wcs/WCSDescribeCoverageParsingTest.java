@@ -98,7 +98,7 @@ public class WCSDescribeCoverageParsingTest
             assertNotNull("Origin is null", origin);
             assertEquals("Incorrect origin values", "-179.99583333333334 89.99583333333334",
                 origin.getPos().getPosString());
-            List<String> offsetVectors = rGrid.getOffsetVectors();
+            List<String> offsetVectors = rGrid.getOffsetVectorStrings();
             assertNotNull("OffsetVectors is null", offsetVectors);
             assertEquals("Incorrect offsetVector count", 2, offsetVectors.size());
             assertEquals("Incorrect first offset vector", "0.008333333333333333 0.0", offsetVectors.get(0));
@@ -122,7 +122,7 @@ public class WCSDescribeCoverageParsingTest
             List<WCS100SingleValue> singleValues = values.getSingleValues();
             assertNotNull("SingleValues is null", singleValues);
             assertEquals("Incorrect singleValues count", 1, singleValues.size());
-            assertEquals("Incorrect singleValue", "1", singleValues.get(0).getSingleValue());
+            assertEquals("Incorrect singleValue", 1.0, singleValues.get(0).getSingleValue());
 
             WCS100SupportedFormats supportedFormats = coverage.getSupportedFormats();
             assertNotNull("SuppotedFormats is null", supportedFormats);
@@ -233,7 +233,7 @@ public class WCSDescribeCoverageParsingTest
             assertNotNull("Origin is null", origin);
             assertEquals("Incorrect origin values", "-179.99583333333325 84.000000100105098",
                 origin.getPos().getPosString());
-            List<String> offsetVectors = rGrid.getOffsetVectors();
+            List<String> offsetVectors = rGrid.getOffsetVectorStrings();
             assertNotNull("OffsetVectors is null", offsetVectors);
             assertEquals("Incorrect offsetVector count", 2, offsetVectors.size());
             assertEquals("Incorrect first offset vector", "0.0083333333333333315 0", offsetVectors.get(0));
@@ -257,14 +257,14 @@ public class WCSDescribeCoverageParsingTest
             List<WCS100SingleValue> singleValues = values.getSingleValues();
             assertNotNull("SingleValues is null", singleValues);
             assertEquals("Incorrect singleValues count", 1, singleValues.size());
-            assertEquals("Incorrect singleValue", "1", singleValues.get(0).getSingleValue());
+            assertEquals("Incorrect singleValue", 1.0, singleValues.get(0).getSingleValue());
 
             WCS100Values nullValues = rangeSet.getNullValues();
             assertNotNull("NullValues is null", nullValues);
             singleValues = nullValues.getSingleValues();
             assertNotNull("NullValues SingleValues is null", nullValues);
             assertEquals("NullValues Incorrect singleValues count", 1, singleValues.size());
-            assertEquals("NullValues Incorrect singleValue", "32767", singleValues.get(0).getSingleValue());
+            assertEquals("NullValues Incorrect singleValue", 32767.0, singleValues.get(0).getSingleValue());
 
             WCS100SupportedFormats supportedFormats = coverage.getSupportedFormats();
             assertNotNull("SuppotedFormats is null", supportedFormats);

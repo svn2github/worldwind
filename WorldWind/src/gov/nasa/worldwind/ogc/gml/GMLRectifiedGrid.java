@@ -6,8 +6,9 @@
 
 package gov.nasa.worldwind.ogc.gml;
 
-import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwind.util.xml.*;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.xml.XMLEventParserContext;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
@@ -32,9 +33,36 @@ public class GMLRectifiedGrid extends GMLGrid
         return this.axisNames;
     }
 
-    public List<String> getOffsetVectors()
+    public List<String> getOffsetVectorStrings()
     {
         return this.offsetVectors;
+    }
+
+    public List<Vec4> getOffsetVectors()
+    {
+        List<Vec4> vectors = new ArrayList<Vec4>(this.offsetVectors.size());
+
+        for (String s : this.offsetVectors)
+        {
+            double[] arr = new double[] {0, 0, 0, 0};
+            String[] split = s.split(" ");
+            for (int i = 0; i < Math.min(split.length, 4); i++)
+            {
+                try
+                {
+                    arr[i] = Double.parseDouble(split[i]);
+                }
+                catch (NumberFormatException e)
+                {
+                    String message = Logging.getMessage("generic.NumberFormatException");
+                    Logging.logger().log(java.util.logging.Level.WARNING, message, e);
+                    return Collections.emptyList();
+                }
+            }
+            vectors.add(new Vec4(arr[0], arr[1], arr[2], arr[3]));
+        }
+
+        return vectors;
     }
 
     protected void doParseEventContent(XMLEventParserContext ctx, XMLEvent event, Object... args)

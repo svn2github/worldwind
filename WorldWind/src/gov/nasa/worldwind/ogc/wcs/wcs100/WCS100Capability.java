@@ -28,4 +28,19 @@ public class WCS100Capability extends AbstractXMLEventParser
     {
         return (WCS100Exception) this.getField("Exception");
     }
+
+    public String getGetOperationAddress(String opName)
+    {
+        WCS100Request request = this.getRequest();
+        WCS100RequestDescription description = request.getRequest(opName);
+        for (WCS100DCPType dcpType : description.getDCPTypes())
+        {
+            WCS100HTTP http = dcpType.getHTTP();
+            String address = http.getGetAddress();
+            if (address != null)
+                return address;
+        }
+
+        return null;
+    }
 }

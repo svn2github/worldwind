@@ -6,7 +6,10 @@
 
 package gov.nasa.worldwind.ogc.wcs.wcs100;
 
+import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.xml.AbstractXMLEventParser;
+
+import java.util.logging.Level;
 
 /**
  * @author tag
@@ -29,8 +32,25 @@ public class WCS100SingleValue extends AbstractXMLEventParser
         return (String) this.getField("semantic");
     }
 
-    public String getSingleValue()
+    public String getSingleValueString()
     {
         return (String) this.getField("CharactersContent");
+    }
+
+    public Double getSingleValue()
+    {
+        if (this.getSingleValueString() == null)
+            return null;
+
+        try
+        {
+            return Double.parseDouble(this.getSingleValueString());
+        }
+        catch (NumberFormatException e)
+        {
+            String message = Logging.getMessage("generic.NumberFormatException");
+            Logging.logger().log(Level.WARNING, message, e);
+            return null;
+        }
     }
 }

@@ -7,7 +7,10 @@
 package gov.nasa.worldwind.terrain;
 
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.ogc.gml.GMLRectifiedGrid;
+import gov.nasa.worldwind.ogc.wcs.wcs100.*;
 import gov.nasa.worldwind.retrieve.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.*;
@@ -24,6 +27,11 @@ public class WCSElevationModel extends BasicElevationModel
     public WCSElevationModel(Element domElement, AVList params)
     {
         super(wcsGetParamsFromDocument(domElement, params));
+    }
+
+    public WCSElevationModel(WCS100Capabilities caps, AVList params)
+    {
+        super(wcsGetParamsFromCapsDoc(caps, params));
     }
 
     protected static AVList wcsGetParamsFromDocument(Element domElement, AVList params)
@@ -43,6 +51,40 @@ public class WCSElevationModel extends BasicElevationModel
         wcsSetFallbacks(params);
 
         params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(params.getStringValue(AVKey.WCS_VERSION), params));
+
+        return params;
+    }
+
+    protected static AVList wcsGetParamsFromCapsDoc(WCS100Capabilities caps, AVList params)
+    {
+        if (caps == null)
+        {
+            String message = Logging.getMessage("nullValue.WCSCapabilities");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (params == null)
+        {
+            String message = Logging.getMessage("nullValue.ElevationModelConfigParams");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        WCS100DescribeCoverage coverage = (WCS100DescribeCoverage) params.getValue(AVKey.DOCUMENT);
+        if (coverage == null)
+        {
+            String message = Logging.getMessage("nullValue.WCSDescribeCoverage");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        getWCSElevationModelConfigParams(caps, coverage, params);
+
+        wcsSetFallbacks(params);
+        determineNumLevels(coverage, params);
+
+        params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(caps.getVersion(), params));
 
         return params;
     }
@@ -72,6 +114,82 @@ public class WCSElevationModel extends BasicElevationModel
 
         if (params.getValue(AVKey.NUM_EMPTY_LEVELS) == null)
             params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
+
+        if (params.getValue(AVKey.ELEVATION_EXTREMES_FILE) == null)
+            params.setValue(AVKey.ELEVATION_EXTREMES_FILE, "config/SRTM30Plus_ExtremeElevations_5.bil");
+
+        if (params.getValue(AVKey.ELEVATION_MIN) == null)
+            params.setValue(AVKey.ELEVATION_MIN, -11000.0);
+
+        if (params.getValue(AVKey.ELEVATION_MAX) == null)
+            params.setValue(AVKey.ELEVATION_MAX, 8850.0);
+    }
+
+    protected static void determineNumLevels(WCS100DescribeCoverage coverage, AVList params)
+    {
+        List<GMLRectifiedGrid> grids =
+            coverage.getCoverageOfferings().get(0).getDomainSet().getSpatialDomain().getRectifiedGrids();
+        if (grids.size() < 1 || grids.get(0).getOffsetVectors().size() < 2)
+        {
+            params.setValue(AVKey.NUM_LEVELS, 18);
+            return;
+        }
+
+        double xRes = Math.abs(grids.get(0).getOffsetVectors().get(0).x);
+        double yRes = Math.abs(grids.get(0).getOffsetVectors().get(1).y);
+        double dataResolution = Math.min(xRes, yRes);
+
+        int tileSize = (Integer) params.getValue(AVKey.TILE_WIDTH);
+        LatLon level0Delta = (LatLon) params.getValue(AVKey.LEVEL_ZERO_TILE_DELTA);
+
+        double n = Math.log(level0Delta.getLatitude().degrees / (dataResolution * tileSize)) / Math.log(2);
+        params.setValue(AVKey.NUM_LEVELS, (int) (Math.ceil(n) + 1));
+    }
+
+    public static AVList getWCSElevationModelConfigParams(WCS100Capabilities caps, WCS100DescribeCoverage coverage,
+        AVList params)
+    {
+        DataConfigurationUtils.getWCSConfigParameters(caps, coverage, params); // checks for null args
+
+        // Ensure that we found all the necessary information.
+        if (params.getStringValue(AVKey.DATASET_NAME) == null)
+        {
+            Logging.logger().warning(Logging.getMessage("WCS.NoCoverageName"));
+            throw new WWRuntimeException(Logging.getMessage("WCS.NoCoverageName"));
+        }
+
+        if (params.getStringValue(AVKey.SERVICE) == null)
+        {
+            Logging.logger().warning(Logging.getMessage("WCS.NoGetCoverageURL"));
+            throw new WWRuntimeException(Logging.getMessage("WCS.NoGetCoverageURL"));
+        }
+
+        if (params.getStringValue(AVKey.DATA_CACHE_NAME) == null)
+        {
+            Logging.logger().warning(Logging.getMessage("nullValue.DataCacheIsNull"));
+            throw new WWRuntimeException(Logging.getMessage("nullValue.DataCacheIsNull"));
+        }
+
+        if (params.getStringValue(AVKey.IMAGE_FORMAT) == null)
+        {
+            Logging.logger().severe("WCS.NoImageFormats");
+            throw new WWRuntimeException(Logging.getMessage("WCS.NoImageFormats"));
+        }
+
+        if (params.getValue(AVKey.SECTOR) == null)
+        {
+            Logging.logger().severe("WCS.NoLonLatEnvelope");
+            throw new WWRuntimeException(Logging.getMessage("WCS.NoLonLatEnvelope"));
+        }
+
+        if (params.getStringValue(AVKey.COORDINATE_SYSTEM) == null)
+        {
+            String msg = Logging.getMessage("WCS.RequiredCRSNotSupported", "EPSG:4326");
+            Logging.logger().severe(msg);
+            throw new WWRuntimeException(msg);
+        }
+
+        return params;
     }
 
     protected static class URLBuilder implements TileUrlBuilder
@@ -186,7 +304,8 @@ public class WCSElevationModel extends BasicElevationModel
             throw new IllegalArgumentException(msg);
         }
 
-        WMSBasicElevationModel.ElevationCompositionTile tile = new WMSBasicElevationModel.ElevationCompositionTile(sector, this.getLevels().getLastLevel(),
+        WMSBasicElevationModel.ElevationCompositionTile tile = new WMSBasicElevationModel.ElevationCompositionTile(
+            sector, this.getLevels().getLastLevel(),
             tileWidth, latlons.size() / tileWidth);
 
         this.downloadElevations(tile);
@@ -211,10 +330,10 @@ public class WCSElevationModel extends BasicElevationModel
     {
         URL url = tile.getResourceURL();
 
-        Retriever retriever = new HTTPRetriever(url, new WMSBasicElevationModel.CompositionRetrievalPostProcessor(tile.getFile()));
+        Retriever retriever = new HTTPRetriever(url,
+            new WMSBasicElevationModel.CompositionRetrievalPostProcessor(tile.getFile()));
         retriever.setConnectTimeout(10000);
         retriever.setReadTimeout(60000);
         retriever.call();
     }
-
 }

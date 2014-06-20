@@ -5,33 +5,22 @@
  */
 package gov.nasa.worldwind.util;
 
-import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.avlist.AVList;
-import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.AbstractLayer;
 import gov.nasa.worldwind.ogc.OGCConstants;
-import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
-import gov.nasa.worldwind.ogc.wms.WMSLayerCapabilities;
-import gov.nasa.worldwind.ogc.wms.WMSLayerStyle;
+import gov.nasa.worldwind.ogc.wcs.wcs100.*;
+import gov.nasa.worldwind.ogc.wms.*;
 import gov.nasa.worldwind.terrain.AbstractElevationModel;
 import gov.nasa.worldwind.wms.CapabilitiesRequest;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.w3c.dom.*;
 
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.xpath.XPath;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import java.net.*;
+import java.util.concurrent.*;
 
 /**
  * A collection of static methods useful for opening, reading, and otherwise working with World Wind data configuration
@@ -700,7 +689,8 @@ public class DataConfigurationUtils
 
         // Need to determine these for URLBuilder construction.
         WWXML.checkAndSetStringParam(domElement, params, AVKey.WCS_VERSION, "Service/@version", xpath);
-        WWXML.checkAndSetStringParam(domElement, params, AVKey.COVERAGE_IDENTIFIERS, "Service/CoverageIdentifiers", xpath);
+        WWXML.checkAndSetStringParam(domElement, params, AVKey.COVERAGE_IDENTIFIERS, "Service/CoverageIdentifiers",
+            xpath);
         WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_COVERAGE_URL, "Service/GetCoverageURL", xpath);
         WWXML.checkAndSetStringParam(domElement, params, AVKey.GET_CAPABILITIES_URL, "Service/GetCapabilitiesURL",
             xpath);
@@ -897,6 +887,124 @@ public class DataConfigurationUtils
         return params;
     }
 
+    public static AVList getWCSConfigParameters(WCS100Capabilities caps, WCS100DescribeCoverage coverage, AVList params)
+    {
+        if (caps == null)
+        {
+            String message = Logging.getMessage("nullValue.WMSCapabilities");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (coverage == null)
+        {
+            String message = Logging.getMessage("nullValue.WCSDescribeCoverage");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (params == null)
+        {
+            String message = Logging.getMessage("nullValue.ParametersIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        WCS100CoverageOffering offering = coverage.getCoverageOfferings().get(0);
+
+        params.setValue(AVKey.SERVICE_NAME, OGCConstants.WCS_SERVICE_NAME);
+        params.setValue(AVKey.WCS_VERSION, caps.getVersion() != null ? caps.getVersion() : "1.0.0");
+        params.setValue(AVKey.DISPLAY_NAME, offering.getLabel());
+        params.setValue(AVKey.COVERAGE_IDENTIFIERS, offering.getName());
+        params.setValue(AVKey.GET_COVERAGE_URL, caps.getCapability().getGetOperationAddress("GetCoverage"));
+        params.setValue(AVKey.GET_CAPABILITIES_URL, caps.getCapability().getGetOperationAddress("GetCapabilities"));
+
+        params.setValue(AVKey.SERVICE, params.getValue(AVKey.GET_COVERAGE_URL));
+        String serviceURL = params.getStringValue(AVKey.SERVICE);
+        if (serviceURL != null)
+        {
+            params.setValue(AVKey.SERVICE, WWXML.fixGetMapString(serviceURL));
+        }
+
+        String coverages = params.getStringValue(AVKey.COVERAGE_IDENTIFIERS);
+        if (coverages != null)
+        {
+            params.setValue(AVKey.DATASET_NAME, coverages);
+        }
+
+        // Form the cache path DATA_CACHE_NAME from a set of unique WMS parameters.
+        if (params.getValue(AVKey.DATA_CACHE_NAME) == null)
+        {
+            try
+            {
+                URI mapRequestURI = new URI(params.getStringValue(AVKey.GET_COVERAGE_URL));
+                String cacheName = WWIO.formPath(mapRequestURI.getAuthority(), mapRequestURI.getPath(),
+                    params.getStringValue(AVKey.COVERAGE_IDENTIFIERS));
+                params.setValue(AVKey.DATA_CACHE_NAME, cacheName);
+            }
+            catch (URISyntaxException e)
+            {
+                String message = Logging.getMessage("WCS.RequestMapURLBad",
+                    params.getStringValue(AVKey.GET_COVERAGE_URL));
+                Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
+                throw new WWRuntimeException(message);
+            }
+        }
+
+        for (String format : offering.getSupportedFormats().getStrings())
+        {
+            if (format.toLowerCase().contains("tiff")) // lots of variants in use, so find one
+            {
+                params.setValue(AVKey.IMAGE_FORMAT, format);
+                break;
+            }
+        }
+
+        // Determine bounding sector.
+        WCS100LonLatEnvelope envelope = offering.getLonLatEnvelope();
+        if (envelope != null)
+        {
+            double[] sw = envelope.getPositions().get(0).getPos2();
+            double[] ne = envelope.getPositions().get(1).getPos2();
+
+            if (sw != null && ne != null)
+            {
+                params.setValue(AVKey.SECTOR, Sector.fromDegreesAndClamp(sw[1], ne[1], sw[0], ne[0]));
+            }
+        }
+
+        String epsg4326 = "EPSG:4326";
+        String crs = null;
+        if (offering.getSupportedCRSs() != null)
+        {
+            if (offering.getSupportedCRSs().getRequestResponseCRSs().contains(epsg4326))
+            {
+                crs = epsg4326;
+            } else if (offering.getSupportedCRSs().getRequestCRSs().contains(epsg4326)
+                && offering.getSupportedCRSs().getResponseCRSs().contains(epsg4326))
+            {
+                crs = epsg4326;
+            }
+        }
+
+        if (crs != null)
+        {
+            params.setValue(AVKey.COORDINATE_SYSTEM, crs);
+        }
+
+        WCS100Values nullValues = offering.getRangeSet().getRangeSet().getNullValues();
+        if (nullValues != null && nullValues.getSingleValues() != null && nullValues.getSingleValues().size() > 0)
+        {
+            Double nullValue = nullValues.getSingleValues().get(0).getSingleValue();
+            if (nullValue != null)
+            {
+                params.setValue(AVKey.MISSING_DATA_SIGNAL, nullValue);
+            }
+        }
+
+        return params;
+    }
+
     /**
      * Convenience method to get the OGC GetCapabilities URL from a specified parameter list. If all the necessary
      * parameters are available, this returns the GetCapabilities URL. Otherwise this returns null.
@@ -927,7 +1035,6 @@ public class DataConfigurationUtils
         {
             return null;
         }
-
 
         try
         {
