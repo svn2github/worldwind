@@ -162,4 +162,28 @@ public class ShapefileUtils
 
         return null;
     }
+
+    /**
+     * Determines whether a shapefile's records contain a height attribute.
+     *
+     * @param shapefile the shapefile to search.
+     *
+     * @return true if the shapefile's records contain a height attribute, otherwise false.
+     */
+    public static boolean hasHeightAttribute(Shapefile shapefile)
+    {
+        Set<String> attrNames = shapefile.getAttributeNames();
+        if (attrNames == null)
+            return false;
+
+        for (String name : attrNames)
+        {
+            if (name.equalsIgnoreCase("height") || name.equalsIgnoreCase("hgt"))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

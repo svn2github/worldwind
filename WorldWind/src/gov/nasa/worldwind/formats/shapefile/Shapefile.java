@@ -436,6 +436,27 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
     }
 
     /**
+     * Returns a set of the unique attribute names associated with this shapefile's records, or null if this shapefile
+     * has no associated attributes.
+     *
+     * @return a set containing the unique attribute names of this shapefile's records, or null if there are no
+     *         attributes.
+     */
+    public Set<String> getAttributeNames()
+    {
+        if (this.attributeFile == null)
+            return null;
+
+        HashSet<String> set = new HashSet<String>();
+        for (DBaseField field : this.attributeFile.getFields())
+        {
+            set.add(field.getName());
+        }
+
+        return set;
+    }
+
+    /**
      * Returns <code>true</code> if the Shapefile has a more records, and <code>false</code> if all records have been
      * read.
      *
