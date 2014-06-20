@@ -28,38 +28,25 @@ public class RandomShapeAttributes
 
     protected void initialize()
     {
-        this.pointAttrs = new PointPlacemarkAttributes[]
-            {
-                this.createPointAttributes(Color.YELLOW),
-                this.createPointAttributes(Color.BLUE),
-                this.createPointAttributes(Color.RED),
-                this.createPointAttributes(Color.GREEN),
-                this.createPointAttributes(Color.CYAN),
-                this.createPointAttributes(Color.ORANGE),
-                this.createPointAttributes(Color.MAGENTA),
-            };
+        Color[] shapeColors = {
+            new Color(255, 9, 84), // red
+            new Color(255, 133, 0), // orange
+            new Color(255, 198, 0), // yellow
+            new Color(79, 213, 33), // green
+            new Color(7, 152, 249), // blue
+            new Color(193, 83, 220), // purple
+        };
 
-        this.polylineAttrs = new ShapeAttributes[]
-            {
-                this.createPolylineAttributes(Color.YELLOW),
-                this.createPolylineAttributes(Color.BLUE),
-                this.createPolylineAttributes(Color.RED),
-                this.createPolylineAttributes(Color.GREEN),
-                this.createPolylineAttributes(Color.CYAN),
-                this.createPolylineAttributes(Color.ORANGE),
-                this.createPolylineAttributes(Color.MAGENTA),
-            };
+        this.pointAttrs = new PointPlacemarkAttributes[shapeColors.length];
+        this.polylineAttrs = new ShapeAttributes[shapeColors.length];
+        this.polygonAttrs = new ShapeAttributes[shapeColors.length];
 
-        this.polygonAttrs = new ShapeAttributes[]
-            {
-                this.createPolygonAttributes(Color.YELLOW),
-                this.createPolygonAttributes(Color.BLUE),
-                this.createPolygonAttributes(Color.RED),
-                this.createPolygonAttributes(Color.GREEN),
-                this.createPolygonAttributes(Color.CYAN),
-                this.createPolygonAttributes(Color.ORANGE),
-                this.createPolygonAttributes(Color.MAGENTA),
-            };
+        for (int i = 0; i < shapeColors.length; i++)
+        {
+            this.pointAttrs[i] = this.createPointAttributes(shapeColors[i]);
+            this.polylineAttrs[i] = this.createPolylineAttributes(shapeColors[i]);
+            this.polygonAttrs[i] = this.createPolygonAttributes(shapeColors[i]);
+        }
     }
 
     public PointPlacemarkAttributes nextPointAttributes()
@@ -98,9 +85,9 @@ public class RandomShapeAttributes
     {
         ShapeAttributes attrs = new BasicShapeAttributes();
         attrs.setInteriorMaterial(new Material(color));
-        attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
+        attrs.setOutlineMaterial(new Material(WWUtil.makeColorDarker(color)));
         attrs.setInteriorOpacity(0.5);
-        attrs.setOutlineWidth(3);
+        attrs.setOutlineWidth(1.5);
         return attrs;
     }
 }

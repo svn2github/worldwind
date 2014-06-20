@@ -6,9 +6,9 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwindx.examples.util.*;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwindx.examples.util.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -46,8 +46,10 @@ public class Shapefiles extends ApplicationTemplate
             this.dragger = new BasicDragger(this.getWwd());
 
             // Setup file chooser
+            FileFilter shpFilter = new FileNameExtensionFilter("ESRI Shapefile", "shp");
             this.fc = new JFileChooser();
-            this.fc.addChoosableFileFilter(new FileNameExtensionFilter("ESRI Shapefile", "shp"));
+            this.fc.addChoosableFileFilter(shpFilter);
+            this.fc.setFileFilter(shpFilter);
         }
 
         protected void makeControlPanel()
@@ -177,24 +179,17 @@ public class Shapefiles extends ApplicationTemplate
         {
             try
             {
-                final List<Layer> layers = this.makeShapefileLayers();
-                for (int i = 0; i < layers.size(); i++)
-                {
-                    String name = this.makeDisplayName(this.source);
-                    layers.get(i).setName(i == 0 ? name : name + "-" + Integer.toString(i));
-                    layers.get(i).setPickEnabled(this.appFrame.pickCheck.isSelected());
-                }
+                final Layer layer = this.makeShapefileLayer();
+                String name = this.makeDisplayName(this.source);
+                layer.setName(name);
+                layer.setPickEnabled(this.appFrame.pickCheck.isSelected());
 
                 SwingUtilities.invokeLater(new Runnable()
                 {
                     public void run()
                     {
-                        for (Layer layer : layers)
-                        {
-                            insertBeforePlacenames(appFrame.getWwd(), layer);
-                            appFrame.layers.add(layer);
-                        }
-
+                        insertBeforePlacenames(appFrame.getWwd(), layer);
+                        appFrame.layers.add(layer);
                         appFrame.layerPanel.update(appFrame.getWwd());
                     }
                 });
@@ -215,19 +210,16 @@ public class Shapefiles extends ApplicationTemplate
             }
         }
 
-        protected List<Layer> makeShapefileLayers()
+        protected Layer makeShapefileLayer()
         {
             if (OpenStreetMapShapefileLoader.isOSMPlacesSource(this.source))
             {
-                Layer layer = OpenStreetMapShapefileLoader.makeLayerFromOSMPlacesSource(source);
-                List<Layer> layers = new ArrayList<Layer>();
-                layers.add(layer);
-                return layers;
+                return OpenStreetMapShapefileLoader.makeLayerFromOSMPlacesSource(this.source);
             }
             else
             {
                 ShapefileLoader loader = new ShapefileLoader();
-                return loader.createLayersFromSource(this.source);
+                return loader.createLayerFromSource(this.source);
             }
         }
 
