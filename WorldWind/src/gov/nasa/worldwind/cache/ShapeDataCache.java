@@ -31,6 +31,8 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
     {
         /** Determines whether the cache entry has expired. */
         protected TimedExpirySupport timer;
+        /** Indicates whether or not the expiration time has been adjusted since the last cache entry expiration. */
+        protected boolean timerAdjusted;
         /** Indicates the last time, in milliseconds, the entry was requested or added. */
         protected long lastUsed = System.currentTimeMillis();
         /** Identifies the associated globe's state at the time the entry was created. */
@@ -104,6 +106,35 @@ public class ShapeDataCache implements Iterable<ShapeDataCache.ShapeDataCacheEnt
         public void restartTimer(DrawContext dc)
         {
             this.timer.restart(dc);
+            this.timerAdjusted = false;
+        }
+
+        /**
+         * Adjust the timer's expiration time by comparing the cached eye distance to the current eye distance. The
+         * remaining expiration time is reduced by 50% if the current eye distance is significantly closer than cached
+         * data's eye distance. Though this method may be called many times, the remaining expiration time is reduced
+         * only once and cannot be reduced again until the timer is restarted. This has no effect if the cached eye
+         * distance is unknown, or if the expiration time has already been reached.
+         *
+         * @param dc             the current draw context.
+         * @param newEyeDistance the current eye distance.
+         */
+        public void adjustTimer(DrawContext dc, double newEyeDistance)
+        {
+            if (this.eyeDistance == 0) // do nothing, there's previous eye distance to compare with
+                return;
+
+            if (this.timerAdjusted || this.timer.isExpired(dc)) // adjust the timer once per cache entry expiration
+                return;
+
+            double oldPixelSize = dc.getView().computePixelSizeAtDistance(this.eyeDistance);
+            double newPixelSize = dc.getView().computePixelSizeAtDistance(newEyeDistance);
+            if (newPixelSize < oldPixelSize / 2)
+            {
+                long remainingTime = this.timer.getExpiryTime() - dc.getFrameTimeStamp();
+                this.timer.setExpiryTime(dc.getFrameTimeStamp() + remainingTime / 2);
+                this.timerAdjusted = true;
+            }
         }
 
         /**

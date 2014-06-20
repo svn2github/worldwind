@@ -65,6 +65,17 @@ public class TimedExpirySupport
     }
 
     /**
+     * Sets the current expiration time to a specified value. This method ignores the configured minimum and maximum
+     * expiry times.
+     *
+     * @param expiryTime the new expiration time, in milliseconds.
+     */
+    public void setExpiryTime(long expiryTime)
+    {
+        this.expiryTime = expiryTime;
+    }
+
+    /**
      * Specifies the minimum and maximum expiration intervals. An interval is set to 0 if its specified value is less
      * than 0.
      *
