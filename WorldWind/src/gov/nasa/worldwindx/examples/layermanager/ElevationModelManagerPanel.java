@@ -80,6 +80,8 @@ public class ElevationModelManagerPanel extends JPanel
         // Repopulate this elevation model manager.
 
         this.fill(wwd);
+        this.revalidate();
+        this.repaint();
     }
 
     protected void fill(WorldWindow wwd)
