@@ -10,10 +10,12 @@ import gov.nasa.worldwind.ogc.OGCConstants;
 import gov.nasa.worldwind.ogc.gml.*;
 import gov.nasa.worldwind.util.WWXML;
 import gov.nasa.worldwind.util.xml.*;
+import gov.nasa.worldwind.wms.Request;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
 import javax.xml.stream.events.XMLEvent;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -25,6 +27,23 @@ public class WCS100DescribeCoverage extends AbstractXMLEventParser
     protected XMLEventReader eventReader;
     protected XMLEventParserContext parserContext;
     protected List<WCS100CoverageOffering> coverageOfferings = new ArrayList<WCS100CoverageOffering>(1);
+
+    public static WCS100DescribeCoverage retrieve(URI uri, final String coverageName) throws URISyntaxException
+    {
+        Request request = new Request(uri, "WCS")
+        {
+            @Override
+            protected void initialize(String service)
+            {
+                super.initialize(service);
+                this.setParam("REQUEST", "DescribeCoverage");
+                this.setParam("VERSION", "1.0.0");
+                this.setParam("coverage", coverageName);
+            }
+        };
+
+        return new WCS100DescribeCoverage(request.toString());
+    }
 
     public WCS100DescribeCoverage(Object docSource)
     {

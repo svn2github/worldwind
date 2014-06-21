@@ -27,6 +27,17 @@ public class WMSCapabilities extends OGCCapabilities
     protected static final QName ROOT_ELEMENT_NAME_1_1_1 = new QName("WMT_MS_Capabilities");
     protected static final QName ROOT_ELEMENT_NAME_1_3_0 = new QName("WMS_Capabilities");
 
+    /**
+     * Retrieves the WMS capabilities document from a specified WMS server.
+     *
+     * @param uri The URI of the server.
+     *
+     * @return The WMS capabilities document for the specified server.
+     *
+     * @throws IllegalArgumentException if the specified URI is invalid.
+     * @throws gov.nasa.worldwind.exception.WWRuntimeException
+     *                                  if an error occurs retrieving the document.
+     */
     public static WMSCapabilities retrieve(URI uri) throws Exception
     {
         try

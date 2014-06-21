@@ -9,12 +9,14 @@ package gov.nasa.worldwind.ogc.wcs.wcs100;
 import gov.nasa.worldwind.ogc.OGCConstants;
 import gov.nasa.worldwind.ogc.gml.GMLPos;
 import gov.nasa.worldwind.ogc.ows.*;
-import gov.nasa.worldwind.util.WWXML;
+import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.xml.*;
+import gov.nasa.worldwind.wms.CapabilitiesRequest;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
 import javax.xml.stream.events.XMLEvent;
+import java.net.*;
 
 /**
  * @author tag
@@ -24,6 +26,34 @@ public class WCS100Capabilities extends AbstractXMLEventParser
 {
     protected XMLEventReader eventReader;
     protected XMLEventParserContext parserContext;
+
+    /**
+     * Retrieves the WCS capabilities document from a specified WCS server.
+     *
+     * @param uri The URI of the server.
+     *
+     * @return The WCS capabilities document for the specified server.
+     *
+     * @throws IllegalArgumentException if the specified URI is invalid.
+     * @throws gov.nasa.worldwind.exception.WWRuntimeException
+     *                                  if an error occurs retrieving the document.
+     */
+    public static WCS100Capabilities retrieve(URI uri) throws Exception
+    {
+        try
+        {
+            CapabilitiesRequest request = new CapabilitiesRequest(uri, "WCS");
+            request.setVersion("1.0.0");
+
+            return new WCS100Capabilities(request.toString());
+        }
+        catch (URISyntaxException e)
+        {
+            String message = Logging.getMessage("OGC.GetCapabilitiesURIInvalid", uri);
+            Logging.logger().warning(message);
+            throw new IllegalArgumentException(message);
+        }
+    }
 
     public WCS100Capabilities(Object docSource)
     {

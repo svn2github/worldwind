@@ -14,6 +14,7 @@ import gov.nasa.worldwind.exception.WWUnrecognizedException;
 import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.ogc.OGCCapabilities;
 import gov.nasa.worldwind.ogc.OGCConstants;
+import gov.nasa.worldwind.ogc.wcs.wcs100.WCS100Capabilities;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.ogc.wms.WMSLayerCapabilities;
 import gov.nasa.worldwind.util.Logging;
@@ -97,6 +98,11 @@ public class BasicElevationModelFactory extends BasicFactory
         }
 
         return new WMSBasicElevationModel((WMSCapabilities) caps, params);
+    }
+
+    protected Object doCreateFromCapabilities(WCS100Capabilities caps, AVList params)
+    {
+        return new WCSElevationModel(caps, params);
     }
 
     /**

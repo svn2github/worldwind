@@ -1044,11 +1044,6 @@ public class DataConfigurationUtils
                 CapabilitiesRequest request = new CapabilitiesRequest(new URI(uri), service);
                 return request.getUri().toURL();
             }
-            else if (service.equals(OGCConstants.WCS_SERVICE_NAME))
-            {
-                service = "WCS";
-                // TODO: make and issue the request
-            }
         }
         catch (URISyntaxException e)
         {
