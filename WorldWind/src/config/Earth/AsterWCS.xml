@@ -25,7 +25,7 @@
         <ExtremeElevations min="-11000" max="8850">
             <FileName>config/SRTM30Plus_ExtremeElevations_5.bil</FileName>
         </ExtremeElevations>
-        <NumLevels count="12" numEmpty="0"/>
+        <NumLevels count="10" numEmpty="0"/>
         <TileOrigin>
             <LatLon units="degrees" latitude="-90" longitude="-180"/>
         </TileOrigin>
