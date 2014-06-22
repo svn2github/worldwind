@@ -63,7 +63,8 @@ New features and improvements in World Wind Java SDK 2.1.0
 
 - Repaired WWJ-521, LevelSet.getLastLevel not returning correct level for sector resolution limits.
 - Repaired WWJ-522, HighResolutionTerrain bulk intersector not notifying of exceptions. Added notification interface.
-- Added ability to retrieve elevations via WCS.
+- Added ability to retrieve elevations via WCS. Added WCSElevations example.
+- Modified CompoundElevationModel to sort elevation models from lowest resolution to highest when models are added.
 
 New features and improvements in World Wind Java SDK 2.0.0
 ------------------------------------------------------------
