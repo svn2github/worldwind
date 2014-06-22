@@ -64,6 +64,43 @@ public class CompoundElevationModel extends AbstractElevationModel
         return false;
     }
 
+    protected void sortElevationModels()
+    {
+        if (this.elevationModels.size() == 1)
+            return;
+
+        List<ElevationModel> temp = new ArrayList<ElevationModel>(this.elevationModels.size());
+        for (ElevationModel em : this.elevationModels)
+        {
+            temp.add(em);
+        }
+
+        Collections.sort(temp, new Comparator<ElevationModel>()
+        {
+            @Override
+            public int compare(ElevationModel o1, ElevationModel o2)
+            {
+                double res1 = o1.getBestResolution(null);
+                double res2 = o2.getBestResolution(null);
+
+                // sort from lowest resolution to highest
+                return res1 > res2 ? -1 : res1 == res2 ? 0 : 1;
+            }
+        });
+
+        this.elevationModels.removeAll(temp);
+        this.elevationModels.addAll(temp);
+    }
+
+    /**
+     * Adds an elevation to this compound elevation model. The list of elevation models for this class is sorted from
+     * lowest resolution to highest. This method inserts the specified elevation model at the appropriate position in
+     * the list, and as a side effect resorts the entire list.
+     *
+     * @param em The elevation model to add.
+     *
+     * @throws IllegalArgumentException if the specified elevation model is null.
+     */
     public void addElevationModel(ElevationModel em)
     {
         if (em == null)
@@ -74,8 +111,24 @@ public class CompoundElevationModel extends AbstractElevationModel
         }
 
         this.elevationModels.add(em);
+        this.sortElevationModels();
     }
 
+    /**
+     * Adds a specified elevation model to a specified position in this compound elevation model's elevation model list.
+     * It's expected that this class' elevation model list is sorted from lowest resolution to highest. The method
+     * {@link #addElevationModel(gov.nasa.worldwind.globes.ElevationModel)} inserts added elevation models at the
+     * appropriate place in the list. This method, however, inserts the elevation model at the specified position in the
+     * list. For proper operation of this compound elevation model, the caller should ensure that the specified position
+     * is the appropriate one for the inserted elevation model's resolution.
+     *
+     * @param index The position at which to insert the specified model, zero origin. Existing models are shifted to the
+     *              right.
+     * @param em    The elevation model to insert.
+     *
+     * @throws IllegalArgumentException  if the specified elevation model is null.
+     * @throws IndexOutOfBoundsException if the specified index is invalid.
+     */
     public void addElevationModel(int index, ElevationModel em)
     {
         if (em == null)
@@ -168,7 +221,7 @@ public class CompoundElevationModel extends AbstractElevationModel
         {
             if (!em.isEnabled())
                 continue;
-            
+
             double m = em.getMaxElevation();
             if (m > max)
                 max = m;
