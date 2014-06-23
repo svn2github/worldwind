@@ -5,19 +5,17 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.examples.util.*;
 
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.filechooser.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
-import java.util.*;
-import java.util.List;
+import java.io.File;
 
 /**
  * Illustrates how to import ESRI Shapefiles into World Wind. This uses a <code>{@link ShapefileLoader}</code> to parse
@@ -31,166 +29,64 @@ public class Shapefiles extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
-        protected List<Layer> layers = new ArrayList<Layer>();
-        protected BasicDragger dragger;
-        protected JFileChooser fc = new JFileChooser(Configuration.getUserHomeDirectory());
-        protected JCheckBox pickCheck, dragCheck;
-
         public AppFrame()
         {
-            // Add our control panel.
-            this.makeControlPanel();
-
-            // Create a select listener for shape dragging but do not add it yet. Dragging can be enabled via the user
-            // interface.
-            this.dragger = new BasicDragger(this.getWwd());
-
-            // Setup file chooser
-            FileFilter shpFilter = new FileNameExtensionFilter("ESRI Shapefile", "shp");
-            this.fc = new JFileChooser();
-            this.fc.addChoosableFileFilter(shpFilter);
-            this.fc.setFileFilter(shpFilter);
+            makeMenu(this);
         }
 
-        protected void makeControlPanel()
+        public void addShapefileLayer(Layer layer)
         {
-            JPanel panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-            panel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(0, 9, 9, 9),
-                new TitledBorder("Shapefiles")));
-
-            // Open shapefile buttons.
-            JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 0, 5)); // nrows, ncols, hgap, vgap
-            buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // top, left, bottom, right
-            panel.add(buttonPanel);
-            // Open shapefile from File button.
-            JButton openFileButton = new JButton("Open File...");
-            openFileButton.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent actionEvent)
-                {
-                    showOpenFileDialog();
-                }
-            });
-            buttonPanel.add(openFileButton);
-            // Open shapefile from URL button.
-            JButton openURLButton = new JButton("Open URL...");
-            openURLButton.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent actionEvent)
-                {
-                    showOpenURLDialog();
-                }
-            });
-            buttonPanel.add(openURLButton);
-
-            // Picking and dragging checkboxes
-            JPanel pickPanel = new JPanel(new GridLayout(1, 1, 10, 10)); // nrows, ncols, hgap, vgap
-            pickPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // top, left, bottom, right
-            this.pickCheck = new JCheckBox("Allow picking");
-            this.pickCheck.setSelected(true);
-            this.pickCheck.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent actionEvent)
-                {
-                    enablePicking(((JCheckBox) actionEvent.getSource()).isSelected());
-                }
-            });
-            pickPanel.add(this.pickCheck);
-
-            this.dragCheck = new JCheckBox("Allow dragging");
-            this.dragCheck.setSelected(false);
-            this.dragCheck.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent actionEvent)
-                {
-                    enableDragging(((JCheckBox) actionEvent.getSource()).isSelected());
-                }
-            });
-            pickPanel.add(this.dragCheck);
-
-            panel.add(pickPanel);
-
-            this.getLayerPanel().add(panel, BorderLayout.SOUTH);
+            this.getWwd().getModel().getLayers().add(layer);
+            this.getLayerPanel().update(this.getWwd());
         }
 
-        protected void enablePicking(boolean enabled)
+        public void gotoLayer(Layer layer)
         {
-            for (Layer layer : this.layers)
+            Sector sector = (Sector) layer.getValue(AVKey.SECTOR);
+            if (sector != null)
             {
-                layer.setPickEnabled(enabled);
+                ExampleUtil.goTo(this.getWwd(), sector);
             }
-
-            // Disable the drag check box. Dragging is implicitly disabled since the objects cannot be picked.
-            this.dragCheck.setEnabled(enabled);
-        }
-
-        protected void enableDragging(boolean enabled)
-        {
-            if (enabled)
-                this.getWwd().addSelectListener(this.dragger);
-            else
-                this.getWwd().removeSelectListener(this.dragger);
-        }
-
-        public void showOpenFileDialog()
-        {
-            int retVal = AppFrame.this.fc.showOpenDialog(this);
-            if (retVal != JFileChooser.APPROVE_OPTION)
-                return;
-
-            Thread t = new WorkerThread(this.fc.getSelectedFile(), this);
-            t.start();
-            ((Component) getWwd()).setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        }
-
-        public void showOpenURLDialog()
-        {
-            String retVal = JOptionPane.showInputDialog(this, "Enter Shapefile URL", "Open",
-                JOptionPane.INFORMATION_MESSAGE);
-            if (WWUtil.isEmpty(retVal)) // User cancelled the operation entered an empty URL.
-                return;
-
-            URL url = WWIO.makeURL(retVal);
-            if (url == null)
-            {
-                JOptionPane.showMessageDialog(this, retVal + " is not a valid URL.", "Open", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Thread t = new WorkerThread(url, this);
-            t.start();
-            ((Component) getWwd()).setCursor(new Cursor(Cursor.WAIT_CURSOR));
         }
     }
 
     public static class WorkerThread extends Thread
     {
-        protected Object source;
+        protected Object shpSource;
         protected AppFrame appFrame;
 
-        public WorkerThread(Object source, AppFrame appFrame)
+        public WorkerThread(Object shpSource, AppFrame appFrame)
         {
-            this.source = source;
+            this.shpSource = shpSource;
             this.appFrame = appFrame;
         }
 
         public void run()
         {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    appFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                }
+            });
+
             try
             {
-                final Layer layer = this.makeShapefileLayer();
-                String name = this.makeDisplayName(this.source);
-                layer.setName(name);
-                layer.setPickEnabled(this.appFrame.pickCheck.isSelected());
+                Layer shpLayer = this.parse();
 
+                // Set the shapefile layer's display name
+                shpLayer.setName(formName(this.shpSource));
+
+                // Schedule a task on the EDT to add the parsed shapefile layer to a layer
+                final Layer finalSHPLayer = shpLayer;
                 SwingUtilities.invokeLater(new Runnable()
                 {
                     public void run()
                     {
-                        insertBeforePlacenames(appFrame.getWwd(), layer);
-                        appFrame.layers.add(layer);
-                        appFrame.layerPanel.update(appFrame.getWwd());
+                        appFrame.addShapefileLayer(finalSHPLayer);
+                        appFrame.gotoLayer(finalSHPLayer);
                     }
                 });
             }
@@ -204,39 +100,97 @@ public class Shapefiles extends ApplicationTemplate
                 {
                     public void run()
                     {
-                        ((Component) appFrame.getWwd()).setCursor(Cursor.getDefaultCursor());
+                        appFrame.setCursor(null);
                     }
                 });
             }
         }
 
-        protected Layer makeShapefileLayer()
+        protected Layer parse()
         {
-            if (OpenStreetMapShapefileLoader.isOSMPlacesSource(this.source))
+            if (OpenStreetMapShapefileLoader.isOSMPlacesSource(this.shpSource))
             {
-                return OpenStreetMapShapefileLoader.makeLayerFromOSMPlacesSource(this.source);
+                return OpenStreetMapShapefileLoader.makeLayerFromOSMPlacesSource(this.shpSource);
             }
             else
             {
                 ShapefileLoader loader = new ShapefileLoader();
-                return loader.createLayerFromSource(this.source);
+                return loader.createLayerFromSource(this.shpSource);
             }
         }
+    }
 
-        protected String makeDisplayName(Object source)
+    protected static String formName(Object source)
+    {
+        String name = WWIO.getSourcePath(source);
+        if (name != null)
+            name = WWIO.getFilename(name);
+        if (name == null)
+            name = "Shapefile";
+
+        return name;
+    }
+
+    protected static void makeMenu(final AppFrame appFrame)
+    {
+        final JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Shapefile", "shp"));
+        fileChooser.setFileFilter(fileChooser.getChoosableFileFilters()[1]);
+
+        JMenuBar menuBar = new JMenuBar();
+        appFrame.setJMenuBar(menuBar);
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+
+        JMenuItem openFileMenuItem = new JMenuItem(new AbstractAction("Open File...")
         {
-            String name = WWIO.getSourcePath(source);
-            if (name != null)
-                name = WWIO.getFilename(name);
-            if (name == null)
-                name = "Shapefile";
+            public void actionPerformed(ActionEvent actionEvent)
+            {
+                try
+                {
+                    int status = fileChooser.showOpenDialog(appFrame);
+                    if (status == JFileChooser.APPROVE_OPTION)
+                    {
+                        for (File file : fileChooser.getSelectedFiles())
+                        {
+                            new WorkerThread(file, appFrame).start();
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-            return name;
-        }
+        fileMenu.add(openFileMenuItem);
+
+        JMenuItem openURLMenuItem = new JMenuItem(new AbstractAction("Open URL...")
+        {
+            public void actionPerformed(ActionEvent actionEvent)
+            {
+                try
+                {
+                    String status = JOptionPane.showInputDialog(appFrame, "URL");
+                    if (!WWUtil.isEmpty(status))
+                    {
+                        new WorkerThread(status.trim(), appFrame).start();
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        fileMenu.add(openURLMenuItem);
     }
 
     public static void main(String[] args)
     {
-        start("World Wind Shapefiles", AppFrame.class);
+        start("World Wind Shapefile Viewer", AppFrame.class);
     }
 }

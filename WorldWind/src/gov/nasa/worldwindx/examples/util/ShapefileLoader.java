@@ -121,6 +121,11 @@ public class ShapefileLoader
             Logging.logger().warning(Logging.getMessage("generic.UnrecognizedShapeType", shp.getShapeType()));
         }
 
+        if (layer != null && shp.getBoundingRectangle() != null)
+        {
+            layer.setValue(AVKey.SECTOR, Sector.fromDegrees(shp.getBoundingRectangle()));
+        }
+
         return layer;
     }
 
