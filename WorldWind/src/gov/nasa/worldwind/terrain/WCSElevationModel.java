@@ -86,6 +86,15 @@ public class WCSElevationModel extends BasicElevationModel
 
         params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(caps.getVersion(), params));
 
+        if (params.getValue(AVKey.ELEVATION_EXTREMES_FILE) == null)
+        {
+            // Use the default extremes file if there are at least as many levels in this new elevation model as the
+            // level of the extremes file, which is level 5.
+            int numLevels = (Integer) params.getValue(AVKey.NUM_LEVELS);
+            if (numLevels >= 6)
+                params.setValue(AVKey.ELEVATION_EXTREMES_FILE, "config/SRTM30Plus_ExtremeElevations_5.bil");
+        }
+
         return params;
     }
 
@@ -114,9 +123,6 @@ public class WCSElevationModel extends BasicElevationModel
 
         if (params.getValue(AVKey.NUM_EMPTY_LEVELS) == null)
             params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
-
-        if (params.getValue(AVKey.ELEVATION_EXTREMES_FILE) == null)
-            params.setValue(AVKey.ELEVATION_EXTREMES_FILE, "config/SRTM30Plus_ExtremeElevations_5.bil");
 
         if (params.getValue(AVKey.ELEVATION_MIN) == null)
             params.setValue(AVKey.ELEVATION_MIN, -11000.0);
