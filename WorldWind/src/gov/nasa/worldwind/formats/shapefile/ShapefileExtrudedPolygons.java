@@ -295,7 +295,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         tile.currentData = (ShapeData) tile.dataCache.getEntry(dc.getGlobe());
         if (tile.currentData == null)
         {
-            tile.currentData = new ShapeData(dc, 3000, 9000);
+            tile.currentData = new ShapeData(dc, 2000, 8000);
             tile.dataCache.addEntry(tile.currentData);
         }
 
