@@ -55,6 +55,7 @@ NSString* WW_WMS_SERVER_ADDRESS = @"WMSServerAddress";
     if (serverList == nil)
     {
         [self addServer:@"http://neowms.sci.gsfc.nasa.gov/wms/wms" serviceTitle:@"NASA Earth Observations (NEO) WMS"];
+        [self addServer:@"http://sedac.ciesin.columbia.edu/geoserver/wms" serviceTitle:@"Columbia University CIESIN"];
     }
     else
     {
