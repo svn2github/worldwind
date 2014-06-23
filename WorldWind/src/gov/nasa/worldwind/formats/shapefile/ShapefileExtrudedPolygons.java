@@ -8,6 +8,7 @@ package gov.nasa.worldwind.formats.shapefile;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
@@ -28,8 +29,10 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 {
     protected static class RecordGroup
     {
+        // Record group properties.
         public final ShapeAttributes attributes;
         public ArrayList<Record> records = new ArrayList<Record>();
+        // Data structures supporting drawing.
         public IntBuffer indices;
         public Range interiorIndexRange = new Range(0, 0);
         public Range outlineIndexRange = new Range(0, 0);
@@ -43,13 +46,19 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected static class Tile
     {
+        // Tile properties.
         public final Sector sector;
         public final int level;
+        // Tile records, attribute groups and child tiles.
         public ArrayList<Record> records = new ArrayList<Record>();
         public ArrayList<RecordGroup> attributeGroups = new ArrayList<RecordGroup>();
         public Tile[] children;
+        // Tile shape data.
         public ShapeDataCache dataCache = new ShapeDataCache(60000);
-        public TileData currentData;
+        public ShapeData currentData;
+        // Tile intersection data.
+        public ShapeData intersectionData;
+        public Terrain intersectionTerrain;
 
         public Tile(Sector sector, int level)
         {
@@ -58,15 +67,15 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         }
     }
 
-    protected static class TileData extends ShapeDataCache.ShapeDataCacheEntry
+    protected static class ShapeData extends ShapeDataCache.ShapeDataCacheEntry
     {
         public FloatBuffer vertices;
-        public Vec4 origin;
+        public Vec4 referencePoint;
         public Matrix transformMatrix;
         public Object vboKey = new Object();
         public boolean vboExpired;
 
-        public TileData(DrawContext dc, long minExpiryTime, long maxExpiryTime)
+        public ShapeData(DrawContext dc, long minExpiryTime, long maxExpiryTime)
         {
             super(dc, minExpiryTime, maxExpiryTime);
         }
@@ -193,18 +202,6 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         this.invalidateAllTileGeometry();
     }
 
-    public Extent getExtent(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        return this.rootTile != null ? this.getTileExtent(dc, this.rootTile) : null;
-    }
-
     @Override
     public double getDistanceFromEye()
     {
@@ -293,30 +290,39 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void addTileOrDescendants(DrawContext dc, Tile tile)
     {
-        tile.currentData = (TileData) tile.dataCache.getEntry(dc.getGlobe());
+        // Get or create the tile's current shape data, which holds the rendered geometry for the current draw context.
+        tile.currentData = (ShapeData) tile.dataCache.getEntry(dc.getGlobe());
         if (tile.currentData == null)
         {
-            tile.currentData = new TileData(dc, 3000, 9000);
+            tile.currentData = new ShapeData(dc, 3000, 9000);
             tile.dataCache.addEntry(tile.currentData);
         }
 
-        if (tile.records.isEmpty() || !this.isTileVisible(dc, tile))
+        // If the tile isn't visible, then don't add it or its descendants. Note that a tile with no records may have
+        // children, so we can't use the tile's record count as a determination of whether or not to add its children.
+        if (!this.isTileVisible(dc, tile))
         {
             return;
         }
 
-        if (this.mustRegenerateTileGeometry(dc, tile))
+        // Add the tile to the list of tiles to draw, regenerating the tile's geometry and the tile's attribute groups
+        // as necessary.
+        if (tile.records.size() > 0)
         {
-            this.regenerateTileGeometry(dc, tile);
+            if (this.mustRegenerateTileGeometry(dc, tile))
+            {
+                this.regenerateTileGeometry(dc, tile);
+            }
+
+            if (this.mustAssembleTileAttributeGroups(tile))
+            {
+                this.assembleTileAttributeGroups(tile);
+            }
+
+            this.currentTiles.add(tile);
         }
 
-        if (this.mustAssembleTileAttributeGroups(tile))
-        {
-            this.assembleTileAttributeGroups(tile);
-        }
-
-        this.currentTiles.add(tile);
-
+        // Process the tile's children, if any.
         if (tile.children != null)
         {
             for (Tile childTile : tile.children)
@@ -328,45 +334,25 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected boolean isTileVisible(DrawContext dc, Tile tile)
     {
-        Extent extent = this.getTileExtent(dc, tile);
+        ShapeData shapeData = tile.currentData;
+        this.regenerateTileExtent(dc.getTerrain(), tile, shapeData);
 
-        if (dc.isSmall(extent, 1))
+        if (dc.isSmall(shapeData.getExtent(), 1))
         {
             return false;
         }
 
-        return dc.isPickingMode() ?
-            dc.getPickFrustums().intersectsAny(extent) : dc.getView().getFrustumInModelCoordinates().intersects(extent);
-    }
-
-    protected Extent getTileExtent(DrawContext dc, Tile tile)
-    {
-        Extent extent = tile.currentData.getExtent();
-
-        if (extent == null) // no need to check for data expiration, a tile's extent never changes
-        {
-            // Compute the tile's minimum and maximum height as height above and below the extreme elevations in the
-            // tile's sector. We use the overall maximum height of all records in order to ensure that the extents of
-            // parent tiles enclose the extents of their descendants.
-            double[] extremes = dc.getGlobe().getMinAndMaxElevations(tile.sector);
-            double minHeight = extremes[0] - this.baseDepth;
-            double maxHeight = extremes[1] + Math.max(this.maxHeight, this.defaultHeight);
-
-            extent = Sector.computeBoundingBox(dc.getGlobe(), dc.getVerticalExaggeration(), this.sector, minHeight,
-                maxHeight);
-            tile.currentData.setExtent(extent);
-        }
-
-        return extent;
+        return dc.isPickingMode() ? dc.getPickFrustums().intersectsAny(shapeData.getExtent())
+            : dc.getView().getFrustumInModelCoordinates().intersects(shapeData.getExtent());
     }
 
     protected boolean mustRegenerateTileGeometry(DrawContext dc, Tile tile)
     {
         // If the new eye distance is significantly closer than cached data's the current eye distance, reduce the
         // timer's remaining time by 50%. This reduction is performed only once each time the timer is reset.
-        if (tile.currentData.origin != null)
+        if (tile.currentData.referencePoint != null)
         {
-            double newEyeDistance = dc.getView().getEyePoint().distanceTo3(tile.currentData.origin);
+            double newEyeDistance = dc.getView().getEyePoint().distanceTo3(tile.currentData.referencePoint);
             tile.currentData.adjustTimer(dc, newEyeDistance);
         }
 
@@ -398,22 +384,42 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void regenerateTileGeometry(DrawContext dc, Tile tile)
     {
-        this.tessellateTile(dc.getTerrain(), tile);
+        ShapeData shapeData = tile.currentData;
+        this.tessellateTile(dc.getTerrain(), tile, shapeData);
 
-        tile.currentData.setEyeDistance(dc.getView().getEyePoint().distanceTo3(tile.currentData.origin));
-        tile.currentData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
-        tile.currentData.setVerticalExaggeration(dc.getVerticalExaggeration());
-        tile.currentData.restartTimer(dc);
+        shapeData.setEyeDistance(dc.getView().getEyePoint().distanceTo3(shapeData.referencePoint));
+        shapeData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
+        shapeData.setVerticalExaggeration(dc.getVerticalExaggeration());
+        shapeData.restartTimer(dc);
     }
 
-    protected void tessellateTile(Terrain terrain, Tile tile)
+    protected void regenerateTileExtent(Terrain terrain, Tile tile, ShapeData shapeData)
     {
-        TileData tileData = tile.currentData;
+        Globe globe = terrain.getGlobe();
+        double verticalExaggeration = terrain.getVerticalExaggeration();
 
+        // TODO: Globe state key and vertical exaggeration are never set if the ShapeData is not regenerated.
+        // TODO: Since we need the extent but potentially not the shape data, find another way to generate or invalidate extents
+        if (shapeData.getExtent() == null)
+        {
+            // Compute the tile's minimum and maximum height as height above and below the extreme elevations in the
+            // tile's sector. We use the overall maximum height of all records in order to ensure that the extents of
+            // parent tiles enclose the extents of their descendants.
+            double[] extremes = globe.getMinAndMaxElevations(tile.sector);
+            double minHeight = extremes[0] - this.baseDepth;
+            double maxHeight = extremes[1] + Math.max(this.maxHeight, this.defaultHeight);
+
+            Extent extent = Sector.computeBoundingBox(globe, verticalExaggeration, this.sector, minHeight, maxHeight);
+            shapeData.setExtent(extent);
+        }
+    }
+
+    protected void tessellateTile(Terrain terrain, Tile tile, ShapeData shapeData)
+    {
         // Allocate the model coordinate vertices to hold the upper and lower points for all records in the tile. The
         // records in the tile never changes, so the number of vertices in the tile never changes.
         int vertexStride = 3;
-        FloatBuffer vertices = tileData.vertices;
+        FloatBuffer vertices = shapeData.vertices;
         if (vertices == null)
         {
             int numPoints = 0;
@@ -429,7 +435,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         // are marked as not visible, as recomputing the vertices and indices for record visibility changes would be
         // expensive. The tessellated interior and outline indices are generated only once, since each record's indices
         // never change.
-        tileData.origin = null;
+        Vec4 rp = null;
         double[] coord = this.doubleArray;
         float[] vertex = this.floatArray;
         for (ShapefileRenderable.Record record : tile.records)
@@ -459,9 +465,9 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                     int index = vertices.position() / vertexStride; // index of top vertex
                     this.tess.addVertex(coord[1], coord[0], 0, index); // coordinates stored as lon,lat
 
-                    if (tileData.origin == null) // first vertex in the tile
+                    if (rp == null) // first vertex in the tile
                     {
-                        tileData.origin = p;
+                        rp = p;
                     }
 
                     if (N == null) // first vertex in the record
@@ -473,12 +479,12 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                     // Add the model coordinate top and bottom vertices, with heights relative to the terrain.
                     double t = height - (N.dot3(p) - NdotR);
                     double b = -this.baseDepth;
-                    vertex[0] = (float) (p.x + N.x * t - tileData.origin.x);
-                    vertex[1] = (float) (p.y + N.y * t - tileData.origin.y);
-                    vertex[2] = (float) (p.z + N.z * t - tileData.origin.z);
-                    vertex[3] = (float) (p.x + N.x * b - tileData.origin.x);
-                    vertex[4] = (float) (p.y + N.y * b - tileData.origin.y);
-                    vertex[5] = (float) (p.z + N.z * b - tileData.origin.z);
+                    vertex[0] = (float) (p.x + N.x * t - rp.x);
+                    vertex[1] = (float) (p.y + N.y * t - rp.y);
+                    vertex[2] = (float) (p.z + N.z * t - rp.z);
+                    vertex[3] = (float) (p.x + N.x * b - rp.x);
+                    vertex[4] = (float) (p.y + N.y * b - rp.y);
+                    vertex[5] = (float) (p.z + N.z * b - rp.z);
                     vertices.put(vertex);
                 }
 
@@ -489,9 +495,10 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             this.assembleRecordIndices(this.tess, record);
         }
 
-        tileData.vertices = (FloatBuffer) vertices.rewind();
-        tileData.transformMatrix = Matrix.fromTranslation(tileData.origin.x, tileData.origin.y, tileData.origin.z);
-        tileData.vboExpired = true;
+        shapeData.vertices = (FloatBuffer) vertices.rewind();
+        shapeData.referencePoint = rp;
+        shapeData.transformMatrix = Matrix.fromTranslation(rp.x, rp.y, rp.z);
+        shapeData.vboExpired = true;
     }
 
     protected void assembleRecordIndices(PolygonTessellator tessellator, ShapefileRenderable.Record record)
@@ -679,108 +686,108 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void drawTile(DrawContext dc, Tile tile)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-        TileData tileData = tile.currentData;
+        ShapeData shapeData = tile.currentData;
 
         int[] vboId = null;
         boolean useVbo = dc.getGLRuntimeCapabilities().isUseVertexBufferObject();
-        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(tileData.vboKey)) == null)
+        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(shapeData.vboKey)) == null)
         {
-            long vboSize = 4 * tileData.vertices.remaining(); // 4 bytes for each float vertex component
+            long vboSize = 4 * shapeData.vertices.remaining(); // 4 bytes for each float vertex component
             vboId = new int[1];
             gl.glGenBuffers(1, vboId, 0);
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
-            gl.glBufferData(GL.GL_ARRAY_BUFFER, vboSize, tileData.vertices, GL.GL_STATIC_DRAW);
+            gl.glBufferData(GL.GL_ARRAY_BUFFER, vboSize, shapeData.vertices, GL.GL_STATIC_DRAW);
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
-            dc.getGpuResourceCache().put(tileData.vboKey, vboId, GpuResourceCache.VBO_BUFFERS, vboSize);
+            dc.getGpuResourceCache().put(shapeData.vboKey, vboId, GpuResourceCache.VBO_BUFFERS, vboSize);
         }
         else if (useVbo)
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
-            if (tileData.vboExpired)
+            if (shapeData.vboExpired)
             {
-                gl.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, 4 * tileData.vertices.remaining(), tileData.vertices);
-                tileData.vboExpired = false;
+                gl.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, 4 * shapeData.vertices.remaining(), shapeData.vertices);
+                shapeData.vboExpired = false;
             }
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
         }
         else
         {
-            gl.glVertexPointer(3, GL.GL_FLOAT, 0, tileData.vertices);
+            gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.vertices);
         }
 
-        Matrix modelview = dc.getView().getModelviewMatrix().multiply(tileData.transformMatrix);
+        Matrix modelview = dc.getView().getModelviewMatrix().multiply(shapeData.transformMatrix);
         modelview.toArray(this.doubleArray, 0, false);
         gl.glLoadMatrixd(this.doubleArray, 0);
 
         for (RecordGroup attrGroup : tile.attributeGroups)
         {
-            this.drawRecordGroup(dc, attrGroup);
+            this.drawTileAttributeGroup(dc, attrGroup);
         }
     }
 
-    protected void drawRecordGroup(DrawContext dc, RecordGroup recordGroup)
+    protected void drawTileAttributeGroup(DrawContext dc, RecordGroup attributeGroup)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
         int[] vboId = null;
         boolean useVbo = dc.getGLRuntimeCapabilities().isUseVertexBufferObject();
-        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(recordGroup.vboKey)) == null)
+        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(attributeGroup.vboKey)) == null)
         {
-            long vboSize = 4 * recordGroup.indices.remaining(); // 4 bytes for each unsigned int index
+            long vboSize = 4 * attributeGroup.indices.remaining(); // 4 bytes for each unsigned int index
             vboId = new int[1];
             gl.glGenBuffers(1, vboId, 0);
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboId[0]);
-            gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, vboSize, recordGroup.indices, GL.GL_STATIC_DRAW);
-            dc.getGpuResourceCache().put(recordGroup.vboKey, vboId, GpuResourceCache.VBO_BUFFERS, vboSize);
+            gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, vboSize, attributeGroup.indices, GL.GL_STATIC_DRAW);
+            dc.getGpuResourceCache().put(attributeGroup.vboKey, vboId, GpuResourceCache.VBO_BUFFERS, vboSize);
         }
         else if (useVbo)
         {
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboId[0]);
         }
 
-        if (recordGroup.attributes.isDrawInterior())
+        if (attributeGroup.attributes.isDrawInterior())
         {
             if (!dc.isPickingMode())
             {
                 float[] color = this.floatArray;
-                recordGroup.attributes.getInteriorMaterial().getDiffuse().getRGBColorComponents(color);
+                attributeGroup.attributes.getInteriorMaterial().getDiffuse().getRGBColorComponents(color);
                 gl.glColor3f(color[0], color[1], color[2]);
             }
 
             if (useVbo)
             {
-                gl.glDrawElements(GL.GL_TRIANGLES, recordGroup.interiorIndexRange.length, GL.GL_UNSIGNED_INT,
-                    4 * recordGroup.interiorIndexRange.location);
+                gl.glDrawElements(GL.GL_TRIANGLES, attributeGroup.interiorIndexRange.length, GL.GL_UNSIGNED_INT,
+                    4 * attributeGroup.interiorIndexRange.location);
             }
             else
             {
-                gl.glDrawElements(GL.GL_TRIANGLES, recordGroup.interiorIndexRange.length, GL.GL_UNSIGNED_INT,
-                    recordGroup.indices.position(recordGroup.interiorIndexRange.location));
-                recordGroup.indices.rewind();
+                gl.glDrawElements(GL.GL_TRIANGLES, attributeGroup.interiorIndexRange.length, GL.GL_UNSIGNED_INT,
+                    attributeGroup.indices.position(attributeGroup.interiorIndexRange.location));
+                attributeGroup.indices.rewind();
             }
         }
 
-        if (recordGroup.attributes.isDrawOutline())
+        if (attributeGroup.attributes.isDrawOutline())
         {
-            gl.glLineWidth((float) recordGroup.attributes.getOutlineWidth());
+            gl.glLineWidth((float) attributeGroup.attributes.getOutlineWidth());
 
             if (!dc.isPickingMode())
             {
                 float[] color = this.floatArray;
-                recordGroup.attributes.getOutlineMaterial().getDiffuse().getRGBColorComponents(color);
+                attributeGroup.attributes.getOutlineMaterial().getDiffuse().getRGBColorComponents(color);
                 gl.glColor3f(color[0], color[1], color[2]);
             }
 
             if (useVbo)
             {
-                gl.glDrawElements(GL.GL_LINES, recordGroup.outlineIndexRange.length, GL.GL_UNSIGNED_INT,
-                    4 * recordGroup.outlineIndexRange.location);
+                gl.glDrawElements(GL.GL_LINES, attributeGroup.outlineIndexRange.length, GL.GL_UNSIGNED_INT,
+                    4 * attributeGroup.outlineIndexRange.location);
             }
             else
             {
-                gl.glDrawElements(GL.GL_LINES, recordGroup.outlineIndexRange.length, GL.GL_UNSIGNED_INT,
-                    recordGroup.indices.position(recordGroup.outlineIndexRange.location));
-                recordGroup.indices.rewind();
+                gl.glDrawElements(GL.GL_LINES, attributeGroup.outlineIndexRange.length, GL.GL_UNSIGNED_INT,
+                    attributeGroup.indices.position(attributeGroup.outlineIndexRange.location));
+                attributeGroup.indices.rewind();
             }
         }
     }
@@ -788,9 +795,9 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void drawTileInUniqueColors(DrawContext dc, Tile tile)
     {
         GL2 gl = dc.getGL().getGL2();
-        TileData tileData = tile.currentData;
+        ShapeData shapeData = tile.currentData;
 
-        int pickColorsSize = tileData.vertices.remaining(); // 1 RGB color for each XYZ vertex
+        int pickColorsSize = shapeData.vertices.remaining(); // 1 RGB color for each XYZ vertex
         if (this.pickColors == null || this.pickColors.capacity() < pickColorsSize)
         {
             this.pickColors = Buffers.newDirectByteBuffer(pickColorsSize);
