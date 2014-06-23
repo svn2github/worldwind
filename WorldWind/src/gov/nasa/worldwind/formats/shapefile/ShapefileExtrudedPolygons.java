@@ -19,6 +19,7 @@ import javax.media.opengl.*;
 import java.awt.*;
 import java.nio.*;
 import java.util.*;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -863,6 +864,115 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         finally
         {
             gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
+        }
+    }
+
+    /**
+     * Compute the intersections of a specified line with the geometry corresponding to this shapefile's records. Each
+     * record's geometry is created relative to the specified terrain rather than the terrain used during rendering,
+     * which may be at lower level of detail than required for accurate intersection determination.
+     *
+     * @param line    the line to intersect.
+     * @param terrain the {@link Terrain} to use when computing each record's geometry.
+     *
+     * @return a list of intersections identifying where the line intersects this shapefile's records, or null if the
+     *         line does not intersect any record.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     * @throws InterruptedException     if the operation is interrupted.
+     * @see Terrain
+     */
+    public List<Intersection> intersect(Line line, Terrain terrain) throws InterruptedException
+    {
+        if (line == null)
+        {
+            String msg = Logging.getMessage("nullValue.LineIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (terrain == null)
+        {
+            String msg = Logging.getMessage("nullValue.TerrainIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        ArrayList<Intersection> intersections = new ArrayList<Intersection>();
+        this.intersectTileOrDescendants(line, terrain, this.rootTile, intersections);
+
+        return intersections.size() > 0 ? intersections : null;
+    }
+
+    protected void intersectTileOrDescendants(Line line, Terrain terrain, Tile tile, List<Intersection> results)
+    {
+        ShapeData shapeData = tile.intersectionData;
+        if (shapeData == null)
+        {
+            shapeData = new ShapeData(null, 0, 0);
+            tile.intersectionData = shapeData;
+        }
+
+        // If the tile doesn't intersect the line, then don't compute the intersection with it or with its descendants.
+        // Note that a tile with no records may have children, so we can't use the tile's record count as a
+        // determination of whether or not to test its children.
+        this.regenerateTileExtent(terrain, tile, shapeData);
+        if (!shapeData.getExtent().intersects(line))
+        {
+            return;
+        }
+
+        // Regenerate the tile's intersection geometry as necessary.
+        if (tile.intersectionTerrain != terrain
+            || !shapeData.getGlobeStateKey().equals(terrain.getGlobe().getGlobeStateKey())
+            || shapeData.getVerticalExaggeration() != terrain.getVerticalExaggeration())
+        {
+            this.tessellateTile(terrain, tile, shapeData);
+            tile.intersectionTerrain = terrain;
+            shapeData.setGlobeStateKey(terrain.getGlobe().getGlobeStateKey());
+            shapeData.setVerticalExaggeration(terrain.getVerticalExaggeration());
+        }
+
+        // Intersect the line with the tile's records. We translate the line from model coordinates to tile local
+        // coordinates in order to perform this arithmetic once on the line's origin, rather than many times for each
+        // tile vertex. Intersection points are translated back into model coordinates.
+        Line localLine = new Line(line.getOrigin().subtract3(shapeData.referencePoint), line.getDirection());
+        for (Record record : tile.records)
+        {
+            if (!record.isVisible()) // ignore records marked as not visible
+                continue;
+
+            FloatBuffer vertices = shapeData.vertices;
+            IntBuffer indices = record.interiorIndices;
+            List<Intersection> recordIntersections = Triangle.intersectTriangles(localLine, vertices, indices);
+            if (recordIntersections != null)
+            {
+                for (Intersection intersection : recordIntersections)
+                {
+                    // Translate the intersection point from tile local coordinates to model coordinates.
+                    Vec4 pt = intersection.getIntersectionPoint().add3(shapeData.referencePoint);
+                    intersection.setIntersectionPoint(pt);
+
+                    // Compute intersection position relative to ground.
+                    Position pos = terrain.getGlobe().computePositionFromPoint(pt);
+                    Vec4 gp = terrain.getSurfacePoint(pos.getLatitude(), pos.getLongitude(), 0);
+                    double dist = Math.sqrt(pt.dotSelf3()) - Math.sqrt(gp.dotSelf3());
+                    intersection.setIntersectionPosition(new Position(pos, dist));
+
+                    // Associate the record with the intersection and add it to the list of intersection results.
+                    intersection.setObject(record);
+                    results.add(intersection);
+                }
+            }
+        }
+
+        // Process the tile's children, if any.
+        if (tile.children != null)
+        {
+            for (Tile childTile : tile.children)
+            {
+                this.intersectTileOrDescendants(line, terrain, childTile, results);
+            }
         }
     }
 }
