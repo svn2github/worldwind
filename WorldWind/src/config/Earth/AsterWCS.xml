@@ -8,7 +8,7 @@
 <!--$Id$-->
 <ElevationModel version="1" modelType="Compound">
     <ElevationModel version="1">
-        <DisplayName>USA 10m, World 30m, Ocean 900m</DisplayName>
+        <DisplayName>Aster V2</DisplayName>
         <Service serviceName="OGC:WCS" version="1.0.0">
             <GetCapabilitiesURL> http://worldwind26.arc.nasa.gov/wms2</GetCapabilitiesURL>
             <GetCoverageURL>http://worldwind26.arc.nasa.gov/wms2</GetCoverageURL>
@@ -17,7 +17,7 @@
         <RetrievePropertiesFromService>false</RetrievePropertiesFromService>
         <!-- day month year hours:minutes:seconds timezone -->
         <LastUpdate>09 06 2014 00:00:00 GMT</LastUpdate>
-        <DataCacheName>Earth/EarthElevations2WCS</DataCacheName>
+        <DataCacheName>Earth/AsterV2WCS</DataCacheName>
         <ImageFormat>image/tiff</ImageFormat>
         <DataType type="Int16" byteOrder="LittleEndian"/>
         <DataDetailHint>0.20</DataDetailHint>
