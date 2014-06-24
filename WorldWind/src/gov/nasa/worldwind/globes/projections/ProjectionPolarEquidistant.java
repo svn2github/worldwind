@@ -68,7 +68,7 @@ public class ProjectionPolarEquidistant implements GeographicProjection
     @Override
     public Vec4 geographicToCartesian(Globe globe, Angle latitude, Angle longitude, double metersElevation, Vec4 offset)
     {
-        // Formulas taken from "Map Projections -- A Working Manual", USGS paper 1395, pp. 195 & 196.
+        // Formulae taken from "Map Projections -- A Working Manual", Snyder, USGS paper 1395, pg. 195.
 
         if (latitude.degrees < 0)
             latitude = Angle.ZERO;
@@ -86,7 +86,7 @@ public class ProjectionPolarEquidistant implements GeographicProjection
     @Override
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
-        // Formulas taken from "Map Projections -- A Working Manual", USGS paper 1395, pp. 195 & 196.
+        // Formulae taken from "Map Projections -- A Working Manual", Snyder, USGS paper 1395, pg. 196.
 
         double rho = Math.sqrt(cart.x * cart.x + cart.y * cart.y);
         if (rho < 1.0e-4)
@@ -94,8 +94,8 @@ public class ProjectionPolarEquidistant implements GeographicProjection
 
         double c = rho / globe.getRadius();
 
-        double lat = Math.asin(Math.cos(c) + cart.y * Math.sin(c) * Math.cos(Math.PI / (2 * rho)));
-        double lon = Math.atan2(cart.y * (this.pole == SOUTH ? 1 : -1), cart.x);
+        double lat = Math.asin(Math.cos(c));
+        double lon = Math.atan(cart.x() / (cart.y * (this.pole == SOUTH ? 1 : -1)));
 
         return Position.fromRadians(lat, lon, cart.z);
     }
