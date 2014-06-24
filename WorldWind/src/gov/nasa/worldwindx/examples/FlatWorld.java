@@ -5,10 +5,10 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.EarthFlat;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.WWUtil;
@@ -38,6 +38,9 @@ public class FlatWorld extends ApplicationTemplate
         {
             super(true, true, false);
 
+            // Tell the globe to scroll contiguously.
+            ((Globe2D) this.getWwd().getModel().getGlobe()).setContinuous(true);
+
             // Change atmosphere SkyGradientLayer for SkyColorLayer
             LayerList layers = this.getWwd().getModel().getLayers();
             for (int i = 0; i < layers.size(); i++)
@@ -50,7 +53,7 @@ public class FlatWorld extends ApplicationTemplate
             // Add flat world projection control panel
             this.getLayerPanel().add(new FlatWorldPanel(this.getWwd()), BorderLayout.SOUTH);
 
-            this.makeShapes();
+//            this.makeShapes();
         }
 
         protected void makeShapes()

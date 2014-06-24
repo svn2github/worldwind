@@ -6,7 +6,9 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.globes.projections.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.view.orbit.*;
 
@@ -17,8 +19,8 @@ import java.awt.event.*;
 
 /**
  * Panel to control a flat or round world projection. The panel includes a radio button to switch between flat and round
- * globes, and a list box of map projections for the flat globe. The panel is attached to a WorldWindow, and changes
- * the WorldWindow to match the users globe selection.
+ * globes, and a list box of map projections for the flat globe. The panel is attached to a WorldWindow, and changes the
+ * WorldWindow to match the users globe selection.
  *
  * @author Patrick Murris
  * @version $Id$
@@ -37,12 +39,13 @@ public class FlatWorldPanel extends JPanel
         this.wwd = wwd;
         if (isFlatGlobe())
         {
-            this.flatGlobe = (FlatGlobe)wwd.getModel().getGlobe();
+            this.flatGlobe = (FlatGlobe) wwd.getModel().getGlobe();
             this.roundGlobe = new Earth();
         }
         else
         {
             this.flatGlobe = new EarthFlat();
+            this.flatGlobe.setContinuous(true);
             this.roundGlobe = wwd.getModel().getGlobe();
         }
         this.makePanel();
@@ -88,7 +91,13 @@ public class FlatWorldPanel extends JPanel
         JPanel comboPanel = new JPanel(new GridLayout(0, 2, 0, 0));
         comboPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         comboPanel.add(new JLabel("Projection:"));
-        this.projectionCombo = new JComboBox(new String[] {"Mercator", "Lat-Lon", "Modified Sin.", "Sinusoidal"});
+        this.projectionCombo = new JComboBox(new String[]
+            {"Mercator", "Lat-Lon", "Modified Sin.", "Sinusoidal",
+                "Transverse Mercator",
+                "North Polar",
+                "South Polar",
+                "Cautra"
+            });
         this.projectionCombo.setEnabled(isFlatGlobe());
         this.projectionCombo.addActionListener(new ActionListener()
         {
@@ -108,24 +117,32 @@ public class FlatWorldPanel extends JPanel
     private void updateProjection()
     {
         if (!isFlatGlobe())
-                return;
+            return;
 
-        // Update flat globe projection
         this.flatGlobe.setProjection(this.getProjection());
+
         this.wwd.redraw();
     }
 
-    private String getProjection()
+    private GeographicProjection getProjection()
     {
         String item = (String) projectionCombo.getSelectedItem();
-        if(item.equals("Mercator"))
-            return FlatGlobe.PROJECTION_MERCATOR;
-        else if(item.equals("Sinusoidal"))
-            return FlatGlobe.PROJECTION_SINUSOIDAL;
-        else if(item.equals("Modified Sin."))
-            return FlatGlobe.PROJECTION_MODIFIED_SINUSOIDAL;
+        if (item.equals("Mercator"))
+            return new ProjectionMercator();
+        else if (item.equals("Sinusoidal"))
+            return new ProjectionSinusoidal();
+        else if (item.equals("Modified Sin."))
+            return new ProjectionModifiedSinusoidal();
+        else if (item.equals("Transverse Mercator"))
+            return new ProjectionTransverseMercator(wwd.getView().getCurrentEyePosition().getLongitude());
+        else if (item.equals("North Polar"))
+            return new ProjectionPolarEquidistant(AVKey.NORTH);
+        else if (item.equals("South Polar"))
+            return new ProjectionPolarEquidistant(AVKey.SOUTH);
+        else if (item.equals("Cautra"))
+            return new ProjectionCautra();
         // Default to lat-lon
-        return FlatGlobe.PROJECTION_LAT_LON;
+        return new ProjectionEquidistantCylindrical();
     }
 
     public boolean isFlatGlobe()
@@ -135,26 +152,26 @@ public class FlatWorldPanel extends JPanel
 
     public void enableFlatGlobe(boolean flat)
     {
-        if(isFlatGlobe() == flat)
+        if (isFlatGlobe() == flat)
             return;
 
-        if(!flat)
+        if (!flat)
         {
             // Switch to round globe
-            wwd.getModel().setGlobe(roundGlobe) ;
+            wwd.getModel().setGlobe(roundGlobe);
             // Switch to orbit view and update with current position
-            FlatOrbitView flatOrbitView = (FlatOrbitView)wwd.getView();
+            FlatOrbitView flatOrbitView = (FlatOrbitView) wwd.getView();
             BasicOrbitView orbitView = new BasicOrbitView();
             orbitView.setCenterPosition(flatOrbitView.getCenterPosition());
-            orbitView.setZoom(flatOrbitView.getZoom( ));
+            orbitView.setZoom(flatOrbitView.getZoom());
             orbitView.setHeading(flatOrbitView.getHeading());
             orbitView.setPitch(flatOrbitView.getPitch());
             wwd.setView(orbitView);
             // Change sky layer
             LayerList layers = wwd.getModel().getLayers();
-            for(int i = 0; i < layers.size(); i++)
+            for (int i = 0; i < layers.size(); i++)
             {
-                if(layers.get(i) instanceof SkyColorLayer)
+                if (layers.get(i) instanceof SkyColorLayer)
                     layers.set(i, new SkyGradientLayer());
             }
         }
@@ -162,25 +179,24 @@ public class FlatWorldPanel extends JPanel
         {
             // Switch to flat globe
             wwd.getModel().setGlobe(flatGlobe);
-            flatGlobe.setProjection(this.getProjection());
+            this.updateProjection();
             // Switch to flat view and update with current position
-            BasicOrbitView orbitView = (BasicOrbitView)wwd.getView();
+            BasicOrbitView orbitView = (BasicOrbitView) wwd.getView();
             FlatOrbitView flatOrbitView = new FlatOrbitView();
             flatOrbitView.setCenterPosition(orbitView.getCenterPosition());
-            flatOrbitView.setZoom(orbitView.getZoom( ));
+            flatOrbitView.setZoom(orbitView.getZoom());
             flatOrbitView.setHeading(orbitView.getHeading());
             flatOrbitView.setPitch(orbitView.getPitch());
             wwd.setView(flatOrbitView);
             // Change sky layer
             LayerList layers = wwd.getModel().getLayers();
-            for(int i = 0; i < layers.size(); i++)
+            for (int i = 0; i < layers.size(); i++)
             {
-                if(layers.get(i) instanceof SkyGradientLayer)
+                if (layers.get(i) instanceof SkyGradientLayer)
                     layers.set(i, new SkyColorLayer());
             }
         }
-        
+
         wwd.redraw();
     }
-
 }

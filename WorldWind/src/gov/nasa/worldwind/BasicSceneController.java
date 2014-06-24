@@ -24,10 +24,10 @@ public class BasicSceneController extends AbstractSceneController
         this.initializeFrame(dc);
         try
         {
-            if (dc.getGlobe() instanceof Globe2D)
-                this.do2DRepaint(dc);
+            if (dc.getGlobe() instanceof Globe2D && ((Globe2D)dc.getGlobe()).isContinuous())
+                this.do2DContiguousRepaint(dc);
             else
-                this.do3DRepaint(dc);
+                this.doNormalRepaint(dc);
         }
         finally
         {
@@ -35,7 +35,7 @@ public class BasicSceneController extends AbstractSceneController
         }
     }
 
-    protected void do3DRepaint(DrawContext dc)
+    protected void doNormalRepaint(DrawContext dc)
     {
         this.applyView(dc);
         this.createPickFrustum(dc);
@@ -47,18 +47,18 @@ public class BasicSceneController extends AbstractSceneController
         this.draw(dc);
     }
 
-    protected void do2DRepaint(DrawContext dc)
+    protected void do2DContiguousRepaint(DrawContext dc)
     {
         ((FlatGlobe) dc.getGlobe()).setOffset(0);
 
         this.applyView(dc);
         this.createPickFrustum(dc);
-        this.createTerrain2D(dc);
-        this.preRender2D(dc);
+        this.createTerrain2DContinuous(dc);
+        this.preRender2DContiguous(dc);
         this.clearFrame(dc);
-        this.pick2D(dc);
+        this.pick2DContiguous(dc);
         this.clearFrame(dc);
-        this.draw2D(dc);
+        this.draw2DContiguous(dc);
     }
 
     protected void makeCurrent(DrawContext dc, int offset)
@@ -82,7 +82,7 @@ public class BasicSceneController extends AbstractSceneController
         }
     }
 
-    protected void createTerrain2D(DrawContext dc)
+    protected void createTerrain2DContinuous(DrawContext dc)
     {
         this.sglC = null;
         this.visibleSectorC = null;
@@ -112,7 +112,7 @@ public class BasicSceneController extends AbstractSceneController
         }
     }
 
-    protected void draw2D(DrawContext dc)
+    protected void draw2DContiguous(DrawContext dc)
     {
         String drawing = "";
         if (this.sglC != null)
@@ -138,7 +138,7 @@ public class BasicSceneController extends AbstractSceneController
 //        System.out.println("DRAWING " + drawing);
     }
 
-    protected void preRender2D(DrawContext dc)
+    protected void preRender2DContiguous(DrawContext dc)
     {
         if (this.sglC != null)
         {
@@ -159,7 +159,7 @@ public class BasicSceneController extends AbstractSceneController
         }
     }
 
-    protected void pick2D(DrawContext dc)
+    protected void pick2DContiguous(DrawContext dc)
     {
         if (this.sglC != null)
         {

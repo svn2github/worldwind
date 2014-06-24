@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.globes;
 
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.projections.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
@@ -37,12 +38,14 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     public final static String PROJECTION_MODIFIED_SINUSOIDAL =
         "gov.nasa.worldwind.globes.projectionModifiedSinusoidal";
 
-    protected String projection = PROJECTION_MERCATOR;
+    protected GeographicProjection projection = new ProjectionMercator();
+    protected boolean continuous;
     protected int offset;
+    protected Vec4 offsetVector = Vec4.ZERO;
 
     /**
      * Create a new globe. The globe will use the Mercator projection. The projection can be changed using {@link
-     * #setProjection(String)}.
+     * #setProjection(GeographicProjection)}.
      *
      * @param equatorialRadius Radius of the globe at the equator.
      * @param polarRadius      Radius of the globe at the poles.
@@ -56,21 +59,21 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
 
     private class FlatStateKey extends StateKey
     {
-        protected final String projection;
+        protected GeographicProjection projection;
         protected double verticalExaggeration;
         protected int offset;
 
         public FlatStateKey(DrawContext dc)
         {
             super(dc);
-            this.projection = FlatGlobe.this.projection;
+            this.projection = FlatGlobe.this.getProjection();
             this.offset = FlatGlobe.this.offset;
         }
 
         public FlatStateKey(Globe globe)
         {
             super(globe);
-            this.projection = FlatGlobe.this.projection;
+            this.projection = FlatGlobe.this.getProjection();
             this.offset = FlatGlobe.this.offset;
         }
 
@@ -90,7 +93,8 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
                 return false;
             if (Double.compare(that.verticalExaggeration, verticalExaggeration) != 0)
                 return false;
-            if (projection != null ? !projection.equals(that.projection) : that.projection != null)
+            if (projection != null ? !projection.equals(that.projection)
+                : that.projection != null)
                 return false;
 
             return true;
@@ -155,20 +159,51 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
      *
      * @param projection New projection. One of {@link #PROJECTION_LAT_LON}, {@link #PROJECTION_MERCATOR}, {@link
      *                   #PROJECTION_SINUSOIDAL}, or {@link #PROJECTION_MODIFIED_SINUSOIDAL}.
+     *
+     * @deprecated Use {@link #setProjection(GeographicProjection)}.
      */
     public void setProjection(String projection)
     {
         if (projection == null)
         {
-            String message = Logging.getMessage("nullValue.StringIsNull");
+            String message = Logging.getMessage("nullValue.GeographicProjectionIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        if (this.projection.equals(projection))
-            return;
+        if (projection.equals(PROJECTION_LAT_LON))
+        {
+            this.setProjection(new ProjectionEquidistantCylindrical());
+        }
+        else if (projection.equals(PROJECTION_MERCATOR))
+        {
+            this.setProjection(new ProjectionMercator());
+        }
+        else if (projection.equals(PROJECTION_SINUSOIDAL))
+        {
+            this.setProjection(new ProjectionSinusoidal());
+        }
+        else if (projection.equals(PROJECTION_MODIFIED_SINUSOIDAL))
+        {
+            this.setProjection(new ProjectionModifiedSinusoidal());
+        }
+        else
+        {
+            this.setProjection(new ProjectionEquidistantCylindrical());
+        }
+    }
+
+    public void setProjection(GeographicProjection projection)
+    {
+        if (projection == null)
+        {
+            String message = Logging.getMessage("nullValue.GeographicProjectionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
 
         this.projection = projection;
+
         this.setTessellator(null);
     }
 
@@ -177,11 +212,23 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
      *
      * @return The active projection.
      *
-     * @see #setProjection(String)
+     * @see #setProjection(GeographicProjection
      */
-    public String getProjection()
+    public GeographicProjection getProjection()
     {
         return this.projection;
+    }
+
+    @Override
+    public void setContinuous(boolean continuous)
+    {
+        this.continuous = continuous;
+    }
+
+    @Override
+    public boolean isContinuous()
+    {
+        return this.continuous || (this.projection != null && this.projection.isContinuous());
     }
 
     public int getOffset()
@@ -192,6 +239,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     public void setOffset(int offset)
     {
         this.offset = offset;
+        this.offsetVector = new Vec4(2.0 * Math.PI * this.equatorialRadius * this.offset, 0, 0);
     }
 
     public boolean intersects(Frustum frustum)
@@ -372,53 +420,8 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
             throw new IllegalArgumentException(message);
         }
 
-        Vec4 cart;
-        double xOffset = 2.0 * Math.PI * this.equatorialRadius * this.offset;
-
-        if (this.projection.equals(PROJECTION_LAT_LON))
-        {
-            // Lat/Lon projection - plate carree
-            cart = new Vec4(this.equatorialRadius * longitude.radians + xOffset,
-                this.equatorialRadius * latitude.radians,
-                metersElevation);
-        }
-        else if (this.projection.equals(PROJECTION_MERCATOR))
-        {
-            // Mercator projection
-            if (latitude.degrees > 75)
-                latitude = Angle.fromDegrees(75);
-            if (latitude.degrees < -75)
-                latitude = Angle.fromDegrees(-75);
-            cart = new Vec4(this.equatorialRadius * longitude.radians + xOffset,
-                this.equatorialRadius * Math.log(Math.tan(Math.PI / 4 + latitude.radians / 2)),
-                metersElevation);
-        }
-        else if (this.projection.equals(PROJECTION_SINUSOIDAL))
-        {
-            // Sinusoidal projection
-            double latCos = latitude.cos();
-            cart = new Vec4(
-                (latCos > 0 ? this.equatorialRadius * longitude.radians * latitude.cos() : 0) + xOffset,
-                this.equatorialRadius * latitude.radians,
-                metersElevation);
-        }
-        else if (this.projection.equals(PROJECTION_MODIFIED_SINUSOIDAL))
-        {
-            // Modified Sinusoidal projection
-            double latCos = latitude.cos();
-            cart = new Vec4(
-                (latCos > 0 ? this.equatorialRadius * longitude.radians * Math.pow(latCos, .3) : 0) + xOffset,
-                this.equatorialRadius * latitude.radians,
-                metersElevation);
-        }
-        else
-        {
-            String message = Logging.getMessage("generic.UnknownProjection", this.projection);
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        return cart;
+        return this.projection.geographicToCartesian(this, latitude, longitude, metersElevation,
+            this.offsetVector);
     }
 
     @Override
@@ -431,46 +434,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
             throw new IllegalArgumentException(message);
         }
 
-        Position pos = null;
-        double xOffset = 2.0 * Math.PI * this.equatorialRadius * this.offset;
-
-        if (this.projection.equals(PROJECTION_LAT_LON))
-        {
-            // Lat/Lon projection - plate carree
-            pos = Position.fromRadians(
-                cart.y / this.equatorialRadius,
-                (cart.x - xOffset) / this.equatorialRadius,
-                cart.z);
-        }
-        else if (this.projection.equals(PROJECTION_MERCATOR))
-        {
-            // Mercator projection
-            pos = Position.fromRadians(
-                Math.atan(Math.sinh(cart.y / this.equatorialRadius)),
-                (cart.x - xOffset) / this.equatorialRadius,
-                cart.z);
-        }
-        else if (this.projection.equals(PROJECTION_SINUSOIDAL))
-        {
-            // Sinusoidal projection
-            double lat = cart.y / this.equatorialRadius;
-            double latCos = Math.cos(lat);
-            pos = Position.fromRadians(
-                lat,
-                latCos > 0 ? (cart.x - xOffset) / this.equatorialRadius / latCos : 0,
-                cart.z);
-        }
-        else if (this.projection.equals(PROJECTION_MODIFIED_SINUSOIDAL))
-        {
-            // Modified Sinusoidal projection
-            double lat = cart.y / this.equatorialRadius;
-            double latCos = Math.cos(lat);
-            pos = Position.fromRadians(
-                lat,
-                latCos > 0 ? (cart.x - xOffset) / this.equatorialRadius / Math.pow(latCos, .3) : 0,
-                cart.z);
-        }
-        return pos;
+        return this.projection.cartesianToGeographic(this, cart, this.offsetVector);
     }
 
 //
