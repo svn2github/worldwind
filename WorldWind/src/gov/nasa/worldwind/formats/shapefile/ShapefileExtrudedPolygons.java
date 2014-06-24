@@ -646,6 +646,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void beginDrawing(DrawContext dc)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glEnable(GL.GL_CULL_FACE);
         gl.glEnableClientState(GL2.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
         gl.glDepthFunc(GL.GL_LEQUAL);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
@@ -663,6 +664,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void endDrawing(DrawContext dc)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glDisable(GL.GL_CULL_FACE);
         gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glColor4f(1, 1, 1, 1);
         gl.glDepthFunc(GL.GL_LESS);
