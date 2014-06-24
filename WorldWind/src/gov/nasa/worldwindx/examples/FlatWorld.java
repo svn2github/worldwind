@@ -53,7 +53,7 @@ public class FlatWorld extends ApplicationTemplate
             // Add flat world projection control panel
             this.getLayerPanel().add(new FlatWorldPanel(this.getWwd()), BorderLayout.SOUTH);
 
-//            this.makeShapes();
+            this.makeShapes();
         }
 
         protected void makeShapes()
