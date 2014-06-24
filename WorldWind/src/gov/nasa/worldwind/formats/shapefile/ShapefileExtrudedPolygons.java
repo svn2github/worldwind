@@ -295,7 +295,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         tile.currentData = (ShapeData) tile.dataCache.getEntry(dc.getGlobe());
         if (tile.currentData == null)
         {
-            tile.currentData = new ShapeData(dc, 2000, 8000);
+            tile.currentData = new ShapeData(dc, 3000, 9000);
             tile.dataCache.addEntry(tile.currentData);
         }
 
@@ -464,7 +464,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                     // independent of the record's model coordinates, since the count and organization of top and bottom
                     // of vertices is always the same.
                     int index = vertices.position() / vertexStride; // index of top vertex
-                    this.tess.addVertex(coord[1], coord[0], 0, index); // coordinates stored as lon,lat
+                    this.tess.addVertex(coord[0], coord[1], 0, index); // map lon,lat to x,y
 
                     if (rp == null) // first vertex in the tile
                     {
@@ -474,11 +474,11 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                     if (N == null) // first vertex in the record
                     {
                         N = terrain.getGlobe().computeSurfaceNormalAtPoint(p);
-                        NdotR = N.dot3(p);
+                        NdotR = p.x * N.x + p.y * N.y + p.z * N.z;
                     }
 
                     // Add the model coordinate top and bottom vertices, with heights relative to the terrain.
-                    double t = height - (N.dot3(p) - NdotR);
+                    double t = height + NdotR - (p.x * N.x + p.y * N.y + p.z * N.z);
                     double b = -this.baseDepth;
                     vertex[0] = (float) (p.x + N.x * t - rp.x);
                     vertex[1] = (float) (p.y + N.y * t - rp.y);
