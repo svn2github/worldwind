@@ -70,10 +70,7 @@ public class ProjectionPolarEquidistant implements GeographicProjection
     {
         // Formulae taken from "Map Projections -- A Working Manual", Snyder, USGS paper 1395, pg. 195.
 
-        if ((this.pole == SOUTH && latitude.degrees > 0) || (this.pole == NORTH && latitude.degrees < 0))
-            latitude = Angle.ZERO;
-
-        if (Math.abs(latitude.degrees) == 90)
+        if ((this.pole == NORTH && latitude.degrees == 90) || (this.pole == SOUTH && latitude.degrees == -90))
             return new Vec4(0, 0, metersElevation);
 
         double a = globe.getRadius() * (Math.PI / 2 + latitude.radians * (this.pole == SOUTH ? 1 : -1));
