@@ -104,6 +104,11 @@ public class ProjectionTransverseMercator implements GeographicProjection
         this.width = width;
     }
 
+    protected double getScale()
+    {
+        return 1.0;
+    }
+
     @Override
     public Vec4 geographicToCartesian(Globe globe, Angle latitude, Angle longitude, double metersElevation, Vec4 offset)
     {
@@ -119,7 +124,7 @@ public class ProjectionTransverseMercator implements GeographicProjection
 
         TMCoord tm = TMCoord.fromLatLon(latitude, longitude,
             globe, null, null, Angle.ZERO, this.centralMeridian,
-            0, 0, 0.9996);
+            0, 0, this.getScale());
 
         return new Vec4(tm.getEasting(), tm.getNorthing(), metersElevation);
     }
@@ -127,7 +132,7 @@ public class ProjectionTransverseMercator implements GeographicProjection
     @Override
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
-        TMCoord tm = TMCoord.fromTM(cart.x, cart.y, globe, Angle.ZERO, this.centralMeridian, 0, 0, 0.9996);
+        TMCoord tm = TMCoord.fromTM(cart.x, cart.y, globe, Angle.ZERO, this.centralMeridian, 0, 0, this.getScale());
 
         return new Position(tm.getLatitude(), tm.getLongitude(), cart.z);
     }
