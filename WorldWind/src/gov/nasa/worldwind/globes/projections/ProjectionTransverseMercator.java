@@ -6,8 +6,6 @@
 
 package gov.nasa.worldwind.globes.projections;
 
-import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.coords.TMCoord;
 import gov.nasa.worldwind.globes.*;
@@ -25,15 +23,16 @@ import gov.nasa.worldwind.util.Logging;
 public class ProjectionTransverseMercator implements GeographicProjection
 {
     protected Angle width = Angle.fromDegrees(30);
-    protected Angle centralMeridian = Angle.fromDegrees(Configuration.getDoubleValue(AVKey.INITIAL_LONGITUDE));
+    protected Angle centralMeridian = Angle.ZERO;
+    protected Angle centralLatitude = Angle.ZERO;
 
-    /** Creates a projection whose central meridian is the Prime Meridian. */
+    /** Creates a projection whose central meridian is the Prime Meridian and central latitude is 0. */
     public ProjectionTransverseMercator()
     {
     }
 
     /**
-     * Creates a projection with a specified central meridian.
+     * Creates a projection with a specified central meridian and a central latitude of 0.
      *
      * @param centralMeridian The projection's central meridian.
      */
@@ -47,6 +46,32 @@ public class ProjectionTransverseMercator implements GeographicProjection
         }
 
         this.centralMeridian = centralMeridian;
+    }
+
+    /**
+     * Creates a projection with a specified central meridian and central latitude.
+     *
+     * @param centralMeridian The projection's central meridian.
+     * @param centralLatitude  The projection's central latitude.
+     */
+    public ProjectionTransverseMercator(Angle centralMeridian, Angle centralLatitude)
+    {
+        if (centralMeridian == null)
+        {
+            String message = Logging.getMessage("nullValue.CentralMeridianIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (centralLatitude == null)
+        {
+            String message = Logging.getMessage("nullValue.CentralLatitudeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.centralMeridian = centralMeridian;
+        this.centralLatitude = centralLatitude;
     }
 
     @Override
@@ -68,11 +93,45 @@ public class ProjectionTransverseMercator implements GeographicProjection
     /**
      * Specifies this projections central meridian.
      *
-     * @param centralMeridian This projection's central meridian.
+     * @param centralMeridian This projection's central meridian. The default is 0.
      */
     public void setCentralMeridian(Angle centralMeridian)
     {
+        if (centralMeridian == null)
+        {
+            String message = Logging.getMessage("nullValue.CentralMeridianIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
         this.centralMeridian = centralMeridian;
+    }
+
+    /**
+     * Indicates this projection's central latitude.
+     *
+     * @return This projection's central latitude.
+     */
+    public Angle getCentralLatitude()
+    {
+        return centralLatitude;
+    }
+
+    /**
+     * Set this projection's central latitude.
+     *
+     * @param centralLatitude This projection's central latitude. The default is 0.
+     */
+    public void setCentralLatitude(Angle centralLatitude)
+    {
+        if (centralLatitude == null)
+        {
+            String message = Logging.getMessage("nullValue.CentralLatitudeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.centralLatitude = centralLatitude;
     }
 
     /**
@@ -123,8 +182,7 @@ public class ProjectionTransverseMercator implements GeographicProjection
             longitude = Angle.fromDegrees(this.centralMeridian.degrees - this.width.degrees);
 
         TMCoord tm = TMCoord.fromLatLon(latitude, longitude,
-            globe, null, null, Angle.ZERO, this.centralMeridian,
-            0, 0, this.getScale());
+            globe, null, null, this.centralLatitude, this.centralMeridian, 0, 0, this.getScale());
 
         return new Vec4(tm.getEasting(), tm.getNorthing(), metersElevation);
     }
@@ -132,10 +190,44 @@ public class ProjectionTransverseMercator implements GeographicProjection
     @Override
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
-        TMCoord tm = TMCoord.fromTM(cart.x, cart.y, globe, Angle.ZERO, this.centralMeridian, 0, 0, this.getScale());
+        TMCoord tm = TMCoord.fromTM(cart.x, cart.y, globe, this.centralLatitude, this.centralMeridian, 0, 0,
+            this.getScale());
 
         return new Position(tm.getLatitude(), tm.getLongitude(), cart.z);
     }
+// These are spherical forms from Map Projections -- A Working Manual, but I can't get them to fully work. -- tag 6/25/14
+//    @Override
+//    public Vec4 geographicToCartesian(Globe globe, Angle latitude, Angle longitude, double metersElevation, Vec4 offset)
+//    {
+//        double B = Math.cos(latitude.radians) * Math.sin(longitude.radians - this.getCentralMeridian().radians);
+//        if (B == 1)
+//            B = 0.9999; // TODO
+//
+//        double x = globe.getEquatorialRadius() * this.getScale() * 0.5 * Math.log((1 + B) / (1 - B));
+//        double y;
+//        if (Math.abs(latitude.degrees) == 90 || Math.abs(longitude.degrees - this.centralMeridian.degrees) == 90)
+//            y = globe.getEquatorialRadius() * this.getScale() * (Math.signum(latitude.degrees) * Math.PI/2);
+//        else
+//        {
+//            double s = Math.tan(latitude.radians) / Math.cos(longitude.radians - this.getCentralMeridian().radians);
+//            y = globe.getEquatorialRadius() * this.getScale() * Math.atan(s);
+//        }
+//
+//        return new Vec4(x + offset.x, y, metersElevation);
+//    }
+//
+//    @Override
+//    public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
+//    {
+//        double rk0 = globe.getEquatorialRadius() * this.getScale();
+//        double D = cart.y / rk0;
+//
+//        double lat = Math.asin(
+//            Math.sin(D) / Math.cosh((cart.x - offset.x) / rk0));
+//        double lon = Math.atan(Math.sinh((cart.x() - offset.x) / rk0) / Math.cos(D));
+//
+//        return Position.fromRadians(lat, lon + this.getCentralMeridian().radians, cart.z);
+//    }
 
     @Override
     public boolean isContinuous()
@@ -153,9 +245,11 @@ public class ProjectionTransverseMercator implements GeographicProjection
 
         ProjectionTransverseMercator that = (ProjectionTransverseMercator) o;
 
-        if (centralMeridian != null ? !centralMeridian.equals(that.centralMeridian) : that.centralMeridian != null)
+        if (!centralMeridian.equals(that.centralMeridian))
             return false;
-        if (width != null ? !width.equals(that.width) : that.width != null)
+        if (!centralLatitude.equals(that.centralLatitude))
+            return false;
+        if (!width.equals(that.width))
             return false;
 
         return true;
@@ -164,8 +258,9 @@ public class ProjectionTransverseMercator implements GeographicProjection
     @Override
     public int hashCode()
     {
-        int result = width != null ? width.hashCode() : 0;
-        result = 31 * result + (centralMeridian != null ? centralMeridian.hashCode() : 0);
+        int result = width.hashCode();
+        result = 31 * result + centralMeridian.hashCode();
+        result = 31 * result + centralLatitude.hashCode();
         return result;
     }
 }
