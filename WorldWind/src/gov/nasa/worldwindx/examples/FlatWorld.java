@@ -38,9 +38,6 @@ public class FlatWorld extends ApplicationTemplate
         {
             super(true, true, false);
 
-            // Tell the globe to scroll contiguously.
-            ((Globe2D) this.getWwd().getModel().getGlobe()).setContinuous(true);
-
             // Change atmosphere SkyGradientLayer for SkyColorLayer
             LayerList layers = this.getWwd().getModel().getLayers();
             for (int i = 0; i < layers.size(); i++)
