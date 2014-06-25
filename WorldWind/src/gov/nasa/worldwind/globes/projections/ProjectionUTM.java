@@ -85,7 +85,6 @@ public class ProjectionUTM extends ProjectionTransverseMercator
             throw new IllegalArgumentException(message);
         }
 
-        // TODO: account for UTM zone exceptions
         return Angle.fromDegrees((3 + (zone - 1) * 6) - (zone > 30 ? 360 : 0));
     }
 }
