@@ -142,7 +142,7 @@ public class FlatWorldPanel extends JPanel
         else if (item.equals("Cautra"))
             return new ProjectionCautra();
         // Default to lat-lon
-        return new ProjectionEquidistantCylindrical();
+        return new ProjectionEquirectangular();
     }
 
     public boolean isFlatGlobe()

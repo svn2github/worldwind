@@ -173,7 +173,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
 
         if (projection.equals(PROJECTION_LAT_LON))
         {
-            this.setProjection(new ProjectionEquidistantCylindrical());
+            this.setProjection(new ProjectionEquirectangular());
         }
         else if (projection.equals(PROJECTION_MERCATOR))
         {
@@ -189,7 +189,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
         }
         else
         {
-            this.setProjection(new ProjectionEquidistantCylindrical());
+            this.setProjection(new ProjectionEquirectangular());
         }
     }
 
