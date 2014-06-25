@@ -372,17 +372,17 @@ public class ShapefileLoader
     //********************  Attribute Construction  ****************//
     //**************************************************************//
 
-    protected PointPlacemarkAttributes nextPointAttributes()
+    protected synchronized PointPlacemarkAttributes nextPointAttributes()
     {
         return randomAttrs.nextPointAttributes();
     }
 
-    protected ShapeAttributes nextPolylineAttributes()
+    protected synchronized ShapeAttributes nextPolylineAttributes()
     {
         return randomAttrs.nextPolylineAttributes();
     }
 
-    protected ShapeAttributes nextPolygonAttributes()
+    protected synchronized ShapeAttributes nextPolygonAttributes()
     {
         return randomAttrs.nextPolygonAttributes();
     }
