@@ -225,27 +225,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         if (this.rootTile == null) // Shapefile is empty or contains only null records.
             return;
 
-        this.pickSupport.clearPickList();
-        try
-        {
-            this.pickSupport.beginPicking(dc);
-            this.render(dc); // draw each tile's records in a single color
-
-            // TODO: Pick rectangle support
-            PickedObject po = this.pickSupport.getTopObject(dc, pickPoint); // resolve the picked tile, if any
-            if (po != null)
-            {
-                this.pickSupport.clearPickList();
-                this.beginDrawing(dc);
-                this.drawTileInUniqueColors(dc, (Tile) po.getObject());
-                this.endDrawing(dc);
-                this.pickSupport.resolvePick(dc, pickPoint, this.pickLayer); // resolve the picked records, if any
-            }
-        }
-        finally
-        {
-            this.pickSupport.endPicking(dc);
-        }
+        this.pickOrderedSurfaceRenderable(dc, pickPoint); // pick is called during ordered rendering
     }
 
     @Override
@@ -618,6 +598,39 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         }
     }
 
+    protected void pickOrderedSurfaceRenderable(DrawContext dc, Point pickPoint)
+    {
+        try
+        {
+            this.pickSupport.clearPickList();
+            this.pickSupport.beginPicking(dc);
+            this.beginDrawing(dc);
+
+            for (Tile tile : this.currentTiles)
+            {
+                Color color = dc.getUniquePickColor();
+                dc.getGL().getGL2().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
+                this.pickSupport.addPickableObject(color.getRGB(), tile);
+                this.drawTile(dc, tile);
+            }
+
+            // TODO: Pick rectangle support
+            PickedObject po = this.pickSupport.getTopObject(dc, pickPoint); // resolve the picked tile, if any
+            if (po != null)
+            {
+                this.pickSupport.clearPickList();
+                this.drawTileInUniqueColors(dc, (Tile) po.getObject());
+                this.pickSupport.resolvePick(dc, pickPoint, this.pickLayer); // resolve the picked records, if any
+            }
+        }
+        finally
+        {
+            this.endDrawing(dc);
+            this.pickSupport.endPicking(dc);
+            this.pickSupport.clearPickList();
+        }
+    }
+
     protected void drawOrderedSurfaceRenderable(DrawContext dc)
     {
         try
@@ -806,10 +819,32 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             this.pickColors = Buffers.newDirectByteBuffer(pickColorsSize);
             dc.getGpuResourceCache().remove(this.pickColorsVboKey); // remove any associated VBO from GPU memory
         }
-
-        byte[] vertexColors = this.byteArray;
         this.pickColors.clear();
 
+        ByteBuffer colors;
+        int[] vboId = null;
+        boolean useVbo = dc.getGLRuntimeCapabilities().isUseVertexBufferObject();
+        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(this.pickColorsVboKey)) == null)
+        {
+            vboId = new int[1];
+            gl.glGenBuffers(1, vboId, 0);
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
+            gl.glBufferData(GL.GL_ARRAY_BUFFER, this.pickColors.remaining(), this.pickColors, GL2.GL_DYNAMIC_DRAW);
+            dc.getGpuResourceCache().put(this.pickColorsVboKey, vboId, GpuResourceCache.VBO_BUFFERS,
+                this.pickColors.remaining());
+            colors = gl.glMapBuffer(GL.GL_ARRAY_BUFFER, GL.GL_WRITE_ONLY);
+        }
+        else if (useVbo)
+        {
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
+            colors = gl.glMapBuffer(GL.GL_ARRAY_BUFFER, GL.GL_WRITE_ONLY);
+        }
+        else
+        {
+            colors = pickColors;
+        }
+
+        byte[] vertexColors = this.byteArray;
         for (ShapefileRenderable.Record record : tile.records)
         {
             // Get a unique pick color for the record, and add it to the list of pickable objects. We must generate a
@@ -830,37 +865,26 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             // Add the unique color for the top and bottom vertices of the record.
             for (int i = 0; i < record.numberOfPoints; i++)
             {
-                this.pickColors.put(vertexColors);
+                colors.put(vertexColors);
             }
         }
 
-        this.pickColors.flip();
-
-        int[] vboId = null;
-        boolean useVbo = dc.getGLRuntimeCapabilities().isUseVertexBufferObject();
-        if (useVbo && (vboId = (int[]) dc.getGpuResourceCache().get(this.pickColorsVboKey)) == null)
-        {
-            vboId = new int[1];
-            gl.glGenBuffers(1, vboId, 0);
-            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
-            gl.glBufferData(GL.GL_ARRAY_BUFFER, pickColorsSize, this.pickColors, GL2.GL_DYNAMIC_DRAW);
-            gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, 0);
-            dc.getGpuResourceCache().put(this.pickColorsVboKey, vboId, GpuResourceCache.VBO_BUFFERS, pickColorsSize);
-        }
-        else if (useVbo)
-        {
-            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboId[0]);
-            gl.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, pickColorsSize, this.pickColors);
-            gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, 0);
-        }
-        else
-        {
-            gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, this.pickColors);
-        }
+        colors.flip();
 
         try
         {
             gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+
+            if (useVbo)
+            {
+                gl.glUnmapBuffer(GL.GL_ARRAY_BUFFER);
+                gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, 0);
+            }
+            else
+            {
+                gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, colors);
+            }
+
             this.drawTile(dc, tile);
         }
         finally
