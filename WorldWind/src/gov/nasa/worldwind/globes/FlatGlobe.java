@@ -5,6 +5,8 @@
  */
 package gov.nasa.worldwind.globes;
 
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.projections.*;
 import gov.nasa.worldwind.render.DrawContext;
@@ -38,7 +40,10 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     public final static String PROJECTION_MODIFIED_SINUSOIDAL =
         "gov.nasa.worldwind.globes.projectionModifiedSinusoidal";
 
-    protected GeographicProjection projection = new ProjectionMercator();
+    protected GeographicProjection projection = (GeographicProjection) WorldWind.createComponent(
+        Configuration.getStringValue(AVKey.GEOGRAPHIC_PROJECTION_CLASS_NAME,
+            "gov.nasa.worldwind.globes.projections.ProjectionEquirectangular"));
+
     protected boolean continuous;
     protected int offset;
     protected Vec4 offsetVector = Vec4.ZERO;

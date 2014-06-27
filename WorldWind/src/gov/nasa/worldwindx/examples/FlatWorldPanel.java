@@ -92,7 +92,7 @@ public class FlatWorldPanel extends JPanel
         comboPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         comboPanel.add(new JLabel("Projection:"));
         this.projectionCombo = new JComboBox(new String[]
-            {"Mercator", "Lat-Lon", "Modified Sin.", "Sinusoidal",
+            {"Lat-Lon", "Mercator", "Modified Sin.", "Sinusoidal",
                 "Transverse Mercator",
                 "North Polar",
                 "South Polar",

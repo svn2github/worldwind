@@ -16,13 +16,18 @@
     <LayerList href="config/worldwind.layers.xml"/>
     <!--Most configuration information is defined in attribute-value pairs-->
     <Property name="gov.nasa.worldwind.avkey.ModelClassName" value="gov.nasa.worldwind.BasicModel"/>
+    <!--<Property name="gov.nasa.worldwind.avkey.GlobeClassName"-->
+              <!--value="gov.nasa.worldwind.globes.Earth"/>-->
     <Property name="gov.nasa.worldwind.avkey.GlobeClassName"
-              value="gov.nasa.worldwind.globes.Earth"/>
+              value="gov.nasa.worldwind.globes.EarthFlat"/>
     <Property name="gov.nasa.worldwind.avkey.EarthElevationModelConfigFile"
               value="config/Earth/EarthElevations2.xml"/>
+    <Property name="gov.nasa.worldwind.globes.GeographicProjectionClassName"
+              value="gov.nasa.worldwind.globes.projections.ProjectionEquirectangular"/>
     <Property name="gov.nasa.worldwind.avkey.InitialLatitude" value="38"/>
     <Property name="gov.nasa.worldwind.avkey.InitialAltitude" value="19.07e6"/>
-    <Property name="gov.nasa.worldwind.avkey.ViewClassName" value="gov.nasa.worldwind.view.orbit.BasicOrbitView"/>
+    <!--<Property name="gov.nasa.worldwind.avkey.ViewClassName" value="gov.nasa.worldwind.view.orbit.BasicOrbitView"/>-->
+    <Property name="gov.nasa.worldwind.avkey.ViewClassName" value="gov.nasa.worldwind.view.orbit.FlatOrbitView"/>
     <Property name="gov.nasa.worldwind.avkey.ViewInputHandlerClassName"
               value="gov.nasa.worldwind.view.orbit.OrbitViewInputHandler"/>
     <Property name="gov.nasa.worldwind.avkey.InputHandlerClassName" value="gov.nasa.worldwind.awt.AWTInputHandler"/>
