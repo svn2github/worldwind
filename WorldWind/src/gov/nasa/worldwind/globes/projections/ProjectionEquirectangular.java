@@ -20,7 +20,7 @@ public class ProjectionEquirectangular implements GeographicProjection
     @Override
     public String getName()
     {
-        return "Equidistant Cylindrical";
+        return "Equirectangular";
     }
 
     @Override
