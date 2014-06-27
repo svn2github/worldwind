@@ -6,6 +6,8 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.GL;
@@ -13,6 +15,7 @@ import java.awt.*;
 
 /**
  * Represent a text label attached to a Point on the viewport and its rendering attributes.
+ *
  * @author Patrick Murris
  * @version $Id$
  * @see AbstractAnnotation
@@ -20,11 +23,13 @@ import java.awt.*;
  */
 public class ScreenAnnotation extends AbstractAnnotation
 {
-    private Point screenPoint;
+    protected Point screenPoint;
+    protected Position position;
 
     /**
      * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position.
-     * @param text the annotation text.
+     *
+     * @param text     the annotation text.
      * @param position the annotation viewport position.
      */
     public ScreenAnnotation(String text, Point position)
@@ -33,11 +38,12 @@ public class ScreenAnnotation extends AbstractAnnotation
     }
 
     /**
-     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position.
-     * Specifiy the <code>Font</code> to be used.
-     * @param text the annotation text.
+     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position. Specifiy the
+     * <code>Font</code> to be used.
+     *
+     * @param text     the annotation text.
      * @param position the annotation viewport position.
-     * @param font the <code>Font</code> to use.
+     * @param font     the <code>Font</code> to use.
      */
     public ScreenAnnotation(String text, Point position, Font font)
     {
@@ -45,11 +51,12 @@ public class ScreenAnnotation extends AbstractAnnotation
     }
 
     /**
-     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position.
-     * Specifiy the <code>Font</code> and text <code>Color</code> to be used.
-     * @param text the annotation text.
-     * @param position the annotation viewport position.
-     * @param font the <code>Font</code> to use.
+     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position. Specifiy the
+     * <code>Font</code> and text <code>Color</code> to be used.
+     *
+     * @param text      the annotation text.
+     * @param position  the annotation viewport position.
+     * @param font      the <code>Font</code> to use.
      * @param textColor the text <code>Color</code>.
      */
     public ScreenAnnotation(String text, Point position, Font font, Color textColor)
@@ -58,9 +65,10 @@ public class ScreenAnnotation extends AbstractAnnotation
     }
 
     /**
-     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position.
-     * Specify the default {@link AnnotationAttributes} set.
-     * @param text the annotation text.
+     * Creates a <code>ScreenAnnotation</code> with the given text, at the given viewport position. Specify the default
+     * {@link AnnotationAttributes} set.
+     *
+     * @param text     the annotation text.
      * @param position the annotation viewport position.
      * @param defaults the default {@link AnnotationAttributes} set.
      */
@@ -120,6 +128,7 @@ public class ScreenAnnotation extends AbstractAnnotation
 
     /**
      * Get the <code>Point</code> where the annotation is drawn in the viewport.
+     *
      * @return the <code>Point</code> where the annotation is drawn in the viewport.
      */
     public Point getScreenPoint()
@@ -129,17 +138,35 @@ public class ScreenAnnotation extends AbstractAnnotation
 
     /**
      * Get the <code>Point</code> where the annotation is drawn in the viewport.
+     *
      * @param dc the current draw context.
+     *
      * @return the <code>Point</code> where the annotation is drawn in the viewport.
      */
     @SuppressWarnings({"UnusedDeclaration"})
     protected Point getScreenPoint(DrawContext dc)
     {
-        return this.screenPoint;
+        return this.position != null ? this.computeAnnotationPosition(dc, this.position) : this.screenPoint;
+    }
+
+    protected Point computeAnnotationPosition(DrawContext dc, Position pos)
+    {
+        Vec4 surfacePoint = dc.getTerrain().getSurfacePoint(pos);
+        if (surfacePoint == null)
+        {
+            Globe globe = dc.getGlobe();
+            surfacePoint = globe.computePointFromPosition(pos.getLatitude(), pos.getLongitude(),
+                globe.getElevation(pos.getLatitude(), pos.getLongitude()));
+        }
+
+        Vec4 pt = dc.getView().project(surfacePoint);
+
+        return new Point((int) pt.x, (int) pt.y);
     }
 
     /**
      * Set the <code>Point</code> where the annotation will be drawn in the viewport.
+     *
      * @param position the <code>Point</code> where the annotation will be drawn in the viewport.
      */
     public void setScreenPoint(Point position)
@@ -153,7 +180,30 @@ public class ScreenAnnotation extends AbstractAnnotation
         this.screenPoint = position;
     }
 
-    //**************************************************************//
+    /**
+     * Returns the position set via {@link #setPosition(gov.nasa.worldwind.geom.Position)}.
+     *
+     * @return The position previously set.
+     */
+    public Position getPosition()
+    {
+        return position;
+    }
+
+    /**
+     * Specifies an optional geographic position that is mapped to a screen position during rendering. This value
+     * overrides this object's screen point and computes it anew each time this annotation is drawn.
+     *
+     * @param position This annotation's geographic position. May be null, in which case this annotation's screen point
+     *                 is used directly.
+     *
+     * @see #setScreenPoint(java.awt.Point)
+     */
+    public void setPosition(Position position)
+    {
+        this.position = position;
+    }
+//**************************************************************//
     //********************  Rendering  *****************************//
     //**************************************************************//
 
@@ -172,10 +222,10 @@ public class ScreenAnnotation extends AbstractAnnotation
         double x = sp.x - width / 2 + offsetX;
         double y = sp.y + offsetY; // use OGL coordinate system
 
-        Rectangle frameRect = new Rectangle((int)x, (int)y, (int)width, (int)height);
+        Rectangle frameRect = new Rectangle((int) x, (int) y, (int) width, (int) height);
 
         // Include reference point in bounds
-        return this.computeBoundingRectangle(frameRect, sp.x,  sp.y);
+        return this.computeBoundingRectangle(frameRect, sp.x, sp.y);
     }
 
     protected Point computeSize(DrawContext dc)
@@ -202,10 +252,22 @@ public class ScreenAnnotation extends AbstractAnnotation
         GL gl = dc.getGL();
         gl.glDepthFunc(GL.GL_ALWAYS);
 
+        byte[] depthMask = null;
+        if (dc.getGlobe() instanceof Globe2D && (((Globe2D) dc.getGlobe()).isContinuous()))
+        {
+            // Need to depth buffer the annotation so that subsequently drawn globes don't clobber it.
+            depthMask = new byte[1];
+            gl.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, depthMask, 0);
+            gl.glDepthMask(true);
+        }
+
         java.awt.Dimension size = this.getPreferredSize(dc);
 
         Point sp = this.getScreenPoint(dc);
         this.drawTopLevelAnnotation(dc, sp.x, sp.y, size.width, size.height, 1, 1, null);
+
+        if (depthMask != null)
+            gl.glDepthMask(depthMask[0] == 1);
     }
 
     //**************************************************************//
@@ -258,14 +320,15 @@ public class ScreenAnnotation extends AbstractAnnotation
     }
 
     /**
-     * Restores publicly settable attribute values found in the specified XML state document String. The
-     * document specified by <code>stateInXml</code> must be a well formed XML document String, or this will throw an
-     * IllegalArgumentException. Unknown structures in <code>stateInXml</code> are benign, because they will
-     * simply be ignored.
+     * Restores publicly settable attribute values found in the specified XML state document String. The document
+     * specified by <code>stateInXml</code> must be a well formed XML document String, or this will throw an
+     * IllegalArgumentException. Unknown structures in <code>stateInXml</code> are benign, because they will simply be
+     * ignored.
      *
      * @param stateInXml an XML document String describing a ScreenAnnotation.
-     * @throws IllegalArgumentException If <code>stateInXml</code> is null, or if <code>stateInXml</code> is not
-     *                                  a well formed XML document String.
+     *
+     * @throws IllegalArgumentException If <code>stateInXml</code> is null, or if <code>stateInXml</code> is not a well
+     *                                  formed XML document String.
      */
     public void restoreState(String stateInXml)
     {

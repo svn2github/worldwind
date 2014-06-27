@@ -2114,10 +2114,7 @@ public class MeasureTool extends AVListImpl implements Disposable
 
         this.annotation.setText(displayString);
 
-        Vec4 screenPoint = this.computeAnnotationPosition(pos);
-        if (screenPoint != null)
-            this.annotation.setScreenPoint(new Point((int) screenPoint.x, (int) screenPoint.y));
-
+        this.annotation.setPosition(pos);
         this.annotation.getAttributes().setVisible(true);
     }
 
@@ -2154,20 +2151,6 @@ public class MeasureTool extends AVListImpl implements Disposable
         }
 
         return displayString;
-    }
-
-    protected Vec4 computeAnnotationPosition(Position pos)
-    {
-        Vec4 surfacePoint = this.wwd.getSceneController().getTerrain().getSurfacePoint(
-            pos.getLatitude(), pos.getLongitude());
-        if (surfacePoint == null)
-        {
-            Globe globe = this.wwd.getModel().getGlobe();
-            surfacePoint = globe.computePointFromPosition(pos.getLatitude(), pos.getLongitude(),
-                globe.getElevation(pos.getLatitude(), pos.getLongitude()));
-        }
-
-        return this.wwd.getView().project(surfacePoint);
     }
 
     protected String formatCircleMeasurements(Position pos)
