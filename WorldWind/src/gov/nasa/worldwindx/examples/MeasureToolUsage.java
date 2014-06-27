@@ -7,14 +7,12 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
-import gov.nasa.worldwind.util.measure.MeasureTool;
-import gov.nasa.worldwind.util.measure.MeasureToolController;
+import gov.nasa.worldwind.util.measure.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.*;
 import java.util.ArrayList;
 
 /**
@@ -38,7 +36,7 @@ public class MeasureToolUsage extends ApplicationTemplate
 
         public AppFrame()
         {
-            super(true, false, true); // no layer panel
+            super(true, false, false); // no layer or statistics panel
 
             // Add terrain profile layer
             profile.setEventSource(getWwd());
@@ -79,6 +77,7 @@ public class MeasureToolUsage extends ApplicationTemplate
             switchMeasureTool();
 
             this.getContentPane().add(tabbedPane, BorderLayout.WEST);
+            this.pack();
         }
 
         private class MeasureToolListener implements PropertyChangeListener
