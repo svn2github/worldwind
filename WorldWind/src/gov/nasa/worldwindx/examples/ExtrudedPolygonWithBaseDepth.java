@@ -76,9 +76,6 @@ public class ExtrudedPolygonWithBaseDepth extends ApplicationTemplate
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
-
             getWwd().getView().setEyePosition(
                 Position.fromDegrees(43.843162670564354, -114.63551647988652, 2652.865781935775));
         }

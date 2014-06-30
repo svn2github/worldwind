@@ -46,7 +46,6 @@ public class VeryManyPaths extends ApplicationTemplate
 
             // Update layer panel
             this.getWwd().getView().setEyePosition(new Position(START_LOCATION, 3e6));
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected void makePaths(RenderableLayer layer, Position origin, int numPaths, Angle length, int numPositions)

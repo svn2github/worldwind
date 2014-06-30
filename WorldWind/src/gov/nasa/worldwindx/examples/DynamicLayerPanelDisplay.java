@@ -39,7 +39,6 @@ public class DynamicLayerPanelDisplay
             super(wwd);
         }
 
-        @Override
         protected void fill(WorldWindow wwd)
         {
             if (this.checkBoxes == null)
@@ -52,11 +51,11 @@ public class DynamicLayerPanelDisplay
                 if (!(layer instanceof TiledImageLayer))
                     continue;
 
-                LayerAction action = new LayerAction(layer, wwd, layer.isEnabled());
-                JCheckBox jcb = new JCheckBox(action);
-                jcb.setSelected(action.selected);
-                this.layersPanel.add(jcb);
-                this.checkBoxes.put(layer, jcb);
+//                LayerAction action = new LayerAction(layer, wwd, layer.isEnabled());
+//                JCheckBox jcb = new JCheckBox(action);
+//                jcb.setSelected(action.selected);
+//                this.layersPanel.add(jcb);
+//                this.checkBoxes.put(layer, jcb);
             }
 
             this.updateLayerActivity(wwd);

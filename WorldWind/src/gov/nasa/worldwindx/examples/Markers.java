@@ -90,7 +90,6 @@ public class Markers extends ApplicationTemplate
             layer.setElevation(1000d);
             layer.setMarkers(markers);
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.getWwd().addSelectListener(new SelectListener()
             {

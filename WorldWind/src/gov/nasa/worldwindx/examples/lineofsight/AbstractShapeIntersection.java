@@ -126,8 +126,6 @@ public class AbstractShapeIntersection extends ApplicationTemplate
             path.setAttributes(pathAttributes);
             this.resultsLayer.addRenderable(path);
 
-            this.layerPanel.update(this.getWwd());
-
             this.getWwd().redraw();
         }
 
@@ -142,8 +140,6 @@ public class AbstractShapeIntersection extends ApplicationTemplate
             pointAttributes.setUsePointAsDefaultImage(true);
             iPoint.setAttributes(pointAttributes);
             this.resultsLayer.addRenderable(iPoint);
-
-            this.layerPanel.update(this.getWwd());
 
             this.getWwd().redraw();
         }

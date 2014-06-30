@@ -40,12 +40,11 @@ public class ViewControls extends ApplicationTemplate
                 if (layer instanceof ViewControlsLayer)
                 {
                     viewControlsLayer = (ViewControlsLayer) layer;
-                    getLayerPanel().update(getWwd());
                 }
             }
 
             // Add view controls selection panel
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
         }
 
         private JPanel makeControlPanel()

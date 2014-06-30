@@ -56,7 +56,6 @@ public class VideoOnTerrain extends ApplicationTemplate
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Video on terrain");
             insertBeforePlacenames(this.getWwd(), layer);
-            this.layerPanel.update(this.getWwd()); // makes the ApplicationTemplate layer list show the new layer
 
             // Set up a SelectListener to drag the SurfaceImage.
             this.getWwd().addSelectListener(new SurfaceImageDragger(this.getWwd()));

@@ -286,7 +286,7 @@ public class ViewLimits extends ApplicationTemplate
 
                 controlPanel.add(box, BorderLayout.NORTH);
             }
-            this.getLayerPanel().add(controlPanel, BorderLayout.SOUTH);
+            this.getControlPanel().add(controlPanel, BorderLayout.SOUTH);
 
             JMenuBar menuBar = new JMenuBar();
             {

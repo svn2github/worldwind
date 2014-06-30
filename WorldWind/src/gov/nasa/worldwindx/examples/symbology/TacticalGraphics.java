@@ -79,8 +79,6 @@ public class TacticalGraphics extends ApplicationTemplate
             insertBeforePlacenames(getWwd(), this.lineLayer);
             insertBeforePlacenames(getWwd(), this.areaLayer);
 
-            this.getLayerPanel().update(this.getWwd());
-
             // Add a BasicDragger so that graphics can be moved by clicking and dragging.
             this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
 
@@ -1040,7 +1038,7 @@ public class TacticalGraphics extends ApplicationTemplate
             box.add(javax.swing.Box.createVerticalStrut(10));
             box.add(cb);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

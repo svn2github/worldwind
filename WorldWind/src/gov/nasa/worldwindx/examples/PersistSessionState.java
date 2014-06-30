@@ -83,7 +83,6 @@ public class PersistSessionState extends ApplicationTemplate
                 // Update the layer panel to display changes in the layer list, and cause the WorldWindow to repaint
                 // itself. These two lines should be omitted in applications that automatically handle layer panel
                 // updates and WorldWindow repaints when the layer list changes.
-                this.getLayerPanel().update(this.getWwd());
                 this.getWwd().redraw();
             }
             catch (Exception e)

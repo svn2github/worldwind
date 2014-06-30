@@ -83,7 +83,7 @@ public class AddAnimator extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, true);
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
 
             WorldWindow wwd = this.getWwd();
 

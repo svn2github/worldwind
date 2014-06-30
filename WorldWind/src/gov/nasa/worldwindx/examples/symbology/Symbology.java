@@ -72,9 +72,6 @@ public class Symbology extends ApplicationTemplate
 
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected void addTacticalGraphics()
@@ -105,9 +102,6 @@ public class Symbology extends ApplicationTemplate
 
             // Add the graphic layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-
-            // Update the layer panel to display the graphic layer.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         /**

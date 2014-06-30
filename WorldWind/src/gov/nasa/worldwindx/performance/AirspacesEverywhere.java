@@ -84,7 +84,6 @@ public class AirspacesEverywhere extends ApplicationTemplate
             System.out.printf("%d Polygons, %d positions\n", count, positions.size());
 
             insertBeforeCompass(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

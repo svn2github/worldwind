@@ -71,8 +71,6 @@ public class AntennaViewer extends ApplicationTemplate
             layer.setName("Antenna Axes");
             layer.setPickEnabled(false);
             insertBeforeCompass(getWwd(), layer);
-
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

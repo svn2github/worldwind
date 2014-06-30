@@ -119,8 +119,6 @@ public class LinesOfSight extends ApplicationTemplate
             this.sightLinesLayer.setName("Sight Lines");
             this.getWwd().getModel().getLayers().add(this.sightLinesLayer);
 
-            getLayerPanel().update(getWwd());
-
             // Create a Terrain object that uses high-resolution elevation data to compute intersections.
             this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), TARGET_RESOLUTION);
             this.terrain.setCacheCapacity(CACHE_SIZE); // larger cache speeds up repeat calculations
@@ -588,7 +586,6 @@ public class LinesOfSight extends ApplicationTemplate
                 public void run()
                 {
                     insertBeforePlacenames(wwd, layer);
-                    layerPanel.update(wwd);
                 }
             });
         }

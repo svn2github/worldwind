@@ -18,14 +18,14 @@ import java.net.URISyntaxException;
  * @author tag
  * @version $Id$
  */
-public class WCSElevations extends LayerManagerApp
+public class WCSElevations extends ApplicationTemplate
 {
     protected static final String[] servers = new String[]
         {
             "http://worldwind26.arc.nasa.gov/wms2",
         };
 
-    public static class AppFrame extends LayerManagerApp.AppFrame
+    public static class AppFrame extends ApplicationTemplate.AppFrame
     {
         protected final Dimension wcsPanelSize = new Dimension(400, 600);
         protected JTabbedPane tabbedPane;
@@ -101,6 +101,6 @@ public class WCSElevations extends LayerManagerApp
 
     public static void main(String[] args)
     {
-        LayerManagerApp.start("World Wind WCS Layers", AppFrame.class);
+        ApplicationTemplate.start("World Wind WCS Layers", AppFrame.class);
     }
 }

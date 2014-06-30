@@ -634,7 +634,6 @@ public class StyleLocationTests extends ApplicationTemplate
                 public void run()
                 {
                     appFrame.getWwd().getModel().getLayers().add(layer);
-                    appFrame.getLayerPanel().update(appFrame.getWwd());
                 }
             });
         }

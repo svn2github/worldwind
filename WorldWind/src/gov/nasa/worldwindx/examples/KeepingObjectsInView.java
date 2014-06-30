@@ -103,8 +103,6 @@ public class KeepingObjectsInView extends ApplicationTemplate
             shapesLayer.setName("Shapes to Track");
             insertBeforePlacenames(this.getWwd(), shapesLayer);
 
-            this.getLayerPanel().update(this.getWwd());
-
             // Add the objects to track to the layers.
             for (Object o : objectsToTrack)
             {
@@ -161,7 +159,7 @@ public class KeepingObjectsInView extends ApplicationTemplate
             box.add(Box.createVerticalStrut(5));
             box.add(button);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

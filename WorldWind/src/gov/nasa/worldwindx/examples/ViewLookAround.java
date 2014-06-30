@@ -38,7 +38,7 @@ public class ViewLookAround extends ApplicationTemplate
             // Add view control panel to the layer panel
             this.vcp = new ViewControlPanel(getWwd());
             getWwd().setView(new BasicFlyView());
-            this.getLayerPanel().add(this.vcp, BorderLayout.SOUTH);
+            this.getControlPanel().add(this.vcp, BorderLayout.SOUTH);
             Position pos = new Position(new LatLon(Angle.fromDegrees(45), Angle.fromDegrees(-120)), 2000);
             getWwd().getView().setEyePosition(pos);
         }

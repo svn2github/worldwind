@@ -70,9 +70,6 @@ public class TreeControl extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(this.getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

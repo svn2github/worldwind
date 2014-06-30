@@ -72,8 +72,6 @@ public class GridOfPoints extends ApplicationTemplate
             this.layer.addRenderable(grid);
             insertBeforeCompass(getWwd(), this.layer);
 
-            this.layerPanel.update(getWwd());
-
             // Establish a select listener that causes the tooltip controller to show the picked position's data value.
             this.setToolTipController(new ToolTipController(getWwd())
             {

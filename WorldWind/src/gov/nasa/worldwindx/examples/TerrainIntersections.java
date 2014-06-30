@@ -101,8 +101,6 @@ public class TerrainIntersections extends ApplicationTemplate
             this.sightLinesLayer.setName("Sight Lines");
             this.getWwd().getModel().getLayers().add(this.sightLinesLayer);
 
-            getLayerPanel().update(getWwd());
-
             // Set up a mouse handler to generate a grid and start intersection calculations when the user shift-clicks.
             this.getWwd().getInputHandler().addMouseListener(new MouseAdapter()
             {

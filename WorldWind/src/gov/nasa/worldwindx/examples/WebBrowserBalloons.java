@@ -104,7 +104,6 @@ public class WebBrowserBalloons extends ApplicationTemplate
             layer.addRenderable(placemark);
             // Add the layer to the ApplicationTemplate's layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

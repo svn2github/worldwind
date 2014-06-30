@@ -38,7 +38,6 @@ public class TreeFiltering extends ApplicationTemplate
             layer.setKeepSeparated(false);
             layer.setPickEnabled(true);
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.getWwd().addPositionListener(new PositionListener()
             {

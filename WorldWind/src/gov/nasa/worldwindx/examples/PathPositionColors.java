@@ -84,9 +84,6 @@ public class PathPositionColors extends ApplicationTemplate
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
-
             // Establish a select listener that causes the tooltip controller to show the picked path position's
             // ordinal.
             this.setToolTipController(new ToolTipController(this.getWwd())

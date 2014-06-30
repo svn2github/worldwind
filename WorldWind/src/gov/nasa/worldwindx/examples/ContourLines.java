@@ -39,7 +39,6 @@ public class ContourLines extends ApplicationTemplate
 
             // Add the contour line layer to the World Window and update the layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add a global moving contour line to the layer.
             this.contourLine = new ContourLine();
@@ -71,7 +70,7 @@ public class ContourLines extends ApplicationTemplate
             }
 
             // Add a contour line control panel to the application window.
-            this.getLayerPanel().add(this.makeContourLineControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(this.makeContourLineControlPanel(), BorderLayout.SOUTH);
         }
 
         protected JPanel makeContourLineControlPanel()

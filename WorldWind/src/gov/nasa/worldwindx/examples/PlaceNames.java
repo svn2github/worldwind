@@ -23,7 +23,7 @@ public class PlaceNames extends ApplicationTemplate
         public AppFrame()
         {
             super(true, true, false);
-            this.getLayerPanel().add(makeControlPanel(),  BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(),  BorderLayout.SOUTH);
         }
 
 

@@ -127,7 +127,7 @@ public class DetailHints extends ApplicationTemplate
             panel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9),
                 new TitledBorder("Scene Detail")));
             panel.add(vbox, BorderLayout.CENTER);
-            this.getLayerPanel().add(panel, BorderLayout.SOUTH);
+            this.getControlPanel().add(panel, BorderLayout.SOUTH);
         }
     }
 

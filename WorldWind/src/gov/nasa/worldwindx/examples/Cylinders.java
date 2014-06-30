@@ -32,7 +32,7 @@ public class Cylinders extends ApplicationTemplate
         public AppFrame()
         {
             // Add detail hint slider panel
-            this.getLayerPanel().add(this.makeDetailHintControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(this.makeDetailHintControlPanel(), BorderLayout.SOUTH);
 
             RenderableLayer layer = new RenderableLayer();
 
@@ -138,8 +138,6 @@ public class Cylinders extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected JPanel makeDetailHintControlPanel()

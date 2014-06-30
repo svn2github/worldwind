@@ -153,7 +153,6 @@ public class RigidShapes extends ApplicationTemplate
 
             // Add the layer to the model and update the layer panel.
             insertBeforePlacenames(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

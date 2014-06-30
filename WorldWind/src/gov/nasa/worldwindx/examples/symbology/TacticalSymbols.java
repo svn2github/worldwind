@@ -112,9 +112,6 @@ public class TacticalSymbols extends ApplicationTemplate
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(symbolLayer);
 
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
-
             // Add a dragging controller to enable user click-and-drag control over tactical symbols.
             this.dragger = new BasicDragger(this.getWwd());
             this.getWwd().addSelectListener(this.dragger);
@@ -278,7 +275,7 @@ public class TacticalSymbols extends ApplicationTemplate
             box.add(Box.createVerticalStrut(10));
             box.add(cb);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

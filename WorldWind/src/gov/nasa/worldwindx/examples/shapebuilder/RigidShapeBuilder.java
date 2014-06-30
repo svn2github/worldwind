@@ -1806,7 +1806,6 @@ public class RigidShapeBuilder extends ApplicationTemplate
             this.shapeLayer = new RenderableLayer();
             this.shapeLayer.setName(SHAPE_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.shapeLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new AbstractShapeBuilderController(this);
             this.builderModel = new AbstractShapeBuilderModel();

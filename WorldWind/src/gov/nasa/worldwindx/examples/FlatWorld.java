@@ -8,8 +8,8 @@ package gov.nasa.worldwindx.examples;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.*;
-import gov.nasa.worldwind.layers.*;
+import gov.nasa.worldwind.globes.EarthFlat;
+import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
@@ -36,24 +36,79 @@ public class FlatWorld extends ApplicationTemplate
     {
         public AppFrame()
         {
-            super(true, true, false);
-
-            // Change atmosphere SkyGradientLayer for SkyColorLayer
-            LayerList layers = this.getWwd().getModel().getLayers();
-            for (int i = 0; i < layers.size(); i++)
-            {
-                if (layers.get(i) instanceof SkyGradientLayer)
-                    layers.set(i, new SkyColorLayer());
-            }
-            this.getLayerPanel().update(this.getWwd());
-
-            // Add flat world projection control panel
-            this.getLayerPanel().add(new FlatWorldPanel(this.getWwd()), BorderLayout.SOUTH);
-
-            this.makeShapes();
+            this.makePaths();
+            this.makeSurfaceShapes();
         }
 
-        protected void makeShapes()
+        protected void makePaths()
+        {
+            RenderableLayer layer = new RenderableLayer();
+            layer.setName("Paths");
+
+            // Path over Florida.
+            ShapeAttributes attrs = new BasicShapeAttributes();
+            attrs.setOutlineMaterial(Material.GREEN);
+            attrs.setInteriorOpacity(0.5);
+            attrs.setOutlineOpacity(0.8);
+            attrs.setOutlineWidth(3);
+
+            double originLat = 28;
+            double originLon = -82;
+            Iterable<Position> locations = Arrays.asList(
+                Position.fromDegrees(originLat + 5.0, originLon + 2.5, 100e3),
+                Position.fromDegrees(originLat + 5.0, originLon - 2.5, 100e3),
+                Position.fromDegrees(originLat + 2.5, originLon - 5.0, 100e3),
+                Position.fromDegrees(originLat - 2.5, originLon - 5.0, 100e3),
+                Position.fromDegrees(originLat - 5.0, originLon - 2.5, 100e3),
+                Position.fromDegrees(originLat - 5.0, originLon + 2.5, 100e3),
+                Position.fromDegrees(originLat - 2.5, originLon + 5.0, 100e3),
+                Position.fromDegrees(originLat + 2.5, originLon + 5.0, 100e3),
+                Position.fromDegrees(originLat + 5.0, originLon + 2.5, 100e3));
+            Path shape = new Path(locations);
+            shape.setAttributes(attrs);
+            layer.addRenderable(shape);
+
+            // Path spanning the international dateline.
+            attrs = new BasicShapeAttributes();
+            attrs.setInteriorMaterial(Material.RED);
+            attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(Color.RED)));
+            attrs.setInteriorOpacity(0.5);
+            attrs.setOutlineOpacity(0.8);
+            attrs.setOutlineWidth(3);
+
+            locations = Arrays.asList(
+                Position.fromDegrees(20, -170, 100e3),
+                Position.fromDegrees(15, 170, 100e3),
+                Position.fromDegrees(10, -175, 100e3),
+                Position.fromDegrees(5, 170, 100e3),
+                Position.fromDegrees(0, -170, 100e3),
+                Position.fromDegrees(20, -170, 100e3));
+            shape = new Path(locations);
+            shape.setAttributes(attrs);
+            layer.addRenderable(shape);
+
+            // Path around the north pole.
+            attrs = new BasicShapeAttributes();
+            attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(Color.GREEN)));
+            attrs.setInteriorOpacity(0.5);
+            attrs.setOutlineOpacity(0.8);
+            attrs.setOutlineWidth(3);
+
+            locations = Arrays.asList(
+                Position.fromDegrees(80, 0, 100e3),
+                Position.fromDegrees(80, 90, 100e3),
+                Position.fromDegrees(80, 180, 100e3),
+//                Position.fromDegrees(80, -180, 100e3),
+                Position.fromDegrees(80, -90, 100e3),
+                Position.fromDegrees(80, 0, 100e3));
+            shape = new Path(locations);
+            shape.setAttributes(attrs);
+            layer.addRenderable(shape);
+
+            ApplicationTemplate.insertBeforePlacenames(this.getWwd(), layer);
+        }
+
+        protected void makeSurfaceShapes()
         {
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Surface Shapes");
@@ -197,18 +252,15 @@ public class FlatWorld extends ApplicationTemplate
             ((SurfacePolyline) shape).setClosed(false);
             layer.addRenderable(shape);
 
-            // Add the layer to the model and update the layer panel.
-            insertBeforeCompass(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
+            ApplicationTemplate.insertBeforePlacenames(this.getWwd(), layer);
         }
     }
-
 
     public static void main(String[] args)
     {
         // Adjust configuration values before instantiation
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
         Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
-        ApplicationTemplate.start("World Wind Flat World", AppFrame.class);
+        start("World Wind Flat World", AppFrame.class);
     }
 }

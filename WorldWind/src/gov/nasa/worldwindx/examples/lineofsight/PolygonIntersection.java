@@ -117,8 +117,6 @@ public class PolygonIntersection extends ApplicationTemplate
             path.setAttributes(pathAttributes);
             this.layer.addRenderable(path);
 
-            this.layerPanel.update(this.getWwd());
-
             this.getWwd().redraw();
         }
 

@@ -27,7 +27,6 @@ public class GeoRSS extends ApplicationTemplate
             RenderableLayer layer = this.buildGeoRSSLayer();
             layer.setName("GeoRSS Shapes");
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
 
         private RenderableLayer buildGeoRSSLayer()

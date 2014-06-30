@@ -50,18 +50,6 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
             WWUtil.alignComponent(this, this.installedDataFrame, AVKey.RIGHT);
             this.installedDataFrame.setVisible(true);
 
-            // Setup AVKey.LAYERS property change events to refresh the LayerPanel.
-            this.getWwd().getModel().addPropertyChangeListener(new PropertyChangeListener()
-            {
-                public void propertyChange(PropertyChangeEvent event)
-                {
-                    if (event.getPropertyName().equals(AVKey.LAYERS))
-                    {
-                        getLayerPanel().update(getWwd());
-                    }
-                }
-            });
-
             this.layoutComponents();
         }
 
@@ -85,7 +73,7 @@ public class InstallImageryAndElevationsDemo extends ApplicationTemplate
             Box box = Box.createVerticalBox();
             box.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // top, left, bottom, right
             box.add(button);
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
             this.validate();
             this.pack();
         }

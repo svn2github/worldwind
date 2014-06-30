@@ -182,7 +182,6 @@ public class DraggingShapes extends ApplicationTemplate
 
             // Add the layer to the model and update the layer panel.
             insertBeforeCompass(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

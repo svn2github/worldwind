@@ -72,7 +72,7 @@ public class ExportImageOrElevations extends ApplicationTemplate
                 btnSaveImage.setToolTipText("Click the button to save image of the selected area");
                 btnPanel.add(btnSaveImage);
             }
-            this.getLayerPanel().add(btnPanel, BorderLayout.SOUTH);
+            this.getControlPanel().add(btnPanel, BorderLayout.SOUTH);
 
             // Listen for changes to the sector selector's region. Could also just wait until the user finishes
             // and query the result using selector.getSector().
@@ -91,7 +91,6 @@ public class ExportImageOrElevations extends ApplicationTemplate
             });
 
             this.enableNAIPLayer();
-            this.getLayerPanel().update(this.getWwd());
         }
 
         private class SaveElevationsAction extends AbstractAction

@@ -40,7 +40,6 @@ public class GPSTracks extends ApplicationTemplate
 
             MarkerLayer layer = this.buildTracksLayer();
             insertBeforeCompass(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.getWwd().addSelectListener(new SelectListener()
             {

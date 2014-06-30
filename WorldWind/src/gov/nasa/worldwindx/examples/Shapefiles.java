@@ -37,7 +37,6 @@ public class Shapefiles extends ApplicationTemplate
         public void addShapefileLayer(Layer layer)
         {
             this.getWwd().getModel().getLayers().add(layer);
-            this.getLayerPanel().update(this.getWwd());
         }
 
         public void gotoLayer(Layer layer)

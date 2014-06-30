@@ -60,7 +60,6 @@ public class PointPlacemarksEverywhere extends ApplicationTemplate
                 altitudeMode == WorldWind.RELATIVE_TO_GROUND ? "RELATIVE_TO_GROUND" : "ABSOLUTE");
 
             insertBeforeCompass(getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

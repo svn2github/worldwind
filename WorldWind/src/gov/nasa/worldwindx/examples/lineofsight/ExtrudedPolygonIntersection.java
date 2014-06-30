@@ -128,8 +128,6 @@ public class ExtrudedPolygonIntersection extends ApplicationTemplate
             path.setAttributes(pathAttributes);
             this.resultsLayer.addRenderable(path);
 
-            this.layerPanel.update(this.getWwd());
-
             this.getWwd().redraw();
         }
 
@@ -144,8 +142,6 @@ public class ExtrudedPolygonIntersection extends ApplicationTemplate
             pointAttributes.setUsePointAsDefaultImage(true);
             iPoint.setAttributes(pointAttributes);
             this.resultsLayer.addRenderable(iPoint);
-
-            this.layerPanel.update(this.getWwd());
 
             this.getWwd().redraw();
         }

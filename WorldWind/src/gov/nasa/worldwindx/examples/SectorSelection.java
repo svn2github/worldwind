@@ -41,7 +41,7 @@ public class SectorSelection extends ApplicationTemplate
             JPanel p = new JPanel(new BorderLayout(5, 5));
             p.add(btn, BorderLayout.CENTER);
 
-            this.getLayerPanel().add(p, BorderLayout.SOUTH);
+            this.getControlPanel().add(p, BorderLayout.SOUTH);
 
             // Listen for changes to the sector selector's region. Could also just wait until the user finishes
             // and query the result using selector.getSector().

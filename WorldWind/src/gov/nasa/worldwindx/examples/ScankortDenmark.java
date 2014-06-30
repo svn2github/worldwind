@@ -61,7 +61,6 @@ public class ScankortDenmark
                 null);
             layer.setEnabled(true);
             ApplicationTemplate.insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add the high resolution elevations.
             Factory emf = new BasicElevationModelFactory();

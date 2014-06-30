@@ -127,7 +127,6 @@ public class ImportImagery extends ApplicationTemplate
 
                         // Add the layer to the model and update the application's layer panel.
                         insertBeforeCompass(AppFrame.this.getWwd(), layer);
-                        AppFrame.this.getLayerPanel().update(AppFrame.this.getWwd());
 
                         // Set the view to look at the imported image.
                         ExampleUtil.goTo(getWwd(), sector);

@@ -67,7 +67,6 @@ public class AllPointGraphics extends ApplicationTemplate
             insertBeforePlacenames(wwd, this.tacgrpLayer);
             insertBeforePlacenames(wwd, this.metocLayer);
             insertBeforePlacenames(wwd, this.emsLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.addGraphicControls();
 
@@ -381,7 +380,7 @@ public class AllPointGraphics extends ApplicationTemplate
             box.add(javax.swing.Box.createVerticalStrut(10));
             box.add(cb);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

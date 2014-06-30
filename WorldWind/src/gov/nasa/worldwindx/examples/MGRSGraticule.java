@@ -40,11 +40,8 @@ public class MGRSGraticule extends ApplicationTemplate
             sb.setEventSource(this.getWwd());
             this.getWwjPanel().add(sb, BorderLayout.SOUTH);
 
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
-
             // Add go to coordinate input panel
-            this.getLayerPanel().add(new GoToCoordinatePanel(this.getWwd()),  BorderLayout.SOUTH);
+            this.getControlPanel().add(new GoToCoordinatePanel(this.getWwd()),  BorderLayout.SOUTH);
 
             // Add MGRS graticule properties frame
             JDialog dialog = MGRSAttributesPanel.showDialog(this, "MGRS Graticule Properties", layer);

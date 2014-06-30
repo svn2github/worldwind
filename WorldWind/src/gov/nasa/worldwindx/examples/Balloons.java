@@ -68,7 +68,6 @@ public class Balloons extends ApplicationTemplate
             this.layer = new RenderableLayer();
             this.layer.setName("Balloons");
             insertBeforePlacenames(getWwd(), this.layer);
-            this.getLayerPanel().update(this.getWwd());
 
             // Add an AnnotationBalloon and a BrowserBalloon to the balloon layer.
             this.makeAnnotationBalloon();

@@ -73,8 +73,6 @@ public class SurfaceImages extends ApplicationTemplate
                 layer.addRenderable(boundary2);
 
                 insertBeforeCompass(this.getWwd(), layer);
-
-                this.getLayerPanel().update(this.getWwd());
             }
             catch (Exception e)
             {

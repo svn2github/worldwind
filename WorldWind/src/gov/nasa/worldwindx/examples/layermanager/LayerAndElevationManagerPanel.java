@@ -40,4 +40,10 @@ public class LayerAndElevationManagerPanel extends JPanel
     {
         this.elevationModelManagerPanel.update(wwd);
     }
+
+    public void update(WorldWindow wwd)
+    {
+        this.updateLayers(wwd);
+        this.updateElevations(wwd);
+    }
 }

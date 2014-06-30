@@ -865,7 +865,6 @@ public class ExtrudedPolygonBuilder extends ApplicationTemplate
             this.polygonLayer = new RenderableLayer();
             this.polygonLayer.setName(POLYGON_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.polygonLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new PolygonBuilderController(this);
             this.builderModel = new PolygonBuilderModel();

@@ -1483,7 +1483,6 @@ public class AirspaceBuilder extends ApplicationTemplate
             this.airspaceLayer = new AirspaceLayer();
             this.airspaceLayer.setName(AIRSPACE_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.airspaceLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             this.builderController = new AirspaceBuilderController(this);
             this.builderModel = new AirspaceBuilderModel();

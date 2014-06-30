@@ -35,7 +35,7 @@ public class FlatWorldPanel extends JPanel
 
     public FlatWorldPanel(WorldWindow wwd)
     {
-        super(new GridLayout(0, 1, 0, 0));
+        super(new GridLayout(0, 2, 0, 0));
         this.wwd = wwd;
         if (isFlatGlobe())
         {
@@ -55,12 +55,11 @@ public class FlatWorldPanel extends JPanel
     {
         JPanel controlPanel = this;
         controlPanel.setBorder(
-            new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("World")));
+            new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Globe")));
         controlPanel.setToolTipText("Set the current projection");
 
         // Flat vs round buttons
         JPanel radioButtonPanel = new JPanel(new GridLayout(0, 2, 0, 0));
-        radioButtonPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         JRadioButton roundRadioButton = new JRadioButton("Round");
         roundRadioButton.setSelected(!isFlatGlobe());
         roundRadioButton.addActionListener(new ActionListener()
@@ -88,9 +87,7 @@ public class FlatWorldPanel extends JPanel
         group.add(flatRadioButton);
 
         // Projection combo
-        JPanel comboPanel = new JPanel(new GridLayout(0, 2, 0, 0));
-        comboPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        comboPanel.add(new JLabel("Projection:"));
+        JPanel comboPanel = new JPanel(new GridLayout(0, 1, 0, 0));
         this.projectionCombo = new JComboBox(new String[]
             {"Lat-Lon", "Mercator", "Modified Sin.", "Sinusoidal",
                 "Transverse Mercator",

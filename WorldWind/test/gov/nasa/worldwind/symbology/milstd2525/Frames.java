@@ -11,7 +11,6 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.symbology.*;
-import gov.nasa.worldwind.symbology.milstd2525.MilStd2525TacticalSymbol;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 
@@ -47,8 +46,6 @@ public class Frames extends ApplicationTemplate
             this.addFrameTypeSymbols(SymbologyConstants.STATUS_PRESENT, layer);
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
 
             layer = new RenderableLayer();
             layer.setName("Standard Frame Types (Anticipated)");
@@ -56,8 +53,6 @@ public class Frames extends ApplicationTemplate
             this.addFrameTypeSymbols(SymbologyConstants.STATUS_ANTICIPATED, layer);
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected void addFrameTypeSymbols(String status, RenderableLayer layer)

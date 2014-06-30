@@ -34,7 +34,7 @@ public class Wedges extends ApplicationTemplate
             super(true, true, false);
 
             // Add detail hint slider panel
-            this.getLayerPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeDetailHintControlPanel(), BorderLayout.SOUTH);
 
             RenderableLayer layer = new RenderableLayer();
 
@@ -139,9 +139,6 @@ public class Wedges extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected JPanel makeDetailHintControlPanel()

@@ -85,9 +85,6 @@ public class InstallImagery extends ApplicationTemplate
                     // Add the layer created by the install method to the layer list.
                     insertBeforePlacenames(AppFrame.this.getWwd(), layer);
 
-                    // Update the layer panel to display the new layer for the installed imagery.
-                    AppFrame.this.getLayerPanel().update(AppFrame.this.getWwd());
-
                     // Set the view to look at the installed image. Get the location from the layer's construction
                     // parameters.
                     AVList params = (AVList) layer.getValue(AVKey.CONSTRUCTION_PARAMETERS);

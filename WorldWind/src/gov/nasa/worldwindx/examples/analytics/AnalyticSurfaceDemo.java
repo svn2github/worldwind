@@ -57,7 +57,6 @@ public class AnalyticSurfaceDemo extends ApplicationTemplate
             this.analyticSurfaceLayer.setPickEnabled(false);
             this.analyticSurfaceLayer.setName("Analytic Surfaces");
             insertBeforePlacenames(this.getWwd(), this.analyticSurfaceLayer);
-            this.getLayerPanel().update(this.getWwd());
 
             createRandomAltitudeSurface(HUE_BLUE, HUE_RED, 40, 40, this.analyticSurfaceLayer);
             createRandomColorSurface(HUE_BLUE, HUE_RED, 40, 40, this.analyticSurfaceLayer);

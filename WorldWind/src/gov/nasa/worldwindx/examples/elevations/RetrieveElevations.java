@@ -45,14 +45,7 @@ public class RetrieveElevations extends ApplicationTemplate
             this.controller.frame = this;
             this.makeComponents();
 
-            this.getLayerPanel().update(this.getWwd());
-
             this.pack();
-        }
-
-        public LayerPanel getLayerPanel()
-        {
-            return this.layerPanel;
         }
 
         protected void makeComponents()
@@ -120,7 +113,7 @@ public class RetrieveElevations extends ApplicationTemplate
 
                 panel.add(controlPanel, BorderLayout.SOUTH);
 
-                this.layerPanel = new LayerPanel(this.getWwd(), null);
+                this.layerPanel = new LayerPanel(this.getWwd());
                 panel.add(this.layerPanel, BorderLayout.CENTER);
             }
             getContentPane().add(panel, BorderLayout.WEST);

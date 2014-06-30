@@ -49,7 +49,6 @@ public class RotatedSector extends ApplicationTemplate
 
                 // Add the layer to the model and update the ApplicationTemplate's layer manager
                 insertBeforeCompass(this.getWwd(), layer);
-                this.getLayerPanel().update(this.getWwd());
 
                 // Rotate the quad continuously
                 Timer timer = new Timer(50, new ActionListener()

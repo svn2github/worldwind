@@ -95,7 +95,7 @@ public class RubberSheetImage extends ApplicationTemplate
 
                 controlBox.add(Box.createVerticalGlue());
             }
-            this.getLayerPanel().add(controlBox, BorderLayout.SOUTH);
+            this.getControlPanel().add(controlBox, BorderLayout.SOUTH);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -223,8 +223,6 @@ public class RubberSheetImage extends ApplicationTemplate
             {
                 entry.getEditor().setArmed(false);
             }
-
-            this.appFrame.getLayerPanel().update(this.appFrame.getWwd());
         }
 
         protected SurfaceImageEntry getEntryFor(SurfaceImage surfaceImage)

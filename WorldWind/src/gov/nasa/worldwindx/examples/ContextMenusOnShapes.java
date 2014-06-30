@@ -247,8 +247,6 @@ public class ContextMenusOnShapes extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
-            // Update layer panel.
-            this.getLayerPanel().update(this.getWwd());
 
             // Set up the context menu
             ContextMenuController contextMenuController = new ContextMenuController();

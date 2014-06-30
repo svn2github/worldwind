@@ -35,7 +35,6 @@ public class RemoteSurfaceImage extends ApplicationTemplate
             layer.setPickEnabled(false);
 
             insertBeforePlacenames(this.getWwd(), layer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

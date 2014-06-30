@@ -77,15 +77,6 @@ public class ExtrudedPolygonsFromShapefile extends ApplicationTemplate
                     sf.close();
                 }
 
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    public void run()
-                    {
-                        insertBeforePlacenames(wwd, layer);
-                        AppFrame.this.getLayerPanel().update(wwd);
-                    }
-                });
-
                 this.wwd.addSelectListener(new SelectListener()
                 {
                     public void selected(SelectEvent event)

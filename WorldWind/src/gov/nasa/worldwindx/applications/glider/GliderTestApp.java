@@ -15,8 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.beans.*;
+import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -157,14 +156,6 @@ public class GliderTestApp extends ApplicationTemplate
         {
             WWIO.closeStream(stream, cloudImagePath);
         }
-
-        frame.getWwd().addPropertyChangeListener(GliderImage.GLIDER_IMAGE_SOURCE, new PropertyChangeListener()
-        {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-                frame.getLayerPanel().update(frame.getWwd());
-            }
-        });
 
         SwingUtilities.invokeLater(new Runnable()
         {

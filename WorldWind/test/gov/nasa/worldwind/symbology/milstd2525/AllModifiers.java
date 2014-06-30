@@ -106,9 +106,6 @@ public class AllModifiers extends ApplicationTemplate
 
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected TacticalSymbol addSymbol(String sidc, double lat, double lon, RenderableLayer layer)

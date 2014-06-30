@@ -82,9 +82,6 @@ public class AllTacticalSymbols extends ApplicationTemplate
 
             // Add the symbol layer to the World Wind model.
             this.getWwd().getModel().getLayers().add(layer);
-
-            // Update the layer panel to display the symbol layer.
-            this.getLayerPanel().update(this.getWwd());
         }
 
         protected List<String> makeSymbolIds(String name)
@@ -212,7 +209,7 @@ public class AllTacticalSymbols extends ApplicationTemplate
             box.add(Box.createVerticalStrut(10));
             box.add(cb);
 
-            this.getLayerPanel().add(box, BorderLayout.SOUTH);
+            this.getControlPanel().add(box, BorderLayout.SOUTH);
         }
     }
 

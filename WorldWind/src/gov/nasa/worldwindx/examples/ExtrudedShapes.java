@@ -102,9 +102,6 @@ public class ExtrudedShapes extends ApplicationTemplate
                 // Add the layer to the model.
                 insertBeforePlacenames(this.getWwd(), layer);
 
-                // Make sure the new layer is shown in the layer manager.
-                this.getLayerPanel().update(this.getWwd());
-
                 // Adjust the view so that it looks at the buildings.
                 View view = getWwd().getView();
                 view.setEyePosition(Position.fromDegrees(47.656, -122.306, 1e3));

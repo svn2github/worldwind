@@ -58,9 +58,7 @@ public class SurfaceImageViewer extends ApplicationTemplate
 
                 insertBeforeCompass(this.getWwd(), layer);
 
-                this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
-
-                this.getLayerPanel().update(this.getWwd());
+                this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
             }
             catch (Exception e)
             {

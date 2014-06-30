@@ -27,7 +27,7 @@ public class NetworkOfflineMode extends ApplicationTemplate
         {
             super(true, true, false);
 
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
         }
 
         protected JPanel makeControlPanel()

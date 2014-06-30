@@ -92,9 +92,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
             controls.setLayout(new BoxLayout(controls, BoxLayout.Y_AXIS));
             // Add earthquakes view control panel
             controls.add(makeEarthquakesPanel());
-            // Add flat world projection control panel
-            controls.add(new FlatWorldPanel(this.getWwd()));
-            this.getLayerPanel().add(controls, BorderLayout.SOUTH);
 
             // Add select listener for earthquake picking
             this.getWwd().addSelectListener(new SelectListener()
@@ -402,7 +399,6 @@ public class FlatWorldEarthquakes extends ApplicationTemplate
                 this.eqLayer = newLayer;
                 this.eqLayer.addRenderable(this.tooltipAnnotation);
                 insertBeforePlacenames(this.getWwd(), this.eqLayer);
-                this.getLayerPanel().update(this.getWwd());
                 this.applyMagnitudeFilter(Double.parseDouble((String) magnitudeCombo.getSelectedItem()));
 
                 if (this.statusLabel != null)

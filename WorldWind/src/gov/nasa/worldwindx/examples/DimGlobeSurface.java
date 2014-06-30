@@ -58,11 +58,7 @@ public class DimGlobeSurface extends ApplicationTemplate
             opacityPanel.add(new JLabel("Opacity"), BorderLayout.WEST);
             this.makeOpacitySlider();
             opacityPanel.add(this.opacitySlider, BorderLayout.CENTER);
-            this.getLayerPanel().add(opacityPanel, BorderLayout.SOUTH);
-
-            // Update the layer panel to show the new layer.
-
-            this.getLayerPanel().update(this.getWwd());
+            this.getControlPanel().add(opacityPanel, BorderLayout.SOUTH);
         }
 
         protected BufferedImage makeFilterImage()

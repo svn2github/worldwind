@@ -49,7 +49,7 @@ public class ScreenSelection extends ApplicationTemplate
             JButton btn = new JButton(new EnableSelectorAction());
             JPanel panel = new JPanel(new BorderLayout(5, 5));
             panel.add(btn, BorderLayout.CENTER);
-            this.getLayerPanel().add(panel, BorderLayout.SOUTH);
+            this.getControlPanel().add(panel, BorderLayout.SOUTH);
 
             // Create layer of highlightable shapes to select.
             this.addShapes();

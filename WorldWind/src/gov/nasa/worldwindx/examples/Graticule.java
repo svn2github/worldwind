@@ -25,9 +25,6 @@ public class Graticule extends ApplicationTemplate
 
             // Add the graticule layer
             insertBeforePlacenames(getWwd(), new LatLonGraticuleLayer());
-
-            // Update layer panel
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 

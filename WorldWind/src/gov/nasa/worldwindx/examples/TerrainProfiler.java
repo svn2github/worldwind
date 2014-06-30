@@ -55,7 +55,6 @@ public class TerrainProfiler extends ApplicationTemplate
                 this.tpl.setStartLatLon(LatLon.fromDegrees(0, -10));
                 this.tpl.setEndLatLon(LatLon.fromDegrees(0, 65));
                 insertBeforeCompass(this.getWwd(), tpl);
-                this.getLayerPanel().update(this.getWwd());
 
                 // retreive default values
                 this.follow = this.tpl.getFollow();
@@ -66,7 +65,7 @@ public class TerrainProfiler extends ApplicationTemplate
                 this.profileLengthFactor = tpl.getProfileLenghtFactor();
 
                 // Add control panel
-                this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+                this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
             }
             catch (Exception e)
             {

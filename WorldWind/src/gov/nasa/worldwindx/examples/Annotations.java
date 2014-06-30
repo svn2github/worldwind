@@ -95,7 +95,7 @@ public class Annotations extends ApplicationTemplate
             this.setupAnnotations();
 
             // Add control panel
-            this.getLayerPanel().add(makeControlPanel(), BorderLayout.SOUTH);
+            this.getControlPanel().add(makeControlPanel(), BorderLayout.SOUTH);
             this.enableControlPanel(false);
 
             // Add a select listener to select or highlight annotations on rollover
@@ -486,7 +486,6 @@ public class Annotations extends ApplicationTemplate
 
             // Add layer to the layer list and update the layer panel
             insertBeforeCompass(this.getWwd(), layer);
-            getLayerPanel().update(getWwd());
         }
 
         public void makeRelativeAnnotations(AnnotationLayer layer)

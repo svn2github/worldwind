@@ -97,7 +97,6 @@ public class MultiResPath extends ApplicationTemplate
             RenderableLayer rLayer = new RenderableLayer();
             rLayer.addRenderable(path);
             insertBeforeCompass(getWwd(), rLayer);
-            this.getLayerPanel().update(this.getWwd());
         }
     }
 
