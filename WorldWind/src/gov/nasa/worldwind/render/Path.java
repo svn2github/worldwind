@@ -752,6 +752,10 @@ public class Path extends AbstractShape
 
         this.positions = positions;
         this.computePositionCount();
+
+        if (this.surfaceShape != null)
+            ((SurfacePolyline) this.surfaceShape).setLocations(positions);
+
         this.reset();
     }
 
@@ -1084,6 +1088,12 @@ public class Path extends AbstractShape
     protected boolean isSurfacePath()
     {
         return this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND && this.isFollowTerrain();
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfacePolyline(this.getPositions());
     }
 
     @Override

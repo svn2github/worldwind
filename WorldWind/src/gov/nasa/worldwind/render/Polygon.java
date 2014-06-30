@@ -349,6 +349,8 @@ public class Polygon extends AbstractShape
         }
 
         this.boundaries.set(0, this.fillBoundary(corners));
+        if (this.surfaceShape != null)
+            this.setSurfacePolygonBoundaries(this.surfaceShape);
 
         this.reset();
     }
@@ -406,6 +408,8 @@ public class Polygon extends AbstractShape
         }
 
         this.boundaries.add(this.fillBoundary(corners));
+        if (this.surfaceShape != null)
+            this.setSurfacePolygonBoundaries(this.surfaceShape);
 
         this.reset();
     }
@@ -552,6 +556,28 @@ public class Polygon extends AbstractShape
     {
         this.rotation = rotation;
         this.reset();
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        SurfacePolygon polygon = new SurfacePolygon();
+        this.setSurfacePolygonBoundaries(polygon);
+
+        return polygon;
+    }
+
+    protected void setSurfacePolygonBoundaries(SurfaceShape shape)
+    {
+        SurfacePolygon polygon = (SurfacePolygon) shape;
+
+        polygon.setLocations(this.getOuterBoundary());
+
+        List<List<? extends Position>> bounds = this.getBoundaries();
+        for (int i = 1; i < bounds.size(); i++)
+        {
+            polygon.addInnerBoundary(bounds.get(i));
+        }
     }
 
     public Extent getExtent(Globe globe, double verticalExaggeration)

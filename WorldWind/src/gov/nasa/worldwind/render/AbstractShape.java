@@ -10,7 +10,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.ShapeDataCache;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
@@ -35,7 +35,8 @@ import java.io.*;
  * @version $Id$
  */
 public abstract class AbstractShape extends WWObjectImpl
-    implements Highlightable, OrderedRenderable, Movable, ExtentHolder, GeographicExtent, Exportable, Restorable
+    implements Highlightable, OrderedRenderable, Movable, ExtentHolder, GeographicExtent, Exportable, Restorable,
+    PreRenderable
 {
     /** The default interior color. */
     protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.LIGHT_GRAY;
@@ -198,6 +199,7 @@ public abstract class AbstractShape extends WWObjectImpl
     protected long maxExpiryTime = DEFAULT_GEOMETRY_GENERATION_INTERVAL;
     protected long minExpiryTime = Math.max(DEFAULT_GEOMETRY_GENERATION_INTERVAL - 500, 0);
     protected boolean viewDistanceExpiration = true;
+    protected SurfaceShape surfaceShape;
 
     // Volatile values used only during frame generation.
     protected OGLStackHandler BEogsh = new OGLStackHandler(); // used for beginDrawing/endDrawing state
@@ -360,6 +362,9 @@ public abstract class AbstractShape extends WWObjectImpl
     public void setAttributes(ShapeAttributes normalAttrs)
     {
         this.normalAttrs = normalAttrs;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.setAttributes(normalAttrs);
     }
 
     /**
@@ -380,6 +385,9 @@ public abstract class AbstractShape extends WWObjectImpl
     public void setHighlightAttributes(ShapeAttributes highlightAttrs)
     {
         this.highlightAttrs = highlightAttrs;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.setHighlightAttributes(highlightAttrs);
     }
 
     public boolean isHighlighted()
@@ -816,6 +824,50 @@ public abstract class AbstractShape extends WWObjectImpl
         return new LazilyLoadedTexture(imageSource, true);
     }
 
+    @Override
+    public void preRender(DrawContext dc)
+    {
+        if (dc.getGlobe() instanceof Globe2D)
+        {
+            if (this.surfaceShape == null)
+            {
+                this.surfaceShape = this.createSurfaceShape();
+                if (this.surfaceShape == null)
+                    return;
+
+                this.surfaceShape.setAttributes(this.getAttributes());
+                this.surfaceShape.setHighlightAttributes(this.getHighlightAttributes());
+            }
+
+            this.updateSurfaceShape();
+            this.surfaceShape.preRender(dc);
+        }
+    }
+
+    /**
+     * Returns a {@link SurfaceShape} that corresponds to this Path and is used for drawing on 2D globes.
+     *
+     * @return The surface shape to represent this Path on a 2D globe.
+     */
+    protected SurfaceShape createSurfaceShape()
+    {
+        return null;
+    }
+
+    /**
+     * Sets surface shape parameters prior to picking and rendering the 2D shape used to represent this shape on 2D
+     * globes. Subclasses should override this method if they need to update more than the highlighted state, visibility
+     * state and delegate owner.
+     */
+    protected void updateSurfaceShape()
+    {
+        this.surfaceShape.setHighlighted(this.isHighlighted());
+        this.surfaceShape.setVisible(this.isVisible());
+
+        Object o = this.getDelegateOwner();
+        this.surfaceShape.setDelegateOwner(o != null ? o : this);
+    }
+
     public void pick(DrawContext dc, Point pickPoint)
     {
         // This method is called only when ordered renderables are being drawn.
@@ -852,6 +904,12 @@ public abstract class AbstractShape extends WWObjectImpl
             String msg = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
+        }
+
+        if (dc.getGlobe() instanceof Globe2D && this.surfaceShape != null)
+        {
+            this.surfaceShape.render(dc);
+            return;
         }
 
         // Retrieve the cached data for the current globe. If it doesn't yet exist, create it. Most code subsequently
