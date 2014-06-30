@@ -10,6 +10,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.globes.projections.ProjectionSinusoidal;
 import gov.nasa.worldwindx.examples.util.HighlightController;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
@@ -48,7 +49,7 @@ public class FlatAndRoundGlobes
         
         Model roundModel = this.makeModel(new Earth(), layers);
         Model flatModel = this.makeModel(new EarthFlat(), layers);
-        ((EarthFlat) flatModel.getGlobe()).setProjection(FlatGlobe.PROJECTION_SINUSOIDAL);
+        ((EarthFlat) flatModel.getGlobe()).setProjection(new ProjectionSinusoidal());
 
         WWFrame roundFrame = new WWFrame(null, roundModel, "Round Globe", AVKey.LEFT_OF_CENTER);
 //        WWFrame flatFrame = new WWFrame(null, flatModel, "Flat Globe", AVKey.RIGHT_OF_CENTER);
