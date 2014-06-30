@@ -33,6 +33,9 @@ import java.util.*;
  * In order to support simultaneous use of this shape with multiple globes (windows), this shape maintains a cache of
  * data computed relative to each globe. During rendering, the data for the currently active globe, as indicated in the
  * draw context, is made current. Subsequently called methods rely on the existence of this current data cache entry.
+ * <p/>
+ * When drawn on a 2D globe, this shape uses a {@link SurfacePolygon} to represent itself. The following features are
+ * not provided in this case: rotation and texture.
  *
  * @author tag
  * @version $Id$

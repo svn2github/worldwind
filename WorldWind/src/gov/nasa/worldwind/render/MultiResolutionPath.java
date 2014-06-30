@@ -20,6 +20,9 @@ import java.util.Iterator;
  * the application. The default algorithm skips up to four positions, depending on the eye distance from the positions.
  * Also, if the segment between any two positions is too small to be distinguished, it is not drawn. See {@link
  * #makePositions(DrawContext, gov.nasa.worldwind.render.Path.PathData)}.
+ * <p/>
+ * When drawn on a 2D globe, this shape uses a SurfacePolyline to represent itself. See {@link Path} for a list of the
+ * features not supported in this case.
  *
  * @author tag
  * @version $Id$

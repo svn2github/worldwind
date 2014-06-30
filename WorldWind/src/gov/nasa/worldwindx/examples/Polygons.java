@@ -34,6 +34,7 @@ public class Polygons extends ApplicationTemplate
             this.getWwd().addSelectListener(new BasicDragger(this.getWwd()));
 
             RenderableLayer layer = new RenderableLayer();
+            layer.setName("Polygons");
 
             // Create and set an attribute bundle.
             ShapeAttributes normalAttributes = new BasicShapeAttributes();
@@ -104,6 +105,23 @@ public class Polygons extends ApplicationTemplate
             pgon.setHighlightAttributes(highlightAttributes);
             pgon.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
             pgon.setRotation(-45d);
+            layer.addRenderable(pgon);
+
+            // Polygon over the north pole
+            pathLocations.clear();
+            pathLocations.add(Position.fromDegrees(80, 0, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 90, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 180, 100e3));
+            pathLocations.add(Position.fromDegrees(80, -90, 100e3));
+            pathLocations.add(Position.fromDegrees(80, 0, 100e3));
+            pgon = new Polygon(pathLocations);
+            pgon.setValue(AVKey.DISPLAY_NAME, "Surrounds the north pole");
+            normalAttributes = new BasicShapeAttributes(normalAttributes);
+            normalAttributes.setDrawInterior(true);
+            normalAttributes.setInteriorMaterial(Material.RED);
+            pgon.setAttributes(normalAttributes);
+            pgon.setHighlightAttributes(highlightAttributes);
+            pgon.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
             layer.addRenderable(pgon);
 
             // Add the layer to the model.
