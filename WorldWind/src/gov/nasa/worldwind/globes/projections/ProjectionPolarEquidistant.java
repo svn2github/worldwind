@@ -25,6 +25,13 @@ public class ProjectionPolarEquidistant implements GeographicProjection
     protected int pole = NORTH;
 
     /**
+     * Creates a projection centered on the North pole.
+     */
+    public ProjectionPolarEquidistant()
+    {
+    }
+
+    /**
      * Creates a projection centered on the specified pole, which can be either {@link AVKey#NORTH} or {@link
      * AVKey#SOUTH}.
      *
