@@ -36,7 +36,7 @@ public class MeasureToolUsage extends ApplicationTemplate
 
         public AppFrame()
         {
-            super(true, false, false); // no layer or statistics panel
+            super(true, true, false); // no layer or statistics panel
 
             // Add terrain profile layer
             profile.setEventSource(getWwd());
@@ -76,7 +76,7 @@ public class MeasureToolUsage extends ApplicationTemplate
             tabbedPane.setSelectedIndex(1);
             switchMeasureTool();
 
-            this.getContentPane().add(tabbedPane, BorderLayout.WEST);
+            this.getControlPanel().add(tabbedPane, BorderLayout.EAST);
             this.pack();
         }
 
