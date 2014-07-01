@@ -1000,4 +1000,8 @@ public interface DrawContext extends WWObject, Disposable
      * @return the current clutter filter.
      */
     ClutterFilter getClutterFilter();
+
+    boolean is2DGlobe();
+
+    boolean isContinuous2DGlobe();
 }

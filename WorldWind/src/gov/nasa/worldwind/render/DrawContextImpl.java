@@ -10,7 +10,7 @@ import com.jogamp.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.cache.GpuResourceCache;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.terrain.*;
@@ -634,6 +634,18 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     public DeclutteringTextRenderer getDeclutteringTextRenderer()
     {
         return declutteringTextRenderer;
+    }
+
+    @Override
+    public boolean is2DGlobe()
+    {
+        return this.globe instanceof Globe2D;
+    }
+
+    @Override
+    public boolean isContinuous2DGlobe()
+    {
+        return this.globe instanceof Globe2D && ((Globe2D) this.getGlobe()).isContinuous();
     }
 
     public void addOrderedRenderable(OrderedRenderable orderedRenderable)

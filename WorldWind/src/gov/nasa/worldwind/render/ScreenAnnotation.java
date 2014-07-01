@@ -253,7 +253,7 @@ public class ScreenAnnotation extends AbstractAnnotation
         gl.glDepthFunc(GL.GL_ALWAYS);
 
         byte[] depthMask = null;
-        if (dc.getGlobe() instanceof Globe2D && (((Globe2D) dc.getGlobe()).isContinuous()))
+        if (dc.isContinuous2DGlobe())
         {
             // Need to depth buffer the annotation so that subsequently drawn globes don't clobber it.
             depthMask = new byte[1];
