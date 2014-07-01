@@ -161,6 +161,36 @@ public class Placemarks extends ApplicationTemplate
             pp.setAttributes(attrs);
             layer.addRenderable(pp);
 
+            pp = new PointPlacemark(Position.fromDegrees(30, 179.9, 100e3));
+            pp.setValue(AVKey.DISPLAY_NAME, "Near dateline,  Clamp to ground, NASA icon, Heading -45, Globe relative");
+            pp.setLabelText("Placemark J");
+            pp.setLineEnabled(false);
+            pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+            attrs = new PointPlacemarkAttributes(attrs);
+            attrs.setImageAddress("gov/nasa/worldwindx/examples/images/georss.png");
+            attrs.setHeading(-45d);
+            attrs.setHeadingReference(AVKey.RELATIVE_TO_GLOBE);
+            attrs.setScale(0.6);
+            attrs.setLabelColor("ffffffff");
+            attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
+            pp.setAttributes(attrs);
+            layer.addRenderable(pp);
+
+            pp = new PointPlacemark(Position.fromDegrees(90, 0, 100e3));
+            pp.setValue(AVKey.DISPLAY_NAME, "North Pole,  Clamp to ground, NASA icon, Heading -45, Globe relative");
+            pp.setLabelText("Placemark K");
+            pp.setLineEnabled(false);
+            pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+            attrs = new PointPlacemarkAttributes(attrs);
+            attrs.setImageAddress("gov/nasa/worldwindx/examples/images/georss.png");
+            attrs.setHeading(-45d);
+            attrs.setHeadingReference(AVKey.RELATIVE_TO_GLOBE);
+            attrs.setScale(0.6);
+            attrs.setLabelColor("ffffffff");
+            attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
+            pp.setAttributes(attrs);
+            layer.addRenderable(pp);
+
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
         }
