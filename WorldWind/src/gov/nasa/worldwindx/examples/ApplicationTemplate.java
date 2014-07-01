@@ -190,6 +190,15 @@ public class ApplicationTemplate
             return this.wwjPanel.getStatusBar();
         }
 
+        /**
+         * @deprecated Use getControlPanel instead.
+         * @return This application's layer panel.
+         */
+        public LayerPanel getLayerPanel()
+        {
+            return this.layerPanel;
+        }
+
         public JPanel getControlPanel()
         {
             return this.controlPanel;

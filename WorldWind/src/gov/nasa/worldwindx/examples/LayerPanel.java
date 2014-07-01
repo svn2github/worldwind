@@ -42,4 +42,13 @@ public class LayerPanel extends JPanel
     {
         this.elevationModelManagerPanel.update(wwd);
     }
+
+    @SuppressWarnings("UnusedParameters")
+    /**
+     * @deprecated There is no need to call this method. As of 6/30/14 it is a no-op.
+     */
+    public void update(WorldWindow wwd)
+    {
+        // This is here merely to provide backwards compatibility for users of the previous version of LayerPanel.
+    }
 }
