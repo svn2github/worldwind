@@ -8,7 +8,7 @@ package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.GpuResourceCache;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
@@ -74,7 +74,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     /** Support class used to build the composite representation of surface objects as a list of SurfaceTiles. */
     protected SurfaceObjectTileBuilder surfaceObjectTileBuilder;
     /** The composite surface object representation. Populated each frame by the {@link #surfaceObjectTileBuilder}. */
-    protected Collection<SurfaceTile> surfaceObjectTiles = new ArrayList<SurfaceTile>();
+    protected HashSet<SurfaceTile> surfaceObjectTiles = new HashSet<SurfaceTile>();
     /** The display name for the surface object tile count performance statistic. */
     protected static final String SURFACE_OBJECT_TILE_COUNT_NAME = "Surface Object Tiles";
     protected ClutterFilter clutterFilter = new BasicClutterFilter();
