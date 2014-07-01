@@ -9,7 +9,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Cylinder;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.util.*;
@@ -23,9 +23,13 @@ import java.util.List;
 /**
  * @author tag
  * @version $Id$
+ * @deprecated Use {@link Path} instead.
+ *             <p/>
+ *             When drawn on a 2D globe, this shape uses either a {@link SurfacePolyline} or {@link SurfacePolygon} to
+ *             represent itself. The path-type feature is not provided in this case.
  */
 public class Polyline extends AVListImpl implements Renderable, OrderedRenderable, Movable, Restorable,
-    MeasurableLength, ExtentHolder
+    MeasurableLength, ExtentHolder, PreRenderable
 {
     public final static int GREAT_CIRCLE = WorldWind.GREAT_CIRCLE;
     public final static int LINEAR = WorldWind.LINEAR;
@@ -61,7 +65,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
     protected PickSupport pickSupport = new PickSupport();
     protected long frameNumber = -1; // identifies frame used to calculate these values
     protected Layer pickLayer;
-
+    protected SurfaceShape surfaceShape;
     // Manage an extent for each globe the polyline's associated with.
 
     protected static class ExtentInfo
@@ -132,6 +136,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         }
 
         this.color = color;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.getAttributes().setOutlineMaterial(new Material(this.color));
     }
 
     public int getAntiAliasHint()
@@ -158,6 +165,16 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
     public void setFilled(boolean filled)
     {
+        if (this.surfaceShape != null && filled != this.filled)
+        {
+            if (filled)
+                this.surfaceShape = new SurfacePolygon(this.getPositions());
+            else
+                this.surfaceShape = new SurfacePolyline(this.getPositions());
+
+            this.setSurfaceShapeAttributes();
+        }
+
         this.filled = filled;
     }
 
@@ -275,6 +292,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
     public void setLineWidth(double lineWidth)
     {
         this.lineWidth = lineWidth;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.getAttributes().setOutlineWidth(this.lineWidth);
     }
 
     /**
@@ -316,6 +336,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
     public void setStipplePattern(short stipplePattern)
     {
         this.stipplePattern = stipplePattern;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.getAttributes().setOutlineStipplePattern(this.stipplePattern);
     }
 
     public int getStippleFactor()
@@ -333,6 +356,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
     public void setStippleFactor(int stippleFactor)
     {
         this.stippleFactor = stippleFactor;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.getAttributes().setOutlineStippleFactor(this.stippleFactor);
     }
 
     public int getNumSubsegments()
@@ -377,6 +403,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         }
 
         this.highlightColor = highlightColor;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.getHighlightAttributes().setOutlineMaterial(new Material(this.highlightColor));
     }
 
     /**
@@ -396,6 +425,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                 this.positions.add(position);
             }
             this.measurer.setPositions(this.positions);
+
+            if (this.surfaceShape != null)
+                this.setSurfaceShapeLocations();
         }
 
         if ((this.filled && this.positions.size() < 3))
@@ -424,6 +456,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                 this.positions.add(new Position(position, altitude));
             }
             this.measurer.setPositions(this.positions);
+
+            if (this.surfaceShape != null)
+                this.setSurfaceShapeLocations();
         }
 
         if (this.filled && this.positions.size() < 3)
@@ -584,6 +619,76 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         return this.eyeDistance;
     }
 
+    protected void setSurfaceShapeAttributes()
+    {
+        ShapeAttributes attrs = new BasicShapeAttributes();
+        attrs.setOutlineMaterial(new Material(this.color));
+        attrs.setInteriorMaterial(attrs.getOutlineMaterial());
+        attrs.setOutlineWidth(this.lineWidth);
+        attrs.setOutlineStipplePattern(this.stipplePattern);
+        attrs.setOutlineStippleFactor(this.stippleFactor);
+        this.surfaceShape.setAttributes(attrs);
+
+        attrs = new BasicShapeAttributes(attrs);
+        attrs.setOutlineMaterial(new Material(this.highlightColor));
+        attrs.setInteriorMaterial(attrs.getOutlineMaterial());
+        this.surfaceShape.setHighlightAttributes(attrs);
+    }
+
+    protected void setSurfaceShapeLocations()
+    {
+        Iterable<Position> locations;
+
+        if (!this.isClosed())
+        {
+            locations = this.getPositions();
+        }
+        else
+        {
+            ArrayList<Position> temp = new ArrayList<Position>();
+            Position firstPosition = null;
+            for (Position pos : this.getPositions())
+            {
+                temp.add(pos);
+
+                if (firstPosition == null)
+                    firstPosition = pos;
+            }
+
+            temp.add(firstPosition);
+
+            locations = temp;
+        }
+
+        if (this.isFilled())
+            ((SurfacePolygon) this.surfaceShape).setLocations(locations);
+        else
+            ((SurfacePolyline) this.surfaceShape).setLocations(locations);
+    }
+
+    public void preRender(DrawContext dc)
+    {
+        if (dc.is2DGlobe())
+        {
+            if (this.surfaceShape == null)
+            {
+                if (this.isFilled())
+                    this.surfaceShape = new SurfacePolygon();
+                else
+                    this.surfaceShape = new SurfacePolyline();
+
+                this.setSurfaceShapeLocations();
+                this.setSurfaceShapeAttributes();
+            }
+
+            this.surfaceShape.setHighlighted(this.isHighlighted());
+            Object o = this.getDelegateOwner();
+            this.surfaceShape.setDelegateOwner(o != null ? o : this);
+
+            this.surfaceShape.preRender(dc);
+        }
+    }
+
     public void pick(DrawContext dc, Point pickPoint)
     {
         // This method is called only when ordered renderables are being drawn.
@@ -617,6 +722,12 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
         if (dc.getSurfaceGeometry() == null)
             return;
+
+        if (dc.is2DGlobe() && this.surfaceShape != null)
+        {
+            this.surfaceShape.render(dc);
+            return;
+        }
 
         this.draw(dc);
     }
