@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import java.awt.*;
-import java.util.Iterator;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -30,6 +30,8 @@ import java.util.logging.Level;
 public class BasicAnnotationRenderer implements AnnotationRenderer
 {
     protected PickSupport pickSupport = new PickSupport();
+    protected long currentFrameTime;
+    protected HashSet<Annotation> currentAnnotations = new HashSet<Annotation>();
 
     protected static boolean isAnnotationValid(Annotation annotation, boolean checkPosition)
     {
@@ -93,6 +95,14 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             throw new IllegalArgumentException(msg);
         }
 
+        if (dc.isContinuous2DGlobe() && this.currentFrameTime != dc.getFrameTimeStamp())
+        {
+            // Keep track of which annotations are added to the ordered renderable list so that they are not added
+            // to that list more than once per frame.
+            this.currentAnnotations.clear();
+            this.currentFrameTime = dc.getFrameTimeStamp();
+        }
+
         Iterator<Annotation> iterator = annotations.iterator();
 
         if (!iterator.hasNext())
@@ -116,7 +126,10 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             if (altitude < annotation.getMinActiveAltitude() || altitude > annotation.getMaxActiveAltitude())
                 continue;
 
-            // TODO: cull annotations that are beyound the horizon or outside the view frustrum
+            if (dc.isContinuous2DGlobe() && this.currentAnnotations.contains(annotation))
+                continue;
+
+            // TODO: cull annotations that are beyond the horizon or outside the view frustrum
             double eyeDistance = 1;
             if (annotation instanceof Locatable)
             {
@@ -129,6 +142,9 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             }
             // The annotations aren't drawn here, but added to the ordered queue to be drawn back-to-front.
             dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
+
+            if (dc.isContinuous2DGlobe())
+                this.currentAnnotations.add(annotation);
         }
     }
 
@@ -139,6 +155,14 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             String msg = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
+        }
+
+        if (dc.isContinuous2DGlobe() && this.currentFrameTime != dc.getFrameTimeStamp())
+        {
+            // Keep track of which annotations are added to the ordered renderable list so that they are not added
+            // to that list more than once per frame.
+            this.currentAnnotations.clear();
+            this.currentFrameTime = dc.getFrameTimeStamp();
         }
 
         if (dc.getVisibleSector() == null)
@@ -154,6 +178,9 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
 
         // Do not draw the pick pass if not at pick point range;
         if (dc.isPickingMode() && !this.isAtPickRange(dc, annotation))
+            return;
+
+        if (dc.isContinuous2DGlobe() && this.currentAnnotations.contains(annotation))
             return;
 
         double altitude = dc.getView().getEyePosition().getElevation();
@@ -187,6 +214,9 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
         }
         // The annotation isn't drawn here, but added to the ordered queue to be drawn back-to-front.
         dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
+
+        if (dc.isContinuous2DGlobe())
+            this.currentAnnotations.add(annotation);
     }
 
     protected boolean isAtPickRange(DrawContext dc, Annotation annotation)
