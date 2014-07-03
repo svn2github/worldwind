@@ -79,6 +79,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     protected static final String SURFACE_OBJECT_TILE_COUNT_NAME = "Surface Object Tiles";
     protected ClutterFilter clutterFilter = new BasicClutterFilter();
 //    protected Map<String, GroupingFilter> groupingFilters = new HashMap<String, GroupingFilter>();
+    protected boolean deferOrderedRendering;
 
     public AbstractSceneController()
     {
@@ -374,6 +375,16 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 //            filter.setDimensions((int) vp.getWidth(), (int) vp.getHeight());
 //        }
 //    }
+
+    public boolean isDeferOrderedRendering()
+    {
+        return deferOrderedRendering;
+    }
+
+    public void setDeferOrderedRendering(boolean deferOrderedRendering)
+    {
+        this.deferOrderedRendering = deferOrderedRendering;
+    }
 
     public int repaint()
     {
@@ -761,6 +772,10 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             dc.enablePickingMode();
             this.pickTerrain(dc);
             this.doNonTerrainPick(dc);
+
+            if (this.isDeferOrderedRendering())
+                return;
+
             this.resolveTopPick(dc);
             this.lastPickedObjects = new PickedObjectList(dc.getPickedObjects());
             this.lastObjectsInPickRect = new PickedObjectList(dc.getObjectsInPickRectangle());
@@ -793,6 +808,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         // Pick against the deferred/ordered surface renderables.
         this.pickOrderedSurfaceRenderables(dc);
+
+        if (this.isDeferOrderedRendering())
+            return;
 
         // Pick against the screen credits.
         if (this.screenCreditController != null)
@@ -884,6 +902,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
             // Draw the deferred/ordered surface renderables.
             this.drawOrderedSurfaceRenderables(dc);
+
+            if (this.isDeferOrderedRendering())
+                return;
 
             if (this.screenCreditController != null)
                 this.screenCreditController.render(dc);

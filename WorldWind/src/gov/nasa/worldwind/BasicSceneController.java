@@ -119,6 +119,7 @@ public class BasicSceneController extends AbstractSceneController
         {
             drawing += " 0 ";
             this.makeCurrent(dc, 0);
+            this.setDeferOrderedRendering(this.sglL != null || this.sglR != null);
             this.draw(dc);
         }
 
@@ -126,8 +127,11 @@ public class BasicSceneController extends AbstractSceneController
         {
             drawing += " 1 ";
             this.makeCurrent(dc, 1);
+            this.setDeferOrderedRendering(this.sglL != null);
             this.draw(dc);
         }
+
+        this.setDeferOrderedRendering(false);
 
         if (this.sglL != null)
         {
@@ -164,14 +168,18 @@ public class BasicSceneController extends AbstractSceneController
         if (this.sglC != null)
         {
             this.makeCurrent(dc, 0);
+            this.setDeferOrderedRendering(this.sglL != null || this.sglR != null);
             this.pick(dc);
         }
 
         if (this.sglR != null)
         {
             this.makeCurrent(dc, 1);
+            this.setDeferOrderedRendering(this.sglL != null);
             this.pick(dc);
         }
+
+        this.setDeferOrderedRendering(false);
 
         if (this.sglL != null)
         {
