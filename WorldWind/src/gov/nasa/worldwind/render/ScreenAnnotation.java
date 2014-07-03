@@ -252,22 +252,10 @@ public class ScreenAnnotation extends AbstractAnnotation
         GL gl = dc.getGL();
         gl.glDepthFunc(GL.GL_ALWAYS);
 
-        byte[] depthMask = null;
-        if (dc.isContinuous2DGlobe())
-        {
-            // Need to depth buffer the annotation so that subsequently drawn globes don't clobber it.
-            depthMask = new byte[1];
-            gl.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, depthMask, 0);
-            gl.glDepthMask(true);
-        }
-
         java.awt.Dimension size = this.getPreferredSize(dc);
 
         Point sp = this.getScreenPoint(dc);
         this.drawTopLevelAnnotation(dc, sp.x, sp.y, size.width, size.height, 1, 1, null);
-
-        if (depthMask != null)
-            gl.glDepthMask(depthMask[0] == 1);
     }
 
     //**************************************************************//
