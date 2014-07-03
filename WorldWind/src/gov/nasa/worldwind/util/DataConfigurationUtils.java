@@ -953,7 +953,12 @@ public class DataConfigurationUtils
 
         for (String format : offering.getSupportedFormats().getStrings())
         {
-            if (format.toLowerCase().contains("tiff")) // lots of variants in use, so find one
+            if (format.toLowerCase().contains("image/tiff"))
+            {
+                params.setValue(AVKey.IMAGE_FORMAT, format);
+                break;
+            }
+            else if (format.toLowerCase().contains("tiff")) // lots of variants in use, so find one
             {
                 params.setValue(AVKey.IMAGE_FORMAT, format);
                 break;
