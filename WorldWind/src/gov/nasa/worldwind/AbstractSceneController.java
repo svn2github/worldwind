@@ -455,6 +455,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         dc.setPickPoint(this.pickPoint);
         dc.setPickRectangle(this.pickRect);
         dc.setViewportCenterScreenPoint(this.getViewportCenter(dc));
+        dc.setViewportCenterPosition(null);
         dc.setClutterFilter(this.getClutterFilter());
 //        dc.setGroupingFilters(this.groupingFilters);
 
@@ -611,10 +612,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             if (dc.getPickPoint() != null)
                 this.pickPoints.add(dc.getPickPoint());
 
-            // Clear viewportCenterPosition.
-            dc.setViewportCenterPosition(null);
             Point vpc = dc.getViewportCenterScreenPoint();
-            if (vpc != null)
+            if (vpc != null && dc.getViewportCenterPosition() == null)
                 this.pickPoints.add(vpc);
 
             if (this.pickPoints.size() == 0)
