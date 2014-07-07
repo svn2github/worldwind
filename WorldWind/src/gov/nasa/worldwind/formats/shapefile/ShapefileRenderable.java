@@ -11,7 +11,6 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
-import java.nio.IntBuffer;
 import java.util.*;
 
 /**
@@ -24,9 +23,9 @@ public abstract class ShapefileRenderable extends WWObjectImpl
     public static class Record extends AVListImpl implements Highlightable
     {
         // Record properties.
-        protected final ShapefileRenderable shapefileRenderable;
-        protected final Sector sector;
-        protected final int recordNumber;
+        protected ShapefileRenderable shapefileRenderable;
+        protected Sector sector; // null by default, must be initialized by subclass
+        protected int recordNumber;
         protected boolean visible = true;
         protected boolean highlighted;
         protected ShapeAttributes normalAttrs;
@@ -35,10 +34,6 @@ public abstract class ShapefileRenderable extends WWObjectImpl
         protected int firstPartNumber;
         protected int lastPartNumber;
         protected int numberOfPoints;
-        protected IntBuffer interiorIndices;
-        protected IntBuffer outlineIndices;
-        protected Double height;
-        protected Object tile;
 
         public Record(ShapefileRenderable shapefileRenderable, ShapefileRecord shapefileRecord)
         {
@@ -58,21 +53,9 @@ public abstract class ShapefileRenderable extends WWObjectImpl
 
             this.shapefileRenderable = shapefileRenderable;
             this.recordNumber = shapefileRecord.getRecordNumber();
-
-            if (shapefileRecord instanceof ShapefileRecordPolyline)
-            {
-                double[] boundingRect = ((ShapefileRecordPolyline) shapefileRecord).getBoundingRectangle();
-                this.sector = boundingRect != null ? Sector.fromDegrees(boundingRect) : null;
-            }
-            else
-            {
-                this.sector = null;
-            }
-
             this.firstPartNumber = shapefileRecord.getFirstPartNumber();
             this.lastPartNumber = shapefileRecord.getLastPartNumber();
             this.numberOfPoints = shapefileRecord.getNumberOfPoints();
-            this.height = ShapefileUtils.extractHeightAttribute(shapefileRecord);
         }
 
         public ShapefileRenderable getShapefileRenderable()
@@ -151,9 +134,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
 
     protected Sector sector;
     protected ArrayList<ShapefileRenderable.Record> records;
-    protected CompoundVecBuffer coordBuffer;
     protected boolean visible = true;
-    protected double maxHeight;
 
     protected static ShapeAttributes defaultAttributes;
     protected static ShapeAttributes defaultHighlightAttributes;
@@ -177,39 +158,36 @@ public abstract class ShapefileRenderable extends WWObjectImpl
             throw new IllegalArgumentException(msg);
         }
 
-        this.records = new ArrayList<ShapefileRenderable.Record>();
-        this.assembleShapefileRecords(shapefile);
-
         double[] boundingRect = shapefile.getBoundingRectangle();
         this.sector = boundingRect != null ? Sector.fromDegrees(boundingRect) : null;
-        this.coordBuffer = shapefile.getPointBuffer(); // valid only after records are assembled
+        this.records = new ArrayList<ShapefileRenderable.Record>();
     }
 
     protected void assembleShapefileRecords(Shapefile shapefile)
     {
         while (shapefile.hasNext())
         {
-            this.addShapefileRecord(shapefile.nextRecord());
+            ShapefileRecord shapefileRecord = shapefile.nextRecord();
+
+            if (this.mustAddShapefileRecord(shapefileRecord))
+            {
+                this.addShapefileRecord(shapefileRecord);
+            }
         }
 
         this.records.trimToSize(); // Reduce memory overhead from unused ArrayList capacity.
     }
 
+    protected boolean mustAddShapefileRecord(ShapefileRecord shapefileRecord)
+    {
+        return shapefileRecord.getNumberOfParts() > 0
+            && shapefileRecord.getNumberOfPoints() > 0
+            && !Shapefile.isNullType(shapefileRecord.getShapeType());
+    }
+
     protected void addShapefileRecord(ShapefileRecord shapefileRecord)
     {
-        if (Shapefile.isNullType(shapefileRecord.getShapeType()))
-            return;
-
-        if (shapefileRecord.getNumberOfParts() == 0 || shapefileRecord.getNumberOfPoints() == 0)
-            return;
-
-        ShapefileRenderable.Record record = new ShapefileRenderable.Record(this, shapefileRecord);
-        this.records.add(record);
-
-        if (record.height != null && this.maxHeight < record.height)
-        {
-            this.maxHeight = record.height;
-        }
+        this.records.add(new ShapefileRenderable.Record(this, shapefileRecord));
     }
 
     public Sector getSector()
