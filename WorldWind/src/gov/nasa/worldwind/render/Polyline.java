@@ -26,7 +26,7 @@ import java.util.List;
  * @deprecated Use {@link Path} instead.
  *             <p/>
  *             When drawn on a 2D globe, this shape uses either a {@link SurfacePolyline} or {@link SurfacePolygon} to
- *             represent itself. The path-type feature is not provided in this case.
+ *             represent itself.
  */
 public class Polyline extends AVListImpl implements Renderable, OrderedRenderable, Movable, Restorable,
     MeasurableLength, ExtentHolder, PreRenderable
@@ -203,6 +203,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         this.reset();
         this.pathType = pathType;
         this.measurer.setPathType(pathType);
+        if (this.surfaceShape != null)
+            this.surfaceShape.setPathType(this.pathType == GREAT_CIRCLE ? AVKey.GREAT_CIRCLE
+            : pathType == RHUMB_LINE ? AVKey.RHUMB_LINE : AVKey.LINEAR);
     }
 
     /**
@@ -679,6 +682,8 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
                 this.setSurfaceShapeLocations();
                 this.setSurfaceShapeAttributes();
+                this.surfaceShape.setPathType(this.pathType == GREAT_CIRCLE ? AVKey.GREAT_CIRCLE
+                : pathType == RHUMB_LINE ? AVKey.RHUMB_LINE : AVKey.LINEAR);
             }
 
             this.surfaceShape.setHighlighted(this.isHighlighted());

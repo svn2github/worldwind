@@ -75,7 +75,7 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
  * under the key AVKey.ORDINAL_LIST.
  * <p/>
  * When drawn on a 2D globe, this shape uses a {@link SurfacePolyline} to represent itself. The following features are
- * not provided in this case: path type, display of path positions, extrusion, outline pick width, and identification of
+ * not provided in this case: display of path positions, extrusion, outline pick width, and identification of
  * path position picked.
  *
  * @author tag
@@ -938,6 +938,8 @@ public class Path extends AbstractShape
     public void setPathType(String pathType)
     {
         this.pathType = pathType;
+        if (this.surfaceShape != null)
+            this.surfaceShape.setPathType(this.pathType);
         this.reset();
     }
 
@@ -1097,7 +1099,10 @@ public class Path extends AbstractShape
     @Override
     protected SurfaceShape createSurfaceShape()
     {
-        return new SurfacePolyline(this.getPositions());
+        SurfacePolyline pl = new SurfacePolyline(this.getPositions());
+        pl.setPathType(this.getPathType());
+
+        return pl;
     }
 
     @Override
