@@ -53,6 +53,29 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         {
             return this.height;
         }
+
+        public List<Intersection> intersect(Line line, Terrain terrain) throws InterruptedException
+        {
+            if (line == null)
+            {
+                String msg = Logging.getMessage("nullValue.LineIsNull");
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            if (terrain == null)
+            {
+                String msg = Logging.getMessage("nullValue.TerrainIsNull");
+                Logging.logger().severe(msg);
+                throw new IllegalArgumentException(msg);
+            }
+
+            ArrayList<Intersection> intersections = new ArrayList<Intersection>();
+            ((ShapefileExtrudedPolygons) this.shapefileRenderable).intersectTileRecord(line, terrain, this,
+                intersections);
+
+            return intersections.size() > 0 ? intersections : null;
+        }
     }
 
     protected static class RecordGroup
@@ -1030,6 +1053,42 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                 this.intersectTileOrDescendants(line, terrain, childTile, results);
             }
         }
+    }
+
+    protected void intersectTileRecord(Line line, Terrain terrain, Record record, List<Intersection> results)
+    {
+        Tile tile = record.tile;
+
+        ShapeData shapeData = tile.intersectionData;
+        if (shapeData == null)
+        {
+            shapeData = new ShapeData(null, 0, 0);
+            tile.intersectionData = shapeData;
+        }
+
+        // Determine whether or not the tile's extent intersects the line. If the line does not intersect the tile's
+        // extent, then it cannot intersect the record.
+        this.regenerateTileExtent(terrain, tile, shapeData);
+        if (!shapeData.getExtent().intersects(line))
+        {
+            return;
+        }
+
+        // Regenerate the tile's intersection geometry as necessary.
+        if (tile.intersectionTerrain != terrain
+            || !shapeData.getGlobeStateKey().equals(terrain.getGlobe().getGlobeStateKey())
+            || shapeData.getVerticalExaggeration() != terrain.getVerticalExaggeration())
+        {
+            this.tessellateTile(terrain, tile, shapeData);
+            tile.intersectionTerrain = terrain;
+            shapeData.setGlobeStateKey(terrain.getGlobe().getGlobeStateKey());
+            shapeData.setVerticalExaggeration(terrain.getVerticalExaggeration());
+        }
+
+        // Intersect the line with the record. Translate the line from model coordinates to tile local coordinates,
+        // then translate intersection points back into model coordinates.
+        Line localLine = new Line(line.getOrigin().subtract3(shapeData.referencePoint), line.getDirection());
+        this.intersectRecordInterior(localLine, terrain, record, results);
     }
 
     protected void intersectRecordInterior(Line localLine, Terrain terrain, Record record, List<Intersection> results)
