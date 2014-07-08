@@ -100,19 +100,25 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         protected OrderedRenderable or;
         protected double distanceFromEye;
         protected long time;
+        protected int globeOffset;
 
-        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, long insertionTime)
+        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, long insertionTime, Globe globe)
         {
             this.or = orderedRenderable;
             this.distanceFromEye = orderedRenderable.getDistanceFromEye();
             this.time = insertionTime;
+            if (globe instanceof Globe2D)
+                this.globeOffset = ((Globe2D) globe).getOffset();
         }
 
-        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double distanceFromEye, long insertionTime)
+        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double distanceFromEye, long insertionTime,
+            Globe globe)
         {
             this.or = orderedRenderable;
             this.distanceFromEye = distanceFromEye;
             this.time = insertionTime;
+            if (globe instanceof Globe2D)
+                this.globeOffset = ((Globe2D) globe).getOffset();
         }
     }
 
@@ -657,7 +663,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             return; // benign event
         }
 
-        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, System.nanoTime()));
+        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, System.nanoTime(), this.getGlobe()));
     }
 
     /** {@inheritDoc} */
@@ -675,7 +681,8 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         // If multiple ordered renderables are added in this way, they are drawn according to the order in which they
         // are added.
         double eyeDistance = isBehind ? Double.MAX_VALUE : orderedRenderable.getDistanceFromEye();
-        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, eyeDistance, System.nanoTime()));
+        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, eyeDistance, System.nanoTime(),
+            this.getGlobe()));
     }
 
     public OrderedRenderable peekOrderedRenderables()
@@ -688,6 +695,9 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     public OrderedRenderable pollOrderedRenderables()
     {
         OrderedRenderableEntry ore = this.orderedRenderables.poll();
+
+        if (ore != null && this.isContinuous2DGlobe())
+            ((Globe2D) this.getGlobe()).setOffset(ore.globeOffset);
 
         return ore != null ? ore.or : null;
     }
