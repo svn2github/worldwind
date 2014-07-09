@@ -8,7 +8,6 @@ package gov.nasa.worldwind.formats.shapefile;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
@@ -70,6 +69,11 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
                 throw new IllegalArgumentException(msg);
             }
 
+            if (!this.visible) // records marked as not visible don't intersect anything
+            {
+                return null;
+            }
+
             ArrayList<Intersection> intersections = new ArrayList<Intersection>();
             ((ShapefileExtrudedPolygons) this.shapefileRenderable).intersectTileRecord(line, terrain, this,
                 intersections);
@@ -107,9 +111,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         // Tile shape data.
         public ShapeDataCache dataCache = new ShapeDataCache(60000);
         public ShapeData currentData;
-        // Tile intersection data.
-        public ShapeData intersectionData;
-        public Terrain intersectionTerrain;
+        public IntersectionData intersectionData = new IntersectionData();
 
         public Tile(Sector sector, int level)
         {
@@ -129,6 +131,52 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         public ShapeData(DrawContext dc, long minExpiryTime, long maxExpiryTime)
         {
             super(dc, minExpiryTime, maxExpiryTime);
+        }
+    }
+
+    protected static class IntersectionData extends ShapeData
+    {
+        protected Terrain terrain;
+        protected boolean tessellationValid;
+
+        public IntersectionData()
+        {
+            super(null, 0, 0);
+        }
+
+        public boolean isValid(Terrain terrain)
+        {
+            return this.terrain == terrain
+                && this.verticalExaggeration == terrain.getVerticalExaggeration()
+                && (this.globeStateKey != null && globeStateKey.equals(terrain.getGlobe().getGlobeStateKey()));
+        }
+
+        public void invalidate()
+        {
+            this.terrain = null;
+            this.verticalExaggeration = 1;
+            this.globeStateKey = null;
+            this.tessellationValid = false;
+        }
+
+        public Terrain getTerrain()
+        {
+            return this.terrain;
+        }
+
+        public void setTerrain(Terrain terrain)
+        {
+            this.terrain = terrain;
+        }
+
+        public boolean isTessellationValid()
+        {
+            return this.tessellationValid;
+        }
+
+        public void setTessellationValid(boolean valid)
+        {
+            this.tessellationValid = valid;
         }
     }
 
@@ -351,8 +399,9 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             tile.dataCache.addEntry(tile.currentData);
         }
 
-        // If the tile isn't visible, then don't add it or its descendants. Note that a tile with no records may have
-        // children, so we can't use the tile's record count as a determination of whether or not to add its children.
+        // Determine whether or not the tile is visible. If the tile is not visible, then neither are the tile's records
+        // or the tile's children. Note that a tile with no records may have children, so we can't use the tile's record
+        // count as a determination of whether or not to test its children.
         if (!this.isTileVisible(dc, tile))
         {
             return;
@@ -362,6 +411,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         // as necessary.
         if (tile.records.size() > 0)
         {
+            this.adjustTileExpiration(dc, tile); // reduce the remaining expiration time as the eye distance decreases
             if (this.mustRegenerateTileGeometry(dc, tile))
             {
                 this.regenerateTileGeometry(dc, tile);
@@ -387,19 +437,27 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected boolean isTileVisible(DrawContext dc, Tile tile)
     {
-        ShapeData shapeData = tile.currentData;
-        this.regenerateTileExtent(dc.getTerrain(), tile, shapeData);
+        Extent extent = this.makeTileExtent(dc.getTerrain(), tile);
 
-        if (dc.isSmall(shapeData.getExtent(), 1))
+        if (dc.isSmall(extent, 1))
         {
             return false;
         }
 
-        return dc.isPickingMode() ? dc.getPickFrustums().intersectsAny(shapeData.getExtent())
-            : dc.getView().getFrustumInModelCoordinates().intersects(shapeData.getExtent());
+        if (dc.isPickingMode())
+        {
+            return dc.getPickFrustums().intersectsAny(extent);
+        }
+
+        return dc.getView().getFrustumInModelCoordinates().intersects(extent);
     }
 
     protected boolean mustRegenerateTileGeometry(DrawContext dc, Tile tile)
+    {
+        return tile.currentData.isExpired(dc) || !tile.currentData.isValid(dc);
+    }
+
+    protected void adjustTileExpiration(DrawContext dc, Tile tile)
     {
         // If the new eye distance is significantly closer than cached data's the current eye distance, reduce the
         // timer's remaining time by 50%. This reduction is performed only once each time the timer is reset.
@@ -408,14 +466,12 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             double newEyeDistance = dc.getView().getEyePoint().distanceTo3(tile.currentData.referencePoint);
             tile.currentData.adjustTimer(dc, newEyeDistance);
         }
-
-        return tile.currentData.isExpired(dc) || !tile.currentData.isValid(dc);
     }
 
     protected void invalidateTileGeometry(Tile tile)
     {
         tile.dataCache.setAllExpired(true); // force the tile vertices to be regenerated
-        tile.dataCache.clearExtents();
+        tile.intersectionData.invalidate();
     }
 
     protected void invalidateAllTileGeometry()
@@ -446,25 +502,19 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         shapeData.restartTimer(dc);
     }
 
-    protected void regenerateTileExtent(Terrain terrain, Tile tile, ShapeData shapeData)
+    protected Extent makeTileExtent(Terrain terrain, Tile tile)
     {
-        Globe globe = terrain.getGlobe();
-        double verticalExaggeration = terrain.getVerticalExaggeration();
+        // Compute the tile's minimum and maximum height as height above and below the extreme elevations in the tile's
+        // sector. We use the overall maximum height of all records in order to ensure that a tile's extent includes its
+        // descendants when the parent tile's max height is less than its descendants.
+        double[] extremes = terrain.getGlobe().getMinAndMaxElevations(tile.sector);
+        double minHeight = extremes[0] - this.defaultBaseDepth;
+        double maxHeight = extremes[1] + Math.max(this.maxHeight, this.defaultHeight);
 
-        // TODO: Globe state key and vertical exaggeration are never set if the ShapeData is not regenerated.
-        // TODO: Since we need the extent but potentially not the shape data, find another way to generate or invalidate extents
-        if (shapeData.getExtent() == null)
-        {
-            // Compute the tile's minimum and maximum height as height above and below the extreme elevations in the
-            // tile's sector. We use the overall maximum height of all records in order to ensure that a tile's extent
-            // includes its descendants when the parent tile's max height is less than its descendants.
-            double[] extremes = globe.getMinAndMaxElevations(tile.sector);
-            double minHeight = extremes[0] - this.defaultBaseDepth;
-            double maxHeight = extremes[1] + Math.max(this.maxHeight, this.defaultHeight);
-
-            Extent extent = Sector.computeBoundingBox(globe, verticalExaggeration, this.sector, minHeight, maxHeight);
-            shapeData.setExtent(extent);
-        }
+        // Compute the tile's extent for the specified terrain. Associated the shape data's extent with the terrain in
+        // order to determine when it becomes invalid.
+        return Sector.computeBoundingBox(terrain.getGlobe(), terrain.getVerticalExaggeration(), tile.sector,
+            minHeight, maxHeight);
     }
 
     protected void tessellateTile(Terrain terrain, Tile tile, ShapeData shapeData)
@@ -1005,43 +1055,26 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void intersectTileOrDescendants(Line line, Terrain terrain, Tile tile, List<Intersection> results)
     {
-        ShapeData shapeData = tile.intersectionData;
+        // Regenerate the tile's intersection geometry as necessary. The returned shape data is null when the line does
+        // not intersect the tile.
+        ShapeData shapeData = this.prepareTileIntersectionData(line, terrain, tile);
         if (shapeData == null)
         {
-            shapeData = new ShapeData(null, 0, 0);
-            tile.intersectionData = shapeData;
-        }
-
-        // Determine whether or not the tile's extent intersects the line. If the line does not intersect the tile's
-        // extent, then it cannot intersect the tile's records or the tile's children. Note that a tile with no records
-        // may have children, so we can't use the tile's record count as a determination of whether or not to test its
-        // children.
-        this.regenerateTileExtent(terrain, tile, shapeData);
-        if (!shapeData.getExtent().intersects(line))
-        {
             return;
-        }
-
-        // Regenerate the tile's intersection geometry as necessary.
-        if (tile.intersectionTerrain != terrain
-            || !shapeData.getGlobeStateKey().equals(terrain.getGlobe().getGlobeStateKey())
-            || shapeData.getVerticalExaggeration() != terrain.getVerticalExaggeration())
-        {
-            this.tessellateTile(terrain, tile, shapeData);
-            tile.intersectionTerrain = terrain;
-            shapeData.setGlobeStateKey(terrain.getGlobe().getGlobeStateKey());
-            shapeData.setVerticalExaggeration(terrain.getVerticalExaggeration());
         }
 
         // Intersect the line with the tile's records. Translate the line from model coordinates to tile local
         // coordinates in order to perform this operation once on the line, rather than many times for each tile vertex.
         // Intersection points are translated back into model coordinates.
-        Line localLine = new Line(line.getOrigin().subtract3(shapeData.referencePoint), line.getDirection());
-        for (Record record : tile.records)
+        if (tile.records.size() > 0)
         {
-            if (record.isVisible()) // ignore records marked as not visible
+            Line localLine = new Line(line.getOrigin().subtract3(shapeData.referencePoint), line.getDirection());
+            for (Record record : tile.records)
             {
-                this.intersectRecordInterior(localLine, terrain, record, results);
+                if (record.isVisible()) // records marked as not visible don't intersect anything
+                {
+                    this.intersectRecordInterior(localLine, terrain, record, shapeData, results);
+                }
             }
         }
 
@@ -1057,43 +1090,58 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void intersectTileRecord(Line line, Terrain terrain, Record record, List<Intersection> results)
     {
-        Tile tile = record.tile;
-
-        ShapeData shapeData = tile.intersectionData;
+        // Regenerate the tile's intersection geometry as necessary. The returned shape data is null when the line does
+        // not intersect the tile.
+        ShapeData shapeData = this.prepareTileIntersectionData(line, terrain, record.tile);
         if (shapeData == null)
         {
-            shapeData = new ShapeData(null, 0, 0);
-            tile.intersectionData = shapeData;
-        }
-
-        // Determine whether or not the tile's extent intersects the line. If the line does not intersect the tile's
-        // extent, then it cannot intersect the record.
-        this.regenerateTileExtent(terrain, tile, shapeData);
-        if (!shapeData.getExtent().intersects(line))
-        {
             return;
-        }
-
-        // Regenerate the tile's intersection geometry as necessary.
-        if (tile.intersectionTerrain != terrain
-            || !shapeData.getGlobeStateKey().equals(terrain.getGlobe().getGlobeStateKey())
-            || shapeData.getVerticalExaggeration() != terrain.getVerticalExaggeration())
-        {
-            this.tessellateTile(terrain, tile, shapeData);
-            tile.intersectionTerrain = terrain;
-            shapeData.setGlobeStateKey(terrain.getGlobe().getGlobeStateKey());
-            shapeData.setVerticalExaggeration(terrain.getVerticalExaggeration());
         }
 
         // Intersect the line with the record. Translate the line from model coordinates to tile local coordinates,
         // then translate intersection points back into model coordinates.
         Line localLine = new Line(line.getOrigin().subtract3(shapeData.referencePoint), line.getDirection());
-        this.intersectRecordInterior(localLine, terrain, record, results);
+        this.intersectRecordInterior(localLine, terrain, record, shapeData, results);
     }
 
-    protected void intersectRecordInterior(Line localLine, Terrain terrain, Record record, List<Intersection> results)
+    protected ShapeData prepareTileIntersectionData(Line line, Terrain terrain, Tile tile)
     {
-        ShapeData shapeData = record.tile.intersectionData;
+        // Force regeneration of the tile's intersection extent and intersection geometry when the specified terrain
+        // changes. We regenerate the extent now and flag the geometry as invalid in order to force its regeneration
+        // later. This is necessary since we want to avoid regenerating the geometry when the line does not intersect
+        // the tile's extent.
+        IntersectionData shapeData = tile.intersectionData;
+        if (!shapeData.isValid(terrain))
+        {
+            shapeData.setExtent(this.makeTileExtent(terrain, tile)); // regenerate the intersection extent
+            shapeData.setTessellationValid(false); // force regeneration of the intersection geometry
+            shapeData.setTerrain(terrain);
+            shapeData.setGlobeStateKey(terrain.getGlobe().getGlobeStateKey());
+            shapeData.setVerticalExaggeration(terrain.getVerticalExaggeration());
+        }
+
+        // Determine whether or not the tile's extent intersects the line. If the line does not intersect the tile's
+        // extent, then it cannot intersect the tile's records or the tile's children. Note that a tile with no records
+        // may have children, so we can't use the tile's record count as a determination of whether or not to test its
+        // children.
+        if (!shapeData.getExtent().intersects(line))
+        {
+            return null;
+        }
+
+        // Regenerate the tile's intersection geometry as necessary. Suppress tessellation of tiles with no records.
+        if (tile.records.size() > 0 && !shapeData.isTessellationValid())
+        {
+            this.tessellateTile(terrain, tile, shapeData);
+            shapeData.setTessellationValid(true);
+        }
+
+        return shapeData;
+    }
+
+    protected void intersectRecordInterior(Line localLine, Terrain terrain, Record record, ShapeData shapeData,
+        List<Intersection> results)
+    {
         FloatBuffer vertices = shapeData.vertices;
         IntBuffer indices = record.interiorIndices;
 
