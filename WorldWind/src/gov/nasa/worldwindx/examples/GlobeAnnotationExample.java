@@ -25,9 +25,10 @@ public class GlobeAnnotationExample extends ApplicationTemplate
         {
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Annotation");
-            insertBeforeCompass(this.getWwd(), layer);
+            insertBeforePlacenames(this.getWwd(), layer);
 
-            GlobeAnnotation ga = new GlobeAnnotation("AGL Annotation", Position.fromDegrees(20, 179.9, 1000));
+            GlobeAnnotation ga = new GlobeAnnotation("AGL Annotation", Position.fromDegrees(20, -120.9, 1000));
+            ga.setAlwaysOnTop(true);
             layer.addRenderable(ga);
         }
     }
