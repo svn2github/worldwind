@@ -36,7 +36,7 @@ public class AlarmIcons extends ApplicationTemplate
 
         public AppFrame()
         {
-            super(true, false, false);
+            super(true, true, false);
 
             IconLayer layer = new IconLayer();
             icon = new UserFacingIcon("src/images/32x32-icon-nasa.png",
@@ -65,7 +65,7 @@ public class AlarmIcons extends ApplicationTemplate
             alarmTypes.add(new FlashingAlarmAction("Flashing Red Square", squareRed, 200));
             alarmTypes.add(new FlashingAlarmAction("Flashing Yellow Triangle", triangleYellow, 200));
 
-            this.getContentPane().add(this.makeControlPanel(), BorderLayout.WEST);
+            this.getControlPanel().add(this.makeControlPanel(), BorderLayout.SOUTH);
         }
 
         private JPanel makeControlPanel()
