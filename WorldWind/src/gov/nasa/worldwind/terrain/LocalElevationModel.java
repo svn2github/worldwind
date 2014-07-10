@@ -133,7 +133,7 @@ public class LocalElevationModel extends AbstractElevationModel
 
         for (LocalTile tile : tiles)
         {
-            if (!sector.intersects(tile.sector))
+            if (sector != null && !sector.intersects(tile.sector))
                 continue;
 
             double r = tile.sector.getDeltaLatRadians() / tile.tileHeight;
