@@ -192,9 +192,9 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected CompoundVecBuffer coordBuffer;
     protected ArrayList<Tile> currentTiles = new ArrayList<Tile>();
     protected PolygonTessellator tess = new PolygonTessellator();
-    protected byte[] byteArray = new byte[6];
-    protected float[] floatArray = new float[6];
-    protected double[] doubleArray = new double[16];
+    protected byte[] colorByteArray = new byte[6];
+    protected float[] colorFloatArray = new float[3];
+    protected double[] matrixArray = new double[16];
     // Data structures supporting picking.
     protected Layer pickLayer;
     protected PickSupport pickSupport = new PickSupport();
@@ -471,7 +471,11 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void invalidateTileGeometry(Tile tile)
     {
         tile.dataCache.setAllExpired(true); // force the tile vertices to be regenerated
-        tile.intersectionData.invalidate();
+
+        synchronized (tile) // synchronize access to tile intersection data
+        {
+            tile.intersectionData.invalidate();
+        }
     }
 
     protected void invalidateAllTileGeometry()
@@ -494,7 +498,13 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void regenerateTileGeometry(DrawContext dc, Tile tile)
     {
         ShapeData shapeData = tile.currentData;
-        this.tessellateTile(dc.getTerrain(), tile, shapeData);
+
+        // Synchronize simultaneous tile updates between rendering, intersect and Record.intersect. Access to this
+        // instance's coordinate buffer must be synchronized.
+        synchronized (this)
+        {
+            this.tessellateTile(dc.getTerrain(), tile, shapeData);
+        }
 
         shapeData.setEyeDistance(dc.getView().getEyePoint().distanceTo3(shapeData.referencePoint));
         shapeData.setGlobeStateKey(dc.getGlobe().getGlobeStateKey(dc));
@@ -534,13 +544,14 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             vertices = Buffers.newDirectFloatBuffer(2 * vertexStride * numPoints);
         }
 
+        double[] coord = new double[2];
+        float[] vertex = new float[6];
+        Vec4 rp = null;
+
         // Generate the model coordinate vertices and indices for all records in the tile. This may include records that
         // are marked as not visible, as recomputing the vertices and indices for record visibility changes would be
         // expensive. The tessellated interior and outline indices are generated only once, since each record's indices
         // never change.
-        Vec4 rp = null;
-        double[] coord = this.doubleArray;
-        float[] vertex = this.floatArray;
         for (Record record : tile.records)
         {
             double height = record.height != null ? record.height : this.defaultHeight;
@@ -855,8 +866,8 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         }
 
         Matrix modelview = dc.getView().getModelviewMatrix().multiply(shapeData.transformMatrix);
-        modelview.toArray(this.doubleArray, 0, false);
-        gl.glLoadMatrixd(this.doubleArray, 0);
+        modelview.toArray(this.matrixArray, 0, false);
+        gl.glLoadMatrixd(this.matrixArray, 0);
 
         for (RecordGroup attrGroup : tile.attributeGroups)
         {
@@ -888,7 +899,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         {
             if (!dc.isPickingMode())
             {
-                float[] color = this.floatArray;
+                float[] color = this.colorFloatArray;
                 attributeGroup.attributes.getInteriorMaterial().getDiffuse().getRGBColorComponents(color);
                 gl.glColor3f(color[0], color[1], color[2]);
             }
@@ -912,7 +923,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
             if (!dc.isPickingMode())
             {
-                float[] color = this.floatArray;
+                float[] color = this.colorFloatArray;
                 attributeGroup.attributes.getOutlineMaterial().getDiffuse().getRGBColorComponents(color);
                 gl.glColor3f(color[0], color[1], color[2]);
             }
@@ -967,7 +978,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             colors = pickColors;
         }
 
-        byte[] vertexColors = this.byteArray;
+        byte[] vertexColors = this.colorByteArray;
         for (Record record : tile.records)
         {
             // Get a unique pick color for the record, and add it to the list of pickable objects. We must generate a
@@ -1055,10 +1066,15 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void intersectTileOrDescendants(Line line, Terrain terrain, Tile tile, List<Intersection> results)
     {
-        // Regenerate the tile's intersection geometry as necessary. The returned shape data is null when the line does
-        // not intersect the tile.
-        ShapeData shapeData = this.prepareTileIntersectionData(line, terrain, tile);
-        if (shapeData == null)
+        // Regenerate the tile's intersection geometry as necessary. Synchronized simultaneous read/write access to the
+        // tile's intersection data between calls to intersect or Record.intersect on separate threads.
+        ShapeData shapeData;
+        synchronized (tile)
+        {
+            shapeData = this.prepareTileIntersectionData(line, terrain, tile);
+        }
+
+        if (shapeData == null) // The line does not intersect the tile.
         {
             return;
         }
@@ -1090,10 +1106,15 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
 
     protected void intersectTileRecord(Line line, Terrain terrain, Record record, List<Intersection> results)
     {
-        // Regenerate the tile's intersection geometry as necessary. The returned shape data is null when the line does
-        // not intersect the tile.
-        ShapeData shapeData = this.prepareTileIntersectionData(line, terrain, record.tile);
-        if (shapeData == null)
+        // Regenerate the tile's intersection geometry as necessary. Synchronized simultaneous read/write access to the
+        // tile's intersection data between calls to intersect or Record.intersect on separate threads.
+        ShapeData shapeData;
+        synchronized (record.tile)
+        {
+            shapeData = this.prepareTileIntersectionData(line, terrain, record.tile);
+        }
+
+        if (shapeData == null) // The line does not intersect the tile.
         {
             return;
         }
@@ -1130,9 +1151,15 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
         }
 
         // Regenerate the tile's intersection geometry as necessary. Suppress tessellation of tiles with no records.
+        // Synchronize simultaneous tile updates between rendering, intersect and Record.intersect. Access to this
+        // instance's coordinate buffer must be synchronized.
         if (tile.records.size() > 0 && !shapeData.isTessellationValid())
         {
-            this.tessellateTile(terrain, tile, shapeData);
+            synchronized (this)
+            {
+                this.tessellateTile(terrain, tile, shapeData);
+            }
+
             shapeData.setTessellationValid(true);
         }
 
