@@ -105,8 +105,9 @@ public class IconRenderer
     /**
      * Indicates whether to render icons outside the view volume. This is primarily to control icon visibility beyond
      * the far view clipping plane. Some important use cases demand that clipping not be performed. If horizon clipping
-     * is enabled, the icon is also tested for horizon clipping. The default is <code>false</code>, view volume clipping
-     * is not performed.
+     * is enabled, the icon is also tested for horizon clipping. The default is <code>true</code>, view volume clipping
+     * is performed. This flag is ignored for 2D continuous globes. View clipping is not performed for those in order
+     * to ensure that partial icons are drawn at the view edges.
      *
      * @param viewClippingEnabled <code>true</code> if view clipping should be performed, otherwise <code>false</code>.
      *
@@ -296,9 +297,11 @@ public class IconRenderer
                 continue; // don't render horizon-clipped icons
             }
 
-            // If enabled, eliminate icons outside the view volume. Primarily used to control icon visibility beyond
-            // the view volume's far clipping plane.
-            if (this.isViewClippingEnabled() && !dc.getView().getFrustumInModelCoordinates().contains(iconPoint))
+            // If enabled, eliminate icons outside the view volume. Used to control icon visibility beyond
+            // the view volume's far clipping plane, and to ensure that partial icons are drawn at the view volume
+            // edges for 2D continuous globes.
+            if (this.isViewClippingEnabled() && !dc.isContinuous2DGlobe()
+                && !dc.getView().getFrustumInModelCoordinates().contains(iconPoint))
             {
                 // Record feedback data for this WWIcon if feedback is enabled.
                 this.recordFeedback(dc, icon, iconPoint, null);
