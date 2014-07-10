@@ -14,6 +14,7 @@ import junit.framework.*;
 import junit.textui.TestRunner;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.File;
 
 /**
  * @author tag
@@ -40,7 +41,8 @@ public class WCSElevationModelCreationTest
                 elevationModel.getLevels().getFirstLevel().getDataset());
             assertEquals("Incorrect format suffix", ".tif",
                 elevationModel.getLevels().getFirstLevel().getFormatSuffix());
-            assertEquals("Incorrect format suffix", "worldwind26.arc.nasa.gov/_wms2/WW_NASA_SRTM30_900m_Tiled",
+            assertEquals("Incorrect cache name",
+                "worldwind26.arc.nasa.gov" + File.separator + "_wms2" + File.separator + "WW_NASA_SRTM30_900m_Tiled",
                 elevationModel.getLevels().getFirstLevel().getCacheName());
         }
 
