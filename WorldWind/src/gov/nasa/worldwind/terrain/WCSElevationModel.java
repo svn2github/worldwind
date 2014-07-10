@@ -34,6 +34,33 @@ public class WCSElevationModel extends BasicElevationModel
         super(wcsGetParamsFromCapsDoc(caps, params));
     }
 
+    /**
+     * Create a new elevation model from a serialized restorable state string.
+     *
+     * @param restorableStateInXml XML string in World Wind restorable state format.
+     *
+     * @see #getRestorableState()
+     */
+    public WCSElevationModel(String restorableStateInXml)
+    {
+        super(wcsRestorableStateToParams(restorableStateInXml));
+
+        RestorableSupport rs;
+        try
+        {
+            rs = RestorableSupport.parse(restorableStateInXml);
+        }
+        catch (Exception e)
+        {
+            // Parsing the document specified by stateInXml failed.
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", restorableStateInXml);
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message, e);
+        }
+
+        this.doRestoreState(rs, null);
+    }
+
     protected static AVList wcsGetParamsFromDocument(Element domElement, AVList params)
     {
         if (domElement == null)
@@ -341,5 +368,83 @@ public class WCSElevationModel extends BasicElevationModel
         retriever.setConnectTimeout(10000);
         retriever.setReadTimeout(60000);
         retriever.call();
+    }
+
+    //**************************************************************//
+    //********************  Restorable Support  ********************//
+    //**************************************************************//
+
+    @Override
+    public void getRestorableStateForAVPair(String key, Object value,
+        RestorableSupport rs, RestorableSupport.StateObject context)
+    {
+        if (value instanceof URLBuilder)
+        {
+            rs.addStateValueAsString(context, AVKey.WCS_VERSION, ((URLBuilder) value).serviceVersion);
+        }
+        else if (value instanceof WCS100DescribeCoverage)
+        {
+            // Skip this entry. The DescribeCoverage parameters will already be present in the parameter list.
+        }
+        else
+        {
+            super.getRestorableStateForAVPair(key, value, rs, context);
+        }
+    }
+
+    protected static AVList wcsRestorableStateToParams(String stateInXml)
+    {
+        if (stateInXml == null)
+        {
+            String message = Logging.getMessage("nullValue.StringIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        RestorableSupport rs;
+        try
+        {
+            rs = RestorableSupport.parse(stateInXml);
+        }
+        catch (Exception e)
+        {
+            // Parsing the document specified by stateInXml failed.
+            String message = Logging.getMessage("generic.ExceptionAttemptingToParseStateXml", stateInXml);
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message, e);
+        }
+
+        AVList params = new AVListImpl();
+        wcsRestoreStateForParams(rs, null, params);
+        return params;
+    }
+
+    protected static void wcsRestoreStateForParams(RestorableSupport rs, RestorableSupport.StateObject context,
+        AVList params)
+    {
+        // Invoke the BasicElevationModel functionality.
+        restoreStateForParams(rs, null, params);
+
+        String s = rs.getStateValueAsString(context, AVKey.IMAGE_FORMAT);
+        if (s != null)
+            params.setValue(AVKey.IMAGE_FORMAT, s);
+
+        s = rs.getStateValueAsString(context, AVKey.TITLE);
+        if (s != null)
+            params.setValue(AVKey.TITLE, s);
+
+        s = rs.getStateValueAsString(context, AVKey.DISPLAY_NAME);
+        if (s != null)
+            params.setValue(AVKey.DISPLAY_NAME, s);
+
+        RestorableSupport.adjustTitleAndDisplayName(params);
+
+        s = rs.getStateValueAsString(context, AVKey.COVERAGE_IDENTIFIERS);
+        if (s != null)
+            params.setValue(AVKey.COVERAGE_IDENTIFIERS, s);
+
+        s = rs.getStateValueAsString(context, AVKey.WCS_VERSION);
+        if (s != null)
+            params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder(s, params));
     }
 }

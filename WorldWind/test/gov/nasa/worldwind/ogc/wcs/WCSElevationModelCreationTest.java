@@ -25,22 +25,9 @@ public class WCSElevationModelCreationTest
     {
         public void test001()
         {
-            WCS100Capabilities caps = new WCS100Capabilities("testData/WCS/WCSCapabilities003.xml");
-            WCS100DescribeCoverage coverage = new WCS100DescribeCoverage("testData/WCS/WCSDescribeCoverage001.xml");
-
-            try
-            {
-                caps.parse();
-                coverage.parse();
-            }
-            catch (XMLStreamException e)
-            {
-                e.printStackTrace();
-            }
-
-            AVList params = new AVListImpl();
-            params.setValue(AVKey.DOCUMENT, coverage);
-            WCSElevationModel elevationModel = new WCSElevationModel(caps, params);
+            WCSElevationModel elevationModel = this.createWCSElevationModel(
+                new WCS100Capabilities("testData/WCS/WCSCapabilities003.xml"),
+                new WCS100DescribeCoverage("testData/WCS/WCSDescribeCoverage001.xml"));
 
             assertEquals("Incorrect number of levels", 5, elevationModel.getLevels().getNumLevels());
             double bestResolution = elevationModel.getBestResolution(Sector.FULL_SPHERE) * 180.0 / Math.PI;
@@ -55,6 +42,60 @@ public class WCSElevationModelCreationTest
                 elevationModel.getLevels().getFirstLevel().getFormatSuffix());
             assertEquals("Incorrect format suffix", "worldwind26.arc.nasa.gov/_wms2/WW_NASA_SRTM30_900m_Tiled",
                 elevationModel.getLevels().getFirstLevel().getCacheName());
+        }
+
+        public void testRestoreState()
+        {
+            WCSElevationModel origElevationModel = this.createWCSElevationModel(
+                new WCS100Capabilities("testData/WCS/WCSCapabilities003.xml"),
+                new WCS100DescribeCoverage("testData/WCS/WCSDescribeCoverage001.xml"));
+
+            String restorableState = origElevationModel.getRestorableState();
+
+            WCSElevationModel newElevationModel = new WCSElevationModel(restorableState);
+
+            assertEquals("Incorrect number of levels",
+                origElevationModel.getLevels().getNumLevels(),
+                newElevationModel.getLevels().getNumLevels());
+
+            double epsilon = 0.0001;
+            double origBestResolution = origElevationModel.getBestResolution(Sector.FULL_SPHERE);
+            double newBestResolution = newElevationModel.getBestResolution(Sector.FULL_SPHERE);
+            assertTrue("Incorrect best resolution", Math.abs(origBestResolution - newBestResolution) < epsilon);
+
+            assertEquals("Min elevation incorrect",
+                origElevationModel.getMinElevation(),
+                newElevationModel.getMinElevation());
+            assertEquals("Max elevation incorrect",
+                origElevationModel.getMaxElevation(),
+                newElevationModel.getMaxElevation());
+
+            assertEquals("Incorrect dataset name",
+                origElevationModel.getLevels().getFirstLevel().getDataset(),
+                newElevationModel.getLevels().getFirstLevel().getDataset());
+            assertEquals("Incorrect format suffix",
+                origElevationModel.getLevels().getFirstLevel().getFormatSuffix(),
+                newElevationModel.getLevels().getFirstLevel().getFormatSuffix());
+            assertEquals("Incorrect cache name",
+                origElevationModel.getLevels().getFirstLevel().getCacheName(),
+                newElevationModel.getLevels().getFirstLevel().getCacheName());
+        }
+
+        private WCSElevationModel createWCSElevationModel(WCS100Capabilities caps, WCS100DescribeCoverage coverage)
+        {
+            try
+            {
+                caps.parse();
+                coverage.parse();
+            }
+            catch (XMLStreamException e)
+            {
+                e.printStackTrace();
+            }
+
+            AVList params = new AVListImpl();
+            params.setValue(AVKey.DOCUMENT, coverage);
+            return new WCSElevationModel(caps, params);
         }
     }
 
