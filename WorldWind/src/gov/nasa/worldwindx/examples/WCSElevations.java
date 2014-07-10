@@ -6,7 +6,6 @@
 
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwindx.examples.layermanager.LayerManagerApp;
 import gov.nasa.worldwindx.examples.util.WCSCoveragePanel;
 
 import javax.swing.*;
@@ -30,6 +29,7 @@ public class WCSElevations extends ApplicationTemplate
         protected final Dimension wcsPanelSize = new Dimension(400, 600);
         protected JTabbedPane tabbedPane;
         protected int previousTabIndex;
+
         public AppFrame()
         {
             this.tabbedPane = new JTabbedPane();
