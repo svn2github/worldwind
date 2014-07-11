@@ -115,16 +115,16 @@ public class PlacemarkClutterFilter implements ClutterFilter
     {
         for (Map.Entry<Rectangle2D, List<Declutterable>> entry : this.shapeMap.entrySet())
         {
-            List<PointPlacemark> placemarks = null;
+            List<PointPlacemark.OrderedPlacemark> placemarks = null;
             Declutterable firstShape = null;
 
             for (Declutterable shape : entry.getValue())
             {
-                if (shape instanceof PointPlacemark)
+                if (shape instanceof PointPlacemark.OrderedPlacemark)
                 {
                     if (placemarks == null)
-                        placemarks = new ArrayList<PointPlacemark>();
-                    placemarks.add((PointPlacemark) shape);
+                        placemarks = new ArrayList<PointPlacemark.OrderedPlacemark>();
+                    placemarks.add((PointPlacemark.OrderedPlacemark) shape);
                 }
                 else
                 {
@@ -142,7 +142,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
             {
                 double angle = -placemarks.size(); // increments Y position of placemark label
 
-                for (PointPlacemark pp : placemarks)
+                for (PointPlacemark.OrderedPlacemark pp : placemarks)
                 {
                     angle += 1;
                     dc.addOrderedRenderable(new DeclutteredLabel(angle, pp, entry.getKey()));
@@ -160,20 +160,20 @@ public class PlacemarkClutterFilter implements ClutterFilter
     protected static class DeclutteredLabel implements OrderedRenderable
     {
         protected double angle;
-        protected PointPlacemark placemark;
+        protected PointPlacemark.OrderedPlacemark opm;
         protected Rectangle2D region;
 
-        public DeclutteredLabel(double angle, PointPlacemark placemark, Rectangle2D region)
+        public DeclutteredLabel(double angle, PointPlacemark.OrderedPlacemark opm, Rectangle2D region)
         {
             this.angle = angle;
-            this.placemark = placemark;
+            this.opm = opm;
             this.region = region;
         }
 
         @Override
         public double getDistanceFromEye()
         {
-            return this.placemark.getDistanceFromEye();
+            return this.opm.getDistanceFromEye();
         }
 
         @Override
@@ -184,7 +184,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
         public void render(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            PointPlacemarkAttributes attrs = this.placemark.getAttributes();
+            PointPlacemarkAttributes attrs = this.opm.getPlacemark().getAttributes();
             Font font = attrs != null ? attrs.getLabelFont() : null;
             if (font == null)
                 font = PointPlacemarkAttributes.DEFAULT_LABEL_FONT;
@@ -214,11 +214,9 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 gl.glOrtho(0d, dc.getView().getViewport().width, 0d, dc.getView().getViewport().height, -1d, 1d);
 
                 // Compute the starting point of the line.
-                Position position = this.placemark.getReferencePosition();
-                Vec4 point = dc.computePointFromPosition(position, this.placemark.getAltitudeMode());
-                Vec4 startPoint = dc.getView().project(point);
+                Vec4 startPoint = this.opm.getScreenPoint();
 
-                Rectangle2D bounds = this.placemark.getBounds(dc);
+                Rectangle2D bounds = this.opm.getBounds(dc);
 
                 // Compute the text point.
                 double dx = -1.0 * bounds.getWidth();
@@ -227,7 +225,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 double y = this.region.getCenterY();
                 Vec4 textPoint = new Vec4(x + dx, y + dy, 0);
 
-                this.drawDeclutterLabel(dc, font, textPoint, placemark.getLabelText());
+                this.drawDeclutterLabel(dc, font, textPoint, this.opm.getPlacemark().getLabelText());
 
                 // Compute the end point of the line.
                 Vec4 endPoint = new Vec4(textPoint.x + bounds.getWidth(), textPoint.y, textPoint.z);

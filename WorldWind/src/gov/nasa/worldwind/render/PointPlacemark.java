@@ -43,7 +43,7 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
  * @version $Id$
  */
 public class PointPlacemark extends WWObjectImpl
-    implements OrderedRenderable, Locatable, Movable, Highlightable, Exportable, Declutterable
+    implements Renderable, Locatable, Movable, Highlightable, Exportable
 {
     /** The scale to use when highlighting if no highlight attributes are specified. */
     protected static final Double DEFAULT_HIGHLIGHT_SCALE = 1.3;
@@ -65,6 +65,74 @@ public class PointPlacemark extends WWObjectImpl
         defaultAttributes.setLabelScale(PointPlacemarkAttributes.DEFAULT_LABEL_SCALE);
     }
 
+    public class OrderedPlacemark implements OrderedRenderable, Declutterable
+    {
+        protected Vec4 placePoint; // the Cartesian point corresponding to the placemark position
+        protected Vec4 terrainPoint; // point on the terrain extruded from the placemark position.
+        protected Vec4 screenPoint; // the projection of the place-point in the viewport (on the screen)
+        protected double eyeDistance; // used to order the placemark as an ordered renderable
+
+        public PointPlacemark getPlacemark()
+        {
+            return PointPlacemark.this;
+        }
+
+        @Override
+        public double getDistanceFromEye()
+        {
+            return this.eyeDistance;
+        }
+
+        public Vec4 getScreenPoint()
+        {
+            return this.screenPoint;
+        }
+
+        public boolean isEnableBatchRendering()
+        {
+            return PointPlacemark.this.isEnableBatchRendering();
+        }
+
+        public boolean isEnableBatchPicking()
+        {
+            return PointPlacemark.this.isEnableBatchPicking();
+        }
+
+        public Layer getPickLayer()
+        {
+            return PointPlacemark.this.pickLayer;
+        }
+
+        @Override
+        public void pick(DrawContext dc, Point pickPoint)
+        {
+            PointPlacemark.this.pick(dc, pickPoint, this);
+        }
+
+        @Override
+        public void render(DrawContext dc)
+        {
+            PointPlacemark.this.drawOrderedRenderable(dc, this);
+        }
+
+        protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
+        {
+            PointPlacemark.this.doDrawOrderedRenderable(dc, pickCandidates, this);
+        }
+
+        @Override
+        public boolean isEnableDecluttering()
+        {
+            return PointPlacemark.this.isEnableDecluttering();
+        }
+
+        @Override
+        public Rectangle2D getBounds(DrawContext dc)
+        {
+            return PointPlacemark.this.getLabelBounds(dc, this);
+        }
+    }
+
     protected Position position;
     protected String labelText;
     protected PointPlacemarkAttributes normalAttrs;
@@ -84,8 +152,6 @@ public class PointPlacemark extends WWObjectImpl
     protected Object delegateOwner;
     protected boolean clipToHorizon = true;
     protected boolean enableDecluttering = false;
-    protected long frameStampForPicking;
-    protected long frameStampForDrawing;
 
     // Values computed once per frame and reused during the frame as needed.
     protected long frameNumber = -1; // identifies frame used to calculate these values
@@ -473,16 +539,15 @@ public class PointPlacemark extends WWObjectImpl
         return this.activeTexture == null && this.getActiveAttributes().isUsePointAsDefaultImage();
     }
 
-    public void pick(DrawContext dc, Point pickPoint)
+    public void pick(DrawContext dc, Point pickPoint, OrderedPlacemark opm)
     {
         // This method is called only when ordered renderables are being drawn.
-        // Arg checked within call to render.
 
         this.pickSupport.clearPickList();
         try
         {
             this.pickSupport.beginPicking(dc);
-            this.render(dc);
+            this.drawOrderedRenderable(dc, opm);
         }
         finally
         {
@@ -493,10 +558,9 @@ public class PointPlacemark extends WWObjectImpl
 
     public void render(DrawContext dc)
     {
-        // This render method is called three times during frame generation. It's first called as a {@link Renderable}
-        // during <code>Renderable</code> picking. It's called again during normal rendering. And it's called a third
-        // time as an OrderedRenderable. The first two calls determine whether to add the placemark  and its optional
-        // line to the ordered renderable list during pick and render. The third call just draws the ordered renderable.
+        // This render method is called twice during frame generation. It's first called as a {@link Renderable}
+        // during <code>Renderable</code> picking. It's called again during normal rendering. These two calls determine
+        // whether to add the placemark and its optional line to the ordered renderable list during pick and render.
         if (dc == null)
         {
             String msg = Logging.getMessage("nullValue.DrawContextIsNull");
@@ -510,10 +574,7 @@ public class PointPlacemark extends WWObjectImpl
         if (!this.isVisible())
             return;
 
-        if (dc.isOrderedRenderingMode())
-            this.drawOrderedRenderable(dc);
-        else
-            this.makeOrderedRenderable(dc);
+        this.makeOrderedRenderable(dc);
     }
 
     /**
@@ -528,26 +589,16 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void makeOrderedRenderable(DrawContext dc)
     {
-        // The rest of the code in this method determines whether to queue an ordered renderable for the placemark
+        // The code in this method determines whether to queue an ordered renderable for the placemark
         // and its optional line.
 
-        if (dc.isContinuous2DGlobe())
-        {
-            // When rendering multiple globes, we want to add this shape the ordered renderable list only once per
-            // frame. The two "frameStamp" variables are set when the ordered renderable is added (see below), and
-            // checked here to avoid adding the ordered renderable again.
-            if (dc.isPickingMode() && this.frameStampForPicking == dc.getFrameTimeStamp())
-                return;
+        OrderedPlacemark opm = new OrderedPlacemark();
 
-            if (!dc.isPickingMode() && this.frameStampForDrawing == dc.getFrameTimeStamp())
-                return;
-        }
-
-        // Re-use values already calculated this frame, unless we're rendering potentially multiple globes.
+        // Try to re-use values already calculated this frame, unless we're rendering a continuous 2D globe.
         if (dc.getFrameTimeStamp() != this.frameNumber || dc.isContinuous2DGlobe())
         {
-            this.computePlacemarkPoints(dc);
-            if (this.placePoint == null || this.screenPoint == null)
+            this.computePlacemarkPoints(dc, opm);
+            if (opm.placePoint == null || opm.screenPoint == null)
                 return;
 
             this.determineActiveAttributes();
@@ -558,8 +609,15 @@ public class PointPlacemark extends WWObjectImpl
 
             this.frameNumber = dc.getFrameTimeStamp();
         }
+        else
+        {
+            opm.placePoint = this.placePoint;
+            opm.screenPoint = this.screenPoint;
+            opm.terrainPoint = this.terrainPoint;
+            opm.eyeDistance = this.eyeDistance;
+        }
 
-        if (this.isClipToHorizon())
+        if (this.isClipToHorizon() && !dc.isContinuous2DGlobe())
         {
             // Don't draw if beyond the horizon.
             double horizon = dc.getView().getHorizonDistance();
@@ -567,17 +625,9 @@ public class PointPlacemark extends WWObjectImpl
                 return;
         }
 
-        if (this.intersectsFrustum(dc) || this.isDrawLine(dc))
+        if (this.intersectsFrustum(dc, opm) || this.isDrawLine(dc, opm))
         {
-            dc.addOrderedRenderable(this); // add the image ordered renderable
-
-            if (dc.isContinuous2DGlobe())
-            {
-                if (dc.isPickingMode())
-                    this.frameStampForPicking = this.frameNumber;
-                else
-                    this.frameStampForDrawing = this.frameNumber;
-            }
+            dc.addOrderedRenderable(opm); // add the image ordered renderable
         }
 
         if (dc.isPickingMode())
@@ -591,19 +641,19 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @return true if the image intersects the frustum, otherwise false.
      */
-    protected boolean intersectsFrustum(DrawContext dc)
+    protected boolean intersectsFrustum(DrawContext dc, OrderedPlacemark opm)
     {
         View view = dc.getView();
 
         // Test the placemark's model coordinate point against the near and far clipping planes.
-        if (this.placePoint != null
-            && (view.getFrustumInModelCoordinates().getNear().distanceTo(this.placePoint) < 0
-            || view.getFrustumInModelCoordinates().getFar().distanceTo(this.placePoint) < 0))
+        if (opm.placePoint != null
+            && (view.getFrustumInModelCoordinates().getNear().distanceTo(opm.placePoint) < 0
+            || view.getFrustumInModelCoordinates().getFar().distanceTo(opm.placePoint) < 0))
         {
             return false;
         }
 
-        Rectangle rect = this.computeImageRectangle(dc);
+        Rectangle rect = this.computeImageRectangle(dc, opm);
         if (dc.isPickingMode())
         {
             // Test image rect against pick frustums. Note that we do this even when the label is visible and the image
@@ -618,7 +668,7 @@ public class PointPlacemark extends WWObjectImpl
         {
             // We are drawing a label but not an image. Determine if the placemark point is visible. This case comes up
             // when the image scale is zero and the label scale is non-zero.
-            return view.getViewport().contains((int) this.screenPoint.x, (int) this.screenPoint.y);
+            return view.getViewport().contains((int) opm.screenPoint.x, (int) opm.screenPoint.y);
         }
 
         return false;
@@ -669,12 +719,12 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @param dc the current draw context.
      */
-    protected void drawOrderedRenderable(DrawContext dc)
+    protected void drawOrderedRenderable(DrawContext dc, OrderedPlacemark opm)
     {
         this.beginDrawing(dc);
         try
         {
-            this.doDrawOrderedRenderable(dc, this.pickSupport);
+            this.doDrawOrderedRenderable(dc, this.pickSupport, opm);
 
             if (this.isEnableBatchRendering())
                 this.drawBatched(dc);
@@ -698,31 +748,31 @@ public class PointPlacemark extends WWObjectImpl
 
         if (!dc.isPickingMode())
         {
-            while (nextItem != null && nextItem instanceof PointPlacemark)
+            while (nextItem != null && nextItem instanceof OrderedPlacemark)
             {
-                PointPlacemark p = (PointPlacemark) nextItem;
-                if (!p.isEnableBatchRendering())
+                OrderedPlacemark opm = (OrderedPlacemark) nextItem;
+                if (!opm.isEnableBatchRendering())
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
-                p.doDrawOrderedRenderable(dc, this.pickSupport);
+                opm.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
             }
         }
         else if (this.isEnableBatchPicking())
         {
-            while (nextItem != null && nextItem instanceof PointPlacemark)
+            while (nextItem != null && nextItem instanceof OrderedPlacemark)
             {
-                PointPlacemark p = (PointPlacemark) nextItem;
-                if (!p.isEnableBatchRendering() || !p.isEnableBatchPicking())
+                OrderedPlacemark opm = (OrderedPlacemark) nextItem;
+                if (!opm.isEnableBatchRendering() || !opm.isEnableBatchPicking())
                     break;
 
-                if (p.pickLayer != this.pickLayer) // batch pick only within a single layer
+                if (opm.getPickLayer() != this.pickLayer) // batch pick only within a single layer
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
-                p.doDrawOrderedRenderable(dc, this.pickSupport);
+                opm.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
             }
@@ -738,15 +788,15 @@ public class PointPlacemark extends WWObjectImpl
      * @param dc             the current draw context.
      * @param pickCandidates a pick support holding the picked object list to add this shape to.
      */
-    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
+    protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates, OrderedPlacemark opm)
     {
-        if (this.isDrawLine(dc))
-            this.drawLine(dc, pickCandidates);
+        if (this.isDrawLine(dc, opm))
+            this.drawLine(dc, pickCandidates, opm);
 
         if (this.activeTexture == null)
         {
             if (this.isDrawPoint(dc))
-                this.drawPoint(dc, pickCandidates);
+                this.drawPoint(dc, pickCandidates, opm);
             return;
         }
 
@@ -791,7 +841,7 @@ public class PointPlacemark extends WWObjectImpl
             gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
 
             // Adjust depth of image to bring it slightly forward
-            double depth = screenPoint.z - (8d * 0.00048875809d);
+            double depth = opm.screenPoint.z - (8d * 0.00048875809d);
             depth = depth < 0d ? 0d : (depth > 1d ? 1d : depth);
             gl.glDepthFunc(GL.GL_LESS);
             gl.glDepthRange(depth, depth);
@@ -799,7 +849,7 @@ public class PointPlacemark extends WWObjectImpl
             // The image is drawn using a translated and scaled unit quad.
             // Translate to screen point and adjust to align hot spot.
             osh.pushModelviewIdentity(gl);
-            gl.glTranslated(screenPoint.x + this.dx, screenPoint.y + this.dy, 0);
+            gl.glTranslated(opm.screenPoint.x + this.dx, opm.screenPoint.y + this.dy, 0);
 
             // Compute the scale
             double xscale;
@@ -850,7 +900,7 @@ public class PointPlacemark extends WWObjectImpl
 //            dc.drawUnitQuadOutline(); // for debugging label placement
 
             if (this.mustDrawLabel() && !dc.isPickingMode()) // don't pick via the label
-                this.drawLabel(dc);
+                this.drawLabel(dc, opm);
         }
         finally
         {
@@ -891,12 +941,6 @@ public class PointPlacemark extends WWObjectImpl
         return this.labelText != null;
     }
 
-    @Override
-    public Rectangle2D getBounds(DrawContext dc)
-    {
-        return this.getLabelBounds(dc);
-    }
-
     /**
      * Determines the screen coordinate boundaries of this placemark's label.
      *
@@ -904,13 +948,13 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @return the label bounds, in lower-left origin screen coordinates.
      */
-    protected Rectangle2D getLabelBounds(DrawContext dc)
+    protected Rectangle2D getLabelBounds(DrawContext dc, OrderedPlacemark opm)
     {
         if (this.labelText == null)
             return null;
 
-        double x = (float) (this.screenPoint.x + this.dx);
-        double y = (float) (this.screenPoint.y + this.dy);
+        double x = (float) (opm.screenPoint.x + this.dx);
+        double y = (float) (opm.screenPoint.y + this.dy);
 
         Double imageScale = this.getActiveAttributes().getScale();
         Offset os = this.getActiveAttributes().getLabelOffset();
@@ -961,7 +1005,7 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @param dc the current draw context.
      */
-    protected void drawLabel(DrawContext dc)
+    protected void drawLabel(DrawContext dc, OrderedPlacemark opm)
     {
         if (this.labelText == null)
             return;
@@ -984,8 +1028,8 @@ public class PointPlacemark extends WWObjectImpl
         if (font == null)
             font = PointPlacemarkAttributes.DEFAULT_LABEL_FONT;
 
-        float x = (float) (this.screenPoint.x + this.dx);
-        float y = (float) (this.screenPoint.y + this.dy);
+        float x = (float) (opm.screenPoint.x + this.dx);
+        float y = (float) (opm.screenPoint.y + this.dy);
 
         Double imageScale = this.getActiveAttributes().getScale();
         Offset os = this.getActiveAttributes().getLabelOffset();
@@ -1035,7 +1079,7 @@ public class PointPlacemark extends WWObjectImpl
      * @param dc             the current draw context.
      * @param pickCandidates the pick support object to use when adding this as a pick candidate.
      */
-    protected void drawLine(DrawContext dc, PickSupport pickCandidates)
+    protected void drawLine(DrawContext dc, PickSupport pickCandidates, OrderedPlacemark opm)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
@@ -1046,15 +1090,15 @@ public class PointPlacemark extends WWObjectImpl
 
         try
         {
-            dc.getView().pushReferenceCenter(dc, this.placePoint); // draw relative to the place point
+            dc.getView().pushReferenceCenter(dc, opm.placePoint); // draw relative to the place point
 
             this.setLineWidth(dc);
             this.setLineColor(dc, pickCandidates);
 
             gl.glBegin(GL2.GL_LINE_STRIP);
             gl.glVertex3d(Vec4.ZERO.x, Vec4.ZERO.y, Vec4.ZERO.z);
-            gl.glVertex3d(this.terrainPoint.x - this.placePoint.x, this.terrainPoint.y - this.placePoint.y,
-                this.terrainPoint.z - this.placePoint.z);
+            gl.glVertex3d(opm.terrainPoint.x - opm.placePoint.x, opm.terrainPoint.y - opm.placePoint.y,
+                opm.terrainPoint.z - opm.placePoint.z);
             gl.glEnd();
         }
         finally
@@ -1069,7 +1113,7 @@ public class PointPlacemark extends WWObjectImpl
      * @param dc             the current draw context.
      * @param pickCandidates the pick support object to use when adding this as a pick candidate.
      */
-    protected void drawPoint(DrawContext dc, PickSupport pickCandidates)
+    protected void drawPoint(DrawContext dc, PickSupport pickCandidates, OrderedPlacemark opm)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
@@ -1097,19 +1141,19 @@ public class PointPlacemark extends WWObjectImpl
             gl.glAlphaFunc(GL2.GL_GREATER, 0.001f);
 
             // Adjust depth of point to bring it slightly forward
-            double depth = this.screenPoint.z - (8d * 0.00048875809d);
+            double depth = opm.screenPoint.z - (8d * 0.00048875809d);
             depth = depth < 0d ? 0d : (depth > 1d ? 1d : depth);
             gl.glDepthFunc(GL.GL_LESS);
             gl.glDepthRange(depth, depth);
 
             gl.glBegin(GL2.GL_POINTS);
-            gl.glVertex3d(this.screenPoint.x, this.screenPoint.y, 0);
+            gl.glVertex3d(opm.screenPoint.x, opm.screenPoint.y, 0);
             gl.glEnd();
 
             gl.glDepthRange(0, 1); // reset depth range to the OGL default
 
             if (!dc.isPickingMode()) // don't pick via the label
-                this.drawLabel(dc);
+                this.drawLabel(dc, opm);
         }
         finally
         {
@@ -1124,16 +1168,16 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @return true if the line should be drawn and it intersects the view frustum, otherwise false.
      */
-    protected boolean isDrawLine(DrawContext dc)
+    protected boolean isDrawLine(DrawContext dc, OrderedPlacemark opm)
     {
         if (!this.isLineEnabled() || dc.is2DGlobe() || this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND
-            || this.terrainPoint == null)
+            || opm.terrainPoint == null)
             return false;
 
         if (dc.isPickingMode())
-            return dc.getPickFrustums().intersectsAny(this.placePoint, this.terrainPoint);
+            return dc.getPickFrustums().intersectsAny(opm.placePoint, opm.terrainPoint);
         else
-            return dc.getView().getFrustumInModelCoordinates().intersectsSegment(this.placePoint, this.terrainPoint);
+            return dc.getView().getFrustumInModelCoordinates().intersectsSegment(opm.placePoint, opm.terrainPoint);
     }
 
     /**
@@ -1366,11 +1410,11 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @param dc the current draw context.
      */
-    protected void computePlacemarkPoints(DrawContext dc)
+    protected void computePlacemarkPoints(DrawContext dc, OrderedPlacemark opm)
     {
-        this.placePoint = null;
-        this.terrainPoint = null;
-        this.screenPoint = null;
+        opm.placePoint = null;
+        opm.terrainPoint = null;
+        opm.screenPoint = null;
 
         Position pos = this.getPosition();
         if (pos == null)
@@ -1378,29 +1422,38 @@ public class PointPlacemark extends WWObjectImpl
 
         if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND)
         {
-            this.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
+            opm.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
         }
         else if (this.altitudeMode == WorldWind.RELATIVE_TO_GROUND)
         {
-            this.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), pos.getAltitude());
+            opm.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), pos.getAltitude());
         }
         else  // ABSOLUTE
         {
             double height = pos.getElevation()
                 * (this.isApplyVerticalExaggeration() ? dc.getVerticalExaggeration() : 1);
-            this.placePoint = dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), height);
+            opm.placePoint = dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), height);
         }
 
-        if (this.placePoint == null)
+        if (opm.placePoint == null)
             return;
 
         // Compute a terrain point if needed.
         if (this.isLineEnabled() && this.altitudeMode != WorldWind.CLAMP_TO_GROUND)
-            this.terrainPoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
+            opm.terrainPoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
 
         // Compute the placemark point's screen location.
-        this.screenPoint = dc.getView().project(this.placePoint);
-        this.eyeDistance = this.placePoint.distanceTo3(dc.getView().getEyePoint());
+        opm.screenPoint = dc.getView().project(opm.placePoint);
+        opm.eyeDistance = opm.placePoint.distanceTo3(dc.getView().getEyePoint());
+
+        if (dc.isPickingMode())
+        {
+            // Cache the computed values for use in the draw phase.
+            this.placePoint = opm.placePoint;
+            this.screenPoint = opm.screenPoint;
+            this.terrainPoint = opm.terrainPoint;
+            this.eyeDistance = opm.eyeDistance;
+        }
     }
 
     /**
@@ -1410,15 +1463,15 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @return the bounding rectangle.
      */
-    protected Rectangle computeImageRectangle(DrawContext dc)
+    protected Rectangle computeImageRectangle(DrawContext dc, OrderedPlacemark opm)
     {
         double s = this.getActiveAttributes().getScale() != null ? this.getActiveAttributes().getScale() : 1;
 
         double width = s * (this.activeTexture != null ? this.activeTexture.getWidth(dc) : 1);
         double height = s * (this.activeTexture != null ? this.activeTexture.getHeight(dc) : 1);
 
-        double x = this.screenPoint.x + (this.isDrawPoint(dc) ? -0.5 * s : this.dx);
-        double y = this.screenPoint.y + (this.isDrawPoint(dc) ? -0.5 * s : this.dy);
+        double x = opm.screenPoint.x + (this.isDrawPoint(dc) ? -0.5 * s : this.dx);
+        double y = opm.screenPoint.y + (this.isDrawPoint(dc) ? -0.5 * s : this.dy);
 
         return new Rectangle((int) x, (int) y, (int) Math.ceil(width), (int) Math.ceil(height));
     }
