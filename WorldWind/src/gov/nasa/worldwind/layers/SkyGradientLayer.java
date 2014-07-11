@@ -119,6 +119,9 @@ public class SkyGradientLayer extends AbstractLayer
     @Override
     public void doRender(DrawContext dc)
     {
+        if (dc.is2DGlobe())
+            return; // Layer doesn't make sense in 2D
+
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
 

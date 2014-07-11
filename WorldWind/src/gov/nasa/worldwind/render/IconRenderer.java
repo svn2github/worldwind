@@ -288,7 +288,7 @@ public class IconRenderer
 
             double eyeDistance = icon.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(iconPoint);
 
-            if (this.isHorizonClippingEnabled() && eyeDistance > horizon)
+            if (this.isHorizonClippingEnabled() && !dc.is2DGlobe() && eyeDistance > horizon)
             {
                 // Record feedback data for this WWIcon if feedback is enabled.
                 this.recordFeedback(dc, icon, iconPoint, null);

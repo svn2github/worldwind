@@ -111,7 +111,7 @@ public class DeclutteringTextRenderer
                 continue;
 
             double eyeDistance = dc.getView().getEyePoint().distanceTo3(textPoint);
-            if (eyeDistance > horizon)
+            if (!dc.is2DGlobe() && eyeDistance > horizon)
                 continue;
 
             if (!frustumInModelCoords.contains(textPoint))

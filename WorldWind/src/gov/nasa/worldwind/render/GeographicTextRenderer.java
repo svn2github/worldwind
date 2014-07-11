@@ -257,7 +257,7 @@ public class GeographicTextRenderer
                 continue;
 
             double eyeDistance = dc.getView().getEyePoint().distanceTo3(textPoint);
-            if (eyeDistance > horizon)
+            if (!dc.is2DGlobe() && eyeDistance > horizon)
                 continue;
 
             if (!frustumInModelCoords.contains(textPoint))
@@ -311,7 +311,7 @@ public class GeographicTextRenderer
 
         double horizon = dc.getView().getHorizonDistance();
         double eyeDistance = dc.getView().getEyePoint().distanceTo3(textPoint);
-        if (eyeDistance > horizon)
+        if (!dc.is2DGlobe() && eyeDistance > horizon)
             return;
 
         if (!dc.getView().getFrustumInModelCoordinates().contains(textPoint))

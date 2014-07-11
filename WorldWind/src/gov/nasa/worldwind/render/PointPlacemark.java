@@ -617,7 +617,7 @@ public class PointPlacemark extends WWObjectImpl
             opm.eyeDistance = this.eyeDistance;
         }
 
-        if (this.isClipToHorizon() && !dc.isContinuous2DGlobe())
+        if (this.isClipToHorizon() && !dc.is2DGlobe())
         {
             // Don't draw if beyond the horizon.
             double horizon = dc.getView().getHorizonDistance();

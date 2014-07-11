@@ -851,7 +851,7 @@ public class TacticalGraphicLabel implements OrderedRenderable
 
         // Don't draw if beyond the horizon.
         double horizon = dc.getView().getHorizonDistance();
-        if (this.eyeDistance > horizon)
+        if (!dc.is2DGlobe() && this.eyeDistance > horizon)
             return;
 
         if (this.intersectsFrustum(dc))

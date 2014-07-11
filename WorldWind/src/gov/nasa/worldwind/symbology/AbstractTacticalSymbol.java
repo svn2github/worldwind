@@ -1033,7 +1033,7 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
 
             // Don't draw if beyond the horizon.
             double horizon = dc.getView().getHorizonDistance();
-            if (this.eyeDistance > horizon)
+            if (!dc.is2DGlobe() && this.eyeDistance > horizon)
                 return;
 
             // If the symbol has never been laid out perform a frustum test using estimated screen bounds. If the symbol

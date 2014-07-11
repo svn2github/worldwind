@@ -228,10 +228,13 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             if (!dc.getView().getFrustumInModelCoordinates().contains(annotationPoint))
                 return;
 
-            double horizon = dc.getView().getHorizonDistance();
-            eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
-            if (eyeDistance > horizon)
-                return;
+            if (!dc.isContinuous2DGlobe())
+            {
+                double horizon = dc.getView().getHorizonDistance();
+                eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
+                if (eyeDistance > horizon)
+                    return;
+            }
         }
         // The annotation isn't drawn here, but added to the ordered queue to be drawn back-to-front.
         dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
