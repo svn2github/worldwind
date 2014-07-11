@@ -170,9 +170,10 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
             throw new IllegalArgumentException(msg);
         }
 
-        if (dc.isContinuous2DGlobe() && this.currentFrameTime != dc.getFrameTimeStamp())
+        if (dc.isContinuous2DGlobe() && annotation instanceof ScreenAnnotation
+            && this.currentFrameTime != dc.getFrameTimeStamp())
         {
-            // Keep track of which annotations are added to the ordered renderable list so that they are not added
+            // Keep track of which screen annotations are added to the ordered renderable list so that they are not added
             // to that list more than once per frame.
             this.currentPickAnnotations.clear();
             this.currentDrawAnnotations.clear();
