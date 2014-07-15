@@ -99,7 +99,7 @@ public class KMLPolygonImpl extends Polygon implements KMLRenderable
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
-        // Intentionally left blank; KML polygon does nothing during the preRender phase.
+        super.preRender(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)

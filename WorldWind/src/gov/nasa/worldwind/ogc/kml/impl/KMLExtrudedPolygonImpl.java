@@ -101,7 +101,7 @@ public class KMLExtrudedPolygonImpl extends ExtrudedPolygon implements KMLRender
 
     public void preRender(KMLTraversalContext tc, DrawContext dc)
     {
-        // Intentionally left blank; KML extruded polygon does nothing during the preRender phase.
+        super.preRender(dc);
     }
 
     public void render(KMLTraversalContext tc, DrawContext dc)
