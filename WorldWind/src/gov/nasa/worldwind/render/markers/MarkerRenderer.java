@@ -246,7 +246,7 @@ public class MarkerRenderer
         Vec4 eyePoint = dc.getView().getEyePoint();
 
         // If this is a new frame, recompute surface points.
-        if (dc.getFrameTimeStamp() != this.frameTimeStamp)
+        if (dc.getFrameTimeStamp() != this.frameTimeStamp || dc.isContinuous2DGlobe())
         {
             this.frameTimeStamp = dc.getFrameTimeStamp();
             this.computeSurfacePoints(dc, markers);
@@ -291,8 +291,23 @@ public class MarkerRenderer
             gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT
                 | GL2.GL_COLOR_BUFFER_BIT);
 
-            float[] lightPosition =
-                {(float) (cameraPosition.x * 2), (float) (cameraPosition.y / 2), (float) (cameraPosition.z), 0.0f};
+            float[] lightPosition = new float[4];
+
+            if (dc.is2DGlobe())
+            {
+                lightPosition[0] = 0.2f;
+                lightPosition[1] = -0.5f;
+                lightPosition[2] = 1f;
+                lightPosition[3] = 0f;
+            }
+            else
+            {
+                lightPosition[0] = (float) cameraPosition.x * 2;
+                lightPosition[1] = (float) cameraPosition.y() / 2;
+                lightPosition[2] = (float) cameraPosition.z();
+                lightPosition[3] = 0f;
+            }
+
             float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};

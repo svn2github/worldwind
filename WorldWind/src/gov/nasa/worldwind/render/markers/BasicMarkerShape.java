@@ -418,23 +418,27 @@ public class BasicMarkerShape
 
             // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
             // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(normal.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -normal.y;
-            double B = normal.x;
-            double L = Math.sqrt(A * A + B * B);
-
-            // Rotate the cube so that one of the faces points north
-            Position position = dc.getGlobe().computePositionFromPoint(point);
-            Vec4 north = dc.getGlobe().computeNorthPointingTangentAtLocation(position.getLatitude(),
-                position.getLongitude());
-            Vec4 rotatedY = Vec4.UNIT_NEGATIVE_Y.transformBy3(Matrix.fromAxisAngle(angle, A / L, B / L, 0));
-            Angle northAngle = rotatedY.angleBetween3(north);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate cube normal to globe
 
-            gl.glRotated(northAngle.degrees, 0, 0, 1); // rotate to face north
+            if (!(normal.equals(Vec4.UNIT_Z) || normal.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                Angle angle = Angle.fromRadians(Math.acos(normal.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -normal.y;
+                double B = normal.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                // Rotate the cube so that one of the faces points north
+                Position position = dc.getGlobe().computePositionFromPoint(point);
+                Vec4 north = dc.getGlobe().computeNorthPointingTangentAtLocation(position.getLatitude(),
+                    position.getLongitude());
+                Vec4 rotatedY = Vec4.UNIT_NEGATIVE_Y.transformBy3(Matrix.fromAxisAngle(angle, A / L, B / L, 0));
+                Angle northAngle = rotatedY.angleBetween3(north);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate cube normal to globe
+
+                gl.glRotated(northAngle.degrees, 0, 0, 1); // rotate to face north
+            }
 
             // Apply heading, pitch, and roll
             if (this.isApplyOrientation())
@@ -480,16 +484,24 @@ public class BasicMarkerShape
                     marker.getPitch());
             }
 
-            // This code performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(orientation.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -orientation.y;
-            double B = orientation.x;
-            double L = Math.sqrt(A * A + B * B);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
+
+            if (!(orientation.equals(Vec4.UNIT_Z) || orientation.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                // This code performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
+                // Compute rotation angle
+                Angle angle = Angle.fromRadians(Math.acos(orientation.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -orientation.y;
+                double B = orientation.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate shape to proper heading and pitch
+            }
+            else if (orientation.equals(Vec4.UNIT_NEGATIVE_Z))
+            {
+                gl.glRotated(180, 1, 0, 0); // rotate to point cone away from globe's surface
+            }
 
             gl.glScaled(size, size, size);                 // scale
             gl.glCallList(dlResource[0]);
@@ -537,16 +549,20 @@ public class BasicMarkerShape
                     marker.getPitch());
             }
 
-            // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
-            // Compute rotation angle
-            Angle angle = Angle.fromRadians(Math.acos(orientation.z));
-            // Compute the direction cosine factors that define the rotation axis
-            double A = -orientation.y;
-            double B = orientation.x;
-            double L = Math.sqrt(A * A + B * B);
-
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
+
+            if (!(orientation.equals(Vec4.UNIT_Z) || orientation.equals(Vec4.UNIT_NEGATIVE_Z)))
+            {
+                // This performs the same operation as Vec4.axisAngle() but with a "v2" of <0, 0, 1>.
+                // Compute rotation angle
+                Angle angle = Angle.fromRadians(Math.acos(orientation.z));
+                // Compute the direction cosine factors that define the rotation axis
+                double A = -orientation.y;
+                double B = orientation.x;
+                double L = Math.sqrt(A * A + B * B);
+
+                gl.glRotated(angle.degrees, A / L, B / L, 0);  // rotate to proper heading and pitch
+            }
 
             gl.glScaled(size, size, size);                 // scale
             gl.glCallList(dlResource[0]);
@@ -619,6 +635,7 @@ public class BasicMarkerShape
             double L = Math.sqrt(A * A + B * B);
 
             gl.glRotated(directionAngle.degrees, A / L, B / L, 0);  // point line toward p2
+
             double scale = attrs.getHeadingScale() * size;
             gl.glScaled(scale, scale, scale);                       // scale
             gl.glCallList(dlResource[0]);
