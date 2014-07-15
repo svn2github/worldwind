@@ -33,7 +33,7 @@ public class Markers extends ApplicationTemplate
             {
                 new BasicMarkerAttributes(Material.BLACK, BasicMarkerShape.SPHERE, 1d, 10, 5),
                 new BasicMarkerAttributes(Material.MAGENTA, BasicMarkerShape.CUBE, 1d, 10, 5),
-                new BasicMarkerAttributes(Material.DARK_GRAY, BasicMarkerShape.CONE, 1d, 10, 5),
+                new BasicMarkerAttributes(Material.YELLOW, BasicMarkerShape.CONE, 1d, 10, 5),
                 new BasicMarkerAttributes(Material.LIGHT_GRAY, BasicMarkerShape.CYLINDER, 1d, 10, 5),
                 new BasicMarkerAttributes(Material.GRAY, BasicMarkerShape.HEADING_ARROW, 1d, 10, 5),
                 new BasicMarkerAttributes(Material.WHITE, BasicMarkerShape.HEADING_LINE, 1d, 10, 5),
@@ -68,7 +68,7 @@ public class Markers extends ApplicationTemplate
             super(true, true, false);
 
             double minLat = 20, maxLat = 60, latDelta = 2;
-            double minLon = -140, maxLon = -60, lonDelta = 2;
+            double minLon = -179, maxLon = 180, lonDelta = 10;
 
             int i = 0;
             ArrayList<Marker> markers = new ArrayList<Marker>();
@@ -83,6 +83,9 @@ public class Markers extends ApplicationTemplate
                     i++;
                 }
             }
+
+            Marker marker = new BasicMarker(Position.fromDegrees(0, 180, 0), attrs[2]);
+            markers.add(marker);
 
             final MarkerLayer layer = new MarkerLayer();
             layer.setOverrideMarkerElevation(true);
