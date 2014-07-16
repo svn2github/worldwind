@@ -1125,6 +1125,7 @@ public abstract class AbstractShape extends WWObjectImpl
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
+                this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
                 shape.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
@@ -1142,6 +1143,7 @@ public abstract class AbstractShape extends WWObjectImpl
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
+                this.currentData = (AbstractShapeData) this.shapeDataCache.getEntry(dc.getGlobe());
                 shape.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
