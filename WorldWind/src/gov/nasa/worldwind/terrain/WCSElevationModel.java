@@ -382,12 +382,10 @@ public class WCSElevationModel extends BasicElevationModel
         {
             rs.addStateValueAsString(context, AVKey.WCS_VERSION, ((URLBuilder) value).serviceVersion);
         }
-        else if (value instanceof WCS100DescribeCoverage)
+        else if (!(value instanceof WCS100DescribeCoverage))
         {
-            // Skip this entry. The DescribeCoverage parameters will already be present in the parameter list.
-        }
-        else
-        {
+            // Don't pass DescribeCoverage to superclass. The DescribeCoverage parameters will already be present in the
+            // parameter list, so do nothing here.
             super.getRestorableStateForAVPair(key, value, rs, context);
         }
     }
