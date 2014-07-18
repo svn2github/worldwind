@@ -876,11 +876,6 @@
 			attributes = {
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "NASA World Wind";
-				TargetAttributes = {
-					0BCBC60617C68E6D00709B37 = {
-						DevelopmentTeam = H43GJHGV9D;
-					};
-				};
 			};
 			buildConfigurationList = 0BCBC60217C68E6D00709B37 /* Build configuration list for PBXProject "TAIGA" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1206,7 +1201,7 @@
 		0BCBC62B17C68E6D00709B37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
@@ -1228,7 +1223,7 @@
 		0BCBC62C17C68E6D00709B37 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
