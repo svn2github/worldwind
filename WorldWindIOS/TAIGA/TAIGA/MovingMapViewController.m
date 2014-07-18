@@ -53,6 +53,7 @@
 #import "DAFIFLayer.h"
 #import "SUALayer.h"
 #import "SUADataViewController.h"
+#import "DataBarViewController.h"
 
 @implementation MovingMapViewController
 {
@@ -69,6 +70,7 @@
     BOOL isShowRouteView;
 
     UIToolbar* topToolBar;
+    DataBarViewController* dataBar;
     UIBarButtonItem* connectivityButton;
     UIBarButtonItem* overlaysButton;
     UIBarButtonItem* quickViewsButton;
@@ -201,6 +203,7 @@
 
     [self createWorldWindView];
     [self createTopToolbar];
+    [self createDataBar];
     [self createChartsController];
     [self createRouteViewController];
     [self createSimulationController];
@@ -636,6 +639,16 @@
     [self.view addSubview:[locationTrackingViewController view]];
 }
 
+- (void) createDataBar
+{
+    CGRect frm = CGRectMake(0, self.view.frame.size.height - TAIGA_TOOLBAR_HEIGHT,
+            self.view.frame.size.width, TAIGA_TOOLBAR_HEIGHT);
+    dataBar = [[DataBarViewController alloc] initWithFrame:frm];
+
+    [self.view addSubview:[dataBar view]];
+    [self addChildViewController:dataBar];
+}
+
 - (void) createTopToolbar
 {
     topToolBar = [[UIToolbar alloc] init];
@@ -643,6 +656,8 @@
     [topToolBar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [topToolBar setBarStyle:UIBarStyleBlack];
     [topToolBar setTranslucent:NO];
+
+    [topToolBar setBackgroundColor:[UIColor clearColor]];
 
     CGSize size = CGSizeMake(140, TAIGA_TOOLBAR_HEIGHT);
 
@@ -994,8 +1009,8 @@
 
 - (void) gpsQualityNotification:(NSNotification*)notification
 {
-    CLLocation* location = (CLLocation*) [notification object];
-    [self showNoGPSSign:trackingLocation && ([notification object] == nil || [location horizontalAccuracy] < 0)];
+    NSNumber* quality = (NSNumber*) [notification object];
+    [self showNoGPSSign:[notification object] == nil || [quality doubleValue] < 0];
 }
 
 - (void) showNoGPSSign:(bool)yn

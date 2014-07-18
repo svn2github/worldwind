@@ -37,6 +37,8 @@
     timer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(pollDevice)
                                            userInfo:nil repeats:YES];
 
+    [self pollDevice];
+
     return self;
 }
 
@@ -161,7 +163,8 @@
     // Send the known GPS quality, or nil if the quality is not available.
     NMEASentence* ggaSentence = [mostRecentSentences objectForKey:NMEA_SENTENCE_TYPE_GPGGA];
     NSString* quality = ggaSentence != nil ? [ggaSentence fieldWithName:NMEA_FIELD_FIX_QUALITY] : nil;
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:quality];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY
+                                                        object:[NSNumber numberWithDouble:[quality intValue]]];
 }
 
 - (NSDate*)dateFromRMCSentence:(NMEASentence*)rmcSentence

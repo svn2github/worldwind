@@ -34,7 +34,6 @@
 
     GPSController* gpsController;
     LocationServicesController* locationServicesController;
-    bool locationTrackingEnabled;
 
     UITextField* fieldBeingEdited;
 }
@@ -49,8 +48,7 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTable:)
                                                  name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(locationTrackingChanged:)
-                                                 name:TAIGA_LOCATION_TRACKING_ENABLED object:nil];
+    [self startGPS];
 
     return self;
 }
@@ -89,24 +87,15 @@
     }
 }
 
-- (void) locationTrackingChanged:(NSNotification*)notification
+- (void) startGPS
 {
-    if (locationTrackingEnabled)
-        [self disableCurrentTrackingSource];
-
-    locationTrackingEnabled = ((NSNumber*) [notification object]).boolValue;
-
-    if (locationTrackingEnabled)
-    {
-        if (gpsSource != GPS_SOURCE_NONE)
-            [self enableCurrentTrackingSource];
-        else // Notify that there is no GPS device active
-            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
-
-    }
+    if (gpsSource != GPS_SOURCE_NONE)
+        [self enableCurrentGPSSource];
+    else // Notify that there is no GPS device active
+        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
 }
 
-- (void) enableCurrentTrackingSource
+- (void) enableCurrentGPSSource
 {
     if (gpsSource == GPS_SOURCE_DEVICE)
     {
@@ -122,7 +111,7 @@
     }
 }
 
-- (void) disableCurrentTrackingSource
+- (void) disableCurrentGPSSource
 {
     if (gpsSource == GPS_SOURCE_DEVICE)
     {
@@ -378,7 +367,7 @@
 
 - (void) tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    [self disableCurrentTrackingSource];
+    [self disableCurrentGPSSource];
 
     if ([indexPath section] == GPS_CONTROLLER_SECTION)
     {
@@ -392,8 +381,8 @@
         [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
                  withRowAnimation:UITableViewRowAnimationAutomatic];
 
-        if (gpsSource != GPS_SOURCE_NONE && locationTrackingEnabled)
-            [self enableCurrentTrackingSource];
+        if (gpsSource != GPS_SOURCE_NONE)
+            [self enableCurrentGPSSource];
     }
 
     if (gpsSource == GPS_SOURCE_NONE)

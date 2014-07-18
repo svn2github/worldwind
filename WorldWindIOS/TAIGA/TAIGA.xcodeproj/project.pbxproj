@@ -151,6 +151,7 @@
 		1BF9AD371F4EC111A8300223 /* CC_SCT_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A68DE17AF5C306D4FA39 /* CC_SCT_128.png */; };
 		1BF9AD3B66A0D89D59B4EDBB /* WX_NONE_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A8334881DA2A22450231 /* WX_NONE_128.png */; };
 		1BF9AD74A19AED4BB0B7E873 /* weather32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AFE5A5C25F04D4A2D8DA /* weather32x32.png */; };
+		1BF9AD79AC4F570B0DAA626C /* DataBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9AD3461EF149E5D412C10 /* DataBarViewController.m */; };
 		1BF9AD8C0CFB45EC26874E61 /* PIREP_ICONS_0015_Layer-17.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD0D9B05173FA74A8F02 /* PIREP_ICONS_0015_Layer-17.png */; };
 		1BF9AD92FDEF5764683F72D9 /* CC_BKN_128.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9A3BCD28EC7E52BD71D11 /* CC_BKN_128.png */; };
 		1BF9ADA1B437C51FB50B3152 /* TerrainProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9A549199359016553F855 /* TerrainProfileController.m */; };
@@ -374,6 +375,7 @@
 		1BF9AABCA8893891715B1668 /* WX_DRDU_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DRDU_128.png; sourceTree = "<group>"; };
 		1BF9AAC6022550E9089A90D7 /* taigaversion.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = taigaversion.txt; sourceTree = SOURCE_ROOT; };
 		1BF9AAD0347D3D745E7E6B55 /* PIREPLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PIREPLayer.m; sourceTree = "<group>"; };
+		1BF9AAF2BC237366B221BA69 /* DataBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataBarViewController.h; sourceTree = "<group>"; };
 		1BF9AAFDD905FB583E16E105 /* WX_DZ_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WX_DZ_128.png; sourceTree = "<group>"; };
 		1BF9AAFDE565B336A0D805BC /* 314-move-point.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "314-move-point.png"; sourceTree = "<group>"; };
 		1BF9AB2EB6370F5ED060DE1C /* PIREP_ICONS_0012_Layer-14.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0012_Layer-14.png"; sourceTree = "<group>"; };
@@ -401,6 +403,7 @@
 		1BF9ACEB71B820E0386B314F /* WB_10kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_10kt_128.png; sourceTree = "<group>"; };
 		1BF9ACFA76BAB92CC2669038 /* 01-refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "01-refresh@2x.png"; sourceTree = "<group>"; };
 		1BF9AD0D9B05173FA74A8F02 /* PIREP_ICONS_0015_Layer-17.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PIREP_ICONS_0015_Layer-17.png"; sourceTree = "<group>"; };
+		1BF9AD3461EF149E5D412C10 /* DataBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataBarViewController.m; sourceTree = "<group>"; };
 		1BF9AD37497E309C2BBF9DC9 /* 361-1up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "361-1up@2x.png"; sourceTree = "<group>"; };
 		1BF9AD77F1944F4FFA668ACE /* TerrainAltitudeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerrainAltitudeLayer.m; sourceTree = "<group>"; };
 		1BF9AD7B4E8449B13741C59D /* WB_55kt_128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WB_55kt_128.png; sourceTree = "<group>"; };
@@ -695,6 +698,8 @@
 				CC8CFCB6027603B62058EF49 /* SUALayer.h */,
 				CC8CFDB70E2F75A71ACA043B /* SUADataViewController.m */,
 				CC8CF022078110ACE57DF7FE /* SUADataViewController.h */,
+				1BF9AD3461EF149E5D412C10 /* DataBarViewController.m */,
+				1BF9AAF2BC237366B221BA69 /* DataBarViewController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -871,6 +876,11 @@
 			attributes = {
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "NASA World Wind";
+				TargetAttributes = {
+					0BCBC60617C68E6D00709B37 = {
+						DevelopmentTeam = H43GJHGV9D;
+					};
+				};
 			};
 			buildConfigurationList = 0BCBC60217C68E6D00709B37 /* Build configuration list for PBXProject "TAIGA" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1108,6 +1118,7 @@
 				1BF9AABF243F6992BFBB44AB /* WxCamFetcher.java in Sources */,
 				CC8CFFC2A1BCE709829B71F9 /* SUALayer.m in Sources */,
 				CC8CF39118D9810EB8C2D240 /* SUADataViewController.m in Sources */,
+				1BF9AD79AC4F570B0DAA626C /* DataBarViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1195,6 +1206,8 @@
 		0BCBC62B17C68E6D00709B37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";
@@ -1206,6 +1219,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1214,6 +1228,8 @@
 		0BCBC62C17C68E6D00709B37 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";
@@ -1225,6 +1241,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};

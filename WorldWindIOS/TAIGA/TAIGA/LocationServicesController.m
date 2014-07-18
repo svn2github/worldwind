@@ -92,7 +92,8 @@
         double horizontalAccuracy = [location horizontalAccuracy];
         if (horizontalAccuracy < 0)
         {
-            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:location];
+            [[NSNotificationCenter defaultCenter]
+                    postNotificationName:TAIGA_GPS_QUALITY object:[NSNumber numberWithDouble:horizontalAccuracy]];
             return NO;
         }
         else
@@ -107,7 +108,8 @@
 
 - (void) postCurrentPosition
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:currentLocation];
+    double horizontalAccuracy = [currentLocation horizontalAccuracy];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:[NSNumber numberWithDouble:horizontalAccuracy]];
     [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_CURRENT_AIRCRAFT_POSITION object:currentLocation];
 }
 
