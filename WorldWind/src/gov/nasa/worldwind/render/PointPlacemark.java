@@ -259,7 +259,11 @@ public class PointPlacemark extends WWObjectImpl
         this.altitudeMode = altitudeMode;
     }
 
-    /** {@inheritDoc} * */
+    /**
+     * Returns the distance from the current view's eye point to the placemark.
+     *
+     * @return the distance from the placemark to the current view's eye point.
+     */
     public double getDistanceFromEye()
     {
         return this.eyeDistance;

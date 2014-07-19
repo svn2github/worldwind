@@ -22,7 +22,7 @@ public interface Globe2D
      * @param continuous <code>true</code> if it makes sense to treat the associated projection as continuous, otherwise
      *                   <code>false</code>.
      *
-     * @see {@link gov.nasa.worldwind.globes.GeographicProjection#isContinuous()}
+     * @see gov.nasa.worldwind.globes.GeographicProjection#isContinuous()
      */
     void setContinuous(boolean continuous);
 

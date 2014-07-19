@@ -8,7 +8,7 @@ package gov.nasa.worldwind.globes;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * <p/>
@@ -414,7 +414,7 @@ public interface ElevationModel extends WWObject, Restorable, Disposable
      *
      * @return true if extreme values caching is enabled, otherwise false.
      *
-     * @see {@link #setExtremesCachingEnabled(boolean)}.
+     * @see #setExtremesCachingEnabled(boolean)
      */
     boolean isExtremesCachingEnabled();
 }

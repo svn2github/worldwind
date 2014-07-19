@@ -98,6 +98,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
                 return false;
             if (Double.compare(that.verticalExaggeration, verticalExaggeration) != 0)
                 return false;
+            //noinspection RedundantIfStatement
             if (projection != null ? !projection.equals(that.projection)
                 : that.projection != null)
                 return false;
@@ -217,7 +218,7 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
      *
      * @return The active projection.
      *
-     * @see #setProjection(GeographicProjection
+     * @see #setProjection
      */
     public GeographicProjection getProjection()
     {
