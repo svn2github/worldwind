@@ -18,7 +18,6 @@
 #import "ZKCDHeader.h"
 #import "Settings.h"
 #import "WWLog.h"
-#import "GPSController.h"
 
 #define VIEW_TAG (100)
 
@@ -42,12 +41,6 @@
 - (id) init
 {
     self = [super initWithNibName:nil bundle:nil];
-
-    NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
-    if (address == nil || address.length == 0)
-    {
-        [GPSController setDefaultGPSDeviceAddress];
-    }
 
     return self;
 }

@@ -6,6 +6,9 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "DDLog.h"
+
+static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #define TAIGA_VERSION (@"0.0038")
 #define TAIGA_VERSION_DATE (@"6/19/14")
@@ -26,6 +29,8 @@
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_REMOVED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.removed")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_REPLACED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.replaced")
 #define TAIGA_FLIGHT_ROUTE_WAYPOINT_MOVED (@"gov.nasa.worldwind.taiga.flightroute.waypoint.moved")
+#define TAIGA_GDB_DEVICE_ADDRESS (@"gov.nasa.worldwind.taiga.gdb.device.address")
+#define TAIGA_GDB_MESSAGE (@"gov.nasa.worldwind.taiga.gdb.message")
 #define TAIGA_GPS_DEVICE_ADDRESS (@"gov.nasa.worldwind.taiga.gpsaddress")
 #define TAIGA_GPS_QUALITY (@"gov.nasa.worldwind.taiga.gpsfixquality")
 #define TAIGA_GPS_SOURCE (@"gov.nasa.worldwind.taiga.gpssource")

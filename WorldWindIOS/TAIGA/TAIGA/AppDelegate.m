@@ -5,27 +5,88 @@
  @version $Id$
  */
 
+#import <CoreLocation/CoreLocation.h>
 #import "AppDelegate.h"
-#import "MovingMapViewController.h"
-#import "WeatherScreenController.h"
-#import "ChartsScreenController.h"
-#import "SettingsScreenController.h"
 #import "MainScreenController.h"
-
-#define TOOLBAR_HEIGHT (80)
+#import "DDASLLogger.h"
+#import "DDTTYLogger.h"
+#import "DDFileLogger.h"
+#import "AppConstants.h"
+#import "UnitsFormatter.h"
+#import "Settings.h"
+#import "GPSController.h"
+#import "GDBMessageController.h"
 
 @implementation AppDelegate
+{
+    UnitsFormatter* formatter;
+    GDBMessageController* gdbMessageController;
+}
 
 - (BOOL) application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
+    [self startLogging];
+
+    NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
+    if (address == nil || address.length == 0)
+    {
+        [GPSController setDefaultGPSDeviceAddress];
+    }
+
+    address = (NSString*) [Settings getObjectForName:TAIGA_GDB_DEVICE_ADDRESS];
+    if (address == nil || address.length == 0)
+    {
+        [GDBMessageController setDefaultGDBDeviceAddress];
+    }
+
     MainScreenController* mainScreenController = [[MainScreenController alloc] init];
 
     [self.window setRootViewController:mainScreenController];
 
+    // Set up to log position changes and GDB messages.
+    gdbMessageController = [[GDBMessageController alloc] init];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(aircraftPositionChanged:)
+                                                 name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gdbMessageReceived:)
+                                                 name:TAIGA_GDB_MESSAGE object:nil];
+
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+- (void) startLogging
+{
+    formatter = [[UnitsFormatter alloc] init];
+
+    [DDLog addLogger:[DDASLLogger sharedInstance]]; // Apple system logger
+    [DDLog addLogger:[DDTTYLogger sharedInstance]]; // Console logger
+
+    // Set up logging to log file.
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* logsDirectory = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+
+    DDLogFileManagerDefault* logFileManagerDefault = [[DDLogFileManagerDefault alloc]
+            initWithLogsDirectory:logsDirectory];
+    DDFileLogger* fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManagerDefault];
+    [DDLog addLogger:fileLogger];
+}
+
+- (void) aircraftPositionChanged:(NSNotification*)notification
+{
+    CLLocation* location = [notification object];
+
+    NSString* s = [formatter formatDegreesLatitude:location.coordinate.latitude
+                                         longitude:location.coordinate.longitude
+                                    metersAltitude:location.altitude];
+    DDLogInfo(@"GPS: %@ (%d m accuracy)", s, location.horizontalAccuracy);
+}
+
+- (void) gdbMessageReceived:(NSNotification*)notification
+{
+    NSString* message = [notification object];
+    DDLogInfo(@"GDB Message: %@", message != nil ? message : @"NONE");
 }
 
 - (void) applicationWillResignActive:(UIApplication*)application

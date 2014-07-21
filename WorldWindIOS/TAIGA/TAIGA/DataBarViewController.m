@@ -17,6 +17,7 @@
     UnitsFormatter* formatter;
     CLLocation* currentLocation;
     UIButton* gpsPositionButton;
+    UIButton* gdbMessageButton;
 }
 
 - (DataBarViewController*) initWithFrame:(CGRect)frame
@@ -30,6 +31,8 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(aircraftPositionDidChange:)
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateGDBMessageView:)
+                                                 name:TAIGA_GDB_MESSAGE object:nil];
 
     return self;
 }
@@ -60,19 +63,37 @@
     [gpsPositionButton.titleLabel setNumberOfLines:0];
     [gpsPositionButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
     [gpsPositionButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
-    [gpsPositionButton setBounds:CGRectMake(0, 0, 160, self.view.frame.size.height)];
+    [gpsPositionButton setBounds:CGRectMake(0, 0, 300, self.view.frame.size.height)];
     [gpsPositionButton.titleLabel setShadowColor:[UIColor blackColor]];
     [gpsPositionButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
     [self updateGPSView];
 
     UIBarButtonItem* gpsPositionItem = [[UIBarButtonItem alloc] initWithCustomView:gpsPositionButton];
 
+
+    gdbMessageButton = [[UIButton alloc] init];
+    [gdbMessageButton.titleLabel setNumberOfLines:0];
+    [gdbMessageButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [gdbMessageButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [gdbMessageButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
+    [gdbMessageButton.titleLabel setShadowColor:[UIColor blackColor]];
+    [gdbMessageButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+    [self updateGPSView];
+
+    UIBarButtonItem* gdbMessageItem = [[UIBarButtonItem alloc] initWithCustomView:gdbMessageButton];
+
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    UIBarButtonItem* fixedSpace = [[UIBarButtonItem alloc]
+            initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    fixedSpace.width = 200;
 
     [toolbar setItems:[NSArray arrayWithObjects:
+            fixedSpace,
             flexibleSpace,
             gpsPositionItem,
+            flexibleSpace,
+            gdbMessageItem,
             flexibleSpace,
             nil]];
 
@@ -87,11 +108,6 @@
     [self.view addSubview:toolbar];
 }
 
-- (void) viewDidLoad
-{
-    [super viewDidLoad];
-}
-
 - (void) aircraftPositionDidChange:(NSNotification*)notification
 {
     currentLocation = [notification object];
@@ -100,10 +116,19 @@
 
 - (void) updateGPSView
 {
-    NSString* title = [[NSString alloc] initWithFormat:@"GPS\n%@\u00a0%@",
+    // Insert non-breaking spaces between the lat/lon/alt values.
+    NSString* title = [[NSString alloc] initWithFormat:@"GPS\n%@\u00a0%@\u00a0%@",
                                                        [formatter formatDegreesLatitude:currentLocation.coordinate.latitude],
-                                                       [formatter formatDegreesLongitude:currentLocation.coordinate.longitude]];
+                                                       [formatter formatDegreesLongitude:currentLocation.coordinate.longitude],
+                                                       [formatter formatMetersAltitude:currentLocation.altitude]];
     [gpsPositionButton setTitle:title forState:UIControlStateNormal];
+}
+
+- (void) updateGDBMessageView:(NSNotification*)notification
+{
+    NSString* message = [notification object];
+    NSString* title = [[NSString alloc] initWithFormat:@"GDB Message\n%@", message != nil ? message : @"NONE"];
+    [gdbMessageButton setTitle:title forState:UIControlStateNormal];
 }
 
 @end

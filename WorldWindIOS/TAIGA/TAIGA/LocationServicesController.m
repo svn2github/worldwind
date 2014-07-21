@@ -23,6 +23,7 @@
     locationManager = [[CLLocationManager alloc] init];
     [locationManager setActivityType:CLActivityTypeOtherNavigation];
     [locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
+    [locationManager setDistanceFilter:50];
     [locationManager setDelegate:self];
 
     [self setMode:LocationServicesControllerModeAllChanges];
