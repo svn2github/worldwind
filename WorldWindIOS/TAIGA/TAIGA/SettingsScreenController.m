@@ -447,8 +447,9 @@
 
             NSArray* gdbFrequencies = [NSArray arrayWithObjects:
                     @"10 seconds",
-                    @"10 minutes",
-                    @"30 minutes",
+                    @"1 minute",
+                    @"5 minutes",
+                    @"15 minutes",
                     @"1 hour",
                     nil
             ];
