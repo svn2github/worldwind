@@ -126,6 +126,7 @@
         return [nameA compare:nameB];
     }];
 
+    [filteredCharts removeAllObjects];
     [filteredCharts addObjectsFromArray:airportCharts];
 
     if ([self tableView] != nil)
