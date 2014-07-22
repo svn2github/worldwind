@@ -20,7 +20,6 @@
 #define REFRESH_SECTION (4)
 
 #define GPS_DEVICE_ROW (1)
-#define GPS_FREQUENCY_ROW (2)
 #define LOCATION_SERVICES_DEVICE_ROW (0)
 #define GDB_URL_ROW (0)
 #define GDB_FREQUENCY_ROW (1)
@@ -46,7 +45,6 @@
     UITextField* gdbURLTextField;
     UITextField* fieldBeingEdited;
     UISegmentedControl* gdbFrequencySelector;
-    UISegmentedControl* gpsFrequencySelector;
 }
 
 - (SettingsScreenController*) initWithFrame:(CGRect)frame
@@ -269,56 +267,6 @@
         NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
         UITextField* addressView = (UITextField*) [[cell contentView] viewWithTag:GPS_ADDRESS_VIEW_TAG];
         [addressView setText:address != nil ? address : @""];
-
-//        [self updateGPSFrequencySelector];
-    }
-    else if ([indexPath row] == GPS_FREQUENCY_ROW)
-    {
-        static NSString* cellIdentifier = @"GPSFrequencyCell";
-
-        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-        if (cell == nil)
-        {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
-            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]]; // just to align with device address label
-            [[cell imageView] setHidden:YES];
-            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-            [[cell textLabel] setText:@"Frequency"];
-
-            NSArray* gdbFrequencies = [NSArray arrayWithObjects:
-                    @"3 seconds",
-                    @"10 seconds",
-                    @"30 seconds",
-                    @"1 minute",
-                    nil
-            ];
-            gpsFrequencySelector = [[UISegmentedControl alloc] initWithItems:gdbFrequencies];
-            gpsFrequencySelector.frame = CGRectMake(170, 5, 500, cell.contentView.frame.size.height - 10);
-            [gpsFrequencySelector setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
-            [gpsFrequencySelector addTarget:self action:@selector(handleGPSFrequencySelection)
-                           forControlEvents:UIControlEventValueChanged];
-
-            [[cell contentView] setAutoresizesSubviews:YES];
-            [cell.contentView addSubview:gpsFrequencySelector];
-        }
-//
-//        int updateFrequency = [gpsController getUpdateFrequency];
-//        NSString* unit = @"second";
-//        if (updateFrequency >= 60)
-//        {
-//            unit = @"minute";
-//            updateFrequency /= 60;
-//        }
-//        NSString* frequencyString = [[NSString alloc] initWithFormat:@"%d %@", updateFrequency, unit];
-//        for (int i = 0; i < gpsFrequencySelector.numberOfSegments; i++)
-//        {
-//            NSString* segmentTitle = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) i];
-//            if ([segmentTitle hasPrefix:frequencyString])
-//            {
-//                gpsFrequencySelector.selectedSegmentIndex = i;
-//                break;
-//            }
-//        }
     }
     else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
     {
@@ -334,59 +282,9 @@
 
         [[cell textLabel] setText:@"iPad"];
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
-
-//        [self updateGPSFrequencySelector];
     }
 
     return cell;
-}
-
-- (void) updateGPSFrequencySelector
-{
-//    [gpsFrequencySelector setEnabled:gpsSource == GPS_SOURCE_DEVICE];
-//    for (int i = 0; i < [gpsFrequencySelector numberOfSegments]; i++)
-//    {
-//        [gpsFrequencySelector setEnabled:gpsSource == GPS_SOURCE_DEVICE forSegmentAtIndex:(NSUInteger) i];
-//    }
-
-//    if (gpsSource == GPS_SOURCE_DEVICE)
-    {
-        int updateFrequency = [gpsController getUpdateFrequency];
-        NSString* unit = @"second";
-        if (updateFrequency >= 60)
-        {
-            unit = @"minute";
-            updateFrequency /= 60;
-        }
-        NSString* frequencyString = [[NSString alloc] initWithFormat:@"%d %@", updateFrequency, unit];
-        for (int i = 0; i < gpsFrequencySelector.numberOfSegments; i++)
-        {
-            NSString* segmentTitle = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) i];
-            if ([segmentTitle hasPrefix:frequencyString])
-            {
-                NSLog(@"SELECTOR IS %d", gpsFrequencySelector.selectedSegmentIndex);
-                gpsFrequencySelector.selectedSegmentIndex = i;
-                NSLog(@"SETTING SELECTOR TO %d", gpsFrequencySelector.selectedSegmentIndex);
-                break;
-            }
-        }
-    }
-}
-
-- (void) handleGPSFrequencySelection
-{
-    int selectedIndex = [gpsFrequencySelector selectedSegmentIndex];
-    if (selectedIndex < 0)
-        return;
-
-    NSString* selectedString = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) selectedIndex];
-    NSArray* tokens = [selectedString componentsSeparatedByString:@" "];
-    int updateFrequency = [((NSString*) [tokens objectAtIndex:0]) intValue];
-    NSString* unit = [tokens objectAtIndex:1];
-    if ([unit hasPrefix:@"minute"])
-        updateFrequency *= 60;
-
-    [gpsController setUpdateFrequency:updateFrequency];
 }
 
 - (UITableViewCell*) cellForGDBMessageSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath

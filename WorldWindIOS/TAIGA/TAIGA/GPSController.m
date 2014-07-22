@@ -14,7 +14,7 @@
 #import "Settings.h"
 
 #define DEFAULT_GPS_DEVICE_ADDRESS @"http://worldwind.arc.nasa.gov/alaska/gps/gps.txt"
-#define DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY (10)
+#define DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY (3)
 
 @implementation GPSController
 {
@@ -53,22 +53,23 @@
     if (timer != nil)
         [timer invalidate];
 
-    int updateFrequency = [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY
-                                     defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
-    timer = [NSTimer scheduledTimerWithTimeInterval:updateFrequency target:self selector:@selector(pollDevice)
+//    int updateFrequency = [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY
+//                                     defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
+    timer = [NSTimer scheduledTimerWithTimeInterval:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY
+                                             target:self selector:@selector(pollDevice)
                                            userInfo:nil repeats:YES];
 }
-
-- (void) setUpdateFrequency:(int)updateFrequency
-{
-    [Settings setInt:updateFrequency forName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY];
-    [self startTimer];
-}
-
-- (int) getUpdateFrequency
-{
-    return [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
-}
+//
+//- (void) setUpdateFrequency:(int)updateFrequency
+//{
+//    [Settings setInt:updateFrequency forName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY];
+//    [self startTimer];
+//}
+//
+//- (int) getUpdateFrequency
+//{
+//    return [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
+//}
 
 - (void) pollDevice
 {
