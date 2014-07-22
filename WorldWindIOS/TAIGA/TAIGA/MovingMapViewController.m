@@ -42,6 +42,7 @@
 #import "ViewSelectionController.h"
 #import "TerrainProfileController.h"
 #import "AircraftLayer.h"
+#import "AircraftTrackLayer.h"
 #import "TerrainAltitudeLayer.h"
 #import "LocationTrackingViewController.h"
 #import "WWDAFIFLayer.h"
@@ -97,6 +98,7 @@
 
     WaypointLayer* waypointLayer;
     AircraftLayer* aircraftLayer;
+    AircraftTrackLayer* aircraftTrackLayer;
     WWRenderableLayer* flightRouteLayer;
     FAASectionalsLayer* faaChartsLayer;
     TerrainAltitudeLayer* terrainAltitudeLayer;
@@ -324,6 +326,12 @@
     [waypointLayer setEnabled:[Settings                                                                               getBoolForName:
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [waypointLayer displayName]] defaultValue:NO]];
     [layers addLayer:waypointLayer];
+
+    aircraftTrackLayer = [[AircraftTrackLayer alloc] init];
+    [aircraftTrackLayer setEnabled:[Settings                                 getBoolForName:
+            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
+                                             [aircraftTrackLayer displayName]] defaultValue:YES]];
+    [layers addLayer:aircraftTrackLayer];
 
     aircraftLayer = [[AircraftLayer alloc] init];
     [[aircraftLayer userTags] setObject:@"" forKey:TAIGA_HIDDEN_LAYER];

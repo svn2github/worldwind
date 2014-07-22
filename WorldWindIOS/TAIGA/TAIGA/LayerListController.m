@@ -24,6 +24,8 @@
 #import "WeatherCamLayer.h"
 #import "DAFIFLayer.h"
 #import "WaypointLayer.h"
+#import "AircraftTrackLayer.h"
+#import "AircraftTrackDetailController.h"
 
 @implementation LayerListController
 
@@ -190,6 +192,12 @@
         TerrainAltitudeDetailController* detailController =
                 [[TerrainAltitudeDetailController alloc] initWithLayer:(WWElevationShadingLayer*) layer];
 
+        [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
+    }
+    else if ([layer isKindOfClass:[AircraftTrackLayer class]])
+    {
+        AircraftTrackDetailController* detailController =
+                [[AircraftTrackDetailController alloc] initWithLayer:(AircraftTrackLayer*) layer];
         [((UINavigationController*) [self parentViewController]) pushViewController:detailController animated:YES];
     }
 }

@@ -188,6 +188,7 @@
 		1BF9AFF6ABD87609B3D91383 /* 19-gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BF9AD9C5CAA7BC7A14A2595 /* 19-gear@2x.png */; };
 		CC8CF0635E94C5A31F226F50 /* all-directions.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF75D510530566D33C381 /* all-directions.png */; };
 		CC8CF06A32832A871226013D /* RedrawingSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */; };
+		CC8CF109F2CAA6B19E7E1F0A /* AircraftTrackLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF10DFB4A959FAA30F463 /* AircraftTrackLayer.m */; };
 		CC8CF1263DDC26E68842E944 /* ColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFF3E5AF50715A46F682B /* ColorPicker.m */; };
 		CC8CF12F6250F0A22DF4E351 /* UIPopoverController+TAIGAAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF8B69AC51EA232F75DCB /* UIPopoverController+TAIGAAdditions.m */; };
 		CC8CF1B24676CE4DE16A2B8F /* 193-location-arrow-outline.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF920AC4D6B8DCBFE7015 /* 193-location-arrow-outline.png */; };
@@ -218,6 +219,7 @@
 		CC8CFA5488820FB99856EF0A /* OpenWeatherMapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF5A3000805B569BCF668 /* OpenWeatherMapLayer.m */; };
 		CC8CFA76E9345B0A2DF0A317 /* NewFlightRouteController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF139FF8DE7488AA3B2D4 /* NewFlightRouteController.m */; };
 		CC8CFC517B7AC990D9874242 /* DraggablePopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CFD4108F2825ADA8A1780 /* DraggablePopoverController.m */; };
+		CC8CFC540B85998C3C5B80D0 /* AircraftTrackDetailController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF7484472CBD2CE3495EC /* AircraftTrackDetailController.m */; };
 		CC8CFC66EF18CB4B4697BC96 /* 07-map-marker@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CC8CF9110C1D627B5FBAF73C /* 07-map-marker@2x.png */; };
 		CC8CFC73DD31F04F31AB4160 /* FlightRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */; };
 		CC8CFC9C00CE029B005892D8 /* EditWaypointPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = CC8CF763B4505131EE0308CC /* EditWaypointPopoverController.m */; };
@@ -467,16 +469,19 @@
 		CC8CF022078110ACE57DF7FE /* SUADataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SUADataViewController.h; sourceTree = "<group>"; };
 		CC8CF0A0D05965E79B4A21BD /* FlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF0E8D7E1A4A959D4578A /* 07-map-marker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "07-map-marker.png"; sourceTree = "<group>"; };
+		CC8CF10DFB4A959FAA30F463 /* AircraftTrackLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftTrackLayer.m; sourceTree = "<group>"; };
 		CC8CF11ADFC19FF9E4A0BE9D /* UnitsFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitsFormatter.h; sourceTree = "<group>"; };
 		CC8CF139FF8DE7488AA3B2D4 /* NewFlightRouteController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NewFlightRouteController.m; sourceTree = "<group>"; };
 		CC8CF16EBF260B33C30488A4 /* rounded-rect@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded-rect@2x.png"; sourceTree = "<group>"; };
 		CC8CF1ECB777FEB11D0C793E /* AltitudePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AltitudePicker.h; sourceTree = "<group>"; };
 		CC8CF220514A4BEE239EA0C0 /* UIPopoverController+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverController+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF2A1449A236B9E911B54 /* route-end@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end@2x.png"; sourceTree = "<group>"; };
+		CC8CF2F807E7397C0F784536 /* AircraftTrackLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftTrackLayer.h; sourceTree = "<group>"; };
 		CC8CF30D1D8DD836A8DC4C70 /* UITableViewCell+TAIGAAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+TAIGAAdditions.h"; sourceTree = "<group>"; };
 		CC8CF327A257057AA8DACB38 /* RedrawingSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedrawingSlider.m; sourceTree = "<group>"; };
 		CC8CF359E600DCDA4DD184B7 /* UnitsFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnitsFormatter.m; sourceTree = "<group>"; };
 		CC8CF395F1297FACD384E75B /* AddWaypointPopoverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddWaypointPopoverController.m; sourceTree = "<group>"; };
+		CC8CF3FEA56B6BA9D4BBE058 /* AircraftTrackDetailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AircraftTrackDetailController.h; sourceTree = "<group>"; };
 		CC8CF4B74DEC92AE987AC72D /* FlightRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlightRoute.m; sourceTree = "<group>"; };
 		CC8CF5081A12222799BC17EF /* route-begin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-begin.png"; sourceTree = "<group>"; };
 		CC8CF576EE92A3317D6063C4 /* SUALayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SUALayer.m; sourceTree = "<group>"; };
@@ -485,6 +490,7 @@
 		CC8CF6883C23299D48C6D79F /* WaypointLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointLayer.h; sourceTree = "<group>"; };
 		CC8CF698F1109BBE57E61250 /* FlightRouteController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlightRouteController.h; sourceTree = "<group>"; };
 		CC8CF6C6DC046EDF8EF726B2 /* route-end.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "route-end.png"; sourceTree = "<group>"; };
+		CC8CF7484472CBD2CE3495EC /* AircraftTrackDetailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AircraftTrackDetailController.m; sourceTree = "<group>"; };
 		CC8CF75D510530566D33C381 /* all-directions.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "all-directions.png"; sourceTree = "<group>"; };
 		CC8CF763B4505131EE0308CC /* EditWaypointPopoverController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditWaypointPopoverController.m; sourceTree = "<group>"; };
 		CC8CF77711BB8EB271836CF7 /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
@@ -727,6 +733,10 @@
 				1BF9A222CBC0954EF6052CF2 /* Lumberjack */,
 				1BF9A5A2FCAEF1B7D6E14102 /* GDBMessageController.m */,
 				1BF9A5333271904585BC8129 /* GDBMessageController.h */,
+				CC8CF2F807E7397C0F784536 /* AircraftTrackLayer.h */,
+				CC8CF10DFB4A959FAA30F463 /* AircraftTrackLayer.m */,
+				CC8CF7484472CBD2CE3495EC /* AircraftTrackDetailController.m */,
+				CC8CF3FEA56B6BA9D4BBE058 /* AircraftTrackDetailController.h */,
 			);
 			path = TAIGA;
 			sourceTree = "<group>";
@@ -1170,6 +1180,8 @@
 				1BF9AC7BF174EEEBA289C327 /* DDASLLogCapture.m in Sources */,
 				1BF9A2CFB83351AF0B9E4C46 /* DDAbstractDatabaseLogger.m in Sources */,
 				1BF9A237FD380E8AFE20B716 /* GDBMessageController.m in Sources */,
+				CC8CF109F2CAA6B19E7E1F0A /* AircraftTrackLayer.m in Sources */,
+				CC8CFC540B85998C3C5B80D0 /* AircraftTrackDetailController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

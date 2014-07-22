@@ -8,15 +8,12 @@
 #import <Foundation/Foundation.h>
 #import "WorldWind/Layer/WWLayer.h"
 
-@class FlightRoute;
-
 @interface AircraftLayer : WWLayer
 {
 @protected
     id aircraftShape;
-    id simulatedFlightRoute;
 }
 
-- (AircraftLayer*) init;
+- (id) init;
 
 @end
