@@ -20,7 +20,6 @@
 @implementation AppDelegate
 {
     UnitsFormatter* formatter;
-    GDBMessageController* gdbMessageController;
 }
 
 - (BOOL) application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
@@ -46,7 +45,6 @@
     [self.window setRootViewController:mainScreenController];
 
     // Set up to log position changes and GDB messages.
-    gdbMessageController = [[GDBMessageController alloc] init];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(aircraftPositionChanged:)
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gdbMessageReceived:)

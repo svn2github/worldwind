@@ -14,6 +14,7 @@
 #import "Settings.h"
 
 #define DEFAULT_GPS_DEVICE_ADDRESS @"http://worldwind.arc.nasa.gov/alaska/gps/gps.txt"
+#define DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY (10)
 
 @implementation GPSController
 {
@@ -34,9 +35,7 @@
     [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
     [dateFormatter setDateFormat:@"yyyy MM dd HH mm ss"];
 
-    timer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(pollDevice)
-                                           userInfo:nil repeats:YES];
-
+    [self startTimer];
     [self pollDevice];
 
     return self;
@@ -47,6 +46,28 @@
     [timer invalidate];
     timer = nil;
     dateFormatter = nil;
+}
+
+- (void) startTimer
+{
+    if (timer != nil)
+        [timer invalidate];
+
+    int updateFrequency = [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY
+                                     defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
+    timer = [NSTimer scheduledTimerWithTimeInterval:updateFrequency target:self selector:@selector(pollDevice)
+                                           userInfo:nil repeats:YES];
+}
+
+- (void) setUpdateFrequency:(int)updateFrequency
+{
+    [Settings setInt:updateFrequency forName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY];
+    [self startTimer];
+}
+
+- (int) getUpdateFrequency
+{
+    return [Settings getIntForName:TAIGA_GPS_DEVICE_UPDATE_FREQUENCY defaultValue:DEFAULT_GPS_DEVICE_UPDATE_FREQUENCY];
 }
 
 - (void) pollDevice
@@ -167,7 +188,7 @@
                                                         object:[NSNumber numberWithDouble:[quality intValue]]];
 }
 
-- (NSDate*)dateFromRMCSentence:(NMEASentence*)rmcSentence
+- (NSDate*) dateFromRMCSentence:(NMEASentence*)rmcSentence
 {
     NSString* dateString = [rmcSentence fieldWithName:NMEA_FIELD_FIX_DATE];
     NSString* timeString = [rmcSentence fieldWithName:NMEA_FIELD_FIX_TIME];

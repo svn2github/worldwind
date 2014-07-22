@@ -12,6 +12,7 @@
 #import "WorldWindConstants.h"
 
 #define DEFAULT_GDB_DEVICE_ADDRESS @"http://worldwindserver.net/taiga/install/taigaversion.txt"
+#define DEFAULT_GDB_DEVICE_UPDATE_FREQUENCY (10)
 
 @implementation GDBMessageController
 {
@@ -27,9 +28,7 @@
 {
     self = [super init];
 
-    timer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(pollDevice)
-                                           userInfo:nil repeats:YES];
-
+    [self startTimer];
     [self pollDevice];
 
     return self;
@@ -39,6 +38,28 @@
 {
     [timer invalidate];
     timer = nil;
+}
+
+- (void) startTimer
+{
+    if (timer != nil)
+        [timer invalidate];
+
+    int updateFrequency = [Settings getIntForName:TAIGA_GDB_DEVICE_UPDATE_FREQUENCY
+                                     defaultValue:DEFAULT_GDB_DEVICE_UPDATE_FREQUENCY];
+    timer = [NSTimer scheduledTimerWithTimeInterval:updateFrequency target:self selector:@selector(pollDevice)
+                                           userInfo:nil repeats:YES];
+}
+
+- (void) setUpdateFrequency:(int)updateFrequency
+{
+    [Settings setInt:updateFrequency forName:TAIGA_GDB_DEVICE_UPDATE_FREQUENCY];
+    [self startTimer];
+}
+
+- (int) getUpdateFrequency
+{
+    return [Settings getIntForName:TAIGA_GDB_DEVICE_UPDATE_FREQUENCY defaultValue:DEFAULT_GDB_DEVICE_UPDATE_FREQUENCY];
 }
 
 - (void) pollDevice

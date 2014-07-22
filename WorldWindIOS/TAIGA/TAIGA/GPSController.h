@@ -9,9 +9,14 @@
 
 @interface GPSController : NSObject
 
++ (void) setDefaultGPSDeviceAddress;
+
 - (GPSController*) init;
+
 - (void) dispose;
 
-+ (void) setDefaultGPSDeviceAddress;
+- (void) setUpdateFrequency:(int)updateFrequency;
+
+- (int) getUpdateFrequency;
 
 @end

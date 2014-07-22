@@ -20,8 +20,10 @@
 #define REFRESH_SECTION (4)
 
 #define GPS_DEVICE_ROW (1)
+#define GPS_FREQUENCY_ROW (2)
 #define LOCATION_SERVICES_DEVICE_ROW (0)
 #define GDB_URL_ROW (0)
+#define GDB_FREQUENCY_ROW (1)
 
 #define GPS_SOURCE_NONE (0)
 #define GPS_SOURCE_DEVICE (1)
@@ -38,10 +40,13 @@
 
     GPSController* gpsController;
     LocationServicesController* locationServicesController;
+    GDBMessageController* gdbMessageController;
 
     UITextField* gpsSourceTextField;
     UITextField* gdbURLTextField;
     UITextField* fieldBeingEdited;
+    UISegmentedControl* gdbFrequencySelector;
+    UISegmentedControl* gpsFrequencySelector;
 }
 
 - (SettingsScreenController*) initWithFrame:(CGRect)frame
@@ -56,13 +61,15 @@
                                                  name:TAIGA_DATA_FILE_INSTALLATION_PROGRESS object:nil];
     [self startGPS];
 
+    gdbMessageController = [[GDBMessageController alloc] init];
+
     return self;
 }
 
 - (void) loadView
 {
     self.view = [[UIView alloc] initWithFrame:myFrame];
-    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.autoresizesSubviews = YES;
 
     CGRect tableFrame = CGRectMake(0, 0, myFrame.size.width, myFrame.size.height);
@@ -152,7 +159,7 @@
         return 2;
 
     else if (section == GDB_MESSAGE_SECTION)
-        return 1;
+        return 2;
 
     else if (section == DATA_INSTALLATION_SECTION)
         return 1;
@@ -236,7 +243,7 @@
             gpsSourceTextField = [[UITextField alloc] initWithFrame:CGRectMake(
                     170,
                     cell.textLabel.frame.origin.y + 5,
-                    490, cell.contentView.bounds.size.height - 10)];
+                    500, cell.contentView.bounds.size.height - 10)];
             [gpsSourceTextField setTag:GPS_ADDRESS_VIEW_TAG];
             [gpsSourceTextField setFont:cell.textLabel.font];
             [gpsSourceTextField setBorderStyle:UITextBorderStyleRoundedRect];
@@ -248,7 +255,7 @@
             [cell.contentView addSubview:gpsSourceTextField];
 
             UIButton* defaultButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            [defaultButton setFrame:CGRectMake(0, 0, 100, cell.bounds.size.height)];
+            [defaultButton setFrame:CGRectMake(10, 0, 90, cell.bounds.size.height)];
             [defaultButton setTitle:@"Default" forState:UIControlStateNormal];
             [defaultButton setBackgroundColor:[UIColor clearColor]];
             [[defaultButton titleLabel] setFont:[[cell textLabel] font]];
@@ -262,6 +269,56 @@
         NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GPS_DEVICE_ADDRESS];
         UITextField* addressView = (UITextField*) [[cell contentView] viewWithTag:GPS_ADDRESS_VIEW_TAG];
         [addressView setText:address != nil ? address : @""];
+
+//        [self updateGPSFrequencySelector];
+    }
+    else if ([indexPath row] == GPS_FREQUENCY_ROW)
+    {
+        static NSString* cellIdentifier = @"GPSFrequencyCell";
+
+        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            [[cell imageView] setImage:[UIImage imageNamed:@"431-yes.png"]]; // just to align with device address label
+            [[cell imageView] setHidden:YES];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            [[cell textLabel] setText:@"Frequency"];
+
+            NSArray* gdbFrequencies = [NSArray arrayWithObjects:
+                    @"3 seconds",
+                    @"10 seconds",
+                    @"30 seconds",
+                    @"1 minute",
+                    nil
+            ];
+            gpsFrequencySelector = [[UISegmentedControl alloc] initWithItems:gdbFrequencies];
+            gpsFrequencySelector.frame = CGRectMake(170, 5, 500, cell.contentView.frame.size.height - 10);
+            [gpsFrequencySelector setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
+            [gpsFrequencySelector addTarget:self action:@selector(handleGPSFrequencySelection)
+                           forControlEvents:UIControlEventValueChanged];
+
+            [[cell contentView] setAutoresizesSubviews:YES];
+            [cell.contentView addSubview:gpsFrequencySelector];
+        }
+//
+//        int updateFrequency = [gpsController getUpdateFrequency];
+//        NSString* unit = @"second";
+//        if (updateFrequency >= 60)
+//        {
+//            unit = @"minute";
+//            updateFrequency /= 60;
+//        }
+//        NSString* frequencyString = [[NSString alloc] initWithFormat:@"%d %@", updateFrequency, unit];
+//        for (int i = 0; i < gpsFrequencySelector.numberOfSegments; i++)
+//        {
+//            NSString* segmentTitle = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) i];
+//            if ([segmentTitle hasPrefix:frequencyString])
+//            {
+//                gpsFrequencySelector.selectedSegmentIndex = i;
+//                break;
+//            }
+//        }
     }
     else if ([indexPath row] == LOCATION_SERVICES_DEVICE_ROW)
     {
@@ -277,9 +334,59 @@
 
         [[cell textLabel] setText:@"iPad"];
         [[cell imageView] setHidden:gpsSource != GPS_SOURCE_LOCATION_SERVICES];
+
+//        [self updateGPSFrequencySelector];
     }
 
     return cell;
+}
+
+- (void) updateGPSFrequencySelector
+{
+//    [gpsFrequencySelector setEnabled:gpsSource == GPS_SOURCE_DEVICE];
+//    for (int i = 0; i < [gpsFrequencySelector numberOfSegments]; i++)
+//    {
+//        [gpsFrequencySelector setEnabled:gpsSource == GPS_SOURCE_DEVICE forSegmentAtIndex:(NSUInteger) i];
+//    }
+
+//    if (gpsSource == GPS_SOURCE_DEVICE)
+    {
+        int updateFrequency = [gpsController getUpdateFrequency];
+        NSString* unit = @"second";
+        if (updateFrequency >= 60)
+        {
+            unit = @"minute";
+            updateFrequency /= 60;
+        }
+        NSString* frequencyString = [[NSString alloc] initWithFormat:@"%d %@", updateFrequency, unit];
+        for (int i = 0; i < gpsFrequencySelector.numberOfSegments; i++)
+        {
+            NSString* segmentTitle = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) i];
+            if ([segmentTitle hasPrefix:frequencyString])
+            {
+                NSLog(@"SELECTOR IS %d", gpsFrequencySelector.selectedSegmentIndex);
+                gpsFrequencySelector.selectedSegmentIndex = i;
+                NSLog(@"SETTING SELECTOR TO %d", gpsFrequencySelector.selectedSegmentIndex);
+                break;
+            }
+        }
+    }
+}
+
+- (void) handleGPSFrequencySelection
+{
+    int selectedIndex = [gpsFrequencySelector selectedSegmentIndex];
+    if (selectedIndex < 0)
+        return;
+
+    NSString* selectedString = [gpsFrequencySelector titleForSegmentAtIndex:(NSUInteger) selectedIndex];
+    NSArray* tokens = [selectedString componentsSeparatedByString:@" "];
+    int updateFrequency = [((NSString*) [tokens objectAtIndex:0]) intValue];
+    NSString* unit = [tokens objectAtIndex:1];
+    if ([unit hasPrefix:@"minute"])
+        updateFrequency *= 60;
+
+    [gpsController setUpdateFrequency:updateFrequency];
 }
 
 - (UITableViewCell*) cellForGDBMessageSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
@@ -300,7 +407,7 @@
             gdbURLTextField = [[UITextField alloc] initWithFrame:CGRectMake(
                     170,
                     cell.textLabel.frame.origin.y + 5,
-                    490, cell.contentView.bounds.size.height - 10)];
+                    500, cell.contentView.bounds.size.height - 10)];
             [gdbURLTextField setTag:GDB_URL_VIEW_TAG];
             [gdbURLTextField setFont:cell.textLabel.font];
             [gdbURLTextField setBorderStyle:UITextBorderStyleRoundedRect];
@@ -312,7 +419,7 @@
             [cell.contentView addSubview:gdbURLTextField];
 
             UIButton* defaultButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            [defaultButton setFrame:CGRectMake(0, 0, 100, cell.bounds.size.height)];
+            [defaultButton setFrame:CGRectMake(10, 0, 90, cell.bounds.size.height)];
             [defaultButton setTitle:@"Default" forState:UIControlStateNormal];
             [defaultButton setBackgroundColor:[UIColor clearColor]];
             [[defaultButton titleLabel] setFont:[[cell textLabel] font]];
@@ -321,14 +428,80 @@
             [cell setAccessoryView:defaultButton];
         }
 
-        [[cell imageView] setHidden:gpsSource != GPS_SOURCE_DEVICE];
+        [[cell imageView] setHidden:YES];
 
         NSString* address = (NSString*) [Settings getObjectForName:TAIGA_GDB_DEVICE_ADDRESS];
         UITextField* addressView = (UITextField*) [[cell contentView] viewWithTag:GDB_URL_VIEW_TAG];
         [addressView setText:address != nil ? address : @""];
     }
+    else if ([indexPath row] == GDB_FREQUENCY_ROW)
+    {
+        static NSString* cellIdentifier = @"GDBFrequencyCell";
+
+        cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            [[cell textLabel] setText:@"Frequency"];
+
+            NSArray* gdbFrequencies = [NSArray arrayWithObjects:
+                    @"10 seconds",
+                    @"10 minutes",
+                    @"30 minutes",
+                    @"1 hour",
+                    nil
+            ];
+            gdbFrequencySelector = [[UISegmentedControl alloc] initWithItems:gdbFrequencies];
+            gdbFrequencySelector.frame = CGRectMake(170, 5, 500, cell.contentView.frame.size.height - 10);
+            [gdbFrequencySelector setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
+            [gdbFrequencySelector addTarget:self action:@selector(handleGDBFrequencySelection)
+                           forControlEvents:UIControlEventValueChanged];
+
+            [[cell contentView] setAutoresizesSubviews:YES];
+            [cell.contentView addSubview:gdbFrequencySelector];
+        }
+
+        int updateFrequency = [gdbMessageController getUpdateFrequency];
+        NSString* unit = @"second";
+        if (updateFrequency >= 3600)
+        {
+            unit = @"hour";
+            updateFrequency /= 3600;
+        }
+        else if (updateFrequency >= 60)
+        {
+            unit = @"minute";
+            updateFrequency /= 60;
+        }
+        NSString* frequencyString = [[NSString alloc] initWithFormat:@"%d %@", updateFrequency, unit];
+        for (int i = 0; i < gdbFrequencySelector.numberOfSegments; i++)
+        {
+            NSString* segmentTitle = [gdbFrequencySelector titleForSegmentAtIndex:(NSUInteger) i];
+            if ([segmentTitle hasPrefix:frequencyString])
+            {
+                gdbFrequencySelector.selectedSegmentIndex = i;
+                break;
+            }
+        }
+    }
 
     return cell;
+}
+
+- (void) handleGDBFrequencySelection
+{
+    int selectedIndex = [gdbFrequencySelector selectedSegmentIndex];
+    NSString* selectedString = [gdbFrequencySelector titleForSegmentAtIndex:(NSUInteger) selectedIndex];
+    NSArray* tokens = [selectedString componentsSeparatedByString:@" "];
+    int updateFrequency = [((NSString*) [tokens objectAtIndex:0]) intValue];
+    NSString* unit = [tokens objectAtIndex:1];
+    if ([unit hasPrefix:@"minute"])
+        updateFrequency *= 60;
+    else if ([unit hasPrefix:@"hour"])
+        updateFrequency *= 3600;
+
+    [gdbMessageController setUpdateFrequency:updateFrequency];
 }
 
 - (UITableViewCell*) cellForRefreshSection:(UITableView*)tableView indexPath:(NSIndexPath*)indexPath
@@ -349,10 +522,9 @@
         [refreshButton setImage:[UIImage imageNamed:@"01-refresh.png"] forState:UIControlStateNormal];
         [refreshButton setBackgroundColor:[UIColor clearColor]];
         [[refreshButton titleLabel] setFont:[[cell textLabel] font]];
-        [refreshButton addTarget:self action:@selector(handleDefaultAddressButton)
+        [refreshButton addTarget:self action:@selector(handleRefreshButtonPressed)
                 forControlEvents:UIControlEventTouchUpInside];
         [refreshButton sizeToFit];
-        [refreshButton addTarget:self action:@selector(handleRefreshButtonPressed) forControlEvents:UIControlEventTouchUpInside];
         [cell.contentView addSubview:refreshButton];
     }
 
@@ -456,11 +628,11 @@
 
         [Settings setInt:gpsSource forName:TAIGA_GPS_SOURCE];
 
-        [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
-                 withRowAnimation:UITableViewRowAnimationAutomatic];
-
         if (gpsSource != GPS_SOURCE_NONE)
             [self enableCurrentGPSSource];
+
+        [tableView reloadSections:[NSIndexSet indexSetWithIndex:GPS_CONTROLLER_SECTION]
+                 withRowAnimation:UITableViewRowAnimationAutomatic];
     }
 
     if (gpsSource == GPS_SOURCE_NONE)

@@ -10,10 +10,14 @@
 
 @interface GDBMessageController : NSObject
 
++ (void) setDefaultGDBDeviceAddress;
+
 - (GDBMessageController*) init;
 
 - (void) dispose;
 
-+ (void) setDefaultGDBDeviceAddress;
+- (void) setUpdateFrequency:(int)updateFrequency;
+
+- (int) getUpdateFrequency;
 
 @end
