@@ -53,7 +53,7 @@
     CGRect rect = CGRectMake(0, 0, 1, 1);
     UIGraphicsBeginImageContext(rect.size);
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, [[UIColor clearColor] CGColor]);
+    CGContextSetFillColorWithColor(context, [[UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.5] CGColor]);
     CGContextFillRect(context, rect);
     UIImage* transparentImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
