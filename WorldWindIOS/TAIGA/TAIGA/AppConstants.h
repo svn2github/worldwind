@@ -10,8 +10,8 @@
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
-#define TAIGA_VERSION (@"0.0040")
-#define TAIGA_VERSION_DATE (@"7/22/14")
+#define TAIGA_VERSION (@"0.0041")
+#define TAIGA_VERSION_DATE (@"7/23/14")
 
 #define TAIGA_DATA_HOST @"worldwindserver.net"
 
