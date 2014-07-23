@@ -159,12 +159,12 @@
 
     CLLocationDirection course = 0;
     if ([rmcSentence fieldWithName:NMEA_FIELD_TRACK_ANGLE] != nil)
-        course = [[ggaSentence fieldWithName:NMEA_FIELD_TRACK_ANGLE] doubleValue];
+        course = [[rmcSentence fieldWithName:NMEA_FIELD_TRACK_ANGLE] doubleValue];
 
     CLLocationSpeed speed = 0;
     if ([rmcSentence fieldWithName:NMEA_FIELD_SPEED_OVER_GROUND] != nil)
-        course = [[ggaSentence fieldWithName:NMEA_FIELD_SPEED_OVER_GROUND] doubleValue];
-    course *= TAIGA_KNOTS_TO_METERS_PER_SECOND;
+        speed = [[rmcSentence fieldWithName:NMEA_FIELD_SPEED_OVER_GROUND] doubleValue];
+    speed *= TAIGA_KNOTS_TO_METERS_PER_SECOND;
 
     NSDate* fixDate = [self dateFromRMCSentence:rmcSentence];
     if (fixDate == nil)
