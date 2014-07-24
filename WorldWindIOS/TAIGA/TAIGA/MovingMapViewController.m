@@ -1018,7 +1018,7 @@
 - (void) gpsQualityNotification:(NSNotification*)notification
 {
     NSNumber* quality = (NSNumber*) [notification object];
-    [self showNoGPSSign:[notification object] == nil || [quality doubleValue] < 0];
+    [self showNoGPSSign:[notification object] == nil || [quality doubleValue] <= 0];
 }
 
 - (void) showNoGPSSign:(bool)yn
