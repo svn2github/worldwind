@@ -111,7 +111,6 @@
     {
         [[cell textLabel] setText:@"Terrain Profile"];
         [[cell imageView] setHidden:!terrainProfileVisible];
-        [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
     }
 
     return cell;
