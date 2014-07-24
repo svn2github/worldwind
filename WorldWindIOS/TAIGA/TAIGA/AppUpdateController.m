@@ -52,7 +52,7 @@
 
 - (void) startUpdateCheck
 {
-    dispatch_async(dispatch_get_main_queue(), ^
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^
     {
         NSString* location = [NSString stringWithFormat:@"http://%@/taiga/install/taigaversion.txt", TAIGA_DATA_HOST];
         NSURL* url = [[NSURL alloc] initWithString:location];
