@@ -424,6 +424,15 @@
         [refreshButton addTarget:self action:@selector(handleRefreshButtonPressed)
                 forControlEvents:UIControlEventTouchUpInside];
         [refreshButton sizeToFit];
+//
+//        CABasicAnimation *halfTurn;
+//        halfTurn = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+//        halfTurn.fromValue = [NSNumber numberWithFloat:0];
+//        halfTurn.toValue = [NSNumber numberWithFloat:(float) ((360 * M_PI) / 180)];
+//        halfTurn.duration = 1.0;
+//        halfTurn.repeatCount = HUGE_VALF;
+//        [[refreshButton.imageView layer] addAnimation:halfTurn forKey:@"180"];
+
         [cell.contentView addSubview:refreshButton];
     }
 
@@ -432,21 +441,25 @@
 
 - (void) handleRefreshButtonPressed
 {
-    if ([WorldWind isNetworkAvailable])
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^
     {
-        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH object:nil];
-        [self handleDefaultGPSAddressButton];
-        [self handleDefaultGDBAddressButton];
-    }
-    else
-    {
-        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
-                                                            message:@"Cannot refresh because network is unavailable"
-                                                           delegate:self
-                                                  cancelButtonTitle:@"Dismiss"
-                                                  otherButtonTitles:nil];
-        [alertView show];
-    }
+        if ([WorldWind isNetworkAvailable])
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_REFRESH object:nil];
+        }
+        else
+        {
+            UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Unable to Refresh"
+                                                                message:@"Cannot refresh because network is unavailable"
+                                                               delegate:self
+                                                      cancelButtonTitle:@"Dismiss"
+                                                      otherButtonTitles:nil];
+            dispatch_async(dispatch_get_main_queue(), ^
+            {
+                [alertView show];
+            });
+        }
+    });
 }
 
 - (void) handleDefaultGPSAddressButton
