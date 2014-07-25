@@ -349,7 +349,6 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     @Override
     public Vec4 computeNorthPointingTangentAtLocation(Angle latitude, Angle longitude)
     {
-        // Flat World Note: return constant (OK)
         if (latitude == null || longitude == null)
         {
             String message = Logging.getMessage("nullValue.LatitudeOrLongitudeIsNull");
@@ -357,7 +356,30 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
             throw new IllegalArgumentException(message);
         }
 
-        return Vec4.UNIT_Y;
+        // Choose a small angle that we'll use as an increment in order to estimate the north pointing tangent by
+        // computing the vector resulting from a small increment in latitude. Using 1e-7 in radians gives a tangent
+        // resolution of approximately 1/2 meter. We specify the value in radians since geodeticToCartesian performs
+        // arithmetic using angles in radians.
+        Angle deltaLat = Angle.fromRadians(1.0e-7);
+
+        if (latitude.degrees + deltaLat.degrees >= 90) // compute the incremental vector below the location
+        {
+            Vec4 p1 = this.geodeticToCartesian(latitude, longitude, 0);
+            Vec4 p2 = this.geodeticToCartesian(latitude.subtract(deltaLat), longitude, 0);
+            return p1.subtract3(p2).normalize3();
+        }
+        else if (latitude.degrees - deltaLat.degrees <= -90) // compute the incremental vector above the location
+        {
+            Vec4 p1 = this.geodeticToCartesian(latitude.add(deltaLat), longitude, 0);
+            Vec4 p2 = this.geodeticToCartesian(latitude, longitude, 0);
+            return p1.subtract3(p2).normalize3();
+        }
+        else // compute the average of the incremental vector above and below the location
+        {
+            Vec4 p1 = this.geodeticToCartesian(latitude.add(deltaLat), longitude, 0);
+            Vec4 p2 = this.geodeticToCartesian(latitude.subtract(deltaLat), longitude, 0);
+            return p1.subtract3(p2).normalize3();
+        }
     }
 
     @Override
@@ -370,8 +392,16 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
             throw new IllegalArgumentException(message);
         }
 
-        Vec4 point = this.geodeticToCartesian(latitude, longitude, metersElevation);
-        return Matrix.fromTranslation(point);
+        // Compute the origin as the cartesian coordinate at (latitude, longitude, metersElevation).
+        Vec4 origin = this.geodeticToCartesian(latitude, longitude, metersElevation);
+
+        // Compute the the local xyz coordinate axes at (latitude, longitude, metersElevation) as follows:
+        Vec4 z = this.computeSurfaceNormalAtLocation(latitude, longitude);
+        Vec4 y = this.computeNorthPointingTangentAtLocation(latitude, longitude);
+        Vec4 x = y.cross3(z); // east pointing tangent
+        Vec4[] axes = {x, y, z};
+
+        return Matrix.fromLocalOrientation(origin, axes);
     }
 
     @Override

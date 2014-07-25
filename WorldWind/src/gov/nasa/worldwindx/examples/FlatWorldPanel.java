@@ -9,7 +9,6 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.globes.projections.*;
-import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.view.orbit.*;
 
 import javax.swing.*;
@@ -156,7 +155,7 @@ public class FlatWorldPanel extends JPanel
         {
             // Switch to round globe
             wwd.getModel().setGlobe(roundGlobe);
-            // Switch to orbit view and update with current position
+            // Switch to orbit view
             FlatOrbitView flatOrbitView = (FlatOrbitView) wwd.getView();
             BasicOrbitView orbitView = new BasicOrbitView();
             orbitView.setCenterPosition(flatOrbitView.getCenterPosition());
@@ -164,20 +163,13 @@ public class FlatWorldPanel extends JPanel
             orbitView.setHeading(flatOrbitView.getHeading());
             orbitView.setPitch(flatOrbitView.getPitch());
             wwd.setView(orbitView);
-            // Change sky layer
-            LayerList layers = wwd.getModel().getLayers();
-            for (int i = 0; i < layers.size(); i++)
-            {
-                if (layers.get(i) instanceof SkyColorLayer)
-                    layers.set(i, new SkyGradientLayer());
-            }
         }
         else
         {
             // Switch to flat globe
             wwd.getModel().setGlobe(flatGlobe);
             this.updateProjection();
-            // Switch to flat view and update with current position
+            // Switch to flat view
             BasicOrbitView orbitView = (BasicOrbitView) wwd.getView();
             FlatOrbitView flatOrbitView = new FlatOrbitView();
             flatOrbitView.setCenterPosition(orbitView.getCenterPosition());
@@ -185,13 +177,6 @@ public class FlatWorldPanel extends JPanel
             flatOrbitView.setHeading(orbitView.getHeading());
             flatOrbitView.setPitch(orbitView.getPitch());
             wwd.setView(flatOrbitView);
-            // Change sky layer
-            LayerList layers = wwd.getModel().getLayers();
-            for (int i = 0; i < layers.size(); i++)
-            {
-                if (layers.get(i) instanceof SkyGradientLayer)
-                    layers.set(i, new SkyColorLayer());
-            }
         }
 
         wwd.redraw();
