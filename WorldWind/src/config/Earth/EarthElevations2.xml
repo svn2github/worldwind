@@ -22,7 +22,7 @@
         <DataType type="Int16" byteOrder="LittleEndian"/>
         <DataDetailHint>0.20</DataDetailHint>
         <FormatSuffix>.bil</FormatSuffix>
-        <ExtremeElevations min="-11000" max="8850">
+        <ExtremeElevations min="-14380" max="8850">
             <FileName>config/SRTM30Plus_ExtremeElevations_5.bil</FileName>
         </ExtremeElevations>
         <NumLevels count="12" numEmpty="0"/>
