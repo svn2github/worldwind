@@ -87,6 +87,7 @@ public class ProjectionPolarEquidistant implements GeographicProjection
         return new Vec4(x, y, metersElevation);
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
@@ -94,11 +95,11 @@ public class ProjectionPolarEquidistant implements GeographicProjection
 
         double rho = Math.sqrt(cart.x * cart.x + cart.y * cart.y);
         if (rho < 1.0e-4)
-            return Position.fromDegrees(0, (this.pole == SOUTH ? -90 : 90), cart.z);
+            return Position.fromDegrees((this.pole == SOUTH ? -90 : 90), 0, cart.z);
 
         double c = rho / globe.getRadius();
-        double lat = Math.asin(Math.cos(c));
-        double lon = Math.atan(cart.x() / (cart.y * (this.pole == SOUTH ? 1 : -1)));
+        double lat = Math.asin(Math.cos(c) * (this.pole == SOUTH ? -1 : 1));
+        double lon = Math.atan2(cart.x, cart.y * (this.pole == SOUTH ? 1 : -1)); // use atan2(x,y) instead of atan(x/y)
 
         return Position.fromRadians(lat, lon, cart.z);
     }
