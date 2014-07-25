@@ -21,40 +21,27 @@ import java.awt.event.*;
  */
 public abstract class AbstractViewInputHandler implements ViewInputHandler, java.beans.PropertyChangeListener
 {
-    protected abstract void onMoveTo(Position focalPosition, ViewInputAttributes.ActionAttributes actionAttribs);
-    protected abstract void onMoveTo(Position focalPosition, ViewInputAttributes.DeviceAttributes deviceAttributes,
+    protected abstract void onMoveTo(Position focalPosition,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
         ViewInputAttributes.ActionAttributes actionAttribs);
 
-    protected abstract void onHorizontalTranslateAbs(Angle latitudeChange, Angle longitudeChange,
-        ViewInputAttributes.ActionAttributes actionAttribs);
+    protected abstract void onHorizontalTranslateRel(double forwardInput, double sideInput,
+        double sideInputFromMouseDown, double forwardInputFromMouseDown,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttributes);
 
+    protected abstract void onVerticalTranslate(double translateChange, double totalTranslateChange,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttributes);
 
-
-    protected abstract void onResetHeading(ViewInputAttributes.ActionAttributes actionAttribs);
-    protected abstract void onResetHeadingPitchRoll(ViewInputAttributes.ActionAttributes actionAttribs);
-
-    protected abstract void onRotateView(Angle headingChange, Angle pitchChange,
-        ViewInputAttributes.ActionAttributes actionAttribs);
     protected abstract void onRotateView(double headingInput, double pitchInput,
         double totalHeadingInput, double totalPitchInput,
         ViewInputAttributes.DeviceAttributes deviceAttributes,
         ViewInputAttributes.ActionAttributes actionAttributes);
 
-    protected abstract void onVerticalTranslate(double translateChange,
-        ViewInputAttributes.ActionAttributes actionAttribs);
-    protected abstract void onVerticalTranslate(double translateChange, double totalTranslateChange,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttributes);
+    protected abstract void onResetHeading(ViewInputAttributes.ActionAttributes actionAttribs);
 
-
-    protected abstract void onHorizontalTranslateRel(double sideInput, double forwardInput,
-        double sideInputFromMouseDown, double forwardInputFromMouseDown,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttributes);
-    protected abstract void onHorizontalTranslateRel(Angle forwardChange, Angle sideChange,
-        ViewInputAttributes.ActionAttributes actionAttribs);
-
-    
+    protected abstract void onResetHeadingPitchRoll(ViewInputAttributes.ActionAttributes actionAttribs);
 
     protected WorldWindow wwd;
     protected ViewInputAttributes attributes;
@@ -125,7 +112,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         this.mouseModsActionMap = this.attributes.getModifierActionMap(ViewInputAttributes.DEVICE_MOUSE);
         this.mouseWheelModsActionMap =
             this.attributes.getModifierActionMap(ViewInputAttributes.DEVICE_MOUSE_WHEEL);
-        
+
     }
 
     /**
@@ -382,7 +369,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     //**************************************************************//
     //********************  View Change Events  ********************//
     //**************************************************************//
-    
+
     protected void onStopView()
     {
         View view = this.getView();
@@ -736,7 +723,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
                     view.firePropertyChange(AVKey.VIEW, null, view);
                 }
             }
-            
+
         }
     }
 
@@ -936,7 +923,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         return ray.nearestIntersectionPoint(intersections);
     }
 
-    
+
 
     protected LatLon getChangeInLocation(Point point1, Point point2, Vec4 vec1, Vec4 vec2)
     {
@@ -1007,7 +994,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         return new Point(x, y);
     }
 
-    
+
 
     public Point getMouseDownPoint()
     {

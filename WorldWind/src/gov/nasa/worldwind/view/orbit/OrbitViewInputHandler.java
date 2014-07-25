@@ -93,10 +93,6 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     //**************************************************************//
     //********************  View Change Events  ********************//
     //**************************************************************//
-    protected void onMoveTo(Position focalPosition, ViewInputAttributes.ActionAttributes actionAttribs)
-    {
-
-    }
 
     protected void onMoveTo(Position focalPosition, ViewInputAttributes.DeviceAttributes deviceAttributes,
         ViewInputAttributes.ActionAttributes actionAttribs)
