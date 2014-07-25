@@ -91,8 +91,7 @@ public class FlatWorldPanel extends JPanel
             {"Lat-Lon", "Mercator", "Modified Sin.", "Sinusoidal",
                 "Transverse Mercator",
                 "North Polar",
-                "South Polar",
-                "Cautra"
+                "South Polar"
             });
         this.projectionCombo.setEnabled(isFlatGlobe());
         this.projectionCombo.addActionListener(new ActionListener()
@@ -135,8 +134,6 @@ public class FlatWorldPanel extends JPanel
             return new ProjectionPolarEquidistant(AVKey.NORTH);
         else if (item.equals("South Polar"))
             return new ProjectionPolarEquidistant(AVKey.SOUTH);
-        else if (item.equals("Cautra"))
-            return new ProjectionCautra();
         // Default to lat-lon
         return new ProjectionEquirectangular();
     }
