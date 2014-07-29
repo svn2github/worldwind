@@ -44,7 +44,6 @@ public class FlatWorldPanel extends JPanel
         else
         {
             this.flatGlobe = new EarthFlat();
-            this.flatGlobe.setContinuous(true);
             this.roundGlobe = wwd.getModel().getGlobe();
         }
         this.makePanel();
