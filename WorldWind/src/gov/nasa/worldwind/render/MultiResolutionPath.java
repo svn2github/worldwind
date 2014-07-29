@@ -21,11 +21,11 @@ import java.util.Iterator;
  * Also, if the segment between any two positions is too small to be distinguished, it is not drawn. See {@link
  * #makePositions(DrawContext, gov.nasa.worldwind.render.Path.PathData)}.
  * <p/>
- * When drawn on a 2D globe, this shape uses a SurfacePolyline to represent itself. See {@link Path} for a list of the
- * features not supported in this case.
+ * NOTE: This shape does not draw correctly on a 2D globe when its positions span the dateline.
  *
  * @author tag
  * @version $Id$
+ * @deprecated
  */
 public class MultiResolutionPath extends Path
 {
