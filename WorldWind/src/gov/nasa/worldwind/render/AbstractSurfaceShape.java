@@ -850,7 +850,7 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
                 if (LatLon.locationsCrossDateline(pos, posNext))
                 {
                     // Determine where the segment crosses the date line.
-                    LatLon separation = this.intersectionWithMeridian(pos, posNext, Angle.POS180, globe);
+                    LatLon separation = LatLon.intersectionWithMeridian(pos, posNext, Angle.POS180, globe);
                     double sign = Math.signum(pos.getLongitude().degrees);
 
                     Angle lat = separation.getLatitude();
@@ -931,48 +931,6 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
 
         return list;
-    }
-
-    /**
-     * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
-     * intersecting a line in Cartesian space between the two positions with a plane through the meridian. Thus, it is
-     * most suitable for working with positions that are fairly close together as the calculation does not take into
-     * account great circle or rhumb paths.
-     *
-     * @param p1       First position.
-     * @param p2       Second position.
-     * @param meridian Longitude line to intersect with.
-     * @param globe    Globe used to compute intersection.
-     *
-     * @return The intersection location along the meridian
-     */
-    protected LatLon intersectionWithMeridian(LatLon p1, LatLon p2, Angle meridian, Globe globe)
-    {
-        if (globe instanceof Globe2D)
-        {
-            // A simple y = mx + b case.
-            double slope = (p2.latitude.degrees - p1.latitude.degrees) / (p2.longitude.degrees - p1.longitude.degrees);
-            double lat = p1.latitude.degrees + slope * (meridian.degrees - p1.longitude.degrees);
-
-            return LatLon.fromDegrees(lat, meridian.degrees);
-        }
-
-        Vec4 pt1 = globe.computePointFromLocation(p1);
-        Vec4 pt2 = globe.computePointFromLocation(p2);
-
-        // Compute a plane through the origin, North Pole, and the desired meridian.
-        Vec4 northPole = globe.computePointFromLocation(new LatLon(Angle.POS90, meridian));
-        Vec4 pointOnEquator = globe.computePointFromLocation(new LatLon(Angle.ZERO, meridian));
-
-        Plane plane = Plane.fromPoints(northPole, pointOnEquator, Vec4.ZERO);
-
-        Vec4 intersectionPoint = plane.intersect(Line.fromSegment(pt1, pt2));
-        if (intersectionPoint == null)
-            return null;
-
-        Position intersectionPos = globe.computePositionFromPoint(intersectionPoint);
-
-        return new LatLon(intersectionPos.getLatitude(), meridian);
     }
 
     protected List<List<LatLon>> getActiveGeometry()

@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
@@ -1117,6 +1118,54 @@ public class LatLon
         }
 
         return newLocations;
+    }
+
+    /**
+     * Determine where a line between two positions crosses a given meridian. The intersection test is performed by
+     * intersecting a line in Cartesian space between the two positions with a plane through the meridian. Thus, it is
+     * most suitable for working with positions that are fairly close together as the calculation does not take into
+     * account great circle or rhumb paths.
+     *
+     * @param p1       First position.
+     * @param p2       Second position.
+     * @param meridian Longitude line to intersect with.
+     * @param globe    Globe used to compute intersection.
+     *
+     * @return The intersection location along the meridian
+     */
+    public static LatLon intersectionWithMeridian(LatLon p1, LatLon p2, Angle meridian, Globe globe)
+    {
+        if (globe instanceof Globe2D)
+        {
+            // y = mx + b case after normalizing negative angles.
+            double lon1 = p1.getLongitude().degrees < 0 ? p1.getLongitude().degrees + 360 : p1.getLongitude().degrees;
+            double lon2 = p2.getLongitude().degrees < 0 ? p2.getLongitude().degrees + 360 : p2.getLongitude().degrees;
+            if (lon1 == lon2)
+                return null;
+
+            double med = meridian.degrees < 0 ? meridian.degrees + 360 : meridian.degrees;
+            double slope = (p2.latitude.degrees - p1.latitude.degrees) / (lon2 - lon1);
+            double lat = p1.latitude.degrees + slope * (med - lon1);
+
+            return LatLon.fromDegrees(lat, meridian.degrees);
+        }
+
+        Vec4 pt1 = globe.computePointFromLocation(p1);
+        Vec4 pt2 = globe.computePointFromLocation(p2);
+
+        // Compute a plane through the origin, North Pole, and the desired meridian.
+        Vec4 northPole = globe.computePointFromLocation(new LatLon(Angle.POS90, meridian));
+        Vec4 pointOnEquator = globe.computePointFromLocation(new LatLon(Angle.ZERO, meridian));
+
+        Plane plane = Plane.fromPoints(northPole, pointOnEquator, Vec4.ZERO);
+
+        Vec4 intersectionPoint = plane.intersect(Line.fromSegment(pt1, pt2));
+        if (intersectionPoint == null)
+            return null;
+
+        Position intersectionPos = globe.computePositionFromPoint(intersectionPoint);
+
+        return new LatLon(intersectionPos.getLatitude(), meridian);
     }
 
     /**
