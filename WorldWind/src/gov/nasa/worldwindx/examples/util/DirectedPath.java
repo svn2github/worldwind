@@ -170,7 +170,7 @@ public class DirectedPath extends Path
     {
         if (arrowAngle == null)
         {
-            String message = Logging.getMessage("nullValue.AngleIsNull", arrowAngle);
+            String message = Logging.getMessage("nullValue.AngleIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
