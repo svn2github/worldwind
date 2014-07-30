@@ -45,10 +45,14 @@ public class PathsOnDateline extends ApplicationTemplate
             pathPositions.add(Position.fromDegrees(30, 170, 1e4));
             Path path = new Path(pathPositions);
             path.setAttributes(attrs);
+            BasicShapeAttributes highlightAttrs = new BasicShapeAttributes(attrs);
+            highlightAttrs.setOutlineMaterial(Material.WHITE);
+            path.setHighlightAttributes(highlightAttrs);
             path.setVisible(true);
             path.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
             path.setPathType(AVKey.GREAT_CIRCLE);
             path.setShowPositions(true);
+            path.setShowPositionsThreshold(1e12);
 
             // Configure the path to draw its outline and position points in the colors below. We use three colors that
             // are evenly distributed along the path's length and gradually increasing in opacity. Position colors may
