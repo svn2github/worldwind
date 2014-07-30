@@ -29,7 +29,7 @@ import java.util.List;
  *             represent itself.
  */
 public class Polyline extends AVListImpl implements Renderable, OrderedRenderable, Movable, Restorable,
-    MeasurableLength, ExtentHolder, PreRenderable
+    MeasurableLength, ExtentHolder, PreRenderable, Highlightable
 {
     public final static int GREAT_CIRCLE = WorldWind.GREAT_CIRCLE;
     public final static int LINEAR = WorldWind.LINEAR;
@@ -289,7 +289,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
     public double getLineWidth()
     {
-        return lineWidth;
+        return this.lineWidth;
     }
 
     public void setLineWidth(double lineWidth)
@@ -297,7 +297,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         this.lineWidth = lineWidth;
 
         if (this.surfaceShape != null)
-            this.surfaceShape.getAttributes().setOutlineWidth(this.lineWidth);
+            this.surfaceShape.getAttributes().setOutlineWidth(this.getLineWidth());
     }
 
     /**
@@ -627,7 +627,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         ShapeAttributes attrs = new BasicShapeAttributes();
         attrs.setOutlineMaterial(new Material(this.color));
         attrs.setInteriorMaterial(attrs.getOutlineMaterial());
-        attrs.setOutlineWidth(this.lineWidth);
+        attrs.setOutlineWidth(this.getLineWidth());
         attrs.setOutlineStipplePattern(this.stipplePattern);
         attrs.setOutlineStippleFactor(this.stippleFactor);
         this.surfaceShape.setAttributes(attrs);
@@ -842,9 +842,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                 primType = GL2.GL_POLYGON;
 
             if (dc.isPickingMode())
-                gl.glLineWidth((float) this.lineWidth + 8);
+                gl.glLineWidth((float) this.getLineWidth() + 8);
             else
-                gl.glLineWidth((float) this.lineWidth);
+                gl.glLineWidth((float) this.getLineWidth());
 
             if (this.followTerrain)
             {
@@ -871,7 +871,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                 gl.glEnd();
             }
 
-            if (this.highlighted)
+            if (this.isHighlighted())
             {
                 if (!dc.isPickingMode())
                 {
@@ -883,7 +883,7 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
                     gl.glColor4ub((byte) this.highlightColor.getRed(), (byte) this.highlightColor.getGreen(),
                         (byte) this.highlightColor.getBlue(), (byte) this.highlightColor.getAlpha());
 
-                    gl.glLineWidth((float) this.lineWidth + 2);
+                    gl.glLineWidth((float) this.getLineWidth() + 2);
                     for (List<Vec4> span : this.currentSpans)
                     {
                         if (span == null)
@@ -1281,12 +1281,12 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
         rs.addStateValueAsInteger("antiAliasHint", this.antiAliasHint);
         rs.addStateValueAsBoolean("filled", this.filled);
         rs.addStateValueAsBoolean("closed", this.closed);
-        rs.addStateValueAsBoolean("highlighted", this.highlighted);
+        rs.addStateValueAsBoolean("highlighted", this.isHighlighted());
         rs.addStateValueAsInteger("pathType", this.pathType);
         rs.addStateValueAsBoolean("followTerrain", this.followTerrain);
         rs.addStateValueAsDouble("offset", this.offset);
         rs.addStateValueAsDouble("terrainConformance", this.terrainConformance);
-        rs.addStateValueAsDouble("lineWidth", this.lineWidth);
+        rs.addStateValueAsDouble("lineWidth", this.getLineWidth());
         rs.addStateValueAsInteger("stipplePattern", this.stipplePattern);
         rs.addStateValueAsInteger("stippleFactor", this.stippleFactor);
         rs.addStateValueAsInteger("numSubsegments", this.numSubsegments);
