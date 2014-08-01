@@ -60,6 +60,12 @@ public class KeyEventState implements KeyListener, MouseListener
         return state != null && state.getEventType() == KeyEvent.KEY_PRESSED;
     }
 
+    public int keyState(int keyCode)
+    {
+        InputState state = this.getKeyState(keyCode);
+        return state != null && state.getEventType() == KeyEvent.KEY_PRESSED ? 1 : 0;
+    }
+
     public int getNumKeysDown()
     {
         if (keyStateMap.isEmpty())
