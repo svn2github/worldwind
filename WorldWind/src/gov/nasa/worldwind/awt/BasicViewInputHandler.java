@@ -18,6 +18,28 @@ import java.awt.event.*;
  */
 public abstract class BasicViewInputHandler extends AbstractViewInputHandler
 {
+    protected abstract void onMoveTo(Position focalPosition,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttribs);
+
+    protected abstract void onHorizontalTranslateRel(double forwardInput, double sideInput,
+        double sideInputFromMouseDown, double forwardInputFromMouseDown,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttributes);
+
+    protected abstract void onVerticalTranslate(double translateChange, double totalTranslateChange,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttributes);
+
+    protected abstract void onRotateView(double headingInput, double pitchInput,
+        double totalHeadingInput, double totalPitchInput,
+        ViewInputAttributes.DeviceAttributes deviceAttributes,
+        ViewInputAttributes.ActionAttributes actionAttributes);
+
+    protected abstract void onResetHeading(ViewInputAttributes.ActionAttributes actionAttribs);
+
+    protected abstract void onResetHeadingPitchRoll(ViewInputAttributes.ActionAttributes actionAttribs);
+
     public class RotateActionListener extends ViewInputActionHandler
     {
         public boolean inputActionPerformed(AbstractViewInputHandler inputHandler, KeyEventState keys, String target,
@@ -97,7 +119,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
             //noinspection StringEquality
             if (target == GENERATE_EVENTS)
             {
-                inputHandler.onHorizontalTranslateRel(forwardInput, sideInput, forwardInput, sideInput,
+                onHorizontalTranslateRel(forwardInput, sideInput, forwardInput, sideInput,
                     getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_KEYBOARD),viewAction);
             }
 
@@ -226,9 +248,9 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
 
 
             ViewInputAttributes.DeviceAttributes deviceAttributes =
-                inputHandler.getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
+                getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
 
-            inputHandler.onRotateView(headingInput, pitchInput, totalHeadingInput, totalPitchInput,
+            onRotateView(headingInput, pitchInput, totalHeadingInput, totalPitchInput,
                 deviceAttributes, viewAction);
             return true;
         }
@@ -313,7 +335,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
             int totalSide = -totalMovement.x;
 
             ViewInputAttributes.DeviceAttributes deviceAttributes =
-                inputHandler.getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
+                getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
 
             onHorizontalTranslateRel(forwardInput, sideInput, totalForward, totalSide, deviceAttributes,
                 viewAction);
@@ -343,8 +365,8 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
                 return false;
             }
 
-            Point point = constrainToSourceBounds(inputHandler.getMousePoint(), inputHandler.getWorldWindow());
-            Point lastPoint = constrainToSourceBounds(inputHandler.getLastMousePoint(), inputHandler.getWorldWindow());
+            Point point = constrainToSourceBounds(getMousePoint(), getWorldWindow());
+            Point lastPoint = constrainToSourceBounds(getLastMousePoint(), getWorldWindow());
             Point mouseDownPoint = constrainToSourceBounds(getMouseDownPoint(), getWorldWindow());
             if (point == null || lastPoint == null)
             {
@@ -358,7 +380,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
 
 
             ViewInputAttributes.DeviceAttributes deviceAttributes =
-                inputHandler.getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
+                getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE);
             onVerticalTranslate((double) translationInput, totalTranslationInput, deviceAttributes, viewAction);
 
             return true;
@@ -423,7 +445,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
             {
                 return false;
             }
-            Position pos = inputHandler.computeSelectedPosition();
+            Position pos = computeSelectedPosition();
             if (pos == null)
             {
                 return false;
@@ -505,7 +527,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
             double zoomInput = mouseWheelEvent.getWheelRotation();
 
             ViewInputAttributes.DeviceAttributes deviceAttributes =
-                inputHandler.getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE_WHEEL);
+                getAttributes().getDeviceAttributes(ViewInputAttributes.DEVICE_MOUSE_WHEEL);
 
             onVerticalTranslate(zoomInput, zoomInput, deviceAttributes, viewAction);
             return true;
@@ -897,6 +919,22 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
 
         }
         return eventHandled;
+    }
+
+    protected boolean callActionListener (KeyEventState keys, String target,
+        ViewInputAttributes.ActionAttributes action)
+    {
+
+        if (action.getActionListener() != null)
+        {
+            return(action.getActionListener().inputActionPerformed(this, keys, target, action));
+        }
+        if (action.getMouseActionListener() != null)
+        {
+            return(action.getMouseActionListener().inputActionPerformed(keys, target, action));
+        }
+        return false;
+
     }
 
     //**************************************************************//

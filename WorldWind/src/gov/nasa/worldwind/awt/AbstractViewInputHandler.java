@@ -8,7 +8,7 @@ package gov.nasa.worldwind.awt;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 
@@ -21,28 +21,6 @@ import java.awt.event.*;
  */
 public abstract class AbstractViewInputHandler implements ViewInputHandler, java.beans.PropertyChangeListener
 {
-    protected abstract void onMoveTo(Position focalPosition,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttribs);
-
-    protected abstract void onHorizontalTranslateRel(double forwardInput, double sideInput,
-        double sideInputFromMouseDown, double forwardInputFromMouseDown,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttributes);
-
-    protected abstract void onVerticalTranslate(double translateChange, double totalTranslateChange,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttributes);
-
-    protected abstract void onRotateView(double headingInput, double pitchInput,
-        double totalHeadingInput, double totalPitchInput,
-        ViewInputAttributes.DeviceAttributes deviceAttributes,
-        ViewInputAttributes.ActionAttributes actionAttributes);
-
-    protected abstract void onResetHeading(ViewInputAttributes.ActionAttributes actionAttribs);
-
-    protected abstract void onResetHeadingPitchRoll(ViewInputAttributes.ActionAttributes actionAttribs);
-
     protected WorldWindow wwd;
     protected ViewInputAttributes attributes;
     protected ViewInputAttributes.ActionAttributesMap mouseActionMap;
@@ -64,10 +42,11 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     // Input transformation coefficients.
     protected double dragSlopeFactor = DEFAULT_DRAG_SLOPE_FACTOR;
     // Per-frame input event timing support.
+    protected long perFrameInputInterval = DEFAULT_PER_FRAME_INPUT_INTERVAL;
     protected long lastPerFrameInputTime;
 
     protected static final double DEFAULT_DRAG_SLOPE_FACTOR = 0.002;
-    protected static final long DEFAULT_PER_FRAME_INPUT_DELAY = 35L;
+    protected static final long DEFAULT_PER_FRAME_INPUT_INTERVAL = 35L; // perform per frame input every 35 ms
 
     // These constants are used by the device input handling routines to determine whether or not to
     // (1) generate view change events based on the current device state, or
@@ -289,28 +268,19 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         this.dragSlopeFactor = factor;
     }
 
+    protected long getPerFrameInputInterval()
+    {
+        return this.perFrameInputInterval;
+    }
+
+    protected void setPerFrameInputInterval(long milliseconds)
+    {
+        this.perFrameInputInterval = milliseconds;
+    }
+
     protected View getView()
     {
         return (this.wwd != null) ? this.wwd.getView() : null;
-    }
-
-    //**************************************************************//
-    //******************** Action Listener support *****************//
-    //**************************************************************//
-    public boolean callActionListener (KeyEventState keys, String target,
-           ViewInputAttributes.ActionAttributes action)
-    {
-
-        if (action.getActionListener() != null)
-        {
-            return(action.getActionListener().inputActionPerformed(this, keys, target, action));
-        }
-        if (action.getMouseActionListener() != null)
-        {
-            return(action.getMouseActionListener().inputActionPerformed(keys, target, action));
-        }
-        return false;
-
     }
 
     //**************************************************************//
@@ -687,43 +657,27 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
             return;
         }
 
-        // Throttle the frequency at which we process per-frame input, which is usually invoked each frame. This helps
+        // Throttle the interval at which we process per-frame input, which is usually invoked each frame. This helps
         // balance the input response of high and low framerate applications.
-        long time = System.currentTimeMillis();
-        if (time - this.lastPerFrameInputTime > DEFAULT_PER_FRAME_INPUT_DELAY)
+        long now = System.currentTimeMillis();
+        long interval = now - this.lastPerFrameInputTime;
+        if (interval >= this.getPerFrameInputInterval())
         {
             this.handlePerFrameKeyState(this.keyEventState, GENERATE_EVENTS);
             this.handlePerFrameMouseState(this.keyEventState, GENERATE_EVENTS);
-
-
-            this.lastPerFrameInputTime = time;
-
+            this.handlePerFrameAnimation(GENERATE_EVENTS);
+            this.lastPerFrameInputTime = now;
+            this.getWorldWindow().redraw();
+            return;
         }
-        else
+
+        // Determine whether or not the current key state would have generated a view change event. If so, issue
+        // a repaint event to give the per-frame input a chance to run again.
+        if (this.handlePerFrameKeyState(this.keyEventState, QUERY_EVENTS) ||
+            this.handlePerFrameMouseState(this.keyEventState, QUERY_EVENTS) ||
+            this.handlePerFrameAnimation(QUERY_EVENTS))
         {
-            // Determine whether or not the current key state would have generated a view change event. If so, issue
-            // a repaint event to give the per-frame input a chance to run again.
-            if (this.handlePerFrameKeyState(this.keyEventState, QUERY_EVENTS))
-            {
-                View view = this.getView();
-                if (view != null)
-                {
-                    view.firePropertyChange(AVKey.VIEW, null, view);
-                }
-            }
-
-            // Determine whether or not the current key state would have generated a view change event. If so, issue
-            // a repaint event to give the per-frame input a chance to run again.
-
-            if (this.handlePerFrameMouseState(this.keyEventState, QUERY_EVENTS))
-            {
-                View view = this.getView();
-                if (view != null)
-                {
-                    view.firePropertyChange(AVKey.VIEW, null, view);
-                }
-            }
-
+            this.getWorldWindow().redraw();
         }
     }
 
@@ -735,14 +689,17 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     // then the the key state will generate any appropriate view change events. If the target is KEY_POLL_QUERY_EVENTS,
     // then the key state will not generate events, and this will return whether or not any view change events would
     // have been generated.
-    @SuppressWarnings({"UnusedDeclaration"})
     protected boolean handlePerFrameKeyState(KeyEventState keys, String target)
     {
         return false;
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     protected boolean handlePerFrameMouseState(KeyEventState keys, String target)
+    {
+        return false;
+    }
+
+    protected boolean handlePerFrameAnimation(String target)
     {
         return false;
     }
