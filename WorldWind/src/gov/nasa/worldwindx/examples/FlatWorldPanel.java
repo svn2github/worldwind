@@ -5,10 +5,12 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.globes.projections.*;
+import gov.nasa.worldwind.view.View2D;
 import gov.nasa.worldwind.view.orbit.*;
 
 import javax.swing.*;
@@ -152,13 +154,11 @@ public class FlatWorldPanel extends JPanel
             // Switch to round globe
             wwd.getModel().setGlobe(roundGlobe);
             // Switch to orbit view
-            FlatOrbitView flatOrbitView = (FlatOrbitView) wwd.getView();
-            BasicOrbitView orbitView = new BasicOrbitView();
-            orbitView.setCenterPosition(flatOrbitView.getCenterPosition());
-            orbitView.setZoom(flatOrbitView.getZoom());
-            orbitView.setHeading(flatOrbitView.getHeading());
-            orbitView.setPitch(flatOrbitView.getPitch());
-            wwd.setView(orbitView);
+            View oldView = wwd.getView();
+            View newView = new BasicOrbitView();
+            newView.setEyePosition(oldView.getEyePosition());
+            newView.setHeading(oldView.getHeading());
+            wwd.setView(newView);
         }
         else
         {
@@ -166,13 +166,15 @@ public class FlatWorldPanel extends JPanel
             wwd.getModel().setGlobe(flatGlobe);
             this.updateProjection();
             // Switch to flat view
-            BasicOrbitView orbitView = (BasicOrbitView) wwd.getView();
-            FlatOrbitView flatOrbitView = new FlatOrbitView();
-            flatOrbitView.setCenterPosition(orbitView.getCenterPosition());
-            flatOrbitView.setZoom(orbitView.getZoom());
-            flatOrbitView.setHeading(orbitView.getHeading());
-            flatOrbitView.setPitch(orbitView.getPitch());
-            wwd.setView(flatOrbitView);
+            View oldView = wwd.getView();
+            View newView = new View2D();
+            Position centerPos = ((OrbitView) oldView).getCenterPosition();
+            double eyeDistance = oldView.getCenterPoint().distanceTo3(oldView.getEyePoint());
+            newView.setEyePosition(
+                new Position(centerPos.latitude, centerPos.longitude, centerPos.elevation + eyeDistance));
+            newView.setHeading(oldView.getHeading());
+
+            wwd.setView(newView);
         }
 
         wwd.redraw();
