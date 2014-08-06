@@ -159,6 +159,6 @@ public class View2D extends BasicView
     {
         // Return the distance from the eye point to lowest possible point on the globe, plus one.
         double minElevation = this.globe.getMinElevation() * this.dc.getVerticalExaggeration();
-        return this.lastEyePoint.z - minElevation + 1;
+        return this.lastEyePoint.z - minElevation + MINIMUM_FAR_DISTANCE;
     }
 }
