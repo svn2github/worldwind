@@ -355,7 +355,7 @@ public class View2DInputHandler extends AbstractViewInputHandler
 
     protected void panWithMouse(Vec4 translation)
     {
-        if (this.mouseBeginPoint == null)
+        if (this.mouseBeginEyeVector == null)
         {
             return; // the cursor and the screen center are both off the globe
         }
@@ -404,7 +404,7 @@ public class View2DInputHandler extends AbstractViewInputHandler
 
     protected void zoomWithMouse(Vec4 translation)
     {
-        if (this.mouseBeginPoint == null)
+        if (this.mouseBeginEyeVector == null)
         {
             return; // the cursor and the screen center are both off the globe
         }
@@ -492,9 +492,10 @@ public class View2DInputHandler extends AbstractViewInputHandler
 
     protected void rotateWithMouse(Vec4 translation)
     {
-        if (this.mouseBeginPoint == null)
+        Vec4 point = this.getSurfacePointAtCenter();
+        if (point == null)
         {
-            return; // the cursor and the screen center are both off the globe
+            return; // the screen center is off the globe
         }
 
         // Convert the translation from screen coordinates to a rotation in eye coordinates.
@@ -502,8 +503,8 @@ public class View2DInputHandler extends AbstractViewInputHandler
         Angle headingAngle = Angle.fromDegrees(headingDegrees);
 
         // Compute the rotation point and rotation axis in model coordinates.
-        Vec4 point = this.mouseBeginPoint;
-        Vec4 normal = this.mouseBeginNormal;
+        Globe globe = this.getWorldWindow().getModel().getGlobe();
+        Vec4 normal = globe.computeSurfaceNormalAtPoint(point);
 
         // Apply the rotation the modelview matrix and set the view's properties from the result.
         Matrix modelview = this.mouseBeginModelview;
