@@ -146,7 +146,7 @@ public class TacticalGraphicLabel
     protected boolean drawInterior;
 
     /** Indicates whether or not batch rendering is enabled. */
-    protected boolean enableBatchRendering = false;
+    protected boolean enableBatchRendering = true;
     /** Indicates whether or not batch picking is enabled. */
     protected boolean enableBatchPicking = true;
 
