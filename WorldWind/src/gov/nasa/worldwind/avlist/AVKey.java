@@ -154,6 +154,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String GRAYSCALE = "gov.nasa.worldwind.avkey.Grayscale";
     final String GREAT_CIRCLE = "gov.nasa.worldwind.avkey.GreatCircle";
 
+    final String HEADING = "gov.nasa.worldwind.avkey.Heading";
     final String HEIGHT = "gov.nasa.worldwind.avkey.Height";
     final String HIDDEN = "gov.nasa.worldwind.avkey.Hidden";
     final String HORIZONTAL = "gov.nasa.worldwind.avkey.Horizontal";
@@ -321,6 +322,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String RELATIVE_TO_GLOBE = "gov.nasa.worldwind.avkey.RelativeToGlobe";
     final String RELATIVE_TO_SCREEN = "gov.nasa.worldwind.avkey.RelativeToScreen";
 
+    final String RANGE = "gov.nasa.worldwind.avkey.Range";
     final String RASTER_BAND_ACTUAL_BITS_PER_PIXEL = "gov.nasa.worldwind.avkey.RasterBand.ActualBitsPerPixel";
     final String RASTER_BAND_MIN_PIXEL_VALUE = "gov.nasa.worldwind.avkey.RasterBand.MinPixelValue";
     final String RASTER_BAND_MAX_PIXEL_VALUE = "gov.nasa.worldwind.avkey.RasterBand.MaxPixelValue";
@@ -363,6 +365,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String RHUMB_LINE = "gov.nasa.worldwind.avkey.RhumbLine";
     final String RIGHT = "gov.nasa.worldwind.avkey.Right";
     final String RIGHT_OF_CENTER = "gov.nasa.worldwind.avkey.RightOfCenter";
+    final String ROLL = "gov.nasa.worldwind.avkey.Roll";
     final String ROLLOVER_TEXT = "gov.nasa.worldwind.avkey.RolloverText";
 
     final String SCHEDULED_TASK_POOL_SIZE = "gov.nasa.worldwind.avkey.ScheduledTaskPoolSize";
@@ -444,6 +447,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String TILED_RASTER_PRODUCER_LARGE_DATASET_THRESHOLD =
         "gov.nasa.worldwind.avkey.TiledRasterProducerLargeDatasetThreshold";
     final String TILED_RASTER_PRODUCER_LIMIT_MAX_LEVEL = "gov.nasa.worldwind.avkey.TiledRasterProducer.LimitMaxLevel";
+    final String TILT = "gov.nasa.worldwind.avkey.Tilt";
     final String TITLE = "gov.nasa.worldwind.avkey.Title";
     final String TOP = "gov.nasa.worldwind.avkey.Top";
     final String TRANSPARENCY_COLORS = "gov.nasa.worldwind.avkey.TransparencyColors";
