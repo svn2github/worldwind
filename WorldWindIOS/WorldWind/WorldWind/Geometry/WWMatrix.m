@@ -803,7 +803,7 @@ void WWMatrixSwapEigenvalues(double* a, double* b, int* ia, int* ib)
     [modelviewLocal multiplyByLocalCoordinateTransform:origin onGlobe:globe];
 
     // Extract the viewing parameters from the transform in local coordinates.
-    // TODO: Document how these parameters are extracted.
+    // TODO: Document how these parameters are extracted. See Matrix.extractViewingParameters in WWJ.
 
     double* ml = modelviewLocal->m;
     double range = -ml[11];

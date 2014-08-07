@@ -440,25 +440,32 @@
 - (WWVec4*) extractForwardVector;
 
 /**
-* Extracts this viewing matrix's parameters.
+* Extracts this viewing matrix's parameters given a viewing origin and a globe.
 *
 * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
 * results are undefined. For details on viewing matrices, see
 * [WWMatrix multiplyByFirstPersonModelview:headingDegrees:tiltDegrees:rollDegrees:onGlobe:]
 * [WWMatrix multiplyByLookAtModelview:range:headingDegrees:tiltDegrees:rollDegrees:onGlobe:].
 *
-* TODO: Provide an overloaded version that does not require a known roll.
+* This returns a parameterization of this viewing matrix based on the specified origin and globe. The origin indicates
+* the model coordinate point that the view's orientation is relative to, while the globe provides the necessary model
+* coordinate context for the origin and the orientation. The origin should be either the view's eye point or a point on
+* the view's forward vector. The view's roll must be specified in order to disambiguate heading and roll when the view's
+* tilt is zero.
 *
-* TODO: Outline what is returned.
+* The following list outlines the returned key-value pairs and their meanings:
 *
-* TODO: Outline why the origin and roll parameters are required.
-* TODO: Outline that origin must be ether the eye point or a point on the line from the eye point along the forward vector.
+* - WW_ORIGIN - The geographic position corresponding to the origin point.
+* - WW_RANGE - The distance between the specified origin point and the view's eye point, in model coordinates.
+* - WW_HEADING - The view's heading angle relative to the globe's north pointing tangent at the origin point.
+* - WW_TILT - The view's tilt angle relative to the globe's normal vector at the origin point.
+* - WW_ROLL - The view's roll relative to the globe's normal vector at the origin point.
 *
-* @param origin TODO
-* @param roll TODO
+* @param origin The origin of the viewing parameters, in model coordinates.
+* @param roll The view's roll, in degrees.
 * @param globe The globe the viewer is looking at.
 *
-* @return TODO
+* @return A parameterization of this viewing matrix as a list of key-value pairs.
 *
 * @exception NSInvalidArgumentException If either argument is nil.
 */
