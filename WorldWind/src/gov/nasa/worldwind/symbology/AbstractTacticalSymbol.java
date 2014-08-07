@@ -373,11 +373,6 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
     protected class OrderedSymbol implements OrderedRenderable
     {
         /**
-         * The frame used to calculate this symbol's per-frame values. Set to the draw context's frame number each
-         * frame. Initially -1.
-         */
-        public long frameNumber = -1;
-        /**
          * Per-frame Cartesian point corresponding to this symbol's position. Calculated each frame in {@link
          * gov.nasa.worldwind.symbology.AbstractTacticalSymbol#computeSymbolPoints(gov.nasa.worldwind.render.DrawContext,
          * gov.nasa.worldwind.symbology.AbstractTacticalSymbol.OrderedSymbol)}. Initially <code>null</code>.
@@ -445,6 +440,26 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         public void render(DrawContext dc)
         {
             AbstractTacticalSymbol.this.drawOrderedRenderable(dc, this);
+        }
+
+        public boolean isEnableBatchRendering()
+        {
+            return AbstractTacticalSymbol.this.isEnableBatchRendering();
+        }
+
+        protected void doDrawOrderedRenderable(DrawContext dc, PickSupport pickCandidates)
+        {
+            AbstractTacticalSymbol.this.doDrawOrderedRenderable(dc, pickCandidates, this);
+        }
+
+        public boolean isEnableBatchPicking()
+        {
+            return AbstractTacticalSymbol.this.isEnableBatchPicking();
+        }
+
+        public Layer getPickLayer()
+        {
+            return AbstractTacticalSymbol.this.pickLayer;
         }
     }
 
@@ -1926,38 +1941,38 @@ public abstract class AbstractTacticalSymbol extends WWObjectImpl implements Tac
         }
     }
 
-    protected void drawBatched(DrawContext dc, OrderedSymbol osym)
+    protected void drawBatched(DrawContext dc, OrderedSymbol firstSymbol)
     {
         // Draw as many as we can in a batch to save ogl state switching.
         Object nextItem = dc.peekOrderedRenderables();
 
         if (!dc.isPickingMode())
         {
-            while (nextItem != null && nextItem instanceof AbstractTacticalSymbol)
+            while (nextItem != null && nextItem instanceof OrderedSymbol)
             {
-                AbstractTacticalSymbol ts = (AbstractTacticalSymbol) nextItem;
+                OrderedSymbol ts = (OrderedSymbol) nextItem;
                 if (!ts.isEnableBatchRendering())
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
-                ts.doDrawOrderedRenderable(dc, this.pickSupport, osym);
+                ts.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
             }
         }
         else if (this.isEnableBatchPicking())
         {
-            while (nextItem != null && nextItem instanceof AbstractTacticalSymbol)
+            while (nextItem != null && nextItem instanceof OrderedSymbol)
             {
-                AbstractTacticalSymbol ts = (AbstractTacticalSymbol) nextItem;
+                OrderedSymbol ts = (OrderedSymbol) nextItem;
                 if (!ts.isEnableBatchRendering() || !ts.isEnableBatchPicking())
                     break;
 
-                if (ts.pickLayer != this.pickLayer) // batch pick only within a single layer
+                if (ts.getPickLayer() != firstSymbol.getPickLayer()) // batch pick only within a single layer
                     break;
 
                 dc.pollOrderedRenderables(); // take it off the queue
-                ts.doDrawOrderedRenderable(dc, this.pickSupport, osym);
+                ts.doDrawOrderedRenderable(dc, this.pickSupport);
 
                 nextItem = dc.peekOrderedRenderables();
             }
