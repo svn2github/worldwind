@@ -27,15 +27,7 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
 
     public BasicViewPropertyLimits()
     {
-        this.eyeLocationLimits = Sector.FULL_SPHERE;
-        this.minEyeElevation = -Double.MAX_VALUE;
-        this.maxEyeElevation = Double.MAX_VALUE;
-        this.minHeading = Angle.NEG180;
-        this.maxHeading = Angle.POS180;
-        this.minPitch = Angle.ZERO;
-        this.maxPitch = Angle.POS90;
-        this.minRoll = Angle.NEG180;
-        this.maxRoll = Angle.POS180;
+        this.reset();
     }
 
     public Sector getEyeLocationLimits()
@@ -131,7 +123,20 @@ public class BasicViewPropertyLimits implements ViewPropertyLimits
         this.maxRoll = maxAngle;
     }
 
-     public static Angle limitHeading(Angle angle, ViewPropertyLimits viewLimits)
+    public void reset()
+    {
+        this.eyeLocationLimits = Sector.FULL_SPHERE;
+        this.minEyeElevation = -Double.MAX_VALUE;
+        this.maxEyeElevation = Double.MAX_VALUE;
+        this.minHeading = Angle.NEG180;
+        this.maxHeading = Angle.POS180;
+        this.minPitch = Angle.ZERO;
+        this.maxPitch = Angle.POS90;
+        this.minRoll = Angle.NEG180;
+        this.maxRoll = Angle.POS180;
+    }
+
+    public static Angle limitHeading(Angle angle, ViewPropertyLimits viewLimits)
     {
         if (angle == null)
         {

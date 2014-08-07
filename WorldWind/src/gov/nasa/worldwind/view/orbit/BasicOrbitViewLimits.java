@@ -23,15 +23,7 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
 
     public BasicOrbitViewLimits()
     {
-        this.centerLocationLimits = Sector.FULL_SPHERE;
-        this.minCenterElevation = -Double.MAX_VALUE;
-        this.maxCenterElevation = Double.MAX_VALUE;
-        this.minHeading = Angle.NEG180;
-        this.maxHeading = Angle.POS180;
-        this.minPitch = Angle.ZERO;
-        this.maxPitch = Angle.POS90;
-        this.minZoom = 0;
-        this.maxZoom = Double.MAX_VALUE;
+        this.reset();
     }
 
     public Sector getCenterLocationLimits()
@@ -71,6 +63,19 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
     {
         this.minZoom = minValue;
         this.maxZoom = maxValue;
+    }
+
+    public void reset()
+    {
+        this.centerLocationLimits = Sector.FULL_SPHERE;
+        this.minCenterElevation = -Double.MAX_VALUE;
+        this.maxCenterElevation = Double.MAX_VALUE;
+        this.minHeading = Angle.NEG180;
+        this.maxHeading = Angle.POS180;
+        this.minPitch = Angle.ZERO;
+        this.maxPitch = Angle.POS90;
+        this.minZoom = 0;
+        this.maxZoom = Double.MAX_VALUE;
     }
 
     public static void applyLimits(OrbitView view, OrbitViewLimits viewLimits)

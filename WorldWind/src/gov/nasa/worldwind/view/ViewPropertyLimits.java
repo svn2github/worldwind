@@ -18,9 +18,11 @@ public interface ViewPropertyLimits
      * Sets the <code>Sector</code> which will limit the <code>View</code> eye position latitude and longitude.
      *
      * @param sector <code>Sector</code> which will limit the eye position latitude and longitude.
+     *
      * @throws IllegalArgumentException if <code>sector</code> is null.
      */
     void setEyeLocationLimits(Sector sector);
+
     /**
      * Returns the <code>Sector</code> which limits the <code>View</code> eye position latitude and longitude.
      *
@@ -55,6 +57,7 @@ public interface ViewPropertyLimits
      *
      * @param minAngle the minimum allowable angle for heading.
      * @param maxAngle the maximum allowable angle for heading.
+     *
      * @throws IllegalArgumentException if either <code>minAngle</code> or <code>maxAngle</code> is null.
      */
     void setHeadingLimits(Angle minAngle, Angle maxAngle);
@@ -71,6 +74,7 @@ public interface ViewPropertyLimits
      *
      * @param minAngle the minimum allowable angle for pitch.
      * @param maxAngle the maximum allowable angle for pitch.
+     *
      * @throws IllegalArgumentException if either <code>minAngle</code> or <code>maxAngle</code> is null.
      */
     void setPitchLimits(Angle minAngle, Angle maxAngle);
@@ -92,6 +96,8 @@ public interface ViewPropertyLimits
      */
     void setRollLimits(Angle minAngle, Angle maxAngle);
 
+    /** Resets all property limits to their default values. */
+    void reset();
 
     void getRestorableState(RestorableSupport rs, RestorableSupport.StateObject context);
 
