@@ -38,6 +38,9 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     protected Point lastMousePoint;
     protected Point mousePoint;
     protected Position selectedPosition;
+    protected Matrix mouseDownModelview;
+    protected Matrix mouseDownProjection;
+    protected Rectangle mouseDownViewport;
     protected KeyEventState keyEventState = new KeyEventState();
     // Input transformation coefficients.
     protected double dragSlopeFactor = DEFAULT_DRAG_SLOPE_FACTOR;
@@ -456,6 +459,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         this.keyEventState.mousePressed(e);
         this.setMouseDownPoint(e.getPoint());
         this.setSelectedPosition(this.computeSelectedPosition());
+        this.setMouseDownView(this.getView());
         this.updateMousePoint(e);
         this.handleMousePressed(e);
     }
@@ -473,6 +477,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         }
         this.keyEventState.mouseReleased(e);
         this.setSelectedPosition(null);
+        this.setMouseDownView(null);
         this.handleMouseReleased(e);
     }
 
@@ -961,5 +966,21 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     public void setMouseDownPoint(Point mouseDownPoint)
     {
         this.mouseDownPoint = mouseDownPoint;
+    }
+
+    protected void setMouseDownView(View mouseDownView)
+    {
+        if (mouseDownView != null)
+        {
+            this.mouseDownModelview = mouseDownView.getModelviewMatrix();
+            this.mouseDownProjection = mouseDownView.getProjectionMatrix();
+            this.mouseDownViewport = mouseDownView.getViewport();
+        }
+        else
+        {
+            this.mouseDownModelview = null;
+            this.mouseDownProjection = null;
+            this.mouseDownViewport = null;
+        }
     }
 }

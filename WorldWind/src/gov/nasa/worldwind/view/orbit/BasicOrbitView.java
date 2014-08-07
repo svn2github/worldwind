@@ -722,6 +722,47 @@ public class BasicOrbitView extends BasicView implements OrbitView
             && modelCoords.getZoom() >= 0);
     }
 
+    @Override
+    protected double computeHorizonDistance(Position eyePosition)
+    {
+        if (this.dc.is2DGlobe())
+        {
+            return Double.MAX_VALUE; // Horizon distance doesn't make sense for the 2D globe.
+        }
+        else
+        {
+            return super.computeHorizonDistance(eyePosition);
+        }
+    }
+
+    @Override
+    protected double computeFarDistance(Position eyePosition)
+    {
+        if (this.dc.is2DGlobe())
+        {
+            // TODO: Compute the smallest far distance for a flat or a tilted view.
+            // Use max distance to six points around the map
+            Vec4 eyePoint = this.globe.computePointFromPosition(eyePosition);
+            Vec4 p = this.globe.computePointFromPosition(Angle.POS90, Angle.NEG180, 0); // NW
+            double far = eyePoint.distanceTo3(p);
+            p = this.globe.computePointFromPosition(Angle.POS90, Angle.POS180, 0); // NE
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.NEG90, Angle.NEG180, 0); // SW
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.NEG90, Angle.POS180, 0); // SE
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.ZERO, Angle.POS180, 0); // E
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            p = this.globe.computePointFromPosition(Angle.ZERO, Angle.NEG180, 0); // W
+            far = Math.max(far, eyePoint.distanceTo3(p));
+            return far < MINIMUM_FAR_DISTANCE ? MINIMUM_FAR_DISTANCE : far;
+        }
+        else
+        {
+            return super.computeHorizonDistance(eyePosition);
+        }
+    }
+
     //**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//

@@ -657,6 +657,10 @@ public class BasicView extends WWObjectImpl implements View
                 if (nearDistance > maxNearDistance)
                     nearDistance = maxNearDistance;
             }
+            else
+            {
+                nearDistance = MINIMUM_NEAR_DISTANCE;
+            }
         }
 
         // Prevent the near clip plane from becoming unnecessarily small. A very small clip plane is not useful for
