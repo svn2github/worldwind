@@ -302,8 +302,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
             return;
         }
 
-        this.stopGoToAnimators();
-        this.stopUserInputAnimators(VIEW_ANIM_CENTER, VIEW_ANIM_HEADING, VIEW_ANIM_PITCH, VIEW_ANIM_ZOOM);
+        this.stopAllAnimators();
 
         if (actionAttributes.getMouseActions() != null)
         {
@@ -619,14 +618,9 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         Globe globe = this.getWorldWindow().getModel().getGlobe();
         BasicOrbitView view = (BasicOrbitView) this.getView();
 
-        // TODO: Are these two lines necessary or helpful?
-        Position eyePos = globe.computePositionFromPoint(eyePoint);
-        eyePoint = globe.computePointFromPosition(eyePos);
-
         double smoothing = (this.isEnableSmoothing() && attrib.isEnableSmoothing()) ? attrib.getSmoothingValue() : 0;
         if (smoothing == 0)
         {
-            this.uiAnimControl.remove(VIEW_ANIM_EYE);
             OrbitViewEyePointAnimator.setEyePoint(globe, view, eyePoint);
             this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
         }
