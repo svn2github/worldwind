@@ -52,4 +52,10 @@ public class ProjectionMercator implements GeographicProjection
             (cart.x - xOffset) / globe.getEquatorialRadius(),
             cart.z);
     }
+
+    @Override
+    public Vec4 northPointingTangent(Globe globe, Angle latitude, Angle longitude)
+    {
+        return Vec4.UNIT_Y;
+    }
 }

@@ -42,4 +42,10 @@ public class ProjectionEquirectangular implements GeographicProjection
         return Position.fromRadians(cart.y / globe.getEquatorialRadius(),
             (cart.x - offset.x) / globe.getEquatorialRadius(), cart.z);
     }
+
+    @Override
+    public Vec4 northPointingTangent(Globe globe, Angle latitude, Angle longitude)
+    {
+        return Vec4.UNIT_Y;
+    }
 }

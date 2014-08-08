@@ -74,4 +74,16 @@ public interface GeographicProjection
      *      gov.nasa.worldwind.geom.Vec4)
      */
     Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset);
+
+    /**
+     * Computes a Cartesian vector that points north and is tangent to the meridian at the specified geographic
+     * location.
+     *
+     * @param globe     The globe this projection is applied to.
+     * @param latitude  The latitude of the location.
+     * @param longitude The longitude of the location.
+     *
+     * @return The north pointing tangent corresponding to the input location.
+     */
+    Vec4 northPointingTangent(Globe globe, Angle latitude, Angle longitude);
 }
