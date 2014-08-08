@@ -606,16 +606,34 @@ public class Angle implements Comparable<Angle>
         return 0;
     }
 
-    private static double normalizedDegreesLatitude(double degrees)
+    public static double normalizedDegrees(double degrees)
+    {
+        double a = degrees % 360;
+        return a > 180 ? a - 360 : a < -180 ? 360 + a : a;
+    }
+
+    public static double normalizedDegreesLatitude(double degrees)
     {
         double lat = degrees % 180;
         return lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
     }
 
-    private static double normalizedDegreesLongitude(double degrees)
+    public static double normalizedDegreesLongitude(double degrees)
     {
         double lon = degrees % 360;
         return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
+    }
+
+    public static Angle normalizedAngle(Angle unnormalizedAngle)
+    {
+        if (unnormalizedAngle == null)
+        {
+            String msg = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        return Angle.fromDegrees(normalizedDegrees(unnormalizedAngle.degrees));
     }
 
     public static Angle normalizedLatitude(Angle unnormalizedAngle)
@@ -640,6 +658,11 @@ public class Angle implements Comparable<Angle>
         }
 
         return Angle.fromDegrees(normalizedDegreesLongitude(unnormalizedAngle.degrees));
+    }
+
+    public Angle normalize()
+    {
+        return normalizedAngle(this);
     }
 
     public Angle normalizedLatitude()
