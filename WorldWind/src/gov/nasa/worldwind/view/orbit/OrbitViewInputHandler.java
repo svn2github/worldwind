@@ -176,11 +176,14 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         if (view instanceof OrbitView)
         {
+            double latDegrees = latitudeChange.degrees;
+            double lonDegrees = longitudeChange.degrees;
 
-            Position newPosition = ((OrbitView) view).getCenterPosition().add(new Position(
-                latitudeChange, longitudeChange, 0.0));
-
-            this.setCenterPosition((BasicOrbitView) view, uiAnimControl, newPosition, actionAttribs);
+            Position centerPos = ((OrbitView) view).getCenterPosition();
+            latDegrees = WWMath.clamp(centerPos.latitude.degrees + latDegrees, -90, 90);
+            lonDegrees = Angle.normalizedDegreesLongitude(centerPos.longitude.degrees + lonDegrees);
+            centerPos = Position.fromDegrees(latDegrees, lonDegrees, centerPos.elevation);
+            this.setCenterPosition((BasicOrbitView) view, uiAnimControl, centerPos, actionAttribs);
         }
     }
 
@@ -277,12 +280,14 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         {
             double sinHeading = view.getHeading().sin();
             double cosHeading = view.getHeading().cos();
-            double latChange = cosHeading * forwardChange.getDegrees() - sinHeading * sideChange.getDegrees();
-            double lonChange = sinHeading * forwardChange.getDegrees() + cosHeading * sideChange.getDegrees();
-            Position newPosition = ((OrbitView) view).getCenterPosition().add(
-                Position.fromDegrees(latChange, lonChange, 0.0));
+            double latDegrees = cosHeading * forwardChange.degrees - sinHeading * sideChange.degrees;
+            double lonDegrees = sinHeading * forwardChange.degrees + cosHeading * sideChange.degrees;
 
-            this.setCenterPosition((BasicOrbitView) view, this.uiAnimControl, newPosition, actionAttribs);
+            Position centerPos = ((OrbitView) view).getCenterPosition();
+            latDegrees = WWMath.clamp(centerPos.latitude.degrees + latDegrees, -90, 90);
+            lonDegrees = Angle.normalizedDegreesLongitude(centerPos.longitude.degrees + lonDegrees);
+            centerPos = Position.fromDegrees(latDegrees, lonDegrees, centerPos.elevation);
+            this.setCenterPosition((BasicOrbitView) view, this.uiAnimControl, centerPos, actionAttribs);
         }
     }
 
@@ -614,12 +619,14 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         Globe globe = this.getWorldWindow().getModel().getGlobe();
         BasicOrbitView view = (BasicOrbitView) this.getView();
 
+        // TODO: Are these two lines necessary or helpful?
         Position eyePos = globe.computePositionFromPoint(eyePoint);
         eyePoint = globe.computePointFromPosition(eyePos);
 
         double smoothing = (this.isEnableSmoothing() && attrib.isEnableSmoothing()) ? attrib.getSmoothingValue() : 0;
         if (smoothing == 0)
         {
+            this.uiAnimControl.remove(VIEW_ANIM_EYE);
             OrbitViewEyePointAnimator.setEyePoint(globe, view, eyePoint);
             this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
         }
@@ -831,10 +838,9 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
     protected static Position computeNewPosition(Position position, OrbitViewLimits limits)
     {
-        Position newPosition = new Position(
-            Angle.normalizedLatitude(position.getLatitude()),
-            Angle.normalizedLongitude(position.getLongitude()),
-            position.getElevation());
+        Angle newLat = Angle.fromDegrees(WWMath.clamp(position.latitude.degrees, -90, 90));
+        Angle newLon = Angle.normalizedLongitude(position.longitude);
+        Position newPosition = new Position(newLat, newLon, position.elevation);
         return BasicOrbitViewLimits.limitCenterPosition(newPosition, limits);
     }
 
