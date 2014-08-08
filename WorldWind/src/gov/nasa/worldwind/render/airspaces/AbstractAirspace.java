@@ -9,7 +9,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
@@ -87,7 +87,7 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
     }
 
     // usually only 1, but few at most
-    protected HashMap<Globe, AirspaceInfo> airspaceInfo = new HashMap<Globe, AirspaceInfo>(2);
+    protected HashMap<GlobeStateKey, AirspaceInfo> airspaceInfo = new HashMap<GlobeStateKey, AirspaceInfo>(2);
 
     public AbstractAirspace(AirspaceAttributes attributes)
     {
@@ -355,12 +355,12 @@ public abstract class AbstractAirspace extends AVListImpl implements Airspace, M
 
     protected AirspaceInfo getAirspaceInfo(DrawContext dc)
     {
-        AirspaceInfo info = this.airspaceInfo.get(dc.getGlobe());
+        AirspaceInfo info = this.airspaceInfo.get(dc.getGlobe().getGlobeStateKey());
 
         if (info == null || !info.isValid(dc))
         {
             info = new AirspaceInfo(dc, this.computeExtent(dc), this.computeMinimalGeometry(dc));
-            this.airspaceInfo.put(dc.getGlobe(), info);
+            this.airspaceInfo.put(dc.getGlobe().getGlobeStateKey(), info);
         }
 
         return info;

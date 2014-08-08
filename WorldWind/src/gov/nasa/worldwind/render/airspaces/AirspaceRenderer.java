@@ -551,10 +551,9 @@ public class AirspaceRenderer
             if (this != oa.getRenderer())
                 return;
 
+            dc.pollOrderedRenderables();
             this.drawAirspace(dc, oa.getAirspace(), oa.getPickedObject(), pickSupport);
 
-            // Take the ordered airspace off the queue, then peek at the next item in the queue (but do not remove it).
-            dc.pollOrderedRenderables();
             top = dc.peekOrderedRenderables();
         }
     }
