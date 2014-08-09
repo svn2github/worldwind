@@ -342,6 +342,7 @@ public abstract class AbstractShape extends WWObjectImpl
     {
         this.shapeDataCache.removeAllEntries();
         this.sector = null;
+        this.surfaceShape = null;
     }
 
     /**
