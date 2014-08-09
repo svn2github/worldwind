@@ -88,7 +88,8 @@ public class ExtrudedPolygonEditor extends AbstractShapeEditor
         this.controlPoints = new ArrayList<Marker>();
 
         this.assembleVertexControlPoints(dc);
-        this.assembleHeightControlPoints();
+        if (!dc.is2DGlobe())
+            this.assembleHeightControlPoints();
     }
 
     protected void assembleVertexControlPoints(DrawContext dc)
