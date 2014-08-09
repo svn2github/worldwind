@@ -8,6 +8,7 @@ package gov.nasa.worldwind.globes.projections;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Provides a Modified Sinusoidal spherical projection.
@@ -43,8 +44,11 @@ public class ProjectionModifiedSinusoidal implements GeographicProjection
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
         double latRadians = cart.y / globe.getEquatorialRadius();
+        latRadians = WWMath.clamp(latRadians, -Math.PI / 2, Math.PI / 2);
+
         double latCos = Math.cos(latRadians);
         double lonRadians = latCos > 0 ? cart.x / globe.getEquatorialRadius() / Math.pow(latCos, .3) : 0;
+        lonRadians = WWMath.clamp(lonRadians, -Math.PI, Math.PI);
 
         return Position.fromRadians(latRadians, lonRadians, cart.z);
     }
