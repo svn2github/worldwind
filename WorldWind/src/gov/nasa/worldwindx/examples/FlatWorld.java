@@ -12,7 +12,6 @@ import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -26,7 +25,6 @@ import java.util.Arrays;
  * @version $Id$
  * @see gov.nasa.worldwind.globes.FlatGlobe
  * @see EarthFlat
- * @see FlatOrbitView
  */
 public class FlatWorld extends ApplicationTemplate
 {
@@ -260,7 +258,6 @@ public class FlatWorld extends ApplicationTemplate
     {
         // Adjust configuration values before instantiation
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
-        Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
         start("World Wind Flat World", AppFrame.class);
     }
 }

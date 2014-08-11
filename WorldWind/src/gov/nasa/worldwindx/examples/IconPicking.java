@@ -13,7 +13,6 @@ import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.UserFacingIcon;
-import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 
 import java.awt.*;
 
@@ -24,7 +23,6 @@ import java.awt.*;
  * @version $Id$
  * @see gov.nasa.worldwind.globes.FlatGlobe
  * @see EarthFlat
- * @see FlatOrbitView
  */
 public class IconPicking extends ApplicationTemplate
 {
@@ -65,13 +63,6 @@ public class IconPicking extends ApplicationTemplate
             layer.addIcon(icon);
 
             ApplicationTemplate.insertAfterPlacenames(this.getWwd(), layer);
-            // Change atmosphere SkyGradientLayer for SkyColorLayer
-            LayerList layers = this.getWwd().getModel().getLayers();
-            for (int i = 0; i < layers.size(); i++)
-            {
-                if (layers.get(i) instanceof SkyGradientLayer)
-                    layers.set(i, new SkyColorLayer());
-            }
 
             this.getWwd().addSelectListener(new SelectListener()
             {
@@ -97,10 +88,9 @@ public class IconPicking extends ApplicationTemplate
     {
         // Adjust configuration values before instantiation
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
-        Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
         Configuration.setValue(AVKey.INITIAL_ALTITUDE, 27e6);
         Configuration.setValue(AVKey.INITIAL_LATITUDE, 0);
         Configuration.setValue(AVKey.INITIAL_LONGITUDE, 88);
-        ApplicationTemplate.start("World Wind Flat World", AppFrame.class);
+        ApplicationTemplate.start("World Wind Icon Picking", AppFrame.class);
     }
 }

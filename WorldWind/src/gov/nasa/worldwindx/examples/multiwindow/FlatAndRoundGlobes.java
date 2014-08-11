@@ -19,7 +19,6 @@ import gov.nasa.worldwind.layers.Earth.BMNGOneImage;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.render.Polygon;
 import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,8 +53,6 @@ public class FlatAndRoundGlobes
         WWFrame roundFrame = new WWFrame(null, roundModel, "Round Globe", AVKey.LEFT_OF_CENTER);
 //        WWFrame flatFrame = new WWFrame(null, flatModel, "Flat Globe", AVKey.RIGHT_OF_CENTER);
         WWFrame flatFrame = new WWFrame(roundFrame.wwPanel.wwd, flatModel, "Flat Globe", AVKey.RIGHT_OF_CENTER);
-
-        flatFrame.wwPanel.wwd.setView(new FlatOrbitView());
 
         this.addViewControlLayer(roundFrame);
         this.addViewControlLayer(flatFrame);

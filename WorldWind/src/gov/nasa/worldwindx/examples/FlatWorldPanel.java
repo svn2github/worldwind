@@ -41,6 +41,7 @@ public class FlatWorldPanel extends JPanel
         {
             this.flatGlobe = (FlatGlobe) wwd.getModel().getGlobe();
             this.roundGlobe = new Earth();
+            this.apply2DViewLimits();
         }
         else
         {
