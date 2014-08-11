@@ -209,8 +209,6 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
         }
 
         this.projection = projection;
-
-        this.setTessellator(null);
     }
 
     /**
