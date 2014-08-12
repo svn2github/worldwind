@@ -5,7 +5,7 @@
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
@@ -21,7 +21,7 @@ import java.util.*;
  * @author dcollins
  * @version $Id$
  */
-public class SurfacePolygon extends AbstractSurfaceShape implements Exportable, Movable2D
+public class SurfacePolygon extends AbstractSurfaceShape implements Exportable
 {
     protected List<Iterable<? extends LatLon>> boundaries = new ArrayList<Iterable<? extends LatLon>>();
 
@@ -216,42 +216,7 @@ public class SurfacePolygon extends AbstractSurfaceShape implements Exportable, 
         this.onShapeChanged();
     }
 
-    @Override
-    public void moveTo(Globe globe, Position position)
-    {
-        if (this.boundaries.isEmpty())
-            return;
-
-        Position oldReferencePosition = this.getReferencePosition();
-        if (oldReferencePosition == null)
-            return;
-
-        Vec4 oldReferencePoint = globe.computePointFromPosition(oldReferencePosition);
-        Vec4 newReferencePoint = globe.computePointFromPosition(position);
-        if (oldReferencePoint == null || newReferencePoint == null)
-            return;
-
-        Vec4 delta = newReferencePoint.subtract3(oldReferencePoint);
-
-        for (int i = 0; i < this.boundaries.size(); i++)
-        {
-            ArrayList<LatLon> newLocations = new ArrayList<LatLon>();
-
-            for (LatLon ll : this.boundaries.get(i))
-            {
-                Vec4 oldPoint = globe.computePointFromLocation(ll);
-                Vec4 newPoint = oldPoint.add3(delta);
-                LatLon newLocation = globe.computePositionFromPoint(newPoint);
-                newLocations.add(newLocation);
-            }
-
-            this.boundaries.set(i, newLocations);
-        }
-
-        // We've changed the polygon's list of boundaries; flag the shape as changed.
-        this.onShapeChanged();
-    }
-//**************************************************************//
+    //**************************************************************//
     //********************  Interior Tessellation  *****************//
     //**************************************************************//
 

@@ -8,7 +8,7 @@ package gov.nasa.worldwind.util;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.globes.Globe;
 
 import java.awt.*;
 
@@ -132,10 +132,7 @@ public class BasicDragger implements SelectListener
                 // Intersection with globe. Move reference point to the intersection point,
                 // but maintain current altitude.
                 Position p = new Position(pickPos, dragObject.getReferencePosition().getElevation());
-                if (globe instanceof Globe2D && dragObject instanceof Movable2D)
-                    ((Movable2D) dragObject).moveTo(globe, p);
-                else
-                    dragObject.moveTo(p);
+                dragObject.moveTo(p);
             }
             this.dragging = true;
             event.consume();
