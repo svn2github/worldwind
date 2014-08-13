@@ -432,10 +432,10 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getDefaultAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(new Material(Color.BLACK, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.BLACK, 0.0f));
+        attributes.setInteriorMaterial(new Material(Color.BLACK, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.BLACK, 0.0f));
         attributes.setOutlineMaterial(Material.DARK_GRAY);
         attributes.setDrawOutline(true);
-        attributes.setOpacity(0.95);
+        attributes.setInteriorOpacity(0.95);
         attributes.setOutlineOpacity(.95);
         attributes.setOutlineWidth(2);
         return attributes;
@@ -444,10 +444,10 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getSelectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.WHITE);
+        attributes.setInteriorMaterial(Material.WHITE);
         attributes.setOutlineMaterial(Material.BLACK);
         attributes.setDrawOutline(true);
-        attributes.setOpacity(0.8);
+        attributes.setInteriorOpacity(0.8);
         attributes.setOutlineOpacity(0.8);
         attributes.setOutlineWidth(2);
         return attributes;
@@ -456,16 +456,16 @@ public class AirspaceBuilder extends ApplicationTemplate
     public static AirspaceAttributes getIntersectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.RED);
-        attributes.setOpacity(0.95);
+        attributes.setInteriorMaterial(Material.RED);
+        attributes.setInteriorOpacity(0.95);
         return attributes;
     }
 
     public static AirspaceAttributes getSelectionAndIntersectionAttributes()
     {
         AirspaceAttributes attributes = new BasicAirspaceAttributes();
-        attributes.setMaterial(Material.ORANGE);
-        attributes.setOpacity(0.8);
+        attributes.setInteriorMaterial(Material.ORANGE);
+        attributes.setInteriorOpacity(0.8);
         return attributes;
     }
 

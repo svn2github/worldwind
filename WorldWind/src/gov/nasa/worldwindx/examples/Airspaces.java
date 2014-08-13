@@ -349,7 +349,7 @@ public class Airspaces extends ApplicationTemplate
                 this.lastHighlit = (Airspace) o;
                 this.lastAttrs = this.lastHighlit.getAttributes();
                 BasicAirspaceAttributes highlitAttrs = new BasicAirspaceAttributes(this.lastAttrs);
-                highlitAttrs.setMaterial(Material.WHITE);
+                highlitAttrs.setInteriorMaterial(Material.WHITE);
                 this.lastHighlit.setAttributes(highlitAttrs);
             }
 
@@ -359,9 +359,9 @@ public class Airspaces extends ApplicationTemplate
         protected void setupDefaultMaterial(Airspace a, Color color)
         {
             a.getAttributes().setDrawOutline(true);
-            a.getAttributes().setMaterial(new Material(color));
+            a.getAttributes().setInteriorMaterial(new Material(color));
             a.getAttributes().setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
-            a.getAttributes().setOpacity(0.8);
+            a.getAttributes().setInteriorOpacity(0.8);
             a.getAttributes().setOutlineOpacity(0.9);
             a.getAttributes().setOutlineWidth(3.0);
         }
@@ -950,7 +950,7 @@ public class Airspaces extends ApplicationTemplate
                                 AirspaceAttributes attribs = airspace.getAttributes();
                                 if (!attribs.isDrawOutline())
                                 {
-                                    Color color = attribs.getMaterial().getDiffuse();
+                                    Color color = attribs.getInteriorMaterial().getDiffuse();
                                     attribs.setDrawOutline(true);
                                     attribs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
                                 }

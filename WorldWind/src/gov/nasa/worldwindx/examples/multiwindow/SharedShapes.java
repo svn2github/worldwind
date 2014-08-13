@@ -140,7 +140,7 @@ public class SharedShapes
         layer.setName("Airspaces");
 
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
-        attrs.setMaterial(Material.RED);
+        attrs.setInteriorMaterial(Material.RED);
 
         Airspace airspace = new Orbit(LatLon.fromDegrees(37.5, -120), LatLon.fromDegrees(42.5, -120),
             Orbit.OrbitType.CENTER, 100000);
