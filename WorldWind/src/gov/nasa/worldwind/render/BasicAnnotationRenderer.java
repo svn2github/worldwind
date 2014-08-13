@@ -137,7 +137,7 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
                     continue;
             }
 
-            // TODO: cull annotations that are beyond the horizon or outside the view frustrum
+            // TODO: cull annotations that are beyond the horizon
             double eyeDistance = 1;
             if (annotation instanceof Locatable)
             {
@@ -148,6 +148,14 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
                     continue;
                 eyeDistance = annotation.isAlwaysOnTop() ? 0 : dc.getView().getEyePoint().distanceTo3(annotationPoint);
             }
+
+            if (annotation instanceof ScreenAnnotation)
+            {
+                Rectangle screenBounds = annotation.getBounds(dc);
+                if (screenBounds != null && !dc.getView().getViewport().intersects(screenBounds))
+                    return;
+            }
+
             // The annotations aren't drawn here, but added to the ordered queue to be drawn back-to-front.
             dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
 
@@ -236,6 +244,14 @@ public class BasicAnnotationRenderer implements AnnotationRenderer
                     return;
             }
         }
+
+        if (annotation instanceof ScreenAnnotation)
+        {
+            Rectangle screenBounds = annotation.getBounds(dc);
+            if (screenBounds != null && !dc.getView().getViewport().intersects(screenBounds))
+                return;
+        }
+
         // The annotation isn't drawn here, but added to the ordered queue to be drawn back-to-front.
         dc.addOrderedRenderable(new OrderedAnnotation(annotation, layer, eyeDistance));
 
