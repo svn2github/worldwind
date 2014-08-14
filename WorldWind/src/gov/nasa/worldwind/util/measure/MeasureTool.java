@@ -21,43 +21,43 @@ import java.util.List;
 /**
  * A utility class to interactively draw shapes and measure distance and area across the terrain. When armed, the class
  * monitors mouse events to allow the definition of a measure shape that can be one of {@link #SHAPE_LINE}, {@link
- * #SHAPE_PATH}, {@link #SHAPE_SURFACE_LINE}, {@link #SHAPE_SURFACE_PATH} {@link #SHAPE_POLYGON}, {@link #SHAPE_CIRCLE},
- * {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link #SHAPE_QUAD}. <p/> <p>In order to allow user interaction with
- * the measuring shape, a controller must be set by calling {@link #setController(MeasureToolController)} with a new
- * instance of a <code>MeasureToolController</code>.</p> <p/> <p>The interaction sequence for drawing a shape and
- * measuring is as follows: <ul> <li>Set the measure shape.</li> <li>Arm the <code>MeasureTool</code> object by calling
- * its {@link #setArmed(boolean)} method with an argument of true.</li> <li>Click on the terrain to add points.</li>
- * <li>Disarm the <code>MeasureTool</code> object by calling its {@link #setArmed(boolean)} method with an argument of
- * false. </li> <li>Read the measured length or area by calling the <code>MeasureTool</code> {@link #getLength()} or
- * {@link #getArea()} method. Note that the length and area can be queried at any time during or after the process.</li>
- * </ul> </p> <p>While entering points or after the measure tool has been disarmed, dragging the control points allow to
- * change the initial points positions and alter the measure shape.</p> <p/> <p> While the <code>MeasureTool</code> is
- * armed, pressing and immediately releasing mouse button one while also pressing the control key (Ctl) removes the last
- * point entered. </p> <p/> <p>Arming and disarming the <code>MeasureTool</code> does not change the contents or
- * attributes of the measure tool's layer. Note that the measure tool will NOT disarm itself after the second point of a
- * line or a regular shape has been entered - the MeasureToolController has that responsibility.</p> <p/> <p><b>Setting
- * the measure shape from the application</b></p> <p/> <p>The application can set the measure shape to an arbitrary list
- * of positions using {@link #setPositions(java.util.ArrayList)}. If the provided list contains two positions, the
- * measure shape will be set to {@link #SHAPE_SURFACE_LINE}. If more then two positions are provided, the measure shape
- * will be set to {@link #SHAPE_SURFACE_PATH} if the last position differs from the first (open path), or {@link
- * #SHAPE_POLYGON} if the path is closed.</p> <p/> <p>The application can also set the measure shape to a predefined
- * regular shape by calling {@link #setMeasureShapeType(String, Position, double, double, Angle)}, providing a shape
- * type (one of {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link #SHAPE_QUAD}), a center
- * position, a width, a height (in meters) and a heading angle.</p> <p/> <p>Finally, the application can use an existing
- * <code>Polyline</code> or <code>SurfaceShape</code> by using {@link #setMeasureShape(Polyline)} or {@link
- * #setMeasureShape(SurfaceShape)}. The surface shape can be one of <code>SurfacePolyline</code>,
- * <code>SurfacePolygon</code>, <code>SurfaceQuad</code>, <code>SurfaceSquare</code>, <code>SurfaceEllipse</code> or
- * <code>SurfaceCircle</code>. <p/> <p><b>Measuring</b></p> <p/> <p>The application can read the measured length or area
- * by calling the <code>MeasureTool</code> {@link #getLength()} or {@link #getArea()} method. These methods will return
- * -1 when no value is available.</p> <p/> <p>Regular shapes are defined by a center position, a width a height and a
- * heading angle. Those attributes can be accessed by calling the {@link #getCenterPosition()}, {@link #getWidth()},
- * {@link #getHeight()} and {@link #getOrientation()} methods.</p> <p/> <p>The measurements are displayed in units
- * specified in the measure tool's {@link UnitsFormat} object. Access to the units format is via the method {@link
- * #getUnitsFormat()}. <p/> <p><b>Events</b></p> <p/> <p>The <code>MeasureTool</code> will send events on several
- * occasions: when the position list has changed - {@link #EVENT_POSITION_ADD}, {@link #EVENT_POSITION_REMOVE} or {@link
- * #EVENT_POSITION_REPLACE}, when metrics has changed {@link #EVENT_METRIC_CHANGED} or when the tool is armed or
- * disarmed {@link #EVENT_ARMED}.</p> <p/> <p>Events will also be fired at the start and end of a rubber band operation
- * during shape creation: {@link #EVENT_RUBBERBAND_START} and {@link #EVENT_RUBBERBAND_STOP}.</p> <p/> <p>See {@link
+ * #SHAPE_PATH}, {@link #SHAPE_POLYGON}, {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link
+ * #SHAPE_QUAD}. <p/> <p>In order to allow user interaction with the measuring shape, a controller must be set by
+ * calling {@link #setController(MeasureToolController)} with a new instance of a <code>MeasureToolController</code>.</p>
+ * <p/> <p>The interaction sequence for drawing a shape and measuring is as follows: <ul> <li>Set the measure
+ * shape.</li> <li>Arm the <code>MeasureTool</code> object by calling its {@link #setArmed(boolean)} method with an
+ * argument of true.</li> <li>Click on the terrain to add points.</li> <li>Disarm the <code>MeasureTool</code> object by
+ * calling its {@link #setArmed(boolean)} method with an argument of false. </li> <li>Read the measured length or area
+ * by calling the <code>MeasureTool</code> {@link #getLength()} or {@link #getArea()} method. Note that the length and
+ * area can be queried at any time during or after the process.</li> </ul> </p> <p>While entering points or after the
+ * measure tool has been disarmed, dragging the control points allow to change the initial points positions and alter
+ * the measure shape.</p> <p/> <p> While the <code>MeasureTool</code> is armed, pressing and immediately releasing mouse
+ * button one while also pressing the control key (Ctl) removes the last point entered. </p> <p/> <p>Arming and
+ * disarming the <code>MeasureTool</code> does not change the contents or attributes of the measure tool's layer. Note
+ * that the measure tool will NOT disarm itself after the second point of a line or a regular shape has been entered -
+ * the MeasureToolController has that responsibility.</p> <p/> <p><b>Setting the measure shape from the
+ * application</b></p> <p/> <p>The application can set the measure shape to an arbitrary list of positions using {@link
+ * #setPositions(java.util.ArrayList)}. If the provided list contains two positions, the measure shape will be set to
+ * {@link #SHAPE_LINE}. If more then two positions are provided, the measure shape will be set to {@link
+ * #SHAPE_PATH} if the last position differs from the first (open path), or {@link #SHAPE_POLYGON} if the path
+ * is closed.</p> <p/> <p>The application can also set the measure shape to a predefined regular shape by calling {@link
+ * #setMeasureShapeType(String, Position, double, double, Angle)}, providing a shape type (one of {@link #SHAPE_CIRCLE},
+ * {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link #SHAPE_QUAD}), a center position, a width, a height (in
+ * meters) and a heading angle.</p> <p/> <p>Finally, the application can use an existing <code>Polyline</code> or
+ * <code>SurfaceShape</code> by using {@link #setMeasureShape(Polyline)} or {@link #setMeasureShape(SurfaceShape)}. The
+ * surface shape can be one of <code>SurfacePolyline</code>, <code>SurfacePolygon</code>, <code>SurfaceQuad</code>,
+ * <code>SurfaceSquare</code>, <code>SurfaceEllipse</code> or <code>SurfaceCircle</code>. <p/> <p><b>Measuring</b></p>
+ * <p/> <p>The application can read the measured length or area by calling the <code>MeasureTool</code> {@link
+ * #getLength()} or {@link #getArea()} method. These methods will return -1 when no value is available.</p> <p/>
+ * <p>Regular shapes are defined by a center position, a width a height and a heading angle. Those attributes can be
+ * accessed by calling the {@link #getCenterPosition()}, {@link #getWidth()}, {@link #getHeight()} and {@link
+ * #getOrientation()} methods.</p> <p/> <p>The measurements are displayed in units specified in the measure tool's
+ * {@link UnitsFormat} object. Access to the units format is via the method {@link #getUnitsFormat()}. <p/>
+ * <p><b>Events</b></p> <p/> <p>The <code>MeasureTool</code> will send events on several occasions: when the position
+ * list has changed - {@link #EVENT_POSITION_ADD}, {@link #EVENT_POSITION_REMOVE} or {@link #EVENT_POSITION_REPLACE},
+ * when metrics has changed {@link #EVENT_METRIC_CHANGED} or when the tool is armed or disarmed {@link
+ * #EVENT_ARMED}.</p> <p/> <p>Events will also be fired at the start and end of a rubber band operation during shape
+ * creation: {@link #EVENT_RUBBERBAND_START} and {@link #EVENT_RUBBERBAND_STOP}.</p> <p/> <p>See {@link
  * gov.nasa.worldwindx.examples.MeasureToolPanel} for some events usage.</p> <p/> <p>Several instances of this class can
  * be used simultaneously. However, each instance should be disposed of after usage by calling the {@link #dispose()}
  * method.</p>
@@ -69,9 +69,7 @@ import java.util.List;
 public class MeasureTool extends AVListImpl implements Disposable
 {
     public static final String SHAPE_LINE = "MeasureTool.ShapeLine";
-    public static final String SHAPE_SURFACE_LINE = "MeasureTool.ShapeSurfaceLine";
     public static final String SHAPE_PATH = "MeasureTool.ShapePath";
-    public static final String SHAPE_SURFACE_PATH = "MeasureTool.ShapeSurfacePath";
     public static final String SHAPE_POLYGON = "MeasureTool.ShapePolygon";
     public static final String SHAPE_CIRCLE = "MeasureTool.ShapeCircle";
     public static final String SHAPE_ELLIPSE = "MeasureTool.ShapeEllipse";
@@ -143,7 +141,7 @@ public class MeasureTool extends AVListImpl implements Disposable
     protected AnnotationAttributes controlPointWithLeaderAttributes;
     protected ShapeAttributes leaderAttributes;
     protected AnnotationAttributes annotationAttributes;
-    protected String measureShapeType = SHAPE_SURFACE_LINE;
+    protected String measureShapeType = SHAPE_LINE;
     protected boolean followTerrain = false;
     protected boolean showControlPoints = true;
     protected boolean showAnnotation = true;
@@ -453,9 +451,9 @@ public class MeasureTool extends AVListImpl implements Disposable
 
     /**
      * Set the measure shape to an arbitrary list of positions. If the provided list contains two positions, the measure
-     * shape will be set to {@link #SHAPE_SURFACE_LINE}. If more then two positions are provided, the measure shape will
-     * be set to {@link #SHAPE_SURFACE_PATH} if the last position differs from the first (open path), or {@link
-     * #SHAPE_POLYGON} if the path is closed.
+     * shape will be set to {@link #SHAPE_LINE}. If more then two positions are provided, the measure shape will be set
+     * to {@link #SHAPE_PATH} if the last position differs from the first (open path), or {@link #SHAPE_POLYGON}
+     * if the path is closed.
      *
      * @param newPositions the shape position list.
      */
@@ -490,7 +488,7 @@ public class MeasureTool extends AVListImpl implements Disposable
         }
 
         // Update line heading if needed
-        if (this.measureShapeType.equals(SHAPE_SURFACE_LINE))
+        if (this.measureShapeType.equals(SHAPE_LINE))
             this.shapeOrientation = LatLon.greatCircleAzimuth(this.positions.get(0), this.positions.get(1));
 
         // Update screen shapes
@@ -697,9 +695,8 @@ public class MeasureTool extends AVListImpl implements Disposable
     }
 
     /**
-     * Get the measure shape type. can be one of {@link #SHAPE_SURFACE_LINE}, {@link #SHAPE_SURFACE_PATH}, {@link
-     * #SHAPE_LINE}, {@link #SHAPE_PATH}, {@link #SHAPE_POLYGON}, {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link
-     * #SHAPE_SQUARE} or {@link #SHAPE_QUAD}.
+     * Get the measure shape type. can be one of {@link #SHAPE_LINE}, {@link #SHAPE_PATH}, {@link #SHAPE_POLYGON},
+     * {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link #SHAPE_QUAD}.
      *
      * @return the measure shape type.
      */
@@ -709,9 +706,9 @@ public class MeasureTool extends AVListImpl implements Disposable
     }
 
     /**
-     * Set the measure shape type. can be one of {@link #SHAPE_SURFACE_LINE}, {@link #SHAPE_SURFACE_PATH}, {@link
-     * #SHAPE_LINE}, {@link #SHAPE_PATH}, {@link #SHAPE_POLYGON}, {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link
-     * #SHAPE_SQUARE} or {@link #SHAPE_QUAD}. This will reset the measure tool and clear the current measure shape.
+     * Set the measure shape type. can be one of {@link #SHAPE_LINE}, {@link #SHAPE_PATH}, {@link #SHAPE_POLYGON},
+     * {@link #SHAPE_CIRCLE}, {@link #SHAPE_ELLIPSE}, {@link #SHAPE_SQUARE} or {@link #SHAPE_QUAD}. This will reset the
+     * measure tool and clear the current measure shape.
      *
      * @param shape the measure shape type.
      */
@@ -844,7 +841,7 @@ public class MeasureTool extends AVListImpl implements Disposable
 
     protected String getPathType(List<? extends Position> positions)
     {
-        return positions.size() > 2 ? SHAPE_SURFACE_PATH : SHAPE_SURFACE_LINE;
+        return positions.size() > 2 ? SHAPE_PATH : SHAPE_LINE;
     }
 
     /**
@@ -911,7 +908,7 @@ public class MeasureTool extends AVListImpl implements Disposable
         else // SurfacePolygon, SurfacePolyline, SurfaceSector, or some custom shape
         {
             // Set measure shape type
-            this.measureShapeType = surfaceShape instanceof SurfacePolyline ? SHAPE_SURFACE_PATH : SHAPE_POLYGON;
+            this.measureShapeType = SHAPE_POLYGON;
             // Extract positions from shape
             updatePositionsFromShape();
             // Create control points for each position except the last that is the same as the first
@@ -936,11 +933,6 @@ public class MeasureTool extends AVListImpl implements Disposable
             || shape.equals(SHAPE_ELLIPSE)
             || shape.equals(SHAPE_QUAD)
             || shape.equals(SHAPE_SQUARE));
-    }
-
-    protected boolean isSurfaceLineShape(String shape)
-    {
-        return shape.equals(SHAPE_SURFACE_LINE) || shape.equals(SHAPE_SURFACE_PATH);
     }
 
     public boolean isFollowTerrain()
@@ -1072,11 +1064,6 @@ public class MeasureTool extends AVListImpl implements Disposable
                     // Two points on a line, update line heading info
                     this.shapeOrientation = LatLon.greatCircleAzimuth(this.positions.get(0), this.positions.get(1));
                 }
-                if (this.measureShapeType.equals(SHAPE_SURFACE_LINE) && this.positions.size() > 1)
-                {
-                    // Two points on a line, update line heading info
-                    this.shapeOrientation = LatLon.greatCircleAzimuth(this.positions.get(0), this.positions.get(1));
-                }
             }
             else
             {
@@ -1188,8 +1175,6 @@ public class MeasureTool extends AVListImpl implements Disposable
             // Update heading for simple line
             if (measureShapeType.equals(SHAPE_LINE) && positions.size() > 1)
                 shapeOrientation = LatLon.greatCircleAzimuth(positions.get(0), positions.get(1));
-            if (measureShapeType.equals(SHAPE_SURFACE_LINE) && positions.size() > 1)
-                shapeOrientation = LatLon.greatCircleAzimuth(positions.get(0), positions.get(1));
         }
 
         // Update rendered shapes
@@ -1242,8 +1227,6 @@ public class MeasureTool extends AVListImpl implements Disposable
             }
             // Update heading for simple line
             if (measureShapeType.equals(SHAPE_LINE) && positions.size() > 1)
-                shapeOrientation = LatLon.greatCircleAzimuth(positions.get(0), positions.get(1));
-            if (measureShapeType.equals(SHAPE_SURFACE_LINE) && positions.size() > 1)
                 shapeOrientation = LatLon.greatCircleAzimuth(positions.get(0), positions.get(1));
             // Update rendered shapes
             updateMeasureShape();
@@ -1885,39 +1868,6 @@ public class MeasureTool extends AVListImpl implements Disposable
                 this.surfaceShape = null;
             }
         }
-        // Update SurfacePolyline
-        else if (this.isSurfaceLineShape(this.measureShapeType))
-        {
-            if (this.positions.size() > 1 && this.surfaceShape == null)
-            {
-                // Init surface shape
-                this.surfaceShape = new SurfacePolyline(this.positions);
-                ShapeAttributes attr = new BasicShapeAttributes();
-                attr.setOutlineMaterial(new Material(this.getLineColor()));
-                attr.setOutlineOpacity(this.getLineColor().getAlpha() / 255d);
-                attr.setOutlineWidth(this.getLineWidth());
-                this.surfaceShape.setAttributes(attr);
-                this.surfaceShape.setPathType(this.getPathType());
-                this.shapeLayer.addRenderable(this.surfaceShape);
-            }
-            if (this.positions.size() <= 1 && this.surfaceShape != null)
-            {
-                // Remove surface shape if less then 2 positions
-                this.shapeLayer.removeRenderable(this.surfaceShape);
-                this.surfaceShape = null;
-            }
-            if (this.surfaceShape != null)
-            {
-                // Update current shape
-                ((SurfacePolyline) this.surfaceShape).setLocations(this.positions);
-            }
-            // Remove line if necessary
-            if (this.line != null)
-            {
-                this.shapeLayer.removeRenderable(this.line);
-                this.line = null;
-            }
-        }
         // Update polygon
         else if (this.measureShapeType.equals(SHAPE_POLYGON))
         {
@@ -2192,10 +2142,6 @@ public class MeasureTool extends AVListImpl implements Disposable
                 displayString = this.formatEllipseMeasurements(pos);
             }
             else if (this.measureShapeType.equals(SHAPE_LINE) || this.measureShapeType.equals(SHAPE_PATH))
-            {
-                displayString = this.formatLineMeasurements(pos);
-            }
-            else if (this.isSurfaceLineShape(this.measureShapeType))
             {
                 displayString = this.formatLineMeasurements(pos);
             }

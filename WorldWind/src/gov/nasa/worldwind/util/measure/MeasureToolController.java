@@ -231,7 +231,7 @@ public class MeasureToolController extends MouseAdapter
     {
         if (this.isArmed() && this.isUseRubberBand() && mouseEvent.getButton() == MouseEvent.BUTTON1)
         {
-            if (this.isUseRubberBand() && measureTool.getPositions().size() == 1)
+            if (measureTool.getPositions().size() == 1)
                 measureTool.removeControlPoint();
             this.setActive(false);
             rubberBandTarget = null;
@@ -360,7 +360,6 @@ public class MeasureToolController extends MouseAdapter
             && this.measureTool.getWwd().getObjectsAtCurrentPosition().getTerrainObject() != null)
         {
             if (!isFreeHand() || (!measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_PATH)
-                    && !measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_SURFACE_PATH)
                     && !measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_POLYGON)))
             {
                 // Rubber band - Move control point and update shape
@@ -551,8 +550,7 @@ public class MeasureToolController extends MouseAdapter
     protected void autoDisarm()
     {
         // Disarm after second control point of a line or regular shape
-        if (measureTool.isRegularShape() || measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_LINE)
-            || measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_SURFACE_LINE))
+        if (measureTool.isRegularShape() || measureTool.getMeasureShapeType().equals(MeasureTool.SHAPE_LINE))
             if (measureTool.getControlPoints().size() > 1)
                 this.setArmed(false);
     }
