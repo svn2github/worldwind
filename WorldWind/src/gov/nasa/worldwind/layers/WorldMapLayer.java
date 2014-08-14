@@ -447,7 +447,7 @@ public class WorldMapLayer extends AbstractLayer
                 }
 
                 // Draw view footprint in map icon space
-                if (this.showFootprint)
+                if (!dc.is2DGlobe() && this.showFootprint)
                 {
                     this.footPrintPositions = this.computeViewFootPrint(dc, 32);
                     if (this.footPrintPositions != null)
