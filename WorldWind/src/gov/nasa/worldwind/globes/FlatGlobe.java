@@ -150,14 +150,14 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     @Override
     public double getRadiusAt(LatLon latLon)
     {
+        // TODO: Find a more accurate workaround then getMaximumRadius()
         if (latLon == null)
         {
             String msg = Logging.getMessage("nullValue.LatLonIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
-
-        return super.getRadiusAt(latLon);
+        return getMaximumRadius();
     }
 
     /**
