@@ -155,12 +155,6 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
      */
     Extent getExtent(DrawContext dc);
 
-    void makeOrderedRenderable(DrawContext dc, AirspaceRenderer renderer);
-
-    void renderGeometry(DrawContext dc, String drawStyle);
-
-    void renderExtent(DrawContext dc);
-
     /**
      * Sets the altitude datum, which indicates whether airspace altitudes are relative to mean sea level, ground level
      * or a single ground reference location.
@@ -224,4 +218,84 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
      * @return the current ground reference location.
      */
     LatLon getGroundReference();
+
+    /**
+     * Indicates whether batch rendering is enabled for the concrete shape type of this shape.
+     *
+     * @return true if batch rendering is enabled, otherwise false.
+     *
+     * @see #setEnableBatchRendering(boolean).
+     */
+    boolean isEnableBatchRendering();
+
+    /**
+     * Specifies whether adjacent shapes of this shape's concrete type in the ordered renderable list may be rendered
+     * together if they are contained in the same layer. This increases performance. There is seldom a reason to disable
+     * it.
+    *
+        * @param enableBatchRendering true to enable batch rendering, otherwise false.
+    */
+    void setEnableBatchRendering(boolean enableBatchRendering);
+
+    /**
+     * Indicates whether batch picking is enabled.
+     *
+     * @return true if batch rendering is enabled, otherwise false.
+     *
+     * @see #setEnableBatchPicking(boolean).
+     */
+    boolean isEnableBatchPicking();
+
+    /**
+     * Specifies whether adjacent shapes of this shape's concrete type in the ordered renderable list may be pick-tested
+     * together if they are contained in the same layer. This increases performance but allows only the top-most of the
+     * polygons to be reported in a {@link gov.nasa.worldwind.event.SelectEvent} even if several of the polygons are at
+     * the pick position.
+     * <p/>
+     * Batch rendering ({@link #setEnableBatchRendering(boolean)}) must be enabled in order for batch picking to occur.
+     *
+     * @param enableBatchPicking true to enable batch rendering, otherwise false.
+     */
+    void setEnableBatchPicking(boolean enableBatchPicking);
+
+    /**
+     * Indicates whether the filled sides of this shape should be offset towards the viewer to help eliminate artifacts
+     * when two or more faces of this or other filled shapes are coincident.
+     *
+     * @return true if depth offset is applied, otherwise false.
+     */
+    boolean isEnableDepthOffset();
+
+    /**
+     * Specifies whether the filled sides of this shape should be offset towards the viewer to help eliminate artifacts
+     * when two or more faces of this or other filled shapes are coincident.
+     *
+     * @param enableDepthOffset true if depth offset is applied, otherwise false.
+     */
+    void setEnableDepthOffset(boolean enableDepthOffset);
+
+    /**
+     * Indicates the outline line width to use during picking. A larger width than normal typically makes the outline
+     * easier to pick.
+     *
+     * @return the outline line width used during picking.
+     */
+    int getOutlinePickWidth();
+
+    /**
+     * Specifies the outline line width to use during picking. A larger width than normal typically makes the outline
+     * easier to pick.
+     * <p/>
+     * Note that the size of the pick aperture also affects the precision necessary to pick.
+     *
+     * @param outlinePickWidth the outline pick width. The default is 10.
+     *
+     * @throws IllegalArgumentException if the width is less than 0.
+     */
+    void setOutlinePickWidth(int outlinePickWidth);
+
+    Object getDelegateOwner();
+
+    void setDelegateOwner(Object delegateOwner);
+
 }

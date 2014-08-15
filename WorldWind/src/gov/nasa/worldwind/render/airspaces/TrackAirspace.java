@@ -12,8 +12,6 @@ import gov.nasa.worldwind.util.*;
 
 import java.util.*;
 
-import gov.nasa.worldwind.render.airspaces.Box;
-
 /**
  * @author garakl
  * @version $Id$
@@ -617,22 +615,8 @@ public class TrackAirspace extends AbstractAirspace
     //********************  Geometry Rendering  ********************//
     //**************************************************************//
 
-    public void makeOrderedRenderable(DrawContext dc, AirspaceRenderer renderer)
+    protected void makeOrderedRenderable(DrawContext dc)
     {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (renderer == null)
-        {
-            String message = Logging.getMessage("nullValue.RendererIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
         // Update the child leg vertices if they're out of date. Since the leg vertices are used to determine how each
         // leg is shaped with respect to its neighbors, the vertices must be current before rendering each leg.
         if (this.isLegsOutOfDate(dc))
@@ -642,73 +626,18 @@ public class TrackAirspace extends AbstractAirspace
 
         for (Box leg : this.getLegs())
         {
-            if (!leg.isVisible())
-                continue;
-
-            if (!leg.isAirspaceVisible(dc))
-                continue;
-
-            // The leg is responsible for applying its own attributes, so we override its attributes with our own just
-            // before rendering.
+            // Synchronize the leg's attributes with this track's attributes, and setup this track as the leg's pick
+            // delegate.
             leg.setAttributes(this.getAttributes());
-
-            // Create an ordered renderable that draws each layer, but specifies this Track as the picked object.
-            OrderedRenderable or = renderer.createOrderedRenderable(dc, leg, leg.computeEyeDistance(dc), this);
-            dc.addOrderedRenderable(or);
+            leg.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
+            leg.render(dc);
         }
     }
 
+    @Override
     protected void doRenderGeometry(DrawContext dc, String drawStyle)
     {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // Called by AirspaceRenderer's drawNow and pickNow methods. These methods do not use the ordered renderable
-        // queue, so TrackAirspace must explicitly initiate drawing its legs. When airspace rendering is initiated via
-        // AirspaceRenderer drawOrdered or pickOrdered, TrackAirspace does not add an ordered renderable for itself, so
-        // this method is never initiated.
-
-        // Update the child leg vertices if they're out of date. Since the leg vertices are used to determine how each
-        // leg is shaped with respect to its neighbors, the vertices must be current before rendering each leg.
-        if (this.isLegsOutOfDate(dc))
-        {
-            this.doUpdateLegs(dc);
-        }
-
-        for (Box b : this.getLegs())
-        {
-            if (!b.isVisible())
-                continue;
-
-            if (!b.isAirspaceVisible(dc))
-                continue;
-
-            b.renderGeometry(dc, drawStyle);
-        }
-    }
-
-    protected void doRenderExtent(DrawContext dc)
-    {
-        if (dc == null)
-        {
-            String message = Logging.getMessage("nullValue.DrawContextIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // Called by AirspaceRenderer's drawNow and pickNow methods. These methods do not use the ordered renderable
-        // queue, so TrackAirspace must explicitly initiate drawing its legs. When airspace rendering is initiated via
-        // AirspaceRenderer drawOrdered or pickOrdered, TrackAirspace does not add an ordered renderable for itself, so
-        // this method is never initiated.
-
-        for (Box b : this.legs)
-        {
-            b.renderExtent(dc);
-        }
+        // Intentionally left blank.
     }
 
     //**************************************************************//

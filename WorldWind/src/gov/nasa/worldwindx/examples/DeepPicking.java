@@ -6,7 +6,10 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.airspaces.Airspace;
 
 /**
  * Illustrates how to cause all elements under the cursor in a WorldWindow to be reported in <code>{@link
@@ -26,14 +29,13 @@ public class DeepPicking extends Airspaces
         public AppFrame()
         {
             // Prohibit batch picking for the airspaces.
-            this.controller.aglAirspaces.setEnableBatchPicking(false);
-            this.controller.amslAirspaces.setEnableBatchPicking(false);
+            this.disableBatchPicking();
 
             // Tell the scene controller to perform deep picking.
-            this.controller.getWwd().getSceneController().setDeepPickEnabled(true);
+            this.getWwd().getSceneController().setDeepPickEnabled(true);
 
             // Register a select listener to print the class names of the items under the cursor.
-            this.controller.getWwd().addSelectListener(new SelectListener()
+            this.getWwd().addSelectListener(new SelectListener()
             {
                 public void selected(SelectEvent event)
                 {
@@ -50,6 +52,20 @@ public class DeepPicking extends Airspaces
                     }
                 }
             });
+        }
+
+        protected void disableBatchPicking()
+        {
+            for (Layer layer : this.getWwd().getModel().getLayers())
+            {
+                if (!layer.getName().toLowerCase().contains("airspace"))
+                    continue;
+
+                for (Renderable airspace : ((RenderableLayer) layer).getRenderables())
+                {
+                    ((Airspace) airspace).setEnableBatchPicking(false);
+                }
+            }
         }
     }
 

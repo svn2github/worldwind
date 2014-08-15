@@ -401,7 +401,7 @@ public class SphereAirspace extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, geom);
         }
 
-        this.getRenderer().drawGeometry(dc, geom);
+        this.drawGeometry(dc, geom, geom);
     }
 
     protected void makeSphere(double radius, int subdivisions, Geometry dest)

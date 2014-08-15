@@ -30,7 +30,7 @@ public class ElevationPlane extends Polygon
 
     public ElevationPlane()
     {
-        this.getRenderer().setEnableLighting(false);
+        this.getAttributes().setEnableLighting(false);
     }
 
     /**

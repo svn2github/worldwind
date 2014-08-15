@@ -672,7 +672,7 @@ public class Box extends AbstractAirspace
         Geometry vertexGeom = this.getBoxVertexGeometry(dc, verts, altitudes, terrainConformant, enableCaps,
             pillars, stacks, heightStacks, referenceCenter);
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private void drawBoxOutline(DrawContext dc, Vec4[] verts, double[] altitudes, boolean[] terrainConformant,
@@ -684,7 +684,7 @@ public class Box extends AbstractAirspace
         Geometry vertexGeom = this.getBoxVertexGeometry(dc, verts, altitudes, terrainConformant, enableCaps,
             pillars, stacks, heightStacks, referenceCenter);
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private Geometry getBoxIndexFillGeometry(boolean[] enableCaps, int pillars, int stacks, int heightStacks)

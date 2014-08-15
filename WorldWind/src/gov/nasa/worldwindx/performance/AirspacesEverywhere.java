@@ -7,9 +7,9 @@
 package gov.nasa.worldwindx.performance;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.layers.AirspaceLayer;
 import gov.nasa.worldwind.render.airspaces.Polygon;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class AirspacesEverywhere extends ApplicationTemplate
 
             ArrayList<LatLon> positions = new ArrayList<LatLon>();
 
-            AirspaceLayer layer = new AirspaceLayer();
+            RenderableLayer layer = new RenderableLayer();
 
             int count = 0;
             for (double lat = minLat; lat <= maxLat; lat += delta)
@@ -77,7 +77,7 @@ public class AirspacesEverywhere extends ApplicationTemplate
                     Polygon pgon = new Polygon(positions);
                     pgon.setAltitudes(1e3, 1e4);
                     pgon.setAltitudeDatum(AVKey.ABOVE_MEAN_SEA_LEVEL, AVKey.ABOVE_MEAN_SEA_LEVEL);
-                    layer.addAirspace(pgon);
+                    layer.addRenderable(pgon);
                     ++count;
                 }
             }

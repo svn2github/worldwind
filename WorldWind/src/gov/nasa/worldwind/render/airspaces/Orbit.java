@@ -549,7 +549,7 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private void drawLongCylinderOutline(DrawContext dc,
@@ -571,7 +571,7 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, outlineIndexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, outlineIndexGeom, vertexGeom);
+        this.drawGeometry(dc, outlineIndexGeom, vertexGeom);
     }
 
     private Geometry createLongCylinderVertexGeometry(DrawContext dc, double radius, double length,
@@ -714,7 +714,7 @@ public class Orbit extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private void makeLongDisk(DrawContext dc,

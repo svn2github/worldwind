@@ -373,7 +373,7 @@ public class Curtain extends AbstractAirspace
         CurtainGeometry geom = this.getCurtainGeometry(dc, count, locations, pathType, splitThreshold,
             altitudes, terrainConformant, referenceCenter);
 
-        this.getRenderer().drawGeometry(dc, geom.getFillIndexGeometry(), geom.getVertexGeometry());
+        this.drawGeometry(dc, geom.getFillIndexGeometry(), geom.getVertexGeometry());
     }
 
     protected void drawCurtainOutline(DrawContext dc, int count, LatLon[] locations, String pathType,
@@ -384,7 +384,7 @@ public class Curtain extends AbstractAirspace
         CurtainGeometry geom = this.getCurtainGeometry(dc, count, locations, pathType, splitThreshold,
             altitudes, terrainConformant, referenceCenter);
 
-        this.getRenderer().drawGeometry(dc, geom.getOutlineIndexGeometry(), geom.getVertexGeometry());
+        this.drawGeometry(dc, geom.getOutlineIndexGeometry(), geom.getVertexGeometry());
     }
 
     protected void makeCurtainGeometry(DrawContext dc, int count, LatLon[] locations, String pathType,

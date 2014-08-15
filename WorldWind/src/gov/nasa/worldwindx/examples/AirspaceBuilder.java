@@ -9,7 +9,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.layers.AirspaceLayer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.airspaces.*;
@@ -1021,7 +1021,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             this.getModel().addEntry(entry);
             this.updateShapeIntersection();
 
-            this.getApp().getAirspaceLayer().addAirspace(entry.getAirspace());
+            this.getApp().getAirspaceLayer().addRenderable(entry.getAirspace());
             this.getApp().getWwd().redraw();
         }
 
@@ -1037,7 +1037,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             this.getModel().removeEntry(entry);
             this.updateShapeIntersection();
 
-            this.getApp().getAirspaceLayer().removeAirspace(entry.getAirspace());
+            this.getApp().getAirspaceLayer().removeRenderable(entry.getAirspace());
             this.getApp().getWwd().redraw();
         }
 
@@ -1473,14 +1473,14 @@ public class AirspaceBuilder extends ApplicationTemplate
     protected static class AppFrame extends ApplicationTemplate.AppFrame
     {
         // Airspace layer and editor UI components.
-        protected AirspaceLayer airspaceLayer;
+        protected RenderableLayer airspaceLayer;
         protected AirspaceBuilderModel builderModel;
         protected AirspaceBuilderPanel builderView;
         protected AirspaceBuilderController builderController;
 
         public AppFrame()
         {
-            this.airspaceLayer = new AirspaceLayer();
+            this.airspaceLayer = new RenderableLayer();
             this.airspaceLayer.setName(AIRSPACE_LAYER_NAME);
             insertBeforePlacenames(this.getWwd(), this.airspaceLayer);
 
@@ -1501,7 +1501,7 @@ public class AirspaceBuilder extends ApplicationTemplate
             return this.builderView;
         }
 
-        public AirspaceLayer getAirspaceLayer()
+        public RenderableLayer getAirspaceLayer()
         {
             return this.airspaceLayer;
         }

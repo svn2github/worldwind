@@ -136,7 +136,7 @@ public class SharedShapes
 
     protected static Layer makeAirspaceLayer()
     {
-        AirspaceLayer layer = new AirspaceLayer();
+        RenderableLayer layer = new RenderableLayer();
         layer.setName("Airspaces");
 
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
@@ -147,21 +147,21 @@ public class SharedShapes
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new Curtain(Arrays.asList(
             LatLon.fromDegrees(37.5, -112.5), LatLon.fromDegrees(42.5, -112.5), LatLon.fromDegrees(37.5, -107.5)));
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new Polygon(Arrays.asList(
             LatLon.fromDegrees(37.5, -102.5), LatLon.fromDegrees(42.5, -102.5), LatLon.fromDegrees(37.5, -97.5)));
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new PolyArc(Arrays.asList(
             LatLon.fromDegrees(37.5, -92.5), LatLon.fromDegrees(42.5, -92.5), LatLon.fromDegrees(37.5, -87.5)),
@@ -169,7 +169,7 @@ public class SharedShapes
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new Cake(Arrays.asList(
             new Cake.Layer(LatLon.fromDegrees(40, -80), 100000, Angle.ZERO, Angle.ZERO, 10000, 20000),
@@ -177,26 +177,26 @@ public class SharedShapes
             new Cake.Layer(LatLon.fromDegrees(40, -80), 25000, Angle.ZERO, Angle.ZERO, 30000, 40000)));
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new CappedCylinder(LatLon.fromDegrees(30, -120), 100000);
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new PartialCappedCylinder(LatLon.fromDegrees(30, -110), 100000,
             Angle.fromDegrees(30), Angle.fromDegrees(330));
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new SphereAirspace(LatLon.fromDegrees(30, -100), 100000);
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new TrackAirspace(Arrays.asList(
             new Box(LatLon.fromDegrees(27.5, -92.5), LatLon.fromDegrees(32.5, -92.5), 100000, 100000),
@@ -205,7 +205,7 @@ public class SharedShapes
         ((TrackAirspace) airspace).getLegs().get(1).setAltitudes(20000, 30000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         airspace = new Route(Arrays.asList(
             LatLon.fromDegrees(27.5, -82.5), LatLon.fromDegrees(32.5, -82.5), LatLon.fromDegrees(27.5, -77.5)),
@@ -213,7 +213,7 @@ public class SharedShapes
         airspace.setAltitudes(10000, 20000);
         airspace.setTerrainConforming(true);
         airspace.setAttributes(attrs);
-        layer.addAirspace(airspace);
+        layer.addRenderable(airspace);
 
         return layer;
     }
@@ -259,7 +259,7 @@ public class SharedShapes
 
         // Create an application frame to display the two World Wind windows and the shared layer panel.
         JFrame appFrame = new JFrame("World Wind Shared Shapes");
-        appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        appFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         appFrame.getContentPane().add(box, BorderLayout.CENTER);
 
         // Make the first World Window visible. This is essential in order to share OpenGL resources with the second

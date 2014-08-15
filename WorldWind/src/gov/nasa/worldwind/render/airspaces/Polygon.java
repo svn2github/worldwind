@@ -510,7 +510,7 @@ public class Polygon extends AbstractAirspace
         PolygonGeometry geom = this.getPolygonGeometry(dc, locations, edgeFlags, altitudes, terrainConformant,
             enableCaps, subdivisions, referenceCenter);
         if (geom != null)
-            this.getRenderer().drawGeometry(dc, geom.getFillIndexGeometry(), geom.getVertexGeometry());
+            this.drawGeometry(dc, geom.getFillIndexGeometry(), geom.getVertexGeometry());
     }
 
     private void drawPolygonOutline(DrawContext dc, List<LatLon> locations, List<Boolean> edgeFlags,
@@ -521,7 +521,7 @@ public class Polygon extends AbstractAirspace
         PolygonGeometry geom = this.getPolygonGeometry(dc, locations, edgeFlags, altitudes, terrainConformant,
             enableCaps, subdivisions, referenceCenter);
         if (geom != null)
-            this.getRenderer().drawGeometry(dc, geom.getOutlineIndexGeometry(), geom.getVertexGeometry());
+            this.drawGeometry(dc, geom.getOutlineIndexGeometry(), geom.getVertexGeometry());
     }
 
     private void makePolygon(DrawContext dc, List<LatLon> locations, List<Boolean> edgeFlags,

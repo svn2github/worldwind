@@ -529,7 +529,7 @@ public class CappedCylinder extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private void drawCylinderOutline(DrawContext dc, double radius, double[] altitudes, boolean[] terrainConformant,
@@ -549,7 +549,7 @@ public class CappedCylinder extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, outlineIndexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, outlineIndexGeom, vertexGeom);
+        this.drawGeometry(dc, outlineIndexGeom, vertexGeom);
     }
 
     private Geometry createCylinderVertexGeometry(DrawContext dc, double radius, double[] altitudes,
@@ -684,7 +684,7 @@ public class CappedCylinder extends AbstractAirspace
             this.getGeometryCache().add(cacheKey, indexGeom);
         }
 
-        this.getRenderer().drawGeometry(dc, indexGeom, vertexGeom);
+        this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
     private void makeDisk(DrawContext dc, double[] radii, double altitude, boolean terrainConformant,
