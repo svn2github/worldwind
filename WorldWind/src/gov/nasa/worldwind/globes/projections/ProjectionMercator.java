@@ -11,6 +11,8 @@ import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.Logging;
 
 /**
+ * Provides a Mercator projection of an ellipsoidal globe.
+ *
  * @author tag
  * @version $Id$
  */
@@ -86,9 +88,16 @@ public class ProjectionMercator implements GeographicProjection
 
         double xOffset = offset != null ? offset.x : 0;
 
-        return new Vec4(globe.getEquatorialRadius() * longitude.radians + xOffset,
-            globe.getEquatorialRadius() * Math.log(Math.tan(Math.PI / 4 + latitude.radians / 2)),
-            metersElevation);
+        // See "Map Projections: A Working Manual", page 44 for the source of the below formulas.
+
+        double x = globe.getEquatorialRadius() * longitude.radians + xOffset;
+
+        double ecc = Math.sqrt(globe.getEccentricitySquared());
+        double sinPhi = Math.sin(latitude.radians);
+        double s = ((1 + sinPhi) / (1 - sinPhi)) * Math.pow((1 - ecc * sinPhi) / (1 + ecc * sinPhi), ecc);
+        double y = 0.5 * globe.getEquatorialRadius() * Math.log(s);
+
+        return new Vec4(x, y, metersElevation);
     }
 
     @Override
@@ -96,10 +105,23 @@ public class ProjectionMercator implements GeographicProjection
     {
         double xOffset = offset != null ? offset.x : 0;
 
-        return Position.fromRadians(
-            Math.atan(Math.sinh(cart.y / globe.getEquatorialRadius())),
-            (cart.x - xOffset) / globe.getEquatorialRadius(),
-            cart.z);
+        // See "Map Projections: A Working Manual", page 44 for the source of the below formulas.
+
+        double ecc = Math.sqrt(globe.getEccentricitySquared());
+        double t = Math.pow(Math.E, -cart.y / globe.getEquatorialRadius());
+        double lat = Math.PI / 2 - 2 * Math.atan(t);
+
+        // Iterate until the formula converges to within the given tolerance.
+        for (int i = 0; i < 10; i++) // give it 10 chances, although convergence usually occurs on 3rd or 4th iteration
+        {
+            double esp = ecc * Math.sin(lat);
+            double lastLat = lat;
+            lat = Math.PI / 2 - 2 * Math.atan(t * Math.pow((1 - esp) / (1 + esp), ecc / 2));
+            if (Math.abs(lastLat - lat) < 0.00000001) // about 6 cm for WGS84 radius
+                break;
+        }
+
+        return Position.fromRadians(lat, (cart.x - xOffset) / globe.getEquatorialRadius(), cart.z);
     }
 
     @Override
