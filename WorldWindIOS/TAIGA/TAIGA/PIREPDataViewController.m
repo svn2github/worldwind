@@ -15,6 +15,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 {
     NSMutableArray* names;
     NSMutableArray* values;
+    NSDateFormatter* dateFormatter;
 }
 
 + (void) initialize
@@ -42,6 +43,7 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
             @"report_type",
             nil
     ];
+
 }
 
 - (PIREPDataViewController*) init
@@ -56,6 +58,12 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 
     names = [[NSMutableArray alloc] init];
     values = [[NSMutableArray alloc] init];
+
+    dateFormatter = [[NSDateFormatter alloc] init];
+    NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+    [dateFormatter setLocale:enUSPOSIXLocale];
+    [dateFormatter setDateFormat:@"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'"];
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 
     return self;
 }
@@ -92,6 +100,37 @@ static NSArray* TAIGA_PIREP_DISPLAY_FIELDS;
 - (NSString*) tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section
 {
     return [[_entries objectForKey:@"raw_text"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+- (void) tableView:(UITableView*)tableView willDisplayHeaderView:(UIView*)view forSection:(NSInteger)section
+{
+    UITableViewHeaderFooterView * headerView = (UITableViewHeaderFooterView *)view;
+
+    UIColor* headerColor = [UIColor clearColor];
+    UIColor* textColor = headerView.textLabel.textColor;
+
+    for (NSUInteger i = 0; i < names.count; i++)
+    {
+        if ([((NSString*) [names objectAtIndex:i]) hasPrefix:@"Observed"])
+        {
+            NSString* dateString = [values objectAtIndex:i];
+            NSDate* observationDate = [dateFormatter dateFromString:dateString];
+            if (observationDate.timeIntervalSinceNow < -7200)
+            {
+                headerColor = [UIColor redColor];
+                textColor = [UIColor whiteColor];
+            }
+            else if (observationDate.timeIntervalSinceNow < -3600)
+            {
+                headerColor = [UIColor yellowColor];
+            }
+
+            break;
+        }
+    }
+
+    headerView.contentView.backgroundColor = headerColor;
+    headerView.textLabel.textColor = textColor;
 }
 
 - (CGFloat) tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
