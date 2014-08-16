@@ -84,6 +84,11 @@
     [self setupInstalledDataTimer];
 }
 
+- (void) didReceiveMemoryWarning
+{
+    DDLogWarn(@"RECEIVED MEMORY WARNING");
+}
+
 - (UIStatusBarStyle) preferredStatusBarStyle
 {
     return UIStatusBarStyleLightContent;
