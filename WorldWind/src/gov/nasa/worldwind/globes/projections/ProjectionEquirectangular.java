@@ -11,6 +11,7 @@ import gov.nasa.worldwind.globes.*;
 
 /**
  * Implements an Equirectangular projection, also known as Equidistant Cylindrical, Plate Carree and Rectangular.
+ * The projected globe is spherical, not ellipsoidal.
  *
  * @author tag
  * @version $Id$
