@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B0D46CD18D0E919004F8819 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B0D46CC18D0E919004F8819 /* libz.dylib */; };
+		0B62698B19A26E4900CC97B9 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B62698A19A26E4900CC97B9 /* Crashlytics.framework */; };
 		0BCBC60B17C68E6D00709B37 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60A17C68E6D00709B37 /* UIKit.framework */; };
 		0BCBC60D17C68E6D00709B37 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60C17C68E6D00709B37 /* Foundation.framework */; };
 		0BCBC60F17C68E6D00709B37 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BCBC60E17C68E6D00709B37 /* CoreGraphics.framework */; };
@@ -235,6 +236,7 @@
 
 /* Begin PBXFileReference section */
 		0B0D46CC18D0E919004F8819 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		0B62698A19A26E4900CC97B9 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		0BCBC60717C68E6D00709B37 /* TAIGA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAIGA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BCBC60A17C68E6D00709B37 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0BCBC60C17C68E6D00709B37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -549,6 +551,7 @@
 				0BCBC77017C68F1400709B37 /* QuartzCore.framework in Frameworks */,
 				0BCBC76E17C68F0A00709B37 /* CoreLocation.framework in Frameworks */,
 				0BCBC76C17C68F0400709B37 /* SystemConfiguration.framework in Frameworks */,
+				0B62698B19A26E4900CC97B9 /* Crashlytics.framework in Frameworks */,
 				0BCBC60B17C68E6D00709B37 /* UIKit.framework in Frameworks */,
 				0BCBC60D17C68E6D00709B37 /* Foundation.framework in Frameworks */,
 				0BCBC60F17C68E6D00709B37 /* CoreGraphics.framework in Frameworks */,
@@ -588,6 +591,7 @@
 		0BCBC60917C68E6D00709B37 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0B62698A19A26E4900CC97B9 /* Crashlytics.framework */,
 				0B0D46CC18D0E919004F8819 /* libz.dylib */,
 				0BCBC60A17C68E6D00709B37 /* UIKit.framework */,
 				0BCBC60C17C68E6D00709B37 /* Foundation.framework */,
@@ -916,6 +920,7 @@
 				0BCBC60317C68E6D00709B37 /* Sources */,
 				0BCBC60417C68E6D00709B37 /* Frameworks */,
 				0BCBC60517C68E6D00709B37 /* Resources */,
+				0B62698919A26DC700CC97B9 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1102,6 +1107,22 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		0B62698919A26DC700CC97B9 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "./Crashlytics.framework/run 5cfb29d0cd7e2db68baa627ddfa10e6100679b6c 126ae927331bdcda9a465af63794b4b8f6ab41d4bf3bbc99add76839909605f5";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0BCBC60317C68E6D00709B37 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -1271,6 +1292,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";
@@ -1293,6 +1318,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";

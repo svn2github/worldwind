@@ -16,6 +16,7 @@
 #import "Settings.h"
 #import "GPSController.h"
 #import "GDBMessageController.h"
+#import <Crashlytics/Crashlytics.h>
 
 @implementation AppDelegate
 {
@@ -49,6 +50,8 @@
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gdbMessageReceived:)
                                                  name:TAIGA_GDB_MESSAGE object:nil];
+
+    [Crashlytics startWithAPIKey:@"5cfb29d0cd7e2db68baa627ddfa10e6100679b6c"];
 
     [self.window makeKeyAndVisible];
     return YES;
