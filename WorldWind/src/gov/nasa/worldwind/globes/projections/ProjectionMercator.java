@@ -105,21 +105,29 @@ public class ProjectionMercator implements GeographicProjection
     {
         double xOffset = offset != null ? offset.x : 0;
 
-        // See "Map Projections: A Working Manual", page 44 for the source of the below formulas.
+        // See "Map Projections: A Working Manual", pages 45 and 19 for the source of the below formulas.
 
-        double ecc = Math.sqrt(globe.getEccentricitySquared());
+        double ecc2 = globe.getEccentricitySquared();
+        double ecc4 = ecc2 * ecc2;
+        double ecc6 = ecc4 * ecc2;
+        double ecc8 = ecc6 * ecc2;
         double t = Math.pow(Math.E, -cart.y / globe.getEquatorialRadius());
-        double lat = Math.PI / 2 - 2 * Math.atan(t);
 
-        // Iterate until the formula converges to within the given tolerance.
-        for (int i = 0; i < 10; i++) // give it 10 chances, although convergence usually occurs on 3rd or 4th iteration
-        {
-            double esp = ecc * Math.sin(lat);
-            double lastLat = lat;
-            lat = Math.PI / 2 - 2 * Math.atan(t * Math.pow((1 - esp) / (1 + esp), ecc / 2));
-            if (Math.abs(lastLat - lat) < 0.00000001) // about 6 cm for WGS84 radius
-                break;
-        }
+        double A = Math.PI / 2 - 2 * Math.atan(t);
+        double B = ecc2 / 2 + 5 * ecc4 / 24 + ecc6 / 12 + 13 * ecc8 / 360;
+        double C = 7 * ecc4 / 48 + 29 * ecc6 / 240 + 811 * ecc8 / 11520;
+        double D = 7 * ecc6 / 120 + 81 * ecc8 / 1120;
+        double E = 4279 * ecc8 / 161280;
+
+        double Ap = A - C + E;
+        double Bp = B - 3 * D;
+        double Cp = 2 * C - 8 * E;
+        double Dp = 4 * D;
+        double Ep = 8 * E;
+
+        double s2p = Math.sin(2 * A);
+
+        double lat = Ap + s2p * (Bp + s2p * (Cp + s2p * (Dp + Ep * s2p)));
 
         return Position.fromRadians(lat, (cart.x - xOffset) / globe.getEquatorialRadius(), cart.z);
     }
