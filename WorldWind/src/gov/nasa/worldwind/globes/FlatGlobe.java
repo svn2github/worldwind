@@ -134,32 +134,6 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
         return new FlatStateKey(this);
     }
 
-    @Override
-    public double getRadiusAt(Angle latitude, Angle longitude)
-    {
-        // TODO: Find a more accurate workaround than getMaximumRadius()
-        if (latitude == null || longitude == null)
-        {
-            String msg = Logging.getMessage("nullValue.AngleIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        return getMaximumRadius();
-    }
-
-    @Override
-    public double getRadiusAt(LatLon latLon)
-    {
-        // TODO: Find a more accurate workaround then getMaximumRadius()
-        if (latLon == null)
-        {
-            String msg = Logging.getMessage("nullValue.LatLonIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        return getMaximumRadius();
-    }
-
     /**
      * Set the projection used to project the globe onto a plane.
      *
@@ -377,20 +351,6 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
         Vec4[] axes = {x, y, z};
 
         return Matrix.fromLocalOrientation(origin, axes);
-    }
-
-    @Override
-    public Matrix computeSurfaceOrientationAtPosition(Position position)
-    {
-        if (position == null)
-        {
-            String message = Logging.getMessage("nullValue.PositionIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        return this.computeSurfaceOrientationAtPosition(position.getLatitude(), position.getLongitude(),
-            position.getElevation());
     }
 
     @Override

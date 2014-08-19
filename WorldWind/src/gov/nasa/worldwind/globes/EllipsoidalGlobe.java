@@ -212,7 +212,15 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             throw new IllegalArgumentException(msg);
         }
 
-        return this.computePointFromPosition(latitude, longitude, 0d).getLength3();
+        // The radius for an ellipsoidal globe is a function of its latitude. The following solution was derived by
+        // observing that the length of the ellipsoidal point at the specified latitude and longitude indicates the
+        // radius at that location. The formula for the length of the ellipsoidal point was then converted into the
+        // simplified form below.
+
+        double sinLat = Math.sin(latitude.radians);
+        double rpm = this.equatorialRadius / Math.sqrt(1.0 - this.es * sinLat * sinLat);
+
+        return rpm * Math.sqrt(1.0 + (this.es * this.es - 2.0 * this.es) * sinLat * sinLat);
     }
 
     public double getRadiusAt(LatLon location)
@@ -224,7 +232,7 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
             throw new IllegalArgumentException(msg);
         }
 
-        return this.computePointFromPosition(location.getLatitude(), location.getLongitude(), 0d).getLength3();
+        return this.getRadiusAt(location.latitude, location.longitude);
     }
 
     public double getEccentricitySquared()
