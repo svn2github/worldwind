@@ -17,6 +17,32 @@ import java.util.List;
  * elevations for geographic positions on the surface of the globe. Globe provides methods for converting geographic
  * positions (latitude, longitude, and elevation) to cartesian coordinates, and for converting cartesian to geographic.
  * The origin and orientation of the cartesian coordinate system are determined by implementations of this interface.
+ * <p/>
+ * <h1>Computations in Cartesian Coordinates</h1>
+ * <p/>
+ * Globe provides methods for performing computations in the coordinate system represented by a globe's surface in
+ * cartesian coordinates. These methods perform work with respect to the globe's actual shape in 3D cartesian
+ * coordinates. For an ellipsoidal globe, these methods are equivalent to the ellipsoidal coordinate computations below.
+ * For an instance of {@link Globe2D}, these methods work in the cartesian coordinates specified by the globe's 2D
+ * projection.
+ * <p/>
+ * <ul> <li>{@link #computePointFromPosition(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)}</li>
+ * <li>{@link #computePositionFromPoint(gov.nasa.worldwind.geom.Vec4)}</li> <li>{@link
+ * #computeSurfaceNormalAtLocation(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle)}</li> <li>{@link
+ * #computeSurfaceOrientationAtPosition(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)}</li>
+ * </ul>
+ * <p/>
+ * <h1>Computations in Ellipsoidal Coordinates</h1>
+ * <p/>
+ * Globe provides methods for performing computation on the ellipsoid represented by a globe's equatorial radius and its
+ * polar radius. These methods perform work with respect to the ellipsoid in 3D cartesian coordinates. Calling any of
+ * these methods on an instance of Globe2D will return the same result as a 3D globe with equivalent radii.
+ * <p/>
+ * <ul> <li>{@link #computeEllipsoidalPointFromPosition(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle,
+ * double)}</li> <li>{@link #computePositionFromEllipsoidalPoint(gov.nasa.worldwind.geom.Vec4)}</li> <li>{@link
+ * #computeEllipsoidalNormalAtLocation(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle)}</li> <li>{@link
+ * #computeEllipsoidalOrientationAtPosition(gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double)}</li>
+ * </ul>
  *
  * @author Tom Gaskins
  * @version $Id$
@@ -52,12 +78,12 @@ public interface Globe extends WWObject, Extent
     double getMaximumRadius();
 
     /**
-     * Indicates the radius of the globe at a location.
+     * Indicates the radius in meters of the globe's ellipsoid at a location.
      *
      * @param latitude  Latitude of the location at which to determine radius.
      * @param longitude Longitude of the location at which to determine radius.
      *
-     * @return The radius of the globe at the specified location, in meters.
+     * @return The radius in meters of the globe's ellipsoid at the specified location.
      */
     double getRadiusAt(Angle latitude, Angle longitude);
 
@@ -100,7 +126,6 @@ public interface Globe extends WWObject, Extent
      *         determined for all of the locations. Returns zero if an elevation model is not available.
      *
      * @throws IllegalArgumentException if either the sector, latlons list or elevations array is null.
-     *
      * @see #getElevationModel()
      */
     double getElevations(Sector sector, List<? extends LatLon> latlons, double targetResolution, double[] elevations);
@@ -216,7 +241,7 @@ public interface Globe extends WWObject, Extent
     Position computePositionFromPoint(Vec4 point);
 
     /**
-     * Computes a vector perpendicular to the surface of this globe.
+     * Computes a vector perpendicular to the surface of this globe in cartesian coordinates.
      *
      * @param latitude  Latitude of the location at which to compute the normal vector.
      * @param longitude Longitude of the location at which to compute the normal vector.
@@ -254,43 +279,111 @@ public interface Globe extends WWObject, Extent
     Matrix computeModelCoordinateOriginTransform(Position position);
 
     /**
-     * Returns the cartesian transform Matrix that maps model coordinates to a local coordinate system at (latitude,
+     * Returns the cartesian transform matrix that maps model coordinates to a local coordinate system at (latitude,
      * longitude, metersElevation). The X axis is mapped to the vector tangent to the globe and pointing East. The Y
-     * axis is mapped to the vector tangent to the Globe and pointing to the North Pole. The Z axis is mapped to the
-     * Globe normal at (latitude, longitude, metersElevation). The origin is mapped to the cartesian position of
+     * axis is mapped to the vector tangent to the globe and pointing to the North Pole. The Z axis is mapped to the
+     * globe normal at (latitude, longitude, metersElevation). The origin is mapped to the cartesian position of
      * (latitude, longitude, metersElevation).
      *
      * @param latitude        the latitude of the position.
      * @param longitude       the longitude of the position.
      * @param metersElevation the number of meters above or below mean sea level.
      *
-     * @return the cartesian transform Matrix that maps model coordinates to the local coordinate system at the
+     * @return the cartesian transform matrix that maps model coordinates to the local coordinate system at the
      *         specified position.
      */
     Matrix computeSurfaceOrientationAtPosition(Angle latitude, Angle longitude, double metersElevation);
 
     /**
-     * Returns the cartesian transform Matrix that maps model coordinates to a local coordinate system at (latitude,
+     * Returns the cartesian transform matrix that maps model coordinates to a local coordinate system at (latitude,
      * longitude, metersElevation). They X axis is mapped to the vector tangent to the globe and pointing East. The Y
-     * axis is mapped to the vector tangent to the Globe and pointing to the North Pole. The Z axis is mapped to the
-     * Globe normal at (latitude, longitude, metersElevation). The origin is mapped to the cartesian position of
+     * axis is mapped to the vector tangent to the globe and pointing to the North Pole. The Z axis is mapped to the
+     * globe normal at (latitude, longitude, metersElevation). The origin is mapped to the cartesian position of
      * (latitude, longitude, metersElevation).
      *
      * @param position the latitude, longitude, and number of meters above or below mean sea level.
      *
-     * @return the cartesian transform Matrix that maps model coordinates to the local coordinate system at the
+     * @return The cartesian transform matrix that maps model coordinates to the local coordinate system at the
      *         specified position.
      */
     Matrix computeSurfaceOrientationAtPosition(Position position);
 
     /**
-     * Indicates this globe's radius at a specified location.
+     * Computes a ellipsoidal point from a latitude, longitude, and elevation.
+     * <p/>
+     * The returned point is a function of this globe's equatorial radius and its polar radius, and always represents a
+     * point on the ellipsoid in 3D cartesian coordinates that corresponds to the specified position. Calling this
+     * method on an instance of Globe2D will return a point on the ellipsoid defined by the 2D globe's radii.
      *
-     * @param latLon the location of interest.
+     * @param latitude        Latitude of the location to convert.
+     * @param longitude       Longitude of the location to convert.
+     * @param metersElevation Elevation, in meters, of the geographic position to convert.
      *
-     * @return the globe's radius at that location.
+     * @return The ellipsoidal point that corresponds to the specified geographic position.
      */
-    double getRadiusAt(LatLon latLon);
+    Vec4 computeEllipsoidalPointFromPosition(Angle latitude, Angle longitude, double metersElevation);
+
+    /**
+     * Computes the geographic position of a point in ellipsoidal coordinates.
+     * <p/>
+     * The returned position is a function of this globe's equatorial radius and its polar radius, and always represents
+     * a position corresponding to the point on the ellipsoid in 3D cartesian coordinates. Calling this method on an
+     * instance of Globe2D will return a position corresponding to the ellipsoid defined by the 2D globe's radii.
+     *
+     * @param ellipsoidalPoint Point of which to find the geographic position, relative to the ellipsoid defined by the
+     *                         globe's radii.
+     *
+     * @return The geographic position of the specified ellipsoidal point.
+     */
+    Position computePositionFromEllipsoidalPoint(Vec4 ellipsoidalPoint);
+
+    /**
+     * Computes a vector perpendicular to the surface of the ellipsoid specified by this globe, in cartesian
+     * coordinates.
+     * <p/>
+     * The returned vector is a function of this globe's equatorial radius and its polar radius, and always represents a
+     * vector normal to the corresponding ellipsoid in 3D cartesian coordinates. Calling this method on an instance of
+     * Globe2D will return a vector normal to the ellipsoid defined by the 2D globe's radii.
+     *
+     * @param latitude  Latitude of the location at which to compute the normal vector.
+     * @param longitude Longitude of the location at which to compute the normal vector.
+     *
+     * @return A vector perpendicular to the surface of the ellipsoid specified by this globe, at the specified
+     *         location.
+     *
+     * @throws IllegalArgumentException if either angle is null.
+     */
+    Vec4 computeEllipsoidalNormalAtLocation(Angle latitude, Angle longitude);
+
+    /**
+     * Returns the cartesian transform matrix that maps local model coordinates to an ellipsoidal coordinate system at
+     * (latitude, longitude, metersElevation). The X axis is mapped to the vector tangent to the ellipsoid and pointing
+     * East. The Y axis is mapped to the vector tangent to the ellipsoid and pointing to the North Pole. The Z axis is
+     * mapped to the ellipsoidal normal at (latitude, longitude, metersElevation). The origin is mapped to the
+     * ellipsoidal position of (latitude, longitude, metersElevation).
+     * <p/>
+     * The returned matrix is a function of this globe's equatorial radius and its polar radius, and always represents a
+     * transform matrix appropriate for the corresponding ellipsoid in 3D cartesian coordinates. Calling this method on
+     * an instance of Globe2D will return a transform matrix for the ellipsoid defined by the 2D globe's radii.
+     *
+     * @param latitude        the latitude of the position.
+     * @param longitude       the longitude of the position.
+     * @param metersElevation the number of meters above or below mean sea level.
+     *
+     * @return The cartesian transform matrix that maps model coordinates to the ellipsoidal coordinate system at the
+     *         specified position.
+     */
+
+    Matrix computeEllipsoidalOrientationAtPosition(Angle latitude, Angle longitude, double metersElevation);
+
+    /**
+     * Indicates the radius in meters of the globe's ellipsoid at a location.
+     *
+     * @param location the location at which to determine radius.
+     *
+     * @return The radius in meters of the globe's ellipsoid at the specified location.
+     */
+    double getRadiusAt(LatLon location);
 
     /**
      * Returns the minimum and maximum elevations at a specified location on this Globe. This returns a two-element
