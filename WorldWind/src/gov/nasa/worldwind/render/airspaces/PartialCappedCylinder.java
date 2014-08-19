@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -86,7 +86,7 @@ public class PartialCappedCylinder extends CappedCylinder
 
         this.leftAzimuth = leftAzimuth;
         this.rightAzimuth = rightAzimuth;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     protected Box computeExtent(Globe globe, double verticalExaggeration)
@@ -108,7 +108,7 @@ public class PartialCappedCylinder extends CappedCylinder
             return super.computeMinimalGeometry(globe, verticalExaggeration);
 
         double[] radii = this.getRadii();
-        Matrix transform = this.computeTransform(globe, verticalExaggeration);
+        Matrix transform = this.computeEllipsoidalTransform(globe, verticalExaggeration);
 
         GeometryBuilder gb = this.getGeometryBuilder();
         int count = gb.getPartialDiskVertexCount(MINIMAL_GEOMETRY_SLICES, MINIMAL_GEOMETRY_LOOPS);
@@ -125,13 +125,59 @@ public class PartialCappedCylinder extends CappedCylinder
         {
             Vec4 v = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
             v = v.transformBy4(transform);
-            locations.add(globe.computePositionFromPoint(v));
+            locations.add(globe.computePositionFromEllipsoidalPoint(v));
         }
 
         ArrayList<Vec4> points = new ArrayList<Vec4>();
         this.makeExtremePoints(globe, verticalExaggeration, locations, points);
 
         return points;
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        double[] angles = this.computeAngles();
+        if (angles == null) // angles are equal, fall back to drawing a closed cylinder
+        {
+            super.regenerateSurfaceShape(dc, shape);
+            return;
+        }
+
+        double[] radii = this.getRadii();
+        GeometryBuilder gb = this.getGeometryBuilder();
+        int vertexCount = gb.getPartialDiskVertexCount(this.getSlices(), 1);
+        float[] coords = new float[3 * vertexCount];
+        gb.makePartialDiskVertices((float) radii[0], (float) radii[1], this.getSlices(), 1, (float) angles[0],
+            (float) angles[2], coords);
+
+        Globe globe = dc.getGlobe();
+        Matrix transform = this.computeEllipsoidalTransform(globe, dc.getVerticalExaggeration());
+        ArrayList<LatLon> locations = new ArrayList<LatLon>();
+
+        if (radii[0] > 0) // inner radius is > 0
+        {
+            for (int i = 0; i < vertexCount; i += 2) // inner loop
+            {
+                int index = 3 * i;
+                Vec4 point = new Vec4(coords[index], coords[index + 1], coords[index + 2]).transformBy4(transform);
+                locations.add(globe.computePositionFromEllipsoidalPoint(point));
+            }
+        }
+        else // inner radius == 0
+        {
+            locations.add(this.getCenter());
+        }
+
+        for (int i = vertexCount - 1; i > 0; i -= 2) // outer loop in reverse
+        {
+            int index = 3 * i;
+            Vec4 point = new Vec4(coords[index], coords[index + 1], coords[index + 2]).transformBy4(transform);
+            locations.add(globe.computePositionFromEllipsoidalPoint(point));
+        }
+
+        ((SurfacePolygon) shape).getBoundaries().clear();
+        ((SurfacePolygon) shape).setOuterBoundary(locations);
     }
 
     //**************************************************************//
@@ -412,7 +458,7 @@ public class PartialCappedCylinder extends CappedCylinder
         Vec4 referenceCenter)
     {
         Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
+        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
 
         for (int i = 0; i <= slices; i++)
         {
@@ -420,14 +466,15 @@ public class PartialCappedCylinder extends CappedCylinder
             index = 3 * index;
             Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
             vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
+            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
 
             for (int j = 0; j <= stacks; j++)
             {
                 double elevation = altitudes[j];
                 if (terrainConformant[j])
                     elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
+                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
+                    elevation); // final model-coordinate point
 
                 index = j + i * (stacks + 1);
                 index = 3 * index;
@@ -528,19 +575,20 @@ public class PartialCappedCylinder extends CappedCylinder
         Vec4 referenceCenter)
     {
         Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
+        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
 
         for (int i = 0; i < numCoords; i += 3)
         {
             Vec4 vec = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
             vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
+            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
 
             double elevation = altitude;
             if (terrainConformant)
                 elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
 
-            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
+            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
+                elevation); // final model-coordinate point
             verts[i] = (float) (vec.x - referenceCenter.x);
             verts[i + 1] = (float) (vec.y - referenceCenter.y);
             verts[i + 2] = (float) (vec.z - referenceCenter.z);
@@ -657,7 +705,7 @@ public class PartialCappedCylinder extends CappedCylinder
         Vec4 referenceCenter)
     {
         Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
+        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
 
         for (int p = 0; p <= pillars; p++)
         {
@@ -665,14 +713,15 @@ public class PartialCappedCylinder extends CappedCylinder
             index = 3 * index;
             Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
             vec = vec.transformBy4(transform);
-            Position pos = globe.computePositionFromPoint(vec);
+            Position pos = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
 
             for (int s = 0; s <= stacks; s++)
             {
                 double elevation = altitudes[s];
                 if (terrainConformant[s])
                     elevation += this.computeElevationAt(dc, pos.getLatitude(), pos.getLongitude());
-                vec = globe.computePointFromPosition(pos.getLatitude(), pos.getLongitude(), elevation);
+                vec = globe.computePointFromPosition(pos.getLatitude(), pos.getLongitude(),
+                    elevation); // final model-coordinate point
 
                 index = p + s * (pillars + 1);
                 index = 3 * index;

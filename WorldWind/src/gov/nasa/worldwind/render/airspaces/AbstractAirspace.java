@@ -25,7 +25,8 @@ import java.util.List;
  * @author dcollins
  * @version $Id$
  */
-public abstract class AbstractAirspace extends WWObjectImpl implements Airspace, OrderedRenderable, Movable
+public abstract class AbstractAirspace extends WWObjectImpl
+    implements Airspace, OrderedRenderable, PreRenderable, Movable
 {
     protected static final String ARC_SLICES = "ArcSlices";
     protected static final String DISABLE_TERRAIN_CONFORMANCE = "DisableTerrainConformance";
@@ -64,6 +65,8 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
     protected boolean enableDepthOffset;
     protected int outlinePickWidth = DEFAULT_OUTLINE_PICK_WIDTH;
     protected Object delegateOwner;
+    protected SurfaceShape surfaceShape;
+    protected boolean mustRegenerateSurfaceShape;
     // Geometry computation and rendering support.
     protected AirspaceInfo currentInfo;
     protected Layer pickLayer;
@@ -230,7 +233,7 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
     {
         this.lowerAltitude = lowerAltitude;
         this.upperAltitude = upperAltitude;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public void setAltitude(double altitude)
@@ -258,7 +261,7 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
         this.lowerAltitudeDatum = this.lowerTerrainConforming ? AVKey.ABOVE_GROUND_LEVEL : AVKey.ABOVE_MEAN_SEA_LEVEL;
         this.upperAltitudeDatum = this.upperTerrainConforming ? AVKey.ABOVE_GROUND_LEVEL : AVKey.ABOVE_MEAN_SEA_LEVEL;
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public String[] getAltitudeDatum()
@@ -288,7 +291,7 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
             AVKey.ABOVE_GROUND_REFERENCE))
             this.upperTerrainConforming = true;
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public LatLon getGroundReference()
@@ -516,15 +519,92 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
         return this.computeMinimalGeometry(dc.getGlobe(), dc.getVerticalExaggeration());
     }
 
-    protected void setExtentOutOfDate() // TODO: rename to clarify that the airspace data is out of date
+    protected void invalidateAirspaceData()
     {
         this.airspaceInfo.clear(); // Doesn't hurt to remove all cached extents because re-creation is cheap
+        this.mustRegenerateSurfaceShape = true;
     }
 
     @Override
     public double getDistanceFromEye()
     {
         return this.currentInfo.getEyeDistance();
+    }
+
+    @Override
+    public void preRender(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
+        if (dc.getGlobe() instanceof Globe2D)
+        {
+            if (this.surfaceShape == null)
+            {
+                this.surfaceShape = this.createSurfaceShape();
+                this.mustRegenerateSurfaceShape = true;
+                if (this.surfaceShape == null)
+                    return;
+            }
+
+            if (this.mustRegenerateSurfaceShape)
+            {
+                this.regenerateSurfaceShape(dc, this.surfaceShape);
+                this.mustRegenerateSurfaceShape = false;
+            }
+
+            this.updateSurfaceShape(dc, this.surfaceShape);
+            this.surfaceShape.preRender(dc);
+        }
+    }
+
+    /**
+     * Returns a {@link SurfaceShape} that corresponds to this Airspace and is used for drawing on 2D globes.
+     *
+     * @return The surface shape to represent this Airspace on a 2D globe.
+     */
+    protected SurfaceShape createSurfaceShape()
+    {
+        return null;
+    }
+
+    /**
+     * Sets surface shape parameters prior to picking and rendering the 2D shape used to represent this Airspace on 2D
+     * globes. Subclasses should override this method if they need to update more than the attributes and the delegate
+     * owner.
+     *
+     * @param dc    the current drawing context.
+     * @param shape the surface shape to update.
+     */
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        ShapeAttributes attrs = this.getAttributes();
+        if (shape.getAttributes() == null)
+            shape.setAttributes(new BasicShapeAttributes(attrs));
+        else
+            shape.getAttributes().copy(attrs);
+
+        Object o = this.getDelegateOwner();
+        shape.setDelegateOwner(o != null ? o : this);
+    }
+
+    /**
+     * Regenerates surface shape geometry prior to picking and rendering the 2D shape used to represent this Airspace on
+     * 2D globes.
+     *
+     * @param dc    the current drawing context.
+     * @param shape the surface shape to regenerate.
+     */
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        // Intentionally left blank.
     }
 
     @Override
@@ -568,6 +648,12 @@ public abstract class AbstractAirspace extends WWObjectImpl implements Airspace,
 
         if (!this.isVisible())
             return;
+
+        if (dc.getGlobe() instanceof Globe2D && this.surfaceShape != null)
+        {
+            this.surfaceShape.render(dc);
+            return;
+        }
 
         this.currentInfo = this.getAirspaceInfo(dc);
 

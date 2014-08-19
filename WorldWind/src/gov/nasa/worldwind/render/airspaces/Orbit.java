@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -166,7 +166,7 @@ public class Orbit extends AbstractAirspace
 
         this.location1 = location1;
         this.location2 = location2;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public String getOrbitType()
@@ -184,7 +184,7 @@ public class Orbit extends AbstractAirspace
         }
 
         this.orbitType = orbitType;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public double getWidth()
@@ -202,7 +202,7 @@ public class Orbit extends AbstractAirspace
         }
 
         this.width = width;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public boolean isEnableCaps()
@@ -233,10 +233,10 @@ public class Orbit extends AbstractAirspace
     @Override
     protected List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration)
     {
-        Matrix transform = this.computeTransform(globe, verticalExaggeration);
+        Matrix transform = this.computeEllipsoidalTransform(globe, verticalExaggeration);
 
-        Vec4 point1 = globe.computePointFromPosition(this.location1.getLatitude(), this.location1.getLongitude(), 0.0);
-        Vec4 point2 = globe.computePointFromPosition(this.location2.getLatitude(), this.location2.getLongitude(), 0.0);
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(this.location1.latitude, this.location1.longitude, 0.0);
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(this.location2.latitude, this.location2.longitude, 0.0);
         double radius = this.width / 2.0;
         double length = point1.distanceTo3(point2);
 
@@ -256,7 +256,7 @@ public class Orbit extends AbstractAirspace
         {
             Vec4 v = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
             v = v.transformBy4(transform);
-            locations.add(globe.computePositionFromPoint(v));
+            locations.add(globe.computePositionFromEllipsoidalPoint(v));
         }
 
         ArrayList<Vec4> points = new ArrayList<Vec4>();
@@ -291,6 +291,46 @@ public class Orbit extends AbstractAirspace
             locations[i] = LatLon.greatCircleEndPosition(newRef, azimuth, distance);
         }
         this.setLocations(locations[0], locations[1]);
+    }
+
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfacePolygon();
+    }
+
+    @Override
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        super.updateSurfaceShape(dc, shape);
+
+        boolean mustDrawInterior = this.getAttributes().isDrawInterior() && this.isEnableCaps();
+        shape.getAttributes().setDrawInterior(mustDrawInterior); // suppress the shape interior when caps are disabled
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        Globe globe = dc.getGlobe();
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(this.location1.latitude, this.location1.longitude, 0);
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(this.location2.latitude, this.location2.longitude, 0);
+        float length = (float) point1.distanceTo3(point2);
+        float radius = (float) this.width / 2f;
+
+        GeometryBuilder gb = this.getGeometryBuilder();
+        int vertexCount = gb.getLongCylinderVertexCount(this.arcSlices, this.lengthSlices, 0);
+        float[] coords = new float[3 * vertexCount];
+        gb.makeLongCylinderVertices(radius, length, 0, this.arcSlices, this.lengthSlices, 0, coords);
+
+        Matrix transform = this.computeEllipsoidalTransform(globe, dc.getVerticalExaggeration());
+        LatLon[] locations = new LatLon[vertexCount];
+        for (int i = 0; i < vertexCount; i++)
+        {
+            Vec4 point = new Vec4(coords[3 * i], coords[3 * i + 1], coords[3 * i + 2]).transformBy4(transform);
+            locations[i] = globe.computePositionFromEllipsoidalPoint(point);
+        }
+
+        ((SurfacePolygon) shape).setOuterBoundary(Arrays.asList(locations));
     }
 
     protected int getArcSlices()
@@ -370,16 +410,17 @@ public class Orbit extends AbstractAirspace
 
         Globe globe = dc.getGlobe();
         double[] altitudes = this.getAltitudes(dc.getVerticalExaggeration());
-        Vec4 point1 = globe.computePointFromPosition(
-            this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
-            this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(
+            this.location1.latitude, this.location1.longitude, altitudes[0]);
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(
+            this.location2.latitude, this.location2.longitude, altitudes[0]);
         Vec4 centerPoint = Vec4.mix3(0.5, point1, point2);
-        Position centerPos = globe.computePositionFromPoint(centerPoint);
-        return globe.computePointFromPosition(centerPos.getLatitude(), centerPos.getLongitude(), altitudes[0]);
+        Position centerPos = globe.computePositionFromEllipsoidalPoint(centerPoint);
+        return globe.computePointFromPosition(centerPos.latitude, centerPos.longitude,
+            altitudes[0]); // model-coordinate reference center
     }
 
-    protected Matrix computeTransform(Globe globe, double verticalExaggeration)
+    protected Matrix computeEllipsoidalTransform(Globe globe, double verticalExaggeration)
     {
         if (globe == null)
         {
@@ -391,12 +432,13 @@ public class Orbit extends AbstractAirspace
         double[] altitudes = this.getAltitudes(verticalExaggeration);
         double radius = this.width / 2.0;
 
-        Vec4 point1 = globe.computePointFromPosition(
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(
             this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(
             this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
         Vec4 centerPoint = Vec4.mix3(0.5, point1, point2);
-        Vec4 upVec = globe.computeSurfaceNormalAtPoint(centerPoint);
+        Position centerPos = globe.computePositionFromEllipsoidalPoint(centerPoint);
+        Vec4 upVec = globe.computeEllipsoidalNormalAtLocation(centerPos.latitude, centerPos.longitude);
         Vec4 axis = point2.subtract3(point1);
         axis = axis.normalize3();
 
@@ -440,11 +482,11 @@ public class Orbit extends AbstractAirspace
         int loops = this.loops;
 
         Globe globe = dc.getGlobe();
-        Vec4 point1 = globe.computePointFromPosition(
+        Vec4 point1 = globe.computeEllipsoidalPointFromPosition(
             this.location1.getLatitude(), this.location1.getLongitude(), altitudes[0]);
-        Vec4 point2 = globe.computePointFromPosition(
+        Vec4 point2 = globe.computeEllipsoidalPointFromPosition(
             this.location2.getLatitude(), this.location2.getLongitude(), altitudes[0]);
-        double length = point1.distanceTo3(point2);
+        double length = point1.distanceTo3(point2); // ellipsoidal-coordinate length
 
         if (this.isEnableLevelOfDetail())
         {
@@ -625,7 +667,7 @@ public class Orbit extends AbstractAirspace
         Vec4 referenceCenter)
     {
         Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
+        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
         int slices = 2 * (arcSlices + 1) + 2 * (lengthSlices - 1);
 
         for (int i = 0; i < slices; i++)
@@ -634,14 +676,15 @@ public class Orbit extends AbstractAirspace
             index = 3 * index;
             Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
             vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
+            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
 
             for (int j = 0; j <= stacks; j++)
             {
                 double elevation = altitudes[j];
                 if (terrainConformant[j])
                     elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
+                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
+                    elevation); // final model-coordinate point
 
                 index = i + j * slices;
                 index = 3 * index;
@@ -746,18 +789,19 @@ public class Orbit extends AbstractAirspace
         Vec4 referenceCenter)
     {
         Globe globe = dc.getGlobe();
-        Matrix transform = this.computeTransform(dc.getGlobe(), dc.getVerticalExaggeration());
+        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
 
         for (int i = 0; i < numCoords; i += 3)
         {
             Vec4 vec = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
             vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromPoint(vec);
+            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
 
             double elevation = altitude;
             if (terrainConformant)
                 elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(), elevation);
+            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
+                elevation); // final model-coordinate point
 
             verts[i] = (float) (vec.x - referenceCenter.x);
             verts[i + 1] = (float) (vec.y - referenceCenter.y);

@@ -6,8 +6,9 @@
 package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Cylinder;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -134,7 +135,7 @@ public class SphereAirspace extends AbstractAirspace
         }
 
         this.location = location;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     /**
@@ -165,7 +166,7 @@ public class SphereAirspace extends AbstractAirspace
         }
 
         this.radius = radius;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public Position getReferencePosition()
@@ -279,6 +280,27 @@ public class SphereAirspace extends AbstractAirspace
         return Math.abs(distance - sphere.getRadius());
     }
 
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfaceCircle();
+    }
+
+    @Override
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        super.updateSurfaceShape(dc, shape);
+
+        shape.getAttributes().setDrawOutline(false); // suppress the surface shape's outline
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        ((SurfaceCircle) shape).setCenter(this.location);
+        ((SurfaceCircle) shape).setRadius(this.radius);
+    }
+
     protected int getSubdivisions()
     {
         return this.subdivisions;
@@ -323,7 +345,7 @@ public class SphereAirspace extends AbstractAirspace
         }
         else if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
         {
-            // TODO: sphere airspace outline
+            // Sphere airspaces do not display an outline.
         }
     }
 

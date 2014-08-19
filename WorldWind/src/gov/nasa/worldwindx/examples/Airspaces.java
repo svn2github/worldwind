@@ -522,12 +522,13 @@ public class Airspaces extends ApplicationTemplate
 
         protected void setupDefaultMaterial(Airspace a, Color color)
         {
-            a.getAttributes().setDrawOutline(true);
             a.getAttributes().setInteriorMaterial(new Material(color));
-            a.getAttributes().setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
             a.getAttributes().setInteriorOpacity(0.8);
-            a.getAttributes().setOutlineOpacity(0.9);
-            a.getAttributes().setOutlineWidth(3.0);
+            a.getAttributes().setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
+            a.getAttributes().setOutlineOpacity(1);
+            a.getAttributes().setOutlineWidth(2);
+            a.getAttributes().setDrawOutline(true);
+            a.getAttributes().setEnableAntialiasing(true);
         }
 
         public void initializeSelectionMonitoring()

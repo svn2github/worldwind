@@ -71,9 +71,10 @@ public class Route extends TrackAirspace
                     last = cur;
                 }
             }
-            this.setExtentOutOfDate();
-            this.setLegsOutOfDate();
         }
+
+        this.invalidateAirspaceData();
+        this.setLegsOutOfDate();
     }
 
     public double getWidth()
@@ -98,7 +99,7 @@ public class Route extends TrackAirspace
             l.setWidths(legWidth, legWidth);
         }
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 

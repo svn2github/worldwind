@@ -9,7 +9,7 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
@@ -102,8 +102,9 @@ public class Cake extends AbstractAirspace
                 if (l != null)
                     this.layers.add(l);
             }
-            this.setExtentOutOfDate();
         }
+
+        this.invalidateAirspaceData();
     }
 
     public void setEnableCaps(boolean enable)
@@ -216,21 +217,54 @@ public class Cake extends AbstractAirspace
             l.doMoveTo(oldRef, newRef);
         }
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     //**************************************************************//
     //********************  Geometry Rendering  ********************//
     //**************************************************************//
 
-    protected void makeOrderedRenderable(DrawContext dc)
+    @Override
+    public void preRender(DrawContext dc)
     {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
         for (Layer layer : this.layers)
         {
             // Synchronize the layer's attributes with this cake's attributes, and setup this cake as the layer's pick
             // delegate.
             layer.setAttributes(this.getAttributes());
             layer.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
+            layer.preRender(dc);
+        }
+    }
+
+    @Override
+    public void render(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
+        if (!this.isAirspaceVisible(dc))
+            return;
+
+        for (Layer layer : this.layers)
+        {
             layer.render(dc);
         }
     }

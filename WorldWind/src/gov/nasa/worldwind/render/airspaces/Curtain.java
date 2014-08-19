@@ -11,7 +11,7 @@ import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
@@ -110,12 +110,15 @@ public class Curtain extends AbstractAirspace
     protected void addLocations(Iterable<? extends LatLon> newLocations)
     {
         if (newLocations != null)
+        {
             for (LatLon ll : newLocations)
             {
                 if (ll != null)
                     this.locations.add(ll);
             }
-        this.setExtentOutOfDate();
+        }
+
+        this.invalidateAirspaceData();
     }
 
     public String getPathType()
@@ -133,7 +136,7 @@ public class Curtain extends AbstractAirspace
         }
 
         this.pathType = pathType;
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
     }
 
     public boolean isApplyPositionAltitude()
@@ -175,6 +178,33 @@ public class Curtain extends AbstractAirspace
         return points;
     }
 
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        return new SurfacePolyline();
+    }
+
+    @Override
+    protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        super.updateSurfaceShape(dc, shape);
+
+        // Display the airspace's interior color when its outline is disabled but its interior is enabled. This causes
+        // the surface shape to display the color most similar to the 3D airspace.
+        if (!this.getAttributes().isDrawOutline() && this.getAttributes().isDrawInterior())
+        {
+            shape.getAttributes().setDrawOutline(true);
+            shape.getAttributes().setOutlineMaterial(this.getAttributes().getInteriorMaterial());
+        }
+    }
+
+    @Override
+    protected void regenerateSurfaceShape(DrawContext dc, SurfaceShape shape)
+    {
+        ((SurfacePolyline) this.surfaceShape).setLocations(this.getLocations());
+        this.surfaceShape.setPathType(this.getPathType());
+    }
+
     protected void doMoveTo(Position oldRef, Position newRef)
     {
         if (oldRef == null)
@@ -201,6 +231,7 @@ public class Curtain extends AbstractAirspace
             double azimuth = LatLon.greatCircleAzimuth(oldRef, ll).radians;
             newLocations[i] = LatLon.greatCircleEndPosition(newRef, azimuth, distance);
         }
+
         this.setLocations(Arrays.asList(newLocations));
     }
 

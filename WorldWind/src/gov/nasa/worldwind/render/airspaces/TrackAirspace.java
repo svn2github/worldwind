@@ -7,7 +7,7 @@ package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
 import java.util.*;
@@ -60,9 +60,10 @@ public class TrackAirspace extends AbstractAirspace
                 if (b != null)
                     this.addLeg(b);
             }
-
-            this.setLegsOutOfDate();
         }
+
+        this.invalidateAirspaceData();
+        this.setLegsOutOfDate();
     }
 
     public Box addLeg(LatLon start, LatLon end, double lowerAltitude, double upperAltitude,
@@ -103,7 +104,7 @@ public class TrackAirspace extends AbstractAirspace
 
         leg.setForceCullFace(true);
         this.legs.add(leg);
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 
@@ -120,6 +121,7 @@ public class TrackAirspace extends AbstractAirspace
     public void setEnableInnerCaps(boolean draw)
     {
         this.enableInnerCaps = draw;
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 
@@ -170,6 +172,7 @@ public class TrackAirspace extends AbstractAirspace
             l.setAltitudes(lowerAltitude, upperAltitude);
         }
 
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 
@@ -182,6 +185,7 @@ public class TrackAirspace extends AbstractAirspace
             l.setTerrainConforming(lowerTerrainConformant, upperTerrainConformant);
         }
 
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 
@@ -271,6 +275,17 @@ public class TrackAirspace extends AbstractAirspace
         return null; // Track is a geometry container, and therefore has no geometry itself.
     }
 
+    @Override
+    protected void invalidateAirspaceData()
+    {
+        super.invalidateAirspaceData();
+
+        for (Box leg : this.legs)
+        {
+            leg.invalidateAirspaceData();
+        }
+    }
+
     protected void doMoveTo(Position oldRef, Position newRef)
     {
         if (oldRef == null)
@@ -292,7 +307,7 @@ public class TrackAirspace extends AbstractAirspace
             box.doMoveTo(oldRef, newRef);
         }
 
-        this.setExtentOutOfDate();
+        this.invalidateAirspaceData();
         this.setLegsOutOfDate();
     }
 
@@ -329,9 +344,9 @@ public class TrackAirspace extends AbstractAirspace
 
             leg.setEnableCaps(true);
 
-            Vec4[] vertices = Box.computeStandardVertices(globe, verticalExaggeration, leg);
+            Vec4[] vertices = Box.computeEllipsoidalStandardVertices(globe, verticalExaggeration, leg);
             if (vertices != null && vertices.length == 8)
-                leg.setVertices(globe, vertices);
+                leg.setEllipsoidalVertices(globe, vertices);
         }
 
         // If there's more than one leg, we potentially align the vertices of adjacent legs to give the appearance of
@@ -403,10 +418,10 @@ public class TrackAirspace extends AbstractAirspace
      */
     protected void joinLegs(Globe globe, double verticalExaggeration, Box leg1, Box leg2)
     {
-        Vec4[] leg1Vertices = leg1.getVertices(globe);
-        Vec4[] leg2Vertices = leg2.getVertices(globe);
+        Vec4[] leg1Vertices = leg1.getEllipsoidalVertices(globe);
+        Vec4[] leg2Vertices = leg2.getEllipsoidalVertices(globe);
 
-        Plane bisectingPlane = this.computeBisectingPlane(globe, leg1, leg2);
+        Plane bisectingPlane = this.computeEllipsoidalBisectingPlane(globe, leg1, leg2);
 
         // If the two legs overlap, their bisecting plane intersects either the starting cap of the first leg, or the
         // ending cap of the second leg. In this case, we cannot join the leg's vertices and exit without changing
@@ -421,12 +436,12 @@ public class TrackAirspace extends AbstractAirspace
         // connecting vertices to form a very large peak away from the common point. Therefore we use a different
         // approach to join acute legs as follows:
         // * The first leg is extended to cover the second leg, and has its end cap enabled.
-        // * The second leg is clipped when it intersects the first leg, and has its start cap enables if and only if
+        // * The second leg is clipped when it intersects the first leg, and has its start cap enabled if and only if
         //   inner caps are enabled.
         if (this.isSmallAngle(globe, leg1, leg2))
         {
-            Plane[] leg1Planes = Box.computeStandardPlanes(globe, verticalExaggeration, leg1);
-            Plane[] leg2Planes = Box.computeStandardPlanes(globe, verticalExaggeration, leg2);
+            Plane[] leg1Planes = Box.computeEllipsoidalStandardPlanes(globe, verticalExaggeration, leg1);
+            Plane[] leg2Planes = Box.computeEllipsoidalStandardPlanes(globe, verticalExaggeration, leg2);
 
             Line low_left_line = Line.fromSegment(leg2Vertices[Box.B_LOW_LEFT], leg2Vertices[Box.A_LOW_LEFT]);
             Line low_right_line = Line.fromSegment(leg2Vertices[Box.B_LOW_RIGHT], leg2Vertices[Box.A_LOW_RIGHT]);
@@ -460,8 +475,8 @@ public class TrackAirspace extends AbstractAirspace
 
             leg1.setEnableEndCap(true);
             leg2.setEnableStartCap(this.isEnableInnerCaps());
-            leg1.setVertices(globe, leg1Vertices);
-            leg2.setVertices(globe, leg2Vertices);
+            leg1.setEllipsoidalVertices(globe, leg1Vertices);
+            leg2.setEllipsoidalVertices(globe, leg2Vertices);
         }
         else
         {
@@ -487,16 +502,16 @@ public class TrackAirspace extends AbstractAirspace
 
             leg1.setEnableEndCap(this.isEnableInnerCaps());
             leg2.setEnableStartCap(this.isEnableInnerCaps());
-            leg1.setVertices(globe, leg1Vertices);
-            leg2.setVertices(globe, leg2Vertices);
+            leg1.setEllipsoidalVertices(globe, leg1Vertices);
+            leg2.setEllipsoidalVertices(globe, leg2Vertices);
         }
     }
 
     /**
-     * Returns a <code>Plane</code> that bisects the angle between the two legs at the point at their common location.
-     * <code>leg1</code> must precede <code>leg2</code>, and they must share a common location at the end of
-     * <code>leg1</code> and the beginning of <code>leg2</code>. This returns <code>null</code> if the legs overlap and
-     * cannot be bisected.
+     * Returns a <code>Plane</code> in ellipsoidal Cartesian coordinates that bisects the angle between the two legs at
+     * the point at their common location. <code>leg1</code> must precede <code>leg2</code>, and they must share a
+     * common location at the end of <code>leg1</code> and the beginning of <code>leg2</code>. This returns
+     * <code>null</code> if the legs overlap and cannot be bisected.
      *
      * @param globe the <code>Globe</code> the legs are related to.
      * @param leg1  the first leg.
@@ -504,7 +519,7 @@ public class TrackAirspace extends AbstractAirspace
      *
      * @return a <code>Plane</code> that bisects the geometry of the two legs.
      */
-    protected Plane computeBisectingPlane(Globe globe, Box leg1, Box leg2)
+    protected Plane computeEllipsoidalBisectingPlane(Globe globe, Box leg1, Box leg2)
     {
         LatLon[] leg1Loc = leg1.getLocations();
         LatLon[] leg2Loc = leg2.getLocations();
@@ -514,9 +529,9 @@ public class TrackAirspace extends AbstractAirspace
         // Compute the Cartesian point of the the first leg's starting location, the two leg's common location, and the
         // second leg's ending location. Use the lower altitude, because we're only interested in the angles between the
         // two legs.
-        Vec4 a = globe.computePointFromPosition(leg1Loc[0], leg1Altitudes[0]);
-        Vec4 b = globe.computePointFromPosition(leg1Loc[1], leg1Altitudes[0]);
-        Vec4 c = globe.computePointFromPosition(leg2Loc[1], leg2Altitudes[0]);
+        Vec4 a = globe.computeEllipsoidalPointFromPosition(leg1Loc[0].latitude, leg1Loc[0].longitude, leg1Altitudes[0]);
+        Vec4 b = globe.computeEllipsoidalPointFromPosition(leg1Loc[1].latitude, leg1Loc[1].longitude, leg1Altitudes[0]);
+        Vec4 c = globe.computeEllipsoidalPointFromPosition(leg2Loc[1].latitude, leg2Loc[1].longitude, leg2Altitudes[0]);
 
         // Compute a vector that lies on a plane that bisects the angle between the two legs at their common location.
         // This vector is perpendicular to the vectors connecting both leg's locations.
@@ -538,7 +553,7 @@ public class TrackAirspace extends AbstractAirspace
         {
             // Otherwise, we compute the bisecting plane as the plane that contains the bisecting vector and the Globe's
             // normal at the two legs' common location.
-            Vec4 bNormal = globe.computeSurfaceNormalAtPoint(b);
+            Vec4 bNormal = globe.computeEllipsoidalNormalAtLocation(leg1Loc[1].latitude, leg1Loc[1].longitude);
             n = bNormal.cross3(ab_plus_cb).normalize3();
         }
 
@@ -547,10 +562,10 @@ public class TrackAirspace extends AbstractAirspace
     }
 
     /**
-     * Specifies whether the angle between the two adjacent legs is less than a specified threshold. The threshold is
-     * configured by calling {@link #setSmallAngleThreshold(gov.nasa.worldwind.geom.Angle)}. <code>leg1</code> must
-     * precede <code>leg2</code>, and they must share a common location at the end of <code>leg1</code> and the
-     * beginning of <code>leg2</code>.
+     * Specifies whether the angle between the two adjacent legs is less than a threshold on the ellipsoid specified by
+     * the <code>globe</code>. The threshold is configured by calling {@link #setSmallAngleThreshold(gov.nasa.worldwind.geom.Angle)}.
+     * <code>leg1</code> must precede <code>leg2</code>, and they must share a common location at the end of
+     * <code>leg1</code> and the beginning of <code>leg2</code>.
      *
      * @param globe the <code>Globe</code> the legs are related to.
      * @param leg1  the first leg.
@@ -567,9 +582,9 @@ public class TrackAirspace extends AbstractAirspace
 
         // Compute the lower center point of leg1's starting, the lower center point on the two leg's common location,
         // and the lower center point of the leg2's ending.
-        Vec4 a = globe.computePointFromPosition(leg1Loc[0], leg1Altitudes[0]);
-        Vec4 b = globe.computePointFromPosition(leg1Loc[1], leg1Altitudes[0]);
-        Vec4 c = globe.computePointFromPosition(leg2Loc[1], leg2Altitudes[0]);
+        Vec4 a = globe.computeEllipsoidalPointFromPosition(leg1Loc[0].latitude, leg1Loc[0].longitude, leg1Altitudes[0]);
+        Vec4 b = globe.computeEllipsoidalPointFromPosition(leg1Loc[1].latitude, leg1Loc[1].longitude, leg1Altitudes[0]);
+        Vec4 c = globe.computeEllipsoidalPointFromPosition(leg2Loc[1].latitude, leg2Loc[1].longitude, leg2Altitudes[0]);
 
         Vec4 ba = a.subtract3(b);
         Vec4 bc = c.subtract3(b);
@@ -579,7 +594,7 @@ public class TrackAirspace extends AbstractAirspace
     }
 
     /**
-     * Specifies whether the two adjacent legs make a right turn relative to the surface of the specified
+     * Specifies whether the two adjacent legs make a right turn relative to the ellipsoid specified by the
      * <code>globe</code>. <code>leg1</code> must precede <code>leg2</code>, and they must share a common location at
      * the end of <code>leg1</code> and the beginning of <code>leg2</code>.
      *
@@ -599,15 +614,15 @@ public class TrackAirspace extends AbstractAirspace
 
         // Compute the lower center point of leg1's starting, the lower center point on the two leg's common location,
         // and the lower center point of the leg2's ending.
-        Vec4 a = globe.computePointFromPosition(leg1Loc[0], leg1Altitudes[0]);
-        Vec4 b = globe.computePointFromPosition(leg1Loc[1], leg1Altitudes[0]);
-        Vec4 c = globe.computePointFromPosition(leg2Loc[1], leg2Altitudes[0]);
+        Vec4 a = globe.computeEllipsoidalPointFromPosition(leg1Loc[0].latitude, leg1Loc[0].longitude, leg1Altitudes[0]);
+        Vec4 b = globe.computeEllipsoidalPointFromPosition(leg1Loc[1].latitude, leg1Loc[1].longitude, leg1Altitudes[0]);
+        Vec4 c = globe.computeEllipsoidalPointFromPosition(leg2Loc[1].latitude, leg2Loc[1].longitude, leg2Altitudes[0]);
 
         Vec4 ba = a.subtract3(b);
         Vec4 bc = c.subtract3(b);
         Vec4 cross = ba.cross3(bc);
 
-        Vec4 n = globe.computeSurfaceNormalAtLocation(leg1Loc[1].getLatitude(), leg1Loc[1].getLongitude());
+        Vec4 n = globe.computeEllipsoidalNormalAtLocation(leg1Loc[1].latitude, leg1Loc[1].longitude);
         return cross.dot3(n) >= 0;
     }
 
@@ -615,8 +630,16 @@ public class TrackAirspace extends AbstractAirspace
     //********************  Geometry Rendering  ********************//
     //**************************************************************//
 
-    protected void makeOrderedRenderable(DrawContext dc)
+    @Override
+    public void preRender(DrawContext dc)
     {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         // Update the child leg vertices if they're out of date. Since the leg vertices are used to determine how each
         // leg is shaped with respect to its neighbors, the vertices must be current before rendering each leg.
         if (this.isLegsOutOfDate(dc))
@@ -624,12 +647,34 @@ public class TrackAirspace extends AbstractAirspace
             this.doUpdateLegs(dc);
         }
 
-        for (Box leg : this.getLegs())
+        for (Box leg : this.legs)
         {
             // Synchronize the leg's attributes with this track's attributes, and setup this track as the leg's pick
             // delegate.
             leg.setAttributes(this.getAttributes());
             leg.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
+            leg.preRender(dc);
+        }
+    }
+
+    @Override
+    public void render(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String msg = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isVisible())
+            return;
+
+        if (!this.isAirspaceVisible(dc))
+            return;
+
+        for (Box leg : this.legs)
+        {
             leg.render(dc);
         }
     }
