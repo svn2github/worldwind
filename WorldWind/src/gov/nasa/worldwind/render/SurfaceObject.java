@@ -47,6 +47,24 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
     void setVisible(boolean visible);
 
     /**
+     * Indicates whether batch picking is enabled.
+     *
+     * @return <code>true</code> to enable batch picking; <code>false</code> otherwise.
+     *
+     * @see #setEnableBatchPicking(boolean)
+     */
+    boolean isEnableBatchPicking();
+
+    /**
+     * Specifies whether adjacent SurfaceObjects in the DrawContext's ordered surface renderable list may be rendered
+     * together during picking if they are contained in the same layer. This increases performance and there is seldom a
+     * reason to disable it.
+     *
+     * @param enable <code>true</code> to enable batch picking; <code>false</code> otherwise.
+     */
+    void setEnableBatchPicking(boolean enable);
+
+    /**
      * Returns an object that uniquely identifies the surface object's state on the specified draw context. This object
      * is guaranteed to be globally unique; an equality test with a state key from another always returns false.
      *

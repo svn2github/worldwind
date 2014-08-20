@@ -593,6 +593,9 @@ public abstract class AbstractAirspace extends WWObjectImpl
 
         Object o = this.getDelegateOwner();
         shape.setDelegateOwner(o != null ? o : this);
+
+        boolean b = this.isEnableBatchPicking();
+        shape.setEnableBatchPicking(b);
     }
 
     /**

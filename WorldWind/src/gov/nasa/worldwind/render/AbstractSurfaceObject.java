@@ -150,25 +150,15 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
         this.updateModifiedTime();
     }
 
-    /**
-     * Indicates whether batch picking is enabled.
-     *
-     * @return <code>true</code> to enable batch picking; <code>false</code> otherwise.
-     *
-     * @see #setEnableBatchPicking(boolean)
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean isEnableBatchPicking()
     {
         return this.enableBatchPicking;
     }
 
-    /**
-     * Specifies whether adjacent SurfaceObjects in the DrawContext's ordered surface renderable list may be rendered
-     * together during picking if they are contained in the same layer. This increases performance and there is seldom a
-     * reason to disable it.
-     *
-     * @param enable <code>true</code> to enable batch picking; <code>false</code> otherwise.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void setEnableBatchPicking(boolean enable)
     {
         this.enableBatchPicking = enable;
