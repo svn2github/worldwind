@@ -130,6 +130,7 @@ public class PolyArc extends Polygon
         }
 
         this.radius = radius;
+        this.invalidateAirspaceData();
     }
 
     public Angle[] getAzimuths()
@@ -157,6 +158,7 @@ public class PolyArc extends Polygon
 
         this.leftAzimuth = leftAzimuth;
         this.rightAzimuth = rightAzimuth;
+        this.invalidateAirspaceData();
     }
 
     protected int getSlices()
