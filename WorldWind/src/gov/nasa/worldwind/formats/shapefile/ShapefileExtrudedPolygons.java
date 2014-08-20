@@ -189,7 +189,6 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected int tileMaxLevel = 3;
     protected int tileMaxCapacity = 10000;
     // Data structures supporting polygon tessellation and drawing.
-    protected CompoundVecBuffer coordBuffer;
     protected ArrayList<Tile> currentTiles = new ArrayList<Tile>();
     protected PolygonTessellator tess = new PolygonTessellator();
     protected byte[] colorByteArray = new byte[6];
@@ -201,49 +200,99 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected ByteBuffer pickColors;
     protected Object pickColorsVboKey = new Object();
 
+    /**
+     * Creates a new ShapefileExtrudedPolygons with the specified shapefile. The normal attributes and the highlight
+     * attributes for each ShapefileRenderable.Record are assigned default values. In order to modify
+     * ShapefileRenderable.Record shape attributes or key-value attributes during construction, use {@link
+     * #ShapefileExtrudedPolygons(Shapefile, gov.nasa.worldwind.render.ShapeAttributes,
+     * gov.nasa.worldwind.render.ShapeAttributes, gov.nasa.worldwind.formats.shapefile.ShapefileRenderable.AttributeDelegate)}.
+     *
+     * @param shapefile The shapefile to display.
+     *
+     * @throws IllegalArgumentException if the shapefile is null.
+     */
     public ShapefileExtrudedPolygons(Shapefile shapefile)
     {
-        super(shapefile); // superclass constructor checks shapefile argument
-
-        if (!Shapefile.isPolygonType(shapefile.getShapeType()))
+        if (shapefile == null)
         {
-            String msg = Logging.getMessage("SHP.UnsupportedShapeType", shapefile.getShapeType());
+            String msg = Logging.getMessage("nullValue.ShapefileIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        if (this.sector != null) // Suppress record assembly and tile creation for empty shapefiles.
+        this.init(shapefile, null, null, null);
+    }
+
+    /**
+     * Creates a new ShapefileExtrudedPolygons with the specified shapefile. The normal attributes, the highlight
+     * attributes and the attribute delegate are optional. Specifying a non-null value for normalAttrs or highlightAttrs
+     * causes each ShapefileRenderable.Record to adopt those attributes. Specifying a non-null value for the attribute
+     * delegate enables callbacks during creation of each ShapefileRenderable.Record. See {@link AttributeDelegate} for
+     * more information.
+     *
+     * @param shapefile         The shapefile to display.
+     * @param normalAttrs       The normal attributes for each ShapefileRenderable.Record. May be null to use the
+     *                          default attributes.
+     * @param highlightAttrs    The highlight attributes for each ShapefileRenderable.Record. May be null to use the
+     *                          default highlight attributes.
+     * @param attributeDelegate Optional callback for configuring each ShapefileRenderable.Record's shape attributes and
+     *                          key-value attributes. May be null.
+     *
+     * @throws IllegalArgumentException if the shapefile is null.
+     */
+    public ShapefileExtrudedPolygons(Shapefile shapefile, ShapeAttributes normalAttrs, ShapeAttributes highlightAttrs,
+        ShapefileRenderable.AttributeDelegate attributeDelegate)
+    {
+        if (shapefile == null)
         {
-            this.rootTile = new Tile(this.sector, 0);
-            this.assembleShapefileRecords(shapefile);
-            this.coordBuffer = shapefile.getPointBuffer(); // valid only after records are assembled
-
-            if (this.mustSplitTile(this.rootTile))
-            {
-                this.splitTile(this.rootTile);
-            }
-
-            this.rootTile.records.trimToSize(); // Reduce memory overhead from unused ArrayList capacity.
+            String msg = Logging.getMessage("nullValue.ShapefileIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
         }
+
+        this.init(shapefile, normalAttrs, highlightAttrs, attributeDelegate);
     }
 
     @Override
-    protected void addShapefileRecord(ShapefileRecord shapefileRecord)
+    protected void assembleRecords(Shapefile shapefile)
+    {
+        this.rootTile = new Tile(this.sector, 0);
+
+        super.assembleRecords(shapefile);
+
+        if (this.mustSplitTile(this.rootTile))
+        {
+            this.splitTile(this.rootTile);
+        }
+
+        this.rootTile.records.trimToSize(); // Reduce memory overhead from unused ArrayList capacity.
+    }
+
+    @Override
+    protected boolean mustAssembleRecord(ShapefileRecord shapefileRecord)
+    {
+        return super.mustAssembleRecord(shapefileRecord)
+            && Shapefile.isPolygonType(shapefileRecord.getShapeType());
+    }
+
+    @Override
+    protected void assembleRecord(ShapefileRecord shapefileRecord)
     {
         Record record = this.createRecord(shapefileRecord);
-        this.records.add(record);
-        this.rootTile.records.add(record);
-        record.tile = this.rootTile;
+        this.addRecord(shapefileRecord, record);
 
         if (record.height != null && this.maxHeight < record.height)
         {
             this.maxHeight = record.height;
         }
+
+        this.rootTile.records.add(record);
+        record.tile = this.rootTile;
     }
 
     protected ShapefileExtrudedPolygons.Record createRecord(ShapefileRecord shapefileRecord)
     {
-        return new Record(this, shapefileRecord);
+        return new ShapefileExtrudedPolygons.Record(this, shapefileRecord);
     }
 
     protected boolean mustSplitTile(Tile tile)
@@ -298,7 +347,10 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     protected void recordDidChange(ShapefileRenderable.Record record)
     {
         Tile tile = ((ShapefileExtrudedPolygons.Record) record).tile;
-        this.invalidateTileAttributeGroups(tile);
+        if (tile != null) // tile is null when attributes are specified during construction
+        {
+            this.invalidateTileAttributeGroups(tile);
+        }
     }
 
     public double getDefaultHeight()
@@ -568,7 +620,7 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
             {
                 this.tess.beginContour();
 
-                VecBuffer subBuffer = this.coordBuffer.subBuffer(part);
+                VecBuffer subBuffer = record.pointBuffer.subBuffer(part);
                 for (int i = 0; i < subBuffer.getSize(); i++)
                 {
                     subBuffer.get(i, coord);

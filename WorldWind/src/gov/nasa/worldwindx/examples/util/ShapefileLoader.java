@@ -237,13 +237,7 @@ public class ShapefileLoader
     protected void addRenderablesForExtrudedPolygons(Shapefile shp, RenderableLayer layer)
     {
         ShapeAttributes attrs = this.nextPolygonAttributes();
-        ShapefileExtrudedPolygons shape = new ShapefileExtrudedPolygons(shp);
-
-        for (ShapefileRenderable.Record record : shape)
-        {
-            record.setAttributes(attrs);
-        }
-
+        ShapefileExtrudedPolygons shape = new ShapefileExtrudedPolygons(shp, attrs, null, null);
         layer.addRenderable(shape);
     }
 
