@@ -377,6 +377,7 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeDatelineCrossingAirspaces()
         {
+            randomAttrs.nextAirspaceAttributes(); // skip the yellow attribute
             AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Dateline Crossing Airspaces");
