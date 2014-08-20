@@ -12,10 +12,9 @@ import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.airspaces.Box;
-import gov.nasa.worldwind.render.airspaces.Polygon;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.BasicDragger;
+import gov.nasa.worldwindx.examples.util.RandomShapeAttributes;
 
-import java.awt.*;
 import java.util.Arrays;
 
 /**
@@ -43,6 +42,7 @@ public class Airspaces extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
+        protected RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
         protected Airspace lastHighlightAirspace;
         protected AirspaceAttributes lastAttrs;
 
@@ -57,34 +57,33 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeAGLAirspaces()
         {
+            AirspaceAttributes attrs = this.randomAttrs.nextAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("AGL Airspaces");
 
             // Cylinder.
-            CappedCylinder cyl = new CappedCylinder();
+            CappedCylinder cyl = new CappedCylinder(attrs);
             cyl.setCenter(LatLon.fromDegrees(47.7477, -123.6372));
             cyl.setRadius(30000.0);
             cyl.setAltitudes(5000.0, 10000.0);
             cyl.setTerrainConforming(true, true);
-            cyl.setValue(AVKey.DISPLAY_NAME, "30,000m Radius Cylinder. Top & bottom terrain conformance.");
-            this.setupDefaultMaterial(cyl, Color.BLUE);
+            cyl.setValue(AVKey.DISPLAY_NAME, "30km radius Cylinder with top and bottom terrain conformance");
             layer.addRenderable(cyl);
 
             // Radarc
-            PartialCappedCylinder partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -122.6372));
-            partCyl.setAltitudes(5000.0, 10000.0);
-            partCyl.setTerrainConforming(true, true);
             // To render a Radarc,
             // (1) Specify inner radius and outer radius.
             // (2) Specify start and stop azimuth.
+            PartialCappedCylinder partCyl = new PartialCappedCylinder(attrs);
+            partCyl.setCenter(LatLon.fromDegrees(46.7477, -122.6372));
             partCyl.setRadii(15000.0, 30000.0);
+            partCyl.setAltitudes(5000.0, 10000.0);
             partCyl.setAzimuths(Angle.fromDegrees(90.0), Angle.fromDegrees(0.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.GRAY);
+            partCyl.setTerrainConforming(true, true);
+            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees");
             layer.addRenderable(partCyl);
 
-            Cake cake = new Cake();
+            Cake cake = new Cake(attrs);
             cake.setLayers(Arrays.asList(
                 new Cake.Layer(LatLon.fromDegrees(36, -121), 10000.0, Angle.fromDegrees(0.0),
                     Angle.fromDegrees(360.0), 10000.0, 15000.0),
@@ -95,69 +94,62 @@ public class Airspaces extends ApplicationTemplate
             cake.getLayers().get(0).setTerrainConforming(true, true);
             cake.getLayers().get(1).setTerrainConforming(true, true);
             cake.getLayers().get(2).setTerrainConforming(true, true);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake. With disjoint layers.");
-            this.setupDefaultMaterial(cake, Color.MAGENTA);
+            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake with disjoint layers");
             layer.addRenderable(cake);
 
             // Center Orbit
-            Orbit orbit = new Orbit();
+            Orbit orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
             orbit.setAltitudes(15000.0, 25000.0);
             orbit.setWidth(30000.0);
             orbit.setOrbitType(Orbit.OrbitType.CENTER);
             orbit.setTerrainConforming(true, true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "CENTER Orbit.");
-            this.setupDefaultMaterial(orbit, Color.GRAY);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Center Orbit");
             layer.addRenderable(orbit);
 
             // Orbit from Los Angeles to New York
-            orbit = new Orbit();
+            orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(34.0489, -118.2481), LatLon.fromDegrees(40.7137, -74.0065));
             orbit.setAltitudes(10000.0, 100000.0);
             orbit.setWidth(500000.0);
             orbit.setOrbitType(Orbit.OrbitType.CENTER);
             orbit.setTerrainConforming(true, true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit From L.A. to N.Y.");
-            this.setupDefaultMaterial(orbit, Color.RED);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit from L.A. to N.Y");
             layer.addRenderable(orbit);
 
             // Curtain around Snohomish County, WA
-            Curtain curtain = new Curtain();
+            Curtain curtain = new Curtain(attrs);
             curtain.setLocations(makeLatLon(SNOHOMISH_COUNTY));
             curtain.setAltitudes(5000.0, 10000.0);
             curtain.setTerrainConforming(true, true);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around Snohomish County, WA.");
-            this.setupDefaultMaterial(curtain, Color.GREEN);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around Snohomish County, WA");
             layer.addRenderable(curtain);
 
             // Curtain around San Juan County, WA
-            curtain = new Curtain();
+            curtain = new Curtain(attrs);
             curtain.setLocations(makeLatLon(SAN_JUAN_COUNTY_2));
             curtain.setAltitudes(5000.0, 10000.0);
             curtain.setTerrainConforming(true, true);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around San Juan County, WA.");
-            this.setupDefaultMaterial(curtain, Color.GREEN);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Curtain around San Juan County, WA");
             layer.addRenderable(curtain);
 
             // Polygons of San Juan County, WA
-            Polygon poly = new Polygon();
+            Polygon poly = new Polygon(attrs);
             poly.setLocations(makeLatLon(SAN_JUAN_COUNTY_1));
             poly.setAltitudes(5000.0, 10000.0);
             poly.setTerrainConforming(true, true);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA.");
-            this.setupDefaultMaterial(poly, Color.GREEN);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA");
             layer.addRenderable(poly);
 
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(makeLatLon(SAN_JUAN_COUNTY_3));
             poly.setAltitudes(5000.0, 10000.0);
             poly.setTerrainConforming(true, true);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA.");
-            this.setupDefaultMaterial(poly, Color.GREEN);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon of San Juan County, WA");
             layer.addRenderable(poly);
 
             // Polygon over the Sierra Nevada mountains.
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(Arrays.asList(
                 LatLon.fromDegrees(40.1323, -122.0911),
                 LatLon.fromDegrees(38.0062, -120.7711),
@@ -168,12 +160,11 @@ public class Airspaces extends ApplicationTemplate
                 LatLon.fromDegrees(40.2609, -120.8295)));
             poly.setAltitudes(0, 5000);
             poly.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_REFERENCE);
-            poly.setValue(AVKey.DISPLAY_NAME, "Polygon over the Sierra Nevada mountains.");
-            this.setupDefaultMaterial(poly, Color.LIGHT_GRAY);
+            poly.setValue(AVKey.DISPLAY_NAME, "Polygon over the Sierra Nevada mountains");
             layer.addRenderable(poly);
 
             // Continent sized polygon.
-            poly = new Polygon();
+            poly = new Polygon(attrs);
             poly.setLocations(Arrays.asList(
                 LatLon.fromDegrees(-40, 60),
                 LatLon.fromDegrees(-40, 80),
@@ -182,10 +173,11 @@ public class Airspaces extends ApplicationTemplate
             ));
             poly.setAltitudes(100000.0, 500000.0);
             poly.setTerrainConforming(true, true);
-            this.setupDefaultMaterial(poly, Color.RED);
+            poly.setValue(AVKey.DISPLAY_NAME, "Continent sized Polygon");
             layer.addRenderable(poly);
 
-            TrackAirspace track = new TrackAirspace();
+            TrackAirspace track = new TrackAirspace(attrs);
+            track.setValue(AVKey.DISPLAY_NAME, "Disconnected Track");
             double leftWidth = 80000d;
             double rightWidth = 80000d;
             double minAlt = 150000d;
@@ -204,24 +196,23 @@ public class Airspaces extends ApplicationTemplate
                 maxAlt / 4, leftWidth, rightWidth).setTerrainConforming(false, true);
             track.addLeg(LatLon.fromDegrees(31.5107, -88.5723), LatLon.fromDegrees(34.2444, -87.4563), minAlt / 6,
                 maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(true, true);
-            this.setupDefaultMaterial(track, Color.MAGENTA);
             layer.addRenderable(track);
 
             // Sphere
-            SphereAirspace sphere = new SphereAirspace();
+            SphereAirspace sphere = new SphereAirspace(attrs);
             sphere.setLocation(LatLon.fromDegrees(47.7477, -122.6372));
             sphere.setAltitude(5000.0);
-            sphere.setTerrainConforming(true);
             sphere.setRadius(5000.0);
-            this.setupDefaultMaterial(sphere, Color.ORANGE);
+            sphere.setTerrainConforming(true);
+            sphere.setValue(AVKey.DISPLAY_NAME, "Sphere centered 5km above terrain");
             layer.addRenderable(sphere);
 
-            sphere = new SphereAirspace();
+            sphere = new SphereAirspace(attrs);
             sphere.setLocation(LatLon.fromDegrees(47.7477, -121.6372));
             sphere.setAltitude(0.0);
-            sphere.setTerrainConforming(true);
             sphere.setRadius(5000.0);
-            this.setupDefaultMaterial(sphere, Color.MAGENTA);
+            sphere.setTerrainConforming(true);
+            sphere.setValue(AVKey.DISPLAY_NAME, "Sphere centered on terrain");
             layer.addRenderable(sphere);
 
             return layer;
@@ -229,35 +220,34 @@ public class Airspaces extends ApplicationTemplate
 
         protected Layer makeAMSLAirspaces()
         {
+            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("AMSL Airspaces");
 
             // Continent-sized cylinder.
-            CappedCylinder cyl = new CappedCylinder();
+            CappedCylinder cyl = new CappedCylinder(attrs);
             cyl.setCenter(LatLon.fromDegrees(0.0, 0.0));
             cyl.setRadii(1000000.0, 3000000.0);
             cyl.setAltitudes(100000.0, 500000.0);
             cyl.setTerrainConforming(false, false);
-            cyl.setValue(AVKey.DISPLAY_NAME, "3,000,000m Cylinder.");
-            this.setupDefaultMaterial(cyl, Color.RED);
+            cyl.setValue(AVKey.DISPLAY_NAME, "3,000km Cylinder");
             layer.addRenderable(cyl);
 
             // Radarc
-            PartialCappedCylinder partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
-            partCyl.setAltitudes(5000.0, 10000.0);
-            partCyl.setTerrainConforming(false, false);
             // To render a Radarc,
             // (1) Specify inner radius and outer radius.
             // (2) Specify start and stop azimuth.
+            PartialCappedCylinder partCyl = new PartialCappedCylinder(attrs);
+            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
             partCyl.setRadii(15000.0, 30000.0);
+            partCyl.setAltitudes(5000.0, 10000.0);
             partCyl.setAzimuths(Angle.fromDegrees(0.0), Angle.fromDegrees(90.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.DARK_GRAY);
+            partCyl.setTerrainConforming(false, false);
+            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees");
             layer.addRenderable(partCyl);
 
             // Cake
-            Cake cake = new Cake();
+            Cake cake = new Cake(attrs);
             cake.setLayers(Arrays.asList(
                 new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 10000.0, Angle.fromDegrees(190.0),
                     Angle.fromDegrees(170.0), 10000.0, 15000.0),
@@ -268,34 +258,31 @@ public class Airspaces extends ApplicationTemplate
             cake.getLayers().get(0).setTerrainConforming(false, false);
             cake.getLayers().get(1).setTerrainConforming(false, false);
             cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake.");
-            this.setupDefaultMaterial(cake, Color.YELLOW);
+            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake");
             layer.addRenderable(cake);
 
             // Left Orbit
-            Orbit orbit = new Orbit();
+            Orbit orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
             orbit.setAltitudes(10000.0, 20000.0);
             orbit.setWidth(30000.0);
             orbit.setOrbitType(Orbit.OrbitType.LEFT);
             orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "LEFT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.LIGHT_GRAY);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Left Orbit");
             layer.addRenderable(orbit);
 
             // Right Orbit
-            orbit = new Orbit();
+            orbit = new Orbit(attrs);
             orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
             orbit.setAltitudes(10000.0, 20000.0);
             orbit.setWidth(30000.0);
             orbit.setOrbitType(Orbit.OrbitType.RIGHT);
             orbit.setTerrainConforming(false, false);
-            orbit.setValue(AVKey.DISPLAY_NAME, "RIGHT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.DARK_GRAY);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Right Orbit");
             layer.addRenderable(orbit);
 
             // PolyArc
-            PolyArc polyArc = new PolyArc();
+            PolyArc polyArc = new PolyArc(attrs);
             polyArc.setLocations(Arrays.asList(
                 LatLon.fromDegrees(45.5, -122.0),
                 LatLon.fromDegrees(46.0, -122.0),
@@ -305,11 +292,11 @@ public class Airspaces extends ApplicationTemplate
             polyArc.setRadius(30000.0);
             polyArc.setAzimuths(Angle.fromDegrees(-45.0), Angle.fromDegrees(135.0));
             polyArc.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(polyArc, Color.GRAY);
+            polyArc.setValue(AVKey.DISPLAY_NAME, "PolyArc with 30km radius from -45 to 135 degrees");
             layer.addRenderable(polyArc);
 
             // Route
-            Route route = new Route();
+            Route route = new Route(attrs);
             route.setAltitudes(5000.0, 20000.0);
             route.setWidth(20000.0);
             route.setLocations(Arrays.asList(
@@ -318,12 +305,13 @@ public class Airspaces extends ApplicationTemplate
                 LatLon.fromDegrees(44.0, -120.0),
                 LatLon.fromDegrees(43.0, -120.0)));
             route.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(route, Color.GREEN);
+            route.setValue(AVKey.DISPLAY_NAME, "Route");
             layer.addRenderable(route);
 
             // Track
-            TrackAirspace track = new TrackAirspace();
+            TrackAirspace track = new TrackAirspace(attrs);
             track.setEnableInnerCaps(false);
+            track.setValue(AVKey.DISPLAY_NAME, "Semi-connected Track");
             double leftWidth = 100000d;
             double rightWidth = 100000d;
             double minAlt = 150000d;
@@ -340,7 +328,6 @@ public class Airspaces extends ApplicationTemplate
             leg = track.addLeg(LatLon.fromDegrees(47.0121, -94.9218), LatLon.fromDegrees(44.7964, -68.4230), minAlt / 4,
                 maxAlt / 4, leftWidth, rightWidth);
             leg.setTerrainConforming(false, false);
-            this.setupDefaultMaterial(track, Color.ORANGE);
             layer.addRenderable(track);
 
             return layer;
@@ -348,187 +335,78 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeIntersectingAirspaces()
         {
+            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Intersecting Airspaces");
-            layer.setEnabled(false);
 
-            double minAltitude = 1000;
-            double maxAltitude = 10000;
+            double bottom = 1000;
+            double top = 10000;
 
-            // Cylinder.
-            CappedCylinder cyl = new CappedCylinder();
-            cyl.setCenter(LatLon.fromDegrees(47.7477, -123.6372));
-            cyl.setRadius(30000.0);
-            cyl.setAltitudes(minAltitude, maxAltitude);
-            cyl.setTerrainConforming(false, false);
+            // Cake with intersecting layers
+            Cake cake = new Cake(attrs);
+            cake.setLayers(Arrays.asList(
+                new Cake.Layer(LatLon.fromDegrees(25, -100), 50000, Angle.ZERO, Angle.ZERO, bottom, top),
+                new Cake.Layer(LatLon.fromDegrees(24, -100), 100000, Angle.ZERO, Angle.ZERO, bottom, top),
+                new Cake.Layer(LatLon.fromDegrees(23, -100), 150000, Angle.ZERO, Angle.ZERO, bottom, top)));
+            cake.getLayers().get(0).setEnableDepthOffset(true);
+            cake.getLayers().get(1).setEnableDepthOffset(true);
+            cake.getLayers().get(2).setEnableDepthOffset(true);
+            cake.setValue(AVKey.DISPLAY_NAME, "Cake with intersecting layers (depth offset enabled)");
+            layer.addRenderable(cake);
+
+            // Orbit intersecting Cylinder
+            Orbit orbit = new Orbit(attrs);
+            orbit.setLocations(LatLon.fromDegrees(20, -100), LatLon.fromDegrees(15, -90));
+            orbit.setAltitudes(bottom, top);
+            orbit.setWidth(400000);
+            orbit.setEnableDepthOffset(true);
+            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit intersecting Cylinder (depth offset enabled)");
+            layer.addRenderable(orbit);
+
+            // Cylinder intersecting Orbit
+            CappedCylinder cyl = new CappedCylinder(attrs);
+            cyl.setCenter(LatLon.fromDegrees(18, -95));
+            cyl.setRadius(400000);
+            cyl.setAltitudes(bottom, top);
             cyl.setEnableDepthOffset(true);
-            cyl.setValue(AVKey.DISPLAY_NAME, "30,000m Radius Cylinder. Top & bottom terrain conformance.");
-            this.setupDefaultMaterial(cyl, Color.BLUE);
+            cyl.setValue(AVKey.DISPLAY_NAME, "Cylinder intersecting Orbit (depth offset enabled)");
             layer.addRenderable(cyl);
-
-            // Radarc
-            PartialCappedCylinder partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -123.6372));
-            partCyl.setAltitudes(minAltitude, maxAltitude);
-            partCyl.setTerrainConforming(false, false);
-            partCyl.setEnableDepthOffset(true);
-            // To render a Radarc,
-            // (1) Specify inner radius and outer radius.
-            // (2) Specify start and stop azimuth.
-            partCyl.setRadii(15000.0, 30000.0);
-            partCyl.setAzimuths(Angle.fromDegrees(0.0), Angle.fromDegrees(90.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 0 to 90 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.DARK_GRAY);
-            layer.addRenderable(partCyl);
-
-            // Radarc
-            partCyl = new PartialCappedCylinder();
-            partCyl.setCenter(LatLon.fromDegrees(46.7477, -122.6372));
-            partCyl.setAltitudes(minAltitude, maxAltitude);
-            partCyl.setTerrainConforming(false, false);
-            partCyl.setEnableDepthOffset(true);
-            // To render a Radarc,
-            // (1) Specify inner radius and outer radius.
-            // (2) Specify start and stop azimuth.
-            partCyl.setRadii(15000.0, 30000.0);
-            partCyl.setAzimuths(Angle.fromDegrees(90.0), Angle.fromDegrees(0.0));
-            partCyl.setValue(AVKey.DISPLAY_NAME, "Partial Cylinder from 90 to 0 degrees.");
-            this.setupDefaultMaterial(partCyl, Color.GRAY);
-            layer.addRenderable(partCyl);
-
-            // Cake
-            Cake cake = new Cake();
-            cake.setLayers(Arrays.asList(
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 10000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(170.0), 10000.0, 15000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 15000.0, Angle.fromDegrees(190.0),
-                    Angle.fromDegrees(90.0), 16000.0, 21000.0),
-                new Cake.Layer(LatLon.fromDegrees(46.7477, -121.6372), 12500.0, Angle.fromDegrees(270.0),
-                    Angle.fromDegrees(60.0), 22000.0, 27000.0)));
-            cake.getLayers().get(0).setTerrainConforming(false, false);
-            cake.getLayers().get(1).setTerrainConforming(false, false);
-            cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.getLayers().get(0).setEnableDepthOffset(true);
-            cake.getLayers().get(1).setEnableDepthOffset(true);
-            cake.getLayers().get(2).setEnableDepthOffset(true);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake.");
-            this.setupDefaultMaterial(cake, Color.YELLOW);
-            layer.addRenderable(cake);
-
-            cake = new Cake();
-            cake.setLayers(Arrays.asList(
-                new Cake.Layer(LatLon.fromDegrees(36, -121), 10000.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 10000.0, 15000.0),
-                new Cake.Layer(LatLon.fromDegrees(36.1, -121.1), 15000.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 16000.0, 21000.0),
-                new Cake.Layer(LatLon.fromDegrees(35.9, -120.9), 12500.0, Angle.fromDegrees(0.0),
-                    Angle.fromDegrees(360.0), 22000.0, 27000.0)));
-            cake.getLayers().get(0).setTerrainConforming(false, false);
-            cake.getLayers().get(1).setTerrainConforming(false, false);
-            cake.getLayers().get(2).setTerrainConforming(false, false);
-            cake.getLayers().get(0).setEnableDepthOffset(true);
-            cake.getLayers().get(1).setEnableDepthOffset(true);
-            cake.getLayers().get(2).setEnableDepthOffset(true);
-            cake.setValue(AVKey.DISPLAY_NAME, "3 layer Cake. With disjoint layers.");
-            this.setupDefaultMaterial(cake, Color.MAGENTA);
-            layer.addRenderable(cake);
-
-            // Left Orbit
-            Orbit orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.LEFT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setEnableDepthOffset(true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "LEFT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.LIGHT_GRAY);
-            layer.addRenderable(orbit);
-
-            // Center Orbit
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.CENTER);
-            orbit.setTerrainConforming(false, false);
-            orbit.setEnableDepthOffset(true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "CENTER Orbit.");
-            this.setupDefaultMaterial(orbit, Color.GRAY);
-            layer.addRenderable(orbit);
-
-            // Right Orbit
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(45.7477, -123.6372), LatLon.fromDegrees(45.7477, -122.6372));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(30000.0);
-            orbit.setOrbitType(Orbit.OrbitType.RIGHT);
-            orbit.setTerrainConforming(false, false);
-            orbit.setEnableDepthOffset(true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "RIGHT Orbit.");
-            this.setupDefaultMaterial(orbit, Color.DARK_GRAY);
-            layer.addRenderable(orbit);
-
-            // Orbit from Los Angeles to New York
-            orbit = new Orbit();
-            orbit.setLocations(LatLon.fromDegrees(34.0489, -118.2481), LatLon.fromDegrees(40.7137, -74.0065));
-            orbit.setAltitudes(minAltitude, maxAltitude);
-            orbit.setWidth(500000.0);
-            orbit.setOrbitType(Orbit.OrbitType.CENTER);
-            orbit.setTerrainConforming(false, false);
-            orbit.setEnableDepthOffset(true);
-            orbit.setValue(AVKey.DISPLAY_NAME, "Orbit From L.A. to N.Y.");
-            this.setupDefaultMaterial(orbit, Color.RED);
-            layer.addRenderable(orbit);
 
             return layer;
         }
 
         public Layer makeDatelineCrossingAirspaces()
         {
+            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Dateline Crossing Airspaces");
-            layer.setEnabled(false);
 
             // Curtains of different path types crossing the dateline.
-            Curtain curtain = new Curtain();
+            Curtain curtain = new Curtain(attrs);
             curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
             curtain.setAltitudes(1000.0, 100000.0);
             curtain.setTerrainConforming(false, false);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Great arc Curtain from America to Japan.");
-            this.setupDefaultMaterial(curtain, Color.MAGENTA);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Great-arc Curtain from America to Japan");
             layer.addRenderable(curtain);
 
-            curtain = new Curtain();
+            curtain = new Curtain(attrs);
             curtain.setLocations(Arrays.asList(LatLon.fromDegrees(27.0, -112.0), LatLon.fromDegrees(35.0, 138.0)));
             curtain.setPathType(AVKey.RHUMB_LINE);
             curtain.setAltitudes(1000.0, 100000.0);
             curtain.setTerrainConforming(false, false);
-            curtain.setValue(AVKey.DISPLAY_NAME, "Rhumb Curtain from America to Japan.");
-            this.setupDefaultMaterial(curtain, Color.CYAN);
+            curtain.setValue(AVKey.DISPLAY_NAME, "Rhumb Curtain from America to Japan");
             layer.addRenderable(curtain);
 
             // Continent sized sphere
-            SphereAirspace sphere = new SphereAirspace();
+            SphereAirspace sphere = new SphereAirspace(attrs);
             sphere.setLocation(LatLon.fromDegrees(0.0, -180.0));
             sphere.setAltitude(0.0);
-            sphere.setTerrainConforming(false);
             sphere.setRadius(1000000.0);
-            this.setupDefaultMaterial(sphere, Color.RED);
+            sphere.setTerrainConforming(false);
+            sphere.setValue(AVKey.DISPLAY_NAME, "1,000km radius Sphere on the antimeridian");
             layer.addRenderable(sphere);
 
             return layer;
-        }
-
-        protected void setupDefaultMaterial(Airspace a, Color color)
-        {
-            a.getAttributes().setInteriorMaterial(new Material(color));
-            a.getAttributes().setInteriorOpacity(0.8);
-            a.getAttributes().setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
-            a.getAttributes().setOutlineOpacity(1);
-            a.getAttributes().setOutlineWidth(2);
-            a.getAttributes().setDrawOutline(true);
-            a.getAttributes().setEnableAntialiasing(true);
         }
 
         public void initializeSelectionMonitoring()
