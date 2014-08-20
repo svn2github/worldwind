@@ -282,7 +282,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
     public Iterator<ShapefileRenderable.Record> iterator()
     {
         if (this.records == null)
-            return Collections.emptyIterator();
+            return Collections.<ShapefileRenderable.Record>emptyList().iterator();
 
         return this.records.iterator();
     }
