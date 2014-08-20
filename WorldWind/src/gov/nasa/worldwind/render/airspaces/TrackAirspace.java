@@ -640,6 +640,9 @@ public class TrackAirspace extends AbstractAirspace
             throw new IllegalArgumentException(msg);
         }
 
+        if (!this.isVisible())
+            return;
+
         // Update the child leg vertices if they're out of date. Since the leg vertices are used to determine how each
         // leg is shaped with respect to its neighbors, the vertices must be current before rendering each leg.
         if (this.isLegsOutOfDate(dc))

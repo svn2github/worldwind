@@ -81,7 +81,7 @@ public class Box extends AbstractAirspace
      * <code>null</code> keys. Null keys are used for backward compatibility with the Box accessor methods that do not
      * specify a globe.
      */
-    protected Map<Globe, BoxData> boxData = new HashMap<Globe, BoxData>(2); // Usually holds either one or two entries.
+    protected Map<GlobeStateKey, BoxData> boxData = new HashMap<GlobeStateKey, BoxData>(2); // Usually holds either one or two entries.
     private boolean forceCullFace = false;
     private int pillars = DEFAULT_PILLARS;
     private int stacks = DEFAULT_STACKS;
@@ -288,7 +288,7 @@ public class Box extends AbstractAirspace
      */
     public boolean isVerticesValid(Globe globe)
     {
-        BoxData data = this.boxData.get(globe);
+        BoxData data = this.boxData.get(globe.getGlobeStateKey());
         return data != null && data.globeStateKey != null && data.globeStateKey.equals(globe.getGlobeStateKey());
     }
 
@@ -305,7 +305,7 @@ public class Box extends AbstractAirspace
      */
     public Vec4[] getEllipsoidalVertices(Globe globe)
     {
-        BoxData data = this.boxData.get(globe);
+        BoxData data = this.boxData.get(globe.getGlobeStateKey());
         return data != null ? data.ellipsoidalVertices : null;
     }
 
@@ -327,7 +327,7 @@ public class Box extends AbstractAirspace
     {
         if (vertices == null)
         {
-            this.boxData.remove(globe);
+            this.boxData.remove(globe.getGlobeStateKey());
         }
         else
         {
@@ -338,13 +338,13 @@ public class Box extends AbstractAirspace
                 throw new IllegalArgumentException(message);
             }
 
-            BoxData data = this.boxData.get(globe);
+            BoxData data = this.boxData.get(globe.getGlobeStateKey());
 
             // Create a box data if one doesn't already exist and put it in the map.
             if (data == null)
             {
                 data = new BoxData();
-                this.boxData.put(globe, data);
+                this.boxData.put(globe.getGlobeStateKey(), data);
             }
 
             // Copy the specified vertices into the data held by this box's map.
