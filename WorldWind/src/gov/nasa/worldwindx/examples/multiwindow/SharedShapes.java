@@ -14,12 +14,11 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.layers.Earth.*;
-import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.airspaces.Box;
 import gov.nasa.worldwind.render.airspaces.Polygon;
 import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwindx.examples.util.HighlightController;
+import gov.nasa.worldwindx.examples.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -139,8 +138,8 @@ public class SharedShapes
         RenderableLayer layer = new RenderableLayer();
         layer.setName("Airspaces");
 
-        AirspaceAttributes attrs = new BasicAirspaceAttributes();
-        attrs.setInteriorMaterial(Material.RED);
+        RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
+        AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
 
         Airspace airspace = new Orbit(LatLon.fromDegrees(37.5, -120), LatLon.fromDegrees(42.5, -120),
             Orbit.OrbitType.CENTER, 100000);
