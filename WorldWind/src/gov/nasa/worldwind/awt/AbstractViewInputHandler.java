@@ -476,6 +476,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
             return;
         }
         this.keyEventState.mouseReleased(e);
+        this.setMouseDownPoint(null);
         this.setSelectedPosition(null);
         this.setMouseDownView(null);
         this.handleMouseReleased(e);

@@ -368,7 +368,7 @@ public abstract class BasicViewInputHandler extends AbstractViewInputHandler
             Point point = constrainToSourceBounds(getMousePoint(), getWorldWindow());
             Point lastPoint = constrainToSourceBounds(getLastMousePoint(), getWorldWindow());
             Point mouseDownPoint = constrainToSourceBounds(getMouseDownPoint(), getWorldWindow());
-            if (point == null || lastPoint == null)
+            if (point == null || lastPoint == null || mouseDownPoint == null)
             {
                 return false;
             }
