@@ -7,8 +7,7 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 /**
  * Represents a geometric angle. Instances of <code>Angle</code> are immutable. An angle can be obtained through the
@@ -541,6 +540,34 @@ public class Angle implements Comparable<Angle>
         }
 
         return Angle.fromDegrees((a.degrees + b.degrees + c.degrees) / 3);
+    }
+
+    /**
+     * Limits a specified angle to be within a specified minimum and maximum.
+     * <p/>
+     * The returned angle is undefined if min > max. Otherwise, this method's return value is equivalent to the
+     * following:
+     * <p/>
+     * <ul> <li>min - If value < min</li> <li>max - If value > max</li> <li>value - If min <= value <= max</li> </ul>
+     *
+     * @param value The angle to clamp.
+     * @param min   The minimum angle to clamp to.
+     * @param max   The maximum angle to clamp to.
+     *
+     * @return The clamped angle.
+     *
+     * @throws IllegalArgumentException if any argument is null.
+     */
+    public static Angle clamp(Angle value, Angle min, Angle max)
+    {
+        if (value == null || min == null || max == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return value.degrees < min.degrees ? min : (value.degrees > max.degrees ? max : value);
     }
 
     /**
