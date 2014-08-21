@@ -57,8 +57,6 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
     protected PickSupport pickSupport = new PickSupport();
     /** Support class used to build surface tiles used to draw the pick representation. */
     protected SurfaceObjectTileBuilder pickTileBuilder;
-    /** The pick representation. Populated each frame by the {@link #pickTileBuilder}. */
-    protected Collection<SurfaceTile> pickTiles;
     /* The next unique ID. This property is shared by all instances of AbstractSurfaceObject. */
     protected static long nextUniqueId = 1;
 
@@ -611,19 +609,11 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
      */
     protected void buildPickRepresentation(DrawContext dc)
     {
-        // Lazily create the collection used to hold the pick representation's SurfaceTiles. This ensures the collection
-        // does not waste memory for surface objects that are never picked.
-        if (this.pickTiles == null)
-            this.pickTiles = new ArrayList<SurfaceTile>();
-
         // Lazily create the support object used to build the pick representation.  We keep a reference to the
         // SurfaceObjectTileBuilder used to build the tiles because it acts as a cache key to the tiles and determines
         // when the tiles must be updated.
         if (this.pickTileBuilder == null)
             this.pickTileBuilder = this.createPickTileBuilder();
-
-        // Clear any SurfaceTiles from the pick representation build during the previous frame.
-        this.pickTiles.clear();
 
         // Build the pickable representation of this surface object as a list of surface tiles. Set the DrawContext into
         // ordered picking mode while the surface object's pickable representation is built. During ordered picking mode
@@ -638,9 +628,7 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
             dc.setOrderedRenderingMode(true);
 
             // Build the pick representation as a list of surface tiles.
-            List<SurfaceTile> tiles = this.pickTileBuilder.buildTiles(dc, Arrays.asList(this));
-            if (tiles != null)
-                this.pickTiles.addAll(tiles);
+            this.pickTileBuilder.buildTiles(dc, Arrays.asList(this));
         }
         finally
         {
@@ -661,7 +649,7 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
         // The pick representation is stored as a list of surface tiles. If the list is empty, then this surface object
         // was not picked. This method might be called when the list is null or empty because of an upstream
         // exception that prevented creation of the list.
-        if (this.pickTiles == null || this.pickTiles.isEmpty())
+        if (this.pickTileBuilder == null || this.pickTileBuilder.getTileCount(dc) == 0)
             return;
 
         // Draw the pickable representation of this surface object created during preRendering.
@@ -674,13 +662,13 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
             gl.glCullFace(GL.GL_BACK);
             gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_FILL);
 
-            dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.pickTiles);
+            dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.pickTileBuilder.getTiles(dc));
         }
         finally
         {
             ogsh.pop(gl);
             // Clear the list of pick tiles to avoid retaining references to them in case we're never picked again.
-            this.pickTiles.clear();
+            this.pickTileBuilder.clearTiles(dc);
         }
     }
 

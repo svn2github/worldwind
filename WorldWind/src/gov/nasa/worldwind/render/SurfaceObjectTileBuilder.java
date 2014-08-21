@@ -9,6 +9,7 @@ import com.jogamp.opengl.util.texture.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe2D;
 import gov.nasa.worldwind.layers.TextureTile;
 import gov.nasa.worldwind.util.*;
 
@@ -46,19 +47,18 @@ import java.util.List;
  * class MyRenderable implements Renderable, PreRenderable
  * {
  *     protected SurfaceObjectTileBuilder tileBuilder = new SurfaceObjectTileBuilder();
- *     protected ArrayList<SurfaceTile> tiles = new ArrayList<SurfaceTile>();
  *
  *     public void preRender(DrawContext dc)
  *     {
  *         List<?> surfaceObjects = Arrays.asList(
  *             new SurfaceCircle(LatLon.fromDegrees(0, 100), 10000),
  *             new SurfaceSquare(LatLon.fromDegrees(0, 101), 10000));
- *         this.tiles.addAll(this.tileBuilder.buildSurfaceTiles(dc, surfaceObjects));
+ *         this.tileBuilder.buildSurfaceTiles(dc, surfaceObjects);
  *     }
  *
  *     public void render(DrawContext dc)
  *     {
- *         dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.tiles);
+ *         dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.tileBuilder.getTiles(dc));
  *     }
  * }
  * </pre>
@@ -94,23 +94,12 @@ public class SurfaceObjectTileBuilder
      * share LevelSets across all instances of SurfaceObjectTileBuilder.
      */
     protected static Map<Dimension, LevelSet> levelSetMap = new HashMap<Dimension, LevelSet>();
-    /**
-     * Map associating a tile texture dimension to a tile cache name. This map is an instance property so that the cache
-     * names for each instance and each tile dimension are unique.
-     */
-    protected Map<Dimension, String> tileCacheNameMap = new HashMap<Dimension, String>();
 
     /**
      * Indicates the desired tile texture width and height, in pixels. Initially set to
      * <code>DEFAULT_TEXTURE_DIMENSION</code>.
      */
     protected Dimension tileDimension = new Dimension(DEFAULT_TEXTURE_DIMENSION, DEFAULT_TEXTURE_DIMENSION);
-    /**
-     * Indicates the currently used tile texture width and height, in pixels. This is different than the caller
-     * specified <code>tileDimension</code> if this value does not fit in the viewport, or is not a power of two.
-     * Initially <code>null</code>.
-     */
-    protected Dimension currentTileDimension;
     /** The surface tile OpenGL texture format. 0 indicates the default format is used. */
     protected int tileTextureFormat;
     /** Controls if surface tiles are rendered using a linear filter or a nearest-neighbor filter. */
@@ -119,10 +108,15 @@ public class SurfaceObjectTileBuilder
     protected boolean useMipmaps;
     /** Controls the tile resolution as distance changes between the globe's surface and the eye point. */
     protected double splitScale = DEFAULT_SPLIT_SCALE;
-    /** List of currently assembled surface objects. Used during tile assembly and updating. */
+    /**
+     * List of currently assembled surface objects. Valid only during the execution of {@link #buildTiles(DrawContext,
+     * Iterable)}.
+     */
     protected List<SurfaceObject> currentSurfaceObjects = new ArrayList<SurfaceObject>();
     /** List of currently assembled surface tiles. */
-    protected List<SurfaceObjectTile> currentTiles = new ArrayList<SurfaceObjectTile>();
+    protected Map<Object, TileInfo> tileInfoMap = new HashMap<Object, TileInfo>();
+    /** The currently active TileInfo. Valid only during the execution of {@link #buildTiles(DrawContext, Iterable)}. */
+    protected TileInfo currentInfo;
     /** Support class used to render to an offscreen surface tile. */
     protected OGLRenderToTextureSupport rttSupport = new OGLRenderToTextureSupport();
 
@@ -301,21 +295,15 @@ public class SurfaceObjectTileBuilder
     }
 
     /**
-     * Assembles the surface tiles and draws any SurfaceObjects in the iterable into those offscreen tiles. The surface
-     * tiles are assembled to meet the necessary resolution of to the draw context's {@link gov.nasa.worldwind.View}.
-     * This may temporarily use the framebuffer to perform offscreen rendering, and therefore should be called during
-     * the preRender method of a World Wind {@link gov.nasa.worldwind.layers.Layer}.
-     * <p/>
-     * This returns an empty List if the specified iterable is null, is empty or contains no SurfaceObjects.
+     * Returns the number of SurfaceTiles assembled during the last call to {@link #buildTiles(DrawContext, Iterable)}.
      *
-     * @param dc       the draw context to build tiles for.
-     * @param iterable the iterable to gather SurfaceObjects from.
+     * @param dc the draw context used to build tiles.
      *
-     * @return a List of SurfaceTiles containing a composite representation of the specified SurfaceObjects.
+     * @return a count of SurfaceTiles containing a composite representation of the specified SurfaceObjects.
      *
      * @throws IllegalArgumentException if the draw context is null.
      */
-    public List<SurfaceTile> buildTiles(DrawContext dc, Iterable<?> iterable)
+    public int getTileCount(DrawContext dc)
     {
         if (dc == null)
         {
@@ -324,11 +312,69 @@ public class SurfaceObjectTileBuilder
             throw new IllegalArgumentException(message);
         }
 
+        Object tileInfoKey = this.createTileInfoKey(dc);
+        TileInfo tileInfo = this.tileInfoMap.get(tileInfoKey);
+        return tileInfo != null ? tileInfo.tiles.size() : 0;
+    }
+
+    /**
+     * Returns the list of SurfaceTiles assembled during the last call to {@link #buildTiles(DrawContext, Iterable)}.
+     *
+     * @param dc the draw context used to build tiles.
+     *
+     * @return a List of SurfaceTiles containing a composite representation of the specified SurfaceObjects.
+     *
+     * @throws IllegalArgumentException if the draw context is null.
+     */
+    public Collection<? extends SurfaceTile> getTiles(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Object tileInfoKey = this.createTileInfoKey(dc);
+        TileInfo tileInfo = this.tileInfoMap.get(tileInfoKey);
+        return tileInfo != null ? tileInfo.tiles : Collections.<SurfaceTile>emptyList();
+    }
+
+    /**
+     * Assembles the surface tiles and draws any SurfaceObjects in the iterable into those offscreen tiles. The surface
+     * tiles are assembled to meet the necessary resolution of to the draw context's {@link gov.nasa.worldwind.View}.
+     * This may temporarily use the framebuffer to perform offscreen rendering, and therefore should be called during
+     * the preRender method of a World Wind {@link gov.nasa.worldwind.layers.Layer}.
+     * <p/>
+     * This does nothing if the specified iterable is null, is empty or contains no SurfaceObjects.
+     *
+     * @param dc       the draw context to build tiles for.
+     * @param iterable the iterable to gather SurfaceObjects from.
+     *
+     * @throws IllegalArgumentException if the draw context is null.
+     */
+    public void buildTiles(DrawContext dc, Iterable<?> iterable)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        TileInfoKey tileInfoKey = this.createTileInfoKey(dc);
+        this.currentInfo = this.tileInfoMap.get(tileInfoKey);
+        if (this.currentInfo == null)
+        {
+            this.currentInfo = this.createTileInfo(dc);
+            this.tileInfoMap.put(tileInfoKey, this.currentInfo);
+        }
+
         this.currentSurfaceObjects.clear();
-        this.currentTiles.clear();
+        this.currentInfo.tiles.clear();
 
         if (iterable == null)
-            return Collections.emptyList();
+            return;
 
         // Assemble the list of current surface objects from the specified iterable.
         this.assembleSurfaceObjects(iterable);
@@ -336,113 +382,44 @@ public class SurfaceObjectTileBuilder
         // We've cleared any tile assembly state from the last rendering pass. Determine if we can assemble and update
         // the tiles. If not, we're done.
         if (this.currentSurfaceObjects.isEmpty() || !this.canAssembleTiles(dc))
-            return Collections.emptyList();
+            return;
 
         // Assemble the current visible tiles and update their associated textures if necessary.
         this.assembleTiles(dc);
         this.updateTiles(dc);
 
-        // Tiles in the current tile list contain references to SurfaceObjects. These references are used during tile
-        // update, and are longer needed. Clear these lists to ensure we don't retain any dangling references to the
-        // surface objects.
-        for (SurfaceObjectTile tile : this.currentTiles)
+        // Clear references to surface objects to avoid dangling references. The surface object list is no longer
+        // needed, no are the lists held by each tile.
+        this.currentSurfaceObjects.clear();
+        for (SurfaceObjectTile tile : this.currentInfo.tiles)
         {
             tile.clearObjectList();
         }
-
-        ArrayList<SurfaceTile> tiles = new ArrayList<SurfaceTile>(this.currentTiles);
-
-        // Objects in the current surface object list and current tile list are no longer needed. Clear the lists to
-        // ensure we don't retain dangling references to any objects or tiles.
-        this.currentSurfaceObjects.clear();
-        this.currentTiles.clear();
-
-        return tiles;
     }
 
     /**
-     * Indicates the tile cache name to use for the specified <code>tileDimension</code>. The cache name is unique to
-     * this <code>SurfaceObjectTileBuilder</code> and the <code>tileDimension</code>. Using a unique cache name for each
-     * instance and tile dimension ensures that the tiles for this instances and <code>tileDimension</code> do not
-     * conflict with any other tiles in the cache.
-     * <p/>
-     * In practices, there are at most 10 dimensions we'll use (512, 256, 128, 64, 32, 16, 8, 4, 2, 1 ), and therefore
-     * at most 10 cache names for each <code>SurfaceObjectTileBuilder</code>.
-     * <p/>
-     * Subsequent calls are guaranteed to return the same cache name for the same <code>tileDimension</code>.
+     * Removes all entries from list of SurfaceTiles assembled during the last call to {@link #buildTiles(DrawContext,
+     * Iterable)}.
      *
-     * @param tileDimension the texture tile dimension who's cache name is returned.
+     * @param dc the draw context used to build tiles.
      *
-     * @return the tile cache name for the specified <code>tileDimension</code>
+     * @throws IllegalArgumentException if the draw context is null.
      */
-    protected String getTileCacheName(Dimension tileDimension)
+    public void clearTiles(DrawContext dc)
     {
-        String s = this.tileCacheNameMap.get(tileDimension);
-        if (s == null)
+        if (dc == null)
         {
-            s = this.nextCacheName();
-            this.tileCacheNameMap.put(tileDimension, s);
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
         }
 
-        return s;
-    }
-
-    /**
-     * Returns a unique name appropriate for use as part of a cache name. The returned string is constructed as follows:
-     * {@code this.getClass().getName() + "/" + nextUniqueId()}.
-     *
-     * @return a unique cache name.
-     */
-    protected String nextCacheName()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getName());
-        sb.append("/");
-        sb.append(nextUniqueId());
-
-        return sb.toString();
-    }
-
-    /**
-     * Returns the next unique integer associated with a SurfaceObjectTileBuilder. This method is synchronized to ensure
-     * that two threads calling simultaneously receive different IDs. Since this method is called from
-     * SurfaceObjectTileBuilder's constructor, this is critical to ensure that SurfaceObjectTileBuilders can be safely
-     * constructed on separate threads.
-     *
-     * @return the next unique integer.
-     */
-    protected static synchronized long nextUniqueId()
-    {
-        return nextUniqueId++;
-    }
-
-    /**
-     * Returns the tile dimension used to create the tile textures for the specified <code>DrawContext</code>. This
-     * attempts to use the caller configured <code>{@link #tileDimension}</code>, but always returns a dimension that is
-     * is a power of two, is square, and fits in the <code>DrawContext</code>'s viewport.
-     *
-     * @param dc the <code>DrawContext</code> to compute a texture tile dimension for.
-     *
-     * @return a texture tile dimension appropriate for the specified <code>DrawContext</code>.
-     */
-    protected Dimension computeTextureTileDimension(DrawContext dc)
-    {
-        // Force a square dimension by using the maximum of the tile builder's tileWidth and tileHeight.
-        int maxSize = Math.max(this.tileDimension.width, this.tileDimension.height);
-
-        // The viewport may be smaller than the desired dimension. For that reason, we constrain the desired tile
-        // dimension by the viewport width and height.
-        Rectangle viewport = dc.getView().getViewport();
-        if (maxSize > viewport.width)
-            maxSize = viewport.width;
-        if (maxSize > viewport.height)
-            maxSize = viewport.height;
-
-        // The final dimension used to render all surface tiles will be the power of two which is less than or equal to
-        // the preferred dimension, and which fits into the viewport.
-
-        int potSize = WWMath.powerOfTwoFloor(maxSize);
-        return new Dimension(potSize, potSize);
+        Object tileInfoKey = this.createTileInfoKey(dc);
+        TileInfo tileInfo = this.tileInfoMap.get(tileInfoKey);
+        if (tileInfo != null)
+        {
+            tileInfo.tiles.clear();
+        }
     }
 
     //**************************************************************//
@@ -450,8 +427,8 @@ public class SurfaceObjectTileBuilder
     //**************************************************************//
 
     /**
-     * Updates each {@link SurfaceObjectTileBuilder.SurfaceObjectTile} in the {@link #currentTiles} list. This is
-     * typically called after {@link #assembleTiles(DrawContext)} to update the assembled tiles.
+     * Updates each {@link SurfaceObjectTileBuilder.SurfaceObjectTile} in the {@link #currentInfo}. This is typically
+     * called after {@link #assembleTiles(DrawContext)} to update the assembled tiles.
      * <p/>
      * This method does nothing if <code>currentTiles</code> is empty.
      *
@@ -459,7 +436,7 @@ public class SurfaceObjectTileBuilder
      */
     protected void updateTiles(DrawContext dc)
     {
-        if (this.currentTiles.isEmpty())
+        if (this.currentInfo.tiles.isEmpty())
             return;
 
         // The tile drawing rectangle has the same dimension as the current tile viewport, but it's lower left corner
@@ -479,10 +456,10 @@ public class SurfaceObjectTileBuilder
                 this.tileTextureFormat == GL.GL_RGBA ||
                 this.tileTextureFormat == GL.GL_RGBA8);
 
-        this.rttSupport.beginRendering(dc, 0, 0, this.currentTileDimension.width, this.currentTileDimension.height);
+        this.rttSupport.beginRendering(dc, 0, 0, this.currentInfo.tileWidth, this.currentInfo.tileHeight);
         try
         {
-            for (SurfaceObjectTile tile : this.currentTiles)
+            for (SurfaceObjectTile tile : this.currentInfo.tiles)
             {
                 this.updateTile(dc, tile);
             }
@@ -689,19 +666,21 @@ public class SurfaceObjectTileBuilder
      * Subsequent calls are guaranteed to return the same <code>LevelSet</code> for the same
      * <code>tileDimension</code>.
      *
-     * @param tileDimension the DrawContext to return a LevelSet for.
+     * @param tileWidth  the tile width, in pixels.
+     * @param tileHeight the tile height, in pixels.
      *
-     * @return a LevelSet who's tile dimension fits in the DrawContext's viewport.
+     * @return a LevelSet with the specified tile dimensions.
      */
-    protected LevelSet getLevelSet(Dimension tileDimension)
+    protected LevelSet getLevelSet(int tileWidth, int tileHeight)
     {
         // If we already have a LevelSet for the dimension, just return it. Otherwise create it and put it in a map for
         // use during subsequent calls.
-        LevelSet levelSet = levelSetMap.get(tileDimension);
+        Dimension key = new Dimension(tileWidth, tileHeight);
+        LevelSet levelSet = levelSetMap.get(key);
         if (levelSet == null)
         {
-            levelSet = createLevelSet(tileDimension.width, tileDimension.height);
-            levelSetMap.put(tileDimension, levelSet);
+            levelSet = createLevelSet(tileWidth, tileHeight);
+            levelSetMap.put(key, levelSet);
         }
 
         return levelSet;
@@ -758,7 +737,7 @@ public class SurfaceObjectTileBuilder
      * resolution criteria. Tiles are culled against the current SurfaceObject list, against the DrawContext's view
      * frustum during rendering mode, and against the DrawContext's pick frustums during picking mode. If a tile does
      * not meet the tile builder's resolution criteria, it's split into four sub-tiles and the process recursively
-     * repeated on the sub-tiles. Visible leaf tiles are added to the <code>{@link #currentTiles}</code> list.
+     * repeated on the sub-tiles. Visible leaf tiles are added to the {@link #currentInfo}.
      * <p/>
      * During assembly each SurfaceObject in {@link #currentSurfaceObjects} is sorted into the tiles they intersect. The
      * top level tiles are used as an index to quickly determine which tiles each SurfaceObjects intersects.
@@ -770,15 +749,8 @@ public class SurfaceObjectTileBuilder
      */
     protected void assembleTiles(DrawContext dc)
     {
-        // Compute the texture tile dimension to use for this DrawContext. This dimension is always square and a power
-        // of two.
-        this.currentTileDimension = this.computeTextureTileDimension(dc);
-        // Get the level set and tile cache name to use for the current tile dimension. The LevelSet is shared by all
-        // SurfaceObjectTileBuilders, while the cache name is unique to this instance. Since all
-        // SurfaceObjectTileBuilders use the same tile structure to determine visible tiles, this saves memory while
-        // preventing a conflict in the tile and texture caches.
-        String tileCacheName = this.getTileCacheName(this.currentTileDimension);
-        LevelSet levelSet = this.getLevelSet(this.currentTileDimension);
+        LevelSet levelSet = this.currentInfo.levelSet;
+        String tileCacheName = this.currentInfo.cacheName;
 
         Level level = levelSet.getFirstLevel();
         Angle dLat = level.getTileDelta().getLatitude();
@@ -860,9 +832,9 @@ public class SurfaceObjectTileBuilder
     }
 
     /**
-     * Potentially adds the specified tile or its descendants to the tile builder's {@link #currentTiles} list. The tile
-     * and its descendants are discarded if the tile is not visible or does not intersect any SurfaceObjects in the
-     * parent's surface object list. See {@link SurfaceObjectTileBuilder.SurfaceObjectTile#getObjectList()}.
+     * Potentially adds the specified tile or its descendants to the tile builder's {@link #currentInfo}. The tile and
+     * its descendants are discarded if the tile is not visible or does not intersect any SurfaceObjects in the parent's
+     * surface object list. See {@link SurfaceObjectTileBuilder.SurfaceObjectTile#getObjectList()}.
      * <p/>
      * If the tile meet the tile builder's resolution criteria it's added to the tile builder's
      * <code>currentTiles</code> list. Otherwise, it's split into four sub-tiles and each tile is recursively processed.
@@ -974,13 +946,13 @@ public class SurfaceObjectTileBuilder
     }
 
     /**
-     * Adds the specified tile to the tile builder's {@link #currentTiles} list.
+     * Adds the specified tile to this tile builder's {@link #currentInfo} and the TextureTile memory cache.
      *
      * @param tile the tile to add.
      */
     protected void addTile(SurfaceObjectTile tile)
     {
-        this.currentTiles.add(tile);
+        this.currentInfo.tiles.add(tile);
         TextureTile.getMemoryCache().add(tile.getTileKey(), tile);
     }
 
@@ -1075,6 +1047,144 @@ public class SurfaceObjectTileBuilder
         // NOTE: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is
         // window-size dependent and results in selecting an excessive number of tiles when the window is large.
         return texelSizeMeters > scaledEyeDistanceMeters;
+    }
+
+    //**************************************************************//
+    //********************  Surface Object Tile  *******************//
+    //**************************************************************//
+
+    /**
+     * Creates a key to address the tile information associated with the specified draw context. Each key is unique to
+     * this instance, the tile dimensions that fit in the draw context's viewport, and the globe offset when a 2D globe
+     * is in use. Using a unique set of tile information ensures that
+     * <p/>
+     * In practices, there are at most 10 dimensions we'll use (512, 256, 128, 64, 32, 16, 8, 4, 2, 1) and 3 globe
+     * offsets (-1, 0, 1). Therefore there are at most 30 sets of tile information for each instance of
+     * SurfaceObjectTileBuilder.
+     *
+     * @param dc the draw context to create the tile info key for.
+     *
+     * @return the tile info key for the specified draw context.
+     */
+    protected TileInfoKey createTileInfoKey(DrawContext dc)
+    {
+        Dimension tileDimension = this.computeTextureTileDimension(dc);
+        return new TileInfoKey(dc, tileDimension.width, tileDimension.height);
+    }
+
+    /**
+     * Creates a tile info associated with the specified draw context.
+     *
+     * @param dc the draw context to create the tile info for.
+     *
+     * @return the tile info for the specified draw context.
+     */
+    protected TileInfo createTileInfo(DrawContext dc)
+    {
+        // Use a LevelSet shared by all instances of this class to save memory and prevent a conflict in the tile and
+        // texture caches. Use a cache name unique to this tile info instance.
+        Dimension tileDimension = this.computeTextureTileDimension(dc);
+        LevelSet levelSet = this.getLevelSet(tileDimension.width, tileDimension.height);
+        String cacheName = this.uniqueCacheName();
+        return new TileInfo(levelSet, cacheName, tileDimension.width, tileDimension.height);
+    }
+
+    /**
+     * Returns the tile dimension used to create the tile textures for the specified <code>DrawContext</code>. This
+     * attempts to use this tile builder's {@link #tileDimension}, but always returns a dimension that is is a power of
+     * two, is square, and fits in the <code>DrawContext</code>'s viewport.
+     *
+     * @param dc the <code>DrawContext</code> to compute a texture tile dimension for.
+     *
+     * @return a texture tile dimension appropriate for the specified <code>DrawContext</code>.
+     */
+    protected Dimension computeTextureTileDimension(DrawContext dc)
+    {
+        // Force a square dimension by using the maximum of the tile builder's tileWidth and tileHeight.
+        int maxSize = Math.max(this.tileDimension.width, this.tileDimension.height);
+
+        // The viewport may be smaller than the desired dimension. For that reason, we constrain the desired tile
+        // dimension by the viewport width and height.
+        Rectangle viewport = dc.getView().getViewport();
+        if (maxSize > viewport.width)
+            maxSize = viewport.width;
+        if (maxSize > viewport.height)
+            maxSize = viewport.height;
+
+        // The final dimension used to render all surface tiles will be the power of two which is less than or equal to
+        // the preferred dimension, and which fits into the viewport.
+
+        int potSize = WWMath.powerOfTwoFloor(maxSize);
+        return new Dimension(potSize, potSize);
+    }
+
+    /**
+     * Returns a unique name appropriate for use as part of a cache name.
+     *
+     * @return a unique cache name.
+     */
+    protected String uniqueCacheName()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().getName());
+        sb.append("/");
+        sb.append(nextUniqueId++);
+
+        return sb.toString();
+    }
+
+    protected static class TileInfoKey
+    {
+        public final int globeOffset;
+        public final int tileWidth;
+        public final int tileHeight;
+
+        public TileInfoKey(DrawContext dc, int tileWidth, int tileHeight)
+        {
+            this.globeOffset = (dc.getGlobe() instanceof Globe2D) ? ((Globe2D) dc.getGlobe()).getOffset() : 0;
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || this.getClass() != o.getClass())
+                return false;
+
+            TileInfoKey that = (TileInfoKey) o;
+            return this.globeOffset == that.globeOffset
+                && this.tileWidth == that.tileWidth
+                && this.tileHeight == that.tileHeight;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = this.globeOffset;
+            result = 31 * result + this.tileWidth;
+            result = 31 * result + this.tileHeight;
+            return result;
+        }
+    }
+
+    protected static class TileInfo
+    {
+        public ArrayList<SurfaceObjectTile> tiles = new ArrayList<SurfaceObjectTile>();
+        public LevelSet levelSet;
+        public String cacheName;
+        public int tileWidth;
+        public int tileHeight;
+
+        public TileInfo(LevelSet levelSet, String cacheName, int tileWidth, int tileHeight)
+        {
+            this.levelSet = levelSet;
+            this.cacheName = cacheName;
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+        }
     }
 
     //**************************************************************//
