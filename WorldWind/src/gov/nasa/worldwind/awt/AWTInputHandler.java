@@ -409,12 +409,10 @@ public class AWTInputHandler extends WWObjectImpl
             // Initiate a repaint.
             this.wwd.getView().firePropertyChange(AVKey.VIEW, null, this.wwd.getView());
         }
-        else
+
+        if (!mouseEvent.isConsumed())
         {
-            if (!mouseEvent.isConsumed())
-            {
-                this.wwd.getView().getViewInputHandler().mousePressed(mouseEvent);
-            }
+            this.wwd.getView().getViewInputHandler().mousePressed(mouseEvent);
         }
 
         // GLJPanel does not take keyboard focus when the user clicks on it, thereby suppressing key events normally
