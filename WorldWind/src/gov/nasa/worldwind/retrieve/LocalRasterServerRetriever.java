@@ -70,7 +70,7 @@ public class LocalRasterServerRetriever extends WWObjectImpl implements Retrieve
 
     public String getName()
     {
-        Object o = this.getValue(AVKey.DISPLAY_NAME);
+        Object o = this.getStringValue(AVKey.DISPLAY_NAME);
         return (WWUtil.isEmpty(o)) ? null : (String) o;
     }
 

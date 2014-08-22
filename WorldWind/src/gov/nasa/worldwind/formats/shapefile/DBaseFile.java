@@ -79,7 +79,7 @@ public class DBaseFile extends AVListImpl
         catch (Exception e)
         {
             String message = Logging.getMessage("SHP.ExceptionAttemptingToReadDBase",
-                this.getValue(AVKey.DISPLAY_NAME));
+                this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
             throw new WWRuntimeException(message, e);
         }
@@ -102,7 +102,7 @@ public class DBaseFile extends AVListImpl
         catch (Exception e)
         {
             String message = Logging.getMessage("SHP.ExceptionAttemptingToReadDBase",
-                this.getValue(AVKey.DISPLAY_NAME));
+                this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
             throw new WWRuntimeException(message, e);
         }
@@ -147,14 +147,14 @@ public class DBaseFile extends AVListImpl
     {
         if (!this.open)
         {
-            String message = Logging.getMessage("SHP.DBaseFileClosed", this.getValue(AVKey.DISPLAY_NAME));
+            String message = Logging.getMessage("SHP.DBaseFileClosed", this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
         if (this.getNumberOfRecords() <= 0 || this.numRecordsRead >= this.getNumberOfRecords())
         {
-            String message = Logging.getMessage("SHP.NoRecords", this.getValue(AVKey.DISPLAY_NAME));
+            String message = Logging.getMessage("SHP.NoRecords", this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
@@ -166,7 +166,7 @@ public class DBaseFile extends AVListImpl
         catch (IOException e)
         {
             String message = Logging.getMessage("SHP.ExceptionAttemptingToReadDBaseRecord",
-                this.getValue(AVKey.DISPLAY_NAME));
+                this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
             throw new WWRuntimeException(message, e);
         }

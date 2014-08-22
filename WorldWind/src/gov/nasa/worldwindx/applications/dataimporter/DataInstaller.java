@@ -382,7 +382,7 @@ public class DataInstaller extends AVListImpl
         }
         sb.append(productionParams.getValue(AVKey.DATASET_NAME)).append(".RasterServer.xml");
 
-        Object o = productionParams.getValue(AVKey.DISPLAY_NAME);
+        Object o = productionParams.getStringValue(AVKey.DISPLAY_NAME);
         if (WWUtil.isEmpty(o))
         {
             productionParams.setValue(AVKey.DISPLAY_NAME, productionParams.getValue(AVKey.DATASET_NAME));

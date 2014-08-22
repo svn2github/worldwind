@@ -494,14 +494,14 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
     {
         if (!this.open)
         {
-            String message = Logging.getMessage("SHP.ShapefileClosed", this.getValue(AVKey.DISPLAY_NAME));
+            String message = Logging.getMessage("SHP.ShapefileClosed", this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
         if (this.header == null) // This should never happen, but we check anyway.
         {
-            String message = Logging.getMessage("SHP.HeaderIsNull", this.getValue(AVKey.DISPLAY_NAME));
+            String message = Logging.getMessage("SHP.HeaderIsNull", this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
@@ -509,7 +509,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
         int contentLength = this.header.fileLength - HEADER_LENGTH;
         if (contentLength <= 0 || this.numBytesRead >= contentLength)
         {
-            String message = Logging.getMessage("SHP.NoRecords", this.getValue(AVKey.DISPLAY_NAME));
+            String message = Logging.getMessage("SHP.NoRecords", this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
@@ -522,7 +522,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
         catch (Exception e)
         {
             String message = Logging.getMessage("SHP.ExceptionAttemptingToReadShapefileRecord",
-                this.getValue(AVKey.DISPLAY_NAME));
+                this.getStringValue(AVKey.DISPLAY_NAME));
             Logging.logger().log(Level.SEVERE, message, e);
             throw new WWRuntimeException(message, e);
         }
@@ -808,7 +808,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
         catch (IOException e)
         {
             Logging.logger().log(Level.WARNING,
-                Logging.getMessage("SHP.ExceptionAttemptingToReadProjection", this.getValue(AVKey.DISPLAY_NAME)), e);
+                Logging.getMessage("SHP.ExceptionAttemptingToReadProjection", this.getStringValue(AVKey.DISPLAY_NAME)), e);
         }
 
         // Set the Shapefile's caller specified parameters. We do this after reading the projection parameters to give
@@ -839,7 +839,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
         catch (IOException e)
         {
             Logging.logger().log(Level.WARNING,
-                Logging.getMessage("SHP.ExceptionAttemptingToReadIndex", this.getValue(AVKey.DISPLAY_NAME)), e);
+                Logging.getMessage("SHP.ExceptionAttemptingToReadIndex", this.getStringValue(AVKey.DISPLAY_NAME)), e);
         }
 
         // Read this Shapefile's header and flag the Shapefile as open. We read the header after reading any projection
@@ -1065,7 +1065,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
             // Log a warning that we could not allocate enough memory to hold the Shapefile index. Shapefile parsing
             // can continue without the optional index, so we catch the exception and return immediately.
             Logging.logger().log(Level.WARNING,
-                Logging.getMessage("SHP.OutOfMemoryAllocatingIndex", this.getValue(AVKey.DISPLAY_NAME)), e);
+                Logging.getMessage("SHP.OutOfMemoryAllocatingIndex", this.getStringValue(AVKey.DISPLAY_NAME)), e);
             return null;
         }
 
@@ -1130,7 +1130,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
         if (!this.hasKey(AVKey.COORDINATE_SYSTEM))
         {
             Logging.logger().warning(
-                Logging.getMessage("generic.UnspecifiedCoordinateSystem", this.getValue(AVKey.DISPLAY_NAME)));
+                Logging.getMessage("generic.UnspecifiedCoordinateSystem", this.getStringValue(AVKey.DISPLAY_NAME)));
             return null;
         }
         else if (AVKey.COORDINATE_SYSTEM_GEOGRAPHIC.equals(o))
@@ -1560,7 +1560,7 @@ public class Shapefile extends AVListImpl implements Closeable, Exportable
                     // Let the caller catch and log the exception. If we cannot allocate enough memory to hold the
                     // point buffer, we throw an exception indicating that the read operation should be terminated.
                     throw new WWRuntimeException(Logging.getMessage("SHP.OutOfMemoryAllocatingPointBuffer",
-                        this.getValue(AVKey.DISPLAY_NAME)), e);
+                        this.getStringValue(AVKey.DISPLAY_NAME)), e);
                 }
 
                 this.pointBuffer = new VecBufferSequence(

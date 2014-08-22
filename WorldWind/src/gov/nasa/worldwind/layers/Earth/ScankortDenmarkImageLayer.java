@@ -29,7 +29,7 @@ public class ScankortDenmarkImageLayer extends WMSTiledImageLayer
 
     public String toString()
     {
-        Object o = this.getValue(AVKey.DISPLAY_NAME);
+        Object o = this.getStringValue(AVKey.DISPLAY_NAME);
         return o != null ? (String) o : "Scankort Denmark Imagery";
     }
 }
