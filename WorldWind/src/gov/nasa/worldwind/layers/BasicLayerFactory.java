@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.*;
+import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
 import gov.nasa.worldwind.ogc.*;
 import gov.nasa.worldwind.ogc.wms.*;
 import gov.nasa.worldwind.util.*;
@@ -295,6 +296,10 @@ public class BasicLayerFactory extends BasicFactory
             {
                 layer = this.createTiledImageLayer(domElement, params);
             }
+            else if (layerType != null && layerType.equals("ShapefileLayer"))
+            {
+                layer = this.createShapefileLayer(domElement, params);
+            }
             else
             {
                 String msg = Logging.getMessage("generic.UnrecognizedLayerType", layerType);
@@ -359,5 +364,12 @@ public class BasicLayerFactory extends BasicFactory
         layer.setEnabled(actuate != null && actuate.equals("onLoad"));
 
         return layer;
+    }
+
+    protected Layer createShapefileLayer(Element domElement, AVList params)
+    {
+        ShapefileLayerFactory factory = new ShapefileLayerFactory();
+
+        return factory.createLayerFromConfigDocument(domElement, params);
     }
 }
