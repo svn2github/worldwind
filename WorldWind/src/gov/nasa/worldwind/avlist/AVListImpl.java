@@ -107,7 +107,8 @@ public class AVListImpl implements AVList
         }
         try
         {
-            return (String) this.getValue(key);
+            Object value = this.getValue(key);
+            return value != null ? value.toString() : null;
         }
         catch (ClassCastException e)
         {
