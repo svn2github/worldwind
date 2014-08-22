@@ -7,10 +7,8 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.globes.projections.*;
-import gov.nasa.worldwind.view.orbit.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -41,7 +39,6 @@ public class FlatWorldPanel extends JPanel
         {
             this.flatGlobe = (FlatGlobe) wwd.getModel().getGlobe();
             this.roundGlobe = new Earth();
-            this.apply2DViewLimits();
         }
         else
         {
@@ -100,7 +97,6 @@ public class FlatWorldPanel extends JPanel
             public void actionPerformed(ActionEvent actionEvent)
             {
                 updateProjection();
-                apply2DViewLimits();
             }
         });
         comboPanel.add(this.projectionCombo);
@@ -154,33 +150,16 @@ public class FlatWorldPanel extends JPanel
         {
             // Switch to round globe
             wwd.getModel().setGlobe(roundGlobe);
-            // Stop any view movement and reset the view property limits.
             wwd.getView().stopMovement();
-            wwd.getView().getViewPropertyLimits().reset();
         }
         else
         {
             // Switch to flat globe
             wwd.getModel().setGlobe(flatGlobe);
-            this.updateProjection();
-            // Stop any view movement and limit the view's tilt and zoom properites.
             wwd.getView().stopMovement();
-            this.apply2DViewLimits();
+            this.updateProjection();
         }
 
         wwd.redraw();
-    }
-
-    protected void apply2DViewLimits()
-    {
-        OrbitView view = (OrbitView) wwd.getView();
-        double maxZoom = Math.PI * wwd.getModel().getGlobe().getEquatorialRadius()
-            / view.getFieldOfView().tanHalfAngle();
-        view.getOrbitViewLimits().setPitchLimits(Angle.ZERO, Angle.ZERO);
-        view.getOrbitViewLimits().setRollLimits(Angle.ZERO, Angle.ZERO);
-        view.getOrbitViewLimits().setZoomLimits(0, maxZoom);
-        view.setDetectCollisions(false);
-        BasicOrbitViewLimits.applyLimits(view, view.getOrbitViewLimits());
-        view.setDetectCollisions(true);
     }
 }
