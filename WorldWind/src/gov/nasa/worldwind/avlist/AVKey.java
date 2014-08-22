@@ -279,6 +279,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String PICKED_OBJECT_PARENT_LAYER = "gov.nasa.worldwind.avkey.PickedObject.ParentLayer";
     final String PICKED_OBJECT_PARENT_LAYER_NAME = "gov.nasa.worldwind.avkey.PickedObject.ParentLayer.Name";
     final String PICKED_OBJECT_SIZE = "gov.nasa.worldwind.avkey.PickedObject.Size";
+    final String PICK_ENABLED = "gov.nasa.worldwind.avkey.PickEnabled";
     final String PIXELS = "gov.nasa.worldwind.avkey.Pixels";
     /**
      * Indicates whether a raster's pixel values represent imagery or elevation data. When used as a key, the

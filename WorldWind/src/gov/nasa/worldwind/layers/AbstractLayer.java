@@ -433,6 +433,7 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         WWXML.checkAndAppendBooleanElement(params, AVKey.NETWORK_RETRIEVAL_ENABLED, context, "NetworkRetrievalEnabled");
         WWXML.checkAndAppendDoubleElement(params, AVKey.MAP_SCALE, context, "MapScale");
         WWXML.checkAndAppendScreenCreditElement(params, AVKey.SCREEN_CREDIT, context, "ScreenCredit");
+        WWXML.checkAndAppendBooleanElement(params, AVKey.PICK_ENABLED, context, "PickEnabled");
 
         return context;
     }
@@ -482,6 +483,7 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
             xpath);
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.MIN_ABSENT_TILE_CHECK_INTERVAL,
             "MinAbsentTileCheckInterval", xpath);
+        WWXML.checkAndSetBooleanParam(domElement, params, AVKey.PICK_ENABLED, "PickEnabled", xpath);
 
         return params;
     }
