@@ -356,6 +356,7 @@ public class ViewLimits extends ApplicationTemplate
             this.surfaceSector.setAttributes(attr);
 
             this.layer = new RenderableLayer();
+            this.layer.setName("Sector Limits");
             this.layer.setPickEnabled(false);
             this.layer.addRenderable(this.surfaceSector);
             insertBeforePlacenames(this.appFrame.getWwd(), this.layer);
