@@ -271,7 +271,11 @@ public class IconRenderer
             // otherwise draw it from the globe.
             Position pos = icon.getPosition();
             Vec4 iconPoint = null;
-            if (pos.getElevation() < dc.getGlobe().getMaxElevation() && !this.isAlwaysUseAbsoluteElevation())
+            if (dc.is2DGlobe())
+            {
+                iconPoint = dc.getGlobe().computePointFromLocation(pos);
+            }
+            else if (pos.getElevation() < dc.getGlobe().getMaxElevation() && !this.isAlwaysUseAbsoluteElevation())
             {
                 iconPoint = dc.getSurfaceGeometry().getSurfacePoint(icon.getPosition());
             }
