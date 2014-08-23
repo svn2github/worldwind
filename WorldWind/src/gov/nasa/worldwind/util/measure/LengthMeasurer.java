@@ -14,15 +14,12 @@ import gov.nasa.worldwind.render.Polyline;
 import java.util.ArrayList;
 
 /**
- * Utility class to measure length along a path on a globe.
- * <p/>
- * <p>The measurer must be provided a list of at least two positions to be able to compute a distance.</p>
- * <p/>
- * <p>Segments which are longer then the current maxSegmentLength will be subdivided along lines following the current
- * pathType - Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE.</p>
- * <p/>
- * <p>If the measurer is set to follow terrain, the computed length will account for terrain deformations as if someone
- * was walking along that path. Otherwise the length is the sum of the cartesian distance between the positions.</p>
+ * Utility class to measure length along a path on a globe. <p/> <p>The measurer must be provided a list of at least two
+ * positions to be able to compute a distance.</p> <p/> <p>Segments which are longer then the current maxSegmentLength
+ * will be subdivided along lines following the current pathType - Polyline.LINEAR, Polyline.RHUMB_LINE or
+ * Polyline.GREAT_CIRCLE.</p> <p/> <p>If the measurer is set to follow terrain, the computed length will account for
+ * terrain deformations as if someone was walking along that path. Otherwise the length is the sum of the cartesian
+ * distance between the positions.</p>
  * <p/>
  * <p>When following terrain the measurer will sample terrain elevations at regular intervals along the path. The
  * minimum number of samples used for the whole length can be set with setLengthTerrainSamplingSteps(). However, the
@@ -229,11 +226,9 @@ public class LengthMeasurer implements MeasurableLength
     }
 
     /**
-     * Get the path length in meter.
-     * <p/>
-     * <p>If the measurer is set to follow terrain, the computed length will account for terrain deformations as if
-     * someone was walking along that path. Otherwise the length is the sum of the cartesian distance between each
-     * positions.</p>
+     * Get the path length in meter. <p/> <p>If the measurer is set to follow terrain, the computed length will account
+     * for terrain deformations as if someone was walking along that path. Otherwise the length is the sum of the
+     * cartesian distance between each positions.</p>
      *
      * @param globe the globe to draw terrain information from.
      *
@@ -280,26 +275,12 @@ public class LengthMeasurer implements MeasurableLength
 
         // Sum each segment length
         double length = 0;
-
-        if (globe instanceof Globe2D)
+        Vec4 p1 = globe.computeEllipsoidalPointFromPosition(this.subdividedPositions.get(0));
+        for (int i = 1; i < subdividedPositions.size(); i++)
         {
-            // TODO: Account for terrain following and radius variation. MDA-48.
-            LatLon pos = this.subdividedPositions.get(0);
-            for (int i = 1; i < this.subdividedPositions.size(); i++)
-            {
-                length += LatLon.rhumbDistance(pos, this.subdividedPositions.get(i)).radians * globe.getRadiusAt(pos);
-                pos = this.subdividedPositions.get(i);
-            }
-        }
-        else
-        {
-            Vec4 p1 = globe.computePointFromPosition(this.subdividedPositions.get(0));
-            for (int i = 1; i < subdividedPositions.size(); i++)
-            {
-                Vec4 p2 = globe.computePointFromPosition(this.subdividedPositions.get(i));
-                length += p1.distanceTo3(p2);
-                p1 = p2;
-            }
+            Vec4 p2 = globe.computeEllipsoidalPointFromPosition(this.subdividedPositions.get(i));
+            length += p1.distanceTo3(p2);
+            p1 = p2;
         }
 
         return length;
@@ -321,11 +302,10 @@ public class LengthMeasurer implements MeasurableLength
 //    }
 
     /**
-     * Subdivide a list of positions so that no segment is longer then the provided maxLength.
-     * <p/>
-     * <p>If needed, new intermediate positions will be created along lines that follow the given pathType - one of
-     * Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the
-     * terrain surface if followTerrain is true, or interpolated according to the original elevations.</p>
+     * Subdivide a list of positions so that no segment is longer then the provided maxLength. <p/> <p>If needed, new
+     * intermediate positions will be created along lines that follow the given pathType - one of Polyline.LINEAR,
+     * Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the terrain surface if
+     * followTerrain is true, or interpolated according to the original elevations.</p>
      *
      * @param globe         the globe to draw elevations and points from.
      * @param positions     the original position list
@@ -344,11 +324,10 @@ public class LengthMeasurer implements MeasurableLength
 
     /**
      * Subdivide a list of positions so that no segment is longer then the provided maxLength. Only the positions
-     * between start and start + count - 1 will be processed.
-     * <p/>
-     * <p>If needed, new intermediate positions will be created along lines that follow the given pathType - one of
-     * Polyline.LINEAR, Polyline.RHUMB_LINE or Polyline.GREAT_CIRCLE. All position elevations will be either at the
-     * terrain surface if followTerrain is true, or interpolated according to the original elevations.</p>
+     * between start and start + count - 1 will be processed. <p/> <p>If needed, new intermediate positions will be
+     * created along lines that follow the given pathType - one of Polyline.LINEAR, Polyline.RHUMB_LINE or
+     * Polyline.GREAT_CIRCLE. All position elevations will be either at the terrain surface if followTerrain is true, or
+     * interpolated according to the original elevations.</p>
      *
      * @param globe         the globe to draw elevations and points from.
      * @param positions     the original position list

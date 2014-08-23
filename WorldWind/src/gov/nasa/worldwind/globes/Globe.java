@@ -99,7 +99,7 @@ public interface Globe extends WWObject, Extent
      * @param longitude the longitude of the location at which to determine elevation.
      *
      * @return The elevation corresponding to the specified location, or the elevation model's missing-data replacement
-     *         value if there is no elevation for the given location. Returns zero if no elevation model is available.
+     * value if there is no elevation for the given location. Returns zero if no elevation model is available.
      *
      * @see #getElevationModel()
      */
@@ -123,7 +123,7 @@ public interface Globe extends WWObject, Extent
      *                         contain at least as many elements as the list of locations.
      *
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
-     *         determined for all of the locations. Returns zero if an elevation model is not available.
+     * determined for all of the locations. Returns zero if an elevation model is not available.
      *
      * @throws IllegalArgumentException if either the sector, latlons list or elevations array is null.
      * @see #getElevationModel()
@@ -149,7 +149,7 @@ public interface Globe extends WWObject, Extent
      *                         contain at least as many elements as the list of locations.
      *
      * @return the resolution achieved, in radians, or {@link Double#MAX_VALUE} if individual elevations cannot be
-     *         determined for all of the locations. Returns zero if an elevation model is not available.
+     * determined for all of the locations. Returns zero if an elevation model is not available.
      *
      * @throws IllegalArgumentException if either the sector, latlons list, target resolutions array or elevations array
      *                                  is null.
@@ -178,8 +178,8 @@ public interface Globe extends WWObject, Extent
      * @param line the line with which to intersect this globe.
      *
      * @return the geographic position of the intersection of this globe and specified line. If there are multiple
-     *         intersections the intersection nearest to the line's origin is returned. The intersection may be a
-     *         tangent. Returns null if the line does not intersect this globe.
+     * intersections the intersection nearest to the line's origin is returned. The intersection may be a tangent.
+     * Returns null if the line does not intersect this globe.
      */
     Position getIntersectionPosition(Line line);
 
@@ -266,7 +266,7 @@ public interface Globe extends WWObject, Extent
      * @param longitude Longitude of the location at which to compute the tangent vector.
      *
      * @return A vector tangent to this globe at (latitude, longitude), and pointing toward the north pole of this
-     *         globe.
+     * globe.
      */
     Vec4 computeNorthPointingTangentAtLocation(Angle latitude, Angle longitude);
 
@@ -290,7 +290,7 @@ public interface Globe extends WWObject, Extent
      * @param metersElevation the number of meters above or below mean sea level.
      *
      * @return the cartesian transform matrix that maps model coordinates to the local coordinate system at the
-     *         specified position.
+     * specified position.
      */
     Matrix computeSurfaceOrientationAtPosition(Angle latitude, Angle longitude, double metersElevation);
 
@@ -304,7 +304,7 @@ public interface Globe extends WWObject, Extent
      * @param position the latitude, longitude, and number of meters above or below mean sea level.
      *
      * @return The cartesian transform matrix that maps model coordinates to the local coordinate system at the
-     *         specified position.
+     * specified position.
      */
     Matrix computeSurfaceOrientationAtPosition(Position position);
 
@@ -320,8 +320,25 @@ public interface Globe extends WWObject, Extent
      * @param metersElevation Elevation, in meters, of the geographic position to convert.
      *
      * @return The ellipsoidal point that corresponds to the specified geographic position.
+     *
+     * @throws java.lang.IllegalArgumentException if the specified latitude or longitude is null.
      */
     Vec4 computeEllipsoidalPointFromPosition(Angle latitude, Angle longitude, double metersElevation);
+
+    /**
+     * Computes a ellipsoidal point from a latitude, longitude, and elevation.
+     * <p/>
+     * The returned point is a function of this globe's equatorial radius and its polar radius, and always represents a
+     * point on the ellipsoid in 3D cartesian coordinates that corresponds to the specified position. Calling this
+     * method on an instance of Globe2D will return a point on the ellipsoid defined by the 2D globe's radii.
+     *
+     * @param position Position of the location to convert.
+     *
+     * @return The ellipsoidal point that corresponds to the specified geographic position.
+     *
+     * @throws java.lang.IllegalArgumentException if the specified position is null.
+     */
+    Vec4 computeEllipsoidalPointFromPosition(Position position);
 
     /**
      * Computes the geographic position of a point in ellipsoidal coordinates.
@@ -349,7 +366,7 @@ public interface Globe extends WWObject, Extent
      * @param longitude Longitude of the location at which to compute the normal vector.
      *
      * @return A vector perpendicular to the surface of the ellipsoid specified by this globe, at the specified
-     *         location.
+     * location.
      *
      * @throws IllegalArgumentException if either angle is null.
      */
@@ -371,7 +388,7 @@ public interface Globe extends WWObject, Extent
      * @param metersElevation the number of meters above or below mean sea level.
      *
      * @return The cartesian transform matrix that maps model coordinates to the ellipsoidal coordinate system at the
-     *         specified position.
+     * specified position.
      */
 
     Matrix computeEllipsoidalOrientationAtPosition(Angle latitude, Angle longitude, double metersElevation);
@@ -393,8 +410,8 @@ public interface Globe extends WWObject, Extent
      * @param longitude the longitude of the location in question.
      *
      * @return A two-element <code>double</code> array indicating the minimum and maximum elevations at the specified
-     *         location, respectively. These values are the global minimum and maximum if the local minimum and maximum
-     *         values are currently unknown, or zero if this Globe has no elevation model.
+     * location, respectively. These values are the global minimum and maximum if the local minimum and maximum values
+     * are currently unknown, or zero if this Globe has no elevation model.
      */
     double[] getMinAndMaxElevations(Angle latitude, Angle longitude);
 
@@ -405,8 +422,8 @@ public interface Globe extends WWObject, Extent
      * @param sector the sector in question.
      *
      * @return A two-element <code>double</code> array indicating the sector's minimum and maximum elevations,
-     *         respectively. These elements are the global minimum and maximum if the local minimum and maximum values
-     *         are currently unknown, or zero if this Globe has no elevation model.
+     * respectively. These elements are the global minimum and maximum if the local minimum and maximum values are
+     * currently unknown, or zero if this Globe has no elevation model.
      */
     double[] getMinAndMaxElevations(Sector sector);
 

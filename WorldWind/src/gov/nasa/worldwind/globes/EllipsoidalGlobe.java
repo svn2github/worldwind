@@ -700,6 +700,21 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 
     /** {@inheritDoc} */
     @Override
+    public Vec4 computeEllipsoidalPointFromPosition(Position position)
+    {
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.computeEllipsoidalPointFromPosition(position.getLatitude(), position.getLongitude(),
+            position.getAltitude());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Position computePositionFromEllipsoidalPoint(Vec4 ellipsoidalPoint)
     {
         if (ellipsoidalPoint == null)
