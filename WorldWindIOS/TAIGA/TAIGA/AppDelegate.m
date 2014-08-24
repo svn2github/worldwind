@@ -81,7 +81,7 @@
     NSString* s = [formatter formatDegreesLatitude:location.coordinate.latitude
                                          longitude:location.coordinate.longitude
                                     metersAltitude:location.altitude];
-    DDLogInfo(@"GPS: %@ (%d m accuracy)", s, (int) location.horizontalAccuracy);
+    DDLogInfo(@"GPS: %@, heading %f (%d m accuracy)", s, [location course], (int) location.horizontalAccuracy);
 }
 
 - (void) gdbMessageReceived:(NSNotification*)notification
