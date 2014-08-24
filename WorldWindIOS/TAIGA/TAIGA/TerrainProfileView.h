@@ -16,7 +16,6 @@
 @property (nonatomic) BOOL enabled;
 @property (nonatomic, readonly) float warningAltitude;
 @property (nonatomic, readonly) float dangerAltitude;
-@property (nonatomic) float maxAltitude;
 @property (nonatomic) float aircraftAltitude;
 @property (nonatomic) NSArray* path;
 @property (nonatomic) NSString* leftLabel;
