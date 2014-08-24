@@ -95,8 +95,11 @@
             || [[retriever retrievedData] length] == 0
             || [retriever httpStatusCode] != 200)
     {
-        // Send a notification that the GPS fix is not available.
-        [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
+        if (timer != nil) // will be nil if dispose (above) has been called
+        {
+            // Send a notification that the GPS fix is not available.
+            [[NSNotificationCenter defaultCenter] postNotificationName:TAIGA_GPS_QUALITY object:nil];
+        }
         return;
     }
 
