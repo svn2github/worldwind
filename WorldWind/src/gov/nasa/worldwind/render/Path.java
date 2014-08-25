@@ -1097,9 +1097,9 @@ public class Path extends AbstractShape
      * @return <code>true</code> if this Path's positions and the positions in between are located on the underlying
      * terrain, and <code>false</code> otherwise.
      */
-    protected boolean isSurfacePath()
+    protected boolean isSurfacePath(DrawContext dc)
     {
-        return this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND && this.isFollowTerrain();
+        return (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND && this.isFollowTerrain()) || dc.is2DGlobe();
     }
 
     @Override
@@ -1205,7 +1205,7 @@ public class Path extends AbstractShape
     @Override
     protected void addOrderedRenderable(DrawContext dc)
     {
-        if (this.isSurfacePath())
+        if (this.isSurfacePath(dc))
         {
             dc.addOrderedRenderable(this, true); // Specify that this Path is behind other renderables.
         }
@@ -1238,7 +1238,7 @@ public class Path extends AbstractShape
 
         try
         {
-            if (this.isSurfacePath())
+            if (this.isSurfacePath(dc))
             {
                 // Pull the line forward just a bit to ensure it shows over the terrain.
                 dc.pushProjectionOffest(SURFACE_PATH_DEPTH_OFFSET);
@@ -1586,7 +1586,7 @@ public class Path extends AbstractShape
 
         FloatBuffer path = pathData.renderedPath;
 
-        if (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND)
+        if (this.getAltitudeMode() == WorldWind.CLAMP_TO_GROUND || dc.is2DGlobe())
             path = this.computePointsRelativeToTerrain(dc, positions, 0d, path, pathData);
         else if (this.getAltitudeMode() == WorldWind.RELATIVE_TO_GROUND)
             path = this.computePointsRelativeToTerrain(dc, positions, null, path, pathData);
@@ -2150,7 +2150,7 @@ public class Path extends AbstractShape
         // This method does not add the first position of the segment to the position list. It adds only the
         // subsequent positions, including the segment's last position.
 
-        boolean straightLine = this.getPathType() == AVKey.LINEAR && !this.isFollowTerrain();
+        boolean straightLine = this.getPathType() == AVKey.LINEAR && !this.isSurfacePath(dc);
 
         double arcLength;
         if (straightLine)
@@ -2171,7 +2171,7 @@ public class Path extends AbstractShape
 
         for (double s = 0, p = 0; s < 1; )
         {
-            if (this.isFollowTerrain())
+            if (this.isFollowTerrain() || dc.is2DGlobe())
                 p += this.terrainConformance * dc.getView().computePixelSizeAtDistance(
                     ptA.distanceTo3(dc.getView().getEyePoint()));
             else
