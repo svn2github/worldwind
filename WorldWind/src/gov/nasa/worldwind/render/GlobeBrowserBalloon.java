@@ -134,7 +134,7 @@ public class GlobeBrowserBalloon extends AbstractBrowserBalloon implements Globe
         obb.webViewRect = null;
         obb.eyeDistance = 0;
 
-        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND)
+        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND || dc.is2DGlobe())
         {
             ogpm.placePoint = dc.computeTerrainPoint(
                 this.position.getLatitude(), this.position.getLongitude(), 0);
