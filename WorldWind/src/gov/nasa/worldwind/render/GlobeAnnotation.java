@@ -398,7 +398,7 @@ public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Mo
         {
             drawPoint = getAnnotationDrawPointLegacy(dc);
         }
-        else if (altitudeMode == WorldWind.CLAMP_TO_GROUND)
+        else if (altitudeMode == WorldWind.CLAMP_TO_GROUND || dc.is2DGlobe())
         {
             drawPoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
         }
