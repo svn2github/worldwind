@@ -1424,7 +1424,7 @@ public class PointPlacemark extends WWObjectImpl
         if (pos == null)
             return;
 
-        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND)
+        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND || dc.is2DGlobe())
         {
             opm.placePoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
         }
@@ -1443,7 +1443,7 @@ public class PointPlacemark extends WWObjectImpl
             return;
 
         // Compute a terrain point if needed.
-        if (this.isLineEnabled() && this.altitudeMode != WorldWind.CLAMP_TO_GROUND)
+        if (this.isLineEnabled() && this.altitudeMode != WorldWind.CLAMP_TO_GROUND && !dc.is2DGlobe())
             opm.terrainPoint = dc.computeTerrainPoint(pos.getLatitude(), pos.getLongitude(), 0);
 
         // Compute the placemark point's screen location.
