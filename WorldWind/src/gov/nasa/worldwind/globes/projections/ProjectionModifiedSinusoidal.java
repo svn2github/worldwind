@@ -16,8 +16,13 @@ import gov.nasa.worldwind.util.WWMath;
  * @author tag
  * @version $Id$
  */
-public class ProjectionModifiedSinusoidal implements GeographicProjection
+public class ProjectionModifiedSinusoidal extends AbstractGeographicProjection
 {
+    public ProjectionModifiedSinusoidal()
+    {
+        super(Sector.FULL_SPHERE);
+    }
+
     @Override
     public String getName()
     {

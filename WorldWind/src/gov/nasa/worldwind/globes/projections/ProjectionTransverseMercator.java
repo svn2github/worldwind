@@ -20,7 +20,7 @@ import gov.nasa.worldwind.util.Logging;
  * @author tag
  * @version $Id$
  */
-public class ProjectionTransverseMercator implements GeographicProjection
+public class ProjectionTransverseMercator extends AbstractGeographicProjection
 {
     protected Angle width = Angle.fromDegrees(30);
     protected Angle centralMeridian = Angle.ZERO;
@@ -29,6 +29,7 @@ public class ProjectionTransverseMercator implements GeographicProjection
     /** Creates a projection whose central meridian is the Prime Meridian and central latitude is 0. */
     public ProjectionTransverseMercator()
     {
+        super(Sector.FULL_SPHERE);
     }
 
     /**
@@ -38,6 +39,8 @@ public class ProjectionTransverseMercator implements GeographicProjection
      */
     public ProjectionTransverseMercator(Angle centralMeridian)
     {
+        super(Sector.FULL_SPHERE);
+
         if (centralMeridian == null)
         {
             String message = Logging.getMessage("nullValue.CentralMeridianIsNull");
@@ -56,6 +59,8 @@ public class ProjectionTransverseMercator implements GeographicProjection
      */
     public ProjectionTransverseMercator(Angle centralMeridian, Angle centralLatitude)
     {
+        super(Sector.FULL_SPHERE);
+
         if (centralMeridian == null)
         {
             String message = Logging.getMessage("nullValue.CentralMeridianIsNull");

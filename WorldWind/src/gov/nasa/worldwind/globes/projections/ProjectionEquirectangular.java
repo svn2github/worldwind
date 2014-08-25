@@ -10,15 +10,19 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
 
 /**
- * Implements an Equirectangular projection, also known as Equidistant Cylindrical, Plate Carree and Rectangular.
- * The projected globe is spherical, not ellipsoidal.
+ * Implements an Equirectangular projection, also known as Equidistant Cylindrical, Plate Carree and Rectangular. The
+ * projected globe is spherical, not ellipsoidal.
  *
  * @author tag
  * @version $Id$
  */
-public class ProjectionEquirectangular implements GeographicProjection
+public class ProjectionEquirectangular extends AbstractGeographicProjection
 {
-    @Override
+    public ProjectionEquirectangular()
+    {
+        super(Sector.FULL_SPHERE);
+    }
+
     public String getName()
     {
         return "Equirectangular";

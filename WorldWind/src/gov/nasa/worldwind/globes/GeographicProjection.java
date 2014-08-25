@@ -31,10 +31,26 @@ public interface GeographicProjection
      * Indicates whether it makes sense to treat this projection as contiguous with itself. If true, the scene
      * controller will make the globe using the projection appear to scroll continuously horizontally.
      *
-     * @return <code>true</code> if it makes sense to treat this projection as continuous, otherwise
-     *         <code>false</code>.
+     * @return <code>true</code> if it makes sense to treat this projection as continuous, otherwise <code>false</code>.
      */
     boolean isContinuous();
+
+    /**
+     * Indicates the latitude limits for this projection.
+     *
+     * @return The projection limits for this projection.
+     */
+    Sector getProjectionLimits();
+
+    /**
+     * Specifies the limits for this projection.
+     *
+     * @param projectionLimits The projection limits.
+     *
+     * @throws IllegalArgumentException if the specified limits is null or the limits are outside the normal range of
+     *                                  latitude or longitude.
+     */
+    void setProjectionLimits(Sector projectionLimits);
 
     /**
      * Converts a geographic position to meters in Cartesian coordinates.
@@ -71,7 +87,7 @@ public interface GeographicProjection
      * @return The geographic position corresponding to the input point.
      *
      * @see #geographicToCartesian(Globe, gov.nasa.worldwind.geom.Angle, gov.nasa.worldwind.geom.Angle, double,
-     *      gov.nasa.worldwind.geom.Vec4)
+     * gov.nasa.worldwind.geom.Vec4)
      */
     Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset);
 

@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.Logging;
  * @author tag
  * @version $Id$
  */
-public class ProjectionPolarEquidistant implements GeographicProjection
+public class ProjectionPolarEquidistant extends AbstractGeographicProjection
 {
     protected static final int NORTH = 0;
     protected static final int SOUTH = 1;
@@ -29,6 +29,7 @@ public class ProjectionPolarEquidistant implements GeographicProjection
      */
     public ProjectionPolarEquidistant()
     {
+        super(Sector.FULL_SPHERE);
     }
 
     /**
@@ -41,6 +42,8 @@ public class ProjectionPolarEquidistant implements GeographicProjection
      */
     public ProjectionPolarEquidistant(String pole)
     {
+        super(Sector.FULL_SPHERE);
+
         if (pole == null)
         {
             String message = Logging.getMessage("nullValue.HemisphereIsNull");
