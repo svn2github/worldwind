@@ -219,6 +219,10 @@ public class PickSupport
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glPopAttrib();
+
+        // Some nvidia Quadro cards have a bug in which the current color is not restored. Restore it to the
+        // default here.
+        gl.glColor3ub((byte) 255, (byte) 255, (byte) 255);
     }
 
     protected Map<Integer, PickedObject> getPickableObjects()
