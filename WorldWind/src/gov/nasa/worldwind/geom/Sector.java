@@ -8,7 +8,7 @@ package gov.nasa.worldwind.geom;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
-import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.tracks.TrackPoint;
 import gov.nasa.worldwind.util.Logging;
@@ -958,6 +958,105 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         catch (Exception e)
         {
             return new Box(points.get(0)); // unit box around point
+        }
+    }
+
+    /**
+     * Returns a {@link gov.nasa.worldwind.geom.Box} that bounds the specified sector on the surface of the specified
+     * {@link gov.nasa.worldwind.globes.Globe}. The returned box encloses the globe's surface terrain in the sector,
+     * according to the specified vertical exaggeration and the globe's minimum and maximum elevations in the sector. If
+     * the minimum and maximum elevation are equal, this assumes a maximum elevation of 10 + the minimum. If this fails
+     * to compute a box enclosing the sector, this returns a unit box enclosing one of the boxes corners.
+     *
+     * @param globe                the globe the extent relates to.
+     * @param verticalExaggeration the globe's vertical surface exaggeration.
+     * @param sector               a sector on the globe's surface to compute a bounding box for.
+     *
+     * @return a box enclosing the globe's surface on the specified sector.
+     *
+     * @throws IllegalArgumentException if either the globe or sector is null.
+     */
+    public static Box computeBoundingBox2(Globe globe, double verticalExaggeration, Sector sector)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (sector == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double[] minAndMaxElevations = globe.getMinAndMaxElevations(sector);
+        return computeBoundingBox2(globe, verticalExaggeration, sector, minAndMaxElevations[0], minAndMaxElevations[1]);
+    }
+
+    /**
+     * Returns a {@link gov.nasa.worldwind.geom.Box} that bounds the specified sector on the surface of the specified
+     * {@link gov.nasa.worldwind.globes.Globe}. The returned box encloses the globe's surface terrain in the sector,
+     * according to the specified vertical exaggeration, minimum elevation, and maximum elevation. If the minimum and
+     * maximum elevation are equal, this assumes a maximum elevation of 10 + the minimum. If this fails to compute a box
+     * enclosing the sector, this returns a unit box enclosing one of the boxes corners.
+     *
+     * @param globe                the globe the extent relates to.
+     * @param verticalExaggeration the globe's vertical surface exaggeration.
+     * @param sector               a sector on the globe's surface to compute a bounding box for.
+     * @param minElevation         the globe's minimum elevation in the sector.
+     * @param maxElevation         the globe's maximum elevation in the sector.
+     *
+     * @return a box enclosing the globe's surface on the specified sector.
+     *
+     * @throws IllegalArgumentException if either the globe or sector is null.
+     */
+    public static Box computeBoundingBox2(Globe globe, double verticalExaggeration, Sector sector,
+        double minElevation, double maxElevation)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (sector == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Compute the exaggerated minimum and maximum heights.
+        double min = minElevation * verticalExaggeration;
+        double max = maxElevation * verticalExaggeration;
+
+        // Ensure the top and bottom heights are not equal.
+        if (min == max)
+        {
+            max = min + 10;
+        }
+
+        // Create an array for a 3x5 grid of elevations. Use min height at the corners and max height everywhere else.
+        double[] elevations = {
+            min, max, max, max, min,
+            max, max, max, max, max,
+            min, max, max, max, min};
+
+        // Compute the cartesian points for a 3x5 geographic grid. This grid captures enough detail to bound the sector.
+        Vec4[] points = new Vec4[15];
+        globe.computePointsFromPositions(sector, 3, 5, elevations, points);
+
+        try
+        {
+            return Box.computeBoundingBox(Arrays.asList(points));
+        }
+        catch (Exception e)
+        {
+            return new Box(points[0]); // unit box around point
         }
     }
 
