@@ -9,7 +9,7 @@ package gov.nasa.worldwind.globes.projections;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.coords.TMCoord;
 import gov.nasa.worldwind.globes.*;
-import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.*;
 
 /**
  * Provides a Transverse Mercator ellipsoidal projection using the WGS84 ellipsoid. The projection's central meridian
@@ -190,6 +190,48 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
             globe, null, null, this.centralLatitude, this.centralMeridian, 0, 0, this.getScale());
 
         return new Vec4(tm.getEasting(), tm.getNorthing(), metersElevation);
+    }
+
+    @Override
+    public void geographicToCartesian(Globe globe, Sector sector, int numLat, int numLon, double[] metersElevation,
+        Vec4 offset, Vec4[] out)
+    {
+        double minLat = sector.getMinLatitude().radians;
+        double maxLat = sector.getMaxLatitude().radians;
+        double minLon = sector.getMinLongitude().radians;
+        double maxLon = sector.getMaxLongitude().radians;
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
+        double minLatLimit = -82 * Math.PI / 180;
+        double maxLatLimit = 86 * Math.PI / 180;
+        double minLonLimit = this.centralMeridian.radians - this.width.radians;
+        double maxLonLimit = this.centralMeridian.radians + this.width.radians;
+        int pos = 0;
+
+        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
+        // corresponding to each latitude and longitude.
+        double lat = minLat;
+        for (int j = 0; j < numLat; j++, lat += deltaLat)
+        {
+            if (j == numLat - 1) // explicitly set the last lat to the max latitude to ensure alignment
+                lat = maxLat;
+            lat = WWMath.clamp(lat, minLatLimit, maxLatLimit); // limit lat to projection limits
+
+            double lon = minLon;
+            for (int i = 0; i < numLon; i++, lon += deltaLon)
+            {
+                if (i == numLon - 1) // explicitly set the last lon to the max longitude to ensure alignment
+                    lon = maxLon;
+                lon = WWMath.clamp(lon, minLonLimit, maxLonLimit); // limit lon to projection limits
+
+                TMCoord tm = TMCoord.fromLatLon(Angle.fromRadians(lat), Angle.fromRadians(lon),
+                    globe, null, null, this.centralLatitude, this.centralMeridian, 0, 0, this.getScale());
+                double x = tm.getEasting();
+                double y = tm.getNorthing();
+                double z = metersElevation[pos];
+                out[pos++] = new Vec4(x, y, z);
+            }
+        }
     }
 
     @Override

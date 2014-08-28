@@ -90,6 +90,61 @@ public class ProjectionPolarEquidistant extends AbstractGeographicProjection
         return new Vec4(x, y, metersElevation);
     }
 
+    @Override
+    public void geographicToCartesian(Globe globe, Sector sector, int numLat, int numLon, double[] metersElevation,
+        Vec4 offset, Vec4[] out)
+    {
+        double radius = globe.getRadius();
+        double minLat = sector.getMinLatitude().radians;
+        double maxLat = sector.getMaxLatitude().radians;
+        double minLon = sector.getMinLongitude().radians;
+        double maxLon = sector.getMaxLongitude().radians;
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
+        double pole = (this.pole == SOUTH) ? 1 : -1;
+        double pi_2 = Math.PI / 2;
+        int pos = 0;
+
+        // Iterate over the longitude coordinates in the specified sector and compute the cosine and sine of each
+        // longitude value required to compute Cartesian points for the specified sector. This eliminates the need to
+        // re-compute the same cosine and sine results for each row of constant latitude (and varying longitude).
+        double[] cosLon = new double[numLon];
+        double[] sinLon = new double[numLon];
+        double lon = minLon;
+        for (int i = 0; i < numLon; i++, lon += deltaLon)
+        {
+            if (i == numLon - 1) // explicitly set the last lon to the max longitude to ensure alignment
+                lon = maxLon;
+
+            cosLon[i] = Math.cos(lon);
+            sinLon[i] = Math.sin(lon);
+        }
+
+        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
+        // corresponding to each latitude and longitude.
+        double lat = minLat;
+        for (int j = 0; j < numLat; j++, lat += deltaLat)
+        {
+            if (j == numLat - 1) // explicitly set the last lat to the max latitude to ensure alignment
+                lat = maxLat;
+
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            double a = radius * (pi_2 + lat * pole);
+            if ((this.pole == NORTH && lat == pi_2) || (this.pole == SOUTH && lat == -pi_2))
+            {
+                a = 0;
+            }
+
+            for (int i = 0; i < numLon; i++)
+            {
+                double x = a * sinLon[i];
+                double y = a * cosLon[i] * pole;
+                double z = metersElevation[pos];
+                out[pos++] = new Vec4(x, y, z);
+            }
+        }
+    }
+
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)

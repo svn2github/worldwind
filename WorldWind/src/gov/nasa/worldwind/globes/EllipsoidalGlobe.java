@@ -566,6 +566,41 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
         return this.cartesianToGeodetic(point);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void computePointsFromPositions(Sector sector, int numLat, int numLon, double[] metersElevation, Vec4[] out)
+    {
+        if (sector == null)
+        {
+            String message = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (numLat <= 0 || numLon <= 0)
+        {
+            String message = Logging.getMessage("generic.ArgumentOutOfRange", "numLat <= 0 or numLon <= 0");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (metersElevation == null)
+        {
+            String message = Logging.getMessage("nullValue.ElevationsIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        if (out == null)
+        {
+            String message = Logging.getMessage("nullValue.OutputIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.geodeticToCartesian(sector, numLat, numLon, metersElevation, out);
+    }
+
     /**
      * Returns the normal to the Globe at the specified position.
      *
@@ -847,7 +882,82 @@ public class EllipsoidalGlobe extends WWObjectImpl implements Globe
 
         return new Vec4(x, y, z);
     }
-//
+
+    /**
+     * Maps a grid of geographic positions to Cartesian coordinates. The Y axis points to the north pole. The Z axis
+     * points to the intersection of the prime meridian and the equator, in the equatorial plane. The X axis completes a
+     * right-handed coordinate system, and is 90 degrees east of the Z axis and also in the equatorial plane. Sea level
+     * is at z = zero.
+     * <p/>
+     * This method provides an interface for efficient generation of a grid of cartesian points within a sector. The
+     * grid is constructed by dividing the sector into <code>numLon x numLat</code> evenly separated points in
+     * geographic coordinates. The first and last points in latitude and longitude are placed at the sector's minimum
+     * and maximum boundary, and the remaining points are spaced evenly between those boundary points.
+     * <p/>
+     * For each grid point within the sector, an elevation value is specified via an array of elevations. The
+     * calculation at each position incorporates the associated elevation.
+     *
+     * @param sector          The sector over which to generate the points.
+     * @param numLat          The number of points to generate latitudinally.
+     * @param numLon          The number of points to generate longitudinally.
+     * @param metersElevation An array of elevations to incorporate in the point calculations. There must be one
+     *                        elevation value in the array for each generated point, so the array must have a length of
+     *                        at least <code>numLon x numLat</code>. Elevations are read from this array in row major
+     *                        order, beginning with the row of minimum latitude.
+     * @param out             An array to hold the computed cartesian points. It must have a length of at least
+     *                        <code>numLon x numLat</code>. Points are written to this array in row major order,
+     *                        beginning with the row of minimum latitude.
+     *
+     * @throws IllegalArgumentException If any argument is null, or if numLat or numLon are less than or equal to zero.
+     */
+    protected void geodeticToCartesian(Sector sector, int numLat, int numLon, double[] metersElevation, Vec4[] out)
+    {
+        double minLat = sector.getMinLatitude().radians;
+        double maxLat = sector.getMaxLatitude().radians;
+        double minLon = sector.getMinLongitude().radians;
+        double maxLon = sector.getMaxLongitude().radians;
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
+        int pos = 0;
+
+        // Compute the cosine and sine of each longitude value. This eliminates the need to re-compute the same values
+        // for each row of constant latitude (and varying longitude).
+        double[] cosLon = new double[numLon];
+        double[] sinLon = new double[numLon];
+        double lon = minLon;
+        for (int i = 0; i < numLon; i++, lon += deltaLon)
+        {
+            if (i == numLon - 1) // explicitly set the last lon to the max longitude to ensure alignment
+                lon = maxLon;
+
+            cosLon[i] = Math.cos(lon);
+            sinLon[i] = Math.sin(lon);
+        }
+
+        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
+        // corresponding to each latitude and longitude.
+        double lat = minLat;
+        for (int j = 0; j < numLat; j++, lat += deltaLat)
+        {
+            if (j == numLat - 1) // explicitly set the last lat to the max latitude to ensure alignment
+                lat = maxLat;
+
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            double cosLat = Math.cos(lat);
+            double sinLat = Math.sin(lat);
+            double rpm = this.equatorialRadius / Math.sqrt(1.0 - this.es * sinLat * sinLat);
+
+            for (int i = 0; i < numLon; i++)
+            {
+                double elev = metersElevation[pos];
+                double x = (rpm + elev) * cosLat * sinLon[i];
+                double y = (rpm * (1.0 - this.es) + elev) * sinLat;
+                double z = (rpm + elev) * cosLat * cosLon[i];
+                out[pos++] = new Vec4(x, y, z);
+            }
+        }
+    }
+
 //    protected Position cartesianToGeodeticOriginal(Vec4 cart)
 //    {
 //        if (cart == null)

@@ -7,7 +7,7 @@
 package gov.nasa.worldwind.globes.projections;
 
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.globes.*;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.WWMath;
 
 /**
@@ -43,6 +43,45 @@ public class ProjectionSinusoidal extends AbstractGeographicProjection
         double y = globe.getEquatorialRadius() * latitude.radians;
 
         return new Vec4(x, y, metersElevation);
+    }
+
+    @Override
+    public void geographicToCartesian(Globe globe, Sector sector, int numLat, int numLon, double[] metersElevation,
+        Vec4 offset, Vec4[] out)
+    {
+        double eqr = globe.getEquatorialRadius();
+        double minLat = sector.getMinLatitude().radians;
+        double maxLat = sector.getMaxLatitude().radians;
+        double minLon = sector.getMinLongitude().radians;
+        double maxLon = sector.getMaxLongitude().radians;
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
+        int pos = 0;
+
+        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
+        // corresponding to each latitude and longitude.
+        double lat = minLat;
+        for (int j = 0; j < numLat; j++, lat += deltaLat)
+        {
+            if (j == numLat - 1) // explicitly set the last lat to the max latitude to ensure alignment
+                lat = maxLat;
+
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            double y = eqr * lat;
+            double cosLat = Math.cos(lat);
+            cosLat = cosLat > 0 ? cosLat : 0;
+
+            double lon = minLon;
+            for (int i = 0; i < numLon; i++, lon += deltaLon)
+            {
+                if (i == numLon - 1) // explicitly set the last lon to the max longitude to ensure alignment
+                    lon = maxLon;
+
+                double x = eqr * lon * cosLat;
+                double z = metersElevation[pos];
+                out[pos++] = new Vec4(x, y, z);
+            }
+        }
     }
 
     @Override

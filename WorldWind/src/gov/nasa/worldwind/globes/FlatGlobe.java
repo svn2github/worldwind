@@ -397,6 +397,12 @@ public class FlatGlobe extends EllipsoidalGlobe implements Globe2D
     }
 
     @Override
+    protected void geodeticToCartesian(Sector sector, int numLat, int numLon, double[] metersElevation, Vec4[] out)
+    {
+        this.projection.geographicToCartesian(this, sector, numLat, numLon, metersElevation, this.offsetVector, out);
+    }
+
+    @Override
     protected Position cartesianToGeodetic(Vec4 cart)
     {
         if (cart == null)
