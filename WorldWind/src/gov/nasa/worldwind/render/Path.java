@@ -1103,12 +1103,6 @@ public class Path extends AbstractShape
     }
 
     @Override
-    protected SurfaceShape createSurfaceShape()
-    {
-        return null; // Path does not use a surface shape for 2D
-    }
-
-    @Override
     protected void determineActiveAttributes()
     {
         // When the interior is drawn the vertex buffer has a different layout, so it may need to be rebuilt.
