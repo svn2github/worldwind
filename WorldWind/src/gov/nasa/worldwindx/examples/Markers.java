@@ -67,7 +67,7 @@ public class Markers extends ApplicationTemplate
         {
             super(true, true, false);
 
-            double minLat = 20, maxLat = 60, latDelta = 2;
+            double minLat = -60, maxLat = 60, latDelta = 2;
             double minLon = -179, maxLon = 180, lonDelta = 10;
 
             int i = 0;
@@ -78,7 +78,7 @@ public class Markers extends ApplicationTemplate
                 {
                     Marker marker = new BasicMarker(Position.fromDegrees(lat, lon, 0), attrs[i % attrs.length]);
                     marker.setPosition(Position.fromDegrees(lat, lon, 0));
-                    marker.setHeading(Angle.fromDegrees(lat * 5));
+                    marker.setHeading(Angle.fromDegrees(90));
                     markers.add(marker);
                     i++;
                 }
