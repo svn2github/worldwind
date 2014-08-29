@@ -78,7 +78,8 @@ public class Markers extends ApplicationTemplate
                 {
                     Marker marker = new BasicMarker(Position.fromDegrees(lat, lon, 0), attrs[i % attrs.length]);
                     marker.setPosition(Position.fromDegrees(lat, lon, 0));
-                    marker.setHeading(Angle.fromDegrees(90));
+                    marker.setHeading(Angle.fromDegrees(0));
+                    marker.setPitch(Angle.fromDegrees(90));
                     markers.add(marker);
                     i++;
                 }
