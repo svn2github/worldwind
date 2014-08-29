@@ -475,19 +475,39 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     public Color getUniquePickColor()
     {
         this.uniquePickNumber++;
-        int clearColorCode = this.getClearColor().getRGB();
 
-        if (clearColorCode == this.uniquePickNumber)
+        int clearColorCode = this.getClearColor().getRGB();
+        if (clearColorCode == this.uniquePickNumber) // skip the clear color
             this.uniquePickNumber++;
 
         if (this.uniquePickNumber >= 0x00FFFFFF)
         {
             this.uniquePickNumber = 1;  // no black, no white
-            if (clearColorCode == this.uniquePickNumber)
+            if (clearColorCode == this.uniquePickNumber) // skip the clear color
                 this.uniquePickNumber++;
         }
 
         return new Color(this.uniquePickNumber, true); // has alpha
+    }
+
+    public Color getUniquePickColorRange(int count)
+    {
+        if (count < 1)
+            return null;
+
+        Range range = new Range(this.uniquePickNumber + 1, count); // compute the requested range
+
+        int clearColorCode = this.getClearColor().getRGB();
+        if (range.contains(clearColorCode)) // skip the clear color when it's in the range
+            range.location = clearColorCode + 1;
+
+        int maxColorCode = range.location + range.length - 1;
+        if (maxColorCode >= 0x00FFFFFF) // not enough colors to satisfy the requested range
+            return null;
+
+        this.uniquePickNumber = maxColorCode; // set the unique color to the last color in the requested range
+
+        return new Color(range.location, true); // return a pointer to the beginning of the requested range
     }
 
     public Color getClearColor()

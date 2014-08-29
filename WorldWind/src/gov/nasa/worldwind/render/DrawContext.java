@@ -289,11 +289,31 @@ public interface DrawContext extends WWObject, Disposable
     void addObjectInPickRectangle(PickedObject pickedObject);
 
     /**
-     * Returns a unique color to serve as a pick identifier during picking.
+     * Returns a unique color to serve as a pick identifier during picking. This allocates a single unique color from
+     * the pick color address space and returns that color. The color's RGB components represent an address to the pick
+     * color code.
      *
-     * @return a unique pick color
+     * @return a unique pick color.
      */
     Color getUniquePickColor();
+
+    /**
+     * Returns a range of unique colors to serve as pick identifiers during picking. This allocates <code>count</code>
+     * unique colors from the pick color address space and returns the first color in the range. The first color's RGB
+     * components represent an address to the beginning of a sequential range of pick color codes. This method is
+     * similar to calling the no-argument {@link #getUniquePickColor} <code>count</code> times, but guarantees a
+     * contiguous range of color codes and is more efficient when <code>count</code> is large.
+     * <p/>
+     * The number of pick colors is limited to a finite address space. This method returns null when there are fewer
+     * than <code>count</code> remaining unique colors in the pick color address space, or when <code>count</code> is
+     * less than 1.
+     *
+     * @param count the number of unique colors to allocate.
+     *
+     * @return the first unique pick color if there are sufficient unique colors remaining and <code>count</code> is
+     *         greater than 0, otherwise null.
+     */
+    Color getUniquePickColorRange(int count);
 
     /**
      * Returns the WorldWindow's background color.

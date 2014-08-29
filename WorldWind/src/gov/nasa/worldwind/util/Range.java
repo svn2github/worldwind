@@ -6,8 +6,7 @@
 package gov.nasa.worldwind.util;
 
 /**
- * Range describes a contiguous region in a series of items. Ranges are typically used to describe a subset of a
- * java.nio.Buffer when creating a slice is inappropriate.
+ * Range describes a contiguous region in a series of items.
  *
  * @author dcollins
  * @version $Id$
@@ -23,11 +22,25 @@ public class Range
      * Creates a new range with the specified start index and number of items.
      *
      * @param location The start index of the range.
-     * @param length The number of items in the range. May be 0 to indicate an empty range.
+     * @param length   The number of items in the range. May be 0 to indicate an empty range.
      */
     public Range(int location, int length)
     {
         this.location = location;
         this.length = length;
+    }
+
+    /**
+     * Returns a boolean value indicating whether or not the specified location is in this range. The location is in
+     * this range if it's greater than or equal to <code>this.location</code> and less than <code>this.location +
+     * this.length</code>.
+     *
+     * @param location the location to test.
+     *
+     * @return true if the location is in this range, otherwise false.
+     */
+    public boolean contains(int location)
+    {
+        return location >= this.location && location < this.location + this.length;
     }
 }
