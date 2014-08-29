@@ -365,6 +365,8 @@ public class Path extends AbstractShape
      */
     protected static class PickablePositions
     {
+        // TODO: Replace this class with usage of PickSupport.addPickableObjectRange.
+
         /** The minimum color code, inclusive. */
         public final int minColorCode;
         /** The maximum color code, inclusive. */
@@ -400,6 +402,9 @@ public class Path extends AbstractShape
      */
     protected static class PathPickSupport extends PickSupport
     {
+        // TODO: Replace this subclass with usage of PickSupport.addPickableObjectRange.
+        // TODO: Take care to retain the behavior in doResolvePick below that merges multiple picks from a single path.
+
         /**
          * The list of Path pickable positions that this PathPickSupport is currently tracking. This list maps a range
          * of color codes to a Path, where the color codes represent the range of pick colors that the Path's position
