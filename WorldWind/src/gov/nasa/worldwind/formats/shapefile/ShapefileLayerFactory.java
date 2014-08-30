@@ -483,18 +483,22 @@ public class ShapefileLayerFactory
 
     protected void addRenderablesForPolylines(Shapefile shp, RenderableLayer layer)
     {
-        // Reads all records from the Shapefile, but ignores each records unique information. We do this to create one
-        // WWJ object representing the entire shapefile, which as of 8/10/2010 is required to display very large
-        // polyline Shapefiles.
-
-        // TODO: Apply per-record dbase mappings
-
-        while (shp.hasNext())
+        ShapefilePolylines shape = new ShapefilePolylines(shp, this.normalShapeAttributes,
+            this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
         {
-            shp.nextRecord();
-        }
+            @Override
+            public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
+            {
+                if (dBaseMappings != null)
+                {
+                    AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
+                    if (mappings != null)
+                        renderableRecord.setValues(mappings);
+                }
+            }
+        });
 
-        layer.addRenderable(this.createPolyline(shp, null));
+        layer.addRenderable(shape);
     }
 
     protected void addRenderablesForPolygons(Shapefile shp, RenderableLayer layer)
@@ -511,28 +515,23 @@ public class ShapefileLayerFactory
 
     protected void addRenderablesForSurfacePolygons(Shapefile shp, RenderableLayer layer)
     {
-        int recordNumber = 0;
-        while (shp.hasNext())
+        // TODO: Implement ShapefilePolygons and use it here.
+        ShapefilePolylines shape = new ShapefilePolylines(shp, this.normalShapeAttributes,
+            this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
         {
-            try
+            @Override
+            public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
             {
-                ShapefileRecord record = shp.nextRecord();
-                recordNumber = record.getRecordNumber();
-
-                if (!Shapefile.isPolygonType(record.getShapeType()))
-                    continue;
-
-                AVList mappings = this.applyMappings(record.getAttributes(), this.dBaseMappings);
-
-                this.createPolygon(record, mappings, layer);
+                if (dBaseMappings != null)
+                {
+                    AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
+                    if (mappings != null)
+                        renderableRecord.setValues(mappings);
+                }
             }
-            catch (Exception e)
-            {
-                Logging.logger().warning(Logging.getMessage("SHP.ExceptionAttemptingToConvertShapefileRecord",
-                    recordNumber, e));
-                // continue with the remaining records
-            }
-        }
+        });
+
+        layer.addRenderable(shape);
     }
 
     protected void addRenderablesForExtrudedPolygons(Shapefile shp, RenderableLayer layer)
@@ -546,7 +545,8 @@ public class ShapefileLayerFactory
                 if (dBaseMappings != null)
                 {
                     AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
-                    renderableRecord.setValues(mappings);
+                    if (mappings != null)
+                        renderableRecord.setValues(mappings);
                 }
             }
         });
