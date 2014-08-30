@@ -6,16 +6,14 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.avlist.AVList;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Common interface for renderables that are drawn on the Globe's surface terrain, such as {@link
  * gov.nasa.worldwind.render.SurfaceShape}. SurfaceObject implements the {@link gov.nasa.worldwind.render.Renderable}
- * and {@link gov.nasa.worldwind.render.PreRenderable} interfaces, so a surface object may be aggregated within any
- * layer or within some arbitrary rendering code.
+ * interface, so a surface object may be aggregated within any layer or within some arbitrary rendering code.
  * <p/>
  * SurfaceObjects automatically aggregate themselves in the DrawContext's ordered surface renderable queue by calling
  * {@link gov.nasa.worldwind.render.DrawContext#addOrderedSurfaceRenderable(OrderedRenderable)} during the preRender,
@@ -30,7 +28,7 @@ import java.util.List;
  * @author dcollins
  * @version $Id$
  */
-public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
+public interface SurfaceObject extends OrderedRenderable, SurfaceRenderable, PreRenderable, AVList
 {
     /**
      * Indicates whether the surface object should be drawn during rendering.
@@ -65,16 +63,6 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
     void setEnableBatchPicking(boolean enable);
 
     /**
-     * Returns an object that uniquely identifies the surface object's state on the specified draw context. This object
-     * is guaranteed to be globally unique; an equality test with a state key from another always returns false.
-     *
-     * @param dc the draw context the state key relates to.
-     *
-     * @return an object representing surface object's current state.
-     */
-    Object getStateKey(DrawContext dc);
-
-    /**
      * Returns zero to indicate that the surface object's distance from the eye is unknown. SurfaceObjects are processed
      * on the DrawContext's ordered surface renderable queue. Ordered surface renderables do not utilize the
      * renderable's distance from the eye to determine draw order.
@@ -102,16 +90,6 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
      *              object.
      */
     void setDelegateOwner(Object owner);
-
-    /**
-     * Returns a {@link java.util.List} of {@link gov.nasa.worldwind.geom.Sector} instances that bound the surface
-     * object on the specified DrawContext.
-     *
-     * @param dc the DrawContext the surface object is related to.
-     *
-     * @return the surface object's bounding Sectors.
-     */
-    List<Sector> getSectors(DrawContext dc);
 
     /**
      * Returns the surface object's enclosing volume as an {@link gov.nasa.worldwind.geom.Extent} in model coordinates,
@@ -143,14 +121,4 @@ public interface SurfaceObject extends OrderedRenderable, PreRenderable, AVList
      * @throws IllegalArgumentException if the draw context is null.
      */
     void pick(DrawContext dc, Point pickPoint);
-
-    /**
-     * Causes the surface object to render a representation of itself on the surface terrain, using the provided draw
-     * context.
-     *
-     * @param dc the current draw context.
-     *
-     * @throws IllegalArgumentException if the draw context is null.
-     */
-    void render(DrawContext dc);
 }
