@@ -27,7 +27,7 @@ public abstract class SurfaceTileRenderer implements Disposable
     protected Texture alphaTexture;
     protected Texture outlineTexture;
     protected boolean showImageTileOutlines = false;
-    protected boolean addImageTilePickColors = false;
+    protected boolean useImageTilePickColors = false;
 
     /**
      * Free internal resources held by this surface tile renderer. A GL context must be current when this method is
@@ -63,29 +63,27 @@ public abstract class SurfaceTileRenderer implements Disposable
 
     /**
      * Indicates how this SurfaceTileRenderer interprets image tile colors during picking. When true, image tile RGB
-     * colors are added to the current RGB color. When false, image tile RGB colors are replaced with the current RGB
-     * color. In either case the alpha channel is drawn without change. Initially false.
+     * colors are drawn during picking. When false, image tile RGB colors are replaced with the current RGB color.
+     * Initially false.
      *
-     * @return true if image tile RGB colors are added to the current RGB color, false if image tile RGB colors are
-     *         replaced by the current RGB color.
+     * @return true if image tile RGB colors are drawn during picking, false if image tile RGB colors are replaced by
+     *         the current RGB color.
      */
-    public boolean isAddImageTilePickColors()
+    public boolean isUseImageTilePickColors()
     {
-        return this.addImageTilePickColors;
+        return this.useImageTilePickColors;
     }
 
     /**
-     * Specifies how this SurfaceTileRenderer interprets image tile colors during picking. When addImageTilePickColors
-     * is true, image tile RGB colors are added to the current RGB color. When addImageTilePickColors is false, image
-     * tile RGB colors are replaced with the current RGB color. In either case the alpha channel is drawn without
-     * change.
+     * Specifies how this SurfaceTileRenderer interprets image tile colors during picking. When true, image tile RGB
+     * colors are drawn during picking. When false, image tile RGB colors are replaced with the current RGB color.
      *
-     * @param addImageTilePickColors true if image tile RGB colors should be added to the current RGB color, false if
-     *                               image tile RGB colors should be replaced by the current RGB color.
+     * @param useImageTilePickColors true if image tile RGB colors should be drawn during picking, false if image tile
+     *                               RGB colors should be replaced by the current RGB color.
      */
-    public void setAddImageTilePickColors(boolean addImageTilePickColors)
+    public void setUseImageTilePickColors(boolean useImageTilePickColors)
     {
-        this.addImageTilePickColors = addImageTilePickColors;
+        this.useImageTilePickColors = useImageTilePickColors;
     }
 
     public void renderTile(DrawContext dc, SurfaceTile tile)
@@ -167,17 +165,19 @@ public abstract class SurfaceTileRenderer implements Disposable
             gl.glEnable(GL.GL_TEXTURE_2D);
             gl.glMatrixMode(GL2.GL_TEXTURE);
             gl.glPushMatrix();
-            if (!dc.isPickingMode())
+            if (!dc.isPickingMode()) // treat texture as an image; modulate RGBA with the current color
             {
                 gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
             }
-            else
+            else if (this.useImageTilePickColors) // treat texture as pick colors; use texture RGBA directly
+            {
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
+            }
+            else // treat texture as a pick mask; replace RGB with the current pick color
             {
                 gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
-                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB,
-                    this.addImageTilePickColors ? GL2.GL_TEXTURE : GL2.GL_PREVIOUS);
-                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB,
-                    this.addImageTilePickColors ? GL2.GL_ADD : GL2.GL_REPLACE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
             }
 
             int numTexUnitsUsed = 2;
