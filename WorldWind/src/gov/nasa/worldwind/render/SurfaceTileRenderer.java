@@ -26,8 +26,8 @@ public abstract class SurfaceTileRenderer implements Disposable
 
     protected Texture alphaTexture;
     protected Texture outlineTexture;
-
-    private boolean showImageTileOutlines = false;
+    protected boolean showImageTileOutlines = false;
+    protected boolean addImageTilePickColors = false;
 
     /**
      * Free internal resources held by this surface tile renderer. A GL context must be current when this method is
@@ -59,6 +59,33 @@ public abstract class SurfaceTileRenderer implements Disposable
     public void setShowImageTileOutlines(boolean showImageTileOutlines)
     {
         this.showImageTileOutlines = showImageTileOutlines;
+    }
+
+    /**
+     * Indicates how this SurfaceTileRenderer interprets image tile colors during picking. When true, image tile RGB
+     * colors are added to the current RGB color. When false, image tile RGB colors are replaced with the current RGB
+     * color. In either case the alpha channel is drawn without change. Initially false.
+     *
+     * @return true if image tile RGB colors are added to the current RGB color, false if image tile RGB colors are
+     *         replaced by the current RGB color.
+     */
+    public boolean isAddImageTilePickColors()
+    {
+        return this.addImageTilePickColors;
+    }
+
+    /**
+     * Specifies how this SurfaceTileRenderer interprets image tile colors during picking. When addImageTilePickColors
+     * is true, image tile RGB colors are added to the current RGB color. When addImageTilePickColors is false, image
+     * tile RGB colors are replaced with the current RGB color. In either case the alpha channel is drawn without
+     * change.
+     *
+     * @param addImageTilePickColors true if image tile RGB colors should be added to the current RGB color, false if
+     *                               image tile RGB colors should be replaced by the current RGB color.
+     */
+    public void setAddImageTilePickColors(boolean addImageTilePickColors)
+    {
+        this.addImageTilePickColors = addImageTilePickColors;
     }
 
     public void renderTile(DrawContext dc, SurfaceTile tile)
@@ -147,8 +174,10 @@ public abstract class SurfaceTileRenderer implements Disposable
             else
             {
                 gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_COMBINE);
-                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB, GL2.GL_PREVIOUS);
-                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_REPLACE);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_SRC0_RGB,
+                    this.addImageTilePickColors ? GL2.GL_TEXTURE : GL2.GL_PREVIOUS);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB,
+                    this.addImageTilePickColors ? GL2.GL_ADD : GL2.GL_REPLACE);
             }
 
             int numTexUnitsUsed = 2;
