@@ -35,8 +35,8 @@ import java.io.*;
  * @version $Id$
  */
 public abstract class AbstractShape extends WWObjectImpl
-    implements Highlightable, OrderedRenderable, Movable, ExtentHolder, GeographicExtent, Exportable, Restorable,
-    PreRenderable
+    implements Highlightable, OrderedRenderable, Movable, Movable2, ExtentHolder, GeographicExtent, Exportable,
+    Restorable, PreRenderable
 {
     /** The default interior color. */
     protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.LIGHT_GRAY;
@@ -1581,6 +1581,12 @@ public abstract class AbstractShape extends WWObjectImpl
             return;
 
         this.moveTo(refPos.add(delta));
+    }
+
+    @Override
+    public void moveTo(Globe globe, Position position)
+    {
+        this.moveTo(position); // TODO: Update all implementers of this method to use the Movable2 interface
     }
 
     public String isExportFormatSupported(String mimeType)

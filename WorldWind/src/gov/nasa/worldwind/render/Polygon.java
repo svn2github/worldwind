@@ -827,18 +827,27 @@ public class Polygon extends AbstractShape
         if (this.getRotation() == null)
             return null;
 
-        Sector s = this.getSector();
-        if (s == null)
-            return null;
+        // Find the centroid of the polygon with all altitudes 0 and rotate around that using the surface normal at
+        // that point as the rotation axis.
 
-        // Using the four corners of the sector to compute the rotation axis avoids any problems with dateline
-        // spanning polygons.
-        Vec4[] verts = s.computeCornerPoints(globe, 1);
-        Vec4 center = s.computeCenterPoint(globe, 1);
+        double cx = 0;
+        double cy = 0;
+        double cz = 0;
+        double outerBoundarySize = outerBoundary().size();
+        for (int i = 0; i < this.outerBoundary().size(); i++)
+        {
+            Vec4 vert = globe.computePointFromPosition(this.outerBoundary().get(i), 0);
+
+            cx += vert.x / outerBoundarySize;
+            cy += vert.y / outerBoundarySize;
+            cz += vert.z / outerBoundarySize;
+        }
+
+        Vec4 center = new Vec4(cx, cy, cz);
+        Vec4 normalVec = globe.computeSurfaceNormalAtPoint(center);
 
         Matrix m1 = Matrix.fromTranslation(center.multiply3(-1));
         Matrix m3 = Matrix.fromTranslation(center);
-        Vec4 normalVec = verts[2].subtract3(verts[0]).cross3(verts[3].subtract3(verts[1])).normalize3();
         Matrix m2 = Matrix.fromAxisAngle(Angle.fromDegrees(this.getRotation()), normalVec);
         return m3.multiply(m2).multiply(m1);
     }
@@ -1086,7 +1095,7 @@ public class Polygon extends AbstractShape
      *                 normals.
      *
      * @return the buffer specified as input, with its limit incremented by the number of vertices copied, and its
-     *         position set to 0.
+     * position set to 0.
      */
     protected FloatBuffer computeBoundaryNormals(BoundaryInfo boundary, FloatBuffer nBuf)
     {
@@ -1297,7 +1306,7 @@ public class Polygon extends AbstractShape
      * @param terrain the {@link Terrain} to use when computing the polygon's geometry.
      *
      * @return a list of intersections identifying where the line intersects the polygon, or null if the line does not
-     *         intersect the polygon.
+     * intersect the polygon.
      *
      * @throws InterruptedException if the operation is interrupted.
      * @see Terrain
@@ -1421,6 +1430,54 @@ public class Polygon extends AbstractShape
                 continue;
 
             List<Position> newList = Position.computeShiftedPositions(oldPosition, position, boundary);
+            if (newList != null)
+                newBoundaries.add(newList);
+        }
+
+        this.boundaries = newBoundaries;
+        this.setReferencePosition(position);
+        this.reset();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Note that this method overwrites the boundary locations lists, and therefore no longer refer to the originally
+     * specified boundary lists.
+     *
+     * @param position the new position of the shape's reference position.
+     */
+    public void moveTo(Globe globe, Position position)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (position == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!this.isOuterBoundaryValid())
+            return;
+
+        Position oldPosition = this.getReferencePosition();
+        if (oldPosition == null)
+            return;
+
+        List<List<? extends Position>> newBoundaries = new ArrayList<List<? extends Position>>(this.boundaries.size());
+
+        for (List<? extends Position> boundary : this.boundaries)
+        {
+            if (boundary == null || boundary.size() == 0)
+                continue;
+
+            List<Position> newList = Position.computeShiftedPositions(globe, oldPosition, position, boundary);
             if (newList != null)
                 newBoundaries.add(newList);
         }
