@@ -104,6 +104,8 @@ public class SurfaceObjectTileBuilder
     protected boolean useLinearFilter = true;
     /** Controls if mip-maps are generated for surface tile textures. */
     protected boolean useMipmaps;
+    /** Controls if tiles are forced to update during {@link #buildTiles(DrawContext, Iterable)}. */
+    protected boolean forceTileUpdates;
     /** Controls the tile resolution as distance changes between the globe's surface and the eye point. */
     protected double splitScale = DEFAULT_SPLIT_SCALE;
     /**
@@ -263,6 +265,32 @@ public class SurfaceObjectTileBuilder
     public void setUseMipmaps(boolean useMipmaps)
     {
         this.useMipmaps = useMipmaps;
+    }
+
+    /**
+     * Indicates whether or not tiles textures are forced to update during {@link #buildTiles(DrawContext, Iterable)}.
+     * When true, tile textures always update their contents with the current surface renderables. When false, tile
+     * textures only update their contents when the surface renderables change. Initially false.
+     *
+     * @return true if tile textures always update their contents, false if tile textures only update when the surface
+     *         renderables change.
+     */
+    public boolean isForceTileUpdates()
+    {
+        return this.forceTileUpdates;
+    }
+
+    /**
+     * Specifies whether or not tiles textures are forced to update during {@link #buildTiles(DrawContext, Iterable)}.
+     * When true, tile textures always update their contents with the current surface renderables. When false, tile
+     * textures only update their contents when the surface renderables change.
+     *
+     * @param forceTileUpdates true if tile textures should always update their contents, false if tile textures should
+     *                         only update when the surface renderables change.
+     */
+    public void setForceTileUpdates(boolean forceTileUpdates)
+    {
+        this.forceTileUpdates = forceTileUpdates;
     }
 
     /**
@@ -483,20 +511,23 @@ public class SurfaceObjectTileBuilder
         // texture cache below.
         Texture texture = tile.getTexture(dc.getTextureCache());
 
-        // Compare the previous tile state against the currently computed state to determine if the tile needs to be
-        // updated. The tile needs to be updated if any the following conditions are true:
+        // If force tile updates is off, compare the previous tile state against the currently computed state to
+        // determine if the tile needs to be updated. The tile needs to be updated if any the following conditions are
+        // true:
         // * The tile has no texture.
         // * The tile has no state.
         // * The list of intersecting objects has changed.
         // * An intersecting object's state key is different than one stored in the tile's previous state key.
-        Object tileStateKey = tile.getStateKey(dc);
+        if (!this.isForceTileUpdates())
+        {
+            Object tileStateKey = tile.getStateKey(dc);
+            if (texture != null && tileStateKey.equals(tile.lastUpdateStateKey))
+                return;
 
-        if (texture != null && tileStateKey.equals(tile.lastUpdateStateKey))
-            return;
-
-        // If the tile needs to be updated, then assign its lastUpdateStateKey before its texture is created. This
-        // ensures that the lastUpdateStateKey is current when the tile is added to the cache.
-        tile.lastUpdateStateKey = tileStateKey;
+            // If the tile needs to be updated, then assign its lastUpdateStateKey before its texture is created. This
+            // ensures that the lastUpdateStateKey is current when the tile is added to the cache.
+            tile.lastUpdateStateKey = tileStateKey;
+        }
 
         if (texture == null) // Create the tile's texture if it doesn't already have one.
         {
