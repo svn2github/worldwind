@@ -74,6 +74,9 @@
 
     [self setBackgroundColor:[UIColor clearColor]];
     [self setUserInteractionEnabled:NO];
+
+    [self setAutoresizesSubviews:YES];
+    [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 //
 //    minLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, frame.size.height - 22, frame.size.width, 30)];
 //    [minLabel setTextColor:[UIColor whiteColor]];
@@ -244,7 +247,7 @@
     [[UIColor colorWithWhite:0.8 alpha:0.95] set];
     CGContextFillRect(context, rect);
 
-    [self showNoCourseSign:_path == nil];
+    [self showNoCourseSign:_path == nil rect:rect];
     if (_path == nil)
         return;
 
@@ -407,12 +410,13 @@
     [rightLabelView setText:_rightLabel];
 }
 
-- (void) showNoCourseSign:(bool)yn
+- (void) showNoCourseSign:(bool)yn rect:(CGRect)rect
 {
-    CGRect viewFrame = [self frame];
     CGRect labelBounds = [noCourseLabel bounds];
-    float labelX = viewFrame.size.width / 2 - labelBounds.size.width / 2;
+    float labelX = rect.size.width / 2 - labelBounds.size.width / 2;
     [noCourseLabel setFrame:CGRectMake(labelX, 0, labelBounds.size.width, labelBounds.size.height)];
-    [noCourseLabel setText:yn ? @"No Course" : @""];
+    [noCourseLabel setText:yn ? @"  No Course" : @""];
+
+    [maxLabel setText:@""];
 }
 @end
