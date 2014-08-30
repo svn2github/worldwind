@@ -51,7 +51,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
         // Record properties.
         protected ShapefileRenderable shapefileRenderable;
         protected Sector sector; // null by default, must be initialized by subclass
-        protected int recordNumber;
+        protected int ordinal;
         protected boolean visible = true;
         protected boolean highlighted;
         protected ShapeAttributes normalAttrs;
@@ -79,7 +79,6 @@ public abstract class ShapefileRenderable extends WWObjectImpl
             }
 
             this.shapefileRenderable = shapefileRenderable;
-            this.recordNumber = shapefileRecord.getRecordNumber();
             this.pointBuffer = shapefileRecord.getShapeFile().getPointBuffer();
             this.firstPartNumber = shapefileRecord.getFirstPartNumber();
             this.lastPartNumber = shapefileRecord.getLastPartNumber();
@@ -96,9 +95,9 @@ public abstract class ShapefileRenderable extends WWObjectImpl
             return this.sector;
         }
 
-        public int getRecordNumber()
+        public int getOrdinal()
         {
-            return this.recordNumber;
+            return this.ordinal;
         }
 
         public boolean isVisible()
@@ -250,6 +249,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
             this.initAttributeDelegate.assignAttributes(shapefileRecord, renderableRecord);
         }
 
+        renderableRecord.ordinal = this.records.size();
         this.records.add(renderableRecord);
     }
 
@@ -266,16 +266,16 @@ public abstract class ShapefileRenderable extends WWObjectImpl
         return this.records.size();
     }
 
-    public ShapefileRenderable.Record getRecord(int recordNumber)
+    public ShapefileRenderable.Record getRecord(int ordinal)
     {
-        if (this.records == null || recordNumber < 0 || recordNumber >= this.records.size())
+        if (this.records == null || ordinal < 0 || ordinal >= this.records.size())
         {
-            String msg = Logging.getMessage("generic.indexOutOfRange", recordNumber);
+            String msg = Logging.getMessage("generic.indexOutOfRange", ordinal);
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        return this.records.get(recordNumber);
+        return this.records.get(ordinal);
     }
 
     @Override
