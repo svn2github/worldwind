@@ -2476,6 +2476,35 @@ public class Path extends AbstractShape
             this.setPositions(newPositions);
     }
 
+    @Override
+    public void moveTo(Globe globe, Position position)
+    {
+        if (position == null)
+        {
+            String msg = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (this.numPositions == 0)
+            return;
+
+        Position oldPosition = this.getReferencePosition();
+
+        // The reference position is null if this Path has no positions. In this case moving the Path to a new
+        // reference position is meaningless because the Path has no geographic location. Therefore we fail softly
+        // by exiting and doing nothing.
+        if (oldPosition == null)
+            return;
+
+        List<Position> newPositions = Position.computeShiftedPositions(globe, oldPosition, position, this.positions);
+
+        if (newPositions != null)
+        {
+            this.setPositions(newPositions);
+        }
+    }
+
     protected boolean isSmall(DrawContext dc, Vec4 ptA, Vec4 ptB, int numPixels)
     {
         return ptA.distanceTo3(ptB) <= numPixels * dc.getView().computePixelSizeAtDistance(
