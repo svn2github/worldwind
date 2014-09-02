@@ -1405,6 +1405,8 @@ public class Polygon extends AbstractShape
      * specified boundary lists.
      *
      * @param position the new position of the shape's reference position.
+     *
+     * @throws java.lang.IllegalArgumentException if the position is null.
      */
     public void moveTo(Position position)
     {
@@ -1445,7 +1447,10 @@ public class Polygon extends AbstractShape
      * Note that this method overwrites the boundary locations lists, and therefore no longer refer to the originally
      * specified boundary lists.
      *
+     * @param globe    the globe on which to move this shape.
      * @param position the new position of the shape's reference position.
+     *
+     * @throws java.lang.IllegalArgumentException if the globe or position is null.
      */
     public void moveTo(Globe globe, Position position)
     {
