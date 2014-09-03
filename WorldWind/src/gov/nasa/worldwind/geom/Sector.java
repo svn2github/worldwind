@@ -811,7 +811,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
      *
      * @throws IllegalArgumentException if either the globe or sector is null.
      */
-    static public Box computeBoundingBox(Globe globe, double verticalExaggeration, Sector sector)
+    public static Box computeBoundingBox(Globe globe, double verticalExaggeration, Sector sector)
     {
         if (globe == null)
         {
@@ -828,8 +828,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         }
 
         double[] minAndMaxElevations = globe.getMinAndMaxElevations(sector);
-        return computeBoundingBox(globe, verticalExaggeration, sector,
-            minAndMaxElevations[0], minAndMaxElevations[1]);
+        return computeBoundingBox(globe, verticalExaggeration, sector, minAndMaxElevations[0], minAndMaxElevations[1]);
     }
 
     /**
@@ -850,170 +849,6 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
      * @throws IllegalArgumentException if either the globe or sector is null.
      */
     public static Box computeBoundingBox(Globe globe, double verticalExaggeration, Sector sector,
-        double minElevation, double maxElevation)
-    {
-        if (globe == null)
-        {
-            String msg = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // Compute the exaggerated minimum and maximum heights.
-        double minHeight = minElevation * verticalExaggeration;
-        double maxHeight = maxElevation * verticalExaggeration;
-
-        if (minHeight == maxHeight)
-            maxHeight = minHeight + 10; // Ensure the top and bottom heights are not equal.
-
-        List<Vec4> points = new ArrayList<Vec4>();
-        for (LatLon ll : sector)
-        {
-            points.add(globe.computePointFromPosition(ll, minHeight));
-            points.add(globe.computePointFromPosition(ll, maxHeight));
-        }
-
-        // A point at the centroid captures the maximum vertical dimension.
-        LatLon centroid = sector.getCentroid();
-        points.add(globe.computePointFromPosition(centroid, maxHeight));
-
-        // If the sector spans the equator, then the curvature of all four edges need to be taken into account. The
-        // extreme points along the top and bottom edges are located at their mid-points, and the extreme points along
-        // the left and right edges are on the equator. Add points with the longitude of the sector's centroid but with
-        // the sector's min and max latitude, and add points with the sector's min and max longitude but with latitude
-        // at the equator. See WWJINT-225.
-        if (sector.getMinLatitude().degrees < 0 && sector.getMaxLatitude().degrees > 0)
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMinLatitude(), centroid.getLongitude()),
-                maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMaxLatitude(), centroid.getLongitude()),
-                maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(Angle.ZERO, sector.getMinLongitude()), maxHeight));
-            points.add(globe.computePointFromPosition(new LatLon(Angle.ZERO, sector.getMaxLongitude()), maxHeight));
-        }
-        // If the sector is located entirely in the southern hemisphere, then the curvature of its top edge needs to be
-        // taken into account. The extreme point along the top edge is located at its mid-point. Add a point with the
-        // longitude of the sector's centroid but with the sector's max latitude. See WWJINT-225.
-        else if (sector.getMinLatitude().degrees < 0)
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMaxLatitude(), centroid.getLongitude()),
-                maxHeight));
-        }
-        // If the sector is located entirely in the northern hemisphere, then the curvature of its bottom edge needs to
-        // be taken into account. The extreme point along the bottom edge is located at its mid-point. Add a point with
-        // the longitude of the sector's centroid but with the sector's min latitude. See WWJINT-225.
-        else
-        {
-            points.add(globe.computePointFromPosition(new LatLon(sector.getMinLatitude(), centroid.getLongitude()),
-                maxHeight));
-        }
-
-        // If the sector spans 360 degrees of longitude then is a band around the entire globe. (If one edge is a pole
-        // then the sector looks like a circle around the pole.) Add points at the min and max latitudes and longitudes
-        // 0, 180, 90, and -90 to capture full extent of the band.
-        if (sector.getDeltaLonDegrees() >= 360)
-        {
-            Angle minLat = sector.getMinLatitude();
-            points.add(globe.computePointFromPosition(minLat, Angle.ZERO, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.POS90, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.NEG90, maxHeight));
-            points.add(globe.computePointFromPosition(minLat, Angle.POS180, maxHeight));
-
-            Angle maxLat = sector.getMaxLatitude();
-            points.add(globe.computePointFromPosition(maxLat, Angle.ZERO, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.POS90, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.NEG90, maxHeight));
-            points.add(globe.computePointFromPosition(maxLat, Angle.POS180, maxHeight));
-        }
-        else if (sector.getDeltaLonDegrees() > 180)
-        {
-            // Need to compute more points to ensure the box encompasses the full sector.
-            Angle cLon = sector.getCentroid().getLongitude();
-            Angle cLat = sector.getCentroid().getLatitude();
-
-            // centroid latitude, longitude midway between min longitude and centroid longitude
-            Angle lon = Angle.midAngle(sector.getMinLongitude(), cLon);
-            points.add(globe.computePointFromPosition(cLat, lon, maxHeight));
-
-            // centroid latitude, longitude midway between centroid longitude and max longitude
-            lon = Angle.midAngle(cLon, sector.getMaxLongitude());
-            points.add(globe.computePointFromPosition(cLat, lon, maxHeight));
-
-            // centroid latitude, longitude at min longitude and max longitude
-            points.add(globe.computePointFromPosition(cLat, sector.getMinLongitude(), maxHeight));
-            points.add(globe.computePointFromPosition(cLat, sector.getMaxLongitude(), maxHeight));
-        }
-
-        try
-        {
-            return Box.computeBoundingBox(points);
-        }
-        catch (Exception e)
-        {
-            return new Box(points.get(0)); // unit box around point
-        }
-    }
-
-    /**
-     * Returns a {@link gov.nasa.worldwind.geom.Box} that bounds the specified sector on the surface of the specified
-     * {@link gov.nasa.worldwind.globes.Globe}. The returned box encloses the globe's surface terrain in the sector,
-     * according to the specified vertical exaggeration and the globe's minimum and maximum elevations in the sector. If
-     * the minimum and maximum elevation are equal, this assumes a maximum elevation of 10 + the minimum. If this fails
-     * to compute a box enclosing the sector, this returns a unit box enclosing one of the boxes corners.
-     *
-     * @param globe                the globe the extent relates to.
-     * @param verticalExaggeration the globe's vertical surface exaggeration.
-     * @param sector               a sector on the globe's surface to compute a bounding box for.
-     *
-     * @return a box enclosing the globe's surface on the specified sector.
-     *
-     * @throws IllegalArgumentException if either the globe or sector is null.
-     */
-    public static Box computeBoundingBox2(Globe globe, double verticalExaggeration, Sector sector)
-    {
-        if (globe == null)
-        {
-            String msg = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        double[] minAndMaxElevations = globe.getMinAndMaxElevations(sector);
-        return computeBoundingBox2(globe, verticalExaggeration, sector, minAndMaxElevations[0], minAndMaxElevations[1]);
-    }
-
-    /**
-     * Returns a {@link gov.nasa.worldwind.geom.Box} that bounds the specified sector on the surface of the specified
-     * {@link gov.nasa.worldwind.globes.Globe}. The returned box encloses the globe's surface terrain in the sector,
-     * according to the specified vertical exaggeration, minimum elevation, and maximum elevation. If the minimum and
-     * maximum elevation are equal, this assumes a maximum elevation of 10 + the minimum. If this fails to compute a box
-     * enclosing the sector, this returns a unit box enclosing one of the boxes corners.
-     *
-     * @param globe                the globe the extent relates to.
-     * @param verticalExaggeration the globe's vertical surface exaggeration.
-     * @param sector               a sector on the globe's surface to compute a bounding box for.
-     * @param minElevation         the globe's minimum elevation in the sector.
-     * @param maxElevation         the globe's maximum elevation in the sector.
-     *
-     * @return a box enclosing the globe's surface on the specified sector.
-     *
-     * @throws IllegalArgumentException if either the globe or sector is null.
-     */
-    public static Box computeBoundingBox2(Globe globe, double verticalExaggeration, Sector sector,
         double minElevation, double maxElevation)
     {
         if (globe == null)

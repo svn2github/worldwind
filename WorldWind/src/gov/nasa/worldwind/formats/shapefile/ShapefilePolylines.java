@@ -515,7 +515,7 @@ public class ShapefilePolylines extends ShapefileRenderable implements OrderedRe
 
     protected boolean isTileVisible(DrawContext dc, Tile tile)
     {
-        Extent extent = Sector.computeBoundingBox2(dc.getGlobe(), dc.getVerticalExaggeration(), tile.sector);
+        Extent extent = Sector.computeBoundingBox(dc.getGlobe(), dc.getVerticalExaggeration(), tile.sector);
 
         if (dc.isSmall(extent, 1))
         {
