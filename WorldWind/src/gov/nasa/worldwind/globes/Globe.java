@@ -353,6 +353,21 @@ public interface Globe extends WWObject, Extent
     Vec4 computeEllipsoidalPointFromPosition(Angle latitude, Angle longitude, double metersElevation);
 
     /**
+     * Computes a ellipsoidal point from a latitude and longitude.
+     * <p/>
+     * The returned point is a function of this globe's equatorial radius and its polar radius, and always represents a
+     * point on the ellipsoid in 3D cartesian coordinates that corresponds to the specified location. Calling this
+     * method on an instance of Globe2D will return a point on the ellipsoid defined by the 2D globe's radii.
+     *
+     * @param location the location to convert.
+     *
+     * @return The ellipsoidal point that corresponds to the specified geographic location.
+     *
+     * @throws java.lang.IllegalArgumentException if the specified location is null.
+     */
+    Vec4 computeEllipsoidalPointFromLocation(LatLon location);
+
+    /**
      * Computes a ellipsoidal point from a latitude, longitude, and elevation.
      * <p/>
      * The returned point is a function of this globe's equatorial radius and its polar radius, and always represents a
