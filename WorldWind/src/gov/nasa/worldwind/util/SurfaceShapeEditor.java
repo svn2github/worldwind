@@ -82,7 +82,7 @@ public class SurfaceShapeEditor implements SelectListener
         this.rotationLineLayer.setPickEnabled(false);
 
         ShapeAttributes lineAttrs = new BasicShapeAttributes();
-        lineAttrs.setOutlineMaterial(Material.BLACK);
+        lineAttrs.setOutlineMaterial(Material.GREEN);
         lineAttrs.setOutlineWidth(1);
         java.util.List<LatLon> lineLocations = new ArrayList<LatLon>(2);
         lineLocations.add(LatLon.ZERO);
@@ -531,13 +531,13 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 1, 10, 0.1, 0.1 * square.getSize());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * square.getSize());
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
             markerList.add(new ControlPointMarker(new Position(cpPosition, 0), markerAttrs, 0));
 
             markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1,
+                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1,
                     0.1 * square.getSize());
             markerList.add(new ControlPointMarker(new Position(cpPositionR, 0), markerAttrs, 1));
 
@@ -573,7 +573,7 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 1, 10, 0.1, 0.1 * quad.getWidth());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * quad.getWidth());
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(2);
             markerList.add(new ControlPointMarker(new Position(cpPositionW, 0), markerAttrs, 0));
@@ -581,7 +581,7 @@ public class SurfaceShapeEditor implements SelectListener
             markerList.add(new ControlPointMarker(new Position(cpPositionH, 0), markerAttrs, 1));
 
             markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * quad.getWidth());
+                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1, 0.1 * quad.getWidth());
             markerList.add(new ControlPointMarker(new Position(cpPositionR, 0), markerAttrs, 2));
 
             this.controlPointLayer.setMarkers(markerList);
