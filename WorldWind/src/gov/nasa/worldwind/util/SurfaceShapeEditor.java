@@ -36,6 +36,8 @@ public class SurfaceShapeEditor implements SelectListener
     protected RenderableLayer accessoryLayer;
     protected RenderableLayer annotationLayer;
     protected EditorAnnotation annotation;
+    protected UnitsFormat unitsFormat;
+
     protected boolean armed;
 
     protected boolean active;
@@ -101,6 +103,19 @@ public class SurfaceShapeEditor implements SelectListener
 
         this.annotation = new EditorAnnotation("");
         this.annotationLayer.addRenderable(this.annotation);
+
+        this.unitsFormat = new UnitsFormat();
+        this.unitsFormat.setFormat(UnitsFormat.FORMAT_LENGTH, " %,12.3f %s");
+    }
+
+    public UnitsFormat getUnitsFormat()
+    {
+        return unitsFormat;
+    }
+
+    public void setUnitsFormat(UnitsFormat unitsFormat)
+    {
+        this.unitsFormat = unitsFormat != null ? unitsFormat : new UnitsFormat();
     }
 
     public WorldWindow getWwd()
@@ -203,7 +218,7 @@ public class SurfaceShapeEditor implements SelectListener
 
             ((Component) this.wwd).setCursor(cursor);
 
-            if (this.activeOperation == MOVING)
+            if (this.activeOperation == MOVING && event.getTopObject() == this.shape)
                 this.updateShapeAnnotation((SurfaceShape) event.getTopObject());
             else if (this.activeOperation == SIZING)
                 this.updateAnnotation(this.currentSizingMarker);
@@ -590,7 +605,7 @@ public class SurfaceShapeEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = square.getSize();
         ((ControlPointMarker) markerIterator.next()).rotation = square.getHeading();
 
-        this.updateRotationLine(square.getCenter(), cpPositionR);
+        this.updateOrientationLine(square.getCenter(), cpPositionR);
     }
 
     protected void updateSurfaceQuadControlPoints()
@@ -639,7 +654,7 @@ public class SurfaceShapeEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = quad.getHeight();
         ((ControlPointMarker) markerIterator.next()).rotation = quad.getHeading();
 
-        this.updateRotationLine(quad.getCenter(), cpPositionR);
+        this.updateOrientationLine(quad.getCenter(), cpPositionR);
     }
 
     protected void updateSurfaceEllipseControlPoints()
@@ -690,10 +705,10 @@ public class SurfaceShapeEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = ellipse.getMinorRadius();
         ((ControlPointMarker) markerIterator.next()).rotation = ellipse.getHeading();
 
-        this.updateRotationLine(ellipse.getCenter(), cpPositionR);
+        this.updateOrientationLine(ellipse.getCenter(), cpPositionR);
     }
 
-    protected void updateRotationLine(LatLon centerPosition, LatLon cpPositionR)
+    protected void updateOrientationLine(LatLon centerPosition, LatLon cpPositionR)
     {
         java.util.List<LatLon> lineLocations = new ArrayList<LatLon>(2);
         lineLocations.add(centerPosition);
@@ -736,11 +751,13 @@ public class SurfaceShapeEditor implements SelectListener
         Vec4 screenPoint = wwd.getView().project(mcPoint);
         this.annotation.setScreenPoint(new Point((int) screenPoint.x, (int) screenPoint.y));
 
-        String annotationText = marker.getPosition().toString();
+        String annotationText;
         if (marker.size != null)
-            annotationText = marker.size.toString();
+            annotationText = this.unitsFormat.length(null, marker.size);
         else if (marker.rotation != null)
-            annotationText = marker.rotation.toString();
+            annotationText = this.unitsFormat.angle(null, marker.rotation);
+        else
+            annotationText = this.unitsFormat.latLon2(marker.getPosition());
 
         this.annotation.setText(annotationText);
     }

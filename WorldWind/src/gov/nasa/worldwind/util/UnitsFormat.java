@@ -845,6 +845,55 @@ public class UnitsFormat extends AVListImpl
     }
 
     /**
+     * Format angles with {@link #latLon2(gov.nasa.worldwind.geom.LatLon)} and append a new-line character.
+     *
+     * @param latlon the angles to format.
+     *
+     * @return a string containing the formatted angles and ending with the new-line character.
+     *
+     * @throws IllegalArgumentException if <code>latlon</code> is null.
+     */
+    public String latLon2NL(LatLon latlon)
+    {
+        if (latlon == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        return this.latLon2(latlon) + NL;
+    }
+
+    /**
+     * Format angles of latitude and longitude according to the current angle format and in the form "20\u00B0N
+     * 85\u00B0S".
+     *
+     * @param latlon the angles to format.
+     *
+     * @return a string containing the formatted angles.
+     *
+     * @throws IllegalArgumentException if <code>latlon</code> is null.
+     */
+    public String latLon2(LatLon latlon)
+    {
+        if (latlon == null)
+        {
+            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        String latAngle = this.angle("", Angle.fromDegrees(Math.abs(latlon.getLatitude().degrees)));
+        String latString = String.format("%s%s", latAngle, latlon.getLatitude().degrees >= 0 ? "N" : "S");
+
+        String lonAngle = this.angle("", Angle.fromDegrees(Math.abs(latlon.getLongitude().degrees)));
+        String lonString = String.format("%s%s", lonAngle, latlon.getLongitude().degrees >= 0 ? "E" : "W");
+
+        return String.format("%s %s", latString, lonString);
+    }
+
+    /**
      * Format an angle according to the current angle format. Prepend a specified label and append a new-line
      * character.
      *
