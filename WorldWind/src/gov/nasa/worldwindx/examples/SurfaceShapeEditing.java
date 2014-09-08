@@ -39,7 +39,6 @@ public class SurfaceShapeEditing extends ApplicationTemplate
             attrs.setInteriorMaterial(new Material(Color.WHITE));
             attrs.setOutlineMaterial(new Material(Color.BLACK));
             attrs.setOutlineWidth(2);
-            attrs.setInteriorOpacity(0.7);
 
             ShapeAttributes highlightAttrs = new BasicShapeAttributes(attrs);
             highlightAttrs.setOutlineMaterial(new Material(Color.RED));

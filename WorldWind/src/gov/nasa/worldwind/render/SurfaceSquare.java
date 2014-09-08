@@ -23,6 +23,16 @@ public class SurfaceSquare extends SurfaceQuad
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceSquare(SurfaceSquare source)
+    {
+        super(source);
+    }
+
+    /**
      * Constructs a new surface square with the specified normal (as opposed to highlight) attributes, default center
      * location, default size, and default heading. Modifying the attribute reference after calling this constructor
      * causes this shape's appearance to change accordingly.

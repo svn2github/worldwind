@@ -154,6 +154,21 @@ public class SurfaceQuad extends AbstractSurfaceShape implements Exportable
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceQuad(SurfaceQuad source)
+    {
+        super(source);
+
+        this.center = source.center;
+        this.width = source.width;
+        this.height = source.height;
+        this.heading = source.heading;
+    }
+
+    /**
      * Constructs a new surface quad with the specified normal (as opposed to highlight) attributes, the specified
      * center location and dimensions (in meters). Modifying the attribute reference after calling this constructor
      * causes this shape's appearance to change accordingly.

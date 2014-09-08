@@ -102,6 +102,24 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         this.setAttributes(normalAttrs);
     }
 
+    /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public AbstractSurfaceShape(AbstractSurfaceShape source)
+    {
+        super(source);
+
+        this.highlighted = source.highlighted;
+        this.normalAttrs = source.normalAttrs;
+        this.highlightAttrs = source.highlightAttrs;
+        this.pathType = source.pathType;
+        this.texelsPerEdgeInterval = source.texelsPerEdgeInterval;
+        this.minEdgeIntervals = source.minEdgeIntervals;
+        this.maxEdgeIntervals = source.maxEdgeIntervals;
+    }
+
     /** {@inheritDoc} */
     public boolean isHighlighted()
     {

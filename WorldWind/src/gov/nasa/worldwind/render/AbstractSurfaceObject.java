@@ -73,6 +73,21 @@ public abstract class AbstractSurfaceObject extends WWObjectImpl implements Surf
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public AbstractSurfaceObject(AbstractSurfaceObject source)
+    {
+        super(source);
+
+        this.visible = source.visible;
+        this.uniqueId = nextUniqueId();
+        this.lastModifiedTime = System.currentTimeMillis();
+        this.enableBatchPicking = source.enableBatchPicking;
+    }
+
+    /**
      * Returns the next unique integer associated with an AbstractSurfaceObject. This method is synchronized to ensure
      * that two threads calling simultaneously receive different values. Since this method is called from
      * AbstractSurfaceObject's constructor, this is critical to ensure that AbstractSurfaceObject can be safely

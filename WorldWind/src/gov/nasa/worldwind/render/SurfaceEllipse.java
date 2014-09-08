@@ -35,6 +35,22 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceEllipse(SurfaceEllipse source)
+    {
+        super(source);
+
+        this.center = source.center;
+        this.majorRadius = source.majorRadius;
+        this.minorRadius = source.minorRadius;
+        this.heading = source.heading;
+        this.intervals = source.intervals;
+    }
+
+    /**
      * Constructs a new surface ellipse with the specified normal (as opposed to highlight) attributes, default center
      * location, default radii, and default heading. Modifying the attribute reference after calling this constructor
      * causes this shape's appearance to change accordingly.

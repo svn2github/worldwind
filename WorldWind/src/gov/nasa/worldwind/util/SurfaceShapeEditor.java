@@ -35,6 +35,7 @@ public class SurfaceShapeEditor implements SelectListener
     protected MarkerLayer controlPointLayer;
     protected RenderableLayer accessoryLayer;
     protected RenderableLayer annotationLayer;
+    protected RenderableLayer shadowLayer;
     protected EditorAnnotation annotation;
     protected UnitsFormat unitsFormat;
 
@@ -44,6 +45,8 @@ public class SurfaceShapeEditor implements SelectListener
     protected int activeOperation = NONE;
     protected Position previousPosition = null;
     protected ControlPointMarker currentSizingMarker;
+    protected ShapeAttributes originalAttributes;
+    protected ShapeAttributes originalHighlightAttributes;
 
     protected static class ControlPointMarker extends BasicMarker
     {
@@ -63,7 +66,57 @@ public class SurfaceShapeEditor implements SelectListener
         }
     }
 
-    public SurfaceShapeEditor(WorldWindow wwd, SurfaceShape shape)
+    public class EditorAnnotation extends ScreenAnnotation
+    {
+        private Point tooltipOffset = new Point(5, 5);
+
+        /**
+         * Create a tool tip using specified text.
+         *
+         * @param text the text to display in the tool tip.
+         */
+        public EditorAnnotation(String text)
+        {
+            super(text, new Point(0, 0)); // (0,0) is a dummy; the actual point is determined when rendering
+
+            this.initializeAttributes();
+        }
+
+        protected void initializeAttributes()
+        {
+            this.attributes.setAdjustWidthToText(AVKey.SIZE_FIT_TEXT);
+            this.attributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
+            this.attributes.setTextColor(Color.BLACK);
+            this.attributes.setBackgroundColor(new Color(1f, 1f, 1f, 0.8f));
+            this.attributes.setCornerRadius(5);
+            this.attributes.setBorderColor(new Color(0xababab));
+            this.attributes.setFont(Font.decode("Arial-PLAIN-12"));
+            this.attributes.setTextAlign(AVKey.CENTER);
+            this.attributes.setInsets(new Insets(5, 5, 5, 5));
+        }
+
+        protected int getOffsetX()
+        {
+            return this.tooltipOffset != null ? this.tooltipOffset.x : 0;
+        }
+
+        protected int getOffsetY()
+        {
+            return this.tooltipOffset != null ? this.tooltipOffset.y : 0;
+        }
+
+        @Override
+        protected void doRenderNow(DrawContext dc)
+        {
+            this.getAttributes().setDrawOffset(
+                new Point(this.getBounds(dc).width / 2 + this.getOffsetX(), this.getOffsetY()));
+            this.setScreenPoint(this.getScreenPoint());
+
+            super.doRenderNow(dc);
+        }
+    }
+
+    public SurfaceShapeEditor(WorldWindow wwd, SurfaceShape originalShape)
     {
         if (wwd == null)
         {
@@ -71,7 +124,8 @@ public class SurfaceShapeEditor implements SelectListener
             Logging.logger().log(java.util.logging.Level.FINE, msg);
             throw new IllegalArgumentException(msg);
         }
-        if (shape == null)
+
+        if (originalShape == null)
         {
             String msg = Logging.getMessage("nullValue.Shape");
             Logging.logger().log(java.util.logging.Level.FINE, msg);
@@ -79,7 +133,7 @@ public class SurfaceShapeEditor implements SelectListener
         }
 
         this.wwd = wwd;
-        this.shape = shape;
+        this.shape = originalShape;
 
         this.controlPointLayer = new MarkerLayer();
         this.controlPointLayer.setOverrideMarkerElevation(true);
@@ -103,6 +157,9 @@ public class SurfaceShapeEditor implements SelectListener
 
         this.annotation = new EditorAnnotation("");
         this.annotationLayer.addRenderable(this.annotation);
+
+        this.shadowLayer = new RenderableLayer();
+        this.shadowLayer.setPickEnabled(false);
 
         this.unitsFormat = new UnitsFormat();
         this.unitsFormat.setFormat(UnitsFormat.FORMAT_LENGTH, " %,12.3f %s");
@@ -166,6 +223,10 @@ public class SurfaceShapeEditor implements SelectListener
         if (!layers.contains(this.annotationLayer))
             layers.add(this.annotationLayer);
 
+        if (!layers.contains(this.shadowLayer))
+            layers.add(0, this.shadowLayer);
+        this.shadowLayer.setEnabled(true);
+
         this.updateControlPoints();
 
         this.wwd.addSelectListener(this);
@@ -178,6 +239,7 @@ public class SurfaceShapeEditor implements SelectListener
         layers.remove(this.controlPointLayer);
         layers.remove(this.accessoryLayer);
         layers.remove(this.annotationLayer);
+        layers.remove(this.shadowLayer);
 
         wwd.removeSelectListener(this);
 
@@ -199,6 +261,7 @@ public class SurfaceShapeEditor implements SelectListener
             this.activeOperation = NONE;
             this.previousPosition = null;
             ((Component) this.wwd).setCursor(null);
+            this.removeShadow();
             this.updateAnnotation(null);
         }
         else if (event.getEventAction().equals(SelectEvent.ROLLOVER))
@@ -219,15 +282,25 @@ public class SurfaceShapeEditor implements SelectListener
             ((Component) this.wwd).setCursor(cursor);
 
             if (this.activeOperation == MOVING && event.getTopObject() == this.shape)
-                this.updateShapeAnnotation((SurfaceShape) event.getTopObject());
+                this.updateShapeAnnotation();
             else if (this.activeOperation == SIZING)
                 this.updateAnnotation(this.currentSizingMarker);
             else if (event.getTopObject() != null && event.getTopObject() == this.shape)
-                this.updateShapeAnnotation((SurfaceShape) event.getTopObject());
+                this.updateShapeAnnotation();
             else if (event.getTopObject() != null && event.getTopObject() instanceof ControlPointMarker)
                 this.updateAnnotation((ControlPointMarker) event.getTopObject());
             else
                 this.updateAnnotation(null);
+
+            // Take over highlighting control for this shape.
+            if (event.getTopObject() != null && event.getTopObject() instanceof ControlPointMarker)
+                this.shape.setHighlighted(true);
+            else if (this.activeOperation == MOVING || this.activeOperation == SIZING)
+                this.shape.setHighlighted(true);
+            else if (event.getTopObject() != null && event.getTopObject() == this.shape)
+                this.shape.setHighlighted(true);
+            else
+                this.shape.setHighlighted(false);
         }
         else if (event.getEventAction().equals(SelectEvent.LEFT_PRESS))
         {
@@ -246,12 +319,15 @@ public class SurfaceShapeEditor implements SelectListener
             if (topObject == null)
                 return;
 
+            if (this.activeOperation == NONE)
+                this.makeShadow();
+
             if (topObject == this.shape || this.activeOperation == MOVING)
             {
                 this.activeOperation = MOVING;
                 this.dragWholeShape(dragEvent, topObject);
                 this.updateControlPoints();
-                this.updateShapeAnnotation((SurfaceShape) topObject);
+                this.updateShapeAnnotation();
                 event.consume();
             }
             else if (dragEvent.getTopPickedObject().getParentLayer() == this.controlPointLayer
@@ -260,9 +336,61 @@ public class SurfaceShapeEditor implements SelectListener
                 this.activeOperation = SIZING;
                 this.resizeShape(topObject);
                 this.updateControlPoints();
+                this.updateAnnotation(this.currentSizingMarker);
                 event.consume();
             }
+
+            this.wwd.redraw();
         }
+    }
+
+    protected void makeShadow()
+    {
+        SurfaceShape shadowShape = this.makeShadowShape();
+        if (shadowShape != null)
+        {
+            // Set up to keep the shape highlighted during editing but with a reduced opacity.
+            this.originalAttributes = this.shape.getAttributes();
+            this.originalHighlightAttributes = this.shape.getHighlightAttributes();
+
+            ShapeAttributes editingHighlightAttributes = new BasicShapeAttributes(this.originalHighlightAttributes);
+            if (this.originalHighlightAttributes.getInteriorOpacity() == 1)
+                editingHighlightAttributes.setInteriorOpacity(0.7);
+            this.shape.setAttributes(editingHighlightAttributes);
+            this.shape.setHighlightAttributes(editingHighlightAttributes);
+
+            this.shadowLayer.addRenderable(shadowShape);
+        }
+    }
+
+    protected void removeShadow()
+    {
+        this.shadowLayer.removeAllRenderables();
+        if (this.originalAttributes != null)
+        {
+            this.shape.setAttributes(this.originalAttributes);
+            this.shape.setHighlightAttributes(this.originalHighlightAttributes);
+        }
+        this.originalAttributes = null;
+        this.wwd.redraw();
+    }
+
+    protected SurfaceShape makeShadowShape()
+    {
+        if (this.shape instanceof SurfaceSquare)
+            return new SurfaceSquare((SurfaceSquare) this.shape);
+        else if (this.shape instanceof SurfaceQuad)
+            return new SurfaceQuad((SurfaceQuad) this.shape);
+        else if (this.shape instanceof SurfaceCircle)
+            return new SurfaceCircle((SurfaceCircle) this.shape);
+        else if (this.shape instanceof SurfaceEllipse)
+            return new SurfaceEllipse((SurfaceEllipse) this.shape);
+        else if (this.shape instanceof SurfacePolyline)
+            return new SurfacePolyline((SurfacePolyline) this.shape);
+        else if (this.shape instanceof SurfacePolygon)
+            return new SurfacePolygon((SurfacePolygon) this.shape);
+
+        return null;
     }
 
     protected void dragWholeShape(DragSelectEvent dragEvent, Object topObject)
@@ -443,7 +571,7 @@ public class SurfaceShapeEditor implements SelectListener
         else
         {
             double deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            square.setHeading(Angle.fromRadians(square.getHeading().getRadians() + deltaAngle));
+            square.setHeading(this.normalizedHeading(square.getHeading(), deltaAngle));
         }
     }
 
@@ -469,7 +597,7 @@ public class SurfaceShapeEditor implements SelectListener
         else
         {
             double deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            quad.setHeading(Angle.fromRadians(quad.getHeading().getRadians() + deltaAngle));
+            quad.setHeading(this.normalizedHeading(quad.getHeading(), deltaAngle));
         }
     }
 
@@ -495,10 +623,22 @@ public class SurfaceShapeEditor implements SelectListener
         else
         {
             double deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            ellipse.setHeading(Angle.fromRadians(ellipse.getHeading().getRadians() + deltaAngle));
+            ellipse.setHeading(this.normalizedHeading(ellipse.getHeading(), deltaAngle));
         }
 
         this.updateAnnotation(controlPoint);
+    }
+
+    protected Angle normalizedHeading(Angle originalHeading, double deltaHeading)
+    {
+        final double twoPI = 2 * Math.PI;
+
+        double newHeading = originalHeading.getRadians() + deltaHeading;
+
+        if (Math.abs(newHeading) > twoPI)
+            newHeading = newHeading % twoPI;
+
+        return Angle.fromRadians(newHeading >= 0 ? newHeading : newHeading + twoPI);
     }
 
     protected void updateSurfacePolygonControlPoints()
@@ -518,7 +658,7 @@ public class SurfaceShapeEditor implements SelectListener
         {
             double d = LatLon.getAverageDistance(corners).radians * wwd.getModel().getGlobe().getRadius();
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, d / 30);
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * d);
 
             ArrayList<Marker> controlPoints = new ArrayList<Marker>();
             int i = 0;
@@ -717,13 +857,13 @@ public class SurfaceShapeEditor implements SelectListener
         rotationLine.setLocations(lineLocations);
     }
 
-    protected void updateShapeAnnotation(SurfaceShape shape)
+    protected void updateShapeAnnotation()
     {
         LatLon center = null;
-        if (shape instanceof SurfaceEllipse)
-            center = ((SurfaceEllipse) shape).getCenter();
+        if (this.shape instanceof SurfaceEllipse)
+            center = ((SurfaceEllipse) this.shape).getCenter();
         else if (shape instanceof SurfaceQuad)
-            center = ((SurfaceQuad) shape).getCenter();
+            center = ((SurfaceQuad) this.shape).getCenter();
 
         if (center != null)
         {
@@ -770,75 +910,5 @@ public class SurfaceShapeEditor implements SelectListener
         double sign = cross.z >= 0 ? -1 : 1;
 
         return sign * Math.atan2(delta.getLength3(), vP.getLength3());
-    }
-
-    public class EditorAnnotation extends ScreenAnnotation
-    {
-        private Point tooltipOffset = new Point(5, 5);
-
-        /**
-         * Create a tool tip using specified text.
-         *
-         * @param text the text to display in the tool tip.
-         */
-        public EditorAnnotation(String text)
-        {
-            super(text, new Point(0, 0)); // (0,0) is a dummy; the actual point is determined when rendering
-
-            this.initializeAttributes();
-        }
-
-        protected void initializeAttributes()
-        {
-            this.attributes.setAdjustWidthToText(AVKey.SIZE_FIT_TEXT);
-            this.attributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
-            this.attributes.setTextColor(Color.BLACK);
-            this.attributes.setBackgroundColor(new Color(1f, 1f, 1f, 0.8f));
-            this.attributes.setCornerRadius(5);
-            this.attributes.setBorderColor(new Color(0xababab));
-            this.attributes.setFont(Font.decode("Arial-PLAIN-12"));
-            this.attributes.setTextAlign(AVKey.CENTER);
-            this.attributes.setInsets(new Insets(5, 5, 5, 5));
-        }
-
-        protected int getOffsetX()
-        {
-            return this.tooltipOffset != null ? this.tooltipOffset.x : 0;
-        }
-
-        protected int getOffsetY()
-        {
-            return this.tooltipOffset != null ? this.tooltipOffset.y : 0;
-        }
-
-        @Override
-        protected void doRenderNow(DrawContext dc)
-        {
-            this.getAttributes().setDrawOffset(
-                new Point(this.getBounds(dc).width / 2 + this.getOffsetX(), this.getOffsetY()));
-            this.setScreenPoint(this.adjustDrawPointToViewport(this.getScreenPoint(), this.getBounds(dc),
-                dc.getView().getViewport()));
-
-            super.doRenderNow(dc);
-        }
-
-        protected Point adjustDrawPointToViewport(Point point, Rectangle bounds, Rectangle viewport) // TODO
-        {
-            return point;
-//            int x = point.x;
-//            int y = (int) viewport.getHeight() - point.y - 1;
-//
-//            if (x + this.getOffsetX() + bounds.getWidth() > viewport.getWidth())
-//                x = (int) (viewport.getWidth() - bounds.getWidth()) - 1 - this.getOffsetX();
-//            else if (x < 0)
-//                x = 0;
-//
-//            if (y + this.getOffsetY() + bounds.getHeight() > viewport.getHeight())
-//                y = (int) (viewport.getHeight() - bounds.getHeight()) - 1 - this.getOffsetY();
-//            else if (y < 0)
-//                y = bounds.height;
-//
-//            return new java.awt.Point(x, y);
-        }
     }
 }

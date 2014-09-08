@@ -31,6 +31,18 @@ public class SurfacePolygon extends AbstractSurfaceShape implements Exportable
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfacePolygon(SurfacePolygon source)
+    {
+        super(source);
+
+        this.boundaries = source.boundaries;
+    }
+
+    /**
      * Constructs a new surface polygon with the specified normal (as opposed to highlight) attributes and no locations.
      * Modifying the attribute reference after calling this constructor causes this shape's appearance to change
      * accordingly.

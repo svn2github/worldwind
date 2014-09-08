@@ -34,6 +34,19 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfacePolyline(SurfacePolyline source)
+    {
+        super(source);
+
+        this.closed = source.closed;
+        this.locations = source.locations;
+    }
+
+    /**
      * Constructs a new surface polyline with the specified normal (as opposed to highlight) attributes and no
      * locations. Modifying the attribute reference after calling this constructor causes this shape's appearance to
      * change accordingly.

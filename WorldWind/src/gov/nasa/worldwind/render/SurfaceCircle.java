@@ -20,6 +20,16 @@ public class SurfaceCircle extends SurfaceEllipse
     }
 
     /**
+     * Creates a shallow copy of the specified source shape.
+     *
+     * @param source the shape to copy.
+     */
+    public SurfaceCircle(SurfaceCircle source)
+    {
+        super(source);
+    }
+
+    /**
      * Constructs a new surface circle with the specified normal (as opposed to highlight) attributes, default center
      * location, and default radius. Modifying the attribute reference after calling this constructor causes this
      * shape's appearance to change accordingly.
