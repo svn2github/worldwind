@@ -23,6 +23,21 @@ public class ShapefileRecordNull extends ShapefileRecord
         super(shapeFile, buffer);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNullRecord()
+    {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getBoundingRectangle()
+    {
+        return null;
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected void doReadFromBuffer(Shapefile shapefile, ByteBuffer buffer)
     {

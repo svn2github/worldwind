@@ -50,7 +50,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
     {
         // Record properties.
         protected ShapefileRenderable shapefileRenderable;
-        protected Sector sector; // null by default, must be initialized by subclass
+        protected Sector sector;
         protected int ordinal;
         protected boolean visible = true;
         protected boolean highlighted;
@@ -59,7 +59,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
         // Data structures supporting record tessellation and display.
         protected CompoundVecBuffer pointBuffer;
         protected int firstPartNumber;
-        protected int lastPartNumber;
+        protected int numberOfParts;
         protected int numberOfPoints;
 
         public Record(ShapefileRenderable shapefileRenderable, ShapefileRecord shapefileRecord)
@@ -79,9 +79,11 @@ public abstract class ShapefileRenderable extends WWObjectImpl
             }
 
             this.shapefileRenderable = shapefileRenderable;
+            this.sector = shapefileRecord.getBoundingRectangle() != null ? Sector.fromDegrees(
+                shapefileRecord.getBoundingRectangle()) : null;
             this.pointBuffer = shapefileRecord.getShapeFile().getPointBuffer();
             this.firstPartNumber = shapefileRecord.getFirstPartNumber();
-            this.lastPartNumber = shapefileRecord.getLastPartNumber();
+            this.numberOfParts = shapefileRecord.getNumberOfParts();
             this.numberOfPoints = shapefileRecord.getNumberOfPoints();
         }
 
@@ -157,6 +159,19 @@ public abstract class ShapefileRenderable extends WWObjectImpl
                 this.shapefileRenderable.recordDidChange(this);
             }
         }
+
+        protected int getBoundaryCount()
+        {
+            return this.numberOfParts;
+        }
+
+        protected VecBuffer getBoundaryPoints(int ordinal)
+        {
+            synchronized (this.pointBuffer) // synchronize access to the Shapefile's shared pointBuffer
+            {
+                return this.pointBuffer.subBuffer(this.firstPartNumber + ordinal);
+            }
+        }
     }
 
     protected Sector sector;
@@ -230,7 +245,7 @@ public abstract class ShapefileRenderable extends WWObjectImpl
     {
         return shapefileRecord.getNumberOfParts() > 0
             && shapefileRecord.getNumberOfPoints() > 0
-            && !Shapefile.isNullType(shapefileRecord.getShapeType());
+            && !shapefileRecord.isNullRecord();
     }
 
     protected void assembleRecord(ShapefileRecord shapefileRecord)

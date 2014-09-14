@@ -36,11 +36,6 @@ public class ShapefilePolylines extends ShapefileRenderable implements OrderedRe
         public Record(ShapefileRenderable shapefileRenderable, ShapefileRecord shapefileRecord)
         {
             super(shapefileRenderable, shapefileRecord);
-
-            if (shapefileRecord instanceof ShapefileRecordPolygon)
-            {
-                this.sector = Sector.fromDegrees(((ShapefileRecordPolygon) shapefileRecord).getBoundingRectangle());
-            }
         }
     }
 
@@ -393,8 +388,8 @@ public class ShapefilePolylines extends ShapefileRenderable implements OrderedRe
     protected boolean mustAssembleRecord(ShapefileRecord shapefileRecord)
     {
         return super.mustAssembleRecord(shapefileRecord)
-            && (Shapefile.isPolylineType(shapefileRecord.getShapeType())
-            || Shapefile.isPolygonType(shapefileRecord.getShapeType())); // assemble both polyline and polygon records
+            && (shapefileRecord.isPolylineRecord()
+            || shapefileRecord.isPolygonRecord()); // accept both polyline and polygon records
     }
 
     @Override
@@ -553,7 +548,7 @@ public class ShapefilePolylines extends ShapefileRenderable implements OrderedRe
         int vertexStride = 2;
         FloatBuffer vertices = Buffers.newDirectFloatBuffer(vertexStride * numPoints);
 
-        double[] coord = new double[2];
+        double[] location = new double[2];
         float[] vertex = new float[2];
         Vec4 rp = null;
 
@@ -564,16 +559,16 @@ public class ShapefilePolylines extends ShapefileRenderable implements OrderedRe
         {
             this.tess.reset();
 
-            for (int part = record.firstPartNumber; part <= record.lastPartNumber; part++)
+            for (int i = 0; i < record.getBoundaryCount(); i++)
             {
                 this.tess.beginPolyline();
 
-                VecBuffer subBuffer = record.pointBuffer.subBuffer(part);
-                for (int i = 0; i < subBuffer.getSize(); i++)
+                VecBuffer points = record.getBoundaryPoints(i);
+                for (int j = 0; j < points.getSize(); j++)
                 {
-                    subBuffer.get(i, coord);
-                    double x = coord[0]; // map longitude to x
-                    double y = coord[1]; // map latitude to y
+                    points.get(j, location);
+                    double x = location[0]; // map longitude to x
+                    double y = location[1]; // map latitude to y
 
                     int index = vertices.position() / vertexStride;
                     this.tess.addVertex(x, y, 0, index);

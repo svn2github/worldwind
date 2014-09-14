@@ -36,17 +36,11 @@ public class ShapefileRecordMultiPoint extends ShapefileRecord
         super(shapeFile, buffer);
     }
 
-    /**
-     * Returns a four-element array containing the record's bounding rectangle, or null if record parsing failed. The
-     * returned array is ordered as follows: minimum Y, maximum Y, minimum X, and maximum X. If the Shapefile's
-     * coordinate system is geographic, the elements can be interpreted as angular degrees in the order minimum
-     * latitude, maximum latitude, minimum longitude, and maximum longitude.
-     *
-     * @return the record's bounding rectangle, or null to denote the record parsing failed.
-     */
-    public double[] getBoundingRectangle()
+    /** {@inheritDoc} */
+    @Override
+    public boolean isMultiPointRecord()
     {
-        return this.boundingRectangle != null ? this.boundingRectangle : null;
+        return true;
     }
 
     /**
@@ -103,6 +97,15 @@ public class ShapefileRecordMultiPoint extends ShapefileRecord
         return this.mValues;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] getBoundingRectangle()
+    {
+        return this.boundingRectangle != null ? this.boundingRectangle : null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void doReadFromBuffer(Shapefile shapefile, ByteBuffer buffer)
     {
         // Read the bounding rectangle.

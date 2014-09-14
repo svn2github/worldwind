@@ -32,6 +32,13 @@ public class ShapefileRecordPoint extends ShapefileRecord
         super(shapeFile, buffer);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPointRecord()
+    {
+        return true;
+    }
+
     /**
      * Get the point X and Y coordinates.
      *
@@ -63,6 +70,15 @@ public class ShapefileRecordPoint extends ShapefileRecord
         return this.m;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] getBoundingRectangle()
+    {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void doReadFromBuffer(Shapefile shapefile, ByteBuffer buffer)
     {
         // Specify that the record's points should be normalized if the shapefile itself is marked as needing

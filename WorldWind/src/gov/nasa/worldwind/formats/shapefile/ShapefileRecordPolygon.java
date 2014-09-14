@@ -36,6 +36,13 @@ public class ShapefileRecordPolygon extends ShapefileRecordPolyline
         super(shapeFile, buffer);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolygonRecord()
+    {
+        return true;
+    }
+
     /**
      * Export the record to KML as a {@code <Placemark>} element. If the polygon has a "height" attribute it will be
      * exported as an extruded polygon.
