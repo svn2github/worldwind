@@ -40,6 +40,20 @@ public class TrackAirspace extends AbstractAirspace
     {
     }
 
+    public TrackAirspace(TrackAirspace source)
+    {
+        super(source);
+
+        this.legs = new ArrayList<Box>(source.legs.size());
+        for (Box leg : source.legs)
+        {
+            this.legs.add(new Box(leg));
+        }
+
+        this.enableInnerCaps = source.enableInnerCaps;
+        this.smallAngleThreshold = source.smallAngleThreshold;
+    }
+
     public List<Box> getLegs()
     {
         return Collections.unmodifiableList(this.legs);
@@ -380,7 +394,7 @@ public class TrackAirspace extends AbstractAirspace
      *
      * @return <code>true</code> if the legs must be joined, otherwise <code>false</code>.
      */
-    protected boolean mustJoinLegs(Box leg1, Box leg2)
+    public boolean mustJoinLegs(Box leg1, Box leg2)
     {
         LatLon[] leg1Loc = leg1.getLocations();
         LatLon[] leg2Loc = leg2.getLocations();

@@ -31,6 +31,17 @@ public class Polygon extends AbstractAirspace
     private boolean enableCaps = true;
     private int subdivisions = DEFAULT_SUBDIVISIONS;
 
+    public Polygon(Polygon source)
+    {
+        super(source);
+
+        this.enableCaps = source.enableCaps;
+        this.subdivisions = source.subdivisions;
+
+        this.addLocations(source.locations);
+        this.makeDefaultDetailLevels();
+    }
+
     public Polygon(Iterable<? extends LatLon> locations)
     {
         this.addLocations(locations);
@@ -157,6 +168,27 @@ public class Polygon extends AbstractAirspace
         this.makeExtremePoints(globe, verticalExaggeration, tessellatedLocations, points);
 
         return points;
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef, this.getLocations());
+        this.setLocations(newLocations);
+
+        super.doMoveTo(oldRef, newRef);
     }
 
     protected void doMoveTo(Position oldRef, Position newRef)

@@ -81,6 +81,23 @@ public class Orbit extends AbstractAirspace
         this.makeDefaultDetailLevels();
     }
 
+    public Orbit(Orbit source)
+    {
+        super(source);
+
+        this.location1 = source.location1;
+        this.location2 = source.location2;
+        this.orbitType = source.orbitType;
+        this.width = source.width;
+        this.enableCaps = source.enableCaps;
+        this.arcSlices = source.arcSlices;
+        this.lengthSlices = source.lengthSlices;
+        this.stacks = source.stacks;
+        this.loops = source.loops;
+
+        this.makeDefaultDetailLevels();
+    }
+
     public Orbit(AirspaceAttributes attributes)
     {
         super(attributes);
@@ -263,6 +280,28 @@ public class Orbit extends AbstractAirspace
         this.makeExtremePoints(globe, verticalExaggeration, locations, points);
 
         return points;
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef,
+            Arrays.asList(this.getLocations()));
+        this.setLocations(newLocations.get(0), newLocations.get(1));
+
+        super.doMoveTo(oldRef, newRef);
     }
 
     protected void doMoveTo(Position oldRef, Position newRef)

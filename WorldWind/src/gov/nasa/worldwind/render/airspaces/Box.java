@@ -121,6 +121,24 @@ public class Box extends AbstractAirspace
         this.makeDefaultDetailLevels();
     }
 
+    public Box(Box source)
+    {
+        super(source);
+
+        this.location1 = source.location1;
+        this.location2 = source.location2;
+        this.leftWidth = source.leftWidth;
+        this.rightWidth = source.rightWidth;
+        this.enableStartCap = source.enableStartCap;
+        this.enableEndCap = source.enableEndCap;
+        this.forceCullFace = source.forceCullFace;
+        this.pillars = source.pillars;
+        this.stacks = source.stacks;
+        this.heightStacks = source.heightStacks;
+
+        this.makeDefaultDetailLevels();
+    }
+
     public Box(AirspaceAttributes attributes)
     {
         super(attributes);

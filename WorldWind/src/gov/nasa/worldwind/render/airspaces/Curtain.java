@@ -49,6 +49,18 @@ public class Curtain extends AbstractAirspace
         this.makeDefaultDetailLevels();
     }
 
+    public Curtain(Curtain source)
+    {
+        super(source);
+
+        this.addLocations(source.locations);
+        this.pathType = source.pathType;
+        this.splitThreshold = source.splitThreshold;
+        this.applyPositionAltitude = source.applyPositionAltitude;
+
+        this.makeDefaultDetailLevels();
+    }
+
     protected void makeDefaultDetailLevels()
     {
         List<DetailLevel> levels = new ArrayList<DetailLevel>();

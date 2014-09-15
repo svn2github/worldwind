@@ -26,7 +26,7 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class AbstractAirspace extends WWObjectImpl
-    implements Airspace, OrderedRenderable, PreRenderable, Movable
+    implements Airspace, OrderedRenderable, PreRenderable, Movable, Movable2
 {
     protected static final String ARC_SLICES = "ArcSlices";
     protected static final String DISABLE_TERRAIN_CONFORMANCE = "DisableTerrainConformance";
@@ -180,6 +180,27 @@ public abstract class AbstractAirspace extends WWObjectImpl
     protected abstract Extent computeExtent(Globe globe, double verticalExaggeration);
 
     protected abstract List<Vec4> computeMinimalGeometry(Globe globe, double verticalExaggeration);
+
+    public AbstractAirspace(AbstractAirspace source)
+    {
+        this(source.getAttributes());
+
+        this.visible = source.visible;
+        this.attributes = source.attributes;
+        this.lowerAltitude = source.lowerAltitude;
+        this.upperAltitude = source.upperAltitude;
+        this.lowerAltitudeDatum = source.lowerAltitudeDatum;
+        this.upperAltitudeDatum = source.upperAltitudeDatum;
+        this.lowerTerrainConforming = source.lowerTerrainConforming;
+        this.upperTerrainConforming = source.upperTerrainConforming;
+        this.groundReference = source.groundReference;
+        this.enableLevelOfDetail = source.enableLevelOfDetail;
+        this.enableBatchPicking = source.enableBatchPicking;
+        this.enableBatchRendering = source.enableBatchRendering;
+        this.enableDepthOffset = source.enableDepthOffset;
+        this.outlinePickWidth = source.outlinePickWidth;
+        this.delegateOwner = source.delegateOwner;
+    }
 
     public AbstractAirspace()
     {
@@ -767,6 +788,30 @@ public abstract class AbstractAirspace extends WWObjectImpl
             return;
 
         this.moveTo(referencePos.add(position));
+    }
+
+    @Override
+    public void moveTo(Globe globe, Position position)
+    {
+        if (position == null)
+        {
+            String message = Logging.getMessage("nullValue.PositionIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Position oldRef = this.getReferencePosition();
+        if (oldRef == null)
+            return;
+
+        //noinspection UnnecessaryLocalVariable
+        Position newRef = position;
+        this.doMoveTo(globe, oldRef, newRef);
+    }
+
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        this.doMoveTo(oldRef, newRef); // TODO: update all subclasses to use the Movable2 interface
     }
 
     public void moveTo(Position position)

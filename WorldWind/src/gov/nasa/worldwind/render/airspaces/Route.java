@@ -45,6 +45,19 @@ public class Route extends TrackAirspace
         this.setEnableInnerCaps(false);
     }
 
+    public Route(Route source)
+    {
+        super(source);
+
+        this.locations = new ArrayList<LatLon>(source.locations.size());
+        for (LatLon location : source.locations)
+        {
+            this.locations.add(location);
+        }
+
+        this.width = source.width;
+    }
+
     public Iterable<? extends LatLon> getLocations()
     {
         return java.util.Collections.unmodifiableList(this.locations);

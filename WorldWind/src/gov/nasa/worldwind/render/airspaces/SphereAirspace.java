@@ -64,6 +64,17 @@ public class SphereAirspace extends AbstractAirspace
         this.makeDefaultDetailLevels();
     }
 
+    public SphereAirspace(SphereAirspace source)
+    {
+        super(source);
+
+        this.location = source.location;
+        this.radius = source.radius;
+        this.subdivisions = source.subdivisions;
+
+        this.makeDefaultDetailLevels();
+    }
+
     private void makeDefaultDetailLevels()
     {
         List<DetailLevel> levels = new ArrayList<DetailLevel>();

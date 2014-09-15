@@ -61,6 +61,14 @@ public class PartialCappedCylinder extends CappedCylinder
     {
     }
 
+    public PartialCappedCylinder(PartialCappedCylinder source)
+    {
+        super(source);
+
+        this.leftAzimuth = source.leftAzimuth;
+        this.rightAzimuth = source.rightAzimuth;
+    }
+
     public Angle[] getAzimuths()
     {
         Angle[] array = new Angle[2];
