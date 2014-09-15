@@ -376,16 +376,17 @@ public class MarkerRenderer
     {
         double ve = dc.getVerticalExaggeration();
         if (!this.overrideMarkerElevation)
-            return dc.getGlobe().computePointFromPosition(pos, pos.getElevation() * ve);
+            return dc.getGlobe().computePointFromPosition(pos, dc.is2DGlobe() ? 0 : pos.getElevation() * ve);
 
         // Compute points that are at the renderer-specified elevation
+        double effectiveElevation = dc.is2DGlobe() ? 0 : this.elevation;
         Vec4 point = dc.getSurfaceGeometry().getSurfacePoint(pos.getLatitude(), pos.getLongitude(),
-            this.elevation * ve);
+            effectiveElevation * ve);
         if (point != null)
             return point;
 
         // Point is outside the current sector geometry, so compute it from the globe.
-        return dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), this.elevation * ve);
+        return dc.getGlobe().computePointFromPosition(pos.getLatitude(), pos.getLongitude(), effectiveElevation * ve);
     }
 
     protected double computeMarkerRadius(DrawContext dc, Vec4 point, Marker marker)
