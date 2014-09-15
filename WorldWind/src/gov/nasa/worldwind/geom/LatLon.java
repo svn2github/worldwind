@@ -147,7 +147,7 @@ public class LatLon
      * @param value2   the second location.
      *
      * @return an interpolated location between <code>value1</code> and <code>value2</code>, according to the specified
-     *         path type.
+     * path type.
      *
      * @throws IllegalArgumentException if the path type or either location is null.
      */
@@ -303,7 +303,7 @@ public class LatLon
      * @param p2 LatLon of the second location
      *
      * @return the angular distance between the two locations. In radians, this value is the arc length on the radius pi
-     *         circle.
+     * circle.
      */
     public static Angle greatCircleDistance(LatLon p1, LatLon p2)
     {
@@ -640,7 +640,7 @@ public class LatLon
      * @param p2 LatLon of the second location
      *
      * @return the arc length of the rhumb line between the two locations. In radians, this value is the arc length on
-     *         the radius pi circle.
+     * the radius pi circle.
      */
     public static Angle rhumbDistance(LatLon p1, LatLon p2)
     {
@@ -807,7 +807,7 @@ public class LatLon
      * @param p2 LatLon of the second location
      *
      * @return the arc length of the line between the two locations. In radians, this value is the arc length on the
-     *         radius pi circle.
+     * radius pi circle.
      */
     public static Angle linearDistance(LatLon p1, LatLon p2)
     {
@@ -962,6 +962,42 @@ public class LatLon
         }
 
         return (count == 0) ? Angle.ZERO : Angle.fromRadians(totalDistance / (double) count);
+    }
+
+    public static LatLon getCenter(Iterable<? extends LatLon> locations)
+    {
+        if ((locations == null))
+        {
+            String msg = Logging.getMessage("nullValue.LocationsListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        double latitude = 0;
+        double longitude = 0;
+        int count = 0;
+        for (LatLon location : locations)
+        {
+            double lon = location.getLongitude().radians;
+            if (lon < 0)
+                lon += 2 * Math.PI;
+            longitude += lon;
+
+            latitude += location.getLatitude().radians;
+
+            ++count;
+        }
+
+        if (count > 0)
+        {
+            latitude /= count;
+            longitude /= count;
+        }
+
+        if (longitude > Math.PI)
+            longitude -= 2 * Math.PI;
+
+        return LatLon.fromRadians(latitude, longitude);
     }
 
     public LatLon add(LatLon that)
@@ -1471,5 +1507,47 @@ public class LatLon
         }
 
         return newPositions;
+    }
+
+    public static List<LatLon> computeShiftedLocations(Globe globe, LatLon oldLocation, LatLon newLocation,
+        Iterable<? extends LatLon> locations)
+    {
+        if (globe == null)
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (oldLocation == null || newLocation == null)
+        {
+            String msg = Logging.getMessage("nullValue.LocationIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (locations == null)
+        {
+            String msg = Logging.getMessage("nullValue.LocationsListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        ArrayList<LatLon> newLocations = new ArrayList<LatLon>();
+
+        Vec4 oldPoint = globe.computeEllipsoidalPointFromLocation(oldLocation);
+        Vec4 newPoint = globe.computeEllipsoidalPointFromLocation(newLocation);
+        Vec4 delta = newPoint.subtract3(oldPoint);
+
+        for (LatLon latLon : locations)
+        {
+            Vec4 point = globe.computeEllipsoidalPointFromLocation(latLon);
+            point = point.add3(delta);
+            Position newPos = globe.computePositionFromEllipsoidalPoint(point);
+
+            newLocations.add(newPos);
+        }
+
+        return newLocations;
     }
 }
