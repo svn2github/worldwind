@@ -66,56 +66,6 @@ public class SurfaceShapeEditor implements SelectListener
         }
     }
 
-    public class EditorAnnotation extends ScreenAnnotation
-    {
-        private Point tooltipOffset = new Point(5, 5);
-
-        /**
-         * Create a tool tip using specified text.
-         *
-         * @param text the text to display in the tool tip.
-         */
-        public EditorAnnotation(String text)
-        {
-            super(text, new Point(0, 0)); // (0,0) is a dummy; the actual point is determined when rendering
-
-            this.initializeAttributes();
-        }
-
-        protected void initializeAttributes()
-        {
-            this.attributes.setAdjustWidthToText(AVKey.SIZE_FIT_TEXT);
-            this.attributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
-            this.attributes.setTextColor(Color.BLACK);
-            this.attributes.setBackgroundColor(new Color(1f, 1f, 1f, 0.8f));
-            this.attributes.setCornerRadius(5);
-            this.attributes.setBorderColor(new Color(0xababab));
-            this.attributes.setFont(Font.decode("Arial-PLAIN-12"));
-            this.attributes.setTextAlign(AVKey.CENTER);
-            this.attributes.setInsets(new Insets(5, 5, 5, 5));
-        }
-
-        protected int getOffsetX()
-        {
-            return this.tooltipOffset != null ? this.tooltipOffset.x : 0;
-        }
-
-        protected int getOffsetY()
-        {
-            return this.tooltipOffset != null ? this.tooltipOffset.y : 0;
-        }
-
-        @Override
-        protected void doRenderNow(DrawContext dc)
-        {
-            this.getAttributes().setDrawOffset(
-                new Point(this.getBounds(dc).width / 2 + this.getOffsetX(), this.getOffsetY()));
-            this.setScreenPoint(this.getScreenPoint());
-
-            super.doRenderNow(dc);
-        }
-    }
-
     public SurfaceShapeEditor(WorldWindow wwd, SurfaceShape originalShape)
     {
         if (wwd == null)
@@ -139,9 +89,11 @@ public class SurfaceShapeEditor implements SelectListener
         this.controlPointLayer.setOverrideMarkerElevation(true);
         this.controlPointLayer.setElevation(0);
         this.controlPointLayer.setKeepSeparated(false);
+        this.controlPointLayer.setValue(AVKey.IGNORE, true);
 
         this.accessoryLayer = new RenderableLayer();
         this.accessoryLayer.setPickEnabled(false);
+        this.accessoryLayer.setValue(AVKey.IGNORE, true);
 
         ShapeAttributes lineAttrs = new BasicShapeAttributes();
         lineAttrs.setOutlineMaterial(Material.GREEN);
@@ -154,12 +106,14 @@ public class SurfaceShapeEditor implements SelectListener
 
         this.annotationLayer = new RenderableLayer();
         this.annotationLayer.setPickEnabled(false);
+        this.annotationLayer.setValue(AVKey.IGNORE, true);
 
         this.annotation = new EditorAnnotation("");
         this.annotationLayer.addRenderable(this.annotation);
 
         this.shadowLayer = new RenderableLayer();
         this.shadowLayer.setPickEnabled(false);
+        this.shadowLayer.setValue(AVKey.IGNORE, true);
 
         this.unitsFormat = new UnitsFormat();
         this.unitsFormat.setFormat(UnitsFormat.FORMAT_LENGTH, " %,12.3f %s");
@@ -690,8 +644,7 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1,
-                    0.1 * circle.getRadius());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
             markerList.add(new ControlPointMarker(new Position(cpPosition, 0), markerAttrs, 0));
@@ -722,14 +675,13 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * square.getSize());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
             markerList.add(new ControlPointMarker(new Position(cpPosition, 0), markerAttrs, 0));
 
             markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1,
-                    0.1 * square.getSize());
+                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1);
             markerList.add(new ControlPointMarker(new Position(cpPositionR, 0), markerAttrs, 1));
 
             this.controlPointLayer.setMarkers(markerList);
@@ -768,7 +720,7 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1, 0.1 * quad.getWidth());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(2);
             markerList.add(new ControlPointMarker(new Position(cpPositionW, 0), markerAttrs, 0));
@@ -776,7 +728,7 @@ public class SurfaceShapeEditor implements SelectListener
             markerList.add(new ControlPointMarker(new Position(cpPositionH, 0), markerAttrs, 1));
 
             markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1, 0.1 * quad.getWidth());
+                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1);
             markerList.add(new ControlPointMarker(new Position(cpPositionR, 0), markerAttrs, 2));
 
             this.controlPointLayer.setMarkers(markerList);
@@ -817,8 +769,7 @@ public class SurfaceShapeEditor implements SelectListener
         if (markers == null)
         {
             MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1,
-                    0.1 * ellipse.getMajorRadius());
+                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
 
             java.util.List<Marker> markerList = new ArrayList<Marker>(2);
             markerList.add(new ControlPointMarker(new Position(cpPositionW, 0), markerAttrs, 0));
@@ -826,8 +777,7 @@ public class SurfaceShapeEditor implements SelectListener
             markerList.add(new ControlPointMarker(new Position(cpPositionH, 0), markerAttrs, 1));
 
             markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1,
-                    0.1 * ellipse.getMajorRadius());
+                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 1, 10, 0.1);
             markerList.add(new ControlPointMarker(new Position(cpPositionR, 0), markerAttrs, 2));
 
             this.controlPointLayer.setMarkers(markerList);
@@ -886,10 +836,7 @@ public class SurfaceShapeEditor implements SelectListener
         }
 
         this.annotationLayer.setEnabled(true);
-
-        Vec4 mcPoint = wwd.getModel().getGlobe().computePointFromLocation(marker.getPosition());
-        Vec4 screenPoint = wwd.getView().project(mcPoint);
-        this.annotation.setScreenPoint(new Point((int) screenPoint.x, (int) screenPoint.y));
+        this.annotation.setPosition(marker.getPosition());
 
         String annotationText;
         if (marker.size != null)
