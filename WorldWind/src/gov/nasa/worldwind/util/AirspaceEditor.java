@@ -12,7 +12,7 @@ import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.airspaces.Box;
@@ -29,41 +29,84 @@ import java.util.List;
  */
 public class AirspaceEditor implements SelectListener
 {
+    // Control point purposes
+    /**
+     * Indicates that a control point is associated with annotation.
+     */
     protected String ANNOTATION = "gov.nasa.worldwind.airspaceditor.Annotation";
+    /**
+     * Indicates a control point is associated with a location.
+     */
     protected String LOCATION = "gov.nasa.worldwind.airspaceditor.Location";
+    /**
+     * Indicates that a control point is associates with whole-shape rotation.
+     */
     protected String ROTATION = "gov.nasa.worldwind.airspaceditor.Rotation";
+    /**
+     * Indicates that a control point is associated with the left width of a shape.
+     */
     protected String LEFT_WIDTH = "gov.nasa.worldwind.airspaceditor.LeftWidth";
+    /**
+     * Indicates that a control point is associated with the right width of a shape.
+     */
     protected String RIGHT_WIDTH = "gov.nasa.worldwind.airspaceditor.RightWidth";
+    /**
+     * Indicates that a control point is associated with the inner radius of a shape.
+     */
     protected String INNER_RADIUS = "gov.nasa.worldwind.airspaceditor.InnerRadius";
+    /**
+     * Indicates that a control point is associated with the outer radius of a shape.
+     */
     protected String OUTER_RADIUS = "gov.nasa.worldwind.airspaceditor.OuterRadius";
+    /**
+     * Indicates that a control point is associated with the left azimuth of a shape.
+     */
     protected String LEFT_AZIMUTH = "gov.nasa.worldwind.airspaceditor.LeftAzimuth";
+    /**
+     * Indicates that a control point is associated with the right azimuth of a shape.
+     */
     protected String RIGHT_AZIMUTH = "gov.nasa.worldwind.airspaceditor.RightAzimuth";
 
     protected static class ControlPointMarker extends BasicMarker
     {
-        protected int index;
+        /**
+         * The control point's ID.
+         */
+        protected int id;
+        /**
+         * Identifies individual track boxes and cake layers.
+         */
         protected int leg;
-        protected String purpose;
+        /**
+         * Indicates the feature the control point affects.
+         */
+        protected String purpose; // indicates the feature the control point affects
+        /**
+         * Indicates size (in meters) if this control point affects a size of the shape, otherwise null.
+         */
         protected Double size;
+        /**
+         * Indicates angle if this control point affects an angle associated with the shape, otherwise null.
+         */
         protected Angle rotation;
 
-        public ControlPointMarker(Position position, MarkerAttributes attrs, int index, String purpose)
+        public ControlPointMarker(Position position, MarkerAttributes attrs, int id, String purpose)
         {
             super(position, attrs);
-            this.index = index;
+            this.id = id;
             this.purpose = purpose;
         }
 
-        public ControlPointMarker(Position position, MarkerAttributes attrs, int index, int leg, String purpose)
+        public ControlPointMarker(Position position, MarkerAttributes attrs, int id, int leg, String purpose)
         {
-            this(position, attrs, index, purpose);
+            this(position, attrs, id, purpose);
 
             this.leg = leg;
         }
 
-        public int getIndex()
+        public int getId()
         {
-            return this.index;
+            return this.id;
         }
 
         public int getLeg()
@@ -75,31 +118,104 @@ public class AirspaceEditor implements SelectListener
         {
             return this.purpose;
         }
+
+        public Double getSize()
+        {
+            return size;
+        }
+
+        public Angle getRotation()
+        {
+            return rotation;
+        }
     }
 
+    /**
+     * Editor state indicating that the shape is not being resized or moved.
+     */
     protected static final int NONE = 0;
+    /**
+     * Editor state indicating that the shape is being moved.
+     */
     protected static final int MOVING = 1;
+    /**
+     * Editor state indicating that the shape is being sized or otherwise respecified.
+     */
     protected static final int SIZING = 2;
 
+    /**
+     * The {@link gov.nasa.worldwind.WorldWindow} associated with the shape.
+     */
     protected final WorldWindow wwd;
+    /**
+     * The shape associated with the editor. Specified at construction and not subsequently modifiable.
+     */
     protected Airspace shape;
+    /**
+     * The layer holding the editor's control points.
+     */
     protected MarkerLayer controlPointLayer;
+    /**
+     * The layer holding the rotation line and perhaps other affordances.
+     */
     protected RenderableLayer accessoryLayer;
+    /**
+     * The layer holding the control point's annotation.
+     */
     protected RenderableLayer annotationLayer;
+    /**
+     * The layer holding a shadow copy of the shape while the shape is being moved or sized.
+     */
     protected RenderableLayer shadowLayer;
+    /**
+     * The control point annotation.
+     */
     protected EditorAnnotation annotation;
+    /**
+     * The units formatter to use when creating control point annotations.
+     */
     protected UnitsFormat unitsFormat;
 
+    /**
+     * Indicates whether the editor is ready for editing.
+     */
     protected boolean armed;
-
+    /**
+     * Indicates whether the editor is in the midst of an editing operation.
+     */
     protected boolean active;
+    /**
+     * Indicates the current editing operation, one of NONE, MOVING or SIZING.
+     */
     protected int activeOperation = NONE;
+    /**
+     * The terrain position associated with the cursor during the just previous drag event.
+     */
     protected Position previousPosition = null;
+    /**
+     * The control point associated with the current sizing operation.
+     */
     protected ControlPointMarker currentSizingMarker;
     protected AirspaceAttributes originalAttributes;
+    protected AirspaceAttributes originalHighlightAttributes;
+    /**
+     * For shapes without an inherent heading, the current heading established by the editor for the shape.
+     */
     protected Angle currentHeading = Angle.ZERO;
+    /**
+     * Indicates track legs that are adjacent to their previous leg in the track.
+     */
     protected List<Box> trackAdjacencyList;
 
+    /**
+     * Constructs and editor for a specified shape. Once constructed, the editor must be armed to operate. See {@link
+     * #setArmed(boolean)}.
+     *
+     * @param wwd           the {@link gov.nasa.worldwind.WorldWindow} associated with the specified shape.
+     * @param originalShape the shape to edit.
+     *
+     * @throws java.lang.IllegalArgumentException if either the specified world window or shape is null.
+     */
     public AirspaceEditor(WorldWindow wwd, Airspace originalShape)
     {
         if (wwd == null)
@@ -116,6 +232,8 @@ public class AirspaceEditor implements SelectListener
             throw new IllegalArgumentException(msg);
         }
 
+        // TODO: Check that shape implements Movable2.
+
         this.wwd = wwd;
         this.shape = originalShape;
         this.originalAttributes = this.shape.getAttributes();
@@ -128,6 +246,7 @@ public class AirspaceEditor implements SelectListener
         this.accessoryLayer.setPickEnabled(false);
         this.accessoryLayer.setValue(AVKey.IGNORE, true);
 
+        // Set up the Path for the rotation line.
         ShapeAttributes lineAttrs = new BasicShapeAttributes();
         lineAttrs.setOutlineMaterial(Material.GREEN);
         lineAttrs.setOutlineWidth(2);
@@ -156,31 +275,64 @@ public class AirspaceEditor implements SelectListener
         this.unitsFormat.setFormat(UnitsFormat.FORMAT_LENGTH, " %,12.3f %s");
     }
 
+    /**
+     * Indicates the units formatter associated with this editor.
+     *
+     * @return the units formatter associated with this editor.
+     */
     public UnitsFormat getUnitsFormat()
     {
         return unitsFormat;
     }
 
+    /**
+     * Specifies the units formatter to use when creating editor annotations.
+     *
+     * @param unitsFormat the units formatter to use. A default is created if null is specified.
+     */
     public void setUnitsFormat(UnitsFormat unitsFormat)
     {
         this.unitsFormat = unitsFormat != null ? unitsFormat : new UnitsFormat();
     }
 
+    /**
+     * Indicates the World Window associated with this editor.
+     *
+     * @return the World Window associated with this editor.
+     */
     public WorldWindow getWwd()
     {
         return this.wwd;
     }
 
-    public Airspace getAirspace()
+    /**
+     * Indicates the shape associated with this editor.
+     *
+     * @return the shape associated with this editor.
+     */
+    public Airspace getShape()
     {
         return this.shape;
     }
 
+    /**
+     * Indicates whether this editor is armed.
+     *
+     * @return <code>true</code> if the editor is armed, otherwise <code>false</code>.
+     */
     public boolean isArmed()
     {
         return this.armed;
     }
 
+    /**
+     * Arms or disarms the editor. When armed, the editor's shape is displayed with control points and other affordances
+     * that indicate possible editing operations.
+     *
+     * @param armed <code>true</code> to arm the editor, <code>false</code> to disarm it and remove the control points
+     *              and other affordances. This method must be called when the editor is no longer needed so that the
+     *              editor may remove the resources it created when it was armed.
+     */
     public void setArmed(boolean armed)
     {
         if (!this.armed && armed)
@@ -195,6 +347,10 @@ public class AirspaceEditor implements SelectListener
         this.armed = armed;
     }
 
+    /**
+     * Called by {@link #setArmed(boolean)} to create affordance resources, including the layers in which the
+     * affordances are displayed.
+     */
     protected void enable()
     {
         LayerList layers = this.wwd.getModel().getLayers();
@@ -219,13 +375,17 @@ public class AirspaceEditor implements SelectListener
         this.shadowLayer.setEnabled(true);
 
         if (this.shape instanceof TrackAirspace)
-            this.markTrackAdjacency();
+            this.determineTrackAdjacency();
 
         this.updateControlPoints();
 
         this.wwd.addSelectListener(this);
     }
 
+    /**
+     * Called by {@link #setArmed(boolean)} to destroy affordance resources, including the layers in which the
+     * affordances are displayed.
+     */
     protected void disable()
     {
         LayerList layers = this.wwd.getModel().getLayers();
@@ -240,7 +400,10 @@ public class AirspaceEditor implements SelectListener
         ((Component) this.wwd).setCursor(null);
     }
 
-    protected void markTrackAdjacency()
+    /**
+     * Determines and stores internally the adjacency of successive track legs. Called during editor arming.
+     */
+    protected void determineTrackAdjacency()
     {
         if (this.trackAdjacencyList == null)
             this.trackAdjacencyList = new ArrayList<Box>();
@@ -272,7 +435,7 @@ public class AirspaceEditor implements SelectListener
             this.activeOperation = NONE;
             this.previousPosition = null;
             ((Component) this.wwd).setCursor(null);
-            this.removeShadow();
+            this.removeShadowShape();
             this.updateAnnotation(null);
         }
         else if (event.getEventAction().equals(SelectEvent.ROLLOVER))
@@ -280,6 +443,7 @@ public class AirspaceEditor implements SelectListener
             if (!(this.wwd instanceof Component))
                 return;
 
+            // Update the cursor.
             Cursor cursor = null;
             if (this.activeOperation == MOVING)
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
@@ -292,6 +456,7 @@ public class AirspaceEditor implements SelectListener
 
             ((Component) this.wwd).setCursor(cursor);
 
+            // Update the shape or control point annotation.
             if (this.activeOperation == MOVING && event.getTopObject() == this.shape)
                 this.updateShapeAnnotation();
             else if (this.activeOperation == SIZING)
@@ -306,9 +471,13 @@ public class AirspaceEditor implements SelectListener
         else if (event.getEventAction().equals(SelectEvent.LEFT_PRESS))
         {
             this.active = true;
-            PickedObject terrainObject = this.wwd.getObjectsAtCurrentPosition().getTerrainObject();
-            if (terrainObject != null)
-                this.previousPosition = terrainObject.getPosition();
+            PickedObjectList objectsUnderCursor = this.getWwd().getObjectsAtCurrentPosition();
+            if (objectsUnderCursor != null)
+            {
+                PickedObject terrainObject = objectsUnderCursor.getTerrainObject();
+                if (terrainObject != null)
+                    this.previousPosition = terrainObject.getPosition();
+            }
         }
         else if (event.getEventAction().equals(SelectEvent.DRAG))
         {
@@ -320,13 +489,13 @@ public class AirspaceEditor implements SelectListener
             if (topObject == null)
                 return;
 
-            if (this.activeOperation == NONE)
-                this.makeShadow();
+            if (this.activeOperation == NONE) // drag is starting
+                this.makeShadowShape();
 
             if (topObject == this.shape || this.activeOperation == MOVING)
             {
                 this.activeOperation = MOVING;
-                this.dragWholeShape(dragEvent, topObject);
+                this.dragWholeShape(dragEvent);
                 this.updateControlPoints();
                 this.updateShapeAnnotation();
                 event.consume();
@@ -335,7 +504,7 @@ public class AirspaceEditor implements SelectListener
                 || this.activeOperation == SIZING)
             {
                 this.activeOperation = SIZING;
-                this.resizeShape(topObject);
+                this.reshapeShape((ControlPointMarker) topObject);
                 this.updateControlPoints();
                 this.updateAnnotation(this.currentSizingMarker);
                 event.consume();
@@ -345,33 +514,58 @@ public class AirspaceEditor implements SelectListener
         }
     }
 
-    protected void makeShadow()
+    /**
+     * Creates the shape that will remain at the same location and is the same size as the shape to be edited.
+     */
+    protected void makeShadowShape()
     {
-        Airspace shadowShape = this.makeShadowShape();
+        Airspace shadowShape = this.doMakeShadowShape();
         if (shadowShape != null)
         {
-            // Set up to keep the shape highlighted during editing but with a reduced opacity.
-//            this.originalAttributes = this.shape.getAttributes();
+            // Reduce the opacity of an opaque current shape so that the shadow shape is visible while editing
+            // is performed.
 
-            AirspaceAttributes editingHighlightAttributes = new BasicAirspaceAttributes(this.originalAttributes);
-            if (this.originalAttributes.getInteriorOpacity() == 1)
+            this.originalAttributes = this.shape.getAttributes();
+            this.originalHighlightAttributes = this.shape.getHighlightAttributes();
+
+            AirspaceAttributes editingHighlightAttributes = this.originalHighlightAttributes != null ?
+                new BasicAirspaceAttributes(this.originalHighlightAttributes)
+                : new BasicAirspaceAttributes(this.originalAttributes);
+            if (editingHighlightAttributes.getInteriorOpacity() == 1)
                 editingHighlightAttributes.setInteriorOpacity(0.7);
+
             this.shape.setAttributes(editingHighlightAttributes);
+            this.shape.setHighlightAttributes(editingHighlightAttributes);
 
             this.shadowLayer.addRenderable(shadowShape);
         }
     }
 
-    protected void removeShadow()
+    /**
+     * Remove the shadow shape.
+     */
+    protected void removeShadowShape()
     {
         this.shadowLayer.removeAllRenderables();
-//        if (this.originalAttributes != null)
-        this.shape.setAttributes(this.originalAttributes);
-//        this.originalAttributes = null;
+
+        // Restore the original attributes.
+        if (this.originalAttributes != null)
+        {
+            this.shape.setAttributes(this.originalAttributes);
+            this.shape.setHighlightAttributes(this.originalHighlightAttributes);
+        }
+        this.originalAttributes = null;
+
         this.wwd.redraw();
     }
 
-    protected Airspace makeShadowShape()
+    /**
+     * Creates and returns the stationary shape displayed during editing operations. Subclasses should override this
+     * method to create shadow shapes appropriate to the editor's shape.
+     *
+     * @return the new shadow shape created, or null if the shape type is not recognized.
+     */
+    protected Airspace doMakeShadowShape()
     {
         if (this.shape instanceof Polygon)
             return new Polygon((Polygon) this.shape);
@@ -393,12 +587,24 @@ public class AirspaceEditor implements SelectListener
         return null;
     }
 
+    /**
+     * Performs shape-specific minor modifications to shapes after editing operation are performed. Some editing
+     * operations cause positions that are originally identical to become slightly different and thereby disrupt the
+     * original connectivity of the shape. This is the case for track-airspace legs, for instance. This method is called
+     * just after editing operations are performed in order to give the editor a chance to reform connectivity or
+     * otherwise modify the shape to retain its original properties. Subclasses should override this method if they are
+     * aware of shapes other than those recognized by default and those shapes need such adjustment during editing.
+     */
     protected void adjustShape()
     {
         if (this.shape instanceof TrackAirspace)
             this.adjustTrackShape();
     }
 
+    /**
+     * Restores adjacency of {@link gov.nasa.worldwind.render.airspaces.TrackAirspace} shapes. Called by {@link
+     * #adjustShape()}.
+     */
     protected void adjustTrackShape()
     {
         TrackAirspace track = (TrackAirspace) this.shape;
@@ -407,6 +613,7 @@ public class AirspaceEditor implements SelectListener
         if (legs == null)
             return;
 
+        // Start with the second leg and restore coincidence of the first leg position with that of the previous leg.
         for (int i = 1; i < legs.size(); i++)
         {
             Box leg = legs.get(i);
@@ -418,12 +625,14 @@ public class AirspaceEditor implements SelectListener
         }
     }
 
-    protected void dragWholeShape(DragSelectEvent dragEvent, Object topObject)
+    /**
+     * Moves the entire shape according to a specified drag event.
+     *
+     * @param dragEvent the event initiating the move.
+     */
+    protected void dragWholeShape(DragSelectEvent dragEvent)
     {
-        if (!(topObject instanceof Movable))
-            return;
-
-        Movable2 dragObject = (Movable2) topObject;
+        Movable2 dragObject = (Movable2) this.shape;
 
         View view = wwd.getView();
         Globe globe = wwd.getModel().getGlobe();
@@ -456,16 +665,22 @@ public class AirspaceEditor implements SelectListener
         this.adjustShape();
     }
 
-    protected void resizeShape(Object topObject)
+    /**
+     * Modifies the shape's location, size or rotation. This method is called when a control point is dragged.
+     *
+     * @param controlPoint the control point selected.
+     */
+    protected void reshapeShape(ControlPointMarker controlPoint)
     {
-        if (!(topObject instanceof ControlPointMarker))
-            return;
-
-        this.currentSizingMarker = (ControlPointMarker) topObject;
+        this.currentSizingMarker = controlPoint;
 
         // If the terrain beneath the control point is null, then the user is attempting to drag the handle off the
         // globe. This is not a valid state for SurfaceImage, so we will ignore this action but keep the drag operation
         // in effect.
+        PickedObjectList objectsUnderCursor = this.getWwd().getObjectsAtCurrentPosition();
+        if (objectsUnderCursor == null)
+            return;
+
         PickedObject terrainObject = this.wwd.getObjectsAtCurrentPosition().getTerrainObject();
         if (terrainObject == null)
             return;
@@ -476,24 +691,41 @@ public class AirspaceEditor implements SelectListener
             return;
         }
 
-        if (this.shape instanceof Polygon || this.shape instanceof Curtain)
-            this.reshapePolygon(terrainObject.getPosition(), (ControlPointMarker) topObject);
-        else if (this.shape instanceof CappedCylinder)
-            this.reshapeCappedCylinder(terrainObject.getPosition(), (ControlPointMarker) topObject);
-        else if (this.shape instanceof Orbit)
-            this.reshapeOrbit(terrainObject.getPosition(), (ControlPointMarker) topObject);
-        else if (this.shape instanceof Route)
-            this.reshapeRoute(terrainObject.getPosition(), (ControlPointMarker) topObject);
-        else if (this.shape instanceof SphereAirspace)
-            this.reshapeSphere(terrainObject.getPosition(), (ControlPointMarker) topObject);
-        else if (this.shape instanceof TrackAirspace)
-            this.reshapeTrack(terrainObject.getPosition(), (ControlPointMarker) topObject);
+        this.doReshapeShape(controlPoint, terrainObject.getPosition());
 
         this.previousPosition = terrainObject.getPosition();
 
         this.adjustShape();
     }
 
+    /**
+     * Called by {@link #reshapeShape(gov.nasa.worldwind.util.AirspaceEditor.ControlPointMarker)} to perform the actual
+     * shape modification. Subclasses should override this method if they provide editing for shapes other than those
+     * supported by the basic editor.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
+    protected void doReshapeShape(ControlPointMarker controlPoint, Position terrainPosition)
+    {
+        if (this.shape instanceof Polygon || this.shape instanceof Curtain)
+            this.reshapePolygon(terrainPosition, controlPoint);
+        else if (this.shape instanceof CappedCylinder)
+            this.reshapeCappedCylinder(terrainPosition, controlPoint);
+        else if (this.shape instanceof Orbit)
+            this.reshapeOrbit(terrainPosition, controlPoint);
+        else if (this.shape instanceof Route)
+            this.reshapeRoute(terrainPosition, controlPoint);
+        else if (this.shape instanceof SphereAirspace)
+            this.reshapeSphere(terrainPosition, controlPoint);
+        else if (this.shape instanceof TrackAirspace)
+            this.reshapeTrack(terrainPosition, controlPoint);
+    }
+
+    /**
+     * Updates the control points to the locations of the currently edited shape. Called each time a modification to the
+     * shape is made. Subclasses should override this method to handle shape types not supported by the basic editor.
+     */
     protected void updateControlPoints()
     {
         if (this.shape instanceof Polygon || this.shape instanceof Curtain)
@@ -512,6 +744,12 @@ public class AirspaceEditor implements SelectListener
             this.updateTrackControlPoints();
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.Polygon} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapePolygon(Position terrainPosition, ControlPointMarker controlPoint)
     {
         Iterable<? extends LatLon> currentLocations = null;
@@ -563,7 +801,7 @@ public class AirspaceEditor implements SelectListener
                 markerPoint.add3(delta));
 
             // Update the polygon's locations.
-            locations.set(controlPoint.getIndex(), markerPosition);
+            locations.set(controlPoint.getId(), markerPosition);
         }
 
         if (this.shape instanceof Polygon)
@@ -572,6 +810,12 @@ public class AirspaceEditor implements SelectListener
             ((Curtain) this.shape).setLocations(locations);
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.CappedCylinder} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapeCappedCylinder(Position terrainPosition, ControlPointMarker controlPoint)
     {
         CappedCylinder cylinder = (CappedCylinder) this.shape;
@@ -614,6 +858,12 @@ public class AirspaceEditor implements SelectListener
         }
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.SphereAirspace} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapeSphere(Position terrainPosition, ControlPointMarker controlPoint)
     {
         SphereAirspace sphere = (SphereAirspace) this.shape;
@@ -634,6 +884,12 @@ public class AirspaceEditor implements SelectListener
             sphere.setRadius(radius);
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.Orbit} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapeOrbit(Position terrainPosition, ControlPointMarker controlPoint)
     {
         Orbit orbit = (Orbit) this.shape;
@@ -672,11 +928,17 @@ public class AirspaceEditor implements SelectListener
         {
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
                 markerPoint.add3(delta));
-            locations[controlPoint.getIndex()] = markerPosition;
+            locations[controlPoint.getId()] = markerPosition;
             orbit.setLocations(locations[0], locations[1]);
         }
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.Route} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapeRoute(Position terrainPosition, ControlPointMarker controlPoint)
     {
         Route route = (Route) this.shape;
@@ -725,11 +987,17 @@ public class AirspaceEditor implements SelectListener
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
                 markerPoint.add3(delta));
 
-            locations.set(controlPoint.getIndex(), markerPosition);
+            locations.set(controlPoint.getId(), markerPosition);
             route.setLocations(locations);
         }
     }
 
+    /**
+     * Performs an edit for {@link gov.nasa.worldwind.render.airspaces.TrackAirspace} shapes.
+     *
+     * @param controlPoint    the control point selected.
+     * @param terrainPosition the terrain position under the cursor.
+     */
     protected void reshapeTrack(Position terrainPosition, ControlPointMarker controlPoint)
     {
         TrackAirspace track = (TrackAirspace) this.shape;
@@ -806,7 +1074,7 @@ public class AirspaceEditor implements SelectListener
                 markerPoint.add3(delta));
 
             Box leg = track.getLegs().get(controlPoint.getLeg());
-            if (controlPoint.getIndex() == 0)
+            if (controlPoint.getId() == 0)
                 leg.setLocations(markerPosition, leg.getLocations()[1]);
             else
                 leg.setLocations(leg.getLocations()[0], markerPosition);
@@ -815,6 +1083,9 @@ public class AirspaceEditor implements SelectListener
         track.setLegs(new ArrayList<Box>(track.getLegs()));
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.Polygon} shapes.
+     */
     protected void updatePolygonControlPoints()
     {
         Iterable<? extends LatLon> currentLocations = null;
@@ -894,6 +1165,10 @@ public class AirspaceEditor implements SelectListener
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.CappedCylinder}
+     * shapes.
+     */
     protected void updateCappedCylinderControlPoints()
     {
         CappedCylinder cylinder = (CappedCylinder) this.shape;
@@ -936,6 +1211,10 @@ public class AirspaceEditor implements SelectListener
             ((ControlPointMarker) markerIterator.next()).size = radii[0];
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.PartialCappedCylinder}
+     * shapes.
+     */
     protected void updatePartialCappedCylinderControlPoints()
     {
         PartialCappedCylinder cylinder = (PartialCappedCylinder) this.shape;
@@ -1019,6 +1298,10 @@ public class AirspaceEditor implements SelectListener
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.SphereAirspace}
+     * shapes.
+     */
     protected void updateSphereControlPoints()
     {
         SphereAirspace sphere = (SphereAirspace) this.shape;
@@ -1050,6 +1333,9 @@ public class AirspaceEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = radius;
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.Orbit} shapes.
+     */
     protected void updateOrbitControlPoints()
     {
         Orbit orbit = (Orbit) this.shape;
@@ -1058,16 +1344,17 @@ public class AirspaceEditor implements SelectListener
 
         double c0Altitude = this.computeControlPointAltitude(locations[0]);
         double c1Altitude = this.computeControlPointAltitude(locations[1]);
-        double cwAltitude = 0.5 * (c0Altitude + c1Altitude);
 
         Angle orbitHeading = LatLon.greatCircleAzimuth(locations[0], locations[1]);
+
         LatLon center = LatLon.interpolateGreatCircle(0.5, locations[0], locations[1]);
         double centerAltitude = this.computeControlPointAltitude(center);
-        LatLon cwLocation = LatLon.greatCircleEndPosition(center, Angle.fromDegrees(90 + orbitHeading.degrees),
-            Angle.fromRadians(0.5 * width / this.wwd.getModel().getGlobe().getEquatorialRadius()));
+        Position cwPosition = this.computeEdgeLocation(center, locations[0], 0.5 * orbit.getWidth());
+
         Angle length = LatLon.greatCircleDistance(center, locations[0]);
         LatLon crLocation = LatLon.greatCircleEndPosition(center, Angle.fromDegrees(orbitHeading.degrees),
             Angle.fromRadians(length.radians + 1.2 * width / this.wwd.getModel().getGlobe().getEquatorialRadius()));
+        double crAltitude = this.computeControlPointAltitude(crLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
@@ -1082,11 +1369,11 @@ public class AirspaceEditor implements SelectListener
                 LOCATION));
 
             markerAttrs = new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            markerList.add(new ControlPointMarker(new Position(cwLocation, cwAltitude), markerAttrs, 2,
+            markerList.add(new ControlPointMarker(new Position(cwPosition, cwPosition.getAltitude()), markerAttrs, 2,
                 RIGHT_WIDTH));
 
             markerAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            markerList.add(new ControlPointMarker(new Position(crLocation, cwAltitude), markerAttrs, 3,
+            markerList.add(new ControlPointMarker(new Position(crLocation, crAltitude), markerAttrs, 3,
                 ROTATION));
 
             this.controlPointLayer.setMarkers(markerList);
@@ -1096,8 +1383,8 @@ public class AirspaceEditor implements SelectListener
             Iterator<Marker> markerIterator = markers.iterator();
             markerIterator.next().setPosition(new Position(locations[0], c0Altitude));
             markerIterator.next().setPosition(new Position(locations[1], c1Altitude));
-            markerIterator.next().setPosition(new Position(cwLocation, cwAltitude));
-            markerIterator.next().setPosition(new Position(crLocation, cwAltitude));
+            markerIterator.next().setPosition(new Position(cwPosition, cwPosition.getAltitude()));
+            markerIterator.next().setPosition(new Position(crLocation, crAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
@@ -1106,9 +1393,12 @@ public class AirspaceEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = width;
         ((ControlPointMarker) markerIterator.next()).rotation = this.normalizedHeading(orbitHeading, Angle.ZERO);
 
-        this.updateOrientationLine(new Position(center, centerAltitude), new Position(crLocation, cwAltitude));
+        this.updateOrientationLine(new Position(center, centerAltitude), new Position(crLocation, crAltitude));
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.Route} shapes.
+     */
     protected void updateRouteControlPoints()
     {
         Route route = (Route) this.shape;
@@ -1125,24 +1415,14 @@ public class AirspaceEditor implements SelectListener
         if (locations.size() < 2)
             return;
 
-        Angle legHeading = LatLon.greatCircleAzimuth(locations.get(0), locations.get(1));
         LatLon legCenter = LatLon.interpolateGreatCircle(0.5, locations.get(0), locations.get(1));
-
-        Angle cRHeading = legHeading.add(Angle.POS90);
-        LatLon cwRLocation = LatLon.greatCircleEndPosition(legCenter, cRHeading,
-            Angle.fromRadians((0.5 * route.getWidth()) / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        double cwRAltitude = this.computeControlPointAltitude(cwRLocation);
-
-        Angle cLHeading = legHeading.subtract(Angle.POS90);
-        LatLon cwLLocation = LatLon.greatCircleEndPosition(legCenter, cLHeading,
-            Angle.fromRadians((0.5 * route.getWidth()) / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        double cwLAltitude = this.computeControlPointAltitude(cwLLocation);
+        Position cwLPosition = this.computeEdgeLocation(legCenter, locations.get(1), 0.5 * route.getWidth());
+        Position cwRPosition = this.computeEdgeLocation(legCenter, locations.get(0), 0.5 * route.getWidth());
 
         LatLon center = LatLon.getCenter(locations);
         double centerAltitude = this.computeControlPointAltitude(center);
         Angle distance = LatLon.getAverageDistance(locations);
-        Angle routeHeading = this.currentHeading;
-        LatLon crLocation = LatLon.greatCircleEndPosition(center, routeHeading, distance);
+        LatLon crLocation = LatLon.greatCircleEndPosition(center, this.currentHeading, distance);
         double crAltitude = this.computeControlPointAltitude(crLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
@@ -1161,10 +1441,12 @@ public class AirspaceEditor implements SelectListener
             }
 
             markerAttrs = new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            controlPoints.add(new ControlPointMarker(new Position(cwRLocation, cwRAltitude), markerAttrs, i++,
-                RIGHT_WIDTH));
-            controlPoints.add(new ControlPointMarker(new Position(cwLLocation, cwLAltitude), markerAttrs, i++,
-                LEFT_WIDTH));
+            controlPoints.add(
+                new ControlPointMarker(new Position(cwLPosition, cwLPosition.getAltitude()), markerAttrs, i++,
+                    RIGHT_WIDTH));
+            controlPoints.add(
+                new ControlPointMarker(new Position(cwRPosition, cwRPosition.getAltitude()), markerAttrs, i++,
+                    LEFT_WIDTH));
 
             markerAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
             controlPoints.add(new ControlPointMarker(new Position(crLocation, crAltitude), markerAttrs, i,
@@ -1181,8 +1463,8 @@ public class AirspaceEditor implements SelectListener
                 markerIterator.next().setPosition(new Position(cpPosition, altitude));
             }
 
-            markerIterator.next().setPosition(new Position(cwRLocation, cwRAltitude));
-            markerIterator.next().setPosition(new Position(cwLLocation, cwLAltitude));
+            markerIterator.next().setPosition(new Position(cwLPosition, cwLPosition.getAltitude()));
+            markerIterator.next().setPosition(new Position(cwRPosition, cwRPosition.getAltitude()));
             markerIterator.next().setPosition(new Position(crLocation, crAltitude));
         }
 
@@ -1193,11 +1475,14 @@ public class AirspaceEditor implements SelectListener
         }
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
-        ((ControlPointMarker) markerIterator.next()).rotation = routeHeading;
+        ((ControlPointMarker) markerIterator.next()).rotation = this.currentHeading;
 
         this.updateOrientationLine(new Position(center, centerAltitude), new Position(crLocation, crAltitude));
     }
 
+    /**
+     * Updates the control points and affordances for {@link gov.nasa.worldwind.render.airspaces.TrackAirspace} shapes.
+     */
     protected void updateTrackControlPoints()
     {
         TrackAirspace track = (TrackAirspace) this.shape;
@@ -1258,31 +1543,24 @@ public class AirspaceEditor implements SelectListener
                 LatLon[] legLocations = leg.getLocations();
                 double[] widths = leg.getWidths();
 
-                Angle legHeading = LatLon.greatCircleAzimuth(legLocations[0], legLocations[1]);
                 LatLon legCenter = LatLon.interpolateGreatCircle(0.5, legLocations[0], legLocations[1]);
-
-                Angle cwLHeading = legHeading.subtract(Angle.POS90);
-                LatLon cwLLocation = LatLon.greatCircleEndPosition(legCenter, cwLHeading,
-                    Angle.fromRadians(widths[0] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-                double cwLAltitude = this.computeControlPointAltitude(cwLLocation);
-
-                Angle cwRHeading = legHeading.add(Angle.POS90);
-                LatLon cwRLocation = LatLon.greatCircleEndPosition(legCenter, cwRHeading,
-                    Angle.fromRadians(widths[1] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-                double cwRAltitude = this.computeControlPointAltitude(cwRLocation);
+                Position cwLPosition = this.computeEdgeLocation(legCenter, legLocations[1], widths[0]);
+                Position cwRPosition = this.computeEdgeLocation(legCenter, legLocations[0], widths[1]);
 
                 if (markers == null)
                 {
-                    controlPoints.add(new ControlPointMarker(new Position(cwLLocation, cwLAltitude), sizeAttrs, 2, i,
-                        LEFT_WIDTH));
-                    controlPoints.add(new ControlPointMarker(new Position(cwRLocation, cwRAltitude), sizeAttrs, 3, i,
-                        RIGHT_WIDTH));
+                    controlPoints.add(
+                        new ControlPointMarker(new Position(cwLPosition, cwLPosition.getAltitude()), sizeAttrs, 2, i,
+                            LEFT_WIDTH));
+                    controlPoints.add(
+                        new ControlPointMarker(new Position(cwRPosition, cwRPosition.getAltitude()), sizeAttrs, 3, i,
+                            RIGHT_WIDTH));
                 }
                 else
                 {
                     //noinspection ConstantConditions
-                    markerIterator.next().setPosition(new Position(cwLLocation, cwLAltitude));
-                    markerIterator.next().setPosition(new Position(cwRLocation, cwRAltitude));
+                    markerIterator.next().setPosition(new Position(cwLPosition, cwLPosition.getAltitude()));
+                    markerIterator.next().setPosition(new Position(cwRPosition, cwRPosition.getAltitude()));
                 }
             }
         }
@@ -1323,17 +1601,24 @@ public class AirspaceEditor implements SelectListener
         {
             ControlPointMarker cp = (ControlPointMarker) marker;
 
-            if (cp.getIndex() == 2)
+            if (cp.getId() == 2)
                 cp.size = legs.get(cp.getLeg()).getWidths()[0];
-            else if (cp.getIndex() == 3)
+            else if (cp.getId() == 3)
                 cp.size = legs.get(cp.getLeg()).getWidths()[1];
-            else if (cp.getIndex() == 4)
+            else if (cp.getId() == 4)
             {
                 cp.rotation = this.currentHeading;
             }
         }
     }
 
+    /**
+     * Computes the appropriate altitude at which to place a control point at a specified location.
+     *
+     * @param location the location of the control point.
+     *
+     * @return the appropriate altitude at which to place the control point.
+     */
     protected double computeControlPointAltitude(LatLon location)
     {
         double altitude = this.shape.getAltitudes()[1];
@@ -1349,12 +1634,13 @@ public class AirspaceEditor implements SelectListener
         return altitude;
     }
 
+    /**
+     * Updates the annotation indicating the edited shape's center. If the shape has no designated center, this method
+     * prevents the annotation from displaying.
+     */
     protected void updateShapeAnnotation()
     {
-        LatLon center = null;
-
-        if (this.shape instanceof CappedCylinder)
-            center = ((CappedCylinder) this.shape).getCenter();
+        LatLon center = this.getShapeCenter();
 
         if (center != null)
         {
@@ -1368,34 +1654,62 @@ public class AirspaceEditor implements SelectListener
         }
     }
 
-    protected void updateAnnotation(ControlPointMarker marker)
+    /**
+     * Returns the shape's center location, or null if it has no designated center.
+     *
+     * @return the shape's center location, or null if the shape has no designated center.
+     */
+    protected LatLon getShapeCenter()
     {
-        if (marker == null)
+        LatLon center = null;
+
+        if (this.shape instanceof CappedCylinder)
+            center = ((CappedCylinder) this.shape).getCenter();
+        else if (this.shape instanceof SphereAirspace)
+            center = ((SphereAirspace) this.shape).getLocation();
+
+        return center;
+    }
+
+    /**
+     * Updates the annotation associated with a specified control point.
+     *
+     * @param controlPoint the control point.
+     */
+    protected void updateAnnotation(ControlPointMarker controlPoint)
+    {
+        if (controlPoint == null)
         {
             this.annotationLayer.setEnabled(false);
             return;
         }
 
         this.annotationLayer.setEnabled(true);
-        this.annotation.setPosition(marker.getPosition());
+        this.annotation.setPosition(controlPoint.getPosition());
 
         String annotationText;
-        if (marker.size != null)
-            annotationText = this.unitsFormat.length(null, marker.size);
-        else if (marker.rotation != null)
-            annotationText = this.unitsFormat.angle(null, marker.rotation);
+        if (controlPoint.size != null)
+            annotationText = this.unitsFormat.length(null, controlPoint.size);
+        else if (controlPoint.rotation != null)
+            annotationText = this.unitsFormat.angle(null, controlPoint.rotation);
         else
-            annotationText = this.unitsFormat.latLon2(marker.getPosition());
+            annotationText = this.unitsFormat.latLon2(controlPoint.getPosition());
 
         this.annotation.setText(annotationText);
     }
 
-    protected void updateOrientationLine(Position centerPosition, Position cpPositionR)
+    /**
+     * Updates the line designating the shape's central axis.
+     *
+     * @param centerPosition the shape's center location and altitude at which to place one of the line's end points.
+     * @param controlPoint   the shape orientation control point.
+     */
+    protected void updateOrientationLine(Position centerPosition, Position controlPoint)
     {
         Path rotationLine = (Path) this.accessoryLayer.getRenderables().iterator().next();
 
         double cAltitude = centerPosition.getAltitude();
-        double rAltitude = cpPositionR.getAltitude();
+        double rAltitude = controlPoint.getAltitude();
         if (this.shape.getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
         {
             rotationLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
@@ -1403,8 +1717,8 @@ public class AirspaceEditor implements SelectListener
 
             cAltitude = 100 + centerPosition.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
                 centerPosition.getLatitude(), centerPosition.getLongitude());
-            rAltitude = 100 + cpPositionR.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
-                cpPositionR.getLatitude(), cpPositionR.getLongitude());
+            rAltitude = 100 + controlPoint.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
+                controlPoint.getLatitude(), controlPoint.getLongitude());
         }
         else
         {
@@ -1414,10 +1728,18 @@ public class AirspaceEditor implements SelectListener
 
         java.util.List<Position> linePositions = new ArrayList<Position>(2);
         linePositions.add(new Position(centerPosition, cAltitude));
-        linePositions.add(new Position(cpPositionR, rAltitude));
+        linePositions.add(new Position(controlPoint, rAltitude));
         rotationLine.setPositions(linePositions);
     }
 
+    /**
+     * Add a specified increment to an angle and normalize the result to be between 0 and 360 degrees.
+     *
+     * @param originalHeading the base angle.
+     * @param deltaHeading    the increment to add prior to normalizing.
+     *
+     * @return the normalized angle.
+     */
     protected Angle normalizedHeading(Angle originalHeading, Angle deltaHeading)
     {
         final double twoPI = 2 * Math.PI;
@@ -1428,5 +1750,34 @@ public class AirspaceEditor implements SelectListener
             newHeading = newHeading % twoPI;
 
         return Angle.fromRadians(newHeading >= 0 ? newHeading : newHeading + twoPI);
+    }
+
+    /**
+     * Computes a control point location at the edge of a shape.
+     *
+     * @param center   the shape's center.
+     * @param location a location that forms a line from the shape's center along the shape's axis. The returned
+     *                 location is on the edge indicated by the cross product of a vector normal to the surface at the
+     *                 specified center and a vector from the center to this location.
+     * @param length   the distance of the edge from the shape's center.
+     *
+     * @return a location at the shape's edge at the same location along the shape's axis as the specified center
+     * location.
+     */
+    protected Position computeEdgeLocation(LatLon center, LatLon location, double length)
+    {
+        Vec4 centerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(center);
+        Vec4 surfaceNormal = getWwd().getModel().getGlobe().computeEllipsoidalNormalAtLocation(
+            center.getLatitude(), center.getLongitude());
+
+        Vec4 point1 = getWwd().getModel().getGlobe().computeEllipsoidalPointFromLocation(location);
+        Vec4 vecToLocation = point1.subtract3(centerPoint).normalize3();
+        Vec4 vecToEdge = surfaceNormal.cross3(vecToLocation).normalize3().multiply3(length);
+
+        LatLon edgeLocation = getWwd().getModel().getGlobe().computePositionFromEllipsoidalPoint(
+            vecToEdge.add3(centerPoint));
+        double edgeAltitude = this.computeControlPointAltitude(edgeLocation);
+
+        return new Position(edgeLocation, edgeAltitude);
     }
 }
