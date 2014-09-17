@@ -188,8 +188,6 @@ public class Route extends TrackAirspace
 
         List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldRef, newRef, this.getLocations());
         this.setLocations(newLocations);
-
-        super.doMoveTo(oldRef, newRef);
     }
 
     protected void doMoveTo(Position oldRef, Position newRef)
