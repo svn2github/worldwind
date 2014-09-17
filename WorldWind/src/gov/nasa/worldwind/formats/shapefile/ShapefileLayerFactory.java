@@ -440,10 +440,6 @@ public class ShapefileLayerFactory
         return shapeAttributes;
     }
 
-    //**************************************************************//
-    //********************  Geometry Conversion  *******************//
-    //**************************************************************//
-
     protected void addRenderablesForPoints(Shapefile shp, RenderableLayer layer)
     {
         while (shp.hasNext())
@@ -481,6 +477,23 @@ public class ShapefileLayerFactory
         }
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
+    protected Renderable createPoint(ShapefileRecord record, double latDegrees, double lonDegrees, AVList mappings)
+    {
+        PointPlacemark placemark = new PointPlacemark(Position.fromDegrees(latDegrees, lonDegrees, 0));
+        placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+
+        if (this.normalPointAttributes != null)
+            placemark.setAttributes(this.normalPointAttributes);
+        if (this.highlightPointAttributes != null)
+            placemark.setHighlightAttributes(this.highlightPointAttributes);
+
+        if (mappings != null)
+            placemark.setValues(mappings);
+
+        return placemark;
+    }
+
     protected void addRenderablesForPolylines(Shapefile shp, RenderableLayer layer)
     {
         ShapefilePolylines shape = new ShapefilePolylines(shp, this.normalShapeAttributes,
@@ -515,8 +528,7 @@ public class ShapefileLayerFactory
 
     protected void addRenderablesForSurfacePolygons(Shapefile shp, RenderableLayer layer)
     {
-        // TODO: Implement ShapefilePolygons and use it here.
-        ShapefilePolylines shape = new ShapefilePolylines(shp, this.normalShapeAttributes,
+        ShapefilePolygons shape = new ShapefilePolygons(shp, this.normalShapeAttributes,
             this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
         {
             @Override
@@ -568,136 +580,5 @@ public class ShapefileLayerFactory
         }
 
         return mappings.getEntries().size() > 0 ? mappings : null;
-    }
-
-    //**************************************************************//
-    //********************  Primitive Geometry Construction  *******//
-    //**************************************************************//
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    protected Renderable createPoint(ShapefileRecord record, double latDegrees, double lonDegrees, AVList mappings)
-    {
-        PointPlacemark placemark = new PointPlacemark(Position.fromDegrees(latDegrees, lonDegrees, 0));
-        placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-
-        if (this.normalPointAttributes != null)
-            placemark.setAttributes(this.normalPointAttributes);
-        if (this.highlightPointAttributes != null)
-            placemark.setHighlightAttributes(this.highlightPointAttributes);
-
-        if (mappings != null)
-            placemark.setValues(mappings);
-
-        return placemark;
-    }
-
-    protected Renderable createPolyline(Shapefile shp, AVList mappings)
-    {
-        SurfacePolylines shape = new SurfacePolylines(Sector.fromDegrees(shp.getBoundingRectangle()),
-            shp.getPointBuffer());
-
-        if (this.normalShapeAttributes != null)
-            shape.setAttributes(this.normalShapeAttributes);
-        if (this.highlightShapeAttributes != null)
-            shape.setHighlightAttributes(this.highlightShapeAttributes);
-
-        if (mappings != null)
-            shape.setValues(mappings);
-
-        return shape;
-    }
-
-    protected void createPolygon(ShapefileRecord record, AVList mappings, RenderableLayer layer)
-    {
-        Double height = ShapefileUtils.extractHeightAttribute(record);
-        if (height != null) // create extruded polygons
-        {
-            ExtrudedPolygon ep = new ExtrudedPolygon(height);
-
-            if (this.normalShapeAttributes != null)
-                ep.setAttributes(this.normalShapeAttributes);
-            if (this.highlightShapeAttributes != null)
-                ep.setHighlightAttributes(this.highlightShapeAttributes);
-
-            if (mappings != null)
-                ep.setValues(mappings);
-
-            layer.addRenderable(ep);
-
-            for (int i = 0; i < record.getNumberOfParts(); i++)
-            {
-                // Although the shapefile spec says that inner and outer boundaries can be listed in any order, it's
-                // assumed here that inner boundaries are at least listed adjacent to their outer boundary, either
-                // before or after it. The below code accumulates inner boundaries into the extruded polygon until an
-                // outer boundary comes along. If the outer boundary comes before the inner boundaries, the inner
-                // boundaries are added to the polygon until another outer boundary comes along, at which point a new
-                // extruded polygon is started.
-
-                VecBuffer buffer = record.getCompoundPointBuffer().subBuffer(i);
-                if (WWMath.computeWindingOrderOfLocations(buffer.getLocations()).equals(AVKey.CLOCKWISE))
-                {
-                    if (!ep.getOuterBoundary().iterator().hasNext()) // has no outer boundary yet
-                    {
-                        ep.setOuterBoundary(buffer.getLocations());
-                    }
-                    else
-                    {
-                        ep = new ExtrudedPolygon();
-
-                        if (this.normalShapeAttributes != null)
-                            ep.setAttributes(this.normalShapeAttributes);
-                        if (this.highlightShapeAttributes != null)
-                            ep.setHighlightAttributes(this.highlightShapeAttributes);
-
-                        if (mappings != null)
-                            ep.setValues(mappings);
-
-                        ep.setOuterBoundary(record.getCompoundPointBuffer().getLocations());
-                        layer.addRenderable(ep);
-                    }
-                }
-                else
-                {
-                    ep.addInnerBoundary(buffer.getLocations());
-                }
-            }
-        }
-        else // create surface polygons
-        {
-            SurfacePolygons shape = new SurfacePolygons(
-                Sector.fromDegrees(((ShapefileRecordPolygon) record).getBoundingRectangle()),
-                record.getCompoundPointBuffer());
-
-            if (this.normalShapeAttributes != null)
-                shape.setAttributes(this.normalShapeAttributes);
-            if (this.highlightShapeAttributes != null)
-                shape.setHighlightAttributes(this.highlightShapeAttributes);
-
-            if (mappings != null)
-                shape.setValues(mappings);
-
-            // Configure the SurfacePolygons as a single large polygon.
-            // Configure the SurfacePolygons to correctly interpret the Shapefile polygon record. Shapefile polygons may
-            // have rings defining multiple inner and outer boundaries. Each ring's winding order defines whether it's an
-            // outer boundary or an inner boundary: outer boundaries have a clockwise winding order. However, the
-            // arrangement of each ring within the record is not significant; inner rings can precede outer rings and vice
-            // versa.
-            //
-            // By default, SurfacePolygons assumes that the sub-buffers are arranged such that each outer boundary precedes
-            // a set of corresponding inner boundaries. SurfacePolygons traverses the sub-buffers and tessellates a new
-            // polygon each  time it encounters an outer boundary. Outer boundaries are sub-buffers whose winding order
-            // matches the SurfacePolygons' windingRule property.
-            //
-            // This default behavior does not work with Shapefile polygon records, because the sub-buffers of a Shapefile
-            // polygon record can be arranged arbitrarily. By calling setPolygonRingGroups(new int[]{0}), the
-            // SurfacePolygons interprets all sub-buffers as boundaries of a single tessellated shape, and configures the
-            // GLU tessellator's winding rule to correctly interpret outer and inner boundaries (in any arrangement)
-            // according to their winding order. We set the SurfacePolygons' winding rule to clockwise so that sub-buffers
-            // with a clockwise winding ordering are interpreted as outer boundaries.
-            shape.setWindingRule(AVKey.CLOCKWISE);
-            shape.setPolygonRingGroups(new int[] {0});
-            shape.setPolygonRingGroups(new int[] {0});
-            layer.addRenderable(shape);
-        }
     }
 }

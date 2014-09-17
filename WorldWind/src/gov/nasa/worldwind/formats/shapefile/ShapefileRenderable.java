@@ -258,14 +258,13 @@ public abstract class ShapefileRenderable extends WWObjectImpl
     {
         renderableRecord.setAttributes(this.initNormalAttrs);
         renderableRecord.setHighlightAttributes(this.initHighlightAttrs);
+        renderableRecord.ordinal = this.records.size();
+        this.records.add(renderableRecord);
 
         if (this.initAttributeDelegate != null)
         {
             this.initAttributeDelegate.assignAttributes(shapefileRecord, renderableRecord);
         }
-
-        renderableRecord.ordinal = this.records.size();
-        this.records.add(renderableRecord);
     }
 
     public Sector getSector()
