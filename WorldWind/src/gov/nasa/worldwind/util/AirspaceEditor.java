@@ -207,6 +207,10 @@ public class AirspaceEditor implements SelectListener
      */
     protected List<Box> trackAdjacencyList;
 
+    protected MarkerAttributes locationMarkerAttributes;
+    protected MarkerAttributes sizeMarkerAttributes;
+    protected MarkerAttributes angleMarkerAttributes;
+
     /**
      * Constructs and editor for a specified shape. Once constructed, the editor must be armed to operate. See {@link
      * #setArmed(boolean)}.
@@ -221,18 +225,23 @@ public class AirspaceEditor implements SelectListener
         if (wwd == null)
         {
             String msg = Logging.getMessage("nullValue.WorldWindow");
-            Logging.logger().log(java.util.logging.Level.FINE, msg);
+            Logging.logger().log(java.util.logging.Level.SEVERE, msg);
             throw new IllegalArgumentException(msg);
         }
 
         if (originalShape == null)
         {
             String msg = Logging.getMessage("nullValue.Shape");
-            Logging.logger().log(java.util.logging.Level.FINE, msg);
+            Logging.logger().log(java.util.logging.Level.SEVERE, msg);
             throw new IllegalArgumentException(msg);
         }
 
-        // TODO: Check that shape implements Movable2.
+        if (!(originalShape instanceof Movable2))
+        {
+            String msg = Logging.getMessage("generic.Movable2NotSupported");
+            Logging.logger().log(java.util.logging.Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
+        }
 
         this.wwd = wwd;
         this.shape = originalShape;
@@ -273,6 +282,10 @@ public class AirspaceEditor implements SelectListener
 
         this.unitsFormat = new UnitsFormat();
         this.unitsFormat.setFormat(UnitsFormat.FORMAT_LENGTH, " %,12.3f %s");
+
+        this.locationMarkerAttributes = new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
+        this.sizeMarkerAttributes = new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
+        this.angleMarkerAttributes = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
     }
 
     /**
@@ -762,16 +775,12 @@ public class AirspaceEditor implements SelectListener
         if (currentLocations == null)
             return;
 
+        // Assemble a local list of the polygon's locations.
         java.util.List<LatLon> locations = new ArrayList<LatLon>();
         for (LatLon location : currentLocations)
         {
             locations.add(location);
         }
-
-        // Compute how much the specified control point moved.
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
 
         if (controlPoint.getPurpose().equals(ROTATION))
         {
@@ -795,6 +804,7 @@ public class AirspaceEditor implements SelectListener
         else // location change
         {
             // Compute the new location for the polygon location associated with the incoming control point.
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(
                 new Position(controlPoint.getPosition(), 0));
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
@@ -821,14 +831,11 @@ public class AirspaceEditor implements SelectListener
         CappedCylinder cylinder = (CappedCylinder) this.shape;
         double[] radii = cylinder.getRadii();
 
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
-
         Vec4 centerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(cylinder.getCenter());
         Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(controlPoint.getPosition());
         Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
 
+        Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
         if (controlPoint.getPurpose().equals(OUTER_RADIUS))
             radii[1] += delta.dot3(vMarker);
         else if (controlPoint.getPurpose().equals(INNER_RADIUS))
@@ -869,14 +876,11 @@ public class AirspaceEditor implements SelectListener
         SphereAirspace sphere = (SphereAirspace) this.shape;
         double radius = sphere.getRadius();
 
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
-
         Vec4 centerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(sphere.getLocation());
         Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(controlPoint.getPosition());
         Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
 
+        Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
         if (controlPoint.getPurpose().equals(OUTER_RADIUS))
             radius += delta.dot3(vMarker);
 
@@ -896,10 +900,6 @@ public class AirspaceEditor implements SelectListener
         LatLon[] locations = orbit.getLocations();
         double width = orbit.getWidth();
 
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
-
         LatLon center = LatLon.interpolateGreatCircle(0.5, locations[0], locations[1]);
         Vec4 centerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(center);
 
@@ -908,6 +908,7 @@ public class AirspaceEditor implements SelectListener
 
         if (controlPoint.getPurpose().equals(RIGHT_WIDTH))
         {
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
             orbit.setWidth(width + delta.dot3(vMarker));
         }
@@ -926,6 +927,7 @@ public class AirspaceEditor implements SelectListener
         }
         else // location change
         {
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
                 markerPoint.add3(delta));
             locations[controlPoint.getId()] = markerPosition;
@@ -948,10 +950,6 @@ public class AirspaceEditor implements SelectListener
         {
             locations.add(ll);
         }
-
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
 
         if (controlPoint.getPurpose().equals(ROTATION))
         {
@@ -978,10 +976,12 @@ public class AirspaceEditor implements SelectListener
             Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(
                 new Position(controlPoint.getPosition(), 0));
             Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             route.setWidth(route.getWidth() + delta.dot3(vMarker));
         }
         else // location change
         {
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(
                 new Position(controlPoint.getPosition(), 0));
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
@@ -1003,10 +1003,6 @@ public class AirspaceEditor implements SelectListener
         TrackAirspace track = (TrackAirspace) this.shape;
         List<Box> legs = track.getLegs();
 
-        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(terrainPosition);
-        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(this.previousPosition);
-        Vec4 delta = terrainPoint.subtract3(previousPoint);
-
         if (controlPoint.getPurpose().equals(ROTATION))
         {
             List<LatLon> trackLocations = new ArrayList<LatLon>();
@@ -1020,6 +1016,7 @@ public class AirspaceEditor implements SelectListener
             Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(oldHeading);
             this.currentHeading = this.normalizedHeading(this.currentHeading, deltaHeading);
 
+            // Rotate all the legs.
             for (Box leg : legs)
             {
                 LatLon[] locations = leg.getLocations();
@@ -1048,6 +1045,7 @@ public class AirspaceEditor implements SelectListener
 
             double[] widths = leg.getWidths();
             double[] newWidths = new double[] {widths[0], widths[1]};
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             if (controlPoint.getPurpose().equals(LEFT_WIDTH))
                 newWidths[0] += delta.dot3(vMarker);
             else
@@ -1068,6 +1066,7 @@ public class AirspaceEditor implements SelectListener
         }
         else
         {
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
             Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(
                 new Position(controlPoint.getPosition(), 0));
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
@@ -1118,23 +1117,18 @@ public class AirspaceEditor implements SelectListener
         if (markers == null)
         {
             // Create control points for the polygon locations.
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             ArrayList<Marker> controlPoints = new ArrayList<Marker>();
             int i = 0;
             for (LatLon location : locations)
             {
                 double altitude = this.computeControlPointAltitude(location);
-                controlPoints.add(new ControlPointMarker(new Position(location, altitude), markerAttrs, i++,
-                    LOCATION));
+                Position cpPosition = new Position(location, altitude);
+                controlPoints.add(new ControlPointMarker(cpPosition, this.locationMarkerAttributes, i++, LOCATION));
             }
 
             // Create a control point for the rotation control.
-            markerAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            controlPoints.add(
-                new ControlPointMarker(new Position(rotationControlLocation, rotationControlAltitude), markerAttrs, i,
-                    ROTATION));
+            Position cpPosition = new Position(rotationControlLocation, rotationControlAltitude);
+            controlPoints.add(new ControlPointMarker(cpPosition, this.angleMarkerAttributes, i, ROTATION));
 
             this.controlPointLayer.setMarkers(controlPoints);
         }
@@ -1175,34 +1169,33 @@ public class AirspaceEditor implements SelectListener
         double[] radii = cylinder.getRadii();
         boolean hasInnerRadius = radii[0] > 0;
 
-        LatLon coPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), Angle.fromDegrees(90),
+        LatLon outerRadiusLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), Angle.fromDegrees(90),
             Angle.fromRadians(radii[1] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        LatLon ciPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), Angle.fromDegrees(90),
+        LatLon innerRadiusLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), Angle.fromDegrees(90),
             Angle.fromRadians(radii[0] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
 
-        double coAltitude = this.computeControlPointAltitude(coPosition);
-        double ciAltitude = this.computeControlPointAltitude(ciPosition);
+        double outerRadiusAltitude = this.computeControlPointAltitude(outerRadiusLocation);
+        double innerRadiusAltitude = this.computeControlPointAltitude(innerRadiusLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
         {
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
-            markerList.add(new ControlPointMarker(new Position(coPosition, coAltitude), markerAttrs, 0,
-                OUTER_RADIUS));
+            Position cpPosition = new Position(outerRadiusLocation, outerRadiusAltitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 0, OUTER_RADIUS));
             if (hasInnerRadius)
-                markerList.add(new ControlPointMarker(new Position(ciPosition, ciAltitude), markerAttrs, 1,
-                    INNER_RADIUS));
+            {
+                cpPosition = new Position(innerRadiusLocation, innerRadiusAltitude);
+                markerList.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 1, INNER_RADIUS));
+            }
             this.controlPointLayer.setMarkers(markerList);
         }
         else
         {
             Iterator<Marker> markerIterator = markers.iterator();
-            markerIterator.next().setPosition(new Position(coPosition, coAltitude));
+            markerIterator.next().setPosition(new Position(outerRadiusLocation, outerRadiusAltitude));
             if (hasInnerRadius)
-                markerIterator.next().setPosition(new Position(ciPosition, ciAltitude));
+                markerIterator.next().setPosition(new Position(innerRadiusLocation, innerRadiusAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
@@ -1225,20 +1218,20 @@ public class AirspaceEditor implements SelectListener
 
         Angle[] azimuths = cylinder.getAzimuths();
 
-        LatLon coPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
+        LatLon outerRadiusLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
             Angle.fromRadians(radii[1] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        LatLon ciPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
+        LatLon innerRadiusLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
             Angle.fromRadians(radii[0] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
 
-        LatLon cLPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[0],
+        LatLon leftAzimuthLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[0],
             Angle.fromRadians(averageRadius / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        LatLon cRPosition = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
+        LatLon rightAzimuthLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), azimuths[1],
             Angle.fromRadians(averageRadius / this.wwd.getModel().getGlobe().getEquatorialRadius()));
 
-        double coAltitude = this.computeControlPointAltitude(coPosition);
-        double ciAltitude = this.computeControlPointAltitude(ciPosition);
-        double cRAltitude = this.computeControlPointAltitude(cRPosition);
-        double cLAltitude = this.computeControlPointAltitude(cLPosition);
+        double outerRadiusAltitude = this.computeControlPointAltitude(outerRadiusLocation);
+        double innerRadiusAltitude = this.computeControlPointAltitude(innerRadiusLocation);
+        double rightAzimuthAltitude = this.computeControlPointAltitude(rightAzimuthLocation);
+        double leftAzimuthAltitude = this.computeControlPointAltitude(leftAzimuthLocation);
 
         LatLon rotationControlLocation = LatLon.greatCircleEndPosition(cylinder.getCenter(), this.currentHeading,
             Angle.fromRadians(1.2 * radii[1] / this.wwd.getModel().getGlobe().getEquatorialRadius()));
@@ -1247,37 +1240,36 @@ public class AirspaceEditor implements SelectListener
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
         {
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
-            markerList.add(new ControlPointMarker(new Position(coPosition, coAltitude), markerAttrs, 0,
-                OUTER_RADIUS));
+            Position cpPosition = new Position(outerRadiusLocation, outerRadiusAltitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 0, OUTER_RADIUS));
             if (hasInnerRadius)
-                markerList.add(new ControlPointMarker(new Position(ciPosition, ciAltitude), markerAttrs, 1,
-                    INNER_RADIUS));
+            {
+                cpPosition = new Position(innerRadiusLocation, innerRadiusAltitude);
+                markerList.add(
+                    new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 1, INNER_RADIUS));
+            }
 
-            markerAttrs =
-                new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            markerList.add(new ControlPointMarker(new Position(cLPosition, cLAltitude), markerAttrs, 2,
-                LEFT_AZIMUTH));
-            markerList.add(new ControlPointMarker(new Position(cRPosition, cRAltitude), markerAttrs, 3,
-                RIGHT_AZIMUTH));
-
+            cpPosition = new Position(leftAzimuthLocation, leftAzimuthAltitude);
             markerList.add(
-                new ControlPointMarker(new Position(rotationControlLocation, rotationControlAltitude), markerAttrs, 4,
-                    ROTATION));
+                new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 2, LEFT_AZIMUTH));
+            cpPosition = new Position(rightAzimuthLocation, rightAzimuthAltitude);
+            markerList.add(
+                new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 3, RIGHT_AZIMUTH));
+
+            cpPosition = new Position(rotationControlLocation, rotationControlAltitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 4, ROTATION));
 
             this.controlPointLayer.setMarkers(markerList);
         }
         else
         {
             Iterator<Marker> markerIterator = markers.iterator();
-            markerIterator.next().setPosition(new Position(coPosition, coAltitude));
+            markerIterator.next().setPosition(new Position(outerRadiusLocation, outerRadiusAltitude));
             if (hasInnerRadius)
-                markerIterator.next().setPosition(new Position(ciPosition, cRAltitude));
-            markerIterator.next().setPosition(new Position(cLPosition, cLAltitude));
-            markerIterator.next().setPosition(new Position(cRPosition, cRAltitude));
+                markerIterator.next().setPosition(new Position(innerRadiusLocation, rightAzimuthAltitude));
+            markerIterator.next().setPosition(new Position(leftAzimuthLocation, leftAzimuthAltitude));
+            markerIterator.next().setPosition(new Position(rightAzimuthLocation, rightAzimuthAltitude));
 
             markerIterator.next().setPosition(new Position(rotationControlLocation, rotationControlAltitude));
         }
@@ -1307,26 +1299,23 @@ public class AirspaceEditor implements SelectListener
         SphereAirspace sphere = (SphereAirspace) this.shape;
         double radius = sphere.getRadius();
 
-        LatLon cpPosition = LatLon.greatCircleEndPosition(sphere.getLocation(), Angle.fromDegrees(90),
+        LatLon radiusLocation = LatLon.greatCircleEndPosition(sphere.getLocation(), Angle.fromDegrees(90),
             Angle.fromRadians(radius / this.wwd.getModel().getGlobe().getEquatorialRadius()));
 
-        double cpAltitude = this.computeControlPointAltitude(cpPosition);
+        double radiusAltitude = this.computeControlPointAltitude(radiusLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
         {
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
-            markerList.add(new ControlPointMarker(new Position(cpPosition, cpAltitude), markerAttrs, 0,
-                OUTER_RADIUS));
+            Position cpPosition = new Position(radiusLocation, radiusAltitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 0, OUTER_RADIUS));
             this.controlPointLayer.setMarkers(markerList);
         }
         else
         {
             Iterator<Marker> markerIterator = markers.iterator();
-            markerIterator.next().setPosition(new Position(cpPosition, cpAltitude));
+            markerIterator.next().setPosition(new Position(radiusLocation, radiusAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
@@ -1342,49 +1331,44 @@ public class AirspaceEditor implements SelectListener
         LatLon[] locations = orbit.getLocations();
         double width = orbit.getWidth();
 
-        double c0Altitude = this.computeControlPointAltitude(locations[0]);
-        double c1Altitude = this.computeControlPointAltitude(locations[1]);
+        double location0Altitude = this.computeControlPointAltitude(locations[0]);
+        double location1Altitude = this.computeControlPointAltitude(locations[1]);
 
         Angle orbitHeading = LatLon.greatCircleAzimuth(locations[0], locations[1]);
 
         LatLon center = LatLon.interpolateGreatCircle(0.5, locations[0], locations[1]);
         double centerAltitude = this.computeControlPointAltitude(center);
-        Position cwPosition = this.computeEdgeLocation(center, locations[0], 0.5 * orbit.getWidth());
+        Position widthPosition = this.computeEdgeLocation(center, locations[0], 0.5 * orbit.getWidth());
 
-        Angle length = LatLon.greatCircleDistance(center, locations[0]);
-        LatLon crLocation = LatLon.greatCircleEndPosition(center, Angle.fromDegrees(orbitHeading.degrees),
-            Angle.fromRadians(length.radians + 1.2 * width / this.wwd.getModel().getGlobe().getEquatorialRadius()));
-        double crAltitude = this.computeControlPointAltitude(crLocation);
+        Angle distance = LatLon.greatCircleDistance(center, locations[0]);
+        LatLon rotationControlLocation = LatLon.greatCircleEndPosition(center, Angle.fromDegrees(orbitHeading.degrees),
+            Angle.fromRadians(distance.radians + 1.2 * width / this.wwd.getModel().getGlobe().getEquatorialRadius()));
+        double rotationControlAltitude = this.computeControlPointAltitude(rotationControlLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
         {
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             java.util.List<Marker> markerList = new ArrayList<Marker>(1);
-            markerList.add(new ControlPointMarker(new Position(locations[0], c0Altitude), markerAttrs, 0,
-                LOCATION));
-            markerList.add(new ControlPointMarker(new Position(locations[1], c1Altitude), markerAttrs, 1,
-                LOCATION));
+            Position cpPosition = new Position(locations[0], location0Altitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.locationMarkerAttributes, 0, LOCATION));
+            cpPosition = new Position(locations[1], location1Altitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.locationMarkerAttributes, 1, LOCATION));
 
-            markerAttrs = new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            markerList.add(new ControlPointMarker(new Position(cwPosition, cwPosition.getAltitude()), markerAttrs, 2,
-                RIGHT_WIDTH));
+            cpPosition = new Position(widthPosition, widthPosition.getAltitude());
+            markerList.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 2, RIGHT_WIDTH));
 
-            markerAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            markerList.add(new ControlPointMarker(new Position(crLocation, crAltitude), markerAttrs, 3,
-                ROTATION));
+            cpPosition = new Position(rotationControlLocation, rotationControlAltitude);
+            markerList.add(new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 3, ROTATION));
 
             this.controlPointLayer.setMarkers(markerList);
         }
         else
         {
             Iterator<Marker> markerIterator = markers.iterator();
-            markerIterator.next().setPosition(new Position(locations[0], c0Altitude));
-            markerIterator.next().setPosition(new Position(locations[1], c1Altitude));
-            markerIterator.next().setPosition(new Position(cwPosition, cwPosition.getAltitude()));
-            markerIterator.next().setPosition(new Position(crLocation, crAltitude));
+            markerIterator.next().setPosition(new Position(locations[0], location0Altitude));
+            markerIterator.next().setPosition(new Position(locations[1], location1Altitude));
+            markerIterator.next().setPosition(new Position(widthPosition, widthPosition.getAltitude()));
+            markerIterator.next().setPosition(new Position(rotationControlLocation, rotationControlAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
@@ -1393,7 +1377,8 @@ public class AirspaceEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = width;
         ((ControlPointMarker) markerIterator.next()).rotation = this.normalizedHeading(orbitHeading, Angle.ZERO);
 
-        this.updateOrientationLine(new Position(center, centerAltitude), new Position(crLocation, crAltitude));
+        this.updateOrientationLine(new Position(center, centerAltitude),
+            new Position(rotationControlLocation, rotationControlAltitude));
     }
 
     /**
@@ -1416,41 +1401,34 @@ public class AirspaceEditor implements SelectListener
             return;
 
         LatLon legCenter = LatLon.interpolateGreatCircle(0.5, locations.get(0), locations.get(1));
-        Position cwLPosition = this.computeEdgeLocation(legCenter, locations.get(1), 0.5 * route.getWidth());
-        Position cwRPosition = this.computeEdgeLocation(legCenter, locations.get(0), 0.5 * route.getWidth());
+        Position leftWidthPosition = this.computeEdgeLocation(legCenter, locations.get(1), 0.5 * route.getWidth());
+        Position rightWidthPosition = this.computeEdgeLocation(legCenter, locations.get(0), 0.5 * route.getWidth());
 
         LatLon center = LatLon.getCenter(locations);
         double centerAltitude = this.computeControlPointAltitude(center);
-        Angle distance = LatLon.getAverageDistance(locations);
-        LatLon crLocation = LatLon.greatCircleEndPosition(center, this.currentHeading, distance);
-        double crAltitude = this.computeControlPointAltitude(crLocation);
+        Angle averageDistance = LatLon.getAverageDistance(locations);
+        LatLon rotationLocation = LatLon.greatCircleEndPosition(center, this.currentHeading, averageDistance);
+        double rotationAltitude = this.computeControlPointAltitude(rotationLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
         {
-            MarkerAttributes markerAttrs =
-                new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
             ArrayList<Marker> controlPoints = new ArrayList<Marker>();
             int i = 0;
             for (LatLon cpPosition : locations)
             {
                 double altitude = this.computeControlPointAltitude(cpPosition);
-                controlPoints.add(new ControlPointMarker(new Position(cpPosition, altitude), markerAttrs, i++,
-                    LOCATION));
+                Position position = new Position(cpPosition, altitude);
+                controlPoints.add(new ControlPointMarker(position, this.locationMarkerAttributes, i++, LOCATION));
             }
 
-            markerAttrs = new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            controlPoints.add(
-                new ControlPointMarker(new Position(cwLPosition, cwLPosition.getAltitude()), markerAttrs, i++,
-                    RIGHT_WIDTH));
-            controlPoints.add(
-                new ControlPointMarker(new Position(cwRPosition, cwRPosition.getAltitude()), markerAttrs, i++,
-                    LEFT_WIDTH));
+            Position position = new Position(leftWidthPosition, leftWidthPosition.getAltitude());
+            controlPoints.add(new ControlPointMarker(position, this.sizeMarkerAttributes, i++, RIGHT_WIDTH));
+            position = new Position(rightWidthPosition, rightWidthPosition.getAltitude());
+            controlPoints.add(new ControlPointMarker(position, this.sizeMarkerAttributes, i++, LEFT_WIDTH));
 
-            markerAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-            controlPoints.add(new ControlPointMarker(new Position(crLocation, crAltitude), markerAttrs, i,
-                ROTATION));
+            position = new Position(rotationLocation, rotationAltitude);
+            controlPoints.add(new ControlPointMarker(position, this.angleMarkerAttributes, i, ROTATION));
 
             this.controlPointLayer.setMarkers(controlPoints);
         }
@@ -1463,13 +1441,13 @@ public class AirspaceEditor implements SelectListener
                 markerIterator.next().setPosition(new Position(cpPosition, altitude));
             }
 
-            markerIterator.next().setPosition(new Position(cwLPosition, cwLPosition.getAltitude()));
-            markerIterator.next().setPosition(new Position(cwRPosition, cwRPosition.getAltitude()));
-            markerIterator.next().setPosition(new Position(crLocation, crAltitude));
+            markerIterator.next().setPosition(new Position(leftWidthPosition, leftWidthPosition.getAltitude()));
+            markerIterator.next().setPosition(new Position(rightWidthPosition, rightWidthPosition.getAltitude()));
+            markerIterator.next().setPosition(new Position(rotationLocation, rotationAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
-        for (LatLon ignored : locations)
+        for (LatLon ignored : locations) // skip over the locations to get to the width and rotation control points
         {
             markerIterator.next();
         }
@@ -1477,7 +1455,8 @@ public class AirspaceEditor implements SelectListener
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
         ((ControlPointMarker) markerIterator.next()).rotation = this.currentHeading;
 
-        this.updateOrientationLine(new Position(center, centerAltitude), new Position(crLocation, crAltitude));
+        this.updateOrientationLine(new Position(center, centerAltitude),
+            new Position(rotationLocation, rotationAltitude));
     }
 
     /**
@@ -1491,9 +1470,7 @@ public class AirspaceEditor implements SelectListener
         if (legs == null)
             return;
 
-        MarkerAttributes locationAttrs =
-            new BasicMarkerAttributes(Material.BLUE, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
+        // Update the location control points.
         ArrayList<Marker> controlPoints = new ArrayList<Marker>();
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         Iterator<Marker> markerIterator = markers != null ? markers.iterator() : null;
@@ -1510,13 +1487,13 @@ public class AirspaceEditor implements SelectListener
                 {
                     altitude = this.computeControlPointAltitude(legLocations[0]);
                     ControlPointMarker cp = new ControlPointMarker(new Position(legLocations[0], altitude),
-                        locationAttrs, 0, i, LOCATION);
+                        this.locationMarkerAttributes, 0, i, LOCATION);
                     controlPoints.add(cp);
                 }
 
                 altitude = this.computeControlPointAltitude(legLocations[1]);
                 ControlPointMarker cp = new ControlPointMarker(new Position(legLocations[1], altitude),
-                    locationAttrs, 1, i, LOCATION);
+                    this.locationMarkerAttributes, 1, i, LOCATION);
                 controlPoints.add(cp);
             }
             else
@@ -1532,9 +1509,7 @@ public class AirspaceEditor implements SelectListener
             }
         }
 
-        MarkerAttributes sizeAttrs =
-            new BasicMarkerAttributes(Material.CYAN, BasicMarkerShape.SPHERE, 0.7, 10, 0.1);
-
+        // Update the width control points.
         for (int i = 0; i < legs.size(); i++)
         {
             Box leg = legs.get(i);
@@ -1549,12 +1524,10 @@ public class AirspaceEditor implements SelectListener
 
                 if (markers == null)
                 {
-                    controlPoints.add(
-                        new ControlPointMarker(new Position(cwLPosition, cwLPosition.getAltitude()), sizeAttrs, 2, i,
-                            LEFT_WIDTH));
-                    controlPoints.add(
-                        new ControlPointMarker(new Position(cwRPosition, cwRPosition.getAltitude()), sizeAttrs, 3, i,
-                            RIGHT_WIDTH));
+                    Position cpPosition = new Position(cwLPosition, cwLPosition.getAltitude());
+                    controlPoints.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 2, i, LEFT_WIDTH));
+                    cpPosition = new Position(cwRPosition, cwRPosition.getAltitude());
+                    controlPoints.add(new ControlPointMarker(cpPosition, this.sizeMarkerAttributes, 3, i, RIGHT_WIDTH));
                 }
                 else
                 {
@@ -1565,6 +1538,7 @@ public class AirspaceEditor implements SelectListener
             }
         }
 
+        // Update the rotation control points.
         List<LatLon> trackLocations = new ArrayList<LatLon>();
         for (Box leg : legs)
         {
@@ -1575,26 +1549,24 @@ public class AirspaceEditor implements SelectListener
         double trackCenterAltitude = this.computeControlPointAltitude(trackCenter);
         Angle trackRadius = LatLon.getAverageDistance(trackLocations);
 
-        LatLon crLocation = LatLon.greatCircleEndPosition(trackCenter, this.currentHeading, trackRadius);
-        double crAltitude = this.computeControlPointAltitude(crLocation);
+        LatLon rotationLocation = LatLon.greatCircleEndPosition(trackCenter, this.currentHeading, trackRadius);
+        double rotationAltitude = this.computeControlPointAltitude(rotationLocation);
         if (markers == null)
         {
-            MarkerAttributes rotationAttrs = new BasicMarkerAttributes(Material.GREEN, BasicMarkerShape.SPHERE,
-                0.7, 10, 0.1);
-            controlPoints.add(new ControlPointMarker(new Position(crLocation, crAltitude), rotationAttrs, 4,
-                ROTATION));
+            Position cpPosition = new Position(rotationLocation, rotationAltitude);
+            controlPoints.add(new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 4, ROTATION));
         }
         else
         {
             //noinspection ConstantConditions
-            markerIterator.next().setPosition(new Position(crLocation, crAltitude));
+            markerIterator.next().setPosition(new Position(rotationLocation, rotationAltitude));
         }
-
-        this.updateOrientationLine(new Position(trackCenter, trackCenterAltitude),
-            new Position(crLocation, crAltitude));
 
         if (markers == null)
             this.controlPointLayer.setMarkers(controlPoints);
+
+        this.updateOrientationLine(new Position(trackCenter, trackCenterAltitude),
+            new Position(rotationLocation, rotationAltitude));
 
         markers = this.controlPointLayer.getMarkers();
         for (Marker marker : markers)
@@ -1730,6 +1702,23 @@ public class AirspaceEditor implements SelectListener
         linePositions.add(new Position(centerPosition, cAltitude));
         linePositions.add(new Position(controlPoint, rAltitude));
         rotationLine.setPositions(linePositions);
+    }
+
+    /**
+     * Computes the Cartesian difference between two control points.
+     *
+     * @param previousLocation the location nof the previous control point.
+     * @param currentLocation  the location of the current control point.
+     *
+     * @return the Cartesian difference between the two control points.
+     */
+    protected Vec4 computeControlPointDelta(LatLon previousLocation, LatLon currentLocation)
+    {
+        // Compute how much the specified control point moved.
+        Vec4 terrainPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(currentLocation);
+        Vec4 previousPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(previousLocation);
+
+        return terrainPoint.subtract3(previousPoint);
     }
 
     /**
