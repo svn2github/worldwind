@@ -139,7 +139,7 @@ public class SharedShapes
         layer.setName("Airspaces");
 
         RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
-        AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
+        AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
 
         Airspace airspace = new Orbit(LatLon.fromDegrees(37.5, -120), LatLon.fromDegrees(42.5, -120),
             Orbit.OrbitType.CENTER, 100000);

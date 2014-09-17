@@ -412,13 +412,13 @@ public class GeoJSONLoader
     protected PointPlacemarkAttributes createPointAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPointAttributes();
+            return randomAttrs.nextAttributes().asPointAttributes();
 
         String key = this.getClass().getName() + ".PointAttributes";
         PointPlacemarkAttributes attrs = (PointPlacemarkAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPointAttributes();
+            attrs = randomAttrs.nextAttributes().asPointAttributes();
             layer.setValue(key, attrs);
         }
 
@@ -429,13 +429,13 @@ public class GeoJSONLoader
     protected ShapeAttributes createPolylineAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPolylineAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
 
         String key = this.getClass().getName() + ".PolylineAttributes";
         ShapeAttributes attrs = (ShapeAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPolylineAttributes();
+            attrs = randomAttrs.nextAttributes().asShapeAttributes();
             layer.setValue(key, attrs);
         }
 
@@ -446,13 +446,13 @@ public class GeoJSONLoader
     protected ShapeAttributes createPolygonAttributes(GeoJSONGeometry geom, Layer layer)
     {
         if (layer == null)
-            return randomAttrs.nextPolygonAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
 
         String key = this.getClass().getName() + ".PolygonAttributes";
         ShapeAttributes attrs = (ShapeAttributes) layer.getValue(key);
         if (attrs == null)
         {
-            attrs = randomAttrs.nextPolygonAttributes();
+            attrs = randomAttrs.nextAttributes().asShapeAttributes();
             layer.setValue(key, attrs);
         }
 

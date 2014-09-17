@@ -17,10 +17,9 @@ import java.awt.*;
  */
 public class RandomShapeAttributes
 {
-    protected int attrIndex = 0;
+    protected int attrIndex = -1;
     protected PointPlacemarkAttributes[] pointAttrs;
-    protected ShapeAttributes[] polylineAttrs;
-    protected ShapeAttributes[] polygonAttrs;
+    protected ShapeAttributes[] shapeAttrs;
     protected AirspaceAttributes[] airspaceAttrs;
 
     public RandomShapeAttributes()
@@ -40,37 +39,37 @@ public class RandomShapeAttributes
         };
 
         this.pointAttrs = new PointPlacemarkAttributes[shapeColors.length];
-        this.polylineAttrs = new ShapeAttributes[shapeColors.length];
-        this.polygonAttrs = new ShapeAttributes[shapeColors.length];
+        this.shapeAttrs = new ShapeAttributes[shapeColors.length];
         this.airspaceAttrs = new AirspaceAttributes[shapeColors.length];
 
         for (int i = 0; i < shapeColors.length; i++)
         {
             this.pointAttrs[i] = this.createPointAttributes(shapeColors[i]);
-            this.polylineAttrs[i] = this.createPolylineAttributes(shapeColors[i]);
-            this.polygonAttrs[i] = this.createPolygonAttributes(shapeColors[i]);
+            this.shapeAttrs[i] = this.createShapeAttributes(shapeColors[i]);
             this.airspaceAttrs[i] = this.createAirspaceAttributes(shapeColors[i]);
         }
     }
 
-    public PointPlacemarkAttributes nextPointAttributes()
+    public RandomShapeAttributes nextAttributes()
     {
-        return this.pointAttrs[this.attrIndex++ % this.pointAttrs.length];
+        this.attrIndex++;
+
+        return this;
     }
 
-    public ShapeAttributes nextPolylineAttributes()
+    public PointPlacemarkAttributes asPointAttributes()
     {
-        return this.polylineAttrs[this.attrIndex++ % this.polylineAttrs.length];
+        return this.pointAttrs[this.attrIndex % this.pointAttrs.length];
     }
 
-    public ShapeAttributes nextPolygonAttributes()
+    public ShapeAttributes asShapeAttributes()
     {
-        return this.polygonAttrs[this.attrIndex++ % this.polygonAttrs.length];
+        return this.shapeAttrs[this.attrIndex % this.shapeAttrs.length];
     }
 
-    public AirspaceAttributes nextAirspaceAttributes()
+    public AirspaceAttributes asAirspaceAttributes()
     {
-        return this.airspaceAttrs[this.attrIndex++ % this.airspaceAttrs.length];
+        return this.airspaceAttrs[this.attrIndex % this.airspaceAttrs.length];
     }
 
     protected PointPlacemarkAttributes createPointAttributes(Color color)
@@ -82,21 +81,13 @@ public class RandomShapeAttributes
         return attrs;
     }
 
-    protected ShapeAttributes createPolylineAttributes(Color color)
-    {
-        ShapeAttributes attrs = new BasicShapeAttributes();
-        attrs.setOutlineMaterial(new Material(color));
-        attrs.setOutlineWidth(1.5);
-        return attrs;
-    }
-
-    protected ShapeAttributes createPolygonAttributes(Color color)
+    protected ShapeAttributes createShapeAttributes(Color color)
     {
         ShapeAttributes attrs = new BasicShapeAttributes();
         attrs.setInteriorMaterial(new Material(color));
-        attrs.setOutlineMaterial(new Material(WWUtil.makeColorDarker(color)));
+        attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
         attrs.setInteriorOpacity(0.5);
-        attrs.setOutlineWidth(1.5);
+        attrs.setOutlineWidth(2);
         return attrs;
     }
 
@@ -104,9 +95,9 @@ public class RandomShapeAttributes
     {
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
         attrs.setInteriorMaterial(new Material(color));
-        attrs.setOutlineMaterial(new Material(WWUtil.makeColorDarker(color)));
+        attrs.setOutlineMaterial(new Material(WWUtil.makeColorBrighter(color)));
         attrs.setInteriorOpacity(0.7);
-        attrs.setOutlineWidth(1.5);
+        attrs.setOutlineWidth(2);
         attrs.setDrawOutline(true);
         attrs.setEnableAntialiasing(true);
         attrs.setEnableLighting(true);

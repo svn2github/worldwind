@@ -29,6 +29,7 @@ import gov.nasa.worldwind.util.*;
  *
  * @author dcollins
  * @version $Id$
+ * @deprecated Use {@link ShapefileLayerFactory} instead.
  */
 public class ShapefileLoader
 {
@@ -370,7 +371,7 @@ public class ShapefileLoader
     {
         synchronized (randomAttrs)
         {
-            return randomAttrs.nextPointAttributes();
+            return randomAttrs.nextAttributes().asPointAttributes();
         }
     }
 
@@ -378,7 +379,7 @@ public class ShapefileLoader
     {
         synchronized (randomAttrs)
         {
-            return randomAttrs.nextPolylineAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
         }
     }
 
@@ -386,7 +387,7 @@ public class ShapefileLoader
     {
         synchronized (randomAttrs)
         {
-            return randomAttrs.nextPolygonAttributes();
+            return randomAttrs.nextAttributes().asShapeAttributes();
         }
     }
 }

@@ -55,7 +55,7 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeAGLAirspaces()
         {
-            AirspaceAttributes attrs = this.randomAttrs.nextAirspaceAttributes();
+            AirspaceAttributes attrs = this.randomAttrs.nextAttributes().asAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("AGL Airspaces");
 
@@ -218,7 +218,7 @@ public class Airspaces extends ApplicationTemplate
 
         protected Layer makeAMSLAirspaces()
         {
-            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("AMSL Airspaces");
 
@@ -333,7 +333,7 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeIntersectingAirspaces()
         {
-            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Intersecting Airspaces");
 
@@ -375,8 +375,8 @@ public class Airspaces extends ApplicationTemplate
 
         public Layer makeDatelineCrossingAirspaces()
         {
-            randomAttrs.nextAirspaceAttributes(); // skip the yellow attribute
-            AirspaceAttributes attrs = randomAttrs.nextAirspaceAttributes();
+            randomAttrs.nextAttributes(); // skip the yellow attribute
+            AirspaceAttributes attrs = randomAttrs.nextAttributes().asAirspaceAttributes();
             RenderableLayer layer = new RenderableLayer();
             layer.setName("Dateline Crossing Airspaces");
 
