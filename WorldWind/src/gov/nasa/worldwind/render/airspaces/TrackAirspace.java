@@ -682,6 +682,8 @@ public class TrackAirspace extends AbstractAirspace
         if (!this.isVisible())
             return;
 
+        this.determineActiveAttributes(dc);
+
         // Update the child leg vertices if they're out of date. Since the leg vertices are used to determine how each
         // leg is shaped with respect to its neighbors, the vertices must be current before rendering each leg.
         if (this.isLegsOutOfDate(dc))
@@ -693,7 +695,7 @@ public class TrackAirspace extends AbstractAirspace
         {
             // Synchronize the leg's attributes with this track's attributes, and setup this track as the leg's pick
             // delegate.
-            leg.setAttributes(this.getAttributes());
+            leg.setAttributes(this.getActiveAttributes());
             leg.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
             leg.preRender(dc);
         }

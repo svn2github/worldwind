@@ -237,11 +237,13 @@ public class Cake extends AbstractAirspace
         if (!this.isVisible())
             return;
 
+        this.determineActiveAttributes(dc);
+
         for (Layer layer : this.layers)
         {
             // Synchronize the layer's attributes with this cake's attributes, and setup this cake as the layer's pick
             // delegate.
-            layer.setAttributes(this.getAttributes());
+            layer.setAttributes(this.getActiveAttributes());
             layer.setDelegateOwner(this.getDelegateOwner() != null ? this.getDelegateOwner() : this);
             layer.preRender(dc);
         }

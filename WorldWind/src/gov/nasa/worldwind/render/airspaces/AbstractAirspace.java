@@ -47,18 +47,39 @@ public abstract class AbstractAirspace extends WWObjectImpl
     /** The default outline pick width. */
     protected static final int DEFAULT_OUTLINE_PICK_WIDTH = 10;
 
+    /** The default interior color. */
+    protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.LIGHT_GRAY;
+    /** The default outline color. */
+    protected static final Material DEFAULT_OUTLINE_MATERIAL = Material.DARK_GRAY;
+    /** The default highlight color. */
+    protected static final Material DEFAULT_HIGHLIGHT_MATERIAL = Material.WHITE;
+
+    /** The attributes used if attributes are not specified. */
+    protected static AirspaceAttributes defaultAttributes;
+
+    static
+    {
+        // Create and populate the default attributes.
+        defaultAttributes = new BasicAirspaceAttributes();
+        defaultAttributes.setInteriorMaterial(DEFAULT_INTERIOR_MATERIAL);
+        defaultAttributes.setOutlineMaterial(DEFAULT_OUTLINE_MATERIAL);
+    }
+
     // Airspace properties.
-    private boolean visible = true;
-    private AirspaceAttributes attributes;
-    private double lowerAltitude = 0.0;
-    private double upperAltitude = 1.0;
-    private boolean lowerTerrainConforming = false;
-    private boolean upperTerrainConforming = false;
-    private String lowerAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
-    private String upperAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
-    private LatLon groundReference;
-    private boolean enableLevelOfDetail = true;
-    private Collection<DetailLevel> detailLevels = new TreeSet<DetailLevel>();
+    protected boolean visible = true;
+    protected boolean highlighted;
+    protected AirspaceAttributes attributes;
+    protected AirspaceAttributes highlightAttributes;
+    protected AirspaceAttributes activeAttributes = new BasicAirspaceAttributes(); // re-determined each frame
+    protected double lowerAltitude = 0.0;
+    protected double upperAltitude = 1.0;
+    protected boolean lowerTerrainConforming = false;
+    protected boolean upperTerrainConforming = false;
+    protected String lowerAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
+    protected String upperAltitudeDatum = AVKey.ABOVE_MEAN_SEA_LEVEL;
+    protected LatLon groundReference;
+    protected boolean enableLevelOfDetail = true;
+    protected Collection<DetailLevel> detailLevels = new TreeSet<DetailLevel>();
     // Rendering properties.
     protected boolean enableBatchRendering = true;
     protected boolean enableBatchPicking = true;
@@ -67,18 +88,19 @@ public abstract class AbstractAirspace extends WWObjectImpl
     protected Object delegateOwner;
     protected SurfaceShape surfaceShape;
     protected boolean mustRegenerateSurfaceShape;
+    protected long frameTimeStamp;
     // Geometry computation and rendering support.
     protected AirspaceInfo currentInfo;
     protected Layer pickLayer;
     protected PickSupport pickSupport = new PickSupport();
-    private GeometryBuilder geometryBuilder = new GeometryBuilder();
+    protected GeometryBuilder geometryBuilder = new GeometryBuilder();
     // Geometry update support.
-    private long expiryTime = -1L;
-    private long minExpiryTime = 2000L;
-    private long maxExpiryTime = 6000L;
-    private static Random rand = new Random();
+    protected long expiryTime = -1L;
+    protected long minExpiryTime = 2000L;
+    protected long maxExpiryTime = 6000L;
+    protected static Random rand = new Random();
     // Elevation lookup map.
-    private Map<LatLon, Double> elevationMap = new HashMap<LatLon, Double>();
+    protected Map<LatLon, Double> elevationMap = new HashMap<LatLon, Double>();
     // Implements the the interface used by the draw context's outlined-shape renderer.
     protected OutlinedShape outlineShapeRenderer = new OutlinedShape()
     {
@@ -187,6 +209,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
 
         this.visible = source.visible;
         this.attributes = source.attributes;
+        this.highlightAttributes = source.highlightAttributes;
         this.lowerAltitude = source.lowerAltitude;
         this.upperAltitude = source.upperAltitude;
         this.lowerAltitudeDatum = source.lowerAltitudeDatum;
@@ -232,6 +255,31 @@ public abstract class AbstractAirspace extends WWObjectImpl
         }
 
         this.attributes = attributes;
+    }
+
+    @Override
+    public AirspaceAttributes getHighlightAttributes()
+    {
+        return highlightAttributes;
+    }
+
+    @Override
+    public void setHighlightAttributes(AirspaceAttributes highlightAttrs)
+    {
+        this.highlightAttributes = highlightAttrs;
+
+        if (this.surfaceShape != null)
+            this.surfaceShape.setHighlightAttributes(highlightAttrs);
+    }
+
+    public boolean isHighlighted()
+    {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted)
+    {
+        this.highlighted = highlighted;
     }
 
     public double[] getAltitudes()
@@ -552,6 +600,57 @@ public abstract class AbstractAirspace extends WWObjectImpl
         return this.currentInfo.getEyeDistance();
     }
 
+    /**
+     * Determines which attributes -- normal, highlight or default -- to use each frame. Places the result in this
+     * shape's current active attributes.
+     *
+     * @see #getActiveAttributes()
+     */
+    protected void determineActiveAttributes(DrawContext dc)
+    {
+        if (this.frameTimeStamp == dc.getFrameTimeStamp())
+            return;
+
+        if (this.isHighlighted())
+        {
+            if (this.getHighlightAttributes() != null)
+                this.activeAttributes.copy(this.getHighlightAttributes());
+            else
+            {
+                // If no highlight attributes have been specified we need to use the normal attributes but adjust them
+                // to cause highlighting.
+                if (this.getAttributes() != null)
+                    this.activeAttributes.copy(this.getAttributes());
+                else
+                    this.activeAttributes.copy(defaultAttributes);
+
+                this.activeAttributes.setOutlineMaterial(DEFAULT_HIGHLIGHT_MATERIAL);
+                this.activeAttributes.setInteriorMaterial(DEFAULT_HIGHLIGHT_MATERIAL);
+            }
+        }
+        else if (this.getAttributes() != null)
+        {
+            this.activeAttributes.copy(this.getAttributes());
+        }
+        else
+        {
+            this.activeAttributes.copy(defaultAttributes);
+        }
+    }
+
+    /**
+     * Returns this shape's currently active attributes, as determined during the most recent call to {@link
+     * #determineActiveAttributes(gov.nasa.worldwind.render.DrawContext)}. The active attributes are either the normal
+     * or highlight attributes, depending on this shape's highlight flag, and incorporates default attributes for those
+     * not specified in the applicable attribute set.
+     *
+     * @return this shape's currently active attributes.
+     */
+    public AirspaceAttributes getActiveAttributes()
+    {
+        return this.activeAttributes;
+    }
+
     @Override
     public void preRender(DrawContext dc)
     {
@@ -606,7 +705,8 @@ public abstract class AbstractAirspace extends WWObjectImpl
      */
     protected void updateSurfaceShape(DrawContext dc, SurfaceShape shape)
     {
-        ShapeAttributes attrs = this.getAttributes();
+        this.determineActiveAttributes(dc);
+        ShapeAttributes attrs = this.getActiveAttributes();
         if (shape.getAttributes() == null)
             shape.setAttributes(new BasicShapeAttributes(attrs));
         else
@@ -688,10 +788,14 @@ public abstract class AbstractAirspace extends WWObjectImpl
             this.drawOrderedRenderable(dc);
         else
             this.makeOrderedRenderable(dc);
+
+        this.frameTimeStamp = dc.getFrameTimeStamp();
     }
 
     protected void makeOrderedRenderable(DrawContext dc)
     {
+        this.determineActiveAttributes(dc);
+
         double eyeDistance = this.computeEyeDistance(dc);
         this.currentInfo.setEyeDistance(eyeDistance);
 
@@ -954,13 +1058,13 @@ public abstract class AbstractAirspace extends WWObjectImpl
     @SuppressWarnings("UnusedParameters")
     protected boolean mustDrawInterior(DrawContext dc)
     {
-        return this.getAttributes().isDrawInterior();
+        return this.getActiveAttributes().isDrawInterior();
     }
 
     protected void drawInterior(DrawContext dc)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-        AirspaceAttributes attrs = this.getAttributes();
+        AirspaceAttributes attrs = this.getActiveAttributes();
 
         if (!dc.isPickingMode())
         {
@@ -987,13 +1091,13 @@ public abstract class AbstractAirspace extends WWObjectImpl
     @SuppressWarnings("UnusedParameters")
     protected boolean mustDrawOutline(DrawContext dc)
     {
-        return this.getAttributes().isDrawOutline();
+        return this.getActiveAttributes().isDrawOutline();
     }
 
     protected void drawOutline(DrawContext dc)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-        AirspaceAttributes attrs = this.getAttributes();
+        AirspaceAttributes attrs = this.getActiveAttributes();
 
         if (!dc.isPickingMode())
         {
@@ -1036,7 +1140,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
     protected void drawGeometry(DrawContext dc, Geometry indices, Geometry vertices)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-        AirspaceAttributes attrs = this.getAttributes();
+        AirspaceAttributes attrs = this.getActiveAttributes();
 
         int size = vertices.getSize(Geometry.VERTEX);
         int type = vertices.getGLType(Geometry.VERTEX);
@@ -1399,6 +1503,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
             rs.addStateValueAsLatLon(context, "groundReference", this.getGroundReference());
 
         this.attributes.getRestorableState(rs, rs.addStateObject(context, "attributes"));
+        this.highlightAttributes.getRestorableState(rs, rs.addStateObject(context, "highlightAttributes"));
     }
 
     public void restoreState(String stateInXml)
@@ -1475,5 +1580,9 @@ public abstract class AbstractAirspace extends WWObjectImpl
         RestorableSupport.StateObject so = rs.getStateObject(context, "attributes");
         if (so != null)
             this.getAttributes().restoreState(rs, so);
+
+        so = rs.getStateObject(context, "highlightAttributes");
+        if (so != null)
+            this.getHighlightAttributes().restoreState(rs, so);
     }
 }

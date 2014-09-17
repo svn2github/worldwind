@@ -17,7 +17,7 @@ import java.util.Collection;
  * @author dcollins
  * @version $Id$
  */
-public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
+public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, Highlightable
 {
     public static final String DRAW_STYLE_FILL = "Airspace.DrawStyleFill";
     public static final String DRAW_STYLE_OUTLINE = "Airspace.DrawStyleOutline";
@@ -29,6 +29,20 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder
     AirspaceAttributes getAttributes();
 
     void setAttributes(AirspaceAttributes attributes);
+
+    /**
+     * Returns this shape's highlight attributes.
+     *
+     * @return this shape's highlight attributes. May be null.
+     */
+    AirspaceAttributes getHighlightAttributes();
+
+    /**
+     * Specifies this shape's highlight attributes.
+     *
+     * @param highlightAttrs the highlight attributes. May be null, in which case default attributes are used.
+     */
+    void setHighlightAttributes(AirspaceAttributes highlightAttrs);
 
     /**
      * Returns the current airspace surface altitudes.

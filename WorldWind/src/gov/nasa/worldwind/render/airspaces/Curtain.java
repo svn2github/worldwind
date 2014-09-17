@@ -203,10 +203,10 @@ public class Curtain extends AbstractAirspace
 
         // Display the airspace's interior color when its outline is disabled but its interior is enabled. This causes
         // the surface shape to display the color most similar to the 3D airspace.
-        if (!this.getAttributes().isDrawOutline() && this.getAttributes().isDrawInterior())
+        if (!this.getActiveAttributes().isDrawOutline() && this.getActiveAttributes().isDrawInterior())
         {
             shape.getAttributes().setDrawOutline(true);
-            shape.getAttributes().setOutlineMaterial(this.getAttributes().getInteriorMaterial());
+            shape.getAttributes().setOutlineMaterial(this.getActiveAttributes().getInteriorMaterial());
         }
     }
 

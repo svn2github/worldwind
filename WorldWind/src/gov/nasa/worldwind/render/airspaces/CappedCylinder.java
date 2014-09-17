@@ -362,7 +362,7 @@ public class CappedCylinder extends AbstractAirspace
     {
         super.updateSurfaceShape(dc, shape);
 
-        boolean mustDrawInterior = this.getAttributes().isDrawInterior() && this.isEnableCaps();
+        boolean mustDrawInterior = this.getActiveAttributes().isDrawInterior() && this.isEnableCaps();
         shape.getAttributes().setDrawInterior(mustDrawInterior); // suppress the shape interior when caps are disabled
     }
 

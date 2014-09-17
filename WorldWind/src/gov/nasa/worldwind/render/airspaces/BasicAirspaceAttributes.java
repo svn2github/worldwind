@@ -93,9 +93,21 @@ public class BasicAirspaceAttributes extends BasicShapeAttributes implements Air
      *
      * @throws IllegalArgumentException if <code>attributes</code> is <code>null</code>.
      */
-    public BasicAirspaceAttributes(ShapeAttributes attributes)
+    public BasicAirspaceAttributes(AirspaceAttributes attributes)
     {
         super(attributes);
+    }
+
+    /** {@inheritDoc} */
+    public AirspaceAttributes copy()
+    {
+        return new BasicAirspaceAttributes(this);
+    }
+
+    /** {@inheritDoc} */
+    public void copy(AirspaceAttributes attributes)
+    {
+        super.copy(attributes);
     }
 
     /**
