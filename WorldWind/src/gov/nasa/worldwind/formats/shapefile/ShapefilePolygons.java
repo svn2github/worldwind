@@ -1017,8 +1017,7 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         // automatically. We take care to avoid assembling groups based on any Attribute property, as those properties
         // may change without re-assembling these groups. However, changes to a record's visibility state, highlight
         // state, normal attributes reference and highlight attributes reference invalidate this grouping.
-        Map<ShapeAttributes, RecordGroup> attrMap
-            = new IdentityHashMap<ShapeAttributes, ShapefilePolygons.RecordGroup>();
+        Map<ShapeAttributes, RecordGroup> attrMap = new IdentityHashMap<ShapeAttributes, RecordGroup>();
         for (RecordIndices ri : geom.recordIndices)
         {
             ShapefileRenderable.Record record = this.getRecord(ri.ordinal);

@@ -726,12 +726,12 @@ public class ShapefileExtrudedPolygons extends ShapefileRenderable implements Or
     {
         tile.attributeGroups.clear();
 
-        // Assemble the tile's records into groups with common attributes. Attributes are compared using the instance's
-        // address, so subsequent changes to an Attribute instance will be reflected in the record group automatically.
-        // We take care to avoid assembling groups based on any Attribute property, as those properties may change
-        // without re-assembling these groups. However, changes to a record's visibility state, highlight state, normal
-        // attributes reference and highlight attributes reference invalidate this grouping.
-        HashMap<ShapeAttributes, RecordGroup> attrMap = new HashMap<ShapeAttributes, RecordGroup>();
+        // Assemble the tile's records into groups with common attributes. Attributes are grouped by reference using an
+        // InstanceHashMap, so that subsequent changes to an Attribute instance will be reflected in the record group
+        // automatically. We take care to avoid assembling groups based on any Attribute property, as those properties
+        // may change without re-assembling these groups. However, changes to a record's visibility state, highlight
+        // state, normal attributes reference and highlight attributes reference invalidate this grouping.
+        Map<ShapeAttributes, RecordGroup> attrMap = new IdentityHashMap<ShapeAttributes, RecordGroup>();
         for (Record record : tile.records)
         {
             if (!record.isVisible()) // ignore records marked as not visible
