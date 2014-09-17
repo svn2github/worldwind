@@ -195,6 +195,31 @@ public class Cake extends AbstractAirspace
         return null; // Cake is a geometry container, and therefore has no geometry itself.
     }
 
+    protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
+    {
+        if (oldRef == null)
+        {
+            String message = "nullValue.OldRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        if (newRef == null)
+        {
+            String message = "nullValue.NewRefIsNull";
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        super.doMoveTo(oldRef, newRef);
+
+        for (Layer l : this.layers)
+        {
+            l.doMoveTo(globe, oldRef, newRef);
+        }
+
+        this.invalidateAirspaceData();
+    }
+
     protected void doMoveTo(Position oldRef, Position newRef)
     {
         if (oldRef == null)
