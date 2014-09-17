@@ -11,6 +11,7 @@ import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe2D;
 import gov.nasa.worldwind.layers.TextureTile;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.GL;
@@ -424,8 +425,8 @@ public class SurfaceObjectTileBuilder
     }
 
     /**
-     * Removes all entries from list of SurfaceTiles assembled during the last call to {@link #buildTiles(DrawContext,
-     * Iterable)}.
+     * Removes all entries from the list of SurfaceTiles assembled during the last call to {@link
+     * #buildTiles(DrawContext, Iterable)}.
      *
      * @param dc the draw context used to build tiles.
      *
@@ -445,6 +446,55 @@ public class SurfaceObjectTileBuilder
         if (tileInfo != null)
         {
             tileInfo.tiles.clear();
+        }
+    }
+
+    /**
+     * Returns the list of pickable object candidates associated with the SurfaceTiles assembled during the last call to
+     * {@link #buildTiles(DrawContext, Iterable)}.
+     *
+     * @param dc the draw context used to build tiles.
+     *
+     * @return the pick candidates associated with the list of SurfaceTiles.
+     *
+     * @throws IllegalArgumentException if the draw context is null.
+     */
+    public Collection<PickedObject> getPickCandidates(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Object tileInfoKey = this.createTileInfoKey(dc);
+        TileInfo tileInfo = this.tileInfoMap.get(tileInfoKey);
+        return tileInfo != null ? tileInfo.pickCandidates : Collections.<PickedObject>emptyList();
+    }
+
+    /**
+     * Removes all entries from the list of pickable object candidates assembled during the last call to {@link
+     * #buildTiles(DrawContext, Iterable)}.
+     *
+     * @param dc the draw context used to build tiles.
+     *
+     * @throws IllegalArgumentException if the draw context is null.
+     */
+    public void clearPickCandidates(DrawContext dc)
+    {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Object tileInfoKey = this.createTileInfoKey(dc);
+        TileInfo tileInfo = this.tileInfoMap.get(tileInfoKey);
+        if (tileInfo != null)
+        {
+            tileInfo.pickCandidates.clear();
         }
     }
 
@@ -652,7 +702,7 @@ public class SurfaceObjectTileBuilder
      */
     protected Object createSurfaceTileDrawContext(SurfaceObjectTile tile)
     {
-        return new SurfaceTileDrawContext(tile.getSector(), tile.getWidth(), tile.getHeight());
+        return new SurfaceTileDrawContext(tile, this.currentInfo.pickCandidates);
     }
 
     //**************************************************************//
@@ -1202,6 +1252,7 @@ public class SurfaceObjectTileBuilder
     protected static class TileInfo
     {
         public ArrayList<SurfaceObjectTile> tiles = new ArrayList<SurfaceObjectTile>();
+        public ArrayList<PickedObject> pickCandidates = new ArrayList<PickedObject>();
         public LevelSet levelSet;
         public String cacheName;
         public int tileWidth;
