@@ -915,7 +915,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
 
     protected void doMoveTo(Globe globe, Position oldRef, Position newRef)
     {
-        this.doMoveTo(oldRef, newRef); // TODO: update all subclasses to use the Movable2 interface
+        this.doMoveTo(oldRef, newRef);
     }
 
     public void moveTo(Position position)
