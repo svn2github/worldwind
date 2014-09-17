@@ -6,8 +6,9 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.examples.util.*;
 
@@ -18,8 +19,8 @@ import java.awt.event.*;
 import java.io.File;
 
 /**
- * Illustrates how to import ESRI Shapefiles into World Wind. This uses a <code>{@link ShapefileLoader}</code> to parse
- * a Shapefile's contents and convert each shape into an equivalent World Wind shape. This provides examples of
+ * Illustrates how to import ESRI Shapefiles into World Wind. This uses a <code>{@link ShapefileLayerFactory}</code> to
+ * parse a Shapefile's contents and convert the shapefile into an equivalent World Wind shape. This provides examples of
  * importing a Shapefile on the local hard drive and importing a Shapefile at a remote URL.
  *
  * @author Patrick Murris
@@ -27,107 +28,43 @@ import java.io.File;
  */
 public class Shapefiles extends ApplicationTemplate
 {
-    public static class AppFrame extends ApplicationTemplate.AppFrame
+    public static class AppFrame extends ApplicationTemplate.AppFrame implements Runnable
     {
+        protected RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
+
         public AppFrame()
         {
             makeMenu(this);
         }
 
-        public void addShapefileLayer(Layer layer)
+        public void loadShapefile(Object source)
         {
+            ShapefileLayerFactory factory = new ShapefileLayerFactory();
+
+            this.randomAttrs.nextAttributes();
+            factory.setNormalPointAttributes(this.randomAttrs.asPointAttributes());
+            factory.setNormalShapeAttributes(this.randomAttrs.asShapeAttributes());
+
+            Layer layer = factory.createLayerFromSource(source, this); // use this as the completion callback
+            layer.setName(WWIO.getFilename(source.toString()));
             this.getWwd().getModel().getLayers().add(layer);
+
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
-        public void gotoLayer(Layer layer)
+        @Override
+        public void run() // ShapefileLayerFactory completion callback
         {
-            Sector sector = (Sector) layer.getValue(AVKey.SECTOR);
+            LayerList layerList = this.getWwd().getModel().getLayers();
+            Layer lastLayer = layerList.get(layerList.size() - 1);
+            Sector sector = (Sector) lastLayer.getValue(AVKey.SECTOR);
             if (sector != null)
             {
                 ExampleUtil.goTo(this.getWwd(), sector);
             }
+
+            this.setCursor(null);
         }
-    }
-
-    public static class WorkerThread extends Thread
-    {
-        protected Object shpSource;
-        protected AppFrame appFrame;
-
-        public WorkerThread(Object shpSource, AppFrame appFrame)
-        {
-            this.shpSource = shpSource;
-            this.appFrame = appFrame;
-        }
-
-        public void run()
-        {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    appFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                }
-            });
-
-            try
-            {
-                Layer shpLayer = this.parse();
-
-                // Set the shapefile layer's display name
-                shpLayer.setName(formName(this.shpSource));
-
-                // Schedule a task on the EDT to add the parsed shapefile layer to a layer
-                final Layer finalSHPLayer = shpLayer;
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    public void run()
-                    {
-                        appFrame.addShapefileLayer(finalSHPLayer);
-                        appFrame.gotoLayer(finalSHPLayer);
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            finally
-            {
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    public void run()
-                    {
-                        appFrame.setCursor(null);
-                    }
-                });
-            }
-        }
-
-        protected Layer parse()
-        {
-            if (OpenStreetMapShapefileLoader.isOSMPlacesSource(this.shpSource))
-            {
-                return OpenStreetMapShapefileLoader.makeLayerFromOSMPlacesSource(this.shpSource);
-            }
-            else
-            {
-                ShapefileLoader loader = new ShapefileLoader();
-                return loader.createLayerFromSource(this.shpSource);
-            }
-        }
-    }
-
-    protected static String formName(Object source)
-    {
-        String name = WWIO.getSourcePath(source);
-        if (name != null)
-            name = WWIO.getFilename(name);
-        if (name == null)
-            name = "Shapefile";
-
-        return name;
     }
 
     protected static void makeMenu(final AppFrame appFrame)
@@ -153,7 +90,7 @@ public class Shapefiles extends ApplicationTemplate
                     {
                         for (File file : fileChooser.getSelectedFiles())
                         {
-                            new WorkerThread(file, appFrame).start();
+                            appFrame.loadShapefile(file);
                         }
                     }
                 }
@@ -175,7 +112,7 @@ public class Shapefiles extends ApplicationTemplate
                     String status = JOptionPane.showInputDialog(appFrame, "URL");
                     if (!WWUtil.isEmpty(status))
                     {
-                        new WorkerThread(status.trim(), appFrame).start();
+                        appFrame.loadShapefile(status.trim());
                     }
                 }
                 catch (Exception e)

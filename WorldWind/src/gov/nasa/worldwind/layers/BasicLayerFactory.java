@@ -370,6 +370,6 @@ public class BasicLayerFactory extends BasicFactory
     {
         ShapefileLayerFactory factory = new ShapefileLayerFactory();
 
-        return factory.createLayerFromConfigDocument(domElement, params);
+        return factory.createLayerFromConfigDocument(domElement, params, null);
     }
 }
