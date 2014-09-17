@@ -27,45 +27,45 @@ import java.util.List;
  * @author tag
  * @version $Id$
  */
-public class AirspaceEditor implements SelectListener
+public class ShapeEditor implements SelectListener
 {
     // Control point purposes
     /**
      * Indicates that a control point is associated with annotation.
      */
-    protected String ANNOTATION = "gov.nasa.worldwind.airspaceditor.Annotation";
+    protected String ANNOTATION = "gov.nasa.worldwind.shapeEditor.Annotation";
     /**
      * Indicates a control point is associated with a location.
      */
-    protected String LOCATION = "gov.nasa.worldwind.airspaceditor.Location";
+    protected String LOCATION = "gov.nasa.worldwind.shapeEditor.Location";
     /**
      * Indicates that a control point is associates with whole-shape rotation.
      */
-    protected String ROTATION = "gov.nasa.worldwind.airspaceditor.Rotation";
+    protected String ROTATION = "gov.nasa.worldwind.shapeEditor.Rotation";
     /**
      * Indicates that a control point is associated with the left width of a shape.
      */
-    protected String LEFT_WIDTH = "gov.nasa.worldwind.airspaceditor.LeftWidth";
+    protected String LEFT_WIDTH = "gov.nasa.worldwind.shapeEditor.LeftWidth";
     /**
      * Indicates that a control point is associated with the right width of a shape.
      */
-    protected String RIGHT_WIDTH = "gov.nasa.worldwind.airspaceditor.RightWidth";
+    protected String RIGHT_WIDTH = "gov.nasa.worldwind.shapeEditor.RightWidth";
     /**
      * Indicates that a control point is associated with the inner radius of a shape.
      */
-    protected String INNER_RADIUS = "gov.nasa.worldwind.airspaceditor.InnerRadius";
+    protected String INNER_RADIUS = "gov.nasa.worldwind.shapeEditor.InnerRadius";
     /**
      * Indicates that a control point is associated with the outer radius of a shape.
      */
-    protected String OUTER_RADIUS = "gov.nasa.worldwind.airspaceditor.OuterRadius";
+    protected String OUTER_RADIUS = "gov.nasa.worldwind.shapeEditor.OuterRadius";
     /**
      * Indicates that a control point is associated with the left azimuth of a shape.
      */
-    protected String LEFT_AZIMUTH = "gov.nasa.worldwind.airspaceditor.LeftAzimuth";
+    protected String LEFT_AZIMUTH = "gov.nasa.worldwind.shapeEditor.LeftAzimuth";
     /**
      * Indicates that a control point is associated with the right azimuth of a shape.
      */
-    protected String RIGHT_AZIMUTH = "gov.nasa.worldwind.airspaceditor.RightAzimuth";
+    protected String RIGHT_AZIMUTH = "gov.nasa.worldwind.shapeEditor.RightAzimuth";
 
     protected static class ControlPointMarker extends BasicMarker
     {
@@ -150,7 +150,7 @@ public class AirspaceEditor implements SelectListener
     /**
      * The shape associated with the editor. Specified at construction and not subsequently modifiable.
      */
-    protected Airspace shape;
+    protected Renderable shape;
     /**
      * The layer holding the editor's control points.
      */
@@ -196,8 +196,8 @@ public class AirspaceEditor implements SelectListener
      * The control point associated with the current sizing operation.
      */
     protected ControlPointMarker currentSizingMarker;
-    protected AirspaceAttributes originalAttributes;
-    protected AirspaceAttributes originalHighlightAttributes;
+    protected ShapeAttributes originalAttributes;
+    protected ShapeAttributes originalHighlightAttributes;
     /**
      * For shapes without an inherent heading, the current heading established by the editor for the shape.
      */
@@ -220,7 +220,7 @@ public class AirspaceEditor implements SelectListener
      *
      * @throws java.lang.IllegalArgumentException if either the specified world window or shape is null.
      */
-    public AirspaceEditor(WorldWindow wwd, Airspace originalShape)
+    public ShapeEditor(WorldWindow wwd, Renderable originalShape)
     {
         if (wwd == null)
         {
@@ -245,7 +245,7 @@ public class AirspaceEditor implements SelectListener
 
         this.wwd = wwd;
         this.shape = originalShape;
-        this.originalAttributes = this.shape.getAttributes();
+        this.originalAttributes = this.getShapeAttributes();
 
         this.controlPointLayer = new MarkerLayer();
         this.controlPointLayer.setKeepSeparated(false);
@@ -323,7 +323,7 @@ public class AirspaceEditor implements SelectListener
      *
      * @return the shape associated with this editor.
      */
-    public Airspace getShape()
+    public Renderable getShape()
     {
         return this.shape;
     }
@@ -532,26 +532,24 @@ public class AirspaceEditor implements SelectListener
      */
     protected void makeShadowShape()
     {
-        Airspace shadowShape = this.doMakeShadowShape();
-        if (shadowShape != null)
-        {
-            // Reduce the opacity of an opaque current shape so that the shadow shape is visible while editing
-            // is performed.
+        Renderable shadowShape = this.doMakeShadowShape();
+        if (shadowShape == null)
+            return;
 
-            this.originalAttributes = this.shape.getAttributes();
-            this.originalHighlightAttributes = this.shape.getHighlightAttributes();
+        // Reduce the opacity of an opaque current shape so that the shadow shape is visible while editing
+        // is performed.
 
-            AirspaceAttributes editingHighlightAttributes = this.originalHighlightAttributes != null ?
-                new BasicAirspaceAttributes(this.originalHighlightAttributes)
-                : new BasicAirspaceAttributes(this.originalAttributes);
-            if (editingHighlightAttributes.getInteriorOpacity() == 1)
-                editingHighlightAttributes.setInteriorOpacity(0.7);
+        this.originalAttributes = this.getShapeAttributes();
+        this.originalHighlightAttributes = this.getShapeHighlightAttributes();
 
-            this.shape.setAttributes(editingHighlightAttributes);
-            this.shape.setHighlightAttributes(editingHighlightAttributes);
+        ShapeAttributes editingAttributes = new BasicShapeAttributes(this.originalAttributes);
+        if (editingAttributes.getInteriorOpacity() == 1)
+            editingAttributes.setInteriorOpacity(0.7);
 
-            this.shadowLayer.addRenderable(shadowShape);
-        }
+        this.setShapeAttributes(editingAttributes);
+        this.setShapeHighlightAttributes(editingAttributes);
+
+        this.shadowLayer.addRenderable(shadowShape);
     }
 
     /**
@@ -564,10 +562,9 @@ public class AirspaceEditor implements SelectListener
         // Restore the original attributes.
         if (this.originalAttributes != null)
         {
-            this.shape.setAttributes(this.originalAttributes);
-            this.shape.setHighlightAttributes(this.originalHighlightAttributes);
+            this.setShapeAttributes(this.originalAttributes);
+            this.setShapeHighlightAttributes(this.originalHighlightAttributes);
         }
-        this.originalAttributes = null;
 
         this.wwd.redraw();
     }
@@ -578,7 +575,7 @@ public class AirspaceEditor implements SelectListener
      *
      * @return the new shadow shape created, or null if the shape type is not recognized.
      */
-    protected Airspace doMakeShadowShape()
+    protected Renderable doMakeShadowShape()
     {
         if (this.shape instanceof Polygon)
             return new Polygon((Polygon) this.shape);
@@ -672,7 +669,8 @@ public class AirspaceEditor implements SelectListener
         {
             // Intersection with globe. Move reference point to the intersection point.
             Position p = globe.computePositionFromPoint(inters[0].getIntersectionPoint());
-            dragObject.moveTo(getWwd().getModel().getGlobe(), new Position(p, this.shape.getAltitudes()[0]));
+            dragObject.moveTo(getWwd().getModel().getGlobe(), new Position(p,
+                ((Movable2) this.shape).getReferencePosition().getAltitude()));
         }
 
         this.adjustShape();
@@ -712,7 +710,7 @@ public class AirspaceEditor implements SelectListener
     }
 
     /**
-     * Called by {@link #reshapeShape(gov.nasa.worldwind.util.AirspaceEditor.ControlPointMarker)} to perform the actual
+     * Called by {@link #reshapeShape(ShapeEditor.ControlPointMarker)} to perform the actual
      * shape modification. Subclasses should override this method if they provide editing for shapes other than those
      * supported by the basic editor.
      *
@@ -757,6 +755,50 @@ public class AirspaceEditor implements SelectListener
             this.updateTrackControlPoints();
     }
 
+    public ShapeAttributes getShapeAttributes()
+    {
+        if (this.shape instanceof Airspace)
+            return ((Airspace) this.shape).getAttributes();
+        else if (this.shape instanceof SurfaceShape)
+            return ((SurfaceShape) this.shape).getAttributes();
+        else if (this.shape instanceof AbstractShape)
+            return ((AbstractShape) this.shape).getAttributes();
+        else
+            return null;
+    }
+
+    public ShapeAttributes getShapeHighlightAttributes()
+    {
+        if (this.shape instanceof Airspace)
+            return ((Airspace) this.shape).getHighlightAttributes();
+        else if (this.shape instanceof SurfaceShape)
+            return ((SurfaceShape) this.shape).getHighlightAttributes();
+        else if (this.shape instanceof AbstractShape)
+            return ((AbstractShape) this.shape).getHighlightAttributes();
+        else
+            return null;
+    }
+
+    public void setShapeAttributes(ShapeAttributes attributes)
+    {
+        if (this.shape instanceof Airspace)
+            ((Airspace) this.shape).setAttributes(new BasicAirspaceAttributes(attributes));
+        else if (this.shape instanceof SurfaceShape)
+            ((SurfaceShape) this.shape).setAttributes(attributes);
+        else if (this.shape instanceof AbstractShape)
+            ((AbstractShape) this.shape).setAttributes(attributes);
+    }
+
+    public void setShapeHighlightAttributes(ShapeAttributes attributes)
+    {
+        if (this.shape instanceof Airspace)
+            ((Airspace) this.shape).setHighlightAttributes(new BasicAirspaceAttributes(attributes));
+        else if (this.shape instanceof SurfaceShape)
+            ((SurfaceShape) this.shape).setHighlightAttributes(attributes);
+        else if (this.shape instanceof AbstractShape)
+            ((AbstractShape) this.shape).setHighlightAttributes(attributes);
+    }
+
     /**
      * Computes the appropriate altitude at which to place a control point at a specified location.
      *
@@ -766,14 +808,21 @@ public class AirspaceEditor implements SelectListener
      */
     protected double computeControlPointAltitude(LatLon location)
     {
-        double altitude = this.shape.getAltitudes()[1];
+        double altitude = 0;
 
-        if (this.shape.getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
+        if (this.shape instanceof Airspace)
         {
-            LatLon refPos = this.shape.getGroundReference();
-            if (refPos == null)
-                refPos = location;
-            altitude += getWwd().getModel().getGlobe().getElevation(refPos.getLatitude(), refPos.getLongitude());
+            Airspace airspace = (Airspace) this.shape;
+
+            altitude = airspace.getAltitudes()[1];
+
+            if (airspace.getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
+            {
+                LatLon refPos = airspace.getGroundReference();
+                if (refPos == null)
+                    refPos = location;
+                altitude += getWwd().getModel().getGlobe().getElevation(refPos.getLatitude(), refPos.getLongitude());
+            }
         }
 
         return altitude;
@@ -855,7 +904,7 @@ public class AirspaceEditor implements SelectListener
 
         double cAltitude = centerPosition.getAltitude();
         double rAltitude = controlPoint.getAltitude();
-        if (this.shape.getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
+        if (this.getShapeAltitudeMode() == WorldWind.RELATIVE_TO_GROUND)
         {
             rotationLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
             rotationLine.setFollowTerrain(true);
@@ -875,6 +924,21 @@ public class AirspaceEditor implements SelectListener
         linePositions.add(new Position(centerPosition, cAltitude));
         linePositions.add(new Position(controlPoint, rAltitude));
         rotationLine.setPositions(linePositions);
+    }
+
+    protected int getShapeAltitudeMode()
+    {
+        int altitudeMode = WorldWind.RELATIVE_TO_GROUND;
+
+        if (this.shape instanceof Airspace)
+        {
+            if (((Airspace) this.shape).getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
+                altitudeMode = WorldWind.RELATIVE_TO_GROUND;
+            else
+                altitudeMode = WorldWind.ABSOLUTE;
+        }
+
+        return altitudeMode;
     }
 
     /**

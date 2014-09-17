@@ -16,7 +16,7 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.airspaces.Polygon;
 import gov.nasa.worldwind.render.markers.*;
-import gov.nasa.worldwind.util.AirspaceEditor;
+import gov.nasa.worldwind.util.ShapeEditor;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -25,12 +25,12 @@ import java.util.ArrayList;
  * @author tag
  * @version $Id$
  */
-public class AirspaceEditing extends ApplicationTemplate
+public class ShapeEditing extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame implements SelectListener
     {
-        protected AirspaceEditor editor;
-        protected AirspaceAttributes lastAttrs;
+        protected ShapeEditor editor;
+        protected ShapeAttributes lastAttrs;
 
         public AppFrame()
         {
@@ -167,7 +167,7 @@ public class AirspaceEditing extends ApplicationTemplate
                     if (this.editor == null)
                     {
                         // Enable editing of the selected shape.
-                        this.editor = new AirspaceEditor(getWwd(), (Airspace) topObject.getObject());
+                        this.editor = new ShapeEditor(getWwd(), (Airspace) topObject.getObject());
                         this.editor.setArmed(true);
                         this.keepShapeHighlighted(true);
                         event.consume();
@@ -176,7 +176,7 @@ public class AirspaceEditing extends ApplicationTemplate
                     {
                         // Switch editor to a different shape.
                         this.editor.setArmed(false);
-                        this.editor = new AirspaceEditor(getWwd(), (Airspace) topObject.getObject());
+                        this.editor = new ShapeEditor(getWwd(), (Airspace) topObject.getObject());
                         this.editor.setArmed(true);
                         this.keepShapeHighlighted(true);
                         event.consume();
@@ -197,18 +197,18 @@ public class AirspaceEditing extends ApplicationTemplate
         {
             if (tf)
             {
-                this.lastAttrs = this.editor.getShape().getAttributes();
-                this.editor.getShape().setAttributes(this.editor.getShape().getHighlightAttributes());
+                this.lastAttrs = this.editor.getShapeAttributes();
+                this.editor.setShapeAttributes(this.editor.getShapeHighlightAttributes());
             }
             else
             {
-                this.editor.getShape().setAttributes(this.lastAttrs);
+                this.editor.setShapeAttributes(this.lastAttrs);
             }
         }
     }
 
     public static void main(String[] args)
     {
-        ApplicationTemplate.start("World Wind Airspace Editing", AirspaceEditing.AppFrame.class);
+        ApplicationTemplate.start("World Wind Airspace Editing", ShapeEditing.AppFrame.class);
     }
 }
