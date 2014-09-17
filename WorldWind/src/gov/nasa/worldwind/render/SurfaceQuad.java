@@ -315,6 +315,15 @@ public class SurfaceQuad extends AbstractSurfaceShape implements Exportable
         this.setCenter(LatLon.greatCircleEndPosition(newReferencePosition, heading, pathLength));
     }
 
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        List<LatLon> locations = new ArrayList<LatLon>(1);
+        locations.add(this.getCenter());
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition, newReferencePosition,
+            locations);
+        this.setCenter(newLocations.get(0));
+    }
+
     public Iterable<? extends LatLon> getLocations(Globe globe)
     {
         if (globe == null)

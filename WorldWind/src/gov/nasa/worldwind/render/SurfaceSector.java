@@ -157,7 +157,12 @@ public class SurfaceSector extends AbstractSurfaceShape implements Exportable
             newLocations[0].getLongitude(), newLocations[1].getLongitude()));
     }
 
-    //**************************************************************//
+    @Override
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        this.doMoveTo(oldReferencePosition, newReferencePosition);
+    }
+//**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//
 

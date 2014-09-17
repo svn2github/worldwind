@@ -150,6 +150,24 @@ public class SurfacePolylines extends AbstractSurfaceShape
         this.onGeometryChanged();
     }
 
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        for (int i = 0; i < this.buffer.size(); i++)
+        {
+            VecBuffer vb = this.buffer.subBuffer(i);
+
+            List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition,
+                newReferencePosition, vb.getLocations());
+
+            for (int pos = 0; pos < vb.getSize(); pos++)
+            {
+                vb.putLocation(pos, newLocations.get(i));
+            }
+        }
+
+        this.onGeometryChanged();
+    }
+
     protected void onGeometryChanged()
     {
         this.sectors = null;

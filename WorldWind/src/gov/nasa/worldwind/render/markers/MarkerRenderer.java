@@ -393,7 +393,7 @@ public class MarkerRenderer
     {
         double d = point.distanceTo3(dc.getView().getEyePoint());
         double radius = marker.getAttributes().getMarkerPixels() * dc.getView().computePixelSizeAtDistance(d);
-        if (radius < marker.getAttributes().getMinMarkerSize())
+        if (radius < marker.getAttributes().getMinMarkerSize() && marker.getAttributes().getMinMarkerSize() > 0)
             radius = marker.getAttributes().getMinMarkerSize();
         else if (radius > marker.getAttributes().getMaxMarkerSize())
             radius = marker.getAttributes().getMaxMarkerSize();

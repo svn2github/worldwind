@@ -19,7 +19,7 @@ import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.util.ShapeEditor;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * @author tag
@@ -37,6 +37,8 @@ public class ShapeEditing extends ApplicationTemplate
             this.getWwd().addSelectListener(this);
 
             RenderableLayer layer = new RenderableLayer();
+
+            // Airspaces
 
             AirspaceAttributes attrs = new BasicAirspaceAttributes();
             attrs.setDrawInterior(true);
@@ -134,6 +136,52 @@ public class ShapeEditing extends ApplicationTemplate
             track.setAltitudes(1e4, 2e4);
             layer.addRenderable(track);
 
+            // Surface Shapes
+
+            ShapeAttributes shapeAttributes = new BasicShapeAttributes();
+            attrs.setDrawInterior(true);
+            attrs.setDrawOutline(true);
+            attrs.setInteriorMaterial(new Material(Color.WHITE));
+            attrs.setOutlineMaterial(new Material(Color.BLACK));
+            attrs.setOutlineWidth(2);
+
+            locations = new ArrayList<LatLon>();
+            locations.add(LatLon.fromDegrees(42, -121));
+            locations.add(LatLon.fromDegrees(42, -120));
+            locations.add(LatLon.fromDegrees(43, -120));
+            locations.add(LatLon.fromDegrees(43, -121));
+            SurfacePolygon surfacePolygon = new SurfacePolygon(attrs, locations);
+            surfacePolygon.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(surfacePolygon);
+
+            locations = new ArrayList<LatLon>();
+            locations.add(LatLon.fromDegrees(42, -119));
+            locations.add(LatLon.fromDegrees(42, -118));
+            locations.add(LatLon.fromDegrees(43, -118));
+            locations.add(LatLon.fromDegrees(43, -119));
+            SurfacePolyline polyline = new SurfacePolyline(attrs, locations);
+            polyline.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(polyline);
+
+            SurfaceCircle circle = new SurfaceCircle(attrs, LatLon.fromDegrees(42.5, -116), 1e5);
+            circle.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(circle);
+
+            SurfaceSquare square = new SurfaceSquare(attrs, LatLon.fromDegrees(42.5, -113), 1e5);
+            square.setHeading(Angle.fromDegrees(30));
+            square.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(square);
+
+            SurfaceQuad quad = new SurfaceQuad(attrs, LatLon.fromDegrees(42.5, -111), 1e5, 1e5);
+            quad.setHeading(Angle.fromDegrees(30));
+            quad.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(quad);
+
+            SurfaceEllipse ellipse = new SurfaceEllipse(attrs, LatLon.fromDegrees(42.5, -108), 1e5, 1.5e5);
+            ellipse.setHeading(Angle.fromDegrees(30));
+            ellipse.setHighlightAttributes(highlightAttrs);
+            layer.addRenderable(ellipse);
+
             java.util.List<Marker> markers = new ArrayList<Marker>(1);
             markers.add(new BasicMarker(Position.fromDegrees(90, 0), new BasicMarkerAttributes()));
             MarkerLayer markerLayer = new MarkerLayer();
@@ -146,10 +194,10 @@ public class ShapeEditing extends ApplicationTemplate
             Path antiMeridian = new Path(positions);
             antiMeridian.setFollowTerrain(true);
             antiMeridian.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-            ShapeAttributes shapeAttributes = new BasicShapeAttributes();
+            ShapeAttributes antiMeridianAttributes = new BasicShapeAttributes();
             shapeAttributes.setOutlineMaterial(Material.WHITE);
-            antiMeridian.setAttributes(shapeAttributes);
-            antiMeridian.setHighlightAttributes(shapeAttributes);
+            antiMeridian.setAttributes(antiMeridianAttributes);
+            antiMeridian.setHighlightAttributes(antiMeridianAttributes);
             layer.addRenderable(antiMeridian);
 
             insertBeforePlacenames(getWwd(), layer);
@@ -162,12 +210,12 @@ public class ShapeEditing extends ApplicationTemplate
 
             if (event.getEventAction().equals(SelectEvent.LEFT_CLICK))
             {
-                if (topObject != null && topObject.getObject() instanceof Airspace)
+                if (topObject != null && topObject.getObject() instanceof Renderable)
                 {
                     if (this.editor == null)
                     {
                         // Enable editing of the selected shape.
-                        this.editor = new ShapeEditor(getWwd(), (Airspace) topObject.getObject());
+                        this.editor = new ShapeEditor(getWwd(), (Renderable) topObject.getObject());
                         this.editor.setArmed(true);
                         this.keepShapeHighlighted(true);
                         event.consume();
@@ -175,8 +223,9 @@ public class ShapeEditing extends ApplicationTemplate
                     else if (this.editor.getShape() != event.getTopObject())
                     {
                         // Switch editor to a different shape.
+                        this.keepShapeHighlighted(false);
                         this.editor.setArmed(false);
-                        this.editor = new ShapeEditor(getWwd(), (Airspace) topObject.getObject());
+                        this.editor = new ShapeEditor(getWwd(), (Renderable) topObject.getObject());
                         this.editor.setArmed(true);
                         this.keepShapeHighlighted(true);
                         event.consume();
@@ -185,8 +234,8 @@ public class ShapeEditing extends ApplicationTemplate
                     {
                         // Disable editing of the current shape.
                         this.editor.setArmed(false);
-                        this.editor = null;
                         this.keepShapeHighlighted(false);
+                        this.editor = null;
                         event.consume();
                     }
                 }

@@ -186,6 +186,17 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
         this.setLocations(newLocations);
     }
 
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        if (this.locations == null)
+            return;
+
+        List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition, newReferencePosition,
+            this.getLocations());
+
+        this.setLocations(newLocations);
+    }
+
     protected void drawInterior(DrawContext dc, SurfaceTileDrawContext sdc)
     {
         // Intentionally left blank; SurfacePolyline does not render an interior.

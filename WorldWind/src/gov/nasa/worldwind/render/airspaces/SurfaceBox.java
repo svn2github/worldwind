@@ -59,6 +59,12 @@ public class SurfaceBox extends AbstractSurfaceShape
     }
 
     @Override
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        // Intentionally left blank.
+    }
+
+    @Override
     protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
     {
         if (this.vertices == null)

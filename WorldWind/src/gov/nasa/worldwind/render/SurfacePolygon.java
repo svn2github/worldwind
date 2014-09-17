@@ -228,6 +228,23 @@ public class SurfacePolygon extends AbstractSurfaceShape implements Exportable
         this.onShapeChanged();
     }
 
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        if (this.boundaries.isEmpty())
+            return;
+
+        for (int i = 0; i < this.boundaries.size(); i++)
+        {
+            List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition,
+                newReferencePosition, this.boundaries.get(i));
+
+            this.boundaries.set(i, newLocations);
+        }
+
+        // We've changed the polygon's list of boundaries; flag the shape as changed.
+        this.onShapeChanged();
+    }
+
     //**************************************************************//
     //********************  Interior Tessellation  *****************//
     //**************************************************************//
