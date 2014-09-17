@@ -5,9 +5,9 @@
   ~ All Rights Reserved.
   -->
 <!--World boundaries from a shapefile-->
-<!--$Id:$-->
+<!--$Id$-->
 <Layer version="1" layerType="ShapefileLayer">
-    <ShapefileLocation>testData/shapefiles/TM_WORLD_BORDERS_SIMPL-0.2.shp</ShapefileLocation>
+    <ShapefileLocation>testData/shapefiles/TM_WORLD_BORDERS-0.2.shp</ShapefileLocation>
     <DisplayName>Political Boundaries Shapefile</DisplayName>
     <PickEnabled>true</PickEnabled>
     <!--Assign attribute names in the shapefile's DBase file to keys on the shapes created from the shapefile-->
@@ -15,20 +15,20 @@
     <NormalShapeAttributes>
         <DrawInterior>true</DrawInterior>
         <DrawOutline>true</DrawOutline>
-        <InteriorOpacity>0.001</InteriorOpacity>
+        <InteriorOpacity>0.0</InteriorOpacity>
         <OutlineOpacity>1.0</OutlineOpacity>
         <InteriorColor red="255" green="255" blue="255"/>
         <OutlineColor red="255" green="255" blue="255"/>
-        <OutlineWidth>1.0</OutlineWidth>
+        <OutlineWidth>2.0</OutlineWidth>
     </NormalShapeAttributes>
     <HighlightShapeAttributes>
         <DrawInterior>true</DrawInterior>
         <DrawOutline>true</DrawOutline>
-        <InteriorOpacity>0.001</InteriorOpacity>
+        <InteriorOpacity>0.0</InteriorOpacity>
         <OutlineOpacity>1.0</OutlineOpacity>
         <InteriorColor red="255" green="255" blue="255"/>
         <OutlineColor red="255" green="255" blue="0"/>
-        <OutlineWidth>5.0</OutlineWidth>
+        <OutlineWidth>4.0</OutlineWidth>
     </HighlightShapeAttributes>
     <!--The entries below are not needed but are included to show how Point attributes can be specified-->
     <NormalPointAttributes>
