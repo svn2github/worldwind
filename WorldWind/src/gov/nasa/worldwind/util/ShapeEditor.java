@@ -1109,9 +1109,9 @@ public class ShapeEditor implements SelectListener
         if (controlPoint.getPurpose().equals(ROTATION))
         {
             // Rotate the polygon.
-            LatLon center = LatLon.getCenter(locations); // rotation axis
-            Angle oldHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
-            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(oldHeading);
+            LatLon center = LatLon.getCenter(this.getWwd().getModel().getGlobe(), locations); // rotation axis
+            Angle previousHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
+            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(previousHeading);
             this.currentHeading = this.normalizedHeading(this.currentHeading, deltaHeading);
 
             // Rotate the polygon's locations by the heading delta angle.
@@ -1168,9 +1168,19 @@ public class ShapeEditor implements SelectListener
         if (locations.size() < 2)
             return;
 
-        LatLon polygonCenter = LatLon.getCenter(locations);
+        Globe globe = this.getWwd().getModel().getGlobe();
+
+        LatLon polygonCenter = LatLon.getCenter(globe, locations);
         double centerAltitude = this.computeControlPointAltitude(polygonCenter);
-        Angle shapeRadius = LatLon.getAverageDistance(locations);
+
+        // Compute the shape's heading and the rotation control location.
+        Angle shapeRadius = LatLon.getAverageDistance(globe, polygonCenter, locations);
+        shapeRadius = shapeRadius.multiply(1.2);
+//        List<LatLon> topLocations = new ArrayList<LatLon>(2);
+//        topLocations.add(locations.get(0));
+//        topLocations.add(locations.get(1));
+//        LatLon topCenter = LatLon.getCenter(globe, topLocations);
+//        Angle heading = LatLon.greatCircleAzimuth(polygonCenter, topCenter);
         Angle heading = this.currentHeading;
         LatLon rotationControlLocation = LatLon.greatCircleEndPosition(polygonCenter, heading, shapeRadius);
         double rotationControlAltitude = this.computeControlPointAltitude(rotationControlLocation);
@@ -1517,9 +1527,12 @@ public class ShapeEditor implements SelectListener
         double centerAltitude = this.computeControlPointAltitude(center);
         Position widthPosition = this.computeEdgeLocation(center, locations[0], 0.5 * orbit.getWidth());
 
-        Angle distance = LatLon.greatCircleDistance(center, locations[0]);
-        LatLon rotationControlLocation = LatLon.greatCircleEndPosition(center, Angle.fromDegrees(orbitHeading.degrees),
-            Angle.fromRadians(distance.radians + 1.2 * width / this.wwd.getModel().getGlobe().getEquatorialRadius()));
+        Globe globe = this.getWwd().getModel().getGlobe();
+        Vec4 centerPoint = globe.computeEllipsoidalPointFromLocation(center);
+        Vec4 point0 = globe.computeEllipsoidalPointFromLocation(locations[1]);
+        Vec4 vec = point0.subtract3(centerPoint);
+        vec = vec.multiply3(1 + width / vec.getLength3());
+        LatLon rotationControlLocation = globe.computePositionFromEllipsoidalPoint(vec.add3(centerPoint));
         double rotationControlAltitude = this.computeControlPointAltitude(rotationControlLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
@@ -1576,9 +1589,9 @@ public class ShapeEditor implements SelectListener
 
         if (controlPoint.getPurpose().equals(ROTATION))
         {
-            LatLon center = LatLon.getCenter(locations);
-            Angle oldHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
-            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(oldHeading);
+            LatLon center = LatLon.getCenter(this.getWwd().getModel().getGlobe(), locations);
+            Angle previousHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
+            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(previousHeading);
             this.currentHeading = this.normalizedHeading(this.currentHeading, deltaHeading);
 
             for (int i = 0; i < locations.size(); i++)
@@ -1634,15 +1647,21 @@ public class ShapeEditor implements SelectListener
         if (locations.size() < 2)
             return;
 
-        LatLon legCenter = LatLon.interpolateGreatCircle(0.5, locations.get(0), locations.get(1));
+        Globe globe = this.getWwd().getModel().getGlobe();
+        LatLon legCenter = LatLon.getCenter(globe, locations.subList(0, 2));
         Position leftWidthPosition = this.computeEdgeLocation(legCenter, locations.get(1), 0.5 * route.getWidth());
         Position rightWidthPosition = this.computeEdgeLocation(legCenter, locations.get(0), 0.5 * route.getWidth());
 
-        LatLon center = LatLon.getCenter(locations);
-        double centerAltitude = this.computeControlPointAltitude(center);
-        Angle averageDistance = LatLon.getAverageDistance(locations);
-        LatLon rotationLocation = LatLon.greatCircleEndPosition(center, this.currentHeading, averageDistance);
-        double rotationAltitude = this.computeControlPointAltitude(rotationLocation);
+        LatLon routeCenter = LatLon.getCenter(globe, locations);
+        double centerAltitude = this.computeControlPointAltitude(routeCenter);
+
+        // Compute the shape's heading and the rotation control location.
+        Angle shapeRadius = LatLon.greatCircleDistance(routeCenter, locations.get(1));
+        shapeRadius = shapeRadius.add(Angle.fromRadians(route.getWidth() / globe.getEquatorialRadius()));
+//        Angle heading = LatLon.greatCircleAzimuth(routeCenter, locations.get(1));
+        Angle heading = this.currentHeading;
+        LatLon rotationControlLocation = LatLon.greatCircleEndPosition(routeCenter, heading, shapeRadius);
+        double rotationControlAltitude = this.computeControlPointAltitude(rotationControlLocation);
 
         Iterable<Marker> markers = this.controlPointLayer.getMarkers();
         if (markers == null)
@@ -1661,7 +1680,7 @@ public class ShapeEditor implements SelectListener
             position = new Position(rightWidthPosition, rightWidthPosition.getAltitude());
             controlPoints.add(new ControlPointMarker(position, this.sizeMarkerAttributes, i++, LEFT_WIDTH));
 
-            position = new Position(rotationLocation, rotationAltitude);
+            position = new Position(rotationControlLocation, rotationControlAltitude);
             controlPoints.add(new ControlPointMarker(position, this.angleMarkerAttributes, i, ROTATION));
 
             this.controlPointLayer.setMarkers(controlPoints);
@@ -1677,7 +1696,7 @@ public class ShapeEditor implements SelectListener
 
             markerIterator.next().setPosition(new Position(leftWidthPosition, leftWidthPosition.getAltitude()));
             markerIterator.next().setPosition(new Position(rightWidthPosition, rightWidthPosition.getAltitude()));
-            markerIterator.next().setPosition(new Position(rotationLocation, rotationAltitude));
+            markerIterator.next().setPosition(new Position(rotationControlLocation, rotationControlAltitude));
         }
 
         Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
@@ -1687,10 +1706,10 @@ public class ShapeEditor implements SelectListener
         }
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
-        ((ControlPointMarker) markerIterator.next()).rotation = this.currentHeading;
+        ((ControlPointMarker) markerIterator.next()).rotation = heading;
 
-        this.updateOrientationLine(new Position(center, centerAltitude),
-            new Position(rotationLocation, rotationAltitude));
+        this.updateOrientationLine(new Position(routeCenter, centerAltitude),
+            new Position(rotationControlLocation, rotationControlAltitude));
     }
 
     /**
@@ -1712,9 +1731,9 @@ public class ShapeEditor implements SelectListener
                 trackLocations.add(leg.getLocations()[0]);
                 trackLocations.add(leg.getLocations()[1]);
             }
-            LatLon center = LatLon.getCenter(trackLocations);
-            Angle oldHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
-            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(oldHeading);
+            LatLon center = LatLon.getCenter(this.getWwd().getModel().getGlobe(), trackLocations);
+            Angle previousHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
+            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(previousHeading);
             this.currentHeading = this.normalizedHeading(this.currentHeading, deltaHeading);
 
             // Rotate all the legs.
@@ -1869,12 +1888,19 @@ public class ShapeEditor implements SelectListener
             trackLocations.add(leg.getLocations()[0]);
             trackLocations.add(leg.getLocations()[1]);
         }
-        LatLon trackCenter = LatLon.getCenter(trackLocations);
-        double trackCenterAltitude = this.computeControlPointAltitude(trackCenter);
-        Angle trackRadius = LatLon.getAverageDistance(trackLocations);
 
-        LatLon rotationLocation = LatLon.greatCircleEndPosition(trackCenter, this.currentHeading, trackRadius);
+        Globe globe = this.getWwd().getModel().getGlobe();
+        LatLon trackCenter = LatLon.getCenter(globe, trackLocations);
+        double trackCenterAltitude = this.computeControlPointAltitude(trackCenter);
+        Angle trackRadius = LatLon.getAverageDistance(globe, trackCenter, trackLocations);
+        double[] widths = legs.get(0).getWidths();
+        trackRadius = trackRadius.addRadians((widths[0] + widths[1]) / globe.getEquatorialRadius());
+
+//        Angle heading = LatLon.greatCircleAzimuth(trackCenter, legs.get(0).getLocations()[1]);
+        Angle heading = this.currentHeading;
+        LatLon rotationLocation = LatLon.greatCircleEndPosition(trackCenter, heading, trackRadius);
         double rotationAltitude = this.computeControlPointAltitude(rotationLocation);
+
         if (markers == null)
         {
             Position cpPosition = new Position(rotationLocation, rotationAltitude);
@@ -1902,9 +1928,7 @@ public class ShapeEditor implements SelectListener
             else if (cp.getId() == 3)
                 cp.size = legs.get(cp.getLeg()).getWidths()[1];
             else if (cp.getId() == 4)
-            {
-                cp.rotation = this.currentHeading;
-            }
+                cp.rotation = heading;
         }
     }
 
@@ -1922,9 +1946,9 @@ public class ShapeEditor implements SelectListener
         if (controlPoint.getPurpose().equals(ROTATION))
         {
             // Rotate the polygon.
-            LatLon center = LatLon.getCenter(locations); // rotation axis
-            Angle oldHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
-            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(oldHeading);
+            LatLon center = LatLon.getCenter(this.getWwd().getModel().getGlobe(), locations); // rotation axis
+            Angle previousHeading = LatLon.greatCircleAzimuth(center, this.previousPosition);
+            Angle deltaHeading = LatLon.greatCircleAzimuth(center, terrainPosition).subtract(previousHeading);
             this.currentHeading = this.normalizedHeading(this.currentHeading, deltaHeading);
 
             // Rotate the polygon's locations by the heading delta angle.
@@ -1955,18 +1979,35 @@ public class ShapeEditor implements SelectListener
 
     protected void updateSurfacePolygonControlPoints()
     {
-        Iterable<? extends LatLon> locations = null;
+        Iterable<? extends LatLon> locationsIterable = null;
 
         if (this.shape instanceof SurfacePolygon)
-            locations = ((SurfacePolygon) this.shape).getLocations();
+            locationsIterable = ((SurfacePolygon) this.shape).getLocations();
         else if (this.shape instanceof SurfacePolyline)
-            locations = ((SurfacePolyline) this.shape).getLocations();
+            locationsIterable = ((SurfacePolyline) this.shape).getLocations();
 
-        if (locations == null)
+        if (locationsIterable == null)
             return;
 
-        LatLon polygonCenter = LatLon.getCenter(locations);
-        Angle shapeRadius = LatLon.getAverageDistance(locations);
+        java.util.List<LatLon> locations = new ArrayList<LatLon>();
+        for (LatLon location : locationsIterable)
+        {
+            locations.add(location);
+        }
+
+        if (locations.size() < 2)
+            return;
+
+        Globe globe = this.getWwd().getModel().getGlobe();
+
+        LatLon polygonCenter = LatLon.getCenter(globe, locations);
+        Angle shapeRadius = LatLon.getAverageDistance(globe, polygonCenter, locations);
+        shapeRadius = shapeRadius.multiply(1.2);
+//        List<LatLon> topLocations = new ArrayList<LatLon>(2);
+//        topLocations.add(locations.get(0));
+//        topLocations.add(locations.get(1));
+//        LatLon topCenter = LatLon.getCenter(globe, topLocations);
+//        Angle heading = LatLon.greatCircleAzimuth(polygonCenter, topCenter);
         Angle heading = this.currentHeading;
         LatLon rotationControlLocation = LatLon.greatCircleEndPosition(polygonCenter, heading, shapeRadius);
 

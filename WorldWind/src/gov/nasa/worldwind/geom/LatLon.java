@@ -964,6 +964,67 @@ public class LatLon
         return (count == 0) ? Angle.ZERO : Angle.fromRadians(totalDistance / (double) count);
     }
 
+    /**
+     * Computes the average distance between a specified center point and a list of locations.
+     *
+     * @param globe     the globe to use for the computations.
+     * @param center    the center point.
+     * @param locations the locations.
+     *
+     * @return the average distance.
+     *
+     * @throws java.lang.IllegalArgumentException if any of the specified globe, center or locations are null.
+     */
+    public static Angle getAverageDistance(Globe globe, LatLon center, Iterable<? extends LatLon> locations)
+    {
+        if ((globe == null))
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if ((center == null))
+        {
+            String msg = Logging.getMessage("nullValue.LatLonIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if ((locations == null))
+        {
+            String msg = Logging.getMessage("nullValue.LocationsListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        int count = 0;
+        for (LatLon ignored : locations)
+        {
+            ++count;
+        }
+
+        Vec4 centerPoint = globe.computeEllipsoidalPointFromLocation(center);
+
+        double totalDistance = 0;
+        for (LatLon location : locations)
+        {
+            double distance = globe.computeEllipsoidalPointFromLocation(location).subtract3(centerPoint).getLength3();
+            totalDistance += distance / count;
+        }
+
+        return (count == 0) ? Angle.ZERO : Angle.fromRadians(totalDistance / globe.getEquatorialRadius());
+    }
+
+    /**
+     * Computes the average location of a specified list of locations.
+     *
+     * @param locations the locations.
+     *
+     * @return the average of the locations.
+     *
+     * @throws java.lang.IllegalArgumentException if the specified locations is null.
+     */
     public static LatLon getCenter(Iterable<? extends LatLon> locations)
     {
         if ((locations == null))
@@ -998,6 +1059,45 @@ public class LatLon
             longitude -= 2 * Math.PI;
 
         return LatLon.fromRadians(latitude, longitude);
+    }
+
+
+    /**
+     * Computes the average location of a specified list of locations.
+     *
+     * @param globe the globe to use for the computations.
+     * @param locations the locations.
+     *
+     * @return the average of the locations.
+     *
+     * @throws java.lang.IllegalArgumentException if either the specified globe or locations is null.
+     */
+    public static LatLon getCenter(Globe globe, Iterable<? extends LatLon> locations)
+    {
+        if ((globe == null))
+        {
+            String msg = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if ((locations == null))
+        {
+            String msg = Logging.getMessage("nullValue.LocationsListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Vec4 center = Vec4.ZERO;
+
+        int count = 0;
+        for (LatLon location : locations)
+        {
+            center = center.add3(globe.computeEllipsoidalPointFromLocation(location));
+            ++count;
+        }
+
+        return globe.computePositionFromEllipsoidalPoint(center.divide3(count));
     }
 
     public LatLon add(LatLon that)
