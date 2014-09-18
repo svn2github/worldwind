@@ -258,6 +258,6 @@ public class ShapeEditing extends ApplicationTemplate
 
     public static void main(String[] args)
     {
-        ApplicationTemplate.start("World Wind Airspace Editing", ShapeEditing.AppFrame.class);
+        ApplicationTemplate.start("World Wind Shape Editing", ShapeEditing.AppFrame.class);
     }
 }
