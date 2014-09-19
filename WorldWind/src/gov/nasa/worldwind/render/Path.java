@@ -656,6 +656,28 @@ public class Path extends AbstractShape
     {
     }
 
+    public Path(Path source)
+    {
+        super(source);
+
+        List<Position> copiedPositions = new ArrayList<Position>();
+        for (Position position : source.positions)
+        {
+            copiedPositions.add(position);
+        }
+        this.setPositions(copiedPositions);
+        this.positionColors = source.positionColors;
+        this.pathType = source.pathType;
+        this.followTerrain = source.followTerrain;
+        this.extrude = source.extrude;
+        this.terrainConformance = source.terrainConformance;
+        this. numSubsegments = source.numSubsegments;
+        this.drawVerticals = source.drawVerticals;
+        this.showPositions = source.showPositions;
+        this.showPositionsThreshold = source.showPositionsThreshold;
+        this.showPositionsScale = source.showPositionsScale;
+    }
+
     /**
      * Creates a path with specified positions.
      * <p/>

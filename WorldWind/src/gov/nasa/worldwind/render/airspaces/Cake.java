@@ -115,6 +115,14 @@ public class Cake extends AbstractAirspace
         }
     }
 
+    public void setEnableDepthOffset(boolean enable)
+    {
+        for (Layer l : this.layers)
+        {
+            l.setEnableDepthOffset(enable);
+        }
+    }
+
     public void setTerrainConforming(boolean lowerTerrainConformant, boolean upperTerrainConformant)
     {
         super.setTerrainConforming(lowerTerrainConformant, upperTerrainConformant);

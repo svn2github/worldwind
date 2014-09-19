@@ -122,9 +122,19 @@ public class ShapeEditor implements SelectListener
             return this.purpose;
         }
 
+        public void setSize(double size)
+        {
+            this.size = size;
+        }
+
         public Double getSize()
         {
             return size;
+        }
+
+        public void setRotation(Angle rotation)
+        {
+            this.rotation = rotation;
         }
 
         public Angle getRotation()
@@ -201,6 +211,7 @@ public class ShapeEditor implements SelectListener
     protected ControlPointMarker currentSizingMarker;
     protected ShapeAttributes originalAttributes;
     protected ShapeAttributes originalHighlightAttributes;
+    protected boolean originalDepthOffsetFlag;
     /**
      * For shapes without an inherent heading, the current heading established by the editor for the shape.
      */
@@ -553,6 +564,12 @@ public class ShapeEditor implements SelectListener
         this.setShapeHighlightAttributes(editingAttributes);
 
         this.shadowLayer.addRenderable(shadowShape);
+
+        if (this.shape instanceof Airspace)
+        {
+            this.originalDepthOffsetFlag = ((Airspace)this.shape).isEnableDepthOffset();
+            ((Airspace) this.shape).setEnableDepthOffset(true);
+        }
     }
 
     /**
@@ -568,6 +585,9 @@ public class ShapeEditor implements SelectListener
             this.setShapeAttributes(this.originalAttributes);
             this.setShapeHighlightAttributes(this.originalHighlightAttributes);
         }
+
+        if (this.shape instanceof Airspace)
+            ((Airspace) this.shape).setEnableDepthOffset(this.originalDepthOffsetFlag);
 
         this.wwd.redraw();
     }

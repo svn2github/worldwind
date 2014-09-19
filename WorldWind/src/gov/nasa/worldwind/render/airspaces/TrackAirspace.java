@@ -139,6 +139,12 @@ public class TrackAirspace extends AbstractAirspace
         this.setLegsOutOfDate();
     }
 
+    public void setEnableDepthOffset(boolean enable)
+    {
+        super.setEnableDepthOffset(enable);
+        this.setLegsOutOfDate();
+    }
+
     /**
      * Desnotes the threshold that defines whether the angle between two adjacent legs is small. This threshold is used
      * to determine the best method for adjusting the vertices of adjacent legs.
@@ -382,6 +388,7 @@ public class TrackAirspace extends AbstractAirspace
                 continue;
 
             leg.setEnableCaps(true);
+            leg.setEnableDepthOffset(this.isEnableDepthOffset());
 
             Vec4[] vertices = Box.computeEllipsoidalStandardVertices(globe, verticalExaggeration, leg);
             if (vertices != null && vertices.length == 8)

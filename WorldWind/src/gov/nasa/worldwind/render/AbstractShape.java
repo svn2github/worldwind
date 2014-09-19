@@ -337,6 +337,24 @@ public abstract class AbstractShape extends WWObjectImpl
         this.initialize();
     }
 
+    protected AbstractShape(AbstractShape source)
+    {
+        this.normalAttrs = new BasicShapeAttributes(source.normalAttrs);
+        this.highlightAttrs = new BasicShapeAttributes(source.highlightAttrs);
+        this.highlighted = source.highlighted;
+        this.visible = source.visible;
+        this.altitudeMode = source.altitudeMode;
+        this.enableBatchRendering = source.enableBatchRendering;
+        this.enableBatchPicking = source.enableBatchPicking;
+        this.enableDepthOffset = source.enableDepthOffset;
+        this.outlinePickWidth = source.outlinePickWidth;
+        this.sector = source.sector;
+        this.referencePosition = source.referencePosition;
+        this.delegateOwner = source.delegateOwner;
+
+        this.initialize();
+    }
+
     /** Invalidates computed values. Called when this shape's contents or certain attributes change. */
     protected void reset()
     {
