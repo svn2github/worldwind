@@ -46,6 +46,7 @@ public class ShapeEditing extends ApplicationTemplate
             attrs.setInteriorMaterial(new Material(Color.WHITE));
             attrs.setOutlineMaterial(new Material(Color.BLACK));
             attrs.setOutlineWidth(2);
+            attrs.setEnableAntialiasing(true);
 
             AirspaceAttributes highlightAttrs = new BasicAirspaceAttributes(attrs);
             highlightAttrs.setOutlineMaterial(new Material(Color.RED));
