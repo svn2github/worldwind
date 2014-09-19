@@ -40,7 +40,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public Arrow(LatLon location0, LatLon location1, double altitude)
         {
             this.shaft = new Path(new Position(location0, altitude), new Position(location1, altitude));
-            this.head = new Path(new ArrayList<Position>(0));
+            this.head = new Path();
 
             this.shaft.setDelegateOwner(this);
             this.head.setDelegateOwner(this);
@@ -62,8 +62,6 @@ public class ShapeEditingExtension extends ApplicationTemplate
             positions.add(new Position(location0, altitude));
             positions.add(new Position(location1, altitude));
             this.shaft.setPositions(positions);
-
-            this.head.setPositions(new ArrayList<Position>(0));
         }
 
         public LatLon[] getLocations()
@@ -118,11 +116,8 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public void render(DrawContext dc)
         {
             this.shaft.render(dc);
-
-            if (this.head.getPositions().iterator().hasNext())
-                this.head.render(dc);
-            else
-                this.makeArrowhead(dc);
+            this.makeArrowhead(dc);
+            this.head.render(dc);
         }
 
         protected void makeArrowhead(DrawContext dc)
@@ -302,6 +297,18 @@ public class ShapeEditingExtension extends ApplicationTemplate
         {
             Arrow arrow = (Arrow) this.getShape();
 
+            // Compute the new location for the arrowhead.
+            Globe globe = this.getWwd().getModel().getGlobe();
+            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
+            Vec4 markerPoint = globe.computeEllipsoidalPointFromLocation(controlPoint.getPosition());
+            Position markerPosition = globe.computePositionFromEllipsoidalPoint(markerPoint.add3(delta));
+            arrow.setLocations(arrow.getLocations()[0], markerPosition);
+        }
+
+        protected void reshapeArrow2(ControlPointMarker controlPoint, Position terrainPosition)
+        {
+            Arrow arrow = (Arrow) this.getShape();
+
             LatLon[] locations = arrow.getLocations();
 
             // Compute the current arrow heading and the change in heading from the current and previous locations of
@@ -374,6 +381,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
             ShapeAttributes attrs = new BasicShapeAttributes();
             attrs.setOutlineMaterial(Material.BLUE);
             attrs.setOutlineWidth(2);
+            attrs.setEnableAntialiasing(true);
 
             AirspaceAttributes highlightAttrs = new BasicAirspaceAttributes(attrs);
             highlightAttrs.setOutlineMaterial(Material.RED);
