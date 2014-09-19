@@ -754,30 +754,36 @@ public class ShapeEditor implements SelectListener
      */
     protected void doReshapeShape(ControlPointMarker controlPoint, Position terrainPosition)
     {
-        if (this.shape instanceof Polygon || this.shape instanceof Curtain)
-            this.reshapePolygonAirspace(terrainPosition, controlPoint);
-        else if (this.shape instanceof CappedCylinder)
-            this.reshapeCappedCylinder(terrainPosition, controlPoint);
-        else if (this.shape instanceof Orbit)
-            this.reshapeOrbit(terrainPosition, controlPoint);
-        else if (this.shape instanceof Route)
-            this.reshapeRoute(terrainPosition, controlPoint);
-        else if (this.shape instanceof SphereAirspace)
-            this.reshapeSphere(terrainPosition, controlPoint);
-        else if (this.shape instanceof TrackAirspace)
-            this.reshapeTrack(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfacePolygon)
-            this.reshapeSurfacePolygon(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfacePolyline)
-            this.reshapeSurfacePolygon(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfaceCircle)
-            this.reshapeSurfaceCircle(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfaceSquare)
-            this.reshapeSurfaceSquare(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfaceQuad)
-            this.reshapeSurfaceQuad(terrainPosition, controlPoint);
-        else if (this.shape instanceof SurfaceEllipse)
-            this.reshapeSurfaceEllipse(terrainPosition, controlPoint);
+        if (shape instanceof Airspace)
+        {
+            if (this.shape instanceof Polygon || this.shape instanceof Curtain)
+                this.reshapePolygonAirspace(terrainPosition, controlPoint);
+            else if (this.shape instanceof CappedCylinder)
+                this.reshapeCappedCylinder(terrainPosition, controlPoint);
+            else if (this.shape instanceof Orbit)
+                this.reshapeOrbit(terrainPosition, controlPoint);
+            else if (this.shape instanceof Route)
+                this.reshapeRoute(terrainPosition, controlPoint);
+            else if (this.shape instanceof SphereAirspace)
+                this.reshapeSphere(terrainPosition, controlPoint);
+            else if (this.shape instanceof TrackAirspace)
+                this.reshapeTrack(terrainPosition, controlPoint);
+        }
+        else if (this.shape instanceof SurfaceShape)
+        {
+            if (this.shape instanceof SurfacePolygon)
+                this.reshapeSurfacePolygon(terrainPosition, controlPoint);
+            else if (this.shape instanceof SurfacePolyline)
+                this.reshapeSurfacePolygon(terrainPosition, controlPoint);
+            else if (this.shape instanceof SurfaceCircle)
+                this.reshapeSurfaceCircle(terrainPosition, controlPoint);
+            else if (this.shape instanceof SurfaceSquare)
+                this.reshapeSurfaceSquare(terrainPosition, controlPoint);
+            else if (this.shape instanceof SurfaceQuad)
+                this.reshapeSurfaceQuad(terrainPosition, controlPoint);
+            else if (this.shape instanceof SurfaceEllipse)
+                this.reshapeSurfaceEllipse(terrainPosition, controlPoint);
+        }
     }
 
     /**
@@ -786,30 +792,36 @@ public class ShapeEditor implements SelectListener
      */
     protected void updateControlPoints()
     {
-        if (this.shape instanceof Polygon || this.shape instanceof Curtain)
-            this.updatePolygonAirspaceControlPoints();
-        else if (this.shape instanceof PartialCappedCylinder)
-            this.updatePartialCappedCylinderControlPoints();
-        else if (this.shape instanceof CappedCylinder)
-            this.updateCappedCylinderControlPoints();
-        else if (this.shape instanceof Orbit)
-            this.updateOrbitControlPoints();
-        else if (this.shape instanceof Route)
-            this.updateRouteControlPoints();
-        else if (this.shape instanceof SphereAirspace)
-            this.updateSphereControlPoints();
-        else if (this.shape instanceof TrackAirspace)
-            this.updateTrackControlPoints();
-        else if (this.shape instanceof SurfacePolygon || this.shape instanceof SurfacePolyline)
-            this.updateSurfacePolygonControlPoints();
-        else if (this.shape instanceof SurfaceCircle)
-            this.updateSurfaceCircleControlPoints();
-        else if (this.shape instanceof SurfaceSquare)
-            this.updateSurfaceSquareControlPoints();
-        else if (this.shape instanceof SurfaceQuad)
-            this.updateSurfaceQuadControlPoints();
-        else if (this.shape instanceof SurfaceEllipse)
-            this.updateSurfaceEllipseControlPoints();
+        if (shape instanceof Airspace)
+        {
+            if (this.shape instanceof Polygon || this.shape instanceof Curtain)
+                this.updatePolygonAirspaceControlPoints();
+            else if (this.shape instanceof PartialCappedCylinder)
+                this.updatePartialCappedCylinderControlPoints();
+            else if (this.shape instanceof CappedCylinder)
+                this.updateCappedCylinderControlPoints();
+            else if (this.shape instanceof Orbit)
+                this.updateOrbitControlPoints();
+            else if (this.shape instanceof Route)
+                this.updateRouteControlPoints();
+            else if (this.shape instanceof SphereAirspace)
+                this.updateSphereControlPoints();
+            else if (this.shape instanceof TrackAirspace)
+                this.updateTrackControlPoints();
+        }
+        else if (this.shape instanceof SurfaceShape)
+        {
+            if (this.shape instanceof SurfacePolygon || this.shape instanceof SurfacePolyline)
+                this.updateSurfacePolygonControlPoints();
+            else if (this.shape instanceof SurfaceCircle)
+                this.updateSurfaceCircleControlPoints();
+            else if (this.shape instanceof SurfaceSquare)
+                this.updateSurfaceSquareControlPoints();
+            else if (this.shape instanceof SurfaceQuad)
+                this.updateSurfaceQuadControlPoints();
+            else if (this.shape instanceof SurfaceEllipse)
+                this.updateSurfaceEllipseControlPoints();
+        }
     }
 
     public ShapeAttributes getShapeAttributes()
@@ -1985,7 +1997,8 @@ public class ShapeEditor implements SelectListener
         else
         {
             Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
-            Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(controlPoint.getPosition());
+            Vec4 markerPoint = wwd.getModel().getGlobe().computeEllipsoidalPointFromLocation(
+                controlPoint.getPosition());
             Position markerPosition = wwd.getModel().getGlobe().computePositionFromEllipsoidalPoint(
                 markerPoint.add3(delta));
             locations.set(controlPoint.getId(), markerPosition);
