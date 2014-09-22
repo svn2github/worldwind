@@ -247,12 +247,13 @@ public class ShapeEditing extends ApplicationTemplate
         {
             if (tf)
             {
-                this.lastAttrs = this.editor.getShapeAttributes();
-                this.editor.setShapeAttributes(this.editor.getShapeHighlightAttributes());
+                this.lastAttrs = ((Attributable)this.editor.getShape()).getAttributes();
+                ((Attributable) this.editor.getShape()).setAttributes(
+                    ((Attributable) this.editor.getShape()).getHighlightAttributes());
             }
             else
             {
-                this.editor.setShapeAttributes(this.lastAttrs);
+                ((Attributable)this.editor.getShape()).setAttributes(this.lastAttrs);
             }
         }
     }

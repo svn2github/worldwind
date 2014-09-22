@@ -256,9 +256,16 @@ public class ShapeEditor implements SelectListener
             throw new IllegalArgumentException(msg);
         }
 
+        if (!(originalShape instanceof Attributable))
+        {
+            String msg = Logging.getMessage("generic.AttributableNotSupported");
+            Logging.logger().log(java.util.logging.Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         this.wwd = wwd;
         this.shape = originalShape;
-        this.originalAttributes = this.getShapeAttributes();
+        this.originalAttributes = ((Attributable)this.getShape()).getAttributes();
 
         this.controlPointLayer = new MarkerLayer();
         this.controlPointLayer.setKeepSeparated(false);
@@ -627,15 +634,15 @@ public class ShapeEditor implements SelectListener
         // Reduce the opacity of an opaque current shape so that the shadow shape is visible while editing
         // is performed.
 
-        this.originalAttributes = this.getShapeAttributes();
-        this.originalHighlightAttributes = this.getShapeHighlightAttributes();
+        this.originalAttributes = ((Attributable)this.getShape()).getAttributes();
+        this.originalHighlightAttributes = ((Attributable)this.getShape()).getHighlightAttributes();
 
         ShapeAttributes editingAttributes = new BasicShapeAttributes(this.originalAttributes);
         if (editingAttributes.getInteriorOpacity() == 1)
             editingAttributes.setInteriorOpacity(0.7);
 
-        this.setShapeAttributes(editingAttributes);
-        this.setShapeHighlightAttributes(editingAttributes);
+        ((Attributable)this.getShape()).setAttributes(editingAttributes);
+        ((Attributable)this.getShape()).setHighlightAttributes(editingAttributes);
 
         this.getShadowLayer().addRenderable(shadowShape);
 
@@ -662,8 +669,8 @@ public class ShapeEditor implements SelectListener
         // Restore the original attributes.
         if (this.getOriginalAttributes() != null)
         {
-            this.setShapeAttributes(this.getOriginalAttributes());
-            this.setShapeHighlightAttributes(this.getOriginalHighlightAttributes());
+            ((Attributable)this.getShape()).setAttributes(this.getOriginalAttributes());
+            ((Attributable)this.getShape()).setHighlightAttributes(this.getOriginalHighlightAttributes());
         }
 
         this.getWwd().redraw();
@@ -900,50 +907,50 @@ public class ShapeEditor implements SelectListener
                 this.updateSurfaceEllipseControlPoints();
         }
     }
-
-    public ShapeAttributes getShapeAttributes()
-    {
-        if (this.getShape() instanceof Airspace)
-            return ((Airspace) this.getShape()).getAttributes();
-        else if (this.getShape() instanceof SurfaceShape)
-            return ((SurfaceShape) this.getShape()).getAttributes();
-        else if (this.getShape() instanceof AbstractShape)
-            return ((AbstractShape) this.getShape()).getAttributes();
-        else
-            return null;
-    }
-
-    public ShapeAttributes getShapeHighlightAttributes()
-    {
-        if (this.getShape() instanceof Airspace)
-            return ((Airspace) this.getShape()).getHighlightAttributes();
-        else if (this.getShape() instanceof SurfaceShape)
-            return ((SurfaceShape) this.getShape()).getHighlightAttributes();
-        else if (this.getShape() instanceof AbstractShape)
-            return ((AbstractShape) this.getShape()).getHighlightAttributes();
-        else
-            return null;
-    }
-
-    public void setShapeAttributes(ShapeAttributes attributes)
-    {
-        if (this.getShape() instanceof Airspace)
-            ((Airspace) this.getShape()).setAttributes(new BasicAirspaceAttributes(attributes));
-        else if (this.getShape() instanceof SurfaceShape)
-            ((SurfaceShape) this.getShape()).setAttributes(attributes);
-        else if (this.getShape() instanceof AbstractShape)
-            ((AbstractShape) this.getShape()).setAttributes(attributes);
-    }
-
-    public void setShapeHighlightAttributes(ShapeAttributes attributes)
-    {
-        if (this.getShape() instanceof Airspace)
-            ((Airspace) this.getShape()).setHighlightAttributes(new BasicAirspaceAttributes(attributes));
-        else if (this.getShape() instanceof SurfaceShape)
-            ((SurfaceShape) this.getShape()).setHighlightAttributes(attributes);
-        else if (this.getShape() instanceof AbstractShape)
-            ((AbstractShape) this.getShape()).setHighlightAttributes(attributes);
-    }
+//
+//    public ShapeAttributes getShapeAttributes()
+//    {
+//        if (this.getShape() instanceof Airspace)
+//            return ((Airspace) this.getShape()).getAttributes();
+//        else if (this.getShape() instanceof SurfaceShape)
+//            return ((SurfaceShape) this.getShape()).getAttributes();
+//        else if (this.getShape() instanceof AbstractShape)
+//            return ((AbstractShape) this.getShape()).getAttributes();
+//        else
+//            return null;
+//    }
+//
+//    public ShapeAttributes getShapeHighlightAttributes()
+//    {
+//        if (this.getShape() instanceof Airspace)
+//            return ((Airspace) this.getShape()).getHighlightAttributes();
+//        else if (this.getShape() instanceof SurfaceShape)
+//            return ((SurfaceShape) this.getShape()).getHighlightAttributes();
+//        else if (this.getShape() instanceof AbstractShape)
+//            return ((AbstractShape) this.getShape()).getHighlightAttributes();
+//        else
+//            return null;
+//    }
+//
+//    public void setShapeAttributes(ShapeAttributes attributes)
+//    {
+//        if (this.getShape() instanceof Airspace)
+//            ((Airspace) this.getShape()).setAttributes(new BasicAirspaceAttributes(attributes));
+//        else if (this.getShape() instanceof SurfaceShape)
+//            ((SurfaceShape) this.getShape()).setAttributes(attributes);
+//        else if (this.getShape() instanceof AbstractShape)
+//            ((AbstractShape) this.getShape()).setAttributes(attributes);
+//    }
+//
+//    public void setShapeHighlightAttributes(ShapeAttributes attributes)
+//    {
+//        if (this.getShape() instanceof Airspace)
+//            ((Airspace) this.getShape()).setHighlightAttributes(new BasicAirspaceAttributes(attributes));
+//        else if (this.getShape() instanceof SurfaceShape)
+//            ((SurfaceShape) this.getShape()).setHighlightAttributes(attributes);
+//        else if (this.getShape() instanceof AbstractShape)
+//            ((AbstractShape) this.getShape()).setHighlightAttributes(attributes);
+//    }
 
     protected Angle computeHeadingDelta(Vec4 centerPoint, Vec4 previousPoint, Vec4 terrainPoint, Vec4 delta)
     {

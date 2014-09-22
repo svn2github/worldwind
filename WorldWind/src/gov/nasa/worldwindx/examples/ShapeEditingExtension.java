@@ -32,7 +32,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
     /**
      * Defines a custom Renderable that we'll use to illustrate editing extension.
      */
-    public static class Arrow implements Renderable, Movable2, Highlightable
+    public static class Arrow implements Renderable, Movable2, Highlightable, Attributable
     {
         protected Path shaft;
         protected Path head;
@@ -231,62 +231,6 @@ public class ShapeEditingExtension extends ApplicationTemplate
         }
 
         /**
-         * Returns the attributes associated with the current shape.
-         *
-         * @return the current shape's attributes.
-         */
-        public ShapeAttributes getShapeAttributes()
-        {
-            // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.getShape() instanceof Arrow)
-                return ((Arrow) this.getShape()).getAttributes();
-            else
-                return super.getShapeAttributes();
-        }
-
-        /**
-         * Returns the highlight attributes associated with the current shape.
-         *
-         * @return the current shape's highlight attributes.
-         */
-        public ShapeAttributes getShapeHighlightAttributes()
-        {
-            // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.getShape() instanceof Arrow)
-                return ((Arrow) this.getShape()).getHighlightAttributes();
-            else
-                return super.getShapeAttributes();
-        }
-
-        /**
-         * Specifies the attributes for the current shape.
-         *
-         * @param attributes the attributes to assign the current shape.e
-         */
-        public void setShapeAttributes(ShapeAttributes attributes)
-        {
-            // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.getShape() instanceof Arrow)
-                ((Arrow) this.getShape()).setAttributes(new BasicShapeAttributes(attributes));
-            else
-                super.setShapeAttributes(attributes);
-        }
-
-        /**
-         * Specifies the highlight attributes for the current shape.
-         *
-         * @param attributes the highlight attributes to assign the current shape.e
-         */
-        public void setShapeHighlightAttributes(ShapeAttributes attributes)
-        {
-            // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.getShape() instanceof Arrow)
-                ((Arrow) this.getShape()).setHighlightAttributes(new BasicShapeAttributes(attributes));
-            else
-                super.setShapeAttributes(attributes);
-        }
-
-        /**
          * Edit the arrow according to the control point that is being moved. In the case of the custom shape, there is
          * only one control point, and that's for rotation.
          *
@@ -463,13 +407,14 @@ public class ShapeEditingExtension extends ApplicationTemplate
             if (tf)
             {
                 // Set the shape's normal attributes to its highlighted attributes.
-                this.lastAttrs = this.editor.getShapeAttributes();
-                this.editor.setShapeAttributes(this.editor.getShapeHighlightAttributes());
+                this.lastAttrs = ((Attributable)this.editor.getShape()).getAttributes();
+                ((Attributable) this.editor.getShape()).setAttributes(
+                    ((Attributable) this.editor.getShape()).getHighlightAttributes());
             }
             else
             {
                 // restore the shape's original normal attributes.
-                this.editor.setShapeAttributes(this.lastAttrs);
+                ((Attributable)this.editor.getShape()).setAttributes(this.lastAttrs);
             }
         }
     }

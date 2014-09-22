@@ -21,7 +21,7 @@ import gov.nasa.worldwind.globes.Globe;
  * @version $Id$
  */
 public interface SurfaceShape
-    extends SurfaceObject, Highlightable, ExtentHolder, MeasurableArea, MeasurableLength, Restorable
+    extends SurfaceObject, Highlightable, ExtentHolder, MeasurableArea, MeasurableLength, Restorable, Attributable
 {
     /**
      * Indicates whether to highlight the surface shape.

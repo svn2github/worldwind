@@ -258,6 +258,18 @@ public abstract class AbstractAirspace extends WWObjectImpl
     }
 
     @Override
+    public void setAttributes(ShapeAttributes attributes)
+    {
+        this.setAttributes(new BasicAirspaceAttributes(attributes));
+    }
+
+    @Override
+    public void setHighlightAttributes(ShapeAttributes highlightAttributes)
+    {
+        this.setHighlightAttributes(new BasicAirspaceAttributes(highlightAttributes));
+    }
+
+    @Override
     public AirspaceAttributes getHighlightAttributes()
     {
         return highlightAttributes;
