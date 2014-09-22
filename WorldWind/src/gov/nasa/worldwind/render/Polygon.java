@@ -324,7 +324,7 @@ public class Polygon extends AbstractShape
      *
      * @return this polygon's outer boundary. The list may be empty but will not be null.
      */
-    protected List<? extends Position> outerBoundary()
+    public List<? extends Position> outerBoundary()
     {
         return this.boundaries.get(0);
     }

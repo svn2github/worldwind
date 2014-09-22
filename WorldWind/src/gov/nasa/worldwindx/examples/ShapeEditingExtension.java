@@ -45,8 +45,8 @@ public class ShapeEditingExtension extends ApplicationTemplate
             this.shaft.setDelegateOwner(this);
             this.head.setDelegateOwner(this);
 
-            this.shaft.setPathType(AVKey.RHUMB_LINE);
-            this.head.setPathType(AVKey.RHUMB_LINE);
+            this.shaft.setPathType(AVKey.GREAT_CIRCLE);
+            this.head.setPathType(AVKey.GREAT_CIRCLE);
         }
 
         public Arrow(Arrow source)
@@ -75,6 +75,11 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public double getAltitude()
         {
             return this.shaft.getPositions().iterator().next().getAltitude();
+        }
+
+        public int getAltitudeMode()
+        {
+            return this.shaft.getAltitudeMode();
         }
 
         public void setAttributes(ShapeAttributes attributes)
@@ -179,6 +184,22 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public ShapeEditorExtension(WorldWindow wwd, Renderable shape)
         {
             super(wwd, shape);
+        }
+
+        protected int getShapeAltitudeMode()
+        {
+            if (this.getShape() instanceof Arrow)
+                return ((Arrow) this.getShape()).getAltitudeMode();
+            else
+                return super.getShapeAltitudeMode();
+        }
+
+        protected double doGetControlPointAltitude(LatLon location, Renderable shape)
+        {
+            if (shape instanceof Arrow)
+                return super.doGetControlPointAltitude(location, ((Arrow) shape).shaft);
+            else
+                return super.doGetControlPointAltitude(location, shape);
         }
 
         /**
@@ -287,7 +308,8 @@ public class ShapeEditingExtension extends ApplicationTemplate
             {
                 // There is only one control point. Compute its location, create it and add it to the list.
                 java.util.List<Marker> markerList = new ArrayList<Marker>(1);
-                Position cpPosition = new Position(locations[1], arrow.getAltitude());
+                double altitude = this.getControlPointAltitude(locations[1]);
+                Position cpPosition = new Position(locations[1], altitude);
                 markerList.add(new ControlPointMarker(cpPosition, this.getAngleMarkerAttributes(), 0, ROTATION));
 
                 this.getControlPointLayer().setMarkers(markerList);
@@ -296,7 +318,8 @@ public class ShapeEditingExtension extends ApplicationTemplate
             {
                 // The control point exists but must be updated to the new end position of the shape.
                 Iterator<Marker> markerIterator = markers.iterator();
-                markerIterator.next().setPosition(new Position(locations[1], arrow.getAltitude()));
+                double altitude = this.getControlPointAltitude(locations[1]);
+                markerIterator.next().setPosition(new Position(locations[1], altitude));
             }
 
             // Update the control point field that indicates the current heading of the shape.
@@ -407,14 +430,14 @@ public class ShapeEditingExtension extends ApplicationTemplate
             if (tf)
             {
                 // Set the shape's normal attributes to its highlighted attributes.
-                this.lastAttrs = ((Attributable)this.editor.getShape()).getAttributes();
+                this.lastAttrs = ((Attributable) this.editor.getShape()).getAttributes();
                 ((Attributable) this.editor.getShape()).setAttributes(
                     ((Attributable) this.editor.getShape()).getHighlightAttributes());
             }
             else
             {
                 // restore the shape's original normal attributes.
-                ((Attributable)this.editor.getShape()).setAttributes(this.lastAttrs);
+                ((Attributable) this.editor.getShape()).setAttributes(this.lastAttrs);
             }
         }
     }
