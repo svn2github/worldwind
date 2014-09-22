@@ -238,7 +238,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public ShapeAttributes getShapeAttributes()
         {
             // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.shape instanceof Arrow)
+            if (this.getShape() instanceof Arrow)
                 return ((Arrow) this.getShape()).getAttributes();
             else
                 return super.getShapeAttributes();
@@ -252,7 +252,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public ShapeAttributes getShapeHighlightAttributes()
         {
             // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.shape instanceof Arrow)
+            if (this.getShape() instanceof Arrow)
                 return ((Arrow) this.getShape()).getHighlightAttributes();
             else
                 return super.getShapeAttributes();
@@ -266,7 +266,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public void setShapeAttributes(ShapeAttributes attributes)
         {
             // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.shape instanceof Arrow)
+            if (this.getShape() instanceof Arrow)
                 ((Arrow) this.getShape()).setAttributes(new BasicShapeAttributes(attributes));
             else
                 super.setShapeAttributes(attributes);
@@ -280,7 +280,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public void setShapeHighlightAttributes(ShapeAttributes attributes)
         {
             // First see if it's the custom shape. If not, defer to the superclass.
-            if (this.shape instanceof Arrow)
+            if (this.getShape() instanceof Arrow)
                 ((Arrow) this.getShape()).setHighlightAttributes(new BasicShapeAttributes(attributes));
             else
                 super.setShapeAttributes(attributes);
@@ -299,7 +299,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
 
             // Compute the new location for the arrowhead.
             Globe globe = this.getWwd().getModel().getGlobe();
-            Vec4 delta = this.computeControlPointDelta(this.previousPosition, terrainPosition);
+            Vec4 delta = this.computeControlPointDelta(this.getPreviousPosition(), terrainPosition);
             Vec4 markerPoint = globe.computeEllipsoidalPointFromLocation(controlPoint.getPosition());
             Position markerPosition = globe.computePositionFromEllipsoidalPoint(markerPoint.add3(delta));
             arrow.setLocations(arrow.getLocations()[0], markerPosition);
@@ -313,7 +313,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
 
             // Compute the current arrow heading and the change in heading from the current and previous locations of
             // the control point.
-            Angle currentHeading = LatLon.greatCircleAzimuth(locations[0], this.previousPosition);
+            Angle currentHeading = LatLon.greatCircleAzimuth(locations[0], this.getPreviousPosition());
             Angle deltaHeading = LatLon.greatCircleAzimuth(locations[0], terrainPosition).subtract(currentHeading);
 
             // Modify the arrow's two end locations to adhere to the new heading.
@@ -338,15 +338,15 @@ public class ShapeEditingExtension extends ApplicationTemplate
 
             // Get a handle on the current control points. If the handle is null, then the control points must be
             // created.
-            Iterable<Marker> markers = this.controlPointLayer.getMarkers();
+            Iterable<Marker> markers = this.getControlPointLayer().getMarkers();
             if (markers == null)
             {
                 // There is only one control point. Compute its location, create it and add it to the list.
                 java.util.List<Marker> markerList = new ArrayList<Marker>(1);
                 Position cpPosition = new Position(locations[1], arrow.getAltitude());
-                markerList.add(new ControlPointMarker(cpPosition, this.angleMarkerAttributes, 0, ROTATION));
+                markerList.add(new ControlPointMarker(cpPosition, this.getAngleMarkerAttributes(), 0, ROTATION));
 
-                this.controlPointLayer.setMarkers(markerList);
+                this.getControlPointLayer().setMarkers(markerList);
             }
             else
             {
@@ -357,7 +357,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
 
             // Update the control point field that indicates the current heading of the shape.
             Angle arrowHeading = LatLon.greatCircleAzimuth(locations[0], locations[1]);
-            Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
+            Iterator<Marker> markerIterator = this.getControlPointLayer().getMarkers().iterator();
             ((ControlPointMarker) markerIterator.next()).setRotation(this.normalizedHeading(arrowHeading, Angle.ZERO));
         }
 
@@ -369,9 +369,9 @@ public class ShapeEditingExtension extends ApplicationTemplate
             {
                 // Add the arrowhead location to the readout, which by default for this control point shows only the
                 // rotation angle.
-                String text = this.annotation.getText();
-                text += "\n" + this.unitsFormat.latLon2(controlPoint.getPosition());
-                this.annotation.setText(text);
+                String text = this.getAnnotation().getText();
+                text += "\n" + this.getUnitsFormat().latLon2(controlPoint.getPosition());
+                this.getAnnotation().setText(text);
             }
         }
     }
