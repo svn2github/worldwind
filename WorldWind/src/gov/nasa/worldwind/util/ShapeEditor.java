@@ -211,7 +211,6 @@ public class ShapeEditor implements SelectListener
     protected ControlPointMarker currentSizingMarker;
     protected ShapeAttributes originalAttributes;
     protected ShapeAttributes originalHighlightAttributes;
-    protected boolean originalDepthOffsetFlag;
     /**
      * For shapes without an inherent heading, the current heading established by the editor for the shape.
      */
@@ -567,8 +566,14 @@ public class ShapeEditor implements SelectListener
 
         if (this.shape instanceof Airspace)
         {
-            this.originalDepthOffsetFlag = ((Airspace)this.shape).isEnableDepthOffset();
-            ((Airspace) this.shape).setEnableDepthOffset(true);
+            double[] altitudes = ((Airspace)shadowShape).getAltitudes();
+            ((Airspace)shadowShape).setAltitudes(altitudes[0], 0.95 * altitudes[1]);
+//
+//            // Show only the outline of the shadow shape.
+//            AirspaceAttributes shadowAttributes = new BasicAirspaceAttributes(this.originalAttributes);
+//            shadowAttributes.setDrawInterior(false);
+//            ((Airspace)shadowShape).setAttributes(shadowAttributes);
+//            ((Airspace)shadowShape).setHighlightAttributes(shadowAttributes);
         }
     }
 
@@ -585,9 +590,6 @@ public class ShapeEditor implements SelectListener
             this.setShapeAttributes(this.originalAttributes);
             this.setShapeHighlightAttributes(this.originalHighlightAttributes);
         }
-
-        if (this.shape instanceof Airspace)
-            ((Airspace) this.shape).setEnableDepthOffset(this.originalDepthOffsetFlag);
 
         this.wwd.redraw();
     }
