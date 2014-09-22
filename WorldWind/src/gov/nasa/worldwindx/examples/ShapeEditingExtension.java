@@ -360,6 +360,20 @@ public class ShapeEditingExtension extends ApplicationTemplate
             Iterator<Marker> markerIterator = this.controlPointLayer.getMarkers().iterator();
             ((ControlPointMarker) markerIterator.next()).setRotation(this.normalizedHeading(arrowHeading, Angle.ZERO));
         }
+
+        protected void updateAnnotation(ControlPointMarker controlPoint)
+        {
+            super.updateAnnotation(controlPoint);
+
+            if (controlPoint != null)
+            {
+                // Add the arrowhead location to the readout, which by default for this control point shows only the
+                // rotation angle.
+                String text = this.annotation.getText();
+                text += "\n" + this.unitsFormat.latLon2(controlPoint.getPosition());
+                this.annotation.setText(text);
+            }
+        }
     }
 
     /**
