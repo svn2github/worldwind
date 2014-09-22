@@ -1808,14 +1808,14 @@ public class ShapeEditor implements SelectListener
             if (newWidths[0] >= 0 && newWidths[1] >= 0)
             {
                 leg.setWidths(newWidths[0], newWidths[1]);
-
-                for (int i = controlPoint.getLeg() + 1; i < legs.size(); i++)
-                {
-                    if (this.trackAdjacencyList.contains(legs.get(i)))
-                        legs.get(i).setWidths(newWidths[0], newWidths[1]);
-                    else
-                        break;
-                }
+//
+//                for (int i = controlPoint.getLeg() + 1; i < legs.size(); i++)
+//                {
+//                    if (this.trackAdjacencyList.contains(legs.get(i)))
+//                        legs.get(i).setWidths(newWidths[0], newWidths[1]);
+//                    else
+//                        break;
+//                }
             }
         }
         else
@@ -1890,7 +1890,7 @@ public class ShapeEditor implements SelectListener
         for (int i = 0; i < legs.size(); i++)
         {
             Box leg = legs.get(i);
-            if (!this.trackAdjacencyList.contains(leg))
+//            if (!this.trackAdjacencyList.contains(leg))
             {
                 LatLon[] legLocations = leg.getLocations();
                 double[] widths = leg.getWidths();
