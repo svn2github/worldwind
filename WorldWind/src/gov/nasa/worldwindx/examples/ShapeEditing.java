@@ -19,6 +19,7 @@ import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.util.ShapeEditor;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 
 /**
@@ -231,9 +232,11 @@ public class ShapeEditing extends ApplicationTemplate
                         this.keepShapeHighlighted(true);
                         event.consume();
                     }
-                    else
+                    else if ((event.getMouseEvent().getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == 0
+                        && (event.getMouseEvent().getModifiersEx() & MouseEvent.ALT_DOWN_MASK) == 0)
                     {
-                        // Disable editing of the current shape.
+                        // Disable editing of the current shape. Shift and Alt are used by the editor, so ignore
+                        // events with those buttons down.
                         this.editor.setArmed(false);
                         this.keepShapeHighlighted(false);
                         this.editor = null;

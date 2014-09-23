@@ -18,6 +18,7 @@ import gov.nasa.worldwind.render.airspaces.*;
 import gov.nasa.worldwind.render.markers.Marker;
 import gov.nasa.worldwind.util.ShapeEditor;
 
+import java.awt.event.*;
 import java.util.*;
 
 /**
@@ -260,6 +261,9 @@ public class ShapeEditingExtension extends ApplicationTemplate
          */
         protected void reshapeArrow(ControlPointMarker controlPoint, Position terrainPosition)
         {
+            if (controlPoint == null)
+                return; // this shape does not support control point insertion.
+
             Arrow arrow = (Arrow) this.getShape();
 
             // Compute the new location for the arrowhead.
@@ -268,28 +272,6 @@ public class ShapeEditingExtension extends ApplicationTemplate
             Vec4 markerPoint = globe.computeEllipsoidalPointFromLocation(controlPoint.getPosition());
             Position markerPosition = globe.computePositionFromEllipsoidalPoint(markerPoint.add3(delta));
             arrow.setLocations(arrow.getLocations()[0], markerPosition);
-        }
-
-        protected void reshapeArrow2(ControlPointMarker controlPoint, Position terrainPosition)
-        {
-            Arrow arrow = (Arrow) this.getShape();
-
-            LatLon[] locations = arrow.getLocations();
-
-            // Compute the current arrow heading and the change in heading from the current and previous locations of
-            // the control point.
-            Angle currentHeading = LatLon.greatCircleAzimuth(locations[0], this.getPreviousPosition());
-            Angle deltaHeading = LatLon.greatCircleAzimuth(locations[0], terrainPosition).subtract(currentHeading);
-
-            // Modify the arrow's two end locations to adhere to the new heading.
-            for (int i = 0; i < 2; i++)
-            {
-                Angle heading = LatLon.greatCircleAzimuth(locations[0], locations[i]);
-                Angle distance = LatLon.greatCircleDistance(locations[0], locations[i]);
-                locations[i] = LatLon.greatCircleEndPosition(locations[0], heading.add(deltaHeading), distance);
-            }
-
-            arrow.setLocations(locations[0], locations[1]);
         }
 
         /**
@@ -408,9 +390,11 @@ public class ShapeEditingExtension extends ApplicationTemplate
                         this.keepShapeHighlighted(true);
                         event.consume();
                     }
-                    else
+                    else if ((event.getMouseEvent().getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == 0
+                        && (event.getMouseEvent().getModifiersEx() & MouseEvent.ALT_DOWN_MASK) == 0)
                     {
-                        // Disable editing of the current shape.
+                        // Disable editing of the current shape. Shift and Alt are used by the editor, so ignore
+                        // events with those buttons down.
                         this.editor.setArmed(false);
                         this.keepShapeHighlighted(false);
                         this.editor = null;
