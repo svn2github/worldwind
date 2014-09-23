@@ -14,14 +14,16 @@ import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import org.w3c.dom.Element;
 
-import javax.swing.*;
 import javax.xml.xpath.*;
 import java.awt.*;
 import java.util.Map;
 
 /**
- * Converts Shapefile geometry into World Wind renderable objects. Shapefile geometries are mapped to World Wind objects
- * as follows:
+ * Converts Shapefile geometry into World Wind renderable objects.
+ * <p/>
+ * <h1>Shapefile Geometry Conversion</h1>
+ * <p/>
+ * Shapefile geometries are mapped to World Wind objects as follows:
  * <p/>
  * <table> <tr><th>Shapefile Geometry</th><th>World Wind Object</th></tr> <tr><td>Point</td><td>{@link
  * gov.nasa.worldwind.render.PointPlacemark}</td></tr> <tr><td>MultiPoint</td><td>List of {@link
@@ -29,30 +31,67 @@ import java.util.Map;
  * gov.nasa.worldwind.formats.shapefile.ShapefilePolylines}</td></tr> <tr><td>Polygon</td><td>{@link
  * gov.nasa.worldwind.formats.shapefile.ShapefilePolygons}</td></tr> </table>
  * <p/>
- * In addition, if the attributes file associated with the shapefile has an attribute named "height" or "hgt", the
+ * In addition, if the DBase attributes file associated with the shapefile has an attribute named "height" or "hgt", the
  * shapes in the shapefile are mapped to {@link gov.nasa.worldwind.formats.shapefile.ShapefileExtrudedPolygons}.
  * <p/>
- * The attributes applied to the created shapes may be specified to this class, either via the attribute accessors of
- * this class or a configuration file passed to {@link #createLayerFromConfigDocument(org.w3c.dom.Element,
- * gov.nasa.worldwind.avlist.AVList, Runnable)}.
+ * <h1>Shapefile Attributes</h1>
  * <p/>
- * Shapefiles may have associated with them an attributes file. This class provides a mechanism for mapping attribute
- * names in that file to keys assigned to the created shapes. The mapping is specified as a key/value pair, the key is
- * the attribute name in the shapefile's attributes file, the value is the key name to attach to the created shape to
- * hold the value of the specified attribute. Thus, for example, the value of per-record "NAME" fields in the shapefile
- * attributes may be mapped to a {@link gov.nasa.worldwind.avlist.AVKey#DISPLAY_NAME} key in the av-list of the created
- * shapes corresponding to each record.
+ * Shapefiles may have associated with them a DBase attributes file. This class provides a mechanism for mapping
+ * attribute names in the DBase file to keys assigned to the created shapes. The mapping is specified as key/value
+ * pairs, the key is the attribute name in the shapefile's DBase attributes file, the value is the key name to attach to
+ * the created shape to hold the value of the specified attribute. Thus, for example, the value of per-record "NAME"
+ * fields in the DBase attributes may be mapped to a {@link gov.nasa.worldwind.avlist.AVKey#DISPLAY_NAME} key in the
+ * av-list of the created shapes corresponding to each record. The mapping's key/value pairs are specified using {@link
+ * #setDBaseMappings(gov.nasa.worldwind.avlist.AVList)}.
+ * <p/>
+ * The rendering attributes applied to the created shapes may be specified to this class, either via the attribute
+ * accessors of this class or a configuration file passed to {@link #createLayerFromConfigDocument(org.w3c.dom.Element,
+ * gov.nasa.worldwind.avlist.AVList, CompletionCallback)}.
+ * <p/>
+ * The key-value attributes and the rendering attributes of certain created shapes may be specified programmatically
+ * using a ShapefileRenderable.AttributeDelegate. The delegate is called for each shapefile record encountered during
+ * parsing, after this factory applies its DBase attribute mapping and its default rendering attributes. Currently,
+ * attribute delegates are called when parsing shapefiles containing polylines, polygons or extruded polygons.
+ * shapefiles containing points or multi-points ignore the attribute delegate. The delegate is specified using {@link
+ * #setAttributeDelegate(gov.nasa.worldwind.formats.shapefile.ShapefileRenderable.AttributeDelegate)}.
  *
  * @author tag
  * @version $Id$
  */
-public class ShapefileLayerFactory
+public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDelegate
 {
+    /**
+     * Defines an interface for receiving notifications when shapefile parsing completes or encounters an exception.
+     * This interface's methods are typically executed on a separate thread created by the factory. Implementations must
+     * synchronize access to objects that are not thread safe.
+     */
+    public interface CompletionCallback
+    {
+        /**
+         * Called when shapefile parsing and geometry conversion completes. Always called before the factory's thread
+         * terminates.
+         *
+         * @param layer  The layer that renders the shapefile's contents.
+         * @param source The shapefile source passed to this factory.
+         */
+        void completion(Layer layer, Object source);
+
+        /**
+         * Called if exception occurs during shapefile parsing or shapefile geometry conversion. May be called multiple
+         * times during shapefile parsing.
+         *
+         * @param e      The exception thrown.
+         * @param source The shapefile source passed to this factory.
+         */
+        void exception(Exception e, Object source);
+    }
+
     protected AVList dBaseMappings;
     protected ShapeAttributes normalShapeAttributes;
     protected ShapeAttributes highlightShapeAttributes;
     protected PointPlacemarkAttributes normalPointAttributes;
     protected PointPlacemarkAttributes highlightPointAttributes;
+    protected ShapefileRenderable.AttributeDelegate attributeDelegate;
 
     /**
      * Indicates the mappings between shapefile attribute names and av-list keys attached to created shapes.
@@ -158,26 +197,78 @@ public class ShapefileLayerFactory
     }
 
     /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general Shapefile layer configuration element. The
+     * Indicates the attribute delegate called for each shapefile record encountered during parsing.
+     *
+     * @return The attribute delegate called for each shapefile record.
+     */
+    public ShapefileRenderable.AttributeDelegate getAttributeDelegate()
+    {
+        return this.attributeDelegate;
+    }
+
+    /**
+     * Specifies an attribute delegate to call for each shapefile record encountered during parsing. The delegate is
+     * called after this factory applies its DBase attribute mapping and its default rendering attributes.
+     * <p/>
+     * Currently, attribute delegates are called when parsing shapefiles containing polylines, polygons or extruded
+     * polygons. shapefiles containing points or multi-points ignore the attribute delegate.
+     *
+     * @param attributeDelegate The attribute delegate to call for each shapefile record.
+     */
+    public void setAttributeDelegate(ShapefileRenderable.AttributeDelegate attributeDelegate)
+    {
+        this.attributeDelegate = attributeDelegate;
+    }
+
+    /**
+     * Applies this factory's DBase attribute mapping and default rendering attributes to the specified records. If an
+     * attribute delegate has been specified using {@link #setAttributeDelegate(gov.nasa.worldwind.formats.shapefile.ShapefileRenderable.AttributeDelegate)},
+     * this calls the attribute delegate before exiting.
+     *
+     * @param shapefileRecord  The shapefile record used to create the ShapefileRenderable.Record.
+     * @param renderableRecord The ShapefileRenderable.Record to assign attributes for.
+     */
+    @Override
+    public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
+    {
+        if (this.dBaseMappings != null)
+        {
+            AVList mappings = this.applyMappings(shapefileRecord.getAttributes(), this.dBaseMappings);
+            if (mappings != null)
+                renderableRecord.setValues(mappings);
+        }
+
+        if (this.attributeDelegate != null)
+        {
+            this.attributeDelegate.assignAttributes(shapefileRecord, renderableRecord);
+        }
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile layer configuration element. The
      * element may contain elements specifying shapefile attribute mappings, shape attributes to assign to created
      * shapes, and layer properties.
      * <p/>
-     * This returns with the new layer immediately, but schedules Shapefile loading and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once loading
-     * completes, this executes the specified completionCallback if one is specified. The completion callback may
-     * therefore be used to determine when Shapefile loading and geometry conversion completes.
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
+     * completes, this executes the specified callback's completion method, passing the completed layer and the
+     * configuration element.
+     * <p/>
+     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
+     * method, passing the exception and the configuration element. When an exception causes layer parsing or geometry
+     * conversion to fail, this calls the callback's completion method before the separate thread terminates.
      *
-     * @param domElement         The configuration element.
-     * @param params             Key/value pairs to associate with the created layer. Values specified here override
-     *                           corresponding values specified within the configuration element.
-     * @param completionCallback A runnable to execute when Shapefile loading completes. May be null.
+     * @param domElement The configuration element.
+     * @param params     Key/value pairs to associate with the created layer. Values specified here override
+     *                   corresponding values specified within the configuration element.
+     * @param callback   A callback to notify when shapefile parsing completes or encounters an exception. May be null.
      *
-     * @return A Layer that renders the Shapefile's contents.
+     * @return A Layer that renders the shapefile's contents.
      *
-     * @throws IllegalArgumentException if the element is null, or if the Shapefile's primitive type or projection is
-     *                                  unrecognized.
+     * @throws IllegalArgumentException if the element is null, or the element does not specify the shapefile location.
      */
-    public Layer createLayerFromConfigDocument(Element domElement, AVList params, final Runnable completionCallback)
+    public Layer createLayerFromConfigDocument(final Element domElement, AVList params,
+        final CompletionCallback callback)
     {
         if (domElement == null)
         {
@@ -247,10 +338,16 @@ public class ShapefileLayerFactory
                     shp = new Shapefile(shapefileLocation);
                     addRenderablesForShapefile(shp, layer);
                 }
+                catch (Exception e)
+                {
+                    if (callback != null)
+                        callback.exception(e, domElement);
+                }
                 finally
                 {
                     WWIO.closeStream(shp, shapefileLocation);
-                    runCompletionCallback(completionCallback);
+                    if (callback != null)
+                        callback.completion(layer, domElement);
                 }
             }
         });
@@ -259,21 +356,25 @@ public class ShapefileLayerFactory
     }
 
     /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general Shapefile.
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile.
      * <p/>
-     * This returns with the new layer immediately, but schedules Shapefile loading and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once loading
-     * completes, this executes the specified completionCallback if one is specified. The completion callback may
-     * therefore be used to determine when Shapefile loading and geometry conversion completes.
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
+     * completes, this executes the specified callback's completion method, passing the completed layer and the
+     * shapefile.
+     * <p/>
+     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
+     * method, passing the exception and the shapefile. When an exception causes layer parsing or geometry conversion to
+     * fail, this calls the callback's completion method before the separate thread terminates.
      *
-     * @param shp                the Shapefile to create a layer for.
-     * @param completionCallback A runnable to execute when Shapefile loading completes. May be null.
+     * @param shp      the Shapefile to create a layer for.
+     * @param callback A callback to notify when shapefile parsing completes or encounters an exception. May be null.
      *
-     * @return A Layer that renders the Shapefile's contents.
+     * @return A Layer that renders the shapefile's contents.
      *
-     * @throws IllegalArgumentException if the Shapefile is null, or if the Shapefile's primitive type is unrecognized.
+     * @throws IllegalArgumentException if the shapefile is null, or if the shapefile's primitive type is unrecognized.
      */
-    public Layer createLayerFromShapefile(final Shapefile shp, final Runnable completionCallback)
+    public Layer createLayerFromShapefile(final Shapefile shp, final CompletionCallback callback)
     {
         if (shp == null)
         {
@@ -293,9 +394,15 @@ public class ShapefileLayerFactory
                 {
                     addRenderablesForShapefile(shp, layer);
                 }
+                catch (Exception e)
+                {
+                    if (callback != null)
+                        callback.exception(e, shp);
+                }
                 finally
                 {
-                    runCompletionCallback(completionCallback);
+                    if (callback != null)
+                        callback.completion(layer, shp);
                 }
             }
         });
@@ -304,25 +411,29 @@ public class ShapefileLayerFactory
     }
 
     /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general Shapefile source. The source type may be one of
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile source. The source type may be one of
      * the following: <ul> <li>{@link java.io.InputStream}</li> <li>{@link java.net.URL}</li> <li>{@link
      * java.io.File}</li> <li>{@link String} containing a valid URL description or a file or resource name available on
      * the classpath.</li> </ul>
      * <p/>
-     * This returns with the new layer immediately, but schedules Shapefile loading and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once loading
-     * completes, this executes the specified completionCallback if one is specified. The completion callback may
-     * therefore be used to determine when Shapefile loading and geometry conversion completes.
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
+     * completes, this executes the specified callback's completion method, passing the completed layer and the
+     * shapefile source.
+     * <p/>
+     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
+     * method, passing the exception and the shapefile source. When an exception causes layer parsing or geometry
+     * conversion to fail, this calls the callback's completion method before the separate thread terminates.
      *
-     * @param source             the source of the Shapefile.
-     * @param completionCallback A runnable to execute when Shapefile loading completes. May be null.
+     * @param source   the source of the shapefile.
+     * @param callback A callback to notify when shapefile parsing completes or encounters an exception. May be null.
      *
-     * @return A Layer that renders the Shapefile's contents.
+     * @return A Layer that renders the shapefile's contents.
      *
-     * @throws IllegalArgumentException if the source is null or an empty string, or if the Shapefile's primitive type
+     * @throws IllegalArgumentException if the source is null or an empty string, or if the shapefile's primitive type
      *                                  is unrecognized.
      */
-    public Layer createLayerFromSource(final Object source, final Runnable completionCallback)
+    public Layer createLayerFromShapefileSource(final Object source, final CompletionCallback callback)
     {
         if (WWUtil.isEmpty(source))
         {
@@ -344,10 +455,16 @@ public class ShapefileLayerFactory
                     shp = new Shapefile(source);
                     addRenderablesForShapefile(shp, layer);
                 }
+                catch (Exception e)
+                {
+                    if (callback != null)
+                        callback.exception(e, source);
+                }
                 finally
                 {
                     WWIO.closeStream(shp, source.toString());
-                    runCompletionCallback(completionCallback);
+                    if (callback != null)
+                        callback.completion(layer, source);
                 }
             }
         });
@@ -553,20 +670,7 @@ public class ShapefileLayerFactory
     protected void addRenderablesForPolylines(Shapefile shp, RenderableLayer layer)
     {
         ShapefilePolylines shape = new ShapefilePolylines(shp, this.normalShapeAttributes,
-            this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
-        {
-            @Override
-            public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
-            {
-                if (dBaseMappings != null)
-                {
-                    AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
-                    if (mappings != null)
-                        renderableRecord.setValues(mappings);
-                }
-            }
-        });
-
+            this.highlightShapeAttributes, this);
         layer.addRenderable(shape);
     }
 
@@ -585,40 +689,14 @@ public class ShapefileLayerFactory
     protected void addRenderablesForSurfacePolygons(Shapefile shp, RenderableLayer layer)
     {
         ShapefilePolygons shape = new ShapefilePolygons(shp, this.normalShapeAttributes,
-            this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
-        {
-            @Override
-            public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
-            {
-                if (dBaseMappings != null)
-                {
-                    AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
-                    if (mappings != null)
-                        renderableRecord.setValues(mappings);
-                }
-            }
-        });
-
+            this.highlightShapeAttributes, this);
         layer.addRenderable(shape);
     }
 
     protected void addRenderablesForExtrudedPolygons(Shapefile shp, RenderableLayer layer)
     {
         ShapefileExtrudedPolygons shape = new ShapefileExtrudedPolygons(shp, this.normalShapeAttributes,
-            this.highlightShapeAttributes, new ShapefileRenderable.AttributeDelegate()
-        {
-            @Override
-            public void assignAttributes(ShapefileRecord shapefileRecord, ShapefileRenderable.Record renderableRecord)
-            {
-                if (dBaseMappings != null)
-                {
-                    AVList mappings = applyMappings(shapefileRecord.getAttributes(), dBaseMappings);
-                    if (mappings != null)
-                        renderableRecord.setValues(mappings);
-                }
-            }
-        });
-
+            this.highlightShapeAttributes, this);
         layer.addRenderable(shape);
     }
 
@@ -636,13 +714,5 @@ public class ShapefileLayerFactory
         }
 
         return mappings.getEntries().size() > 0 ? mappings : null;
-    }
-
-    protected void runCompletionCallback(Runnable callback)
-    {
-        if (callback != null)
-        {
-            SwingUtilities.invokeLater(callback);
-        }
     }
 }

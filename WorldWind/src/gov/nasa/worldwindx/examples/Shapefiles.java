@@ -8,7 +8,7 @@ package gov.nasa.worldwindx.examples;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layers.*;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.examples.util.*;
 
@@ -28,7 +28,8 @@ import java.io.File;
  */
 public class Shapefiles extends ApplicationTemplate
 {
-    public static class AppFrame extends ApplicationTemplate.AppFrame implements Runnable
+    public static class AppFrame extends ApplicationTemplate.AppFrame
+        implements ShapefileLayerFactory.CompletionCallback
     {
         protected RandomShapeAttributes randomAttrs = new RandomShapeAttributes();
 
@@ -45,7 +46,7 @@ public class Shapefiles extends ApplicationTemplate
             factory.setNormalPointAttributes(this.randomAttrs.asPointAttributes());
             factory.setNormalShapeAttributes(this.randomAttrs.asShapeAttributes());
 
-            Layer layer = factory.createLayerFromSource(source, this); // use this as the completion callback
+            Layer layer = factory.createLayerFromShapefileSource(source, this); // use this as the completion callback
             layer.setName(WWIO.getFilename(source.toString()));
             this.getWwd().getModel().getLayers().add(layer);
 
@@ -53,17 +54,35 @@ public class Shapefiles extends ApplicationTemplate
         }
 
         @Override
-        public void run() // ShapefileLayerFactory completion callback
+        public void completion(final Layer layer, final Object source)
         {
-            LayerList layerList = this.getWwd().getModel().getLayers();
-            Layer lastLayer = layerList.get(layerList.size() - 1);
-            Sector sector = (Sector) lastLayer.getValue(AVKey.SECTOR);
+            if (!SwingUtilities.isEventDispatchThread())
+            {
+                SwingUtilities.invokeLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        completion(layer, source);
+                    }
+                });
+                return;
+            }
+
+            Sector sector = (Sector) layer.getValue(AVKey.SECTOR);
             if (sector != null)
             {
                 ExampleUtil.goTo(this.getWwd(), sector);
             }
 
             this.setCursor(null);
+        }
+
+        @Override
+        public void exception(Exception e, Object source)
+        {
+            String msg = Logging.getMessage("generic.ExceptionAttemptingToReadShapefile", source.toString());
+            Logging.logger().log(java.util.logging.Level.SEVERE, msg, e);
         }
     }
 
