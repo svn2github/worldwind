@@ -35,7 +35,7 @@ public class BasicElevationModelFactory extends BasicFactory
      * Creates an elevation model from a general configuration source. The source can be one of the following: <ul>
      * <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link java.io.InputStream}</li> <li> an
      * {@link org.w3c.dom.Element}</li> <li>a {@link String} holding a file name, a name of a resource on the classpath,
-     * or a string represenation of a URL</li> </ul>
+     * or a string representation of a URL</li> </ul>
      * <p/>
      * For non-compound models, this method maps the <code>serviceName</code> attribute of the
      * <code>ElevationModel/Service</code> element of the XML configuration document to the appropriate elevation-model

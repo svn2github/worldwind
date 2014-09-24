@@ -34,7 +34,7 @@ public class BasicLayerFactory extends BasicFactory
      * Creates a layer or layer list from a general configuration source. The source can be one of the following: <ul>
      * <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link java.io.InputStream}</li> <li>{@link
      * Element}</li> <li>a {@link String} holding a file name, a name of a resource on the classpath, or a string
-     * represenation of a URL</li> </ul>
+     * representation of a URL</li> </ul>
      * <p/>
      * For tiled image layers, this maps the <code>serviceName</code> attribute of the <code>Layer/Service</code>
      * element of the XML configuration file to the appropriate base tiled image layer type. Service types recognized
