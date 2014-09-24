@@ -33,7 +33,7 @@ public class ShapefileTest
     public static class BasicTests extends TestCase
     {
         public static final String STATE_BOUNDS_PATH = "testData/shapefiles/state_bounds.shp";
-        public static final String WORLD_BORDERS_PATH = "testData/shapefiles/TM_WORLD_BORDERS-0.2.shp";
+        public static final String WORLD_BORDERS_PATH = "testData/shapefiles/TM_WORLD_BORDERS-0.3.shp";
         public static final String SPRINGFIELD_URBAN_GROWTH_URL
             = "http://worldwind.arc.nasa.gov/java/apps/springfield/SPR_UGB.shp";
 
@@ -199,7 +199,7 @@ public class ShapefileTest
                 assertEquals("Record first part number not as expected", 64, record.getFirstPartNumber());
                 assertTrue("Record bounds not as expected", Arrays.equals(
                     new double[] {39.5345, 39.53649, -75.530616, -75.527447},
-                    ((ShapefileRecordPolyline) record).getBoundingRectangle()));
+                    record.getBoundingRectangle()));
 
                 assertEquals("Record point not as expected", LatLon.fromDegrees(39.53649, -75.530616),
                     record.getPointBuffer(0).getLocation(0));
@@ -227,7 +227,7 @@ public class ShapefileTest
                 assertRecordAppearsNormal(shapefile, record);
                 assertTrue("Record type not Polygon", Shapefile.isPolygonType(record.getShapeType()));
 
-                rect = ((ShapefileRecordPolygon) record).getBoundingRectangle();
+                rect = record.getBoundingRectangle();
                 assertCoordAppearsGeographic("Record bounds not geographic", rect[2], rect[0]);
                 assertCoordAppearsGeographic("Record bounds not geographic", rect[3], rect[1]);
 

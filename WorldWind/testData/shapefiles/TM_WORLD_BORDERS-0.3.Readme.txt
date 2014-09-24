@@ -27,6 +27,13 @@ LON		FLOAT (7,3)		Longitude
 LAT		FLOAT (6,3)		Latitude
 
 
+CHANGELOG VERSION 0.3 - 30 July 2008
+
+- Corrected spelling mistake (United Arab Emirates)
+- Corrected population number for Japan
+- Adjusted long/lat values for India, Italy and United Kingdom
+
+
 CHANGELOG VERSION 0.2 - 1 April 2008
 
 - Made new ZIP archieves. No change in dataset.
@@ -49,7 +56,7 @@ CHANGELOG VERSION 0.1 - 13 March 2008
 - Glorioso Islands, Parcel Islands, Spartly Islands was removed 
   (almost uninhabited and missing ISO-3611-1 code)
 
-- Added ISO-3611-1 codes (alpha-2, alpha-3, numeric-3). Source:
+- Added ISO-3166-1 codes (alpha-2, alpha-3, numeric-3). Source:
   https://www.cia.gov/library/publications/the-world-factbook/appendix/appendix-d.html
   http://unstats.un.org/unsd/methods/m49/m49alpha.htm
   http://www.fysh.org/~katie/development/geography.txt
