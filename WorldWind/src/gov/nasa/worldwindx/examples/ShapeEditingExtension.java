@@ -292,7 +292,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
                 java.util.List<Marker> markerList = new ArrayList<Marker>(1);
                 double altitude = this.getControlPointAltitude(locations[1]);
                 Position cpPosition = new Position(locations[1], altitude);
-                markerList.add(new ControlPointMarker(cpPosition, this.getAngleMarkerAttributes(), 0, ROTATION));
+                markerList.add(new ControlPointMarker(cpPosition, this.getAngleControlPointAttributes(), 0, ROTATION));
 
                 this.getControlPointLayer().setMarkers(markerList);
             }

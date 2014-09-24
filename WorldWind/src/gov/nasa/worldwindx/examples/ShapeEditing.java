@@ -131,7 +131,7 @@ public class ShapeEditing extends ApplicationTemplate
             track.addLeg(LatLon.fromDegrees(40, -103), LatLon.fromDegrees(41, -103), 1e4, 2e4, 2e4, 2e4);
             track.addLeg(LatLon.fromDegrees(41, -103), LatLon.fromDegrees(41, -102), 1e4, 2e4, 2e4, 2e4);
             track.addLeg(LatLon.fromDegrees(41, -102), LatLon.fromDegrees(40, -102), 1e4, 2e4, 2e4, 2e4);
-            track.addLeg(LatLon.fromDegrees(39.5, -102), LatLon.fromDegrees(39.5, -103), 1e4, 2e4, 2e4, 2e4);
+//            track.addLeg(LatLon.fromDegrees(39.5, -102), LatLon.fromDegrees(39.5, -103), 1e4, 2e4, 2e4, 2e4);
             track.setAttributes(attrs);
             track.setHighlightAttributes(highlightAttrs);
             track.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -208,6 +208,8 @@ public class ShapeEditing extends ApplicationTemplate
         @Override
         public void selected(SelectEvent event)
         {
+            // This select method identifies the shape to edit.
+
             PickedObject topObject = event.getTopPickedObject();
 
             if (event.getEventAction().equals(SelectEvent.LEFT_CLICK))

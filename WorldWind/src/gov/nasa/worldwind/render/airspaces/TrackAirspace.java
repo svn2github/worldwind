@@ -426,7 +426,7 @@ public class TrackAirspace extends AbstractAirspace
      *
      * @return <code>true</code> if the legs must be joined, otherwise <code>false</code>.
      */
-    public boolean mustJoinLegs(Box leg1, Box leg2)
+    protected boolean mustJoinLegs(Box leg1, Box leg2)
     {
         LatLon[] leg1Loc = leg1.getLocations();
         LatLon[] leg2Loc = leg2.getLocations();
