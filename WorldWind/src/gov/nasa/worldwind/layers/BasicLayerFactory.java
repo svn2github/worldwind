@@ -8,7 +8,6 @@ package gov.nasa.worldwind.layers;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.*;
-import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
 import gov.nasa.worldwind.ogc.*;
 import gov.nasa.worldwind.ogc.wms.*;
 import gov.nasa.worldwind.util.*;
@@ -366,10 +365,19 @@ public class BasicLayerFactory extends BasicFactory
         return layer;
     }
 
+    /**
+     * Creates a shapefile layer described by an XML layer description. This delegates layer construction to the factory
+     * class associated with the configuration key "gov.nasa.worldwind.avkey.ShapefileLayerFactory".
+     *
+     * @param domElement the XML element describing the layer to create. The element must contain the shapefile
+     *                   location, and may contain elements specifying shapefile attribute mappings, shape attributes to
+     *                   assign to created shapes, and layer properties.
+     * @param params     any parameters to apply when creating the layer.
+     *
+     * @return a new layer
+     */
     protected Layer createShapefileLayer(Element domElement, AVList params)
     {
-        ShapefileLayerFactory factory = new ShapefileLayerFactory();
-
-        return factory.createLayerFromConfigDocument(domElement, params, null);
+        return (Layer) BasicFactory.create(AVKey.SHAPEFILE_LAYER_FACTORY, domElement, params);
     }
 }

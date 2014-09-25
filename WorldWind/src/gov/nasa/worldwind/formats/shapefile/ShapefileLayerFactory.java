@@ -6,20 +6,22 @@
 
 package gov.nasa.worldwind.formats.shapefile;
 
-import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
-import org.w3c.dom.Element;
+import org.w3c.dom.*;
 
 import javax.xml.xpath.*;
 import java.awt.*;
 import java.util.Map;
 
 /**
- * Converts Shapefile geometry into World Wind renderable objects.
+ * A factory that creates {@link gov.nasa.worldwind.layers.Layer} instances from a shapefile layer configuration source
+ * or a shapefile source.
  * <p/>
  * <h1>Shapefile Geometry Conversion</h1>
  * <p/>
@@ -45,8 +47,8 @@ import java.util.Map;
  * #setDBaseMappings(gov.nasa.worldwind.avlist.AVList)}.
  * <p/>
  * The rendering attributes applied to the created shapes may be specified to this class, either via the attribute
- * accessors of this class or a configuration file passed to {@link #createLayerFromConfigDocument(org.w3c.dom.Element,
- * gov.nasa.worldwind.avlist.AVList, CompletionCallback)}.
+ * accessors of this class or a configuration file passed to {@link #createFromConfigSource(Object,
+ * gov.nasa.worldwind.avlist.AVList)}.
  * <p/>
  * The key-value attributes and the rendering attributes of certain created shapes may be specified programmatically
  * using a ShapefileRenderable.AttributeDelegate. The delegate is called for each shapefile record encountered during
@@ -58,32 +60,30 @@ import java.util.Map;
  * @author tag
  * @version $Id$
  */
-public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDelegate
+public class ShapefileLayerFactory implements Factory, ShapefileRenderable.AttributeDelegate
 {
     /**
      * Defines an interface for receiving notifications when shapefile parsing completes or encounters an exception.
-     * This interface's methods are typically executed on a separate thread created by the factory. Implementations must
+     * This interface's methods are executed on a separate thread created by the factory. Implementations must
      * synchronize access to objects that are not thread safe.
      */
     public interface CompletionCallback
     {
         /**
          * Called when shapefile parsing and geometry conversion completes. Always called before the factory's thread
-         * terminates.
+         * terminates. Executed on a separate thread created by the factory.
          *
-         * @param layer  The layer that renders the shapefile's contents.
-         * @param source The shapefile source passed to this factory.
+         * @param result The layer created by this factory.
          */
-        void completion(Layer layer, Object source);
+        void completion(Object result);
 
         /**
          * Called if exception occurs during shapefile parsing or shapefile geometry conversion. May be called multiple
-         * times during shapefile parsing.
+         * times during shapefile parsing. Executed on a separate thread created by the factory.
          *
-         * @param e      The exception thrown.
-         * @param source The shapefile source passed to this factory.
+         * @param e The exception thrown.
          */
-        void exception(Exception e, Object source);
+        void exception(Exception e);
     }
 
     protected AVList dBaseMappings;
@@ -245,47 +245,215 @@ public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDeleg
     }
 
     /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile layer configuration element. The
-     * element may contain elements specifying shapefile attribute mappings, shape attributes to assign to created
-     * shapes, and layer properties.
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general configuration source. The source can be one of
+     * the following: <ul> <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link
+     * java.io.InputStream}</li> <li>{@link Element}</li> <li>a {@link String} holding a file name, a name of a resource
+     * on the classpath, or a string representation of a URL</li> </ul>
+     * <p/>
+     * The XML configuration file indicated by the source must contain the shapefile location, and may contain elements
+     * specifying shapefile attribute mappings, shape attributes to assign to created shapes, and layer properties.
      * <p/>
      * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
-     * completes, this executes the specified callback's completion method, passing the completed layer and the
-     * configuration element.
-     * <p/>
-     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
-     * method, passing the exception and the configuration element. When an exception causes layer parsing or geometry
-     * conversion to fail, this calls the callback's completion method before the separate thread terminates.
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. In order to receive
+     * notifications when execution completes or if an exception occurs, use {@link #createFromConfigSource(Object,
+     * gov.nasa.worldwind.avlist.AVList, gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory.CompletionCallback)}
+     * and specify a completion callback.
      *
-     * @param domElement The configuration element.
-     * @param params     Key/value pairs to associate with the created layer. Values specified here override
-     *                   corresponding values specified within the configuration element.
-     * @param callback   A callback to notify when shapefile parsing completes or encounters an exception. May be null.
+     * @param configSource the configuration source. See above for supported types.
+     * @param params       Key/value pairs to associate with the created layer. Values specified here override
+     *                     corresponding values specified within the configuration element.
      *
-     * @return A Layer that renders the shapefile's contents.
+     * @return a Layer, as described by the XML configuration file.
      *
-     * @throws IllegalArgumentException if the element is null, or the element does not specify the shapefile location.
+     * @throws IllegalArgumentException if the configuration file name is null or an empty string.
+     * @throws WWRuntimeException       if object creation fails. The exception indicating the source of the failure is
+     *                                  included as the {@link Exception#initCause(Throwable)}.
      */
-    public Layer createLayerFromConfigDocument(final Element domElement, AVList params,
-        final CompletionCallback callback)
+    @Override
+    public Object createFromConfigSource(Object configSource, AVList params)
     {
-        if (domElement == null)
+        if (WWUtil.isEmpty(configSource))
         {
-            String message = Logging.getMessage("nullValue.ElementIsNull");
+            String message = Logging.getMessage("generic.ConfigurationSourceIsInvalid", configSource);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        final String shapefileLocation = WWXML.getText(domElement, "ShapefileLocation");
-        if (WWUtil.isEmpty(shapefileLocation))
+        return this.createFromConfigSource(configSource, params, null); // no completion callback
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general configuration source. The source can be one of
+     * the following: <ul> <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link
+     * java.io.InputStream}</li> <li>{@link Element}</li> <li>a {@link String} holding a file name, a name of a resource
+     * on the classpath, or a string representation of a URL</li> </ul>
+     * <p/>
+     * The XML configuration file indicated by the source must contain the shapefile location, and may contain elements
+     * specifying shapefile attribute mappings, shape attributes to assign to created shapes, and layer properties.
+     * <p/>
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
+     * completes, this calls the callback's completion method with the completed layer as the sole argument.
+     * <p/>
+     * If an exception occurs during execution, this catches the exception and forwards it to the callback's exception
+     * method. When an exception causes layer parsing or geometry conversion to fail, this calls the callback's
+     * completion method before the separate thread terminates.
+     *
+     * @param configSource the configuration source. See above for supported types.
+     * @param params       Key/value pairs to associate with the created layer. Values specified here override
+     *                     corresponding values specified within the configuration element.
+     * @param callback     a callback to notify when shapefile parsing completes or encounters an exception. May be
+     *                     null.
+     *
+     * @return a Layer, as described by the XML configuration file.
+     *
+     * @throws IllegalArgumentException if the configuration file name is null or an empty string.
+     * @throws WWRuntimeException       if object creation fails. The exception indicating the source of the failure is
+     *                                  included as the {@link Exception#initCause(Throwable)}.
+     */
+    public Object createFromConfigSource(Object configSource, AVList params, CompletionCallback callback)
+    {
+        if (WWUtil.isEmpty(configSource))
         {
-            String message = Logging.getMessage("SHP.ShapefileLocationUnspecified");
+            String message = Logging.getMessage("generic.ConfigurationSourceIsInvalid", configSource);
             Logging.logger().severe(message);
-            return null;
+            throw new IllegalArgumentException(message);
         }
 
-        final RenderableLayer layer = new RenderableLayer();
+        Object o = null;
+
+        try
+        {
+            if (configSource instanceof Element)
+            {
+                o = this.doCreateFromElement((Element) configSource, params, callback);
+            }
+            else
+            {
+                Document doc = WWXML.openDocument(configSource);
+                if (doc != null)
+                    o = this.doCreateFromElement(doc.getDocumentElement(), params, callback);
+            }
+        }
+        catch (Exception e)
+        {
+            String msg = Logging.getMessage("generic.CreationFromConfigurationFileFailed", configSource);
+            throw new WWRuntimeException(msg, e);
+        }
+
+        return o;
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile source. The source can be one of the
+     * following: <ul> <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link
+     * java.io.InputStream}</li> <li>{@link Shapefile}</li> <li>a {@link String} holding a file name, a name of a
+     * resource on the classpath, or a string representation of a URL</li> </ul>
+     * <p/>
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. In order to receive
+     * notifications when execution completes or if an exception occurs, use {@link #createFromConfigSource(Object,
+     * gov.nasa.worldwind.avlist.AVList, gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory.CompletionCallback)}
+     * and specify a completion callback.
+     * <p/>
+     * If the source is a Shapefile instance, it is the responsibility of the caller to close the shapefile after this
+     * factory completes execution.
+     *
+     * @param shapefileSource the shapefile source. See above for supported types.
+     *
+     * @return a Layer that renders the shapefile's contents.
+     *
+     * @throws IllegalArgumentException if the shapefile file name is null or an empty string.
+     * @throws WWRuntimeException       if object creation fails. The exception indicating the source of the failure is
+     *                                  included as the {@link Exception#initCause(Throwable)}.
+     */
+    public Object createFromShapefileSource(Object shapefileSource)
+    {
+        if (WWUtil.isEmpty(shapefileSource))
+        {
+            String message = Logging.getMessage("generic.ShapefileSourceIsInvalid", shapefileSource);
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        return this.createFromShapefileSource(shapefileSource, null); // no completion callback
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile source. The source can be one of the
+     * following: <ul> <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link
+     * java.io.InputStream}</li> <li>{@link Shapefile}</li> <li>a {@link String} holding a file name, a name of a
+     * resource on the classpath, or a string representation of a URL</li> </ul>
+     * <p/>
+     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
+     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
+     * completes, this calls the callback's completion method with the completed layer as the sole argument.
+     * <p/>
+     * If an exception occurs during execution, this catches the exception and forwards it to the callback's exception
+     * method. When an exception causes layer parsing or geometry conversion to fail, this calls the callback's
+     * completion method before the separate thread terminates.
+     * <p/>
+     * If the source is a Shapefile instance, it is the responsibility of the caller to close the shapefile after this
+     * factory completes execution.
+     *
+     * @param shapefileSource the shapefile source. See above for supported types.
+     * @param callback        a callback to notify when shapefile parsing completes or encounters an exception. May be
+     *                        null.
+     *
+     * @return a Layer that renders the shapefile's contents.
+     *
+     * @throws IllegalArgumentException if the shapefile file name is null or an empty string.
+     * @throws WWRuntimeException       if object creation fails. The exception indicating the source of the failure is
+     *                                  included as the {@link Exception#initCause(Throwable)}.
+     */
+    public Object createFromShapefileSource(Object shapefileSource, CompletionCallback callback)
+    {
+        if (WWUtil.isEmpty(shapefileSource))
+        {
+            String message = Logging.getMessage("generic.ShapefileSourceIsInvalid", shapefileSource);
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        Object o;
+
+        try
+        {
+            o = this.doCreateFromShapefile(shapefileSource, callback);
+        }
+        catch (Exception e)
+        {
+            String msg = Logging.getMessage("generic.CreationFromShapefileSourceFailed", shapefileSource);
+            throw new WWRuntimeException(msg, e);
+        }
+
+        return o;
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile layer configuration element. The
+     * element must contain the shapefile location, and may contain elements specifying shapefile attribute mappings,
+     * shape attributes to assign to created shapes, and layer properties.
+     *
+     * @param domElement an XML element describing the layer.
+     * @param params     any properties to apply when creating the layer.
+     * @param callback   A callback to notify when shapefile parsing completes or encounters an exception. May be null.
+     *
+     * @return a Layer, as described by the specified description.
+     *
+     * @throws Exception if an exception occurs during creation.
+     */
+    protected Object doCreateFromElement(Element domElement, AVList params, CompletionCallback callback)
+        throws Exception
+    {
+        String shapefileLocation = WWXML.getText(domElement, "ShapefileLocation");
+        if (WWUtil.isEmpty(shapefileLocation))
+        {
+            String msg = Logging.getMessage("SHP.ShapefileLocationUnspecified");
+            throw new WWRuntimeException(msg);
+        }
+
+        RenderableLayer layer = new RenderableLayer();
 
         if (params == null)
             params = new AVListImpl();
@@ -327,6 +495,37 @@ public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDeleg
         if (b != null)
             layer.setPickEnabled(b);
 
+        this.createShapefileLayer(shapefileLocation, layer, callback);
+
+        return layer;
+    }
+
+    /**
+     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile source. The source can be one of the
+     * following: <ul> <li>a {@link java.net.URL}</li> <li>a {@link java.io.File}</li> <li>a {@link
+     * java.io.InputStream}</li> <li>{@link Shapefile}</li> <li>a {@link String} holding a file name, a name of a
+     * resource on the classpath, or a string representation of a URL</li> </ul>
+     *
+     * @param shapefileSource the shapefile source. See above for supported types.
+     * @param callback        A callback to notify when shapefile parsing completes or encounters an exception. May be
+     *                        null.
+     *
+     * @return a Layer that renders the shapefile's contents.
+     *
+     * @throws Exception if an exception occurs during creation.
+     */
+    protected Object doCreateFromShapefile(Object shapefileSource, CompletionCallback callback) throws Exception
+    {
+        RenderableLayer layer = new RenderableLayer();
+
+        this.createShapefileLayer(shapefileSource, layer, callback);
+
+        return layer;
+    }
+
+    protected void createShapefileLayer(final Object shapefileSource, final RenderableLayer layer,
+        final CompletionCallback callback)
+    {
         WorldWind.getScheduledTaskService().addTask(new Runnable()
         {
             @Override
@@ -335,141 +534,34 @@ public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDeleg
                 Shapefile shp = null;
                 try
                 {
-                    shp = new Shapefile(shapefileLocation);
-                    addRenderablesForShapefile(shp, layer);
+                    shp = loadShapefile(shapefileSource);
+                    assembleShapefileLayer(shp, layer);
                 }
                 catch (Exception e)
                 {
                     if (callback != null)
-                        callback.exception(e, domElement);
+                        callback.exception(e);
                 }
                 finally
                 {
-                    WWIO.closeStream(shp, shapefileLocation);
                     if (callback != null)
-                        callback.completion(layer, domElement);
+                        callback.completion(layer);
+                    if (shapefileSource != shp) // close the shapefile if we created it
+                        WWIO.closeStream(shp, shapefileSource.toString());
                 }
             }
         });
-
-        return layer;
     }
 
-    /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile.
-     * <p/>
-     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
-     * completes, this executes the specified callback's completion method, passing the completed layer and the
-     * shapefile.
-     * <p/>
-     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
-     * method, passing the exception and the shapefile. When an exception causes layer parsing or geometry conversion to
-     * fail, this calls the callback's completion method before the separate thread terminates.
-     *
-     * @param shp      the Shapefile to create a layer for.
-     * @param callback A callback to notify when shapefile parsing completes or encounters an exception. May be null.
-     *
-     * @return A Layer that renders the shapefile's contents.
-     *
-     * @throws IllegalArgumentException if the shapefile is null, or if the shapefile's primitive type is unrecognized.
-     */
-    public Layer createLayerFromShapefile(final Shapefile shp, final CompletionCallback callback)
+    protected Shapefile loadShapefile(Object shapefileSource)
     {
-        if (shp == null)
-        {
-            String message = Logging.getMessage("nullValue.ShapefileIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        final RenderableLayer layer = new RenderableLayer();
-
-        WorldWind.getScheduledTaskService().addTask(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    addRenderablesForShapefile(shp, layer);
-                }
-                catch (Exception e)
-                {
-                    if (callback != null)
-                        callback.exception(e, shp);
-                }
-                finally
-                {
-                    if (callback != null)
-                        callback.completion(layer, shp);
-                }
-            }
-        });
-
-        return layer;
+        return (shapefileSource instanceof Shapefile) ? (Shapefile) shapefileSource : new Shapefile(shapefileSource);
     }
 
-    /**
-     * Creates a {@link gov.nasa.worldwind.layers.Layer} from a general shapefile source. The source type may be one of
-     * the following: <ul> <li>{@link java.io.InputStream}</li> <li>{@link java.net.URL}</li> <li>{@link
-     * java.io.File}</li> <li>{@link String} containing a valid URL description or a file or resource name available on
-     * the classpath.</li> </ul>
-     * <p/>
-     * This returns with the new layer immediately, but executes shapefile parsing and shapefile geometry conversion on
-     * a separate thread. Shapefile geometry is added to the returned layer as it becomes available. Once parsing
-     * completes, this executes the specified callback's completion method, passing the completed layer and the
-     * shapefile source.
-     * <p/>
-     * If an exception occurs during shapefile parsing and geometry conversion, this calls the callback's exception
-     * method, passing the exception and the shapefile source. When an exception causes layer parsing or geometry
-     * conversion to fail, this calls the callback's completion method before the separate thread terminates.
-     *
-     * @param source   the source of the shapefile.
-     * @param callback A callback to notify when shapefile parsing completes or encounters an exception. May be null.
-     *
-     * @return A Layer that renders the shapefile's contents.
-     *
-     * @throws IllegalArgumentException if the source is null or an empty string, or if the shapefile's primitive type
-     *                                  is unrecognized.
-     */
-    public Layer createLayerFromShapefileSource(final Object source, final CompletionCallback callback)
+    protected void assembleShapefileLayer(Shapefile shp, RenderableLayer layer)
     {
-        if (WWUtil.isEmpty(source))
-        {
-            String message = Logging.getMessage("nullValue.SourceIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        final RenderableLayer layer = new RenderableLayer();
-
-        WorldWind.getScheduledTaskService().addTask(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Shapefile shp = null;
-                try
-                {
-                    shp = new Shapefile(source);
-                    addRenderablesForShapefile(shp, layer);
-                }
-                catch (Exception e)
-                {
-                    if (callback != null)
-                        callback.exception(e, source);
-                }
-                finally
-                {
-                    WWIO.closeStream(shp, source.toString());
-                    if (callback != null)
-                        callback.completion(layer, source);
-                }
-            }
-        });
-
-        return layer;
+        this.addRenderablesForShapefile(shp, layer);
+        this.addPropertiesForShapefile(shp, layer);
     }
 
     protected AVList collectDBaseMappings(Element domElement, XPath xpath)
@@ -602,15 +694,9 @@ public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDeleg
         }
         else
         {
-            Logging.logger().warning(Logging.getMessage("generic.UnrecognizedShapeType", shp.getShapeType()));
+            String msg = Logging.getMessage("generic.UnrecognizedShapeType", shp.getShapeType());
+            throw new WWRuntimeException(msg);
         }
-
-        if (shp.getBoundingRectangle() != null)
-        {
-            layer.setValue(AVKey.SECTOR, Sector.fromDegrees(shp.getBoundingRectangle()));
-        }
-
-        layer.firePropertyChange(AVKey.LAYER, null, layer);
     }
 
     protected void addRenderablesForPoints(Shapefile shp, RenderableLayer layer)
@@ -714,5 +800,18 @@ public class ShapefileLayerFactory implements ShapefileRenderable.AttributeDeleg
         }
 
         return mappings.getEntries().size() > 0 ? mappings : null;
+    }
+
+    protected void addPropertiesForShapefile(Shapefile shp, RenderableLayer layer)
+    {
+        if (layer.getValue(AVKey.DISPLAY_NAME) == null) // use the shapefile's display name when the layer is unnamed
+        {
+            layer.setValue(AVKey.DISPLAY_NAME, shp.getValue(AVKey.DISPLAY_NAME));
+        }
+
+        if (shp.getBoundingRectangle() != null)
+        {
+            layer.setValue(AVKey.SECTOR, Sector.fromDegrees(shp.getBoundingRectangle()));
+        }
     }
 }

@@ -404,6 +404,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String SHAPE_SQUARE = "gov.nasa.worldwind.avkey.ShapeSquare";
     final String SHAPE_TRIANGLE = "gov.nasa.worldwind.avkey.ShapeTriangle";
     final String SHAPEFILE_GEOMETRY_CACHE_SIZE = "gov.nasa.worldwind.avkey.ShapefileGeometryCacheSize";
+    final String SHAPEFILE_LAYER_FACTORY = "gov.nasa.worldwind.avkey.ShapefileLayerFactory";
     final String SHORT_DESCRIPTION = "gov.nasa.worldwind.avkey.Server.ShortDescription";
     final String SIZE_FIT_TEXT = "gov.nasa.worldwind.avkey.SizeFitText";
     final String SIZE_FIXED = "gov.nasa.worldwind.avkey.SizeFixed";

@@ -5,13 +5,11 @@
  */
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.formats.shapefile.*;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.WWXML;
-import org.w3c.dom.Document;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -33,6 +31,7 @@ public class ShapefileAttributeGroups extends ApplicationTemplate
     public static class AppFrame extends ApplicationTemplate.AppFrame
         implements ActionListener, ShapefileRenderable.AttributeDelegate
     {
+        protected static String SHAPEFILE_PATH = "gov/nasa/worldwindx/examples/data/ShapefileAttributeGroups.xml";
         protected Map<Integer, AttributeGroup> groups = new LinkedHashMap<Integer, AttributeGroup>();
 
         public AppFrame()
@@ -86,11 +85,11 @@ public class ShapefileAttributeGroups extends ApplicationTemplate
 
         protected void loadShapefile()
         {
-            ShapefileLayerFactory factory = new ShapefileLayerFactory();
+            ShapefileLayerFactory factory = (ShapefileLayerFactory) WorldWind.createConfigurationComponent(
+                AVKey.SHAPEFILE_LAYER_FACTORY);
             factory.setAttributeDelegate(this); // call assignAttributes for each shapefile record
 
-            Document doc = WWXML.openDocument("gov/nasa/worldwindx/examples/data/ShapefileAttributeGroups.xml");
-            Layer layer = factory.createLayerFromConfigDocument(doc.getDocumentElement(), null, null);
+            Layer layer = (Layer) factory.createFromConfigSource(SHAPEFILE_PATH, null);
             this.getWwd().getModel().getLayers().add(layer);
         }
 

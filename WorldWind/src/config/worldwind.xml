@@ -34,6 +34,8 @@
     <Property name="gov.nasa.worldwind.avkey.ElevationModelFactory"
               value="gov.nasa.worldwind.terrain.BasicElevationModelFactory"/>
     <Property name="gov.nasa.worldwind.avkey.LayerFactory" value="gov.nasa.worldwind.layers.BasicLayerFactory"/>
+    <Property name="gov.nasa.worldwind.avkey.ShapefileLayerFactory"
+              value="gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory"/>
     <Property name="gov.nasa.worldwind.avkey.WebViewFactory"
               value="gov.nasa.worldwind.util.webview.BasicWebViewFactory"/>
     <Property name="gov.nasa.worldwind.avkey.TessellatorClassName"

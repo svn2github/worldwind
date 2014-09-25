@@ -5,10 +5,11 @@
  */
 package gov.nasa.worldwindx.examples;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
+import gov.nasa.worldwind.formats.shapefile.*;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.examples.util.*;
 
@@ -40,21 +41,19 @@ public class Shapefiles extends ApplicationTemplate
 
         public void loadShapefile(Object source)
         {
-            ShapefileLayerFactory factory = new ShapefileLayerFactory();
+            this.randomAttrs.nextAttributes(); // display each shapefile in different attributes
 
-            this.randomAttrs.nextAttributes();
+            ShapefileLayerFactory factory = (ShapefileLayerFactory) WorldWind.createConfigurationComponent(
+                AVKey.SHAPEFILE_LAYER_FACTORY);
             factory.setNormalPointAttributes(this.randomAttrs.asPointAttributes());
             factory.setNormalShapeAttributes(this.randomAttrs.asShapeAttributes());
-
-            Layer layer = factory.createLayerFromShapefileSource(source, this); // use this as the completion callback
-            layer.setName(WWIO.getFilename(source.toString()));
-            this.getWwd().getModel().getLayers().add(layer);
+            factory.createFromShapefileSource(source, this); // add the layer in the completion callback
 
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
         @Override
-        public void completion(final Layer layer, final Object source)
+        public void completion(final Object result)
         {
             if (!SwingUtilities.isEventDispatchThread())
             {
@@ -63,11 +62,15 @@ public class Shapefiles extends ApplicationTemplate
                     @Override
                     public void run()
                     {
-                        completion(layer, source);
+                        completion(result);
                     }
                 });
                 return;
             }
+
+            Layer layer = (Layer) result;
+            layer.setName(WWIO.getFilename(layer.getName())); // convert the layer name to the source's filename
+            this.getWwd().getModel().getLayers().add(layer);
 
             Sector sector = (Sector) layer.getValue(AVKey.SECTOR);
             if (sector != null)
@@ -79,10 +82,9 @@ public class Shapefiles extends ApplicationTemplate
         }
 
         @Override
-        public void exception(Exception e, Object source)
+        public void exception(Exception e)
         {
-            String msg = Logging.getMessage("generic.ExceptionAttemptingToReadShapefile", source.toString());
-            Logging.logger().log(java.util.logging.Level.SEVERE, msg, e);
+            Logging.logger().log(java.util.logging.Level.SEVERE, e.getMessage(), e);
         }
     }
 
