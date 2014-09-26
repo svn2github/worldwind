@@ -1092,26 +1092,6 @@ public class ShapeEditor implements SelectListener
     }
 
     /**
-     * Compute the change in heading associated with a user's movement of the rotation control point.
-     *
-     * @param centerPoint   the center point of the shape.
-     * @param previousPoint the Cartesian location of the previous position.
-     * @param terrainPoint  the Cartesian location of the current position.
-     * @param delta         the Cartesian vector from the previous point to the terrain point.
-     *
-     * @return the new angle after computing and applying the heading change.
-     */
-    protected Angle computeHeadingDelta(Vec4 centerPoint, Vec4 previousPoint, Vec4 terrainPoint, Vec4 delta)
-    {
-        Vec4 vP = previousPoint.subtract3(centerPoint);
-        Vec4 vT = terrainPoint.subtract3(centerPoint);
-        Vec4 cross = vT.cross3(vP);
-        double sign = cross.z >= 0 ? -1 : 1;
-
-        return Angle.fromRadians(sign * Math.atan2(delta.getLength3(), vP.getLength3()));
-    }
-
-    /**
      * Updates the annotation indicating the edited shape's center. If the shape has no designated center, this method
      * prevents the annotation from displaying.
      */
@@ -2745,8 +2725,9 @@ public class ShapeEditor implements SelectListener
         }
         else // rotation
         {
-            Angle deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            square.setHeading(this.normalizedHeading(square.getHeading(), deltaAngle));
+            Angle oldHeading = LatLon.greatCircleAzimuth(square.getCenter(), this.getPreviousPosition());
+            Angle deltaHeading = LatLon.greatCircleAzimuth(square.getCenter(), terrainPosition).subtract(oldHeading);
+            square.setHeading(this.normalizedHeading(square.getHeading(), deltaHeading));
         }
     }
 
@@ -2814,8 +2795,9 @@ public class ShapeEditor implements SelectListener
         }
         else
         {
-            Angle deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            quad.setHeading(this.normalizedHeading(quad.getHeading(), deltaAngle));
+            Angle oldHeading = LatLon.greatCircleAzimuth(quad.getCenter(), this.getPreviousPosition());
+            Angle deltaHeading = LatLon.greatCircleAzimuth(quad.getCenter(), terrainPosition).subtract(oldHeading);
+            quad.setHeading(this.normalizedHeading(quad.getHeading(), deltaHeading));
         }
     }
 
@@ -2891,8 +2873,9 @@ public class ShapeEditor implements SelectListener
         }
         else
         {
-            Angle deltaAngle = this.computeHeadingDelta(centerPoint, previousPoint, terrainPoint, delta);
-            ellipse.setHeading(this.normalizedHeading(ellipse.getHeading(), deltaAngle));
+            Angle oldHeading = LatLon.greatCircleAzimuth(ellipse.getCenter(), this.getPreviousPosition());
+            Angle deltaHeading = LatLon.greatCircleAzimuth(ellipse.getCenter(), terrainPosition).subtract(oldHeading);
+            ellipse.setHeading(this.normalizedHeading(ellipse.getHeading(), deltaHeading));
         }
 
         this.updateAnnotation(controlPoint);
