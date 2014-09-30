@@ -215,7 +215,7 @@
     viewSelectionController = [[ViewSelectionController alloc] init];
 
     float x = 20;//myFrame.size.width - 220;
-    float y = myFrame.size.height - 70;
+    float y = myFrame.size.height - 150;
     scaleBarView = [[ScaleBarView alloc] initWithFrame:CGRectMake(x, y, 200, 50) worldWindView:_wwv];
     scaleBarView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:scaleBarView];

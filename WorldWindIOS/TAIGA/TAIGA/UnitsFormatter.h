@@ -10,9 +10,14 @@
 @interface UnitsFormatter : NSObject
 {
 @protected
+    NSNumberFormatter* numberFormatter;
     NSNumberFormatter* latitudeFormatter;
     NSNumberFormatter* longitudeFormatter;
     NSNumberFormatter* altitudeFormatter;
+    NSNumberFormatter* angleFormatter;
+    NSNumberFormatter* speedFormatter;
+    NSNumberFormatter* distanceFormatterFeet;
+    NSNumberFormatter* distanceFormatterMiles;
 }
 
 - (NSString*) formatDegreesLatitude:(double)latitude;
@@ -23,8 +28,16 @@
 
 - (NSString*) formatDegreesLatitude:(double)latitude longitude:(double)longitude metersAltitude:(double)altitude;
 
-- (NSString*) formatMetersAltitude:(double)altitude;
+- (NSString*) formatMetersAltitude:(double)meters;
 
-- (NSString*) formatFeetAltitude:(double)altitude;
+- (NSString*) formatFeetAltitude:(double)meters;
+
+- (NSString*) formatAngle:(double)degrees;
+
+- (NSString*) formatFeetSpeed:(double)metersPerSecond;
+
+- (NSString*) formatFeetDistance:(double)meters;
+
+- (NSString*) formatMilesDistance:(double)meters;
 
 @end

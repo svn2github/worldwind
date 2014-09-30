@@ -17,7 +17,11 @@
     UnitsFormatter* formatter;
     CLLocation* currentLocation;
     UIButton* gpsPositionButton;
-    UIButton* gdbMessageButton;
+    UIButton* headingButton;
+    UIButton* speedButton;
+    UIButton* gpsAccuracyButton;
+    UIButton* destinationDistanceButton;
+//    UIButton* gdbMessageButton;
 }
 
 - (DataBarViewController*) initWithFrame:(CGRect)frame
@@ -31,8 +35,8 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(aircraftPositionDidChange:)
                                                  name:TAIGA_CURRENT_AIRCRAFT_POSITION object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateGDBMessageView:)
-                                                 name:TAIGA_GDB_MESSAGE object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateGDBMessageView:)
+//                                                 name:TAIGA_GDB_MESSAGE object:nil];
 
     return self;
 }
@@ -67,34 +71,80 @@
     [gpsPositionButton.titleLabel setShadowColor:[UIColor blackColor]];
     [gpsPositionButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
     [self updateGPSView];
-
     UIBarButtonItem* gpsPositionItem = [[UIBarButtonItem alloc] initWithCustomView:gpsPositionButton];
 
-
-    gdbMessageButton = [[UIButton alloc] init];
-    [gdbMessageButton.titleLabel setNumberOfLines:0];
-    [gdbMessageButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
-    [gdbMessageButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
-    [gdbMessageButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
-    [gdbMessageButton.titleLabel setShadowColor:[UIColor blackColor]];
-    [gdbMessageButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+    gpsAccuracyButton = [[UIButton alloc] init];
+    [gpsAccuracyButton.titleLabel setNumberOfLines:0];
+    [gpsAccuracyButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [gpsAccuracyButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [gpsAccuracyButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
+    [gpsAccuracyButton.titleLabel setShadowColor:[UIColor blackColor]];
+    [gpsAccuracyButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
     [self updateGPSView];
+    UIBarButtonItem* gpsAccuracyItem = [[UIBarButtonItem alloc] initWithCustomView:gpsAccuracyButton];
 
-    UIBarButtonItem* gdbMessageItem = [[UIBarButtonItem alloc] initWithCustomView:gdbMessageButton];
+//
+//    gdbMessageButton = [[UIButton alloc] init];
+//    [gdbMessageButton.titleLabel setNumberOfLines:0];
+//    [gdbMessageButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+//    [gdbMessageButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+//    [gdbMessageButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
+//    [gdbMessageButton.titleLabel setShadowColor:[UIColor blackColor]];
+//    [gdbMessageButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+//    [self updateGPSView];
+//
+//    UIBarButtonItem* gdbMessageItem = [[UIBarButtonItem alloc] initWithCustomView:gdbMessageButton];
+
+    headingButton = [[UIButton alloc] init];
+    [headingButton.titleLabel setNumberOfLines:0];
+    [headingButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [headingButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [headingButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
+    [headingButton.titleLabel setShadowColor:[UIColor blackColor]];
+    [headingButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+    [self updateHeadingView];
+    UIBarButtonItem* headingItem = [[UIBarButtonItem alloc] initWithCustomView:headingButton];
+
+    speedButton = [[UIButton alloc] init];
+    [speedButton.titleLabel setNumberOfLines:0];
+    [speedButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [speedButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [speedButton setBounds:CGRectMake(0, 0, 200, self.view.frame.size.height)];
+    [speedButton.titleLabel setShadowColor:[UIColor blackColor]];
+    [speedButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+    [self updateSpeedView];
+    UIBarButtonItem* speedItem = [[UIBarButtonItem alloc] initWithCustomView:speedButton];
+
+    destinationDistanceButton = [[UIButton alloc] init];
+    [destinationDistanceButton.titleLabel setNumberOfLines:0];
+    [destinationDistanceButton.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [destinationDistanceButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [destinationDistanceButton setBounds:CGRectMake(0, 0, 250, self.view.frame.size.height)];
+    [destinationDistanceButton.titleLabel setShadowColor:[UIColor blackColor]];
+    [destinationDistanceButton.titleLabel setShadowOffset:CGSizeMake(1, 1)];
+    [self updateDestinationDistanceView];
+    UIBarButtonItem* destinationDistanceItem = [[UIBarButtonItem alloc] initWithCustomView:destinationDistanceButton];
 
     UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     UIBarButtonItem* fixedSpace = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    fixedSpace.width = 200;
+    fixedSpace.width = 10;
 
     [toolbar setItems:[NSArray arrayWithObjects:
-            fixedSpace,
+//            fixedSpace,
             flexibleSpace,
             gpsPositionItem,
             flexibleSpace,
-            gdbMessageItem,
+            gpsAccuracyItem,
             flexibleSpace,
+            headingItem,
+            flexibleSpace,
+            speedItem,
+            flexibleSpace,
+            destinationDistanceItem,
+            flexibleSpace,
+            fixedSpace,
             nil]];
 
     // Disable user interaction for the data bar so that gestures pass through to the World Wind view.
@@ -112,6 +162,9 @@
 {
     currentLocation = [notification object];
     [self updateGPSView];
+    [self updateHeadingView];
+    [self updateSpeedView];
+    [self updateDestinationDistanceView];
 }
 
 - (void) updateGPSView
@@ -122,13 +175,41 @@
                                                        [formatter formatDegreesLongitude:currentLocation.coordinate.longitude],
                                                        [formatter formatMetersAltitude:currentLocation.altitude]];
     [gpsPositionButton setTitle:title forState:UIControlStateNormal];
+
+    title = [[NSString alloc] initWithFormat:@"GPS Accuracy\n%@\u00a0",
+                                             [formatter formatFeetDistance:currentLocation                                                               .horizontalAccuracy]];
+    [gpsAccuracyButton setTitle:title forState:UIControlStateNormal];
 }
 
-- (void) updateGDBMessageView:(NSNotification*)notification
+- (void) updateHeadingView
 {
-    NSString* message = [notification object];
-    NSString* title = [[NSString alloc] initWithFormat:@"GDB Message\n%@", message != nil ? message : @"NONE"];
-    [gdbMessageButton setTitle:title forState:UIControlStateNormal];
+    double heading = currentLocation.course;
+    if (heading < 0)
+        heading += 360;
+
+    NSString* title = [[NSString alloc] initWithFormat:@"Heading\n%@\u00a0", [formatter formatAngle:heading]];
+    [headingButton setTitle:title forState:UIControlStateNormal];
 }
+
+- (void) updateSpeedView
+{
+    NSString* title = [[NSString alloc] initWithFormat:@"Ground Speed\n%@\u00a0",
+                                                       [formatter formatFeetSpeed:currentLocation.speed]];
+    [speedButton setTitle:title forState:UIControlStateNormal];
+}
+
+- (void) updateDestinationDistanceView
+{
+    NSString* title = [[NSString alloc] initWithFormat:@"Distance to Dest.\n%@\u00a0",
+                                                       [formatter formatMilesDistance:0]];
+    [destinationDistanceButton setTitle:title forState:UIControlStateNormal];
+}
+//
+//- (void) updateGDBMessageView:(NSNotification*)notification
+//{
+//    NSString* message = [notification object];
+//    NSString* title = [[NSString alloc] initWithFormat:@"GDB Message\n%@", message != nil ? message : @"NONE"];
+//    [gdbMessageButton setTitle:title forState:UIControlStateNormal];
+//}
 
 @end

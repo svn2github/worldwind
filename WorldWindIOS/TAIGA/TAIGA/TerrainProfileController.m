@@ -43,7 +43,7 @@
         // Update the terrain profile.
         WWPosition* currentPosition = [[WWPosition alloc] initWithCLPosition:position];
         WWPosition* nextPosition = [[WWPosition alloc] init];
-        double angularDistance = DEGREES(5 * TAIGA_MILES_TO_METERS / TAIGA_EARTH_RADIUS);
+        double angularDistance = DEGREES(5 * TAIGA_NAUTICAL_MILES_TO_METERS / TAIGA_EARTH_RADIUS);
         [WWLocation greatCircleLocation:currentPosition azimuth:[position course] distance:angularDistance
                          outputLocation:nextPosition];
         NSArray* path = [[NSArray alloc] initWithObjects:currentPosition, nextPosition, nil];
@@ -53,9 +53,9 @@
         double warnAlt = fmax(0.9 * [currentPosition altitude], [currentPosition altitude] - warningOffset);
         [_terrainProfileView setWarningAltitude:(float) warnAlt
                                  dangerAltitude:(float) [currentPosition altitude]];
-        [_terrainProfileView setLeftLabel:@"0 miles"];
-        [_terrainProfileView setCenterLabel:@"2.5 miles"];
-        [_terrainProfileView setRightLabel:@"5 miles"];
+        [_terrainProfileView setLeftLabel:@"0 nm"];
+        [_terrainProfileView setCenterLabel:@"2.5 nm"];
+        [_terrainProfileView setRightLabel:@"5 nm"];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleSettingChange:)
                                                      name:TAIGA_SETTING_CHANGED object:nil];
