@@ -46,8 +46,8 @@
     speedFormatter = [[NSNumberFormatter alloc] init];
     [speedFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [speedFormatter setMaximumFractionDigits:0];
-    [speedFormatter setPositiveSuffix:@" ft/sec"];
-    [speedFormatter setNegativeSuffix:@" ft/sec"];
+    [speedFormatter setPositiveSuffix:@" nm/hr"];
+    [speedFormatter setNegativeSuffix:@" nm/hr"];
 
     distanceFormatterFeet = [[NSNumberFormatter alloc] init];
     [distanceFormatterFeet setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -111,9 +111,10 @@
     return [altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:meters]];
 }
 
-- (NSString*) formatFeetSpeed:(double)metersPerSecond
+- (NSString*) formatMilesSpeed:(double)metersPerSecond
 {
-    return [speedFormatter stringFromNumber:[NSNumber numberWithDouble:metersPerSecond * TAIGA_METERS_TO_FEET]];
+    return [speedFormatter stringFromNumber:
+            [NSNumber numberWithDouble:metersPerSecond * TAIGA_METERS_TO_NAUTICAL_MILES / 3600]];
 }
 
 - (NSString*) formatFeetDistance:(double)meters
