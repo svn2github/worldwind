@@ -6,6 +6,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import <OpenGLES/ES2/glext.h>
 #import "WorldWind/Render/WWTexture.h"
 #import "WorldWind/Formats/PVRTC/WWPVRTCImage.h"
 #import "WorldWind/Render/WWDrawContext.h"

@@ -17,6 +17,7 @@
 #import "WorldWind/WorldWindConstants.h"
 #import "WorldWind/WorldWindViewDelegate.h"
 #import "WorldWind/WWLog.h"
+#import "OpenGLES/ES2/glext.h"
 
 #define REDRAW_FRAME_INTERVAL (3)
 
