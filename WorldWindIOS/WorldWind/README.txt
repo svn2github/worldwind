@@ -7,7 +7,7 @@
 
 INTRODUCTION
 
-This is the source code for World Wind iOS. The code runs on both iPhone and iPad devices running iOS 6 or greater. To
+This is the source code for World Wind iOS. The code runs on both iPhone and iPad devices running iOS 7 or greater. To
 use, open the WorldWindIOS.xcworkspace file with either XCode or AppCode (http://www.jetbrains.com/objc/). Build and run
 the WorldWindExamples application. Be sure to build in release mode to ensure best performance.
 
