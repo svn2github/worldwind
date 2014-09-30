@@ -119,15 +119,15 @@
     [aircraftAltitudeLabelView setShadowColor:[UIColor blackColor]];
     [aircraftAltitudeLabelView setShadowOffset:CGSizeMake(1, 1)];
     [self addSubview:aircraftAltitudeLabelView];
-
-    noCourseLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 500, 200)];
-    [noCourseLabel setText:@"NO COURSE"];
-    [noCourseLabel setBackgroundColor:[UIColor clearColor]];
-    [noCourseLabel setTextColor:[UIColor redColor]];
-    [noCourseLabel setFont:[UIFont boldSystemFontOfSize:80]];
-    [noCourseLabel sizeToFit];
-    [noCourseLabel setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin];
-    [self addSubview:noCourseLabel];
+//
+//    noCourseLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 500, 200)];
+//    [noCourseLabel setText:@"NO COURSE"];
+//    [noCourseLabel setBackgroundColor:[UIColor clearColor]];
+//    [noCourseLabel setTextColor:[UIColor redColor]];
+//    [noCourseLabel setFont:[UIFont boldSystemFontOfSize:80]];
+//    [noCourseLabel sizeToFit];
+//    [noCourseLabel setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin];
+//    [self addSubview:noCourseLabel];
 
     [self setUserInteractionEnabled:YES];
 
@@ -247,7 +247,7 @@
     [[UIColor colorWithWhite:0.8 alpha:0.95] set];
     CGContextFillRect(context, rect);
 
-    [self showNoCourseSign:_path == nil rect:rect];
+//    [self showNoCourseSign:_path == nil rect:rect];
     if (_path == nil)
         return;
 
