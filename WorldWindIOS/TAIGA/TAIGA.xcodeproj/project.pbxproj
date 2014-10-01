@@ -1300,6 +1300,7 @@
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";
 				INFOPLIST_FILE = "TAIGA/TAIGA-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
@@ -1326,6 +1327,7 @@
 				GCC_PREFIX_HEADER = "TAIGA/TAIGA-Prefix.pch";
 				HEADER_SEARCH_PATHS = "../WorldWind/**";
 				INFOPLIST_FILE = "TAIGA/TAIGA-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/WorldWindIOS-gzckgckmqhxtmbhfmsciqmmjrupa/Build/Products/Debug-iphoneos\"",
