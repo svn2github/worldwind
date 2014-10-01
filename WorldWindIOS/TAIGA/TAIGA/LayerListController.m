@@ -36,7 +36,7 @@
     _wwv = wwv;
 
     [[self navigationItem] setTitle:@"Overlays"];
-    [self setPreferredContentSize:CGSizeMake(320, 450)];
+    [self setPreferredContentSize:CGSizeMake(320, 500)];
 
     // Set up to handle layer list changes.
     [[NSNotificationCenter defaultCenter] addObserver:self
