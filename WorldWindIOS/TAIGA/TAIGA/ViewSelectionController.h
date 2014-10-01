@@ -9,7 +9,7 @@
 
 @class WorldWindView;
 
-@interface ViewSelectionController : UITableViewController <UINavigationControllerDelegate>
+@interface ViewSelectionController : UITableViewController
 
 - (ViewSelectionController*) init;
 

@@ -11,7 +11,7 @@
 @class FlightRoute;
 @class WorldWindView;
 
-@interface FlightRouteController : UITableViewController <UINavigationControllerDelegate, WWRenderable>
+@interface FlightRouteController : UITableViewController <WWRenderable>
 {
 @protected
     NSMutableArray* flightRoutes;

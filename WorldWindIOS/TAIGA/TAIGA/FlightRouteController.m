@@ -69,14 +69,6 @@
     [self restoreState];
 }
 
-- (void) navigationController:(UINavigationController*)navigationController
-       willShowViewController:(UIViewController*)viewController
-                     animated:(BOOL)animated
-{
-    // This keeps all the nested popover controllers the same size as this top-level controller.
-    viewController.preferredContentSize = navigationController.topViewController.view.frame.size;
-}
-
 - (void) flightRouteDidChange:(NSNotification*)notification
 {
     // Ignore notifications for flight routes not in this controller's layer. This also avoids saving state or

@@ -9,7 +9,7 @@
 
 @class WorldWindView;
 
-@interface LayerListController : UITableViewController <UINavigationControllerDelegate>
+@interface LayerListController : UITableViewController
 
 @property (nonatomic, readonly) WorldWindView* wwv;
 

@@ -762,7 +762,6 @@
     {
         UINavigationController* navController = [[UINavigationController alloc]
                 initWithRootViewController:layerListController];
-        [navController setDelegate:layerListController];
         layerListPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 
@@ -784,7 +783,6 @@
     {
         UINavigationController* navController = [[UINavigationController alloc]
                 initWithRootViewController:viewSelectionController];
-        [navController setDelegate:viewSelectionController];
         viewSelectionPopoverController = [[UIPopoverController alloc] initWithContentViewController:navController];
     }
 
