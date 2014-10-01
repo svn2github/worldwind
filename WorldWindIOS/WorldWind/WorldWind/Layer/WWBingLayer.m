@@ -22,7 +22,7 @@
                        numLevels:16
             retrievalImageFormat:@"image/png"
                        cachePath:cachePath];
-    [self setDisplayName:@"Bing"];
+    [self setDisplayName:@"Bing Maps Imagery"];
     [self setImageFile:@"Bing"];
 
     NSString* serviceLocation = @"http://worldwind27.arc.nasa.gov/wms/virtualearth";
