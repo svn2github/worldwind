@@ -127,7 +127,7 @@
 {
     self = [super init];
 
-    [self setDisplayName:@"PIREPS"];
+    [self setDisplayName:@"PIREPs"];
 
     _refreshInProgress = [[NSNumber alloc] initWithBool:NO];
     _lastUpdate = (NSDate*) [Settings getObjectForName:PIREP_REFRESH_DATE];
