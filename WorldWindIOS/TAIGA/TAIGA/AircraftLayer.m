@@ -40,7 +40,8 @@
 - (id) createAircraftShape
 {
     WWShapeAttributes* shapeAttrs = [[WWShapeAttributes alloc] init];
-    [shapeAttrs setInteriorColor:[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1]];
+//    [shapeAttrs setInteriorColor:[[WWColor alloc] initWithR:0.027 g:0.596 b:0.976 a:1]];
+    [shapeAttrs setInteriorColor:[[WWColor alloc] initWithR:1.0 g:0 b:0 a:1]];
     [shapeAttrs setOutlineColor:[[WWColor alloc] initWithR:1 g:1 b:1 a:1]];
     [shapeAttrs setOutlineWidth:2];
 
