@@ -25,6 +25,7 @@
     [locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
     [locationManager setDistanceFilter:10];
     [locationManager setDelegate:self];
+    [locationManager requestAlwaysAuthorization];
 
     [self setMode:LocationServicesControllerModeAllChanges];
 
