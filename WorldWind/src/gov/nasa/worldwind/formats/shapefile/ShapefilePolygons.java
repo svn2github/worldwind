@@ -30,7 +30,8 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
 {
     public static class Record extends ShapefileRenderable.Record
     {
-        protected double[][] effectiveAreas;
+        protected double[][] effectiveArea;
+        protected double[] antimeridianOffset;
 
         public Record(ShapefileRenderable shapefileRenderable, ShapefileRecord shapefileRecord)
         {
@@ -39,7 +40,12 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
 
         protected double[] getBoundaryEffectiveArea(int index)
         {
-            return this.effectiveAreas != null ? this.effectiveAreas[index] : null;
+            return this.effectiveArea != null ? this.effectiveArea[index] : null;
+        }
+
+        protected double getAntimeridianOffset(int index)
+        {
+            return this.antimeridianOffset != null ? this.antimeridianOffset[index] : 0;
         }
     }
 
@@ -841,29 +847,25 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
     {
         // Get the records intersecting the geometry's sector. The implementation of getItemsInRegion may return entries
         // outside the requested sector, so we cull them further in the loop below.
-        Sector sector = geom.sector;
-        Set<Record> intersectingRecords = this.recordTree.getItemsInRegion(sector, null);
+        Set<Record> intersectingRecords = this.recordTree.getItemsInRegion(geom.sector, null);
         if (intersectingRecords.isEmpty())
             return;
 
-        // Compute the minimum effective area for a record vertex based on the geometry resolution. We convert the
-        // resolution from radians to square degrees. This ensures the units are consistent with the vertex effective
-        // area computed by PolylineGeneralizer.
-        double deltaLat = sector.getDeltaLatDegrees();
-        double deltaLon = sector.getDeltaLonDegrees();
-        double resolutionDegrees = geom.resolution * 180.0 / Math.PI;
-        double minEffectiveArea = resolutionDegrees * resolutionDegrees;
+        // Compute the minimum effective area for an entire record based on the geometry resolution. This suppresses
+        // records that degenerate to one or two points.
+        double minEffectiveArea = 4 * geom.resolution * geom.resolution;
+        double xOffset = geom.sector.getCentroid().longitude.degrees;
+        double yOffset = geom.sector.getCentroid().latitude.degrees;
 
         // Setup the polyline generalizer and the polygon tessellator that will be used to generalize and tessellate
         // each record intersecting the geometry's sector.
-        PolylineGeneralizer generalizer = new PolylineGeneralizer();
-        PolygonTessellator2 tess = new PolygonTessellator2();
-        tess.setVertexStride(2);
+        PolylineGeneralizer generalizer = new PolylineGeneralizer(); // TODO: Consider using a ThreadLocal property.
+        PolygonTessellator2 tess = new PolygonTessellator2(); // TODO: Consider using a ThreadLocal property.
         tess.setPolygonNormal(0, 0, 1); // tessellate in geographic coordinates
-
-        double[] point = new double[2];
-        double[] lastPoint = new double[2];
-        double[] offsetPoint = {sector.getCentroid().longitude.degrees, sector.getCentroid().latitude.degrees};
+        tess.setPolygonClipCoords(geom.sector.getMinLongitude().degrees, geom.sector.getMaxLongitude().degrees,
+            geom.sector.getMinLatitude().degrees, geom.sector.getMaxLatitude().degrees);
+        tess.setVertexStride(2);
+        tess.setVertexOffset(-xOffset, -yOffset, 0);
 
         // Generate the geographic coordinate vertices and indices for all records intersecting the geometry's sector
         // and meeting the geometry's resolution criteria. This may include records that are marked as not visible, as
@@ -871,103 +873,125 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         // records later in the relative less expensive routine assembleAttributeGroups.
         for (Record record : intersectingRecords)
         {
-            if (!record.sector.intersects(geom.sector)) // record quadtree may return entries outside the geom sector
-                continue;
+            if (!record.sector.intersects(geom.sector))
+                continue; // the record quadtree may return entries outside the sector passed to getItemsInRegion
 
-            // Ignore records that degenerate to one or two points. These records are included by geometry of higher
-            // resolution.
-            double sectorArea = record.sector.getDeltaLatDegrees() * record.sector.getDeltaLonDegrees();
-            if (sectorArea < 4 * minEffectiveArea)
-                continue;
+            double effectiveArea = record.sector.getDeltaLatRadians() * record.sector.getDeltaLonRadians();
+            if (effectiveArea < minEffectiveArea)
+                continue;  // ignore records that don't meet the resolution criteria
 
-            this.computeEffectiveArea(record, generalizer);
-            tess.resetIndices();
-            tess.beginPolygon();
-
-            for (int i = 0; i < record.getBoundaryCount(); i++)
-            {
-                tess.beginContour();
-
-                VecBuffer points = record.getBoundaryPoints(i);
-                double[] pointAreas = record.getBoundaryEffectiveArea(i);
-                int lastCode = -1;
-                for (int j = 0; j < points.getSize(); j++)
-                {
-                    // Generalize the record by ignoring points that don't meet the geometry's resolution criteria.
-                    // These vertices are included by geometry of higher resolution.
-                    double pointEffectiveArea = pointAreas[j];
-                    if (pointEffectiveArea < minEffectiveArea)
-                        continue;
-
-                    points.get(j, point); // 0:longitude, 1:latitude
-                    point[0] -= offsetPoint[0];
-                    point[1] -= offsetPoint[1];
-
-                    // Compute a 4-bit code indicating the point's location in the 9 cell grid defined by the geometry's
-                    // sector and the eight adjacent spaces defined by extending the min/max boundaries to infinity.
-                    // Code 0 indicates that the point is in the geometry's sector. We include points when they are
-                    // either in the geometry's sector or have changed cells. This significantly reduces unnecessary
-                    // complexity outside of the geometry's sector without introducing visual artifacts.
-                    int code = clipCode(point[0] / deltaLon, point[1] / deltaLat);
-                    if (lastCode > 0 && code != lastCode)
-                        tess.addVertex(lastPoint[0], lastPoint[1], 0);
-                    if (code == 0 || code != lastCode)
-                        tess.addVertex(point[0], point[1], 0);
-
-                    lastCode = code;
-                    lastPoint[0] = point[0];
-                    lastPoint[1] = point[1];
-                }
-
-                tess.endContour();
-            }
-
-            tess.endPolygon();
-            this.addRecordIndices(geom, record, tess);
+            this.computeRecordMetrics(record, generalizer);
+            this.tessellateRecord(geom, record, tess);
         }
 
         if (tess.getVertexCount() == 0 || geom.recordIndices.size() == 0)
             return;
 
-        FloatBuffer vertices = Buffers.newDirectFloatBuffer(tess.getVertexStride() * tess.getVertexCount());
+        FloatBuffer vertices = Buffers.newDirectFloatBuffer(2 * tess.getVertexCount());
         tess.getVertices(vertices);
         geom.vertices = (FloatBuffer) vertices.rewind();
-        geom.vertexStride = tess.getVertexStride();
+        geom.vertexStride = 2;
         geom.vertexCount = tess.getVertexCount();
-        geom.vertexOffset = new Vec4(offsetPoint[0], offsetPoint[1], 0);
+        geom.vertexOffset = new Vec4(xOffset, yOffset, 0);
     }
 
-    protected void computeEffectiveArea(Record record, PolylineGeneralizer generalizer)
+    protected void computeRecordMetrics(Record record, PolylineGeneralizer generalizer)
     {
         synchronized (record) // synchronize access to checking and computing a record's effective area
         {
-            if (record.effectiveAreas != null)
+            if (record.effectiveArea != null)
                 return;
 
-            record.effectiveAreas = new double[record.getBoundaryCount()][];
-            double[] location = new double[2];
+            record.effectiveArea = new double[record.getBoundaryCount()][];
+            record.antimeridianOffset = new double[record.getBoundaryCount()];
 
             for (int i = 0; i < record.getBoundaryCount(); i++)
             {
+                VecBuffer points = record.getBoundaryPoints(i);
+                double[] point = new double[4]; // lon, lat, prevLon, prevLat
+                double[] offsetPoint = new double[2];
+                double offset = 0;
+                boolean applyOffset = false;
+
                 generalizer.reset();
                 generalizer.beginPolyline();
 
-                VecBuffer points = record.getBoundaryPoints(i);
                 for (int j = 0; j < points.getSize(); j++)
                 {
-                    points.get(j, location); // 0:longitude, 1:latitude
-                    generalizer.addVertex(location[0], location[1], 0);
+                    points.get(j, point);
+
+                    if (j > 0 && Math.signum(point[0]) != Math.signum(point[2]) && Math.abs(point[0] - point[2]) > 180)
+                    {
+                        if (offset == 0)
+                            offset = (point[2] < 0) ? -360 : 360;
+                        applyOffset = !applyOffset;
+                    }
+
+                    if (applyOffset) // adjust vertices associated with edges that span the anti-meridian
+                    {
+                        offsetPoint[0] = point[0] + offset;
+                        offsetPoint[1] = point[1];
+                        points.put(j, offsetPoint);
+                    }
+
+                    generalizer.addVertex(point[0], point[1], 0); // longitude, latitude, 0
+                    System.arraycopy(point, 0, point, 2, 2); // copy lon,lat to prevLon,prevLat
                 }
 
-                record.effectiveAreas[i] = new double[points.getSize()];
+                record.effectiveArea[i] = new double[points.getSize()];
+                record.antimeridianOffset[i] = offset;
                 generalizer.endPolyline();
-                generalizer.getVertexEffectiveArea(record.effectiveAreas[i]);
+                generalizer.getVertexEffectiveArea(record.effectiveArea[i]);
             }
         }
     }
 
-    protected void addRecordIndices(ShapefileGeometry geom, Record record, PolygonTessellator2 tess)
+    protected void tessellateRecord(ShapefileGeometry geom, Record record, PolygonTessellator2 tess)
     {
+        // Compute the minimum effective area for a vertex based on the geometry resolution. We convert the resolution
+        // from radians to square degrees. This ensures the units are consistent with the vertex effective area computed
+        // by PolylineGeneralizer, which adopts the units of the source data (degrees).
+        double resolutionDegrees = geom.resolution * 180.0 / Math.PI;
+        double minEffectiveArea = resolutionDegrees * resolutionDegrees;
+
+        tess.resetIndices(); // clear indices from previous records, but retain the accumulated vertices
+        tess.beginPolygon();
+
+        for (int i = 0; i < record.getBoundaryCount(); i++)
+        {
+            VecBuffer coords = record.getBoundaryPoints(i);
+            double[] effectiveArea = record.getBoundaryEffectiveArea(i);
+            double[] point = new double[2];
+
+            tess.beginContour();
+            for (int j = 0; j < coords.getSize(); j++)
+            {
+                if (effectiveArea[j] < minEffectiveArea)
+                    continue; // ignore vertices that don't meet the resolution criteria
+
+                coords.get(j, point);
+                tess.addVertex(point[0], point[1], 0); // longitude, latitude, 0
+            }
+            tess.endContour();
+
+            double antimeridianOffset = record.getAntimeridianOffset(i);
+            if (antimeridianOffset != 0) // tessellate anti-meridian crossing boundaries twice
+            {
+                tess.beginContour();
+                for (int j = 0; j < coords.getSize(); j++)
+                {
+                    if (effectiveArea[j] < minEffectiveArea)
+                        continue; // ignore vertices that don't meet the resolution criteria
+
+                    coords.get(j, point);
+                    tess.addVertex(point[0] + antimeridianOffset, point[1], 0); // longitude, latitude, 0
+                }
+                tess.endContour();
+            }
+        }
+
+        tess.endPolygon();
+
         Range range = tess.getPolygonVertexRange();
         if (range.length == 0) // this should never happen, but we check anyway
             return;
@@ -983,23 +1007,6 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         ri.interiorIndices = (IntBuffer) interiorIndices.rewind();
         ri.outlineIndices = (IntBuffer) outlineIndices.rewind();
         geom.recordIndices.add(ri);
-    }
-
-    protected static int clipCode(double x, double y)
-    {
-        int code = 0;
-
-        if (x < -0.5)
-            code |= 0x0001;
-        else if (x > 0.5)
-            code |= 0x0010;
-
-        if (y < -0.5)
-            code = 0x0100;
-        else if (y > 0.5)
-            code = 0x1000;
-
-        return code;
     }
 
     protected boolean mustAssembleAttributeGroups(ShapefileGeometry geom)

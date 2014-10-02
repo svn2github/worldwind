@@ -58,8 +58,11 @@ public class PolygonTessellator2
     protected Range polygonVertexRange = new Range(0, 0);
     protected int vertexStride = 3;
     protected boolean isBoundaryEdge;
+    protected double[] coords = new double[6];
+    protected double[] offset = new double[3];
+    protected double[] clip = {-Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE};
     protected float[] vertex = new float[3];
-    protected double[] coords = new double[3];
+    protected int prevClipCode;
 
     public PolygonTessellator2()
     {
@@ -75,16 +78,6 @@ public class PolygonTessellator2
     public int getVertexCount()
     {
         return this.vertices.position() / this.vertexStride;
-    }
-
-    public int getVertexStride()
-    {
-        return this.vertexStride;
-    }
-
-    public void setVertexStride(int stride)
-    {
-        this.vertexStride = stride;
     }
 
     public FloatBuffer getVertices(FloatBuffer buffer)
@@ -143,13 +136,8 @@ public class PolygonTessellator2
 
     public void reset()
     {
-        this.resetVertices();
-        this.resetIndices();
-    }
-
-    public void resetVertices()
-    {
         this.vertices.clear();
+        this.resetIndices();
     }
 
     public void resetIndices()
@@ -163,6 +151,26 @@ public class PolygonTessellator2
         GLU.gluTessNormal(this.tess, x, y, z);
     }
 
+    public void setPolygonClipCoords(double xMin, double xMax, double yMin, double yMax)
+    {
+        this.clip[0] = xMin;
+        this.clip[1] = xMax;
+        this.clip[2] = yMin;
+        this.clip[3] = yMax;
+    }
+
+    public void setVertexStride(int stride)
+    {
+        this.vertexStride = stride;
+    }
+
+    public void setVertexOffset(double x, double y, double z)
+    {
+        this.offset[0] = x;
+        this.offset[1] = y;
+        this.offset[2] = z;
+    }
+
     public void beginPolygon()
     {
         GLU.gluTessBeginPolygon(this.tess, this); // Use this as the polygon user data to enable callbacks.
@@ -174,6 +182,7 @@ public class PolygonTessellator2
     public void beginContour()
     {
         GLU.gluTessBeginContour(this.tess);
+        this.prevClipCode = -1;
     }
 
     public void addVertex(double x, double y, double z)
@@ -182,8 +191,23 @@ public class PolygonTessellator2
         this.coords[1] = y;
         this.coords[2] = z;
 
-        int index = this.putVertex(x, y, z);
-        GLU.gluTessVertex(this.tess, this.coords, 0, index); // Associate the vertex with its index in the vertex array.
+        // TODO Modify this logic to clip edges against the clip boundary, adding new vertices as necessary
+        // TODO and storing the code to indicate whether or not the vertex should be included in boundary edges.
+        int code = this.clipCode(x, y, z);
+        if (this.prevClipCode > 0 && code != this.prevClipCode)
+        {
+            int index = this.putVertex(this.coords, 3); // add the previous vertex
+            GLU.gluTessVertex(this.tess, this.coords, 3, index); // associate the vertex with its index
+        }
+
+        if (code == 0 || code != this.prevClipCode)
+        {
+            int index = this.putVertex(this.coords, 0); // add the current vertex
+            GLU.gluTessVertex(this.tess, this.coords, 0, index); // associate the vertex with its index
+        }
+
+        System.arraycopy(this.coords, 0, this.coords, 3, 3); // copy the current vertex to the previous vertex
+        this.prevClipCode = code; // copy the current clip code to the previous clip code
     }
 
     public void endContour()
@@ -244,31 +268,27 @@ public class PolygonTessellator2
 
     protected void tessCombine(double[] coords, Object[] vertexData, float[] weight, Object[] outData)
     {
-        outData[0] = this.putVertex(coords[0], coords[1], coords[2]);
+        outData[0] = this.putVertex(coords, 0);
 
         // TODO: Implement a caller-specified combine callback to enable customizing the vertex data added.
     }
 
-    protected int putVertex(double x, double y, double z)
+    protected int putVertex(double[] coords, int pos)
     {
-        this.vertex[0] = (float) x;
-        this.vertex[1] = (float) y;
-        this.vertex[2] = (float) z;
-
-        int index = this.vertices.position() / this.vertexStride;
-
         if (this.vertices.remaining() < this.vertexStride)
         {
             int capacity = this.vertices.capacity() + this.vertices.capacity() / 2; // increase capacity by 50%
             FloatBuffer buffer = FloatBuffer.allocate(capacity);
             buffer.put((FloatBuffer) this.vertices.flip());
-            buffer.put(this.vertex, 0, this.vertexStride);
             this.vertices = buffer;
         }
-        else
-        {
-            this.vertices.put(this.vertex, 0, this.vertexStride);
-        }
+
+        int index = this.vertices.position() / this.vertexStride;
+
+        this.vertex[0] = (float) (coords[0 + pos] + this.offset[0]);
+        this.vertex[1] = (float) (coords[1 + pos] + this.offset[1]);
+        this.vertex[2] = (float) (coords[2 + pos] + this.offset[2]);
+        this.vertices.put(this.vertex, 0, this.vertexStride);
 
         return index;
     }
@@ -281,13 +301,10 @@ public class PolygonTessellator2
                 + this.interiorIndices.capacity() / 2; // increase capacity by 50%
             IntBuffer buffer = IntBuffer.allocate(capacity);
             buffer.put((IntBuffer) this.interiorIndices.flip());
-            buffer.put(i);
             this.interiorIndices = buffer;
         }
-        else
-        {
-            this.interiorIndices.put(i);
-        }
+
+        this.interiorIndices.put(i);
     }
 
     protected void putBoundaryIndex(int i)
@@ -298,12 +315,26 @@ public class PolygonTessellator2
                 + this.boundaryIndices.capacity() / 2; // increase capacity by 50%
             IntBuffer buffer = IntBuffer.allocate(capacity);
             buffer.put((IntBuffer) this.boundaryIndices.flip());
-            buffer.put(i);
             this.boundaryIndices = buffer;
         }
-        else
-        {
-            this.boundaryIndices.put(i);
-        }
+
+        this.boundaryIndices.put(i);
+    }
+
+    /**
+     * Computes a 4-bit code indicating the vertex's location in the 9 cell grid defined by the clip bounds and the
+     * eight adjacent spaces defined by extending the min/max boundaries to infinity. 0 indicates that the vertex is
+     * inside the clip bounds.
+     */
+    protected int clipCode(double x, double y, double z)
+    {
+        // TODO: Add support for clipping z coordiantes.
+        int code = 0;
+        code |= (x < this.clip[0] ? 0x0001 : 0x0); // xMin
+        code |= (x > this.clip[1] ? 0x0010 : 0x0); // xMax
+        code |= (y < this.clip[2] ? 0x0100 : 0x0); // yMin
+        code |= (y > this.clip[3] ? 0x1000 : 0x0); // yMax
+
+        return code;
     }
 }
