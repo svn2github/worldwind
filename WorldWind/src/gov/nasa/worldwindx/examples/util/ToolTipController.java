@@ -151,6 +151,7 @@ public class ToolTipController implements SelectListener, Disposable
         {
             layer = new AnnotationLayer();
             layer.setPickEnabled(false);
+            layer.setValue(AVKey.IGNORE, true);
         }
 
         layer.removeAllAnnotations();
