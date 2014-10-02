@@ -9,6 +9,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.globes.projections.*;
+import gov.nasa.worldwind.terrain.ZeroElevationModel;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -45,6 +46,7 @@ public class FlatWorldPanel extends JPanel
             this.flatGlobe = new EarthFlat();
             this.roundGlobe = wwd.getModel().getGlobe();
         }
+        this.flatGlobe.setElevationModel(new ZeroElevationModel());
         this.makePanel();
     }
 
