@@ -194,7 +194,7 @@
 - (void) updateSpeedView
 {
     NSString* title = [[NSString alloc] initWithFormat:@"Ground Speed\n%@\u00a0",
-                                                       [formatter formatMilesSpeed:currentLocation.speed]];
+                                                       [formatter formatKnotsSpeed:currentLocation.speed]];
     [speedButton setTitle:title forState:UIControlStateNormal];
 }
 

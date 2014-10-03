@@ -34,7 +34,7 @@
 
 - (NSString*) formatAngle:(double)degrees;
 
-- (NSString*) formatMilesSpeed:(double)metersPerSecond;
+- (NSString*) formatKnotsSpeed:(double)metersPerSecond;
 
 - (NSString*) formatFeetDistance:(double)meters;
 

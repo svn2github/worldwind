@@ -46,8 +46,8 @@
     speedFormatter = [[NSNumberFormatter alloc] init];
     [speedFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [speedFormatter setMaximumFractionDigits:0];
-    [speedFormatter setPositiveSuffix:@" nm/hr"];
-    [speedFormatter setNegativeSuffix:@" nm/hr"];
+    [speedFormatter setPositiveSuffix:@" KTS"];
+    [speedFormatter setNegativeSuffix:@" KTS"];
 
     distanceFormatterFeet = [[NSNumberFormatter alloc] init];
     [distanceFormatterFeet setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -111,7 +111,7 @@
     return [altitudeFormatter stringFromNumber:[NSNumber numberWithDouble:meters]];
 }
 
-- (NSString*) formatMilesSpeed:(double)metersPerSecond
+- (NSString*) formatKnotsSpeed:(double)metersPerSecond
 {
     return [speedFormatter stringFromNumber:
             [NSNumber numberWithDouble:metersPerSecond * TAIGA_METERS_TO_NAUTICAL_MILES / 3600]];
