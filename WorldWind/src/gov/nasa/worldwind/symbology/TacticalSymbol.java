@@ -141,7 +141,7 @@ public interface TacticalSymbol extends WWObject, Renderable, Highlightable
     LODSelector getLODSelector();
 
     /**
-     * Specifies this symbols leve of detail selector.
+     * Specifies this symbols level of detail selector.
      *
      * @param LODSelector the level of detail selector. May be null, the default, to indicate no level of detail
      *                    selector.
