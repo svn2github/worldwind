@@ -990,33 +990,37 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
 
     protected void drawOutline(DrawContext dc, SurfaceTileDrawContext sdc)
     {
-        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
         if (this.activeOutlineGeometry.isEmpty())
-            return;
-
-        Position refPos = this.getReferencePosition();
-        if (refPos == null)
             return;
 
         this.applyOutlineState(dc, this.getActiveAttributes());
 
         for (List<LatLon> drawLocations : this.activeOutlineGeometry)
         {
-            if (vertexBuffer == null || vertexBuffer.capacity() < 2 * drawLocations.size())
-                vertexBuffer = Buffers.newDirectFloatBuffer(2 * drawLocations.size());
-            vertexBuffer.clear();
-
-            for (LatLon ll : drawLocations)
-            {
-                vertexBuffer.put((float) (ll.getLongitude().degrees - refPos.getLongitude().degrees));
-                vertexBuffer.put((float) (ll.getLatitude().degrees - refPos.getLatitude().degrees));
-            }
-            vertexBuffer.flip();
-
-            gl.glVertexPointer(2, GL.GL_FLOAT, 0, vertexBuffer);
-            gl.glDrawArrays(GL.GL_LINE_STRIP, 0, drawLocations.size());
+            this.drawLineStrip(dc, drawLocations);
         }
+    }
+
+    protected void drawLineStrip(DrawContext dc, List<LatLon> locations)
+    {
+        Position refPos = this.getReferencePosition();
+        if (refPos == null)
+            return;
+
+        if (vertexBuffer == null || vertexBuffer.capacity() < 2 * locations.size())
+            vertexBuffer = Buffers.newDirectFloatBuffer(2 * locations.size());
+        vertexBuffer.clear();
+
+        for (LatLon ll : locations)
+        {
+            vertexBuffer.put((float) (ll.getLongitude().degrees - refPos.getLongitude().degrees));
+            vertexBuffer.put((float) (ll.getLatitude().degrees - refPos.getLatitude().degrees));
+        }
+        vertexBuffer.flip();
+
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+        gl.glVertexPointer(2, GL.GL_FLOAT, 0, vertexBuffer);
+        gl.glDrawArrays(GL.GL_LINE_STRIP, 0, locations.size());
     }
 
     protected WWTexture getInteriorTexture()

@@ -11,26 +11,31 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 
+import javax.media.opengl.GL2;
 import java.util.*;
 
 public class SurfaceBox extends AbstractSurfaceShape
 {
-    protected LatLon[] vertices;
+    protected LatLon[] locations;
+    protected LatLon[] corners;
     protected boolean enableStartCap = true;
     protected boolean enableEndCap = true;
+    protected boolean enableCenterLine;
+    protected List<List<LatLon>> activeCenterLineGeometry = new ArrayList<List<LatLon>>(); // re-determined each frame
 
     public SurfaceBox()
     {
     }
 
-    public LatLon[] getVertices()
+    public LatLon[] getLocations()
     {
-        return vertices;
+        return this.locations;
     }
 
-    public void setVertices(LatLon[] vertices)
+    public void setLocations(LatLon[] locations, LatLon[] corners)
     {
-        this.vertices = vertices;
+        this.locations = locations;
+        this.corners = corners;
         this.onShapeChanged();
     }
 
@@ -46,10 +51,20 @@ public class SurfaceBox extends AbstractSurfaceShape
         this.onShapeChanged();
     }
 
+    public boolean isEnableCenterLine()
+    {
+        return this.enableCenterLine;
+    }
+
+    public void setEnableCenterLine(boolean enable)
+    {
+        this.enableCenterLine = enable;
+    }
+
     @Override
     public Position getReferencePosition()
     {
-        return this.vertices != null ? new Position(vertices[0].latitude, vertices[0].longitude, 0) : null;
+        return this.locations != null ? new Position(this.locations[0].latitude, this.locations[0].longitude, 0) : null;
     }
 
     @Override
@@ -67,34 +82,45 @@ public class SurfaceBox extends AbstractSurfaceShape
     @Override
     protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
     {
-        if (this.vertices == null)
+        if (this.locations == null)
             return null;
 
         double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
 
         ArrayList<LatLon> interior = new ArrayList<LatLon>();
-        geom.add(interior); // place interior vertices first in the geometry list
+        geom.add(interior); // store interior geometry in index 0
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) // iterate over this box's four segments
         {
-            LatLon a = this.vertices[i];
-            LatLon b = this.vertices[(i + 1) % 4];
+            LatLon a = this.corners[i];
+            LatLon b = this.corners[(i + 1) % 4];
 
+            // Generate intermediate locations between the segment begin and end locations.
             ArrayList<LatLon> intermediate = new ArrayList<LatLon>();
             this.addIntermediateLocations(a, b, edgeIntervalsPerDegree, intermediate);
+
+            // Add segment locations to the interior geometry.
             interior.add(a);
             interior.addAll(intermediate);
 
+            // Add segment locations to the outline geometry.
             if ((i != 0 || this.enableStartCap) && (i != 2 || this.enableEndCap))
             {
                 ArrayList<LatLon> outline = new ArrayList<LatLon>();
                 outline.add(a);
                 outline.addAll(intermediate);
                 outline.add(b);
-                geom.add(outline);
+                geom.add(outline); // store outline geometry in indices 1+
             }
         }
+
+        // Store the center line geometry at the end of the geometry list.
+        ArrayList<LatLon> centerLine = new ArrayList<LatLon>();
+        centerLine.add(this.locations[0]);
+        this.addIntermediateLocations(this.locations[0], this.locations[1], edgeIntervalsPerDegree, centerLine);
+        centerLine.add(this.locations[1]);
+        geom.add(centerLine);
 
         return geom;
     }
@@ -104,16 +130,17 @@ public class SurfaceBox extends AbstractSurfaceShape
     {
         this.activeGeometry.clear();
         this.activeOutlineGeometry.clear();
+        this.activeCenterLineGeometry.clear();
 
         List<List<LatLon>> geom = this.getCachedGeometry(dc, sdc); // calls createGeometry
         if (geom == null)
             return;
 
-        List<LatLon> interior = geom.get(0);
+        int index = 0; // interior geometry stored in index 0
+        List<LatLon> interior = geom.get(index++);
         String pole = this.containsPole(interior);
-        if (pole != null)
+        if (pole != null) // interior compensates for poles and dateline crossing, see WWJ-284
         {
-            // Wrap the shape interior around the pole and along the anti-meridian. See WWJ-284.
             this.activeGeometry.add(this.cutAlongDateLine(interior, pole, dc.getGlobe()));
         }
         else if (LatLon.locationsCrossDateLine(interior))
@@ -125,11 +152,10 @@ public class SurfaceBox extends AbstractSurfaceShape
             this.activeGeometry.add(interior);
         }
 
-        for (int i = 1; i < geom.size(); i++)
+        for (; index < geom.size() - 1; index++) // outline geometry stored in indices 1 through size-2
         {
-            List<LatLon> outline = geom.get(i);
-            if (LatLon.locationsCrossDateLine(
-                interior)) // The outline need only compensate for dateline crossing. See WWJ-452.
+            List<LatLon> outline = geom.get(index);
+            if (LatLon.locationsCrossDateLine(outline)) // outlines compensate for dateline crossing, see WWJ-452
             {
                 this.activeOutlineGeometry.addAll(this.repeatAroundDateline(outline));
             }
@@ -137,6 +163,53 @@ public class SurfaceBox extends AbstractSurfaceShape
             {
                 this.activeOutlineGeometry.add(outline);
             }
+        }
+
+        if (index < geom.size()) // outline geometry stored in index size-1
+        {
+            List<LatLon> centerLine = geom.get(index);
+            if (LatLon.locationsCrossDateLine(centerLine)) // outlines compensate for dateline crossing, see WWJ-452
+            {
+                this.activeCenterLineGeometry.addAll(this.repeatAroundDateline(centerLine));
+            }
+            else
+            {
+                this.activeCenterLineGeometry.add(centerLine);
+            }
+        }
+    }
+
+    protected void drawOutline(DrawContext dc, SurfaceTileDrawContext sdc)
+    {
+        super.drawOutline(dc, sdc);
+
+        if (this.enableCenterLine)
+        {
+            this.drawCenterLine(dc);
+        }
+    }
+
+    protected void drawCenterLine(DrawContext dc)
+    {
+        if (this.activeCenterLineGeometry.isEmpty())
+            return;
+
+        this.applyCenterLineState(dc, this.getActiveAttributes());
+
+        for (List<LatLon> drawLocations : this.activeCenterLineGeometry)
+        {
+            this.drawLineStrip(dc, drawLocations);
+        }
+    }
+
+    protected void applyCenterLineState(DrawContext dc, ShapeAttributes attributes)
+    {
+        GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
+
+        if (!dc.isPickingMode() && attributes.getOutlineStippleFactor() <= 0) // don't override stipple in attributes
+        {
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
+            gl.glLineStipple(Box.DEFAULT_CENTER_LINE_STIPPLE_FACTOR, Box.DEFAULT_CENTER_LINE_STIPPLE_PATTERN);
         }
     }
 
@@ -150,6 +223,6 @@ public class SurfaceBox extends AbstractSurfaceShape
             throw new IllegalArgumentException(message);
         }
 
-        return this.vertices != null ? Arrays.asList(this.vertices) : null;
+        return this.corners != null ? Arrays.asList(this.corners) : null;
     }
 }

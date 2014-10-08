@@ -20,6 +20,7 @@ public class TrackAirspace extends AbstractAirspace
 {
     protected List<Box> legs = new ArrayList<Box>();
     protected boolean enableInnerCaps = true;
+    protected boolean enableCenterLine;
     /**
      * Denotes the the threshold that defines whether the angle between two adjacent legs is small. Initially 22.5
      * degrees.
@@ -51,6 +52,7 @@ public class TrackAirspace extends AbstractAirspace
         }
 
         this.enableInnerCaps = source.enableInnerCaps;
+        this.enableCenterLine = source.enableInnerCaps;
         this.smallAngleThreshold = source.smallAngleThreshold;
     }
 
@@ -117,6 +119,7 @@ public class TrackAirspace extends AbstractAirspace
         }
 
         leg.setForceCullFace(true);
+        leg.setEnableCenterLine(this.enableCenterLine);
         this.legs.add(leg);
         this.invalidateAirspaceData();
         this.setLegsOutOfDate();
@@ -137,6 +140,21 @@ public class TrackAirspace extends AbstractAirspace
         this.enableInnerCaps = draw;
         this.invalidateAirspaceData();
         this.setLegsOutOfDate();
+    }
+
+    public boolean isEnableCenterLine()
+    {
+        return this.enableCenterLine;
+    }
+
+    public void setEnableCenterLine(boolean enable)
+    {
+        this.enableCenterLine = enable;
+
+        for (Box leg : this.legs)
+        {
+            leg.setEnableCenterLine(enable);
+        }
     }
 
     public void setEnableDepthOffset(boolean enable)

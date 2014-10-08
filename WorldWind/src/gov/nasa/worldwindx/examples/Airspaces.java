@@ -196,6 +196,17 @@ public class Airspaces extends ApplicationTemplate
                 maxAlt / 6, leftWidth, rightWidth).setTerrainConforming(true, true);
             layer.addRenderable(track);
 
+            track = new TrackAirspace(attrs);
+            track.setValue(AVKey.DISPLAY_NAME, "Track with center line independent left/right width");
+            track.setTerrainConforming(true, true);
+            track.setEnableInnerCaps(false);
+            track.setEnableCenterLine(true);
+            track.addLeg(LatLon.fromDegrees(42.95, -122.20), LatLon.fromDegrees(42.94, -122.12), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.94, -122.12), LatLon.fromDegrees(42.97, -121.99), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.97, -121.99), LatLon.fromDegrees(42.90, -121.95), 1000, 1300, 300, 600);
+            track.addLeg(LatLon.fromDegrees(42.90, -121.95), LatLon.fromDegrees(42.80, -122.04), 1000, 1300, 300, 600);
+            layer.addRenderable(track);
+
             // Sphere
             SphereAirspace sphere = new SphereAirspace(attrs);
             sphere.setLocation(LatLon.fromDegrees(47.7477, -122.6372));
@@ -309,6 +320,7 @@ public class Airspaces extends ApplicationTemplate
             // Track
             TrackAirspace track = new TrackAirspace(attrs);
             track.setEnableInnerCaps(false);
+            track.setEnableCenterLine(true);
             track.setValue(AVKey.DISPLAY_NAME, "Semi-connected Track");
             double leftWidth = 100000d;
             double rightWidth = 100000d;
