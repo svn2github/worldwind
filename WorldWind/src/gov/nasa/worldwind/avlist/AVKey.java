@@ -185,6 +185,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String INT32 = "gov.nasa.worldwind.avkey.Int32";
     final String INT64 = "gov.nasa.worldwind.avkey.Int64";
 
+    final String LABEL = "gov.nasa.worldwind.avkey.Label";
     final String LAST_UPDATE = "gov.nasa.worldwind.avkey.LastUpdateKey";
     final String LAYER = "gov.nasa.worldwind.avkey.LayerObject";
     final String LAYER_ABSTRACT = "gov.nasa.worldwind.avkey.LayerAbstract";
