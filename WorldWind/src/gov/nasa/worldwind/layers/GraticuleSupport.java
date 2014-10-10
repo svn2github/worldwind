@@ -276,6 +276,7 @@ public class GraticuleSupport
             if (o != null && o instanceof Color)
             {
                 attrs.setOutlineMaterial(new Material(applyOpacity((Color) o, opacity)));
+                attrs.setOutlineOpacity(opacity);
             }
 
             Double lineWidth = AVListImpl.getDoubleValue(params, GraticuleRenderingParams.KEY_LINE_WIDTH);
