@@ -8,8 +8,10 @@ package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.WWUtil;
 
@@ -36,6 +38,7 @@ public class Placemarks extends ApplicationTemplate
             pp.setValue(AVKey.DISPLAY_NAME, "Clamp to ground, Label, Semi-transparent, Audio icon");
             pp.setLineEnabled(false);
             pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+            pp.setEnableLabelPicking(true); // enable label picking for this placemark
             PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
             attrs.setImageAddress("gov/nasa/worldwindx/examples/images/audioicon-64.png");
             attrs.setImageColor(new Color(1f, 1f, 1f, 0.6f));
@@ -193,6 +196,26 @@ public class Placemarks extends ApplicationTemplate
 
             // Add the layer to the model.
             insertBeforeCompass(getWwd(), layer);
+
+            this.getWwd().addSelectListener(new SelectListener()
+            {
+                @Override
+                public void selected(SelectEvent event)
+                {
+                    PickedObject po = event.getTopPickedObject();
+                    if (po != null && po.getObject() instanceof PointPlacemark)
+                    {
+                        if (event.getEventAction().equals(SelectEvent.LEFT_CLICK))
+                        {
+                            Object placemarkPiece = po.getValue(AVKey.PICKED_OBJECT_ID);
+                            if (placemarkPiece != null && placemarkPiece.equals(AVKey.LABEL))
+                            {
+                                System.out.println("LABEL PICKED");
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 
