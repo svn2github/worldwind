@@ -1471,14 +1471,11 @@ public class PointPlacemark extends WWObjectImpl
         opm.screenPoint = dc.getView().project(opm.placePoint);
         opm.eyeDistance = opm.placePoint.distanceTo3(dc.getView().getEyePoint());
 
-        if (dc.isPickingMode())
-        {
-            // Cache the computed values for use in the draw phase.
-            this.placePoint = opm.placePoint;
-            this.screenPoint = opm.screenPoint;
-            this.terrainPoint = opm.terrainPoint;
-            this.eyeDistance = opm.eyeDistance;
-        }
+        // Cache the computed values for subsequent use in this frame.
+        this.placePoint = opm.placePoint;
+        this.screenPoint = opm.screenPoint;
+        this.terrainPoint = opm.terrainPoint;
+        this.eyeDistance = opm.eyeDistance;
     }
 
     /**
