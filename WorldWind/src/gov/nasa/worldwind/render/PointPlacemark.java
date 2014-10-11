@@ -52,6 +52,10 @@ public class PointPlacemark extends WWObjectImpl
         AVKey.FRACTION);
     /** The point size to use when none is specified. */
     protected static final Double DEFAULT_POINT_SIZE = 5d;
+    /**
+     * The address of the transparent image used when attributes.isDrawImage is false.
+     */
+    protected static final String TRANSPARENT_IMAGE_ADDRESS = "images/transparent2x2.png";
 
     /** The attributes used if attributes are not specified. */
     protected static final PointPlacemarkAttributes defaultAttributes = new PointPlacemarkAttributes();
@@ -562,9 +566,9 @@ public class PointPlacemark extends WWObjectImpl
     }
 
     /**
-     * Specifies whether this placemark should appear on top of other placemarks and shapes in the scene. If the flag
-     * is <code>true</code>, this placemark's eye distance is set to 0 so that it will appear visually above other
-     * shapes whose eye distance is greater than 0.
+     * Specifies whether this placemark should appear on top of other placemarks and shapes in the scene. If the flag is
+     * <code>true</code>, this placemark's eye distance is set to 0 so that it will appear visually above other shapes
+     * whose eye distance is greater than 0.
      *
      * @param alwaysOnTop <code>true</code> if the placemark should appear always on top, otherwise <code>false</code>.
      */
@@ -583,7 +587,8 @@ public class PointPlacemark extends WWObjectImpl
     @SuppressWarnings({"UnusedParameters"})
     protected boolean isDrawPoint(DrawContext dc)
     {
-        return this.activeTexture == null && this.getActiveAttributes().isUsePointAsDefaultImage();
+        return this.activeTexture == null && this.getActiveAttributes().isUsePointAsDefaultImage()
+            && this.getActiveAttributes().isDrawImage();
     }
 
     public void pick(DrawContext dc, Point pickPoint, OrderedPlacemark opm)
@@ -995,7 +1000,7 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected boolean mustDrawLabel()
     {
-        return this.getLabelText() != null;
+        return this.getLabelText() != null && this.getActiveAttributes().isDrawLabel();
     }
 
     /**
@@ -1198,8 +1203,11 @@ public class PointPlacemark extends WWObjectImpl
 
             gl.glDepthRange(0, 1); // reset depth range to the OGL default
 
-            if (!dc.isPickingMode()) // don't pick via the label
-                this.drawLabel(dc, pickCandidates, opm);
+            if (this.mustDrawLabel())
+            {
+                if (!dc.isPickingMode() || this.isEnableLabelPicking())
+                    this.drawLabel(dc, pickCandidates, opm);
+            }
         }
         finally
         {
@@ -1384,6 +1392,22 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected WWTexture chooseTexture(PointPlacemarkAttributes attrs)
     {
+        if (!attrs.isDrawImage())
+        {
+            WWTexture texture = this.textures.get(TRANSPARENT_IMAGE_ADDRESS);
+            if (texture == null)
+            {
+                URL localUrl = WorldWind.getDataFileStore().requestFile(TRANSPARENT_IMAGE_ADDRESS);
+                if (localUrl != null)
+                {
+                    texture = new BasicWWTexture(localUrl, true);
+                    this.textures.put(TRANSPARENT_IMAGE_ADDRESS, texture);
+                }
+            }
+
+            return texture;
+        }
+
         if (!WWUtil.isEmpty(attrs.getImageAddress()))
         {
             WWTexture texture = this.textures.get(attrs.getImageAddress());
