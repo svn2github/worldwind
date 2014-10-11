@@ -153,6 +153,7 @@ public class PointPlacemark extends WWObjectImpl
     protected boolean clipToHorizon = true;
     protected boolean enableDecluttering = false;
     protected boolean enableLabelPicking = false;
+    protected boolean alwaysOnTop = false;
 
     // Values computed once per frame and reused during the frame as needed.
     protected long frameNumber = -1; // identifies frame used to calculate these values
@@ -548,6 +549,28 @@ public class PointPlacemark extends WWObjectImpl
     public void setEnableLabelPicking(boolean enableLabelPicking)
     {
         this.enableLabelPicking = enableLabelPicking;
+    }
+
+    /**
+     * Indicates the state of this placemark's always-on-top flag.
+     *
+     * @return <code>true</code> if the always-on-top flag is set, otherwise <code>false</code>.
+     */
+    public boolean isAlwaysOnTop()
+    {
+        return alwaysOnTop;
+    }
+
+    /**
+     * Specifies whether this placemark should appear on top of other placemarks and shapes in the scene. If the flag
+     * is <code>true</code>, this placemark's eye distance is set to 0 so that it will appear visually above other
+     * shapes whose eye distance is greater than 0.
+     *
+     * @param alwaysOnTop <code>true</code> if the placemark should appear always on top, otherwise <code>false</code>.
+     */
+    public void setAlwaysOnTop(boolean alwaysOnTop)
+    {
+        this.alwaysOnTop = alwaysOnTop;
     }
 
     /**
@@ -1469,7 +1492,7 @@ public class PointPlacemark extends WWObjectImpl
 
         // Compute the placemark point's screen location.
         opm.screenPoint = dc.getView().project(opm.placePoint);
-        opm.eyeDistance = opm.placePoint.distanceTo3(dc.getView().getEyePoint());
+        opm.eyeDistance = this.isAlwaysOnTop() ? 0 : opm.placePoint.distanceTo3(dc.getView().getEyePoint());
 
         // Cache the computed values for subsequent use in this frame.
         this.placePoint = opm.placePoint;

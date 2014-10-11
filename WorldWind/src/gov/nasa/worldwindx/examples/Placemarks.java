@@ -257,6 +257,7 @@ public class Placemarks extends ApplicationTemplate
                     pp.setLineEnabled(false);
                     pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
                     pp.setEnableLabelPicking(true);
+                    pp.setAlwaysOnTop(true); // Set this flag just to show how to force the placemark to the top
 
                     // Create and assign the placemark attributes.
                     PointPlacemarkAttributes attrs = new PointPlacemarkAttributes();
