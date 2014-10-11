@@ -135,6 +135,16 @@ public class PointPlacemark extends WWObjectImpl
         {
             return PointPlacemark.this.getLabelBounds(dc, this);
         }
+
+        public Vec4 getPlacePoint()
+        {
+            return placePoint;
+        }
+
+        public Vec4 getTerrainPoint()
+        {
+            return terrainPoint;
+        }
     }
 
     protected Position position;
