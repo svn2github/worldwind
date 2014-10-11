@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.BasicDragger;
 import javax.swing.*;
 
 /**
- * Shows how to edit a PointPlacemark's label when the user clicks on the label.
+ * Shows how to edit a PointPlacemark's label when the user left-clicks on the label.
  *
  * @author tag
  * @version $Id$
@@ -74,6 +74,7 @@ public class PlacemarkLabelEditing extends ApplicationTemplate
                                 {
                                     placemark.setLabelText(labelText);
                                 }
+                                event.consume();
                             }
                         }
                     }
