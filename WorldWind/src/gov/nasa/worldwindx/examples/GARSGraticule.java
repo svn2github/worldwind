@@ -10,11 +10,10 @@ import gov.nasa.worldwind.layers.GARSGraticuleLayer;
 import java.awt.*;
 
 /**
- * Displays the globe with a MGRS/UTM graticule. The graticule is its own layer and can be turned on and off independent
+ * Displays the globe with a GARS graticule. The graticule is its own layer and can be turned on and off independent
  * of other layers. As the view zooms in, the graticule adjusts to display a finer grid. The example provides controls
  * to customize the color and opacity of the grid.
  *
- * @author Patrick Murris
  * @version $Id$
  */
 public class GARSGraticule extends ApplicationTemplate
