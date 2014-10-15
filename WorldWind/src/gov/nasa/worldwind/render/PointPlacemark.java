@@ -75,6 +75,7 @@ public class PointPlacemark extends WWObjectImpl
         protected Vec4 terrainPoint; // point on the terrain extruded from the placemark position.
         protected Vec4 screenPoint; // the projection of the place-point in the viewport (on the screen)
         protected double eyeDistance; // used to order the placemark as an ordered renderable
+        protected Rectangle2D imageBounds;
 
         public PointPlacemark getPlacemark()
         {
@@ -134,6 +135,11 @@ public class PointPlacemark extends WWObjectImpl
         public Rectangle2D getBounds(DrawContext dc)
         {
             return PointPlacemark.this.getLabelBounds(dc, this);
+        }
+
+        public Rectangle2D getImageBounds()
+        {
+            return imageBounds;
         }
 
         public Vec4 getPlacePoint()
@@ -729,7 +735,7 @@ public class PointPlacemark extends WWObjectImpl
                     return true;
             }
         }
-        else if (rect.width > 0)
+        else if (rect.getWidth() > 0)
         {
             return view.getViewport().intersects(rect);
         }
@@ -1553,7 +1559,9 @@ public class PointPlacemark extends WWObjectImpl
         double x = opm.screenPoint.x + (this.isDrawPoint(dc) ? -0.5 * s : this.dx);
         double y = opm.screenPoint.y + (this.isDrawPoint(dc) ? -0.5 * s : this.dy);
 
-        return new Rectangle((int) x, (int) y, (int) Math.ceil(width), (int) Math.ceil(height));
+        opm.imageBounds = new Rectangle((int) x, (int) y, (int) Math.ceil(width), (int) Math.ceil(height));
+
+        return (Rectangle) opm.imageBounds;
     }
 
     /**
