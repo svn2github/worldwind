@@ -6,7 +6,9 @@
 
 package gov.nasa.worldwind.util;
 
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 
 import javax.media.opengl.*;
@@ -68,7 +70,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
      * @param rectangle the region to test.
      *
      * @return the intersected region if the input region intersects one or more other regions in the filter, otherwise
-     *         false.
+     * false.
      */
     protected Rectangle2D intersects(Rectangle2D rectangle)
     {
@@ -162,6 +164,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
         protected double angle;
         protected PointPlacemark.OrderedPlacemark opm;
         protected Rectangle2D region;
+        protected PickSupport pickSupport;
 
         public DeclutteredLabel(double angle, PointPlacemark.OrderedPlacemark opm, Rectangle2D region)
         {
@@ -179,6 +182,23 @@ public class PlacemarkClutterFilter implements ClutterFilter
         @Override
         public void pick(DrawContext dc, Point pickPoint)
         {
+            if (this.opm.getPlacemark().isEnableLabelPicking())
+            {
+                if (this.pickSupport == null)
+                    this.pickSupport = new PickSupport();
+
+                this.pickSupport.clearPickList();
+                try
+                {
+                    this.pickSupport.beginPicking(dc);
+                    this.render(dc);
+                }
+                finally
+                {
+                    this.pickSupport.endPicking(dc);
+                    this.pickSupport.resolvePick(dc, pickPoint, opm.getPickLayer());
+                }
+            }
         }
 
         public void render(DrawContext dc)
@@ -225,19 +245,23 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 double y = this.region.getCenterY();
                 Vec4 textPoint = new Vec4(x + dx, y + dy, 0);
 
+                osh.pushModelviewIdentity(gl);
                 this.drawDeclutterLabel(dc, font, textPoint, this.opm.getPlacemark().getLabelText());
 
-                // Compute the end point of the line.
-                Vec4 endPoint = new Vec4(textPoint.x + bounds.getWidth(), textPoint.y, textPoint.z);
-                dx = endPoint.x - startPoint.x;
-                dy = endPoint.y() - startPoint.y;
-                double d1 = dx * dx + dy * dy;
-                dx = textPoint.x - startPoint.x;
-                dy = textPoint.y - startPoint.y;
-                double d2 = dx * dx + dy * dy;
-                if (d2 < d1)
-                    endPoint = textPoint;
-                this.drawDeclutterLine(dc, startPoint, endPoint);
+                if (!dc.isPickingMode())
+                {
+                    // Compute the end point of the line.
+                    Vec4 endPoint = new Vec4(textPoint.x + bounds.getWidth(), textPoint.y, textPoint.z);
+                    dx = endPoint.x - startPoint.x;
+                    dy = endPoint.y() - startPoint.y;
+                    double d1 = dx * dx + dy * dy;
+                    dx = textPoint.x - startPoint.x;
+                    dy = textPoint.y - startPoint.y;
+                    double d2 = dx * dx + dy * dy;
+                    if (d2 < d1)
+                        endPoint = textPoint;
+                    this.drawDeclutterLine(dc, startPoint, endPoint);
+                }
             }
             finally
             {
@@ -249,21 +273,44 @@ public class PlacemarkClutterFilter implements ClutterFilter
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
-            gl.glMatrixMode(GL2.GL_MODELVIEW);
-            gl.glLoadIdentity();
+            if (dc.isPickingMode())
+            {
+                // Pick the text box, not just the text.
+                Color pickColor = dc.getUniquePickColor();
+                Object delegateOwner = this.opm.getPlacemark().getDelegateOwner();
+                PickedObject po = new PickedObject(pickColor.getRGB(),
+                    delegateOwner != null ? delegateOwner : this.opm.getPlacemark());
+                po.setValue(AVKey.PICKED_OBJECT_ID, AVKey.LABEL);
+                this.pickSupport.addPickableObject(po);
+                gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
 
-            TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
-            try
-            {
-                textRenderer.begin3DRendering();
-                textRenderer.setColor(Color.BLACK);
-                textRenderer.draw3D(labelText, (float) textPoint.x + 1, (float) textPoint.y - 1, 0, 1);
-                textRenderer.setColor(Color.WHITE);
-                textRenderer.draw3D(labelText, (float) textPoint.x, (float) textPoint.y, 0, 1);
+                gl.glTranslated(textPoint.x, textPoint.y, 0);
+                gl.glScaled(this.region.getWidth() / 2, this.region.getHeight() / 2, 1);
+                dc.drawUnitQuad();
             }
-            finally
+            else
             {
-                textRenderer.end3DRendering();
+                TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
+                try
+                {
+                    PointPlacemark placemark = this.opm.getPlacemark();
+                    Color textColor = Color.WHITE;
+                    if (placemark.isHighlighted() && placemark.getHighlightAttributes() != null
+                        && placemark.getHighlightAttributes().getLabelColor() != null)
+                        textColor = placemark.getHighlightAttributes().getLabelColor();
+                    else if (placemark.getAttributes() != null && placemark.getAttributes().getLabelColor() != null)
+                        textColor = placemark.getAttributes().getLabelColor();
+
+                    textRenderer.begin3DRendering();
+                    textRenderer.setColor(Color.BLACK);
+                    textRenderer.draw3D(labelText, (float) textPoint.x + 1, (float) textPoint.y - 1, 0, 1);
+                    textRenderer.setColor(textColor);
+                    textRenderer.draw3D(labelText, (float) textPoint.x, (float) textPoint.y, 0, 1);
+                }
+                finally
+                {
+                    textRenderer.end3DRendering();
+                }
             }
         }
 

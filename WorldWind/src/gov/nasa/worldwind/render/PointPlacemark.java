@@ -75,7 +75,7 @@ public class PointPlacemark extends WWObjectImpl
         protected Vec4 terrainPoint; // point on the terrain extruded from the placemark position.
         protected Vec4 screenPoint; // the projection of the place-point in the viewport (on the screen)
         protected double eyeDistance; // used to order the placemark as an ordered renderable
-        protected Rectangle2D imageBounds;
+        protected Rectangle imageBounds;
 
         public PointPlacemark getPlacemark()
         {
@@ -137,7 +137,7 @@ public class PointPlacemark extends WWObjectImpl
             return PointPlacemark.this.getLabelBounds(dc, this);
         }
 
-        public Rectangle2D getImageBounds()
+        public Rectangle getImageBounds()
         {
             return imageBounds;
         }
@@ -693,6 +693,8 @@ public class PointPlacemark extends WWObjectImpl
                 return;
         }
 
+        this.computeImageBounds(dc, opm);
+
         if (this.intersectsFrustum(dc, opm) || this.isDrawLine(dc, opm))
         {
             dc.addOrderedRenderable(opm); // add the image ordered renderable
@@ -721,18 +723,26 @@ public class PointPlacemark extends WWObjectImpl
             return false;
         }
 
-        Rectangle rect = this.computeImageRectangle(dc, opm);
+        Rectangle rect = opm.getImageBounds();
         if (dc.isPickingMode())
         {
-            // Test image rect against pick frustums.
-            if (dc.getPickFrustums().intersectsAny(rect))
-                return true;
-
-            if (this.getLabelText() != null && this.isEnableLabelPicking())
+            if (this.isEnableDecluttering())
             {
-                rect = this.getLabelBounds(dc, opm);
+                // If decluttering then we need everything within the viewport drawn.
+                return view.getViewport().intersects(rect);
+            }
+            else
+            {
+                // Test image rect against pick frustums.
                 if (dc.getPickFrustums().intersectsAny(rect))
                     return true;
+
+                if (this.getLabelText() != null && this.isEnableLabelPicking())
+                {
+                    rect = this.getLabelBounds(dc, opm);
+                    if (dc.getPickFrustums().intersectsAny(rect))
+                        return true;
+                }
             }
         }
         else if (rect.getWidth() > 0)
@@ -1117,7 +1127,7 @@ public class PointPlacemark extends WWObjectImpl
             pickCandidates.addPickableObject(po);
             gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
 
-            gl.glTranslated(textBounds.getMinX(), textBounds.getY(), 0);
+            gl.glTranslated(textBounds.getX(), textBounds.getY(), 0);
             gl.glScaled(textBounds.getWidth(), textBounds.getHeight(), 1);
             gl.glDisable(GL.GL_TEXTURE_2D);
             dc.drawUnitQuad();
@@ -1549,7 +1559,7 @@ public class PointPlacemark extends WWObjectImpl
      *
      * @return the bounding rectangle.
      */
-    protected Rectangle computeImageRectangle(DrawContext dc, OrderedPlacemark opm)
+    protected void computeImageBounds(DrawContext dc, OrderedPlacemark opm)
     {
         double s = this.getActiveAttributes().getScale() != null ? this.getActiveAttributes().getScale() : 1;
 
@@ -1560,8 +1570,6 @@ public class PointPlacemark extends WWObjectImpl
         double y = opm.screenPoint.y + (this.isDrawPoint(dc) ? -0.5 * s : this.dy);
 
         opm.imageBounds = new Rectangle((int) x, (int) y, (int) Math.ceil(width), (int) Math.ceil(height));
-
-        return (Rectangle) opm.imageBounds;
     }
 
     /**
