@@ -48,7 +48,7 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
      * Returns the current airspace surface altitudes.
      *
      * @return a two-element array of <code>double</code> with element 0 containing the lower surface altitude, and
-     *         element 1 containing the upper surface altitude.
+     * element 1 containing the upper surface altitude.
      *
      * @see #setAltitudes(double, double)
      * @see #setAltitudeDatum
@@ -109,6 +109,25 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
      * @see #setAltitudeDatum(String, String)
      */
     void setTerrainConforming(boolean lowerTerrainConformant, boolean upperTerrainConformant);
+
+    /**
+     * Indicates the state of this airspace's always-on-top flag.
+     *
+     * @return the state of this airspace's always-on-top flag.
+     *
+     * @see #isAlwaysOnTop()
+     */
+    boolean isAlwaysOnTop();
+
+    /**
+     * Specifies whether this airspace should have visual priority over other displayed shapes in 3D mode. If
+     * <code>true</code>, this shape is drawn after all others. This property is ignored by {@link
+     * gov.nasa.worldwind.render.airspaces.Cake} airspaces.
+     *
+     * @param alwaysOnTop if <code>true</code>, this airspace is drawn after all others. Otherwise this airspace is
+     *                    drawn with its normal priority, which is its relative distance to the eye point.
+     */
+    void setAlwaysOnTop(boolean alwaysOnTop);
 
     /**
      * Sets the altitude datum for both the lower and upper airspace surface to the same specified value. The datum is
@@ -206,7 +225,7 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
      * Returns the current altitude datum of the airspace's lower and upper surfaces.
      *
      * @return a two-element array containing at position 0 the lower altitude datum, and at position 1 the upper
-     *         altitude datum.
+     * altitude datum.
      *
      * @see #setAltitudeDatum(String, String)
      */
@@ -246,9 +265,9 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
      * Specifies whether adjacent shapes of this shape's concrete type in the ordered renderable list may be rendered
      * together if they are contained in the same layer. This increases performance. There is seldom a reason to disable
      * it.
-    *
-        * @param enableBatchRendering true to enable batch rendering, otherwise false.
-    */
+     *
+     * @param enableBatchRendering true to enable batch rendering, otherwise false.
+     */
     void setEnableBatchRendering(boolean enableBatchRendering);
 
     /**
@@ -311,5 +330,4 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
     Object getDelegateOwner();
 
     void setDelegateOwner(Object delegateOwner);
-
 }

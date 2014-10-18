@@ -814,6 +814,9 @@ public class ShapeEditor implements SelectListener
         if (shadowShape == null)
             return;
 
+        if (this.getShape() instanceof Airspace)
+            ((Airspace) this.getShape()).setAlwaysOnTop(true);
+
         // Reduce the opacity of an opaque current shape so that the shadow shape is visible while editing
         // is performed.
 
@@ -848,6 +851,8 @@ public class ShapeEditor implements SelectListener
     protected void removeShadowShape()
     {
         this.getShadowLayer().removeAllRenderables();
+        if (this.getShape() instanceof AbstractAirspace)
+            ((AbstractAirspace) this.getShape()).setAlwaysOnTop(false);
 
         // Restore the original attributes.
         if (this.getOriginalAttributes() != null)

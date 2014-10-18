@@ -89,6 +89,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
     protected SurfaceShape surfaceShape;
     protected boolean mustRegenerateSurfaceShape;
     protected long frameTimeStamp;
+    protected boolean alwaysOnTop = false;
     // Geometry computation and rendering support.
     protected AirspaceInfo currentInfo;
     protected Layer pickLayer;
@@ -460,6 +461,18 @@ public abstract class AbstractAirspace extends WWObjectImpl
         this.delegateOwner = delegateOwner;
     }
 
+    @Override
+    public boolean isAlwaysOnTop()
+    {
+        return alwaysOnTop;
+    }
+
+    @Override
+    public void setAlwaysOnTop(boolean alwaysOnTop)
+    {
+        this.alwaysOnTop = alwaysOnTop;
+    }
+
     protected void adjustForGroundReference(DrawContext dc, boolean[] terrainConformant, double[] altitudes,
         LatLon groundRef)
     {
@@ -609,7 +622,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
     @Override
     public double getDistanceFromEye()
     {
-        return this.currentInfo.getEyeDistance();
+        return this.isAlwaysOnTop() ? 0 : this.currentInfo.getEyeDistance();
     }
 
     /**
