@@ -15,7 +15,11 @@ import gov.nasa.worldwind.util.*;
  * Provides a Transverse Mercator ellipsoidal projection using the WGS84 ellipsoid. The projection's central meridian
  * may be specified and defaults to the Prime Meridian (0 longitude). By default, the projection computes values for 30
  * degrees either side of the central meridian. This may be changed via the {@link
- * #setWidth(gov.nasa.worldwind.geom.Angle)} method, but the projection may fail for widths larger than that.
+ * #setWidth(gov.nasa.worldwind.geom.Angle)} method, but the projection may fail for large widths.
+ * <p/>
+ * The projection limits are modified to reflect the central meridian and the width, however the projection limits are
+ * clamped to a minimum of -180 degrees and a maximum of +180 degrees. It's therefore not possible to display a band
+ * whose central meridian is plus or minus 180.
  *
  * @author tag
  * @version $Id$
@@ -59,7 +63,7 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
      * Creates a projection with a specified central meridian and central latitude.
      *
      * @param centralMeridian The projection's central meridian.
-     * @param centralLatitude  The projection's central latitude.
+     * @param centralLatitude The projection's central latitude.
      */
     public ProjectionTransverseMercator(Angle centralMeridian, Angle centralLatitude)
     {
@@ -176,10 +180,15 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
 
     protected static Sector makeProjectionLimits(Angle centralMeridian, Angle width)
     {
-        Angle minLon = Angle.normalizedLongitude(centralMeridian.subtract(width));
-        Angle maxLon = Angle.normalizedLongitude(centralMeridian.add(width));
+        double minLon = centralMeridian.degrees - width.degrees;
+        if (minLon < -180)
+            minLon = -180;
 
-        return new Sector(Angle.NEG90, Angle.POS90, minLon, maxLon);
+        double maxLon = centralMeridian.degrees + width.degrees;
+        if (maxLon > 180)
+            maxLon = 180;
+
+        return Sector.fromDegrees(-90, 90, minLon, maxLon);
     }
 
     protected double getScale()
