@@ -244,7 +244,8 @@ public class Placemarks extends ApplicationTemplate
                 {
                     // PointPlacemarks require an image address, so save the retrieved image as a file and use
                     // the path to that file as the image address.
-                    File imageFile = File.createTempFile("WorldWind", ".png");
+                    File cacheDir = WorldWind.getDataFileStore().getWriteLocation();
+                    File imageFile = File.createTempFile("WorldWind", ".png", cacheDir);
                     ImageIO.write(symbolImage, "png", imageFile);
                     File highlightFile = File.createTempFile("WorldWind", ".png");
                     ImageIO.write(highlightImage, "png", highlightFile);
