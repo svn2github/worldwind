@@ -15,12 +15,15 @@ import gov.nasa.worldwind.util.*;
 import javax.media.opengl.GL;
 import javax.xml.stream.*;
 import java.awt.*;
+import java.awt.image.*;
 import java.io.*;
+import java.util.UUID;
 
 /** Holds attributes for {@link gov.nasa.worldwind.render.PointPlacemark}s. */
 public class PointPlacemarkAttributes implements Exportable
 {
     protected String imageAddress;
+    protected BufferedImage image;
     protected Double scale;
     protected Double heading;
     protected String headingReference; // RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN
@@ -110,6 +113,7 @@ public class PointPlacemarkAttributes implements Exportable
             this.setUsePointAsDefaultImage(attrs.isUsePointAsDefaultImage());
             this.setDrawImage(attrs.isDrawImage());
             this.setDrawLabel(attrs.isDrawLabel());
+            this.setImage(attrs.getImage());
         }
     }
 
@@ -238,6 +242,32 @@ public class PointPlacemarkAttributes implements Exportable
     public void setImageAddress(String address)
     {
         this.imageAddress = address;
+    }
+
+    /**
+     * Returns the {@link java.awt.image.BufferedImage} previously specified to {@link
+     * #setImage(java.awt.image.BufferedImage)}.
+     *
+     * @return The image previously specified for this attribute bundle.
+     */
+    public BufferedImage getImage()
+    {
+        return image;
+    }
+
+    /**
+     * Specifies a {@link java.awt.image.BufferedImage} for {@link gov.nasa.worldwind.render.PointPlacemark}s associated
+     * with this attribute bundle. When this method is called, this attribute bundle's image address is automatically
+     * set to a unique identifier for the image.
+     *
+     * @param image the buffered image to use for the associated point placemarks. May be null, in which case this
+     *              attribute bundle's image address is set to null by this method.
+     */
+    public void setImage(BufferedImage image)
+    {
+        this.image = image;
+
+        this.setImageAddress(this.image != null ? UUID.randomUUID().toString() : null);
     }
 
     /**

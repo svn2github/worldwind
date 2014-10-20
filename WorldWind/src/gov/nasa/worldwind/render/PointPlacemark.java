@@ -38,6 +38,9 @@ import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
  * Point placemarks can participate in global text decluttering by setting their decluttering-enabled flag to {@code
  * true}. See {@link #setEnableDecluttering(boolean)}. The default for this flag is {@code false}. When participating in
  * decluttering, only the point placemark's label is considered when determining interference with other text.
+ * <p/>
+ * When the label of a point placemark is picked, the associated {@link gov.nasa.worldwind.pick.PickedObject} contains
+ * the key {@link AVKey#LABEL}
  *
  * @author tag
  * @version $Id$
@@ -1482,22 +1485,19 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected WWTexture initializeTexture(String address)
     {
+        if (this.getActiveAttributes().getImage() != null)
+        {
+            // App has specified a buffered image.
+            return new BasicWWTexture(this.getActiveAttributes().getImage(), true);
+        }
+
         URL localUrl = WorldWind.getDataFileStore().requestFile(address);
 
-        // WWJ-434 (http://issues.worldwind.arc.nasa.gov/jira/browse/WWJ-434) includes a stack trace showing HTTP
-        // access from BasicWWTexture on the EDT. This should not occur and I (tag) can find no path through the
-        // code that would cause it. Nevertheless, I've added guard code here to prevent anything other than a file
-        // based URL to be passed to the BasicWWTexture constructor.
         if (localUrl != null)
         {
-//            if (!"file".equals(localUrl.getProtocol()))
-//            {
-//                Logging.logger().warning(Logging.getMessage("generic.URLProtocolNotFile", localUrl));
-//                return null;
-//            }
-
             return new BasicWWTexture(localUrl, true);
         }
+
         return null;
     }
 
