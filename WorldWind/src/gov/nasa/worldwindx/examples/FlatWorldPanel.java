@@ -91,7 +91,9 @@ public class FlatWorldPanel extends JPanel
             {"Lat-Lon", "Mercator", "Modified Sin.", "Sinusoidal",
                 "Transverse Mercator",
                 "North Polar",
-                "South Polar"
+                "South Polar",
+                "North Uniform Polar Stereographic",
+//                "South Uniform Polar Stereographic"
             });
         this.projectionCombo.setEnabled(isFlatGlobe());
         this.projectionCombo.addActionListener(new ActionListener()
@@ -134,6 +136,10 @@ public class FlatWorldPanel extends JPanel
             return new ProjectionPolarEquidistant(AVKey.NORTH);
         else if (item.equals("South Polar"))
             return new ProjectionPolarEquidistant(AVKey.SOUTH);
+        else if (item.equals("North Uniform Polar Stereographic"))
+            return new ProjectionUPS(AVKey.NORTH);
+        else if (item.equals("South Uniform Polar Stereographic"))
+            return new ProjectionUPS(AVKey.SOUTH);
         // Default to lat-lon
         return new ProjectionEquirectangular();
     }

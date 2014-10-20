@@ -22,14 +22,18 @@ import gov.nasa.worldwind.util.*;
  */
 public class ProjectionTransverseMercator extends AbstractGeographicProjection
 {
-    protected Angle width = Angle.fromDegrees(30);
-    protected Angle centralMeridian = Angle.ZERO;
-    protected Angle centralLatitude = Angle.ZERO;
+    protected static Angle DEFAULT_WIDTH = Angle.fromDegrees(30);
+    protected static Angle DEFAULT_CENTRAL_MERIDIAN = Angle.ZERO;
+    protected static Angle DEFAULT_CENTRAL_LATITUDE = Angle.ZERO;
+
+    protected Angle width = DEFAULT_WIDTH;
+    protected Angle centralMeridian = DEFAULT_CENTRAL_MERIDIAN;
+    protected Angle centralLatitude = DEFAULT_CENTRAL_LATITUDE;
 
     /** Creates a projection whose central meridian is the Prime Meridian and central latitude is 0. */
     public ProjectionTransverseMercator()
     {
-        super(Sector.FULL_SPHERE);
+        super(makeProjectionLimits(DEFAULT_CENTRAL_MERIDIAN, DEFAULT_WIDTH));
     }
 
     /**
@@ -39,7 +43,7 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
      */
     public ProjectionTransverseMercator(Angle centralMeridian)
     {
-        super(Sector.FULL_SPHERE);
+        super(makeProjectionLimits(centralMeridian, DEFAULT_WIDTH));
 
         if (centralMeridian == null)
         {
@@ -59,7 +63,7 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
      */
     public ProjectionTransverseMercator(Angle centralMeridian, Angle centralLatitude)
     {
-        super(Sector.FULL_SPHERE);
+        super(makeProjectionLimits(centralMeridian, DEFAULT_WIDTH));
 
         if (centralMeridian == null)
         {
@@ -110,6 +114,7 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
         }
 
         this.centralMeridian = centralMeridian;
+        this.setProjectionLimits(makeProjectionLimits(this.getCentralMeridian(), this.getWidth()));
     }
 
     /**
@@ -166,6 +171,15 @@ public class ProjectionTransverseMercator extends AbstractGeographicProjection
         }
 
         this.width = width;
+        this.setProjectionLimits(makeProjectionLimits(this.getCentralMeridian(), this.getWidth()));
+    }
+
+    protected static Sector makeProjectionLimits(Angle centralMeridian, Angle width)
+    {
+        Angle minLon = Angle.normalizedLongitude(centralMeridian.subtract(width));
+        Angle maxLon = Angle.normalizedLongitude(centralMeridian.add(width));
+
+        return new Sector(Angle.NEG90, Angle.POS90, minLon, maxLon);
     }
 
     protected double getScale()

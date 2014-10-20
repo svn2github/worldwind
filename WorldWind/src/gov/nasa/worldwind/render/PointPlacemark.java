@@ -9,6 +9,7 @@ package gov.nasa.worldwind.render;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe2D;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
@@ -644,6 +645,13 @@ public class PointPlacemark extends WWObjectImpl
 
         if (!this.isVisible())
             return;
+
+        if (dc.is2DGlobe())
+        {
+            Sector limits = ((Globe2D)dc.getGlobe()).getProjection().getProjectionLimits();
+            if (limits != null && !limits.contains(this.getPosition()))
+                return;
+        }
 
         this.makeOrderedRenderable(dc);
     }

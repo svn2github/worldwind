@@ -490,6 +490,10 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                     lon = Angle.POS180;
 
                 Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
+
+                if (dc.is2DGlobe() && this.skipTile(dc, tileSector))
+                    continue;
+
                 tops.add(this.createTile(dc, tileSector, 0));
                 lastLon = lon;
             }
@@ -497,6 +501,25 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         return tops;
+    }
+
+    /**
+     * Determines whether a tile is within a 2D globe's projection limits.
+     *
+     * @param dc     the current draw context. The globe contained in the context must be a {@link
+     *               gov.nasa.worldwind.globes.Globe2D}.
+     * @param sector the tile's sector.
+     *
+     * @return <code>true</code> if the tile should be skipped -- it's outside the globe's projection limits --
+     * otherwise <code>false</code>.
+     */
+    protected boolean skipTile(DrawContext dc, Sector sector)
+    {
+        Sector limits = ((Globe2D) dc.getGlobe()).getProjection().getProjectionLimits();
+        if (limits == null || limits.equals(Sector.FULL_SPHERE))
+            return false;
+
+        return !sector.intersectsInterior(limits);
     }
 
     protected RectTile createTile(DrawContext dc, Sector tileSector, int level)
@@ -528,6 +551,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected void selectVisibleTiles(DrawContext dc, RectTile tile)
     {
+        if (dc.is2DGlobe() && this.skipTile(dc, tile.getSector()))
+            return;
+
         Extent extent = tile.getExtent();
         if (extent != null && !extent.intersects(this.currentFrustum))
             return;
