@@ -88,6 +88,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
     protected Object delegateOwner;
     protected SurfaceShape surfaceShape;
     protected boolean mustRegenerateSurfaceShape;
+    protected boolean drawSurfaceShape;
     protected long frameTimeStamp;
     protected boolean alwaysOnTop = false;
     // Geometry computation and rendering support.
@@ -224,6 +225,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
         this.enableDepthOffset = source.enableDepthOffset;
         this.outlinePickWidth = source.outlinePickWidth;
         this.delegateOwner = source.delegateOwner;
+        this.drawSurfaceShape = source.drawSurfaceShape;
     }
 
     public AbstractAirspace()
@@ -473,6 +475,18 @@ public abstract class AbstractAirspace extends WWObjectImpl
         this.alwaysOnTop = alwaysOnTop;
     }
 
+    @Override
+    public boolean isDrawSurfaceShape()
+    {
+        return drawSurfaceShape;
+    }
+
+    @Override
+    public void setDrawSurfaceShape(boolean drawSurfaceShape)
+    {
+        this.drawSurfaceShape = drawSurfaceShape;
+    }
+
     protected void adjustForGroundReference(DrawContext dc, boolean[] terrainConformant, double[] altitudes,
         LatLon groundRef)
     {
@@ -689,7 +703,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
         if (!this.isVisible())
             return;
 
-        if (dc.getGlobe() instanceof Globe2D)
+        if (dc.is2DGlobe() || this.isDrawSurfaceShape())
         {
             if (this.surfaceShape == null)
             {
@@ -798,7 +812,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
         if (!this.isVisible())
             return;
 
-        if (dc.getGlobe() instanceof Globe2D && this.surfaceShape != null)
+        if ((dc.is2DGlobe() || this.isDrawSurfaceShape()) && this.surfaceShape != null)
         {
             this.surfaceShape.render(dc);
             return;

@@ -130,6 +130,22 @@ public interface Airspace extends Renderable, Restorable, AVList, ExtentHolder, 
     void setAlwaysOnTop(boolean alwaysOnTop);
 
     /**
+     * Indicates whether this surface shape is always drawn flat and on the surface.
+     *
+     * @return <code>true</code> if this shape is drawn flat and on the surface, otherwise <code>false</code>.
+     */
+    boolean isDrawSurfaceShape();
+
+    /**
+     * Specifies whether this airspace should be drawn flat and on the surface, ignoring any altitude information
+     * specified in the shape.
+     *
+     * @param drawSurfaceShape <code>true</code> if this shape is drawn flat and on the surface, otherwise
+     *                         <code>false</code>.
+     */
+    void setDrawSurfaceShape(boolean drawSurfaceShape);
+
+    /**
      * Sets the altitude datum for both the lower and upper airspace surface to the same specified value. The datum is
      * normally set via {@link #setAltitudeDatum(String, String)}, but this method is provided for backwards
      * compatibility with the means of originally setting the datum. See the argument descriptions for the mapping of

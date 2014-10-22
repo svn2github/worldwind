@@ -121,6 +121,7 @@ public class TrackAirspace extends AbstractAirspace
         leg.setAlwaysOnTop(this.isAlwaysOnTop());
         leg.setForceCullFace(true);
         leg.setEnableCenterLine(this.enableCenterLine);
+        leg.setDrawSurfaceShape(this.drawSurfaceShape);
         this.legs.add(leg);
         this.invalidateAirspaceData();
         this.setLegsOutOfDate();
@@ -236,6 +237,17 @@ public class TrackAirspace extends AbstractAirspace
         for (Box l : this.getLegs())
         {
             l.setAlwaysOnTop(alwaysOnTop);
+        }
+    }
+
+    @Override
+    public void setDrawSurfaceShape(boolean drawSurfaceShape)
+    {
+        super.setDrawSurfaceShape(drawSurfaceShape);
+
+        for (Box l : this.getLegs())
+        {
+            l.setDrawSurfaceShape(drawSurfaceShape);
         }
     }
 

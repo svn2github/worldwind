@@ -40,6 +40,7 @@ public class ShapeEditing extends ApplicationTemplate
             RenderableLayer layer = new RenderableLayer();
 
             // Airspaces
+            boolean useSurfaceAirspaces = false;
 
             AirspaceAttributes attrs = new BasicAirspaceAttributes();
             attrs.setDrawInterior(true);
@@ -58,6 +59,7 @@ public class ShapeEditing extends ApplicationTemplate
             locations.add(LatLon.fromDegrees(41, -120));
             locations.add(LatLon.fromDegrees(41, -121));
             Polygon polygon = new Polygon(locations);
+            polygon.setDrawSurfaceShape(useSurfaceAirspaces);
             polygon.setAttributes(attrs);
             polygon.setHighlightAttributes(highlightAttrs);
             polygon.setAltitudes(1e4, 2e4);
@@ -65,6 +67,7 @@ public class ShapeEditing extends ApplicationTemplate
             layer.addRenderable(polygon);
 
             CappedCylinder cylinder = new CappedCylinder(LatLon.fromDegrees(40.5, -118), 5e4);
+            cylinder.setDrawSurfaceShape(useSurfaceAirspaces);
             cylinder.setAttributes(attrs);
             cylinder.setHighlightAttributes(highlightAttrs);
             cylinder.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -73,6 +76,7 @@ public class ShapeEditing extends ApplicationTemplate
 
             cylinder = new CappedCylinder(LatLon.fromDegrees(40.5, -116), 5e4);
             cylinder.setRadii(3e4, 5e4);
+            cylinder.setDrawSurfaceShape(useSurfaceAirspaces);
             cylinder.setAttributes(attrs);
             cylinder.setHighlightAttributes(highlightAttrs);
             cylinder.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -81,6 +85,7 @@ public class ShapeEditing extends ApplicationTemplate
 
             Orbit orbit = new Orbit(LatLon.fromDegrees(40, -114), LatLon.fromDegrees(41, -114), Orbit.OrbitType.CENTER,
                 4e4);
+            orbit.setDrawSurfaceShape(useSurfaceAirspaces);
             orbit.setAttributes(attrs);
             orbit.setHighlightAttributes(highlightAttrs);
             orbit.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -93,6 +98,7 @@ public class ShapeEditing extends ApplicationTemplate
             locations.add(LatLon.fromDegrees(41, -111));
             locations.add(LatLon.fromDegrees(40, -112));
             Route route = new Route(locations, 4e4);
+            route.setDrawSurfaceShape(useSurfaceAirspaces);
             route.setAttributes(attrs);
             route.setHighlightAttributes(highlightAttrs);
             route.setAltitudes(1e4, 2e4);
@@ -105,6 +111,7 @@ public class ShapeEditing extends ApplicationTemplate
             locations.add(LatLon.fromDegrees(41, -109));
             locations.add(LatLon.fromDegrees(40, -109));
             Curtain curtain = new Curtain(locations);
+            curtain.setDrawSurfaceShape(useSurfaceAirspaces);
             curtain.setAttributes(attrs);
             curtain.setHighlightAttributes(highlightAttrs);
             curtain.setAltitudes(1e4, 2e4);
@@ -112,6 +119,7 @@ public class ShapeEditing extends ApplicationTemplate
             layer.addRenderable(curtain);
 
             SphereAirspace sphere = new SphereAirspace(LatLon.fromDegrees(40.5, -107), 5e4);
+            sphere.setDrawSurfaceShape(useSurfaceAirspaces);
             sphere.setAttributes(attrs);
             sphere.setHighlightAttributes(highlightAttrs);
             sphere.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -121,6 +129,7 @@ public class ShapeEditing extends ApplicationTemplate
             PartialCappedCylinder partialCylinder = new PartialCappedCylinder(LatLon.fromDegrees(40.5, -105), 5e4);
             partialCylinder.setAzimuths(Angle.fromDegrees(270), Angle.fromDegrees(90));
             partialCylinder.setRadii(3e4, 5e4);
+            partialCylinder.setDrawSurfaceShape(useSurfaceAirspaces);
             partialCylinder.setAttributes(attrs);
             partialCylinder.setHighlightAttributes(highlightAttrs);
             partialCylinder.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);
@@ -132,6 +141,7 @@ public class ShapeEditing extends ApplicationTemplate
             track.addLeg(LatLon.fromDegrees(41, -103), LatLon.fromDegrees(41, -102), 1e4, 2e4, 2e4, 2e4);
             track.addLeg(LatLon.fromDegrees(41, -102), LatLon.fromDegrees(40, -102), 1e4, 2e4, 2e4, 2e4);
 //            track.addLeg(LatLon.fromDegrees(39.5, -102), LatLon.fromDegrees(39.5, -103), 1e4, 2e4, 2e4, 2e4);
+            track.setDrawSurfaceShape(useSurfaceAirspaces);
             track.setAttributes(attrs);
             track.setHighlightAttributes(highlightAttrs);
             track.setAltitudeDatum(AVKey.ABOVE_GROUND_LEVEL, AVKey.ABOVE_GROUND_LEVEL);

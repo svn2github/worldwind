@@ -315,7 +315,8 @@ public class ShapeEditor implements SelectListener
         this.controlPointLayer = new MarkerLayer();
         this.controlPointLayer.setKeepSeparated(false);
         this.controlPointLayer.setValue(AVKey.IGNORE, true); // means "Don't show this layer in the layer manager."
-        if (this.shape instanceof SurfaceShape)
+        if (this.shape instanceof SurfaceShape
+            || (this.shape instanceof Airspace && ((Airspace)this.shape).isDrawSurfaceShape()))
         {
             // This ensures that control points are always placed on the terrain for surface shapes.
             this.controlPointLayer.setOverrideMarkerElevation(true);
@@ -1220,7 +1221,7 @@ public class ShapeEditor implements SelectListener
     {
         double altitude = 0;
 
-        if (shape instanceof Airspace)
+        if (shape instanceof Airspace && !((Airspace)shape).isDrawSurfaceShape())
         {
             Airspace airspace = (Airspace) shape;
 
@@ -1276,7 +1277,11 @@ public class ShapeEditor implements SelectListener
     {
         int altitudeMode = WorldWind.ABSOLUTE;
 
-        if (this.getShape() instanceof Airspace)
+        if (this.getShape() instanceof Airspace && ((Airspace)this.getShape()).isDrawSurfaceShape())
+        {
+            altitudeMode = WorldWind.CLAMP_TO_GROUND;
+        }
+        else if (this.getShape() instanceof Airspace)
         {
             if (((Airspace) this.getShape()).getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
                 altitudeMode = WorldWind.RELATIVE_TO_GROUND;
