@@ -189,7 +189,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * Returns the object's sector.
      *
      * @return the object's sector, either the sector specified at construction or the default sector if no sector was
-     *         specified at construction.
+     * specified at construction.
      */
     public Sector getSector()
     {
@@ -337,7 +337,9 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param line the line to intersect
      *
      * @return an array of intersections with the terrain, or null if there are no intersections or the line is above
-     *         the globe's horizon.
+     * the globe's horizon.
+     *
+     * @deprecated
      */
     public Intersection[] intersect(Line line)
     {
@@ -431,6 +433,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 
         /**
          * Called if an exception occurs during intersection testing.
+         *
          * @param exception the exception thrown.
          */
         void exception(Exception exception);
@@ -811,7 +814,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param line the line to intersect
      *
      * @return a list of tiles that likely intersect the line. Some returned tiles may not intersect the line but will
-     *         only be near it.
+     * only be near it.
      */
     protected List<RectTile> getIntersectingTiles(Position pA, Position pB, Line line)
     {
@@ -879,7 +882,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         // is only one column, the SE subdivision is identical to the SW one and need not be tested. When there is
         // only one row, the NW subdivision is identical to the SW one and need not be tested. In either case (one
         // column or 1 row) the NE subdivision need not be tested.
-        this.doGetIntersectingTiles(r0, c0, r0 + Math.max(0, n / 2 - 1), c0 + Math.max(0, m / 2 - 1), line, tiles); // SW
+        this.doGetIntersectingTiles(r0, c0, r0 + Math.max(0, n / 2 - 1), c0 + Math.max(0, m / 2 - 1), line,
+            tiles); // SW
         if (m != 1)
             this.doGetIntersectingTiles(r0, c0 + m / 2, r0 + Math.max(0, n / 2 - 1), c1, line, tiles); // SE
         if (n != 1)
@@ -893,9 +897,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      *
      * @param tile the tile to compute vertices for
      *
-     * @throws InterruptedException if the operation is interrupted.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                              if terrain data retrieval exceeds the current timeout.
+     * @throws InterruptedException                            if the operation is interrupted.
+     * @throws gov.nasa.worldwind.exception.WWTimeoutException if terrain data retrieval exceeds the current timeout.
      */
     protected void makeVerts(RectTile tile) throws InterruptedException
     {
@@ -918,9 +921,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      *
      * @return the computed vertex information.
      *
-     * @throws InterruptedException if the operation is interrupted.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                              if terrain data retrieval exceeds the current timeout.
+     * @throws InterruptedException                            if the operation is interrupted.
+     * @throws gov.nasa.worldwind.exception.WWTimeoutException if terrain data retrieval exceeds the current timeout.
      */
     protected RenderInfo buildVerts(RectTile tile) throws InterruptedException
     {
@@ -1024,7 +1026,6 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
         {
             if (actualResolution[i] > targetResolution[i])
                 return false;
-
         }
 
         return true;
@@ -1090,12 +1091,12 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param metersOffset the location's distance above the terrain.
      *
      * @return the Cartesian, model-coordinate point of a the specified location, or null if the specified location does
-     *         not exist within this instance's sector or if the operation is interrupted.
+     * not exist within this instance's sector or if the operation is interrupted.
      *
-     * @throws IllegalArgumentException if the latitude or longitude are null.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                                  if the current timeout is exceeded while retrieving terrain data.
-     * @throws InterruptedException     if the operation is interrupted.
+     * @throws IllegalArgumentException                        if the latitude or longitude are null.
+     * @throws gov.nasa.worldwind.exception.WWTimeoutException if the current timeout is exceeded while retrieving
+     *                                                         terrain data.
+     * @throws InterruptedException                            if the operation is interrupted.
      * @see #setTimeout(Long)
      */
     protected Vec4 getSurfacePoint(RectTile tile, Angle latitude, Angle longitude, double metersOffset)
@@ -1134,12 +1135,12 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param longitude the location's longitude.
      *
      * @return the Cartesian, model-coordinate point of a the specified location, or null if the specified location does
-     *         not exist within this instance's sector or if the operation is interrupted.
+     * not exist within this instance's sector or if the operation is interrupted.
      *
-     * @throws IllegalArgumentException if the latitude or longitude are null.
-     * @throws gov.nasa.worldwind.exception.WWTimeoutException
-     *                                  if the current timeout is exceeded while retrieving terrain data.
-     * @throws InterruptedException     if the operation is interrupted.
+     * @throws IllegalArgumentException                        if the latitude or longitude are null.
+     * @throws gov.nasa.worldwind.exception.WWTimeoutException if the current timeout is exceeded while retrieving
+     *                                                         terrain data.
+     * @throws InterruptedException                            if the operation is interrupted.
      * @see #setTimeout(Long)
      */
     protected Vec4 getSurfacePoint(RectTile tile, Angle latitude, Angle longitude) throws InterruptedException
@@ -1344,9 +1345,9 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param triangle the Cartesian coordinates of the triangle.
      *
      * @return a list of the intersection points at which the triangle intersects the tile, or null if there are no
-     *         intersections. If there are intersections, each entry in the returned list contains a two-element array
-     *         holding the Cartesian coordinates of the intersection point with one terrain triangle. In the cases of
-     *         co-planar triangles, all three vertices of the terrain triangle are returned, in a three-element array.
+     * intersections. If there are intersections, each entry in the returned list contains a two-element array holding
+     * the Cartesian coordinates of the intersection point with one terrain triangle. In the cases of co-planar
+     * triangles, all three vertices of the terrain triangle are returned, in a three-element array.
      *
      * @throws InterruptedException if the operation is interrupted before it completes.
      */
@@ -1505,8 +1506,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param sector The sector in question.
      *
      * @return a two-element array containing the minimum and maximum elevations and their locations in the sector. The
-     *         minimum as at index 0 in the array, the maximum is at index 1. If either cannot be determined, null is
-     *         given in the respective array position.
+     * minimum as at index 0 in the array, the maximum is at index 1. If either cannot be determined, null is given in
+     * the respective array position.
      *
      * @throws InterruptedException if the operation is interrupted before it completes.
      */
@@ -1547,8 +1548,8 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
      * @param height The quadrilateral's latitudinal height, in meters.
      *
      * @return a two-element array containing the minimum and maximum elevations and their locations in the
-     *         quadrilateral. The minimum as at index 0 in the array, the maximum is at index 1. If either cannot be
-     *         determined, null is given in the respective array position.
+     * quadrilateral. The minimum as at index 0 in the array, the maximum is at index 1. If either cannot be determined,
+     * null is given in the respective array position.
      *
      * @throws InterruptedException if the operation is interrupted before it completes.
      */
