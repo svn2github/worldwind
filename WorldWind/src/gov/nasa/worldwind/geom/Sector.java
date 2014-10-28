@@ -1089,7 +1089,7 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     }
 
     /**
-     * Determines whether another sectror is fully contained within this one. The sector's angles are assumed to be
+     * Determines whether another sector is fully contained within this one. The sector's angles are assumed to be
      * normalized to +/- 90 degrees latitude and +/- 180 degrees longitude. The result of the operation is undefined if
      * they are not.
      *
@@ -1235,6 +1235,34 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
     }
 
     /**
+     * Determines whether this sector intersects any one of the sectors in the specified iterable. This returns true if
+     * at least one of the sectors is non-null and intersects this sector.
+     *
+     * @param sectors the sectors to test for intersection.
+     *
+     * @return true if at least one of the sectors is non-null and intersects this sector, otherwise false.
+     *
+     * @throws java.lang.IllegalArgumentException if the iterable is null.
+     */
+    public boolean intersectsAny(Iterable<? extends Sector> sectors)
+    {
+        if (sectors == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        for (Sector s : sectors)
+        {
+            if (s != null && s.intersects(this))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a new sector whose angles are the extremes of the this sector and another. The new sector's minimum
      * latitude and longitude will be the minimum of the two sectors. The new sector's maximum latitude and longitude
      * will be the maximum of the two sectors. The sectors are assumed to be normalized to +/- 90 degrees latitude and
@@ -1365,6 +1393,44 @@ public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
         if (!this.contains(latitude, longitude))
             return null;
         return new Sector(latitude, latitude, longitude, longitude);
+    }
+
+    /**
+     * Returns the intersection of all sectors in the specified iterable. This returns a non-null sector if the iterable
+     * contains at least one non-null entry and all non-null entries intersect. The returned sector represents the
+     * geographic region in which all sectors intersect. This returns null if at least one of the sectors does not
+     * intersect the others.
+     *
+     * @param sectors the sectors to intersect.
+     *
+     * @return the intersection of all sectors in the specified iterable, or null if at least one of the sectors does
+     * not intersect the others.
+     *
+     * @throws java.lang.IllegalArgumentException if the iterable is null.
+     */
+    public static Sector intersection(Iterable<? extends Sector> sectors)
+    {
+        if (sectors == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorListIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Sector result = null;
+
+        for (Sector s : sectors)
+        {
+            if (s == null)
+                continue; // ignore null sectors
+
+            if (result == null)
+                result = s; // start with the first non-null sector
+            else if ((result = result.intersection(s)) == null)
+                break; // at least one of the sectors does not intersect the others
+        }
+
+        return result;
     }
 
     public Sector[] subdivide()
