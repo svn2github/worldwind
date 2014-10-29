@@ -16,7 +16,9 @@ import gov.nasa.worldwind.render.markers.*;
 import gov.nasa.worldwind.terrain.HighResolutionTerrain;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Shows how to compute a radar volume that considers terrain intersection and how to use the {@link
@@ -76,12 +78,20 @@ public class RadarVolumeExample extends ApplicationTemplate
                         @Override
                         public void run()
                         {
-                            showRadarVolume(positions, inclusionFlags, numAz, numEl);
-                            getWwd().redraw();
+                            try
+                            {
+                                showRadarVolume(positions, inclusionFlags, numAz, numEl);
+                                getWwd().redraw();
+                            }
+                            finally
+                            {
+                                ((Component) getWwd()).setCursor(Cursor.getDefaultCursor());
+                            }
                         }
                     });
                 }
             });
+            ((Component) this.getWwd()).setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             thread.start();
 
             // Show the radar source as a marker.
