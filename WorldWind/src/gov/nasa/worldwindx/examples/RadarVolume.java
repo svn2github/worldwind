@@ -16,9 +16,10 @@ import gov.nasa.worldwind.util.*;
 
 import javax.media.opengl.*;
 import javax.xml.stream.*;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.*;
-import java.util.*;
+import java.util.List;
 
 /**
  * Displays a volume defined by a near and far grid of positions. This shape is meant to represent a radar volume, with
@@ -47,6 +48,7 @@ public class RadarVolume extends AbstractShape
         protected FloatBuffer sideVertices;
         protected FloatBuffer sideNormals;
         protected FloatBuffer floor;
+        protected FloatBuffer outline;
 
         /**
          * Construct a cache entry using the boundaries of this shape.
@@ -129,8 +131,6 @@ public class RadarVolume extends AbstractShape
         this.inclusionFlags = inclusionFlags;
         this.width = width;
         this.height = height;
-
-        this.makeGridIndices();
     }
 
     @Override
@@ -226,6 +226,7 @@ public class RadarVolume extends AbstractShape
         if (shapeData.gridVertices == null)
         {
             this.makeGridVertices(dc);
+            this.makeGridIndices();
             this.makeGridNormals();
             this.makeFloor();
             this.makeSides();
@@ -235,9 +236,41 @@ public class RadarVolume extends AbstractShape
     }
 
     @Override
+    protected void prepareToDrawOutline(DrawContext dc, ShapeAttributes activeAttrs, ShapeAttributes defaultAttrs)
+    {
+        // Override this method to avoid applying lighting to the outline.
+
+        if (activeAttrs == null || !activeAttrs.isDrawOutline())
+            return;
+
+        GL2 gl = dc.getGL().getGL2();
+
+        if (!dc.isPickingMode())
+        {
+            Material material = activeAttrs.getOutlineMaterial();
+            if (material == null)
+                material = defaultAttrs.getOutlineMaterial();
+
+            Color sc = material.getDiffuse();
+            double opacity = activeAttrs.getOutlineOpacity();
+            gl.glColor4ub((byte) sc.getRed(), (byte) sc.getGreen(), (byte) sc.getBlue(),
+                (byte) (opacity < 1 ? (int) (opacity * 255 + 0.5) : 255));
+
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+
+            gl.glHint(GL.GL_LINE_SMOOTH_HINT, activeAttrs.isEnableAntialiasing() ? GL.GL_NICEST : GL.GL_DONT_CARE);
+        }
+    }
+
+    @Override
     protected void doDrawOutline(DrawContext dc)
     {
-        this.drawModel(dc, GL2.GL_LINE);
+        ShapeData shapeData = this.getCurrent();
+        GL2 gl = dc.getGL().getGL2();
+
+        gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.outline.rewind());
+        gl.glDrawArrays(GL.GL_LINES, 0, shapeData.outline.limit() / 3);
     }
 
     @Override
@@ -434,6 +467,9 @@ public class RadarVolume extends AbstractShape
         shapeData.floor = Buffers.newDirectFloatBuffer(floorSize);
         FloatBuffer vertices = shapeData.gridVertices;
 
+        // This method is responsible for making the outline too.
+        shapeData.outline = Buffers.newDirectFloatBuffer(6 * (this.width - 1));
+
         // Keep track of which columns have their floor computed.
         boolean[] floorFlags = new boolean[this.width - 1];
         for (int i = 0; i < floorFlags.length; i++)
@@ -600,10 +636,15 @@ public class RadarVolume extends AbstractShape
                     shapeData.floor.put(x[5]).put(y[5]).put(z[5]);
                     shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
 
+                    // Capture the outline vertices.
+                    shapeData.outline.put(x[0]).put(y[0]).put(z[0]);
+                    shapeData.outline.put(x[1]).put(y[1]).put(z[1]);
+
                     // Once all the floor segments have been computed we're done.
                     if (shapeData.floor.position() == shapeData.floor.limit())
                     {
                         shapeData.floor.flip();
+                        shapeData.outline.flip();
                         return;
                     }
                 }

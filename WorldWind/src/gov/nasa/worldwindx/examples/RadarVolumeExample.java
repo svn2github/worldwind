@@ -211,9 +211,9 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             // Set the volume's attributes.
             ShapeAttributes attributes = new BasicShapeAttributes();
-            attributes.setDrawOutline(false);
+            attributes.setDrawOutline(true);
             attributes.setDrawInterior(true);
-            attributes.setOutlineMaterial(Material.RED);
+            attributes.setOutlineMaterial(Material.BLUE);
             attributes.setInteriorMaterial(Material.WHITE);
             attributes.setEnableLighting(true);
 //            attributes.setInteriorOpacity(0.8);
