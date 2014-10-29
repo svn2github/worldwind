@@ -364,7 +364,7 @@ public class RadarVolume extends AbstractShape
         // Compute the grid vertices.
         for (Position position : this.positions)
         {
-            Vec4 point = dc.getGlobe().computeEllipsoidalPointFromPosition(position).subtract3(refPt);
+            Vec4 point = dc.getGlobe().computePointFromPosition(position).subtract3(refPt);
             shapeData.gridVertices.put((float) point.x).put((float) point.y).put((float) point.z);
         }
     }

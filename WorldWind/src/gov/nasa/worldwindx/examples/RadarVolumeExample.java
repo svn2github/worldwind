@@ -6,7 +6,8 @@
 
 package gov.nasa.worldwindx.examples;
 
-import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.*;
@@ -244,6 +245,9 @@ public class RadarVolumeExample extends ApplicationTemplate
 
     public static void main(String[] args)
     {
+        Configuration.setValue(AVKey.INITIAL_LATITUDE, 36.8378);
+        Configuration.setValue(AVKey.INITIAL_LONGITUDE, -118.8743);
+        Configuration.setValue(AVKey.INITIAL_ALTITUDE, 200e3);
         ApplicationTemplate.start("Terrain Shadow Prototype", AppFrame.class);
     }
 }
