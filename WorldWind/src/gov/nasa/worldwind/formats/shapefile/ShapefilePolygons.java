@@ -14,8 +14,10 @@ import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.combine.*;
 
 import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 import java.awt.*;
 import java.beans.*;
 import java.nio.*;
@@ -26,7 +28,7 @@ import java.util.List;
  * @author dcollins
  * @version $Id$
  */
-public class ShapefilePolygons extends ShapefileRenderable implements OrderedRenderable, PreRenderable
+public class ShapefilePolygons extends ShapefileRenderable implements OrderedRenderable, PreRenderable, Combinable
 {
     public static class Record extends ShapefileRenderable.Record
     {
@@ -650,6 +652,23 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void combine(CombineContext cc)
+    {
+        if (cc == null)
+        {
+            String msg = Logging.getMessage("nullValue.CombineContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (cc.isBoundingSectorMode())
+            this.combineBounds(cc);
+        else
+            this.combineContours(cc);
+    }
+
     protected void assembleTiles(DrawContext dc)
     {
         this.currentTiles.clear();
@@ -953,6 +972,7 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         // by PolylineGeneralizer, which adopts the units of the source data (degrees).
         double resolutionDegrees = geom.resolution * 180.0 / Math.PI;
         double minEffectiveArea = resolutionDegrees * resolutionDegrees;
+        double[] point = new double[2];
 
         tess.resetIndices(); // clear indices from previous records, but retain the accumulated vertices
         tess.beginPolygon();
@@ -961,7 +981,6 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         {
             VecBuffer coords = record.getBoundaryPoints(i);
             double[] effectiveArea = record.getBoundaryEffectiveArea(i);
-            double[] point = new double[2];
 
             tess.beginContour();
             for (int j = 0; j < coords.getSize(); j++)
@@ -1252,5 +1271,116 @@ public class ShapefilePolygons extends ShapefileRenderable implements OrderedRen
         array[1 + offset] = y;
         array[2 + offset] = z;
         array[3 + offset] = w;
+    }
+
+    protected void combineBounds(CombineContext cc)
+    {
+        cc.addBoundingSector(this.sector);
+    }
+
+    protected void combineContours(CombineContext cc)
+    {
+        if (!cc.getSector().intersects(this.sector))
+            return;  // the shapefile does not intersect the region of interest
+
+        this.doCombineContours(cc);
+    }
+
+    protected void doCombineContours(CombineContext cc)
+    {
+        // Get the records intersecting the context's sector. The implementation of getItemsInRegion may return entries
+        // outside the requested sector, so we cull them further in the loop below.
+        Set<Record> intersectingRecords = this.recordTree.getItemsInRegion(cc.getSector(), null);
+        if (intersectingRecords.isEmpty())
+            return; // no records in the context's sector
+
+        // Compute the minimum effective area for a vertex based on the context's resolution. We convert the resolution
+        // from radians to square degrees. This ensures the units are consistent with the vertex effective area computed
+        // by PolylineGeneralizer, which adopts the units of the source data (degrees).
+        PolylineGeneralizer generalizer = new PolylineGeneralizer();
+        double resolutionDegrees = cc.getResolution() * 180.0 / Math.PI;
+        double minEffectiveArea = resolutionDegrees * resolutionDegrees;
+
+        // Recursively tessellate the records to compute the boundaries of single polygon, then forward the resultant
+        // contours to the context's GLU tessellator. We perform this recursive tessellation in order to draw the union
+        // of the records into the context's GLU tessellator. Since we're eliminating vertices based on the context's
+        // resolution, computing this union is necessary avoids incorrectly drawing regions where the absolute winding
+        // order is greater than one due to two records overlapping.
+        GLUtessellator tess = GLU.gluNewTess();
+
+        try
+        {
+            GLUtessellatorCallback cb = new GLUTessellatorSupport.RecursiveCallback(cc.getTessellator());
+            GLU.gluTessCallback(tess, GLU.GLU_TESS_BEGIN, cb);
+            GLU.gluTessCallback(tess, GLU.GLU_TESS_VERTEX, cb);
+            GLU.gluTessCallback(tess, GLU.GLU_TESS_END, cb);
+            GLU.gluTessCallback(tess, GLU.GLU_TESS_COMBINE, cb);
+            GLU.gluTessProperty(tess, GLU.GLU_TESS_BOUNDARY_ONLY, GL.GL_TRUE);
+            GLU.gluTessProperty(tess, GLU.GLU_TESS_WINDING_RULE, GLU.GLU_TESS_WINDING_NONZERO); // union winding rule
+            GLU.gluTessNormal(tess, 0, 0, 1);
+            GLU.gluTessBeginPolygon(tess, null);
+
+            for (Record record : intersectingRecords)
+            {
+                if (!record.isVisible())
+                    continue; // ignore records marked as not visible
+
+                if (!record.sector.intersects(cc.getSector()))
+                    continue; // the record quadtree may return entries outside the sector passed to getItemsInRegion
+
+                double effectiveArea = record.sector.getDeltaLatDegrees() * record.sector.getDeltaLonDegrees();
+                if (effectiveArea < minEffectiveArea)
+                    continue; // ignore records that don't meet the resolution criteria
+
+                this.computeRecordMetrics(record, generalizer);
+                this.doCombineRecord(tess, cc.getSector(), minEffectiveArea, record);
+            }
+        }
+        finally
+        {
+            GLU.gluTessEndPolygon(tess);
+            GLU.gluDeleteTess(tess);
+        }
+    }
+
+    protected void doCombineRecord(GLUtessellator tess, Sector sector, double minEffectiveArea, Record record)
+    {
+        for (int i = 0; i < record.getBoundaryCount(); i++)
+        {
+            this.doCombineBoundary(tess, sector, minEffectiveArea, record, i, 0);
+
+            double antimeridianOffset = record.getAntimeridianOffset(i);
+            if (antimeridianOffset != 0) // tessellate anti-meridian crossing boundaries twice
+            {
+                this.doCombineBoundary(tess, sector, minEffectiveArea, record, i, antimeridianOffset);
+            }
+        }
+    }
+
+    protected void doCombineBoundary(GLUtessellator tess, Sector sector, double minEffectiveArea, Record record,
+        int ordinal, double longitudeOffset)
+    {
+        ClippingTessellator clipTess = new ClippingTessellator(tess, sector);
+        VecBuffer boundaryCoords = record.getBoundaryPoints(ordinal);
+        double[] effectiveArea = record.getBoundaryEffectiveArea(ordinal);
+        double[] coord = new double[2];
+
+        try
+        {
+            clipTess.beginContour();
+
+            for (int j = 0; j < boundaryCoords.getSize(); j++)
+            {
+                if (effectiveArea[j] < minEffectiveArea)
+                    continue; // ignore vertices that don't meet the resolution criteria
+
+                boundaryCoords.get(j, coord); // longitude, latitude
+                clipTess.addVertex(coord[1], coord[0] + longitudeOffset); // latitude, longitude+offset
+            }
+        }
+        finally
+        {
+            clipTess.endContour();
+        }
     }
 }

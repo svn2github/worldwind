@@ -79,13 +79,11 @@ public class SurfaceBox extends AbstractSurfaceShape
         // Intentionally left blank.
     }
 
-    @Override
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         if (this.locations == null)
             return null;
 
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
 
         ArrayList<LatLon> interior = new ArrayList<LatLon>();

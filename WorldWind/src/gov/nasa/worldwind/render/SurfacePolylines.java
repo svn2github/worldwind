@@ -105,6 +105,11 @@ public class SurfacePolylines extends AbstractSurfaceShape
         return null;
     }
 
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
+    {
+        return null;
+    }
+
     public Iterable<? extends LatLon> getLocations()
     {
         return this.buffer.getLocations();

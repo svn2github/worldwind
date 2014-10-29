@@ -151,13 +151,12 @@ public class SurfacePolyline extends AbstractSurfaceShape implements Exportable
         return new Position(iterator.next(), 0);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         if (this.locations == null)
             return null;
 
         ArrayList<LatLon> drawLocations = new ArrayList<LatLon>();
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         this.generateIntermediateLocations(this.locations, edgeIntervalsPerDegree, this.isClosed(), drawLocations);
 
         if (drawLocations.size() < 2)

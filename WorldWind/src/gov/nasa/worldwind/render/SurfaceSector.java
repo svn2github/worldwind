@@ -120,14 +120,13 @@ public class SurfaceSector extends AbstractSurfaceShape implements Exportable
         return Arrays.asList(locations);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         Iterable<? extends LatLon> originalLocations = this.getLocations(globe);
         if (originalLocations == null)
             return null;
 
         ArrayList<LatLon> drawLocations = new ArrayList<LatLon>();
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         this.generateIntermediateLocations(originalLocations, edgeIntervalsPerDegree, false, drawLocations);
 
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();

@@ -13,6 +13,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.combine.*;
 import gov.nasa.worldwind.util.measure.AreaMeasurer;
 
 import javax.media.opengl.*;
@@ -39,7 +40,8 @@ import java.util.List;
  * @author dcollins
  * @version $Id$
  */
-public abstract class AbstractSurfaceShape extends AbstractSurfaceObject implements SurfaceShape, Movable, Movable2
+public abstract class AbstractSurfaceShape extends AbstractSurfaceObject implements SurfaceShape, Movable, Movable2,
+    Combinable
 {
     /** The default interior color. */
     protected static final Material DEFAULT_INTERIOR_MATERIAL = Material.PINK;
@@ -545,6 +547,23 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             return;
 
         this.doMoveTo(globe, oldReferencePosition, position);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void combine(CombineContext cc)
+    {
+        if (cc == null)
+        {
+            String msg = Logging.getMessage("nullValue.CombineContextIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (cc.isBoundingSectorMode())
+            this.combineBounds(cc);
+        else
+            this.combineContours(cc);
     }
 
     public abstract Position getReferencePosition();
@@ -1062,7 +1081,13 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         }
     }
 
-    protected abstract List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc);
+    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    {
+        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
+        return this.createGeometry(globe, edgeIntervalsPerDegree);
+    }
+
+    protected abstract List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree);
 
     protected Object createGeometryKey(DrawContext dc, SurfaceTileDrawContext sdc)
     {
@@ -1077,6 +1102,88 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
         double intervalsPerTexel = 1.0 / this.getTexelsPerEdgeInterval();
 
         return intervalsPerTexel * texelsPerDegree;
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    protected double computeEdgeIntervalsPerDegree(double resolution)
+    {
+        double degreesPerInterval = resolution * 180.0 / Math.PI;
+        double intervalsPerDegree = 1.0 / degreesPerInterval;
+
+        return intervalsPerDegree;
+    }
+
+    //**************************************************************//
+    //********************  Combinable  ****************************//
+    //**************************************************************//
+
+    protected void combineBounds(CombineContext cc)
+    {
+        List<Sector> sectorList = this.computeSectors(cc.getGlobe());
+        if (sectorList == null)
+            return; // no caller specified locations to bound
+
+        cc.addBoundingSector(Sector.union(sectorList));
+    }
+
+    protected void combineContours(CombineContext cc)
+    {
+        List<Sector> sectorList = this.computeSectors(cc.getGlobe());
+        if (sectorList == null)
+            return; // no caller specified locations to draw
+
+        if (!cc.getSector().intersectsAny(sectorList))
+            return; // this shape does not intersect the region of interest
+
+        this.doCombineContours(cc);
+    }
+
+    protected void doCombineContours(CombineContext cc)
+    {
+        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(cc.getResolution());
+        List<List<LatLon>> contours = this.createGeometry(cc.getGlobe(), edgeIntervalsPerDegree);
+        if (contours == null)
+            return; // shape has no caller specified data
+
+        for (List<LatLon> contour : contours)
+        {
+            String pole = this.containsPole(contour);
+            if (pole != null) // Wrap the contour around the pole and along the anti-meridian. See WWJ-284.
+            {
+                List<LatLon> poleContour = this.cutAlongDateLine(contour, pole, cc.getGlobe());
+                this.doCombineContour(cc, poleContour);
+            }
+            else if (LatLon.locationsCrossDateLine(contour)) // Split the contour along the anti-meridian.
+            {
+                List<List<LatLon>> datelineContours = this.repeatAroundDateline(contour);
+                this.doCombineContour(cc, datelineContours.get(0));
+                this.doCombineContour(cc, datelineContours.get(1));
+            }
+            else
+            {
+                this.doCombineContour(cc, contour);
+            }
+        }
+    }
+
+    protected void doCombineContour(CombineContext cc, Iterable<? extends LatLon> contour)
+    {
+        GLUtessellator tess = cc.getTessellator();
+
+        try
+        {
+            GLU.gluTessBeginContour(tess);
+
+            for (LatLon location : contour)
+            {
+                double[] vertex = {location.longitude.degrees, location.latitude.degrees, 0};
+                GLU.gluTessVertex(tess, vertex, 0, vertex);
+            }
+        }
+        finally
+        {
+            GLU.gluTessEndContour(tess);
+        }
     }
 
     //**************************************************************//

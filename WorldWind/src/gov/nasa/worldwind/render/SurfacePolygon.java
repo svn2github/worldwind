@@ -175,13 +175,12 @@ public class SurfacePolygon extends AbstractSurfaceShape implements Exportable
         return new Position(iterator.next(), 0);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
         if (this.boundaries.isEmpty())
             return null;
 
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
 
         for (Iterable<? extends LatLon> boundary : this.boundaries)
         {

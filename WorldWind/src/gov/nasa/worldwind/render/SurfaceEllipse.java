@@ -431,16 +431,8 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         return Arrays.asList(locations);
     }
 
-    protected List<List<LatLon>> createGeometry(Globe globe, SurfaceTileDrawContext sdc)
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
     {
-        if (globe == null)
-        {
-            String message = Logging.getMessage("nullValue.GlobeIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        double edgeIntervalsPerDegree = this.computeEdgeIntervalsPerDegree(sdc);
         int intervals = this.computeNumIntervals(globe, edgeIntervalsPerDegree);
 
         List<LatLon> drawLocations = this.computeLocations(globe, intervals);
