@@ -30,10 +30,10 @@ import java.util.*;
 public class RadarVolume extends AbstractShape
 {
     protected List<Position> positions; // the grid positions, near grid first, followed by far grid
-    protected boolean[] inclusionFlags;
+    protected boolean[] inclusionFlags; // flags indicating which grid positions are included (visible)
     protected int width; // the number of horizontal positions in the grid.
-    protected int height; // the number of vertical positions in the grir.
-    protected IntBuffer gridIndices; // OpenGL indices defining the near grid triangle strips.
+    protected int height; // the number of vertical positions in the grid.
+    protected IntBuffer gridIndices; // OpenGL indices defining the grid triangles.
     protected IntBuffer sideIndices; // OpenGL indices defining the sides of the area between the grids.
 
     /**
@@ -72,6 +72,22 @@ public class RadarVolume extends AbstractShape
         }
     }
 
+    /**
+     * Constructs a radar volume.
+     *
+     * @param positions      the volume's positions, organized as two grids. The near grid is held in the first width x
+     *                       height entries, the far grid is held in the next width x height entries. This list is
+     *                       retained as-is and is not copied.
+     * @param inclusionFlags flags indicating which grid positions are included in the volume. This array is retained
+     *                       as-is and is not copied.
+     * @param width          the horizontal dimension of the grid.
+     * @param height         the vertical dimension of the grid.
+     *
+     * @throws java.lang.IllegalArgumentException if the positions list or inclusion flags array is null, the size of
+     *                                            the inclusion flags array is less than the number of grid positions,
+     *                                            the positions list is less than the specified size, or the width or
+     *                                            height are less than 2.
+     */
     public RadarVolume(List<Position> positions, boolean[] inclusionFlags, int width, int height)
     {
         if (positions == null || inclusionFlags == null)
@@ -149,6 +165,11 @@ public class RadarVolume extends AbstractShape
         return positions;
     }
 
+    /**
+     * Returns the inclusion flags as specified to this object's constructor.
+     *
+     * @return this object's inclusion flags.
+     */
     public boolean[] getInclusionFlags()
     {
         return this.inclusionFlags;
@@ -240,20 +261,19 @@ public class RadarVolume extends AbstractShape
         // Draw the volume's near and far grids.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.gridVertices.rewind());
         gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.gridNormals.rewind());
-
         gl.glDrawElements(GL.GL_TRIANGLES, this.gridIndices.limit(), GL.GL_UNSIGNED_INT, this.gridIndices.rewind());
 
-        // Draw the volume's side vertices.
+        // Draw the volume's sides.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.sideVertices.rewind());
         gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.sideNormals.rewind());
         gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.sideIndices.limit(), GL.GL_UNSIGNED_INT,
             this.sideIndices.rewind());
-//
-//        this.showNormals(dc);
     }
 
     protected void showNormals(DrawContext dc)
     {
+        // This method is purely diagnostic and is not used by default.
+
         ShapeData shapeData = this.getCurrent();
 
         int size = shapeData.gridVertices.limit() * 2 + shapeData.floor.limit();
@@ -295,6 +315,9 @@ public class RadarVolume extends AbstractShape
 
     protected void makeGridVertices(DrawContext dc)
     {
+        // The grid consists of independent triangles. A tri-strip can't be used because not all positions in the
+        // input grids participate in triangle formation because they may be obstructed.
+
         // Get the current shape data.
         ShapeData shapeData = this.getCurrent();
 
@@ -315,10 +338,12 @@ public class RadarVolume extends AbstractShape
 
     protected void makeGridNormals()
     {
+        // The grid normals are defined by a vector from each position in the near grid to the corresponding
+        // position in the far grid.
+
         ShapeData shapeData = this.getCurrent();
         FloatBuffer vertices = shapeData.gridVertices;
 
-        // Allocate a buffer for the grid normals.
         shapeData.gridNormals = Buffers.newDirectFloatBuffer(shapeData.gridVertices.limit());
         int gridSize = this.getWidth() * this.getHeight();
         int separation = 3 * gridSize;
@@ -346,8 +371,15 @@ public class RadarVolume extends AbstractShape
 
     private void makeGridIndices()
     {
+        // The grid indices define the independent triangles of the near and far grids.
+
         int maxNumIndices = 2 * (this.width - 1) * (this.height - 1) * 6;
         this.gridIndices = Buffers.newDirectIntBuffer(maxNumIndices);
+
+        // Visit each grid cell and determine whether any of its positions are obscured. If the top and bottom
+        // positions are not obscured, and either the lower left or lower right positions are not obscured, the cell
+        // will be shown by either one triangle or two. One triangle is used if only one of the lower positions is
+        // not obscured. Two triangles are shown if both lower positions are not obscured.
 
         for (int n = 0; n < 2; n++)
         {
@@ -367,73 +399,42 @@ public class RadarVolume extends AbstractShape
                     {
                         if (ll && lr)
                         {
+                            // Show both triangles.
                             this.gridIndices.put(k).put(k + 1 + this.width).put(k + 1);
                             this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
                         }
                         else if (ll)
                         {
-                            if (n == 1)
-                                this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
+                            // Show the left triangle.
+                            this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
                         }
                         else if (lr)
                         {
-                            if (n == 1)
-                                this.gridIndices.put(k + 1).put(k + this.width).put(k + 1 + this.width);
+                            // Show the right triangle.
+                            this.gridIndices.put(k + 1).put(k + this.width).put(k + 1 + this.width);
                         }
                     }
                 }
             }
         }
-        this.gridIndices.flip();
+        this.gridIndices.flip(); // capture the currently used buffer size as the limit.
     }
-//
-//    protected void makeFloorIndices()
-//    {
-//        this.floorIndices = Buffers.newDirectIntBuffer(2 * 3 * (this.width - 1));
-//
-//        int gridSize = this.width * this.height;
-//
-//        for (int j = 0; j < this.height - 1; j++)
-//        {
-//            for (int i = 0; i < this.width - 1; i++)
-//            {
-//                int k = gridSize + j * this.width + i;
-//                boolean ll = this.inclusionFlags[k];
-//                boolean lr = this.inclusionFlags[k + 1];
-//                boolean ul = this.inclusionFlags[k + this.width];
-//                boolean ur = this.inclusionFlags[k + this.width + 1];
-//
-//                if (ul && ur)
-//                {
-//                    if (ll && lr)
-//                    {
-//                        this.gridIndices.put(k).put(k + 1 + this.width).put(k + 1);
-//                        this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
-//                    }
-//                    else if (ll)
-//                    {
-//                        this.gridIndices.put(k).put(k + 1).put(k + 1 - gridSize);
-//                        this.gridIndices.put(k).put(k + 1 - gridSize).put(k - gridSize);
-//                    }
-//                    else if (lr)
-//                    {
-//                        this.gridIndices.put(k + 1).put(k + this.width).put(k + 1 + this.width);
-//                    }
-//                }
-//            }
-//        }
-//
-//        this.floorIndices.flip();
-//    }
 
     protected void makeFloor()
     {
+        // The floor consists of independent triangles between the visible portions of the near and far grids. The
+        // algorithm for determining their vertices is similar to that for determining the grid indices: visit each
+        // cell in the far grid and determine which cell positions are not obscured. When either of both of the
+        // lower left or lower right positions are not obscured, compute the two floor triangles between the far grid
+        // and the near grid.
+
         ShapeData shapeData = this.getCurrent();
 
         int floorSize = 18 * 2 * (this.width - 1); // 18 floats per triangle, 2(w - 1) triangles in the floor
         shapeData.floor = Buffers.newDirectFloatBuffer(floorSize);
         FloatBuffer vertices = shapeData.gridVertices;
 
+        // Keep track of which columns have their floor computed.
         boolean[] floorFlags = new boolean[this.width - 1];
         for (int i = 0; i < floorFlags.length; i++)
         {
@@ -459,6 +460,7 @@ public class RadarVolume extends AbstractShape
                 {
                     if (ll && lr)
                     {
+                        // First triangle.
                         x[0] = vertices.get(3 * k);
                         y[0] = vertices.get(3 * k + 1);
                         z[0] = vertices.get(3 * k + 2);
@@ -471,6 +473,7 @@ public class RadarVolume extends AbstractShape
                         y[2] = vertices.get(3 * (k - gridSize) + 1);
                         z[2] = vertices.get(3 * (k - gridSize) + 2);
 
+                        // Second triangle
                         x[3] = vertices.get(3 * (k + 1));
                         y[3] = vertices.get(3 * (k + 1) + 1);
                         z[3] = vertices.get(3 * (k + 1) + 2);
@@ -540,8 +543,9 @@ public class RadarVolume extends AbstractShape
                         continue;
                     }
 
-                    floorFlags[i] = true;
+                    floorFlags[i] = true; // mark that this column's floor has been computed
 
+                    // Compute the normal for the first floor triangle of this column.
                     double ux = x[1] - x[0];
                     double uy = y[1] - y[0];
                     double uz = z[1] - z[0];
@@ -561,6 +565,7 @@ public class RadarVolume extends AbstractShape
                         nz /= length;
                     }
 
+                    // Interleave the vertex coordinates with the normal coordinates.
                     shapeData.floor.put(x[0]).put(y[0]).put(z[0]);
                     shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
                     shapeData.floor.put(x[1]).put(y[1]).put(z[1]);
@@ -568,6 +573,7 @@ public class RadarVolume extends AbstractShape
                     shapeData.floor.put(x[2]).put(y[2]).put(z[2]);
                     shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
 
+                    // Compute the normal for the second floor triangle of this column.
                     ux = x[4] - x[3];
                     uy = y[4] - y[3];
                     uz = z[4] - z[3];
@@ -594,6 +600,7 @@ public class RadarVolume extends AbstractShape
                     shapeData.floor.put(x[5]).put(y[5]).put(z[5]);
                     shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
 
+                    // Once all the floor segments have been computed we're done.
                     if (shapeData.floor.position() == shapeData.floor.limit())
                     {
                         shapeData.floor.flip();
@@ -606,6 +613,9 @@ public class RadarVolume extends AbstractShape
 
     protected void makeSides()
     {
+        // The sides consist of a single triangle strip going around the left, top and right sides of the volume.
+        // Obscured positions on the sides are skipped.
+
         ShapeData shapeData = this.getCurrent();
 
         int numSideVertices = 2 * (2 * this.getHeight() + this.getWidth() - 2);
@@ -613,7 +623,7 @@ public class RadarVolume extends AbstractShape
         shapeData.sideVertices = Buffers.newDirectFloatBuffer(3 * numSideVertices);
         int gridSize = this.getWidth() * this.getHeight();
 
-        // Left side.
+        // Left side vertices.
         for (int i = 0; i < this.getHeight(); i++)
         {
             int k = gridSize + i * this.getWidth();
@@ -630,7 +640,7 @@ public class RadarVolume extends AbstractShape
             }
         }
 
-        // Top
+        // Top vertices.
         for (int i = 1; i < this.getWidth(); i++)
         {
             int k = 2 * gridSize - this.getWidth() + i;
@@ -647,7 +657,7 @@ public class RadarVolume extends AbstractShape
             }
         }
 
-        // Right side.
+        // Right side vertices.
         for (int i = 1; i < this.getHeight(); i++)
         {
             int k = 2 * gridSize - 1 - i * this.getWidth();
@@ -666,6 +676,7 @@ public class RadarVolume extends AbstractShape
 
         shapeData.sideVertices.flip();
 
+        // Create the side indices.
         this.sideIndices = Buffers.newDirectIntBuffer(shapeData.sideVertices.limit() / 3);
         for (int i = 0; i < this.sideIndices.limit(); i++)
         {
@@ -684,6 +695,7 @@ public class RadarVolume extends AbstractShape
     @Override
     protected void fillVBO(DrawContext dc)
     {
+        // Not using VBOs.
     }
 
     public Extent getExtent(Globe globe, double verticalExaggeration)

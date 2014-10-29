@@ -166,7 +166,7 @@ public class RadarVolumeExample extends ApplicationTemplate
         {
             boolean[] inclusionFlags = new boolean[positions.size() - 1];
 
-            // Perform the intersection tests with the terrain.
+            // Perform the intersection tests with the terrain and keep track of which rays intersect.
 
             Position origin = positions.get(0); // this is the radar position
 
