@@ -35,7 +35,7 @@ import java.util.List;
  * Control points are added to the ends of airspace Polygon, Curtain, Route and Track, and SurfacePolyline by
  * shift-left-click on the first or last control point of the shape.
  * <p/>
- * This editor supports airspaces other than Cake and all surface shapes except SurfaceImage.
+ * This editor supports airspaces other than Cake and all surface shapes except SurfaceMultiPolygon and SurfaceImage.
  *
  * @author tag
  * @version $Id$
