@@ -789,6 +789,6 @@ public class RadarVolume extends AbstractShape
     @Override
     protected void doExportAsKML(XMLStreamWriter xmlWriter) throws IOException, XMLStreamException
     {
-        throw new UnsupportedOperationException("KML output not supported for AntennaModel");
+        throw new UnsupportedOperationException("KML output not supported for RadarVolume");
     }
 }
