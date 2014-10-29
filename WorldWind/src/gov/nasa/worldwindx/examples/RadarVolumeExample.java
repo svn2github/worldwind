@@ -36,7 +36,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             super(true, true, false);
 
             Position center = Position.fromDegrees(36.8378, -118.8743, 100); // radar location
-            Angle startAzimuth = Angle.fromDegrees(135);
+            Angle startAzimuth = Angle.fromDegrees(140);
             Angle endAzimuth = Angle.fromDegrees(270);
             Angle startElevation = Angle.fromDegrees(0);
             Angle endElevation = Angle.fromDegrees(70);
@@ -65,7 +65,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                 public void run()
                 {
                     long start = System.currentTimeMillis(); // keep track of how long the intersection operation takes
-                    final List<Position> intersectionPositions = intersectTerrain(positions);
+                    final boolean[] inclusionFlags = intersectTerrain(positions);
                     long end = System.currentTimeMillis();
                     System.out.println(end - start);
 
@@ -75,7 +75,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                         @Override
                         public void run()
                         {
-                            showRadarVolume(intersectionPositions, numAz, numEl);
+                            showRadarVolume(positions, inclusionFlags, numAz, numEl);
                             getWwd().redraw();
                         }
                     });
@@ -162,11 +162,11 @@ public class RadarVolumeExample extends ApplicationTemplate
             return transformedVertices;
         }
 
-        List<Position> intersectTerrain(List<Position> positions)
+        boolean[] intersectTerrain(List<Position> positions)
         {
-            // Perform the intersection tests with the terrain.
+            boolean[] inclusionFlags = new boolean[positions.size() - 1];
 
-            List<Position> intersectPositions = new ArrayList<Position>(positions.size());
+            // Perform the intersection tests with the terrain.
 
             Position origin = positions.get(0); // this is the radar position
 
@@ -176,17 +176,17 @@ public class RadarVolumeExample extends ApplicationTemplate
                 Intersection[] intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
                 if (intersections == null || intersections.length == 0)
                 {
-                    // No intersection so just use the grid position.
-                    intersectPositions.add(position);
+                    // No intersection so use the grid position.
+                    inclusionFlags[i - 1] = true;
                 }
                 else
                 {
-                    // An intersection with the terrain occurred so contract this ray to the radar position.
-                    intersectPositions.add(origin);
+                    // An intersection with the terrain occurred.
+                    inclusionFlags[i - 1] = false;
                 }
             }
 
-            return intersectPositions;
+            return inclusionFlags;
         }
 
         List<Position> makePositions(List<Vec4> vertices)
@@ -205,7 +205,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             return positions;
         }
 
-        void showRadarVolume(List<Position> positions, int numAz, int numEl)
+        void showRadarVolume(List<Position> positions, boolean[] inclusionFlags, int numAz, int numEl)
         {
             RenderableLayer layer = new RenderableLayer();
 
@@ -216,10 +216,10 @@ public class RadarVolumeExample extends ApplicationTemplate
             attributes.setOutlineMaterial(Material.RED);
             attributes.setInteriorMaterial(Material.WHITE);
             attributes.setEnableLighting(true);
-            attributes.setInteriorOpacity(0.8);
+//            attributes.setInteriorOpacity(0.8);
 
             // Create the volume and add it to the model.
-            RadarVolume volume = new RadarVolume(positions, numAz, numEl);
+            RadarVolume volume = new RadarVolume(positions.subList(1, positions.size()), inclusionFlags, numAz, numEl);
             volume.setAttributes(attributes);
             layer.addRenderable(volume);
 

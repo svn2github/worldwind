@@ -30,10 +30,10 @@ import java.util.*;
 public class RadarVolume extends AbstractShape
 {
     protected List<Position> positions; // the grid positions, near grid first, followed by far grid
+    protected boolean[] inclusionFlags;
     protected int width; // the number of horizontal positions in the grid.
     protected int height; // the number of vertical positions in the grir.
-    protected IntBuffer[] nearGridIndices; // OpenGL indices defining the near grid triangle strips.
-    protected IntBuffer[] farGridIndices; // OpenGL indices defining the far grid triangle strips.
+    protected IntBuffer gridIndices; // OpenGL indices defining the near grid triangle strips.
     protected IntBuffer sideIndices; // OpenGL indices defining the sides of the area between the grids.
 
     /**
@@ -46,6 +46,7 @@ public class RadarVolume extends AbstractShape
         protected FloatBuffer gridNormals;
         protected FloatBuffer sideVertices;
         protected FloatBuffer sideNormals;
+        protected FloatBuffer floor;
 
         /**
          * Construct a cache entry using the boundaries of this shape.
@@ -71,22 +72,11 @@ public class RadarVolume extends AbstractShape
         }
     }
 
-    /**
-     * Constructs a volume from two grids of positions.
-     *
-     * @param positions The grid positions, with the near grid first and followed by the far grid.
-     * @param width     The number of horizontal positions in the grid.
-     * @param height    The number of vertical positions in the grid.
-     *
-     * @throws java.lang.IllegalArgumentException if the positions list is null, the width or height is less than 2, and
-     *                                            the size of the positions list is less than that indicated by the
-     *                                            specified width and height.
-     */
-    public RadarVolume(List<Position> positions, int width, int height)
+    public RadarVolume(List<Position> positions, boolean[] inclusionFlags, int width, int height)
     {
-        if (positions == null)
+        if (positions == null || inclusionFlags == null)
         {
-            String message = Logging.getMessage("nullValue.PositionsListIsNull");
+            String message = Logging.getMessage("nullValue.ArrayIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
@@ -112,11 +102,19 @@ public class RadarVolume extends AbstractShape
             throw new IllegalArgumentException(message);
         }
 
-        this.positions = new ArrayList<Position>(positions);
+        if (inclusionFlags.length < positions.size())
+        {
+            String message = Logging.getMessage("generic.ListLengthInsufficient", inclusionFlags.length);
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        this.positions = positions;
+        this.inclusionFlags = inclusionFlags;
         this.width = width;
         this.height = height;
 
-        this.makeIndices();
+        this.makeGridIndices();
     }
 
     @Override
@@ -149,6 +147,11 @@ public class RadarVolume extends AbstractShape
     public List<Position> getPositions()
     {
         return positions;
+    }
+
+    public boolean[] getInclusionFlags()
+    {
+        return this.inclusionFlags;
     }
 
     /**
@@ -200,10 +203,12 @@ public class RadarVolume extends AbstractShape
         ShapeData shapeData = this.getCurrent();
 
         if (shapeData.gridVertices == null)
-            this.makeVertices(dc);
-
-        if (shapeData.gridNormals == null)
-            this.makeNormals();
+        {
+            this.makeGridVertices(dc);
+            this.makeGridNormals();
+            this.makeFloor();
+            this.makeSides();
+        }
 
         return true;
     }
@@ -227,34 +232,32 @@ public class RadarVolume extends AbstractShape
 
         gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, displayMode);
 
+        // Draw the volume's floor.
+        gl.glVertexPointer(3, GL.GL_FLOAT, 24, shapeData.floor.rewind());
+        gl.glNormalPointer(GL.GL_FLOAT, 24, shapeData.floor.rewind());
+        gl.glDrawArrays(GL.GL_TRIANGLES, 0, shapeData.floor.limit() / 6);
+
+        // Draw the volume's near and far grids.
+        gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.gridVertices.rewind());
+        gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.gridNormals.rewind());
+
+        gl.glDrawElements(GL.GL_TRIANGLES, this.gridIndices.limit(), GL.GL_UNSIGNED_INT, this.gridIndices.rewind());
+
         // Draw the volume's side vertices.
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.sideVertices.rewind());
         gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.sideNormals.rewind());
         gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.sideIndices.limit(), GL.GL_UNSIGNED_INT,
             this.sideIndices.rewind());
-
-        // Draw the volume's near and far grids.
-//        Material material = this.getActiveAttributes().getInteriorMaterial();
-//        material.apply(gl, GL2.GL_FRONT_AND_BACK, 1.0f);
-        gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.gridVertices.rewind());
-        gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.gridNormals.rewind());
-
-        for (IntBuffer strip : this.nearGridIndices)
-        {
-            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, strip.limit(), GL.GL_UNSIGNED_INT, strip.rewind());
-        }
-
-        for (IntBuffer strip : this.farGridIndices)
-        {
-            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, strip.limit(), GL.GL_UNSIGNED_INT, strip.rewind());
-        }
+//
+//        this.showNormals(dc);
     }
 
     protected void showNormals(DrawContext dc)
     {
         ShapeData shapeData = this.getCurrent();
 
-        FloatBuffer lineBuffer = Buffers.newDirectFloatBuffer(shapeData.gridVertices.limit() * 2);
+        int size = shapeData.gridVertices.limit() * 2 + shapeData.floor.limit();
+        FloatBuffer lineBuffer = Buffers.newDirectFloatBuffer(size);
 
         for (int i = 0; i < shapeData.gridVertices.limit(); i += 3)
         {
@@ -270,34 +273,343 @@ public class RadarVolume extends AbstractShape
             lineBuffer.put(xn).put(yn).put(zn);
         }
 
+        for (int i = 0; i < shapeData.floor.limit(); i += 6)
+        {
+            float xo = shapeData.floor.get(i);
+            float yo = shapeData.floor.get(i + 1);
+            float zo = shapeData.floor.get(i + 2);
+            lineBuffer.put(xo).put(yo).put(zo);
+
+            double length = 1e3;
+            float xn = (float) (xo + shapeData.floor.get(i + 3) * length);
+            float yn = (float) (yo + shapeData.floor.get(i + 4) * length);
+            float zn = (float) (zo + shapeData.floor.get(i + 5) * length);
+            lineBuffer.put(xn).put(yn).put(zn);
+        }
+
         GL2 gl = dc.getGL().getGL2();
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, lineBuffer.rewind());
         gl.glDrawArrays(GL.GL_LINES, 0, lineBuffer.limit() / 3);
     }
 
-    protected void makeVertices(DrawContext dc)
+    protected void makeGridVertices(DrawContext dc)
     {
         // Get the current shape data.
         ShapeData shapeData = this.getCurrent();
 
         // Set the reference point to the grid's origin.
-        Vec4 refPt = dc.getGlobe().computePointFromPosition(this.getPositions().get(0));
+        Vec4 refPt = dc.getGlobe().computePointFromPosition(this.positions.get(0));
         shapeData.setReferencePoint(refPt);
 
         // Allocate the grid vertices.
-        shapeData.gridVertices = Buffers.newDirectFloatBuffer(3 * this.getPositions().size());
+        shapeData.gridVertices = Buffers.newDirectFloatBuffer(3 * this.positions.size());
 
         // Compute the grid vertices.
-        for (Position position : this.getPositions())
+        for (Position position : this.positions)
         {
             Vec4 point = dc.getGlobe().computeEllipsoidalPointFromPosition(position).subtract3(refPt);
             shapeData.gridVertices.put((float) point.x).put((float) point.y).put((float) point.z);
         }
+    }
 
-        // Create the side vertices. Can't use the grid vertices buffer because side vertices must have different
-        // normals than the grid vertices.
+    protected void makeGridNormals()
+    {
+        ShapeData shapeData = this.getCurrent();
+        FloatBuffer vertices = shapeData.gridVertices;
+
+        // Allocate a buffer for the grid normals.
+        shapeData.gridNormals = Buffers.newDirectFloatBuffer(shapeData.gridVertices.limit());
+        int gridSize = this.getWidth() * this.getHeight();
+        int separation = 3 * gridSize;
+        for (int i = 0; i < gridSize; i++)
+        {
+            int k = i * 3;
+            double nx = vertices.get(k + separation) - vertices.get(k);
+            double ny = vertices.get(k + separation + 1) - vertices.get(k + 1);
+            double nz = vertices.get(k + separation + 2) - vertices.get(k + 2);
+
+            double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (length > 0)
+            {
+                nx /= length;
+                ny /= length;
+                nz /= length;
+            }
+
+            shapeData.gridNormals.put((float) nx).put((float) ny).put((float) nz);
+            shapeData.gridNormals.put(k + separation, (float) nx);
+            shapeData.gridNormals.put(k + separation + 1, (float) ny);
+            shapeData.gridNormals.put(k + separation + 2, (float) nz);
+        }
+    }
+
+    private void makeGridIndices()
+    {
+        int maxNumIndices = 2 * (this.width - 1) * (this.height - 1) * 6;
+        this.gridIndices = Buffers.newDirectIntBuffer(maxNumIndices);
+
+        for (int n = 0; n < 2; n++)
+        {
+            int base = n * this.width * this.height;
+
+            for (int j = 0; j < this.height - 1; j++)
+            {
+                for (int i = 0; i < this.width - 1; i++)
+                {
+                    int k = base + j * this.width + i;
+                    boolean ll = this.inclusionFlags[k];
+                    boolean lr = this.inclusionFlags[k + 1];
+                    boolean ul = this.inclusionFlags[k + this.width];
+                    boolean ur = this.inclusionFlags[k + this.width + 1];
+
+                    if (ul && ur)
+                    {
+                        if (ll && lr)
+                        {
+                            this.gridIndices.put(k).put(k + 1 + this.width).put(k + 1);
+                            this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
+                        }
+                        else if (ll)
+                        {
+                            if (n == 1)
+                                this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
+                        }
+                        else if (lr)
+                        {
+                            if (n == 1)
+                                this.gridIndices.put(k + 1).put(k + this.width).put(k + 1 + this.width);
+                        }
+                    }
+                }
+            }
+        }
+        this.gridIndices.flip();
+    }
+//
+//    protected void makeFloorIndices()
+//    {
+//        this.floorIndices = Buffers.newDirectIntBuffer(2 * 3 * (this.width - 1));
+//
+//        int gridSize = this.width * this.height;
+//
+//        for (int j = 0; j < this.height - 1; j++)
+//        {
+//            for (int i = 0; i < this.width - 1; i++)
+//            {
+//                int k = gridSize + j * this.width + i;
+//                boolean ll = this.inclusionFlags[k];
+//                boolean lr = this.inclusionFlags[k + 1];
+//                boolean ul = this.inclusionFlags[k + this.width];
+//                boolean ur = this.inclusionFlags[k + this.width + 1];
+//
+//                if (ul && ur)
+//                {
+//                    if (ll && lr)
+//                    {
+//                        this.gridIndices.put(k).put(k + 1 + this.width).put(k + 1);
+//                        this.gridIndices.put(k).put(k + this.width).put(k + 1 + this.width);
+//                    }
+//                    else if (ll)
+//                    {
+//                        this.gridIndices.put(k).put(k + 1).put(k + 1 - gridSize);
+//                        this.gridIndices.put(k).put(k + 1 - gridSize).put(k - gridSize);
+//                    }
+//                    else if (lr)
+//                    {
+//                        this.gridIndices.put(k + 1).put(k + this.width).put(k + 1 + this.width);
+//                    }
+//                }
+//            }
+//        }
+//
+//        this.floorIndices.flip();
+//    }
+
+    protected void makeFloor()
+    {
+        ShapeData shapeData = this.getCurrent();
+
+        int floorSize = 18 * 2 * (this.width - 1); // 18 floats per triangle, 2(w - 1) triangles in the floor
+        shapeData.floor = Buffers.newDirectFloatBuffer(floorSize);
+        FloatBuffer vertices = shapeData.gridVertices;
+
+        boolean[] floorFlags = new boolean[this.width - 1];
+        for (int i = 0; i < floorFlags.length; i++)
+        {
+            floorFlags[i] = false;
+        }
+
+        int gridSize = this.width * this.height;
+        float[] x = new float[6];
+        float[] y = new float[6];
+        float[] z = new float[6];
+
+        for (int j = 0; j < this.height - 1; j++)
+        {
+            for (int i = 0; i < this.width - 1; i++)
+            {
+                int k = gridSize + j * this.width + i;
+                boolean ll = this.inclusionFlags[k];
+                boolean lr = this.inclusionFlags[k + 1];
+                boolean ul = this.inclusionFlags[k + this.width];
+                boolean ur = this.inclusionFlags[k + this.width + 1];
+
+                if (ul && ur && !floorFlags[i])
+                {
+                    if (ll && lr)
+                    {
+                        x[0] = vertices.get(3 * k);
+                        y[0] = vertices.get(3 * k + 1);
+                        z[0] = vertices.get(3 * k + 2);
+
+                        x[1] = vertices.get(3 * (k + 1));
+                        y[1] = vertices.get(3 * (k + 1) + 1);
+                        z[1] = vertices.get(3 * (k + 1) + 2);
+
+                        x[2] = vertices.get(3 * (k - gridSize));
+                        y[2] = vertices.get(3 * (k - gridSize) + 1);
+                        z[2] = vertices.get(3 * (k - gridSize) + 2);
+
+                        x[3] = vertices.get(3 * (k + 1));
+                        y[3] = vertices.get(3 * (k + 1) + 1);
+                        z[3] = vertices.get(3 * (k + 1) + 2);
+
+                        x[4] = vertices.get(3 * (k + 1 - gridSize));
+                        y[4] = vertices.get(3 * (k + 1 - gridSize) + 1);
+                        z[4] = vertices.get(3 * (k + 1 - gridSize) + 2);
+
+                        x[5] = vertices.get(3 * (k - gridSize));
+                        y[5] = vertices.get(3 * (k - gridSize) + 1);
+                        z[5] = vertices.get(3 * (k - gridSize) + 2);
+                    }
+                    else if (ll)
+                    {
+                        x[0] = vertices.get(3 * k);
+                        y[0] = vertices.get(3 * k + 1);
+                        z[0] = vertices.get(3 * k + 2);
+
+                        x[1] = vertices.get(3 * (k + this.width + 1));
+                        y[1] = vertices.get(3 * (k + this.width + 1) + 1);
+                        z[1] = vertices.get(3 * (k + this.width + 1) + 2);
+
+                        x[2] = vertices.get(3 * (k - gridSize));
+                        y[2] = vertices.get(3 * (k - gridSize) + 1);
+                        z[2] = vertices.get(3 * (k - gridSize) + 2);
+
+                        x[3] = vertices.get(3 * (k + this.width + 1));
+                        y[3] = vertices.get(3 * (k + this.width + 1) + 1);
+                        z[3] = vertices.get(3 * (k + this.width + 1) + 2);
+
+                        x[4] = vertices.get(3 * (k + this.width + 1 - gridSize));
+                        y[4] = vertices.get(3 * (k + this.width + 1 - gridSize) + 1);
+                        z[4] = vertices.get(3 * (k + this.width + 1 - gridSize) + 2);
+
+                        x[5] = vertices.get(3 * (k - gridSize));
+                        y[5] = vertices.get(3 * (k - gridSize) + 1);
+                        z[5] = vertices.get(3 * (k - gridSize) + 2);
+                    }
+                    else if (lr)
+                    {
+                        x[0] = vertices.get(3 * (k + this.width));
+                        y[0] = vertices.get(3 * (k + this.width) + 1);
+                        z[0] = vertices.get(3 * (k + this.width) + 2);
+
+                        x[1] = vertices.get(3 * (k + 1));
+                        y[1] = vertices.get(3 * (k + 1) + 1);
+                        z[1] = vertices.get(3 * (k + 1) + 2);
+
+                        x[2] = vertices.get(3 * (k + this.width - gridSize));
+                        y[2] = vertices.get(3 * (k + this.width - gridSize) + 1);
+                        z[2] = vertices.get(3 * (k + this.width - gridSize) + 2);
+
+                        x[3] = vertices.get(3 * (k + 1));
+                        y[3] = vertices.get(3 * (k + 1) + 1);
+                        z[3] = vertices.get(3 * (k + 1) + 2);
+
+                        x[4] = vertices.get(3 * (k + 1 - gridSize));
+                        y[4] = vertices.get(3 * (k + 1 - gridSize) + 1);
+                        z[4] = vertices.get(3 * (k + 1 - gridSize) + 2);
+
+                        x[5] = vertices.get(3 * (k + this.width - gridSize));
+                        y[5] = vertices.get(3 * (k + this.width - gridSize) + 1);
+                        z[5] = vertices.get(3 * (k + this.width - gridSize) + 2);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    floorFlags[i] = true;
+
+                    double ux = x[1] - x[0];
+                    double uy = y[1] - y[0];
+                    double uz = z[1] - z[0];
+
+                    double vx = x[2] - x[0];
+                    double vy = y[2] - y[0];
+                    double vz = z[2] - z[0];
+
+                    double nx = uy * vz - uz * vy;
+                    double ny = uz * vx - ux * vz;
+                    double nz = ux * vy - uy * vx;
+                    double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                    if (length > 0)
+                    {
+                        nx /= length;
+                        ny /= length;
+                        nz /= length;
+                    }
+
+                    shapeData.floor.put(x[0]).put(y[0]).put(z[0]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                    shapeData.floor.put(x[1]).put(y[1]).put(z[1]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                    shapeData.floor.put(x[2]).put(y[2]).put(z[2]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+
+                    ux = x[4] - x[3];
+                    uy = y[4] - y[3];
+                    uz = z[4] - z[3];
+
+                    vx = x[5] - x[3];
+                    vy = y[5] - y[3];
+                    vz = z[5] - z[3];
+
+                    nx = uy * vz - uz * vy;
+                    ny = uz * vx - ux * vz;
+                    nz = ux * vy - uy * vx;
+                    length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                    if (length > 0)
+                    {
+                        nx /= length;
+                        ny /= length;
+                        nz /= length;
+                    }
+
+                    shapeData.floor.put(x[3]).put(y[3]).put(z[3]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                    shapeData.floor.put(x[4]).put(y[4]).put(z[4]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                    shapeData.floor.put(x[5]).put(y[5]).put(z[5]);
+                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+
+                    if (shapeData.floor.position() == shapeData.floor.limit())
+                    {
+                        shapeData.floor.flip();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void makeSides()
+    {
+        ShapeData shapeData = this.getCurrent();
+
         int numSideVertices = 2 * (2 * this.getHeight() + this.getWidth() - 2);
+
         shapeData.sideVertices = Buffers.newDirectFloatBuffer(3 * numSideVertices);
         int gridSize = this.getWidth() * this.getHeight();
 
@@ -305,119 +617,68 @@ public class RadarVolume extends AbstractShape
         for (int i = 0; i < this.getHeight(); i++)
         {
             int k = gridSize + i * this.getWidth();
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            if (this.inclusionFlags[k])
+            {
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
 
-            k -= gridSize;
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+                k -= gridSize;
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            }
         }
 
         // Top
         for (int i = 1; i < this.getWidth(); i++)
         {
             int k = 2 * gridSize - this.getWidth() + i;
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            if (this.inclusionFlags[k])
+            {
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
 
-            k -= gridSize;
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+                k -= gridSize;
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            }
         }
 
         // Right side.
         for (int i = 1; i < this.getHeight(); i++)
         {
             int k = 2 * gridSize - 1 - i * this.getWidth();
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            if (this.inclusionFlags[k])
+            {
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
 
-            k -= gridSize;
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
-            shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+                k -= gridSize;
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 1));
+                shapeData.sideVertices.put(shapeData.gridVertices.get(3 * k + 2));
+            }
         }
-    }
 
-    protected void makeNormals()
-    {
-        ShapeData shapeData = this.getCurrent();
+        shapeData.sideVertices.flip();
 
-        // Allocate a buffer for the grid normals and initialize the buffer values to 0, which is required by the
-        // function that computes average normals.
-        shapeData.gridNormals = Buffers.newDirectFloatBuffer(shapeData.gridVertices.limit());
-        while (shapeData.gridNormals.position() < shapeData.gridNormals.limit())
+        this.sideIndices = Buffers.newDirectIntBuffer(shapeData.sideVertices.limit() / 3);
+        for (int i = 0; i < this.sideIndices.limit(); i++)
         {
-            shapeData.gridNormals.put(0);
-        }
-        shapeData.gridNormals.rewind();
-
-        // Generate the normals for the near and far grids.
-
-        for (IntBuffer strip : this.nearGridIndices)
-        {
-            WWUtil.generateTriStripNormals(shapeData.gridVertices, strip, shapeData.gridNormals);
+            this.sideIndices.put(i);
         }
 
-        for (IntBuffer strip : this.farGridIndices)
-        {
-            WWUtil.generateTriStripNormals(shapeData.gridVertices, strip, shapeData.gridNormals);
-        }
-
-        // Allocate and zero a buffer for the side vertices then generate the side normals.
+        // Allocate and zero a buffer for the side normals then generate the side normals.
         shapeData.sideNormals = Buffers.newDirectFloatBuffer(shapeData.sideVertices.limit());
         while (shapeData.sideNormals.position() < shapeData.sideNormals.limit())
         {
             shapeData.sideNormals.put(0);
         }
-        shapeData.gridNormals.rewind();
         WWUtil.generateTriStripNormals(shapeData.sideVertices, this.sideIndices, shapeData.sideNormals);
-    }
-
-    /**
-     * Creates the triangle strip indices for the grids and the volume's sides.
-     */
-    protected void makeIndices()
-    {
-        int numStripIndices = 2 * this.getWidth();
-        this.nearGridIndices = new IntBuffer[this.getHeight() - 1];
-        for (int i = 0; i < this.getHeight() - 1; i++)
-        {
-            this.nearGridIndices[i] = Buffers.newDirectIntBuffer(numStripIndices);
-
-            int k = i * this.getWidth();
-            for (int j = 0; j < this.getWidth(); j++)
-            {
-                this.nearGridIndices[i].put(k).put(k + this.getWidth());
-                k += 1;
-            }
-        }
-
-        int base = this.getWidth() * this.getHeight();
-        this.farGridIndices = new IntBuffer[this.getHeight() - 1];
-        for (int i = 0; i < this.getHeight() - 1; i++)
-        {
-            this.farGridIndices[i] = Buffers.newDirectIntBuffer(numStripIndices);
-
-            int k = i * this.getWidth() + base;
-            for (int j = 0; j < this.getWidth(); j++)
-            {
-                this.farGridIndices[i].put(k).put(k + this.getWidth());
-                k += 1;
-            }
-        }
-
-        int numSideVertices = 2 * (2 * this.getHeight() + this.getWidth() - 2);
-        this.sideIndices = Buffers.newDirectIntBuffer(numSideVertices);
-        for (int i = 0; i < this.sideIndices.limit(); i++)
-        {
-            this.sideIndices.put(i);
-        }
     }
 
     @Override
@@ -432,7 +693,7 @@ public class RadarVolume extends AbstractShape
         if (extent != null)
             return extent;
 
-        this.getCurrent().setExtent(super.computeExtentFromPositions(globe, verticalExaggeration, this.getPositions()));
+        this.getCurrent().setExtent(super.computeExtentFromPositions(globe, verticalExaggeration, this.positions));
 
         return this.getCurrent().getExtent();
     }
@@ -443,7 +704,7 @@ public class RadarVolume extends AbstractShape
         if (this.sector != null)
             return this.sector;
 
-        this.sector = Sector.boundingSector(this.getPositions());
+        this.sector = Sector.boundingSector(this.positions);
 
         return this.sector;
     }
