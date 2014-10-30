@@ -21,6 +21,17 @@ import java.awt.*;
 import java.awt.event.*;
 
 /**
+ * Shows how to use the {@link gov.nasa.worldwind.util.combine.Combinable} interface and the {@link
+ * gov.nasa.worldwind.util.combine.ShapeCombiner} class to compute the intersection of a World Wind surface shapes with
+ * Earth's land and water.
+ * <p/>
+ * This example provides an editable surface circle indicating a region to clip against either land or water. The land
+ * and water are represented by an ESRI shapefile containing polygons of Earth's continents, including major islands.
+ * Clipping against land is accomplished by computing the intersection of the surface circle and the shapefile polygons.
+ * Clipping against water is accomplished by subtracting the shapefile polygons from the surface circle. The user
+ * specifies the location of the surface circle, whether to clip against land or water, and the desired resolution of
+ * the resultant shape, in kilometers.
+ *
  * @author dcollins
  * @version $Id$
  */
