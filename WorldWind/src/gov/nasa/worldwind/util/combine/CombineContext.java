@@ -319,7 +319,9 @@ public class CombineContext implements Disposable
     protected void tessVertex(Object vertexData)
     {
         double[] vertex = (double[]) vertexData; // longitude, latitude, 0
-        this.currentContour.add(LatLon.fromDegrees(vertex[1], vertex[0])); // latitude, longitude
+        double latDegrees = Angle.normalizedDegreesLatitude(vertex[1]);
+        double lonDegrees = Angle.normalizedDegreesLongitude(vertex[0]);
+        this.currentContour.add(LatLon.fromDegrees(latDegrees, lonDegrees));
     }
 
     protected void tessEnd()
