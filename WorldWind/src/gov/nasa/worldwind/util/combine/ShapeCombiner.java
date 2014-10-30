@@ -169,11 +169,13 @@ public class ShapeCombiner
         // Limit this operation to the intersection of the bounding regions. Since this is an intersection operation,
         // shapes outside of this region can be ignored or simplified.
         this.assembleBoundingSectors(cc, shapes);
-        cc.setSector(Sector.intersection(cc.getBoundingSectors()));
 
         // Exit immediately if the bounding regions do not intersect.
-        if (cc.getSector() == null)
+        Sector sector = Sector.intersection(cc.getBoundingSectors());
+        if (sector == null)
             return;
+
+        cc.setSector(sector);
 
         // Compute the intersection of the first two shapes.
         this.intersection(cc, shapes[0], shapes[1]);
@@ -216,6 +218,11 @@ public class ShapeCombiner
         // operation, shapes outside of this region can be ignored or simplified.
         Combinable a = shapes[0];
         this.assembleBoundingSectors(cc, a);
+
+        // Exit immediately if the first shape has no bounding region.
+        if (cc.getBoundingSectors().size() == 0)
+            return;
+
         cc.setSector(cc.getBoundingSectors().get(0));
 
         // Compute the union of all shapes except the first, but reverse the winding order of the resultant contours.
