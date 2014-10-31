@@ -113,7 +113,7 @@ public class RadarVolume extends AbstractShape
             throw new IllegalArgumentException(message);
         }
 
-        if (positions.size() < width * height + 1)
+        if (positions.size() < 2 * (width * height))
         {
             String message = Logging.getMessage("generic.ListLengthInsufficient", positions.size());
             Logging.logger().severe(message);
@@ -288,7 +288,7 @@ public class RadarVolume extends AbstractShape
 
         // Draw the volume's floor.
         gl.glVertexPointer(3, GL.GL_FLOAT, 24, shapeData.floor.rewind());
-        gl.glNormalPointer(GL.GL_FLOAT, 24, shapeData.floor.rewind());
+        gl.glNormalPointer(GL.GL_FLOAT, 24, shapeData.floor.position(3));
         gl.glDrawArrays(GL.GL_TRIANGLES, 0, shapeData.floor.limit() / 6);
 
         // Draw the volume's near and far grids.
@@ -463,12 +463,13 @@ public class RadarVolume extends AbstractShape
 
         ShapeData shapeData = this.getCurrent();
 
-        int floorSize = 18 * 2 * (this.width - 1); // 18 floats per triangle, 2(w - 1) triangles in the floor
-        shapeData.floor = Buffers.newDirectFloatBuffer(floorSize);
+        int maxFloorSize = 18 * 2 * (this.width * this.height); // 18 floats per triangle
+        shapeData.floor = Buffers.newDirectFloatBuffer(maxFloorSize);
         FloatBuffer vertices = shapeData.gridVertices;
 
         // This method is responsible for making the outline too.
-        shapeData.outline = Buffers.newDirectFloatBuffer(6 * (this.width - 1));
+        int maxOutlineSize = 6 * (this.width + 2 * this.height); // 6 floats per line
+        shapeData.outline = Buffers.newDirectFloatBuffer(maxOutlineSize);
 
         // Keep track of which columns have their floor computed.
         boolean[] floorFlags = new boolean[this.width - 1];
@@ -494,7 +495,7 @@ public class RadarVolume extends AbstractShape
 
                 if (ul && ur && !floorFlags[i])
                 {
-                    if (ll && lr)
+                    if (ll && lr) // draw 2 triangles between the grids across the bottom of the cell
                     {
                         // First triangle.
                         x[0] = vertices.get(3 * k);
@@ -522,7 +523,7 @@ public class RadarVolume extends AbstractShape
                         y[5] = vertices.get(3 * (k - gridSize) + 1);
                         z[5] = vertices.get(3 * (k - gridSize) + 2);
                     }
-                    else if (ll)
+                    else if (ll) // draw 2 triangles between the grids from lower left to upper right of the cell
                     {
                         x[0] = vertices.get(3 * k);
                         y[0] = vertices.get(3 * k + 1);
@@ -548,7 +549,7 @@ public class RadarVolume extends AbstractShape
                         y[5] = vertices.get(3 * (k - gridSize) + 1);
                         z[5] = vertices.get(3 * (k - gridSize) + 2);
                     }
-                    else if (lr)
+                    else if (lr) // draw 2 triangles between the grids from lower right to upper left of the cell
                     {
                         x[0] = vertices.get(3 * (k + this.width));
                         y[0] = vertices.get(3 * (k + this.width) + 1);
@@ -580,76 +581,145 @@ public class RadarVolume extends AbstractShape
                     }
 
                     floorFlags[i] = true; // mark that this column's floor has been computed
-
-                    // Compute the normal for the first floor triangle of this column.
-                    double ux = x[1] - x[0];
-                    double uy = y[1] - y[0];
-                    double uz = z[1] - z[0];
-
-                    double vx = x[2] - x[0];
-                    double vy = y[2] - y[0];
-                    double vz = z[2] - z[0];
-
-                    double nx = uy * vz - uz * vy;
-                    double ny = uz * vx - ux * vz;
-                    double nz = ux * vy - uy * vx;
-                    double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
-                    if (length > 0)
-                    {
-                        nx /= length;
-                        ny /= length;
-                        nz /= length;
-                    }
-
-                    // Interleave the vertex coordinates with the normal coordinates.
-                    shapeData.floor.put(x[0]).put(y[0]).put(z[0]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-                    shapeData.floor.put(x[1]).put(y[1]).put(z[1]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-                    shapeData.floor.put(x[2]).put(y[2]).put(z[2]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-
-                    // Compute the normal for the second floor triangle of this column.
-                    ux = x[4] - x[3];
-                    uy = y[4] - y[3];
-                    uz = z[4] - z[3];
-
-                    vx = x[5] - x[3];
-                    vy = y[5] - y[3];
-                    vz = z[5] - z[3];
-
-                    nx = uy * vz - uz * vy;
-                    ny = uz * vx - ux * vz;
-                    nz = ux * vy - uy * vx;
-                    length = Math.sqrt(nx * nx + ny * ny + nz * nz);
-                    if (length > 0)
-                    {
-                        nx /= length;
-                        ny /= length;
-                        nz /= length;
-                    }
-
-                    shapeData.floor.put(x[3]).put(y[3]).put(z[3]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-                    shapeData.floor.put(x[4]).put(y[4]).put(z[4]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-                    shapeData.floor.put(x[5]).put(y[5]).put(z[5]);
-                    shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
-
-                    // Capture the outline vertices.
-                    shapeData.outline.put(x[0]).put(y[0]).put(z[0]);
-                    shapeData.outline.put(x[1]).put(y[1]).put(z[1]);
-
-                    // Once all the floor segments have been computed we're done.
-                    if (shapeData.floor.position() == shapeData.floor.limit())
-                    {
-                        shapeData.floor.flip();
-                        shapeData.outline.flip();
-                        return;
-                    }
                 }
+                else if (lr && ur && !floorFlags[i]) // draw right side of cell
+                {
+                    x[0] = vertices.get(3 * (k + this.width + 1));
+                    y[0] = vertices.get(3 * (k + this.width + 1) + 1);
+                    z[0] = vertices.get(3 * (k + this.width + 1) + 2);
+
+                    x[1] = vertices.get(3 * (k + 1));
+                    y[1] = vertices.get(3 * (k + 1) + 1);
+                    z[1] = vertices.get(3 * (k + 1) + 2);
+
+                    x[2] = vertices.get(3 * (k + 1 - gridSize));
+                    y[2] = vertices.get(3 * (k + 1 - gridSize) + 1);
+                    z[2] = vertices.get(3 * (k + 1 - gridSize) + 2);
+
+                    x[3] = vertices.get(3 * (k + this.width + 1));
+                    y[3] = vertices.get(3 * (k + this.width + 1) + 1);
+                    z[3] = vertices.get(3 * (k + this.width + 1) + 2);
+
+                    x[4] = vertices.get(3 * (k + 1 - gridSize));
+                    y[4] = vertices.get(3 * (k + 1 - gridSize) + 1);
+                    z[4] = vertices.get(3 * (k + 1 - gridSize) + 2);
+
+                    x[5] = vertices.get(3 * (k + this.width + 1 - gridSize));
+                    y[5] = vertices.get(3 * (k + this.width + 1 - gridSize) + 1);
+                    z[5] = vertices.get(3 * (k + this.width + 1 - gridSize) + 2);
+                }
+                else if (ll && ul && !floorFlags[i]) // draw left side of cell
+                {
+                    x[0] = vertices.get(3 * k);
+                    y[0] = vertices.get(3 * k + 1);
+                    z[0] = vertices.get(3 * k + 2);
+
+                    x[1] = vertices.get(3 * (k + this.width));
+                    y[1] = vertices.get(3 * (k + this.width) + 1);
+                    z[1] = vertices.get(3 * (k + this.width) + 2);
+
+                    x[2] = vertices.get(3 * (k + this.width - gridSize));
+                    y[2] = vertices.get(3 * (k + this.width - gridSize) + 1);
+                    z[2] = vertices.get(3 * (k + this.width - gridSize) + 2);
+
+                    x[3] = vertices.get(3 * k);
+                    y[3] = vertices.get(3 * k + 1);
+                    z[3] = vertices.get(3 * k + 2);
+
+                    x[4] = vertices.get(3 * (k + this.width - gridSize));
+                    y[4] = vertices.get(3 * (k + this.width - gridSize) + 1);
+                    z[4] = vertices.get(3 * (k + this.width - gridSize) + 2);
+
+                    x[5] = vertices.get(3 * (k - gridSize));
+                    y[5] = vertices.get(3 * (k - gridSize) + 1);
+                    z[5] = vertices.get(3 * (k - gridSize) + 2);
+                }
+                else
+                {
+                    continue;
+                }
+
+                // Compute the normal for the first floor triangle of this column.
+                double ux = x[1] - x[0];
+                double uy = y[1] - y[0];
+                double uz = z[1] - z[0];
+
+                double vx = x[2] - x[0];
+                double vy = y[2] - y[0];
+                double vz = z[2] - z[0];
+
+                double nx = uy * vz - uz * vy;
+                double ny = uz * vx - ux * vz;
+                double nz = ux * vy - uy * vx;
+                double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                if (length > 0)
+                {
+                    nx /= length;
+                    ny /= length;
+                    nz /= length;
+                }
+
+                // Interleave the vertex coordinates with the normal coordinates.
+                shapeData.floor.put(x[0]).put(y[0]).put(z[0]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                shapeData.floor.put(x[1]).put(y[1]).put(z[1]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                shapeData.floor.put(x[2]).put(y[2]).put(z[2]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+
+                // Compute the normal for the second floor triangle of this column.
+                ux = x[4] - x[3];
+                uy = y[4] - y[3];
+                uz = z[4] - z[3];
+
+                vx = x[5] - x[3];
+                vy = y[5] - y[3];
+                vz = z[5] - z[3];
+
+                nx = uy * vz - uz * vy;
+                ny = uz * vx - ux * vz;
+                nz = ux * vy - uy * vx;
+                length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                if (length > 0)
+                {
+                    nx /= length;
+                    ny /= length;
+                    nz /= length;
+                }
+
+                shapeData.floor.put(x[3]).put(y[3]).put(z[3]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                shapeData.floor.put(x[4]).put(y[4]).put(z[4]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+                shapeData.floor.put(x[5]).put(y[5]).put(z[5]);
+                shapeData.floor.put((float) nx).put((float) ny).put((float) nz);
+
+                // Capture the outline vertices.
+                shapeData.outline.put(x[0]).put(y[0]).put(z[0]);
+                shapeData.outline.put(x[1]).put(y[1]).put(z[1]);
             }
         }
+
+        // Mark the buffer portions actually used.
+        shapeData.floor.flip();
+        shapeData.outline.flip();
+
+        // Trim the unused space.
+        shapeData.floor = trimBuffer(shapeData.floor);
+        shapeData.outline = trimBuffer(shapeData.outline);
+    }
+
+    protected static FloatBuffer trimBuffer(FloatBuffer buffer)
+    {
+        FloatBuffer outputBuffer = Buffers.newDirectFloatBuffer(buffer.limit());
+
+        buffer.rewind();
+        while (buffer.hasRemaining())
+        {
+            outputBuffer.put(buffer.get());
+        }
+
+        return outputBuffer;
     }
 
     protected void makeSides()

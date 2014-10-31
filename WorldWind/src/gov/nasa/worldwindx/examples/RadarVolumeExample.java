@@ -45,20 +45,23 @@ public class RadarVolumeExample extends ApplicationTemplate
             Angle endElevation = Angle.fromDegrees(70);
             double innerRange = 10e3;
             double outerRange = 30e3;
-            final int numAz = 25; // number of azimuth samplings
-            final int numEl = 25; // number of elevation samplings
+            final int numAz = 18; // number of azimuth samplings
+            final int numEl = 18; // number of elevation samplings
 
             // Initialize the high-resolution terrain class. Construct it to use 100 meter resolution elevations.
             this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), 100d);
 
             // Compute a near and far grid of positions that will serve as ray endpoints for computing terrain
             // intersections.
-            List<Vec4> vertices = this.computeOriginalVertices(center, startAzimuth, endAzimuth, startElevation,
+            List<Vec4> vertices = this.computeGridVertices(center, startAzimuth, endAzimuth, startElevation,
                 endElevation, innerRange, outerRange, numAz, numEl);
+//            List<Vec4> vertices = this.computeConeVertices(center, Angle.fromDegrees(30), Angle.fromDegrees(190),
+//                Angle.fromDegrees(20), innerRange, outerRange, numAz, numEl);
 
             // Create geographic positions from the computed Cartesian vertices. The terrain intersector works with
             // geographic positions.
             final List<Position> positions = this.makePositions(vertices);
+//            this.showPositionsAndRays(positions);
 
             // Intersect the rays defined by the radar center and the computed positions with the terrain. Since
             // this is potentially a long-running operation, perform it in a separate thread.
@@ -104,11 +107,13 @@ public class RadarVolumeExample extends ApplicationTemplate
             insertAfterPlacenames(getWwd(), markerLayer);
         }
 
-        List<Vec4> computeOriginalVertices(Position center, Angle leftAzimuth, Angle rightAzimuth, Angle lowerElevation,
+        List<Vec4> computeGridVertices(Position center, Angle leftAzimuth, Angle rightAzimuth, Angle lowerElevation,
             Angle upperElevation, double innerRange, double outerRange, int numAzimuths, int numElevations)
         {
             // Compute the vertices at the Cartesian origin then transform them to the radar position and
-            // orientation.
+            // orientation. The grid is formed as though we're looking at the back of it, the side the radar is on.
+            // The radar volume shape is expecting this orientation and requires it to make the orientation of the
+            // triangle faces consistent with the normal vectors that are parallel to the emanating radar rays.
 
             List<Vec4> vertices = new ArrayList<Vec4>();
             vertices.add(Vec4.ZERO); // the first vertex is the radar position.
@@ -152,6 +157,79 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             // The vertices are computed relative to the origin. Transform them to the radar position and orientation.
             return this.transformVerticesToPosition(center, vertices);
+        }
+
+        List<Vec4> computeConeVertices(Position apex, Angle fov, Angle azimuth, Angle elevation, double innerRange,
+            double outerRange, int width, int height)
+        {
+            List<Vec4> vertices = new ArrayList<Vec4>();
+            vertices.add(Vec4.ZERO); // the first vertex is the radar position.
+
+            List<Vec4> gridVertices = new ArrayList<Vec4>(width * height);
+
+            double dT = 2 * Math.PI / (width - 1);
+            double dR = 1.0 / (height - 1);
+
+            for (int j = 0; j < height; j++)
+            {
+                double r = 1 - j * dR;
+
+                for (int i = 0; i < width; i++)
+                {
+                    double t = i * dT;
+
+                    double x = r * Math.cos(t);
+                    double y = r * Math.sin(t);
+
+                    gridVertices.add(new Vec4(x, y, 1));
+                }
+            }
+
+            // Scale the grid vertices to the size of the far grid and translate them to the outerRange. Define the
+            // grid such that we're looking at the back of it, in the direction of the rays emanating from the radar
+            // position. To achieve this the translations to the outer and inner ranges are negative. This causes the
+            // outer triangle faces of the radar volume's shape to be oriented counter-clockwise and consistent with
+            // the normals orientation, which is in the same direction as emanating radar rays.
+            List<Vec4> farGrid = new ArrayList<Vec4>(gridVertices.size());
+            double scale = outerRange * Math.tan(fov.radians / 2);
+            Matrix scaleMatrix = Matrix.fromScale(scale, scale, 1);
+            Matrix translationMatrix = Matrix.fromTranslation(0, 0, -outerRange);
+            Matrix combined = translationMatrix.multiply(scaleMatrix);
+            for (Vec4 v : gridVertices)
+            {
+                farGrid.add(v.transformBy4(combined));
+            }
+
+            // Do the same for the near grid.
+            List<Vec4> nearGrid = new ArrayList<Vec4>(gridVertices.size());
+            scale = innerRange * Math.tan(fov.radians / 2);
+            scaleMatrix = Matrix.fromScale(scale, scale, 1);
+            translationMatrix = Matrix.fromTranslation(0, 0, -innerRange);
+            combined = translationMatrix.multiply(scaleMatrix);
+            for (Vec4 v : gridVertices)
+            {
+                nearGrid.add(v.transformBy4(combined));
+            }
+
+            // Rotate both grids around the Y axis to the specified elevation.
+            Matrix elevationMatrix = Matrix.fromAxisAngle(Angle.NEG90.subtract(elevation), 0, 1, 0);
+
+            // Rotate both grids around the Z axis to the specified azimuth.
+            Matrix azimuthMatrix = Matrix.fromAxisAngle(Angle.POS90.subtract(azimuth), 0, 0, 1);
+
+            // Combine the rotations and build the full vertex list.
+            combined = azimuthMatrix.multiply(elevationMatrix);
+            for (int i = 0; i < gridVertices.size(); i++)
+            {
+                vertices.add(nearGrid.get(i).transformBy3(combined));
+            }
+            for (int i = 0; i < gridVertices.size(); i++)
+            {
+                vertices.add(farGrid.get(i).transformBy3(combined));
+            }
+
+            // The vertices are computed relative to the origin. Transform them to the radar position and orientation.
+            return this.transformVerticesToPosition(apex, vertices);
         }
 
         List<Vec4> transformVerticesToPosition(Position position, List<Vec4> vertices)
@@ -250,6 +328,37 @@ public class RadarVolumeExample extends ApplicationTemplate
             layer.addRenderable(path);
 
             insertAfterPlacenames(getWwd(), layer);
+        }
+
+        void showPositionsAndRays(List<Position> positions)
+        {
+            MarkerLayer markerLayer = new MarkerLayer();
+            markerLayer.setKeepSeparated(false);
+            MarkerAttributes attributes = new BasicMarkerAttributes();
+            ArrayList<Marker> markers = new ArrayList<Marker>();
+
+            RenderableLayer lineLayer = new RenderableLayer();
+            ShapeAttributes lineAttributes = new BasicShapeAttributes();
+            lineAttributes.setOutlineMaterial(Material.RED);
+
+            for (Position position : positions)
+            {
+                Marker marker = new BasicMarker(position, attributes);
+                markers.add(marker);
+            }
+            markerLayer.setMarkers(markers);
+
+            int gridSize = positions.size() / 2;
+            for (int i = 1; i < gridSize; i++)
+            {
+                Path path = new Path(positions.get(0), positions.get(i + gridSize));
+                path.setAttributes(lineAttributes);
+                path.setAltitudeMode(WorldWind.ABSOLUTE);
+                lineLayer.addRenderable(path);
+            }
+
+            insertAfterPlacenames(getWwd(), markerLayer);
+            insertAfterPlacenames(getWwd(), lineLayer);
         }
     }
 
