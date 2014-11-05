@@ -33,7 +33,7 @@ public class RadarVolumeExample extends ApplicationTemplate
     {
         // Use the HighResolutionTerrain class to get accurate terrain for computing the intersections.
         protected HighResolutionTerrain terrain;
-        protected double innerRange = 10e3;
+        protected double innerRange = 100;
         protected double outerRange = 30e3;
         protected final int numAz = 25; // number of azimuth samplings
         protected final int numEl = 25; // number of elevation samplings
@@ -264,7 +264,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             Position origin = positions.get(0); // this is the radar position
             Vec4 originPoint = globe.computeEllipsoidalPointFromPosition(origin);
 
-            List<Integer> intersectionIndices = new ArrayList<Integer>();
+//            List<Integer> intersectionIndices = new ArrayList<Integer>();
 
             for (int i = 1; i < positions.size(); i++)
             {
@@ -305,7 +305,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                             Position pos = globe.computePositionFromEllipsoidalPoint(intersectionPoint);
                             double elevation = this.terrain.getElevation(pos);
                             positions.set(i, new Position(pos, elevation));
-                            intersectionIndices.add(i);
+//                            intersectionIndices.add(i);
                         }
                     }
                     else
@@ -314,22 +314,22 @@ public class RadarVolumeExample extends ApplicationTemplate
                     }
                 }
             }
-
-            for (Integer i : intersectionIndices)
-            {
-                if (i < positions.size() - numAz)
-                {
-                    Position position = positions.get(i);
-                    Position upper = positions.get(i + this.numAz);
-                    Vec4 positionVec = globe.computeEllipsoidalPointFromPosition(position).subtract3(originPoint);
-                    Vec4 upperVec = globe.computeEllipsoidalPointFromPosition(upper).subtract3(originPoint);
-                    upperVec = upperVec.add3(positionVec).divide3(2);
-                    double t = positionVec.getLength3() / upperVec.getLength3();
-                    Vec4 newPoint = upperVec.multiply3(t).add3(originPoint);
-                    Position newPosition = globe.computePositionFromEllipsoidalPoint(newPoint);
-                    positions.set(i, newPosition);
-                }
-            }
+//
+//            for (Integer i : intersectionIndices)
+//            {
+//                if (i < positions.size() - numAz)
+//                {
+//                    Position position = positions.get(i);
+//                    Position upper = positions.get(i + this.numAz);
+//                    Vec4 positionVec = globe.computeEllipsoidalPointFromPosition(position).subtract3(originPoint);
+//                    Vec4 upperVec = globe.computeEllipsoidalPointFromPosition(upper).subtract3(originPoint);
+//                    upperVec = upperVec.add3(positionVec).divide3(2);
+//                    double t = 1;//positionVec.getLength3() / upperVec.getLength3();
+//                    Vec4 newPoint = upperVec.multiply3(t).add3(originPoint);
+//                    Position newPosition = globe.computePositionFromEllipsoidalPoint(newPoint);
+//                    positions.set(i, newPosition);
+//                }
+//            }
 
             return obstructionFlags;
         }
