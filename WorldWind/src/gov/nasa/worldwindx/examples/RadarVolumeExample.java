@@ -33,6 +33,10 @@ public class RadarVolumeExample extends ApplicationTemplate
     {
         // Use the HighResolutionTerrain class to get accurate terrain for computing the intersections.
         protected HighResolutionTerrain terrain;
+        protected double innerRange = 10e3;
+        protected double outerRange = 30e3;
+        protected final int numAz = 25; // number of azimuth samplings
+        protected final int numEl = 25; // number of elevation samplings
 
         public AppFrame()
         {
@@ -43,13 +47,9 @@ public class RadarVolumeExample extends ApplicationTemplate
             Angle endAzimuth = Angle.fromDegrees(270);
             Angle startElevation = Angle.fromDegrees(0);
             Angle endElevation = Angle.fromDegrees(70);
-            double innerRange = 10e3;
-            double outerRange = 30e3;
-            final int numAz = 18; // number of azimuth samplings
-            final int numEl = 18; // number of elevation samplings
 
-            // Initialize the high-resolution terrain class. Construct it to use 100 meter resolution elevations.
-            this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), 100d);
+            // Initialize the high-resolution terrain class. Construct it to use 50 meter resolution elevations.
+            this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), 50d);
 
             // Compute a near and far grid of positions that will serve as ray endpoints for computing terrain
             // intersections.
@@ -71,7 +71,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                 public void run()
                 {
                     long start = System.currentTimeMillis(); // keep track of how long the intersection operation takes
-                    final boolean[] inclusionFlags = intersectTerrain(positions);
+                    final int[] obstructionFlags = intersectTerrain(positions);
                     long end = System.currentTimeMillis();
                     System.out.println(end - start);
 
@@ -83,7 +83,8 @@ public class RadarVolumeExample extends ApplicationTemplate
                         {
                             try
                             {
-                                showRadarVolume(positions, inclusionFlags, numAz, numEl);
+                                showRadarVolume(positions, obstructionFlags, numAz, numEl);
+//                                showPositionsAndRays(positions);
                                 getWwd().redraw();
                             }
                             finally
@@ -111,7 +112,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             Angle upperElevation, double innerRange, double outerRange, int numAzimuths, int numElevations)
         {
             // Compute the vertices at the Cartesian origin then transform them to the radar position and
-            // orientation. The grid is formed as though we're looking at the back of it, the side the radar is on.
+            // orientation. The grid is formed as though we're looking at the back of it -- the side the radar is on.
             // The radar volume shape is expecting this orientation and requires it to make the orientation of the
             // triangle faces consistent with the normal vectors that are parallel to the emanating radar rays.
 
@@ -251,13 +252,19 @@ public class RadarVolumeExample extends ApplicationTemplate
             return transformedVertices;
         }
 
-        boolean[] intersectTerrain(List<Position> positions)
+        int[] intersectTerrain(List<Position> positions)
         {
-            boolean[] inclusionFlags = new boolean[positions.size() - 1];
+            int[] obstructionFlags = new int[positions.size() - 1];
+
+            int gridSize = (positions.size() - 1) / 2;
+            Globe globe = this.terrain.getGlobe();
 
             // Perform the intersection tests with the terrain and keep track of which rays intersect.
 
             Position origin = positions.get(0); // this is the radar position
+            Vec4 originPoint = globe.computeEllipsoidalPointFromPosition(origin);
+
+            List<Integer> intersectionIndices = new ArrayList<Integer>();
 
             for (int i = 1; i < positions.size(); i++)
             {
@@ -266,16 +273,65 @@ public class RadarVolumeExample extends ApplicationTemplate
                 if (intersections == null || intersections.length == 0)
                 {
                     // No intersection so use the grid position.
-                    inclusionFlags[i - 1] = true;
+                    obstructionFlags[i - 1] = RadarVolume.NO_OBSTRUCTION;
                 }
                 else
                 {
-                    // An intersection with the terrain occurred.
-                    inclusionFlags[i - 1] = false;
+                    // An intersection with the terrain occurred. If it's a far grid position and beyond the near grid,
+                    // set the grid position to be the intersection position.
+
+                    // First see if the intersection is beyond the far grid, in which case the ray is considered
+                    // unobstructed.
+                    Vec4 intersectionPoint = intersections[0].getIntersectionPoint();
+                    double distance = intersectionPoint.distanceTo3(originPoint);
+                    if (distance > this.outerRange)
+                    {
+                        // No intersection so use the grid position.
+                        obstructionFlags[i - 1] = RadarVolume.NO_OBSTRUCTION;
+                        continue;
+                    }
+
+                    if (i > positions.size() / 2) // if this is a far grid position
+                    {
+                        if (obstructionFlags[i - 1 - gridSize] == RadarVolume.EXTERNAL_OBSTRUCTION)
+                        {
+                            // If it's obstructed at the near grid it's obstructed at the far grid.
+                            obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                        }
+                        else
+                        {
+                            // The obstruction occurs beyond the near grid.
+                            obstructionFlags[i - 1] = RadarVolume.INTERNAL_OBSTRUCTION;
+                            Position pos = globe.computePositionFromEllipsoidalPoint(intersectionPoint);
+                            double elevation = this.terrain.getElevation(pos);
+                            positions.set(i, new Position(pos, elevation));
+                            intersectionIndices.add(i);
+                        }
+                    }
+                    else
+                    {
+                        obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                    }
                 }
             }
 
-            return inclusionFlags;
+            for (Integer i : intersectionIndices)
+            {
+                if (i < positions.size() - numAz)
+                {
+                    Position position = positions.get(i);
+                    Position upper = positions.get(i + this.numAz);
+                    Vec4 positionVec = globe.computeEllipsoidalPointFromPosition(position).subtract3(originPoint);
+                    Vec4 upperVec = globe.computeEllipsoidalPointFromPosition(upper).subtract3(originPoint);
+                    upperVec = upperVec.add3(positionVec).divide3(2);
+                    double t = positionVec.getLength3() / upperVec.getLength3();
+                    Vec4 newPoint = upperVec.multiply3(t).add3(originPoint);
+                    Position newPosition = globe.computePositionFromEllipsoidalPoint(newPoint);
+                    positions.set(i, newPosition);
+                }
+            }
+
+            return obstructionFlags;
         }
 
         List<Position> makePositions(List<Vec4> vertices)
@@ -294,21 +350,20 @@ public class RadarVolumeExample extends ApplicationTemplate
             return positions;
         }
 
-        void showRadarVolume(List<Position> positions, boolean[] inclusionFlags, int numAz, int numEl)
+        void showRadarVolume(List<Position> positions, int[] obstructionFlags, int numAz, int numEl)
         {
             RenderableLayer layer = new RenderableLayer();
 
             // Set the volume's attributes.
             ShapeAttributes attributes = new BasicShapeAttributes();
-            attributes.setDrawOutline(true);
             attributes.setDrawInterior(true);
-            attributes.setOutlineMaterial(Material.BLUE);
             attributes.setInteriorMaterial(Material.WHITE);
             attributes.setEnableLighting(true);
 //            attributes.setInteriorOpacity(0.8);
 
             // Create the volume and add it to the model.
-            RadarVolume volume = new RadarVolume(positions.subList(1, positions.size()), inclusionFlags, numAz, numEl);
+            RadarVolume volume = new RadarVolume(positions.subList(1, positions.size()), obstructionFlags, numAz,
+                numEl);
             volume.setAttributes(attributes);
             layer.addRenderable(volume);
 
@@ -343,8 +398,10 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             for (Position position : positions)
             {
-                Marker marker = new BasicMarker(position, attributes);
-                markers.add(marker);
+                {
+                    Marker marker = new BasicMarker(position, attributes);
+                    markers.add(marker);
+                }
             }
             markerLayer.setMarkers(markers);
 
