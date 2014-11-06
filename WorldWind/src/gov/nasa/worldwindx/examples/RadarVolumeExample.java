@@ -53,10 +53,10 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             // Compute a near and far grid of positions that will serve as ray endpoints for computing terrain
             // intersections.
-            List<Vec4> vertices = this.computeGridVertices(center, startAzimuth, endAzimuth, startElevation,
-                endElevation, innerRange, outerRange, numAz, numEl);
-//            List<Vec4> vertices = this.computeConeVertices(center, Angle.fromDegrees(30), Angle.fromDegrees(190),
-//                Angle.fromDegrees(20), innerRange, outerRange, numAz, numEl);
+//            List<Vec4> vertices = this.computeGridVertices(center, startAzimuth, endAzimuth, startElevation,
+//                endElevation, innerRange, outerRange, numAz, numEl);
+            List<Vec4> vertices = this.computeConeVertices(center, Angle.fromDegrees(30), Angle.fromDegrees(190),
+                Angle.fromDegrees(20), innerRange, outerRange, numAz, numEl);
 
             // Create geographic positions from the computed Cartesian vertices. The terrain intersector works with
             // geographic positions.
@@ -73,7 +73,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                     long start = System.currentTimeMillis(); // keep track of how long the intersection operation takes
                     final int[] obstructionFlags = intersectTerrain(positions);
                     long end = System.currentTimeMillis();
-                    System.out.println(end - start);
+                    System.out.println("Intersection calculations took " + (end - start) + " ms");
 
                     // The computed positions define the radar volume. Set up to show that on the event dispatch thread.
                     SwingUtilities.invokeLater(new Runnable()
@@ -168,21 +168,30 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             List<Vec4> gridVertices = new ArrayList<Vec4>(width * height);
 
-            double dT = 2 * Math.PI / (width - 1);
-            double dR = 1.0 / (height - 1);
+            Matrix rotation = Matrix.fromRotationZ(Angle.NEG90);
+
+            double dx = 2.0 / (width - 1);
+            double dy = 2.0 / (height - 1);
+            double xx, yy, zz;
 
             for (int j = 0; j < height; j++)
             {
-                double r = 1 - j * dR;
+                double y = -1 + j * dy;
 
                 for (int i = 0; i < width; i++)
                 {
-                    double t = i * dT;
+                    double x = -1 + i * dx;
 
-                    double x = r * Math.cos(t);
-                    double y = r * Math.sin(t);
+                    double r = Math.sqrt(x * x + y * y);
+                    if (r > 1)
+                        r = 1;
 
-                    gridVertices.add(new Vec4(x, y, 1));
+                    double theta = Math.atan2(y, x);
+                    xx = r * Math.cos(theta);
+                    yy = r * Math.sin(theta);
+
+                    Vec4 v = new Vec4(xx, yy, 1);
+                    gridVertices.add(v.transformBy3(rotation));
                 }
             }
 
@@ -264,7 +273,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             Position origin = positions.get(0); // this is the radar position
             Vec4 originPoint = globe.computeEllipsoidalPointFromPosition(origin);
 
-//            List<Integer> intersectionIndices = new ArrayList<Integer>();
+            List<Integer> intersectionIndices = new ArrayList<Integer>();
 
             for (int i = 1; i < positions.size(); i++)
             {
@@ -305,7 +314,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                             Position pos = globe.computePositionFromEllipsoidalPoint(intersectionPoint);
                             double elevation = this.terrain.getElevation(pos);
                             positions.set(i, new Position(pos, elevation));
-//                            intersectionIndices.add(i);
+                            intersectionIndices.add(i);
                         }
                     }
                     else
@@ -314,22 +323,23 @@ public class RadarVolumeExample extends ApplicationTemplate
                     }
                 }
             }
-//
-//            for (Integer i : intersectionIndices)
-//            {
-//                if (i < positions.size() - numAz)
-//                {
-//                    Position position = positions.get(i);
-//                    Position upper = positions.get(i + this.numAz);
-//                    Vec4 positionVec = globe.computeEllipsoidalPointFromPosition(position).subtract3(originPoint);
-//                    Vec4 upperVec = globe.computeEllipsoidalPointFromPosition(upper).subtract3(originPoint);
-//                    upperVec = upperVec.add3(positionVec).divide3(2);
-//                    double t = 1;//positionVec.getLength3() / upperVec.getLength3();
-//                    Vec4 newPoint = upperVec.multiply3(t).add3(originPoint);
-//                    Position newPosition = globe.computePositionFromEllipsoidalPoint(newPoint);
-//                    positions.set(i, newPosition);
-//                }
-//            }
+
+            // Raise the internal intersection positions to the next elevation level above their original one.
+            for (Integer i : intersectionIndices)
+            {
+                if (i < positions.size() - numAz)
+                {
+                    Position position = positions.get(i);
+                    Position upper = positions.get(i + this.numAz);
+                    Vec4 positionVec = globe.computeEllipsoidalPointFromPosition(position).subtract3(originPoint);
+                    Vec4 upperVec = globe.computeEllipsoidalPointFromPosition(upper).subtract3(originPoint);
+                    upperVec = upperVec.add3(positionVec).divide3(2);
+                    double t = positionVec.getLength3() / upperVec.getLength3();
+                    Vec4 newPoint = upperVec.multiply3(t).add3(originPoint);
+                    Position newPosition = globe.computePositionFromEllipsoidalPoint(newPoint);
+                    positions.set(i, newPosition);
+                }
+            }
 
             return obstructionFlags;
         }
