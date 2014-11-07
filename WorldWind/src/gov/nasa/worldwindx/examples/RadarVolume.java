@@ -55,6 +55,7 @@ public class RadarVolume extends AbstractShape
         protected FloatBuffer triangleNormals; // normals of the grid and floor triangles
         protected FloatBuffer sideVertices; // vertices of the volume's sides -- all but the grids and the floor
         protected FloatBuffer sideNormals; // normals of the side vertices
+        protected Vec4 centerPoint; // the volume's approximate center; used to determine eye distance
 
         /**
          * Construct a cache entry using the boundaries of this shape.
@@ -236,6 +237,7 @@ public class RadarVolume extends AbstractShape
         if (shapeData.triangleVertices == null)
         {
             this.makeGridVertices(dc);
+            this.computeCenterPoint();
             this.makeGridNormals();
             this.makeGridTriangles();
             this.makeSides();
@@ -244,6 +246,8 @@ public class RadarVolume extends AbstractShape
             shapeData.gridVertices = null;
             shapeData.gridNormals = null;
         }
+
+        shapeData.setEyeDistance(dc.getView().getEyePoint().distanceTo3(shapeData.centerPoint));
 
         return true;
     }
@@ -339,6 +343,29 @@ public class RadarVolume extends AbstractShape
             shapeData.gridNormals.put(k + separation + 1, (float) ny);
             shapeData.gridNormals.put(k + separation + 2, (float) nz);
         }
+    }
+
+    protected void computeCenterPoint()
+    {
+        ShapeData shapeData = this.getCurrent();
+
+        int gridSize = this.width * this.height;
+        int k = 3 * gridSize / 2;
+
+        double xNear = shapeData.gridVertices.get(k);
+        double yNear = shapeData.gridVertices.get(k + 1);
+        double zNear = shapeData.gridVertices.get(k + 2);
+
+        k += 3 * gridSize;
+
+        double xFar = shapeData.gridVertices.get(k);
+        double yFar = shapeData.gridVertices.get(k + 1);
+        double zFar = shapeData.gridVertices.get(k + 2);
+
+        Vec4 pNear = (new Vec4(xNear, yNear, zNear)).add3(shapeData.getReferencePoint());
+        Vec4 pFar = (new Vec4(xFar, yFar, zFar)).add3(shapeData.getReferencePoint());
+
+        shapeData.centerPoint = pNear.add3(pFar).multiply3(0.5);
     }
 
     /**
