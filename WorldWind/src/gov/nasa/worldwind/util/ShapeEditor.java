@@ -316,7 +316,7 @@ public class ShapeEditor implements SelectListener
         this.controlPointLayer.setKeepSeparated(false);
         this.controlPointLayer.setValue(AVKey.IGNORE, true); // means "Don't show this layer in the layer manager."
         if (this.shape instanceof SurfaceShape
-            || (this.shape instanceof Airspace && ((Airspace)this.shape).isDrawSurfaceShape()))
+            || (this.shape instanceof Airspace && ((Airspace) this.shape).isDrawSurfaceShape()))
         {
             // This ensures that control points are always placed on the terrain for surface shapes.
             this.controlPointLayer.setOverrideMarkerElevation(true);
@@ -1221,7 +1221,7 @@ public class ShapeEditor implements SelectListener
     {
         double altitude = 0;
 
-        if (shape instanceof Airspace && !((Airspace)shape).isDrawSurfaceShape())
+        if (shape instanceof Airspace && !((Airspace) shape).isDrawSurfaceShape())
         {
             Airspace airspace = (Airspace) shape;
 
@@ -1277,7 +1277,7 @@ public class ShapeEditor implements SelectListener
     {
         int altitudeMode = WorldWind.ABSOLUTE;
 
-        if (this.getShape() instanceof Airspace && ((Airspace)this.getShape()).isDrawSurfaceShape())
+        if (this.getShape() instanceof Airspace && ((Airspace) this.getShape()).isDrawSurfaceShape())
         {
             altitudeMode = WorldWind.CLAMP_TO_GROUND;
         }
@@ -2097,7 +2097,9 @@ public class ShapeEditor implements SelectListener
                 new Position(controlPoint.getPosition(), 0));
             Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
             Vec4 delta = this.computeControlPointDelta(this.getPreviousPosition(), terrainPosition);
-            route.setWidth(route.getWidth() + delta.dot3(vMarker));
+            double newWidth = route.getWidth() + delta.dot3(vMarker);
+            if (newWidth >= 0)
+                route.setWidth(newWidth);
         }
         else if (controlPoint != null) // location change or add/delete control point
         {
