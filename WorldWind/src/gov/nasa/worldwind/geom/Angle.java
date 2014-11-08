@@ -440,6 +440,11 @@ public class Angle implements Comparable<Angle>
         return Angle.fromRadians(Math.asin(sine));
     }
 
+    public static double arctanh(double radians)
+    {
+        return 0.5 * Math.log((1 + radians) / (1 - radians));
+    }
+
     /**
      * Obtains the cosine of this angle.
      *

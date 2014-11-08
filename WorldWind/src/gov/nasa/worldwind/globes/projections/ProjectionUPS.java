@@ -22,6 +22,9 @@ public class ProjectionUPS extends AbstractGeographicProjection
     protected static final int NORTH = 0;
     protected static final int SOUTH = 1;
 
+    protected static final Sector NORTH_LIMITS = Sector.fromDegrees(0, 90, -180, 180);
+    protected static final Sector SOUTH_LIMITS = Sector.fromDegrees(-90, 0, -180, 180);
+
     protected int pole = NORTH;
 
     /**
@@ -29,7 +32,7 @@ public class ProjectionUPS extends AbstractGeographicProjection
      */
     public ProjectionUPS()
     {
-        super(Sector.fromDegrees(0, 90, -180, 180));
+        super(NORTH_LIMITS);
     }
 
     /**
@@ -42,7 +45,7 @@ public class ProjectionUPS extends AbstractGeographicProjection
      */
     public ProjectionUPS(String pole)
     {
-        super(Sector.fromDegrees(0, pole != null && pole.equals(AVKey.SOUTH) ? -90 : 90, -180, 180));
+        super(pole != null && pole.equals(AVKey.SOUTH) ? SOUTH_LIMITS : NORTH_LIMITS);
 
         if (pole == null)
         {
@@ -74,27 +77,26 @@ public class ProjectionUPS extends AbstractGeographicProjection
         if ((this.pole == NORTH && latitude.degrees == 90) || (this.pole == SOUTH && latitude.degrees == -90))
             return new Vec4(0, 0, metersElevation);
 
-        double lat = latitude.radians * (this.pole == NORTH ? 1 : -1);
-        double lon = longitude.radians * (this.pole == NORTH ? 1 : -1);
+        double lat = latitude.radians;
+        double lon = longitude.radians;
 
         if (this.pole == NORTH && lat < 0)
             lat = 0;
-        else if (this.pole == SOUTH && -lat < 0)
+        else if (this.pole == SOUTH && lat > 0)
             lat = 0;
 
         double k0 = 0.994; // standard UPS scale factor -- see above reference pg.157, pp 2.
         double ecc = Math.sqrt(globe.getEccentricitySquared());
-        double sp = Math.sin(lat);
+        double sp = Math.sin(lat * (this.pole == NORTH ? 1 : -1));
 
         double t = Math.sqrt(((1 - sp) / (1 + sp)) * Math.pow((1 + ecc * sp) / (1 - ecc * sp), ecc));
         double s = Math.sqrt(Math.pow(1 + ecc, 1 + ecc) * Math.pow(1 - ecc, 1 - ecc));
         double r = 2 * globe.getEquatorialRadius() * k0 * t / s;
 
-        double x = r * Math.sin(lon);// * (this.pole == NORTH ? 1 : -1);
-        double y = -r * Math.cos(lon);// * (this.pole == NORTH ? 1 : -1);
+        double x = r * Math.sin(lon);
+        double y = -r * Math.cos(lon) * (this.pole == NORTH ? 1 : -1);
 
         return new Vec4(x, y, metersElevation);
-//        return new Vec4(r * Math.sin(lon), -r * Math.cos(lon), metersElevation);
     }
 
     @Override
@@ -140,10 +142,10 @@ public class ProjectionUPS extends AbstractGeographicProjection
     public Position cartesianToGeographic(Globe globe, Vec4 cart, Vec4 offset)
     {
         double xOffset = offset != null ? offset.x : 0;
-        double x = (cart.x - xOffset);// * (this.pole == NORTH ? 1 : -1);
-        double y = cart.y;// * (this.pole == NORTH ? 1 : -1);
+        double x = (cart.x - xOffset);
+        double y = cart.y;
 
-        double lon = Math.atan2(x, y * (this.pole == NORTH ? -1 : 1)); // TODO: this is for the sphere
+        double lon = Math.atan2(x, y * (this.pole == NORTH ? -1 : 1));
 
         double k0 = 0.994; // standard UPS scale factor -- see above reference pg.157, pp 2.
         double ecc = Math.sqrt(globe.getEccentricitySquared());
@@ -173,7 +175,6 @@ public class ProjectionUPS extends AbstractGeographicProjection
         double lat = Ap + s2p * (Bp + s2p * (Cp + s2p * (Dp + Ep * s2p)));
 
         lat = lat * (this.pole == NORTH ? 1 : -1);
-        lon = lon * (this.pole == NORTH ? 1 : -1);
 
         return Position.fromRadians(lat, lon, cart.z);
     }
@@ -189,5 +190,88 @@ public class ProjectionUPS extends AbstractGeographicProjection
         double y = Math.cos(longitude.radians);
 
         return new Vec4(x, y, 0);
+    }
+
+//    @Override
+    public Vec4 geographicToCartesianNGA(Globe globe, Angle latitude, Angle longitude, double metersElevation, Vec4 offset)
+    {
+        // Formula from NGA.SIG.0012_2.0.0_UTMUPS dated 2014-03-25.
+
+        if ((this.pole == NORTH && latitude.degrees == 90) || (this.pole == SOUTH && latitude.degrees == -90))
+            return new Vec4(0, 0, metersElevation);
+
+        double clampedLat = WWMath.clamp(latitude.radians, this.getProjectionLimits().getMinLatitude().radians,
+            this.getProjectionLimits().getMaxLatitude().radians);
+
+
+        double a = globe.getEquatorialRadius();
+        double lat = clampedLat * (this.pole == NORTH ? 1 : -1);
+        double lon = longitude.radians;
+
+        double sinLat = Math.sin(lat);
+        double cosLat = Math.cos(lat);
+
+        double e = Math.sqrt(globe.getEccentricitySquared());
+        double P = Math.exp(e * Angle.arctanh(e * sinLat));
+        double k90 = Math.sqrt(1 - e * e) * Math.exp(e * Angle.arctanh(e));
+
+        double denom = (1 + sinLat) / P + (1 - sinLat) * P;
+        double cosChi = 2 * cosLat / denom;
+        double sinChi = ((1 + sinLat) / P - (1 - sinLat) * P) / denom;
+
+        denom = k90 * (1 + sinChi);
+        double x = 0.994 * 2 * a * Math.sin(lon) * cosChi/ denom;
+        double y = 0.994 * -2 * a * Math.cos(lon) * cosChi/ denom * (this.pole == NORTH ? 1 : -1);
+
+        return new Vec4(x, y, metersElevation);
+    }
+
+//    @Override
+    public Position cartesianToGeographicNGA(Globe globe, Vec4 cart, Vec4 offset)
+    {
+        // Formula from NGA.SIG.0012_2.0.0_UTMUPS dated 2014-03-25.
+
+        // THIS FORMULA IS NOT PRODUCING THE EXPECTED RESULTS. Using this formula causes navigation to behave as
+        // though there's a singularity at the pole. The user appears to be prevented from moving the pole over
+        // the center of Cartesian coordinates.
+
+        double xOffset = offset != null ? offset.x : 0;
+        double x = (cart.x - xOffset) / 0.994;
+        double y = cart.y / (0.994 * this.pole == NORTH ? 1 : -1);
+
+        double a = globe.getEquatorialRadius();
+        double e = Math.sqrt(globe.getEccentricitySquared());
+        double k90 = Math.sqrt(1 - e * e) * Math.exp(e * Angle.arctanh(e));
+
+        double rx = (k90 * x) / (2 * a);
+        double ry = (k90 * y) / (2 * a);
+        double rSquared = rx * rx + ry * ry;
+        double r = Math.sqrt(rSquared);
+
+        double cosChi = 2 * r / (1 + rSquared);
+        double sinChi = (1 - rSquared) / (1 + rSquared);
+
+        double sinLat = sinChi;
+        double P = 1;
+        double convergence = 0.00000001; // ~ 6 cm on Earth
+
+        for (int i = 0; i < 10; i++)
+        {
+            P = Math.exp(e * Angle.arctanh(e * sinLat));
+            double sPrevious = sinLat;
+            sinLat = ((1 + sinChi) * P * P - (1 - sinChi)) / ((1 + sinChi) * P * P + (1 - sinChi));
+
+            if (Math.abs(sinLat - sPrevious) <= convergence)
+                break;
+        }
+
+        double cosLat = 0.5 * ((1 + sinLat) / P + (1 - sinLat) * P) * cosChi;
+        double lat = Math.atan2(sinLat, cosLat) * this.pole == NORTH ? 1 : -1;
+
+        double lon = Math.atan2(x, -y);
+        if (x == 0 && y == 0)
+            lon = 0;
+
+        return Position.fromRadians(lat, lon, cart.z);
     }
 }
