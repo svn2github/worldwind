@@ -63,6 +63,7 @@ public class ShapeEditingExtension extends ApplicationTemplate
             positions.add(new Position(location0, altitude));
             positions.add(new Position(location1, altitude));
             this.shaft.setPositions(positions);
+            this.head.setPositions(new ArrayList<Position>(0)); // causes arrowhead to be rebuilt
         }
 
         public LatLon[] getLocations()
@@ -122,7 +123,11 @@ public class ShapeEditingExtension extends ApplicationTemplate
         public void render(DrawContext dc)
         {
             this.shaft.render(dc);
-            this.makeArrowhead(dc);
+
+            // Make the arrowhead if it's moved since we last made it.
+            if (this.head.getPositions() == null || !this.head.getPositions().iterator().hasNext())
+                this.makeArrowhead(dc);
+
             this.head.render(dc);
         }
 
