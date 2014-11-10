@@ -13,6 +13,9 @@ import gov.nasa.worldwind.util.*;
 import java.util.*;
 
 /**
+ * Creates a sequence of potentially disconnected rectangular airspaces specified by a collection of {@link
+ * gov.nasa.worldwind.render.airspaces.Box} objects.
+ *
  * @author garakl
  * @version $Id$
  */
@@ -691,7 +694,7 @@ public class TrackAirspace extends AbstractAirspace
      * @param leg2  the second leg.
      *
      * @return @return <code>true</code> if the legs make a right turn on the specified <code>globe</code>, otherwise
-     *         <code>false</code>.
+     * <code>false</code>.
      */
     protected boolean isRightTurn(Globe globe, Box leg1, Box leg2)
     {
