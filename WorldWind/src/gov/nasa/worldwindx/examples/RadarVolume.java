@@ -508,38 +508,71 @@ public class RadarVolume extends AbstractShape
 
                             // If this is the bottom row of cells, then we may need to draw the floor connecting
                             // the internally obstructed far grid positions to the near grid.
-                            if (n == 1 && j == 0
-                                && (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION
-                                || this.obstructionFlags[lrv] == INTERNAL_OBSTRUCTION))
+                            if (n == 1 && j == 0)
                             {
-                                // Draw the floor.
-                                kk = llv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
+                                if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION
+                                    || this.obstructionFlags[lrv] == INTERNAL_OBSTRUCTION)
+                                {
+                                    // Draw the floor.
+                                    kk = llv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[0] = kk;
 
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
+                                    kk = lrv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[1] = kk;
 
-                                kk = (llv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
+                                    kk = (llv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[2] = kk;
 
-                                this.setTriangleNormals(null, triIndices);
+                                    this.setTriangleNormals(null, triIndices);
 
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
+                                    kk = lrv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[0] = kk;
 
-                                kk = (lrv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
+                                    kk = (lrv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[1] = kk;
 
-                                kk = (llv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
+                                    kk = (llv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[2] = kk;
 
-                                this.setTriangleNormals(null, triIndices);
+                                    this.setTriangleNormals(null, triIndices);
+                                }
+                                else
+                                {
+                                    // Draw the floor.
+                                    kk = llv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[0] = kk;
+
+                                    kk = (llv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[1] = kk;
+
+                                    kk = (lrv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[2] = kk;
+
+                                    this.setTriangleNormals(null, triIndices);
+
+                                    kk = llv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[0] = kk;
+
+                                    kk = lrv * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[1] = kk;
+
+                                    kk = (lrv - gridSize) * 3;
+                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                                    triIndices[2] = kk;
+
+                                    this.setTriangleNormals(null, triIndices);
+                                }
                             }
                         }
                         else if (ll)
