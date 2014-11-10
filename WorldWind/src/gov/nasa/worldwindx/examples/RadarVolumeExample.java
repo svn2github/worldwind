@@ -31,6 +31,8 @@ public class RadarVolumeExample extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
+        protected static final boolean CONE_VOLUME = false;
+
         // Use the HighResolutionTerrain class to get accurate terrain for computing the intersections.
         protected HighResolutionTerrain terrain;
         protected double innerRange = 100;
@@ -53,10 +55,18 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             // Compute a near and far grid of positions that will serve as ray endpoints for computing terrain
             // intersections.
-//            List<Vec4> vertices = this.computeGridVertices(center, startAzimuth, endAzimuth, startElevation,
-//                endElevation, innerRange, outerRange, numAz, numEl);
-            List<Vec4> vertices = this.computeConeVertices(center, Angle.fromDegrees(30), Angle.fromDegrees(190),
-                Angle.fromDegrees(20), innerRange, outerRange, numAz, numEl);
+            List<Vec4> vertices;
+
+            if (CONE_VOLUME)
+            {
+                vertices = this.computeConeVertices(center, Angle.fromDegrees(120), Angle.fromDegrees(180),
+                    Angle.fromDegrees(90), innerRange, outerRange, numAz, numEl);
+            }
+            else
+            {
+                vertices = this.computeGridVertices(center, startAzimuth, endAzimuth, startElevation,
+                    endElevation, innerRange, outerRange, numAz, numEl);
+            }
 
             // Create geographic positions from the computed Cartesian vertices. The terrain intersector works with
             // geographic positions.
@@ -166,61 +176,6 @@ public class RadarVolumeExample extends ApplicationTemplate
             List<Vec4> vertices = new ArrayList<Vec4>();
             vertices.add(Vec4.ZERO); // the first vertex is the radar position.
 
-            List<Vec4> gridVertices = new ArrayList<Vec4>(width * height);
-
-            Matrix rotation = Matrix.fromRotationZ(Angle.NEG90);
-
-            double dx = 2.0 / (width - 1);
-            double dy = 2.0 / (height - 1);
-            double xx, yy, zz;
-
-            for (int j = 0; j < height; j++)
-            {
-                double y = -1 + j * dy;
-
-                for (int i = 0; i < width; i++)
-                {
-                    double x = -1 + i * dx;
-
-                    double r = Math.sqrt(x * x + y * y);
-                    if (r > 1)
-                        r = 1;
-
-                    double theta = Math.atan2(y, x);
-                    xx = r * Math.cos(theta);
-                    yy = r * Math.sin(theta);
-
-                    Vec4 v = new Vec4(xx, yy, 1);
-                    gridVertices.add(v.transformBy3(rotation));
-                }
-            }
-
-            // Scale the grid vertices to the size of the far grid and translate them to the outerRange. Define the
-            // grid such that we're looking at the back of it, in the direction of the rays emanating from the radar
-            // position. To achieve this the translations to the outer and inner ranges are negative. This causes the
-            // outer triangle faces of the radar volume's shape to be oriented counter-clockwise and consistent with
-            // the normals orientation, which is in the same direction as emanating radar rays.
-            List<Vec4> farGrid = new ArrayList<Vec4>(gridVertices.size());
-            double scale = outerRange * Math.tan(fov.radians / 2);
-            Matrix scaleMatrix = Matrix.fromScale(scale, scale, 1);
-            Matrix translationMatrix = Matrix.fromTranslation(0, 0, -outerRange);
-            Matrix combined = translationMatrix.multiply(scaleMatrix);
-            for (Vec4 v : gridVertices)
-            {
-                farGrid.add(v.transformBy4(combined));
-            }
-
-            // Do the same for the near grid.
-            List<Vec4> nearGrid = new ArrayList<Vec4>(gridVertices.size());
-            scale = innerRange * Math.tan(fov.radians / 2);
-            scaleMatrix = Matrix.fromScale(scale, scale, 1);
-            translationMatrix = Matrix.fromTranslation(0, 0, -innerRange);
-            combined = translationMatrix.multiply(scaleMatrix);
-            for (Vec4 v : gridVertices)
-            {
-                nearGrid.add(v.transformBy4(combined));
-            }
-
             // Rotate both grids around the Y axis to the specified elevation.
             Matrix elevationMatrix = Matrix.fromAxisAngle(Angle.NEG90.subtract(elevation), 0, 1, 0);
 
@@ -228,14 +183,69 @@ public class RadarVolumeExample extends ApplicationTemplate
             Matrix azimuthMatrix = Matrix.fromAxisAngle(Angle.POS90.subtract(azimuth), 0, 0, 1);
 
             // Combine the rotations and build the full vertex list.
-            combined = azimuthMatrix.multiply(elevationMatrix);
-            for (int i = 0; i < gridVertices.size(); i++)
+            Matrix combined = azimuthMatrix.multiply(elevationMatrix);
+
+            double x, y;
+
+            double dTheta = 2 * Math.PI / (width - 1);
+
+            // Compute the near grid.
+            double innerWidth = innerRange * fov.tanHalfAngle();
+            double R = innerWidth / fov.divide(2).sin();
+            double r0 = R * fov.divide(2).cos();
+            double dRadius = innerWidth / (height - 1);
+
+            // Compute rings of vertices to define the grid.
+            for (int j = 0; j < height; j++)
             {
-                vertices.add(nearGrid.get(i).transformBy3(combined));
+                double radius = innerWidth - j * dRadius;
+
+                for (int i = 0; i < width; i++)
+                {
+                    double theta = i * dTheta;
+
+                    x = radius * Math.cos(theta);
+                    y = radius * Math.sin(theta);
+
+                    // Compute Z on the sphere of inner range radius.
+                    double w = Math.sqrt(x * x + y * y);
+                    double a = Math.atan(w / r0);
+                    double t = Math.sqrt(w * w + r0 * r0);
+                    double tp = R - t;
+                    double z = (2 * r0 - R) + tp / Math.cos(a);
+
+                    Vec4 v = new Vec4(x, y, -z);
+                    vertices.add(v.transformBy3(combined));
+                }
             }
-            for (int i = 0; i < gridVertices.size(); i++)
+
+            // Compute the far grid.
+            double outerWidth = outerRange * fov.tanHalfAngle();
+            R = outerWidth / fov.divide(2).sin();
+            r0 = R * fov.divide(2).cos();
+            dRadius = outerWidth / (height - 1);
+
+            for (int j = 0; j < height; j++)
             {
-                vertices.add(farGrid.get(i).transformBy3(combined));
+                double radius = outerWidth - j * dRadius;
+
+                for (int i = 0; i < width; i++)
+                {
+                    double theta = i * dTheta;
+
+                    x = radius * Math.cos(theta);
+                    y = radius * Math.sin(theta);
+
+                    // Compute Z on the sphere of outer range radius.
+                    double w = Math.sqrt(x * x + y * y);
+                    double a = Math.atan(w / r0);
+                    double t = Math.sqrt(w * w + r0 * r0);
+                    double tp = R - t;
+                    double z = (2 * r0 - R) + tp / Math.cos(a);
+
+                    Vec4 v = new Vec4(x, y, -z);
+                    vertices.add(v.transformBy3(combined));
+                }
             }
 
             // The vertices are computed relative to the origin. Transform them to the radar position and orientation.

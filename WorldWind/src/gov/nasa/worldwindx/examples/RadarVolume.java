@@ -41,6 +41,7 @@ public class RadarVolume extends AbstractShape
     protected int width; // the number of horizontal positions in the grid.
     protected int height; // the number of vertical positions in the grid.
     protected IntBuffer sideIndices; // OpenGL indices defining the sides of the area between the grids.
+    protected boolean enableSides = true; // sides show up inside conical volumes to enable the app to turn them off
 
     /**
      * This class holds globe-specific data for this shape. It's managed via the shape-data cache in {@link
@@ -142,6 +143,16 @@ public class RadarVolume extends AbstractShape
         this.obstructionFlags = obstructionFlags;
         this.width = width;
         this.height = height;
+    }
+
+    public boolean isEnableSides()
+    {
+        return enableSides;
+    }
+
+    public void setEnableSides(boolean enableSides)
+    {
+        this.enableSides = enableSides;
     }
 
     @Override
@@ -276,11 +287,14 @@ public class RadarVolume extends AbstractShape
         gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.triangleNormals.rewind());
         gl.glDrawArrays(GL.GL_TRIANGLES, 0, shapeData.triangleVertices.limit() / 3);
 
-        // Draw the volume's sides.
-        gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.sideVertices.rewind());
-        gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.sideNormals.rewind());
-        gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.sideIndices.limit(), GL.GL_UNSIGNED_INT,
-            this.sideIndices.rewind());
+        if (this.isEnableSides())
+        {
+            // Draw the volume's sides.
+            gl.glVertexPointer(3, GL.GL_FLOAT, 0, shapeData.sideVertices.rewind());
+            gl.glNormalPointer(GL.GL_FLOAT, 0, shapeData.sideNormals.rewind());
+            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, this.sideIndices.limit(), GL.GL_UNSIGNED_INT,
+                this.sideIndices.rewind());
+        }
     }
 
     protected void makeGridVertices(DrawContext dc)
