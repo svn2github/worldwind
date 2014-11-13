@@ -136,14 +136,14 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         if (width <= 0)
         {
-            String message = Logging.getMessage("Geom.WidthInvalid", width);
+            String message = Logging.getMessage("generic.InvalidWidth", width);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
         if (height <= 0)
         {
-            String message = Logging.getMessage("Geom.HeightInvalid", width);
+            String message = Logging.getMessage("generic.InvalidHeight", height);
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
