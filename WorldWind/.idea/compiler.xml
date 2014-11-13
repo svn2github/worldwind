@@ -28,6 +28,7 @@
       <entry name="?*.au" />
       <entry name="?*.zip" />
       <entry name="?*.tif" />
+      <entry name="?*.csv" />
     </wildcardResourcePatterns>
     <annotationProcessing>
       <profile default="true" name="Default" enabled="false">
