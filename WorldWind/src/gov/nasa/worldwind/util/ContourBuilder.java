@@ -41,7 +41,7 @@ public class ContourBuilder
         public final int y;
         public final int contourMask;
         public final Map<Direction, Double> edgeWeights = new HashMap<Direction, Double>();
-        public boolean isVisited;
+        public final Set<Direction> visitedDirections = new HashSet<Direction>(4);
 
         public CellInfo(int x, int y, int contourMask)
         {
@@ -388,20 +388,21 @@ public class ContourBuilder
 
     protected void traverseContourCells()
     {
+        List<List<double[]>> contours = new ArrayList<List<double[]>>();
+
         this.contourList.clear();
 
         for (CellKey key : this.contourCellList) // iterate over all possible contour starting points
         {
             CellInfo cell = this.contourCellMap.get(key);
 
-            if (cell.isVisited) // ignore any cells that we've already visited in the traversal below
-                continue;
-
-            cell.isVisited = true;
-            List<List<double[]>> contours = new ArrayList<List<double[]>>();
-
             for (Direction dir : dirNext.get(cell.contourMask).keySet()) // either 2 or 4 starting directions
             {
+                if (cell.visitedDirections.contains(dir))
+                {
+                    continue;
+                }
+
                 this.currentContour = new ArrayList<double[]>();
                 this.traverseContour(cell, dir);
                 contours.add(this.currentContour);
@@ -435,51 +436,60 @@ public class ContourBuilder
 
     protected void traverseContour(CellInfo cell, Direction dir)
     {
-        Direction dirPrev;
-        Direction dirNext = ContourBuilder.dirRev.get(dir);
+        Direction dirNext = dir;
+        Direction dirPrev = dir;  // use Prev same as Next for first iteration (i.e., for seed cell)
 
-        do
+        while (cell != null && !cell.visitedDirections.contains(dirNext))
         {
             // Mark the contour cell as visited.
-            cell.isVisited = true;
+            cell.visitedDirections.add(dirNext);
+            cell.visitedDirections.add(dirPrev);
 
-            // Advance to the next direction.
-            dirPrev = ContourBuilder.dirRev.get(dirNext);
-            dirNext = ContourBuilder.dirNext.get(cell.contourMask).get(dirPrev);
-
-            // Compute the intersection of the contour cell in the next direction. The cell's xy coordinates initially
-            // indicate the cell's Southwest corner.
-            double xIntersect = cell.x;
-            double yIntersect = cell.y;
-
-            switch (dirNext)
-            {
-                case NORTH:
-                    xIntersect += cell.edgeWeights.get(dirNext); // interpolate along the north edge
-                    break;
-                case SOUTH:
-                    xIntersect += cell.edgeWeights.get(dirNext); // interpolate along the south edge
-                    yIntersect += 1; // move from the north to the south
-                    break;
-                case EAST:
-                    xIntersect += 1; // move from the west to the east
-                    yIntersect += cell.edgeWeights.get(dirNext); // interpolate along the east edge
-                    break;
-                case WEST:
-                    yIntersect += cell.edgeWeights.get(dirNext); // interpolate along the west edge
-                    break;
-                default:
-                    String msg = Logging.getMessage("generic.UnexpectedDirection", dirNext);
-                    Logging.logger().severe(msg);
-                    break;
-            }
-
-            this.currentContour.add(new double[] {xIntersect, yIntersect});
+            addIntersection(cell, dirNext);
 
             // Advance to the next cell.
             cell = this.nextCell(cell, dirNext);
 
-        } while (cell != null && !cell.isVisited);
+            // guard cell use in computing dirNext
+            if (cell != null)
+            {
+                // Advance to the next direction.
+                dirPrev = ContourBuilder.dirRev.get(dirNext);
+                dirNext = ContourBuilder.dirNext.get(cell.contourMask).get(dirPrev);
+            }
+        }
+    }
+
+    protected void addIntersection(CellInfo cell, Direction dir)
+    {
+        // Compute the intersection of the contour cell in the next direction. The cell's xy coordinates initially
+        // indicate the cell's Southwest corner.
+        double xIntersect = cell.x;
+        double yIntersect = cell.y;
+
+        switch (dir)
+        {
+            case NORTH:
+                xIntersect += cell.edgeWeights.get(dir); // interpolate along the north edge
+                break;
+            case SOUTH:
+                xIntersect += cell.edgeWeights.get(dir); // interpolate along the south edge
+                yIntersect += 1; // move from the north to the south
+                break;
+            case EAST:
+                xIntersect += 1; // move from the west to the east
+                yIntersect += cell.edgeWeights.get(dir); // interpolate along the east edge
+                break;
+            case WEST:
+                yIntersect += cell.edgeWeights.get(dir); // interpolate along the west edge
+                break;
+            default:
+                String msg = Logging.getMessage("generic.UnexpectedDirection", dirNext);
+                Logging.logger().severe(msg);
+                break;
+        }
+
+        this.currentContour.add(new double[] {xIntersect, yIntersect});
     }
 
     protected void clearContourCells()
