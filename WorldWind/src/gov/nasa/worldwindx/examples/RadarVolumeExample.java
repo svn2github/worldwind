@@ -36,9 +36,10 @@ public class RadarVolumeExample extends ApplicationTemplate
         // Use the HighResolutionTerrain class to get accurate terrain for computing the intersections.
         protected HighResolutionTerrain terrain;
         protected double innerRange = 100;
-        protected double outerRange = 30e3;
+        protected double outerRange = 500e3;
         protected final int numAz = 25; // number of azimuth samplings
         protected final int numEl = 25; // number of elevation samplings
+        protected final Angle minimumElevation = Angle.fromDegrees(0);
 
         public AppFrame()
         {
@@ -49,6 +50,9 @@ public class RadarVolumeExample extends ApplicationTemplate
             Angle endAzimuth = Angle.fromDegrees(270);
             Angle startElevation = Angle.fromDegrees(0);
             Angle endElevation = Angle.fromDegrees(70);
+            Angle coneFieldOfView = Angle.fromDegrees(90);
+            Angle coneElevation = Angle.fromDegrees(70);
+            Angle coneAzimuth = Angle.fromDegrees(205);
 
             // Initialize the high-resolution terrain class. Construct it to use 50 meter resolution elevations.
             this.terrain = new HighResolutionTerrain(this.getWwd().getModel().getGlobe(), 50d);
@@ -59,8 +63,8 @@ public class RadarVolumeExample extends ApplicationTemplate
 
             if (CONE_VOLUME)
             {
-                vertices = this.computeConeVertices(center, Angle.fromDegrees(120), Angle.fromDegrees(180),
-                    Angle.fromDegrees(90), innerRange, outerRange, numAz, numEl);
+                vertices = this.computeConeVertices(center, coneFieldOfView, coneAzimuth, coneElevation, innerRange,
+                    outerRange, numAz, numEl);
             }
             else
             {
@@ -288,7 +292,37 @@ public class RadarVolumeExample extends ApplicationTemplate
             for (int i = 1; i < positions.size(); i++)
             {
                 Position position = positions.get(i);
-                Intersection[] intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
+
+                // Mark the position as obstructed if it's below the minimum elevation.
+                if (this.isBelowMinimumElevation(position, i, origin.getAltitude()))
+                {
+                    obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                    continue;
+                }
+
+                // Compute the intersection with the terrain of a ray to this position. No need to perform the
+                // intersection test if the ray to the position just below this one is unobstructed because no
+                // obstruction will occur above an unobstructed position. Also no need to perform the intersection
+                // test for a far grid position if the near grid position is obstructed.
+
+                Intersection[] intersections = null;
+                if ((i > this.numAz && i <= gridSize) // near grid above the first row of elevations
+                    || (i > gridSize + this.numAz)) // far grid above the first row of elevations
+                {
+                    if (obstructionFlags[i - numAz] != RadarVolume.NO_OBSTRUCTION)
+                        intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
+                }
+                else if (i > gridSize) // far grid
+                {
+                    // Only test a far grid position if the corresponding near grid position is unobstructed.
+                    if (obstructionFlags[i - gridSize] == RadarVolume.NO_OBSTRUCTION)
+                        intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
+                }
+                else
+                {
+                    intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
+                }
+
                 if (intersections == null || intersections.length == 0)
                 {
                     // No intersection so use the grid position.
@@ -352,6 +386,15 @@ public class RadarVolumeExample extends ApplicationTemplate
             }
 
             return obstructionFlags;
+        }
+
+        protected boolean isBelowMinimumElevation(Position position, int positionIndex, double referenceAltitude)
+        {
+            double R = positionIndex < this.numAz * this.numEl ? this.innerRange : this.outerRange;
+
+            double elevation = Math.asin((position.getAltitude() - referenceAltitude) / R);
+
+            return elevation < this.minimumElevation.radians;
         }
 
         List<Position> makePositions(List<Vec4> vertices)
@@ -443,7 +486,7 @@ public class RadarVolumeExample extends ApplicationTemplate
     {
         Configuration.setValue(AVKey.INITIAL_LATITUDE, 36.8378);
         Configuration.setValue(AVKey.INITIAL_LONGITUDE, -118.8743);
-        Configuration.setValue(AVKey.INITIAL_ALTITUDE, 200e3);
+        Configuration.setValue(AVKey.INITIAL_ALTITUDE, 2000e3);
         ApplicationTemplate.start("Terrain Shadow Prototype", AppFrame.class);
     }
 }
