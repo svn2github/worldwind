@@ -3,6 +3,7 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
+
 package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.*;
@@ -10,6 +11,25 @@ import gov.nasa.worldwind.geom.*;
 import java.util.*;
 
 /**
+ * Generates contour lines at threshold values in a rectangular array of numeric values. ContourBuilder differs from the
+ * ContourLine renderable shape in that ContourBuilder can compute the coordinates of contour lines within arbitrary
+ * two-dimensional scalar data, whereas the ContourLine shape operates only on elevation values associated with a World
+ * Wind globe. Note that ContourBuilder can be used to compute contour line coordinates within a rectangular array of
+ * elevation values.
+ * <p/>
+ * ContourBuilder operates on a caller specified rectangular array. The array specified as a one dimensional array of
+ * floating point numbers, and is understood to be organized in row-major order, with the first index indicating the
+ * value at the rectangle's upper-left corner. The domain of array values is any value that fits in a 64-bit floating
+ * point number.
+ * <p/>
+ * Contour lines may be computed at any threshold value (i.e. isovalue) by calling {@link #buildContourLines(double)} or
+ * {@link #buildContourLines(double, gov.nasa.worldwind.geom.Sector, double)}. The latter method maps contour line
+ * coordinates to geographic positions by associating the rectangular array with a geographic sector. It is valid to
+ * compute contour lines for a threshold value that is less than the rectangular array's minimum value or greater than
+ * the rectangular array's maximum value, though the result is an empty list of contour lines. The domain of contour
+ * line coordinates is the XY Cartesian space defined by the rectangular array's width and height. X coordinates range
+ * from 0 to width-1, and Y coordinates range from 0 to height-1.
+ *
  * @author dcollins
  * @version $Id$
  */
@@ -85,7 +105,7 @@ public class ContourBuilder
         dirRev.put(Direction.EAST, Direction.WEST);
         dirRev.put(Direction.WEST, Direction.EAST);
 
-        // Use LinkedHaspMap to store the maps in dirNext in order to preserve enumeration order. The method 
+        // Use LinkedHaspMap to store the maps in dirNext in order to preserve enumeration order. The method
         // traverseContourCells requires that the directions are enumerated in the order listed here.
         LinkedHashMap<Direction, Direction> map = new LinkedHashMap<Direction, Direction>();
         map.put(Direction.SOUTH, Direction.WEST);
@@ -162,41 +182,71 @@ public class ContourBuilder
         dirNext.put(14, map);
     }
 
-    public ContourBuilder(int fieldWidth, int fieldHeight, double[] fieldValues)
+    /**
+     * Creates a new ContourBuilder with the specified rectangular array arguments. The array is understood to be
+     * organized in row-major order, with the first index indicating the value at the rectangle's upper-left corner.
+     *
+     * @param width  the rectangular array width.
+     * @param height the rectangular array height.
+     * @param values the rectangular array values, as a one-dimensional array. Must contain at least width * height
+     *               values. This array is understood to be organized in row-major order, with the first index
+     *               indicating the value at the rectangle's upper-left corner.
+     *
+     * @throws java.lang.IllegalArgumentException if either the width or the height are less than 1, if the array is
+     *                                            null, or if the array length is insufficient for the specified width
+     *                                            and height.
+     */
+    public ContourBuilder(int width, int height, double[] values)
     {
-        if (fieldWidth <= 0)
+        if (width < 1)
         {
-            String msg = Logging.getMessage("generic.InvalidWidth", fieldWidth);
+            String msg = Logging.getMessage("generic.InvalidWidth", width);
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        if (fieldHeight <= 0)
+        if (height < 1)
         {
-            String msg = Logging.getMessage("generic.InvalidHeight", fieldHeight);
+            String msg = Logging.getMessage("generic.InvalidHeight", height);
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        if (fieldValues == null)
+        if (values == null)
         {
             String msg = Logging.getMessage("nullValue.ArrayIsNull");
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        if (fieldValues.length != fieldWidth * fieldHeight)
+        if (values.length != width * height)
         {
-            String msg = Logging.getMessage("generic.ArrayInvalidLength", fieldValues.length);
+            String msg = Logging.getMessage("generic.ArrayInvalidLength", values.length);
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
 
-        this.width = fieldWidth;
-        this.height = fieldHeight;
-        this.values = fieldValues;
+        this.width = width;
+        this.height = height;
+        this.values = values;
     }
 
+    /**
+     * Computes the contour lines at a specified threshold value. The returned list represents a collection of
+     * individual geographic polylines, which may or may not represent a closed loop. Each polyline is represented as a
+     * list of two-element arrays, with the X coordinate at index 0 and the Y coordinate at index 1. The domain of
+     * contour line coordinates is the XY Cartesian space defined by the rectangular array's width and height. X
+     * coordinates range from 0 to width-1, and Y coordinates range from 0 to height-1.
+     * <p/>
+     * <p/>
+     * This returns an empty list if there are no contour lines associated with the value. This occurs when the value is
+     * less than the rectangular array's minimum value, or when the value is greater than the rectangular array's
+     * maximum value.
+     *
+     * @param value the threshold value (i.e. isovalue) to compute contour lines for.
+     *
+     * @return a list containing the contour lines for the threshold value.
+     */
     public List<List<double[]>> buildContourLines(double value)
     {
         this.assembleContourCells(value);
@@ -209,6 +259,33 @@ public class ContourBuilder
         return result;
     }
 
+    /**
+     * Computes the geographic contour lines at a specified threshold value. The returned list represents a collection
+     * of individual geographic polylines, which may or may not represent a closed loop. This maps contour line
+     * coordinates to geographic positions by associating the rectangular array with a geographic sector. The array's
+     * upper left corner is mapped to the sector's NorthWest corner, and the array's lower right corner is mapped to the
+     * sector's SouthEast corner.
+     * <p/>
+     * The domain of contour line coordinates is the geographic space defined by the specified sector. Prior to the
+     * mapping into geographic coordinates, contour line X coordinates range from 0 to width-1, and Y coordinates range
+     * from 0 to height-1. After the mapping into geographic coordinates, contour line X coordinates range from
+     * sector.getMinLongitude() to sector.getMaxLongitude(), and Y coordinates range from sector.getMaxLatitude() to
+     * sector.getMinLatitude().
+     * <p/>
+     * This returns an empty list if there are no contour lines associated with the value. This occurs when the value is
+     * less than the rectangular array's minimum value, or when the value is greater than the rectangular array's
+     * maximum value.
+     *
+     * @param value    the threshold value (i.e. isovalue) to compute contour lines for.
+     * @param sector   the sector to associate with the rectangular array. The array's upper left corner is mapped to
+     *                 the sector's NorthWest corner, and the array's lower right corner is mapped to the sector's
+     *                 SouthEast corner.
+     * @param altitude the altitude to assign to the geographic positions.
+     *
+     * @return a list containing the geographic contour lines for the threshold value.
+     *
+     * @throws java.lang.IllegalArgumentException if the sector is null.
+     */
     public List<List<Position>> buildContourLines(double value, Sector sector, double altitude)
     {
         if (sector == null)
@@ -252,7 +329,8 @@ public class ContourBuilder
     protected void assembleContourCells(double value)
     {
         // Divide the 2D scalar field into a grid of evenly spaced contouring cells. Every 2x2 block of field values
-        // forms a cell. The contouring grid's dimensions are therefore one less than the 2D scalar field.
+        // forms a cell. The contouring grid's dimensions are therefore one less than the 2D scalar field. Based on
+        // the approach outlined at http://en.wikipedia.org/wiki/Marching_squares
 
         this.contourCellMap.clear();
         this.contourCellList.clear();
