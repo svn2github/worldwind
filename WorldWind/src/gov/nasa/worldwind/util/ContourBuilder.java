@@ -17,7 +17,7 @@ import java.util.*;
  * Wind globe. Note that ContourBuilder can be used to compute contour line coordinates within a rectangular array of
  * elevation values.
  * <p/>
- * ContourBuilder operates on a caller specified rectangular array. The array specified as a one dimensional array of
+ * ContourBuilder operates on a caller specified rectangular array. The array is specified as a one dimensional array of
  * floating point numbers, and is understood to be organized in row-major order, with the first index indicating the
  * value at the rectangle's upper-left corner. The domain of array values is any value that fits in a 64-bit floating
  * point number.
@@ -263,8 +263,8 @@ public class ContourBuilder
      * Computes the geographic contour lines at a specified threshold value. The returned list represents a collection
      * of individual geographic polylines, which may or may not represent a closed loop. This maps contour line
      * coordinates to geographic positions by associating the rectangular array with a geographic sector. The array's
-     * upper left corner is mapped to the sector's NorthWest corner, and the array's lower right corner is mapped to the
-     * sector's SouthEast corner.
+     * upper left corner is mapped to the sector's Northwest corner, and the array's lower right corner is mapped to the
+     * sector's Southeast corner.
      * <p/>
      * The domain of contour line coordinates is the geographic space defined by the specified sector. Prior to the
      * mapping into geographic coordinates, contour line X coordinates range from 0 to width-1, and Y coordinates range
@@ -278,8 +278,8 @@ public class ContourBuilder
      *
      * @param value    the threshold value (i.e. isovalue) to compute contour lines for.
      * @param sector   the sector to associate with the rectangular array. The array's upper left corner is mapped to
-     *                 the sector's NorthWest corner, and the array's lower right corner is mapped to the sector's
-     *                 SouthEast corner.
+     *                 the sector's Northwest corner, and the array's lower right corner is mapped to the sector's
+     *                 Southeast corner.
      * @param altitude the altitude to assign to the geographic positions.
      *
      * @return a list containing the geographic contour lines for the threshold value.
