@@ -3,7 +3,6 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-
 package gov.nasa.worldwindx.examples;
 
 import com.jogamp.common.nio.Buffers;
@@ -241,7 +240,9 @@ public class RadarVolume extends AbstractShape
     protected boolean doMakeOrderedRenderable(DrawContext dc)
     {
         if (!this.intersectsFrustum(dc))
+        {
             return false;
+        }
 
         ShapeData shapeData = this.getCurrent();
 
@@ -398,6 +399,9 @@ public class RadarVolume extends AbstractShape
 
         FloatBuffer triVerts = shapeData.triangleVertices;
 
+        int[] triFlags = new int[3];
+        int[] triIndices = new int[3];
+
         for (int n = 0; n < 2; n++) // once for near grid, then again for far grid
         {
             int base = n * this.width * this.height;
@@ -425,9 +429,6 @@ public class RadarVolume extends AbstractShape
                         ul = this.obstructionFlags[k + this.width] != EXTERNAL_OBSTRUCTION;
                         ur = this.obstructionFlags[k + this.width + 1] != EXTERNAL_OBSTRUCTION;
                     }
-
-                    int[] triFlags = new int[3];
-                    int[] triIndices = new int[3];
                     int gridSize = this.width * this.height;
 
                     int llv = k; // index of lower left cell position
@@ -435,165 +436,36 @@ public class RadarVolume extends AbstractShape
                     int ulv = (k + width);
                     int urv = k + width + 1;
 
-                    if (ul && ur)
+                    int kk; // index into the grid vertices buffer
+
+                    if (ul && ur && ll && lr) // case 6
                     {
-                        if (ll && lr)
+                        // Show both triangles.
+
+                        // It matters how we decompose the cell into triangles. The order in these two clauses
+                        // ensures that the correct half cells are drawn when one of the lower positions has an
+                        // internal obstruction -- is not on the face of the grid.
+
+                        if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION)
                         {
-                            // Show both triangles.
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[0] = this.obstructionFlags[kk / 3];
+                            triIndices[0] = kk;
 
-                            int kk; // index into the grid vertices buffer
+                            kk = ulv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[1] = this.obstructionFlags[kk / 3];
+                            triIndices[1] = kk;
 
-                            // It matters how we decompose the cell into triangles. The order in these two clauses
-                            // ensures that the correct half cells are drawn when one of the lower positions has an
-                            // internal obstruction -- is not on the face of the grid.
+                            kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[2] = this.obstructionFlags[kk / 3];
+                            triIndices[2] = kk;
 
-                            if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION)
-                            {
-                                kk = llv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[0] = this.obstructionFlags[kk / 3];
-                                triIndices[0] = kk;
+                            this.setTriangleNormals(triFlags, triIndices);
 
-                                kk = ulv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[1] = this.obstructionFlags[kk / 3];
-                                triIndices[1] = kk;
-
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[2] = this.obstructionFlags[kk / 3];
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(triFlags, triIndices);
-
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[0] = this.obstructionFlags[kk / 3];
-                                triIndices[0] = kk;
-
-                                kk = ulv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[1] = this.obstructionFlags[kk / 3];
-                                triIndices[1] = kk;
-
-                                kk = urv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[2] = this.obstructionFlags[kk / 3];
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(triFlags, triIndices);
-                            }
-                            else
-                            {
-                                kk = llv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[0] = this.obstructionFlags[kk / 3];
-                                triIndices[0] = kk;
-
-                                kk = urv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[1] = this.obstructionFlags[kk / 3];
-                                triIndices[1] = kk;
-
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[2] = this.obstructionFlags[kk / 3];
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(triFlags, triIndices);
-
-                                kk = llv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[0] = this.obstructionFlags[kk / 3];
-                                triIndices[0] = kk;
-
-                                kk = ulv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[1] = this.obstructionFlags[kk / 3];
-                                triIndices[1] = kk;
-
-                                kk = urv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triFlags[2] = this.obstructionFlags[kk / 3];
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(triFlags, triIndices);
-                            }
-
-                            // If this is the bottom row of cells, then we may need to draw the floor connecting
-                            // the internally obstructed far grid positions to the near grid.
-                            if (n == 1 && j == 0)
-                            {
-                                if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION
-                                    || this.obstructionFlags[lrv] == INTERNAL_OBSTRUCTION)
-                                {
-                                    // Draw the floor.
-                                    kk = llv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[0] = kk;
-
-                                    kk = lrv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[1] = kk;
-
-                                    kk = (llv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[2] = kk;
-
-                                    this.setTriangleNormals(null, triIndices);
-
-                                    kk = lrv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[0] = kk;
-
-                                    kk = (lrv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[1] = kk;
-
-                                    kk = (llv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[2] = kk;
-
-                                    this.setTriangleNormals(null, triIndices);
-                                }
-                                else
-                                {
-                                    // Draw the floor.
-                                    kk = llv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[0] = kk;
-
-                                    kk = (llv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[1] = kk;
-
-                                    kk = (lrv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[2] = kk;
-
-                                    this.setTriangleNormals(null, triIndices);
-
-                                    kk = llv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[0] = kk;
-
-                                    kk = lrv * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[1] = kk;
-
-                                    kk = (lrv - gridSize) * 3;
-                                    triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                    triIndices[2] = kk;
-
-                                    this.setTriangleNormals(null, triIndices);
-                                }
-                            }
-                        }
-                        else if (ll)
-                        {
-                            // Show the left triangle.
-
-                            int kk = llv * 3;
+                            kk = lrv * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triFlags[0] = this.obstructionFlags[kk / 3];
                             triIndices[0] = kk;
@@ -609,44 +481,27 @@ public class RadarVolume extends AbstractShape
                             triIndices[2] = kk;
 
                             this.setTriangleNormals(triFlags, triIndices);
-
-                            if (n == 1) // far grid
-                            {
-                                // Draw the floor
-                                kk = llv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
-
-                                kk = urv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
-
-                                kk = (llv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(null, triIndices);
-
-                                kk = urv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
-
-                                kk = (urv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
-
-                                kk = (llv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(null, triIndices);
-                            }
                         }
-                        else if (lr)
+                        else
                         {
-                            // Show the right triangle.
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[0] = this.obstructionFlags[kk / 3];
+                            triIndices[0] = kk;
 
-                            int kk = lrv * 3;
+                            kk = urv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[1] = this.obstructionFlags[kk / 3];
+                            triIndices[1] = kk;
+
+                            kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triFlags[2] = this.obstructionFlags[kk / 3];
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(triFlags, triIndices);
+
+                            kk = llv * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triFlags[0] = this.obstructionFlags[kk / 3];
                             triIndices[0] = kk;
@@ -662,59 +517,144 @@ public class RadarVolume extends AbstractShape
                             triIndices[2] = kk;
 
                             this.setTriangleNormals(triFlags, triIndices);
-
-                            if (n == 1) // far grid
-                            {
-                                // Draw the floor
-
-                                kk = ulv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
-
-                                kk = lrv * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
-
-                                kk = (lrv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(null, triIndices);
-
-                                kk = (lrv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[0] = kk;
-
-                                kk = (ulv - gridSize) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[1] = kk;
-
-                                kk = (ulv) * 3;
-                                triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
-                                triIndices[2] = kk;
-
-                                this.setTriangleNormals(null, triIndices);
-                            }
                         }
-                        else if (n == 1)
+                    }
+                    else if (ul && !ur && ll && lr) // case 5
+                    {
+                        // Show the lower left triangle
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[0] = this.obstructionFlags[kk / 3];
+                        triIndices[0] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[1] = this.obstructionFlags[kk / 3];
+                        triIndices[1] = kk;
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[2] = this.obstructionFlags[kk / 3];
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(triFlags, triIndices);
+                    }
+                    else if (ul && ur && ll && !lr) // case 7
+                    {
+                        // Show the upper left triangle.
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[0] = this.obstructionFlags[kk / 3];
+                        triIndices[0] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[1] = this.obstructionFlags[kk / 3];
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[2] = this.obstructionFlags[kk / 3];
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(triFlags, triIndices);
+                    }
+                    else if (!ul && ur && ll && lr) // case 8
+                    {
+                        // Show the lower right triangle
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[0] = this.obstructionFlags[kk / 3];
+                        triIndices[0] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[1] = this.obstructionFlags[kk / 3];
+                        triIndices[1] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[2] = this.obstructionFlags[kk / 3];
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(triFlags, triIndices);
+                    }
+                    else if (ul && ur && !ll && lr) // case 11
+                    {
+                        // Show the right triangle.
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[0] = this.obstructionFlags[kk / 3];
+                        triIndices[0] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[1] = this.obstructionFlags[kk / 3];
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triFlags[2] = this.obstructionFlags[kk / 3];
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(triFlags, triIndices);
+                    }
+
+                    if (n == 0) // no need to calculate floor for the near grid
+                        continue;
+
+                    // Form the cell's "floor".
+
+                    if (!ul && !ur && ll && lr) // case 2
+                    {
+                        // Draw the cell bottom.
+
+                        if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION
+                            || this.obstructionFlags[lrv] == INTERNAL_OBSTRUCTION)
                         {
-                            // Far grid and both lower positions are either unobstructed or internally obstructed. In
-                            // this case we draw only the floor of the cell -- the area between the near and far grids.
-
-                            llv = ulv - gridSize;
-                            lrv = urv - gridSize;
-
-                            // Draw the floor.
-                            int kk;
                             kk = llv * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[0] = kk;
 
-                            kk = urv * 3;
+                            kk = lrv * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[1] = kk;
 
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+
                             kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = (lrv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+                        }
+                        else
+                        {
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (lrv - gridSize) * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[2] = kk;
 
@@ -724,11 +664,302 @@ public class RadarVolume extends AbstractShape
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[0] = kk;
 
-                            kk = ulv * 3;
+                            kk = lrv * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[1] = kk;
 
-                            kk = urv * 3;
+                            kk = (lrv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+                        }
+                    }
+                    else if (ul && !ur && ll && !lr) // case 3
+                    {
+                        // Draw the left side of the cell.
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (ulv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (ul && !ur && ll && lr) // case 5
+                    {
+                        // Draw the ul to lr diagonal of the cell.
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (ulv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (ul && ur && ll && !lr) // case 7
+                    {
+                        // Draw the ur to ll diagonal of the cell.
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (urv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (!ul && ur && ll && lr) // case 8
+                    {
+                        // Draw the ll to ur diagonal of the cell.
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (urv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = (llv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (!ul && ur && !ll && lr) // case 10
+                    {
+                        // Draw the right side of the cell.
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (urv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (ul && ur && !ll && lr) // case 11
+                    {
+                        // Draw the ul to lr diagonal of the cell.
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = (ulv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = (lrv - gridSize) * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+                    else if (ul && ur && !ll && !lr) // case 13
+                    {
+                        // Draw the cell top.
+
+                        llv = ulv - gridSize;
+                        lrv = urv - gridSize;
+
+                        // Draw the floor.
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = lrv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+
+                        kk = llv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[0] = kk;
+
+                        kk = ulv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[1] = kk;
+
+                        kk = urv * 3;
+                        triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                        triIndices[2] = kk;
+
+                        this.setTriangleNormals(null, triIndices);
+                    }
+
+                    // If this is the bottom row of cells, then we may need to draw the floor connecting
+                    // the internally obstructed far grid positions to the near grid.
+                    if (j == 0 && ll && lr)
+                    {
+                        if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION
+                            || this.obstructionFlags[lrv] == INTERNAL_OBSTRUCTION)
+                        {
+                            // Draw the floor.
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+
+                            kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = (lrv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+                        }
+                        else
+                        {
+                            // Draw the floor.
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = (llv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (lrv - gridSize) * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[2] = kk;
+
+                            this.setTriangleNormals(null, triIndices);
+
+                            kk = llv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[0] = kk;
+
+                            kk = lrv * 3;
+                            triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
+                            triIndices[1] = kk;
+
+                            kk = (lrv - gridSize) * 3;
                             triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                             triIndices[2] = kk;
 
@@ -741,6 +972,7 @@ public class RadarVolume extends AbstractShape
 
         shapeData.triangleVertices.flip(); // capture the currently used buffer size as the limit.
         shapeData.triangleVertices = trimBuffer(shapeData.triangleVertices);
+
         shapeData.triangleNormals.flip();
         shapeData.triangleNormals = trimBuffer(shapeData.triangleNormals);
     }
@@ -909,7 +1141,9 @@ public class RadarVolume extends AbstractShape
         // See if we've cached an extent associated with the globe.
         Extent extent = super.getExtent(globe, verticalExaggeration);
         if (extent != null)
+        {
             return extent;
+        }
 
         this.getCurrent().setExtent(super.computeExtentFromPositions(globe, verticalExaggeration, this.positions));
 
@@ -920,7 +1154,9 @@ public class RadarVolume extends AbstractShape
     public Sector getSector()
     {
         if (this.sector != null)
+        {
             return this.sector;
+        }
 
         this.sector = Sector.boundingSector(this.positions);
 

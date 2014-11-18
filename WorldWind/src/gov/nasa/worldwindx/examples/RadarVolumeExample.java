@@ -31,12 +31,12 @@ public class RadarVolumeExample extends ApplicationTemplate
 {
     public static class AppFrame extends ApplicationTemplate.AppFrame
     {
-        protected static final boolean CONE_VOLUME = false;
+        protected static final boolean CONE_VOLUME = true;
 
         // Use the HighResolutionTerrain class to get accurate terrain for computing the intersections.
         protected HighResolutionTerrain terrain;
         protected double innerRange = 100;
-        protected double outerRange = 500e3;
+        protected double outerRange = 30e3;
         protected final int numAz = 25; // number of azimuth samplings
         protected final int numEl = 25; // number of elevation samplings
         protected final Angle minimumElevation = Angle.fromDegrees(0);
@@ -48,10 +48,10 @@ public class RadarVolumeExample extends ApplicationTemplate
             Position center = Position.fromDegrees(36.8378, -118.8743, 100); // radar location
             Angle startAzimuth = Angle.fromDegrees(140);
             Angle endAzimuth = Angle.fromDegrees(270);
-            Angle startElevation = Angle.fromDegrees(0);
-            Angle endElevation = Angle.fromDegrees(70);
-            Angle coneFieldOfView = Angle.fromDegrees(90);
-            Angle coneElevation = Angle.fromDegrees(70);
+            Angle startElevation = Angle.fromDegrees(-50);
+            Angle endElevation = Angle.fromDegrees(50);
+            Angle coneFieldOfView = Angle.fromDegrees(100);
+            Angle coneElevation = Angle.fromDegrees(20);
             Angle coneAzimuth = Angle.fromDegrees(205);
 
             // Initialize the high-resolution terrain class. Construct it to use 50 meter resolution elevations.
@@ -75,7 +75,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             // Create geographic positions from the computed Cartesian vertices. The terrain intersector works with
             // geographic positions.
             final List<Position> positions = this.makePositions(vertices);
-//            this.showPositionsAndRays(positions);
+//            this.showPositionsAndRays(positions, null);
 
             // Intersect the rays defined by the radar center and the computed positions with the terrain. Since
             // this is potentially a long-running operation, perform it in a separate thread.
@@ -98,7 +98,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                             try
                             {
                                 showRadarVolume(positions, obstructionFlags, numAz, numEl);
-//                                showPositionsAndRays(positions);
+//                                showPositionsAndRays(positions, obstructionFlags);
                                 getWwd().redraw();
                             }
                             finally
@@ -300,28 +300,31 @@ public class RadarVolumeExample extends ApplicationTemplate
                     continue;
                 }
 
-                // Compute the intersection with the terrain of a ray to this position. No need to perform the
-                // intersection test if the ray to the position just below this one is unobstructed because no
-                // obstruction will occur above an unobstructed position. Also no need to perform the intersection
-                // test for a far grid position if the near grid position is obstructed.
+                // If it's obstructed at the near grid it's obstructed at the far grid.
+                if (i > gridSize && obstructionFlags[i - 1 - gridSize] == RadarVolume.EXTERNAL_OBSTRUCTION)
+                {
+                    obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                    continue;
+                }
 
-                Intersection[] intersections = null;
-                if ((i > this.numAz && i <= gridSize) // near grid above the first row of elevations
-                    || (i > gridSize + this.numAz)) // far grid above the first row of elevations
+                // Compute the intersection with the terrain of a ray to this position.
+                //
+                // No need to perform the intersection test if the ray to the position just below this one is
+                // unobstructed because no obstruction will occur above an unobstructed position. Cannot perform this
+                // optimization on cone volumes because their orientation varies around the cone.
+                if (!CONE_VOLUME // can't perform this optimization on cones because their orientation is not constant
+                    && ((i > this.numAz && i <= gridSize) // near grid above the first row of elevations
+                    || (i > gridSize + this.numAz))) // far grid above the first row of elevations
                 {
-                    if (obstructionFlags[i - numAz] != RadarVolume.NO_OBSTRUCTION)
-                        intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
+                    if (obstructionFlags[i - numAz] == RadarVolume.NO_OBSTRUCTION)
+                    {
+                        obstructionFlags[i - 1] = RadarVolume.NO_OBSTRUCTION;
+                        continue;
+                    }
                 }
-                else if (i > gridSize) // far grid
-                {
-                    // Only test a far grid position if the corresponding near grid position is unobstructed.
-                    if (obstructionFlags[i - gridSize] == RadarVolume.NO_OBSTRUCTION)
-                        intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
-                }
-                else
-                {
-                    intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
-                }
+
+                // Perform the intersection test.
+                Intersection[] intersections = this.terrain.intersect(origin, position, WorldWind.ABSOLUTE);
 
                 if (intersections == null || intersections.length == 0)
                 {
@@ -344,31 +347,27 @@ public class RadarVolumeExample extends ApplicationTemplate
                         continue;
                     }
 
-                    if (i > positions.size() / 2) // if this is a far grid position
+                    if (i > gridSize) // if this is a far grid position
                     {
-                        if (obstructionFlags[i - 1 - gridSize] == RadarVolume.EXTERNAL_OBSTRUCTION)
-                        {
-                            // If it's obstructed at the near grid it's obstructed at the far grid.
-                            obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
-                        }
-                        else
-                        {
-                            // The obstruction occurs beyond the near grid.
-                            obstructionFlags[i - 1] = RadarVolume.INTERNAL_OBSTRUCTION;
-                            Position pos = globe.computePositionFromEllipsoidalPoint(intersectionPoint);
-                            double elevation = this.terrain.getElevation(pos);
-                            positions.set(i, new Position(pos, elevation));
-                            intersectionIndices.add(i);
-                        }
+                        // The obstruction occurs beyond the near grid.
+                        obstructionFlags[i - 1] = RadarVolume.INTERNAL_OBSTRUCTION;
+                        Position pos = globe.computePositionFromEllipsoidalPoint(intersectionPoint);
+                        double elevation = this.terrain.getElevation(pos);
+                        positions.set(i, new Position(pos, elevation));
+                        intersectionIndices.add(i);
                     }
-                    else
+                    else // it's a near grid position
                     {
-                        obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                        if (distance < this.innerRange)
+                            obstructionFlags[i - 1] = RadarVolume.EXTERNAL_OBSTRUCTION;
+                        else
+                            obstructionFlags[i - 1] = RadarVolume.NO_OBSTRUCTION;
                     }
                 }
             }
 
-            // Raise the internal intersection positions to the next elevation level above their original one.
+            // Raise the internal intersection positions to the next elevation level above their original one. This
+            // provides more clearance between the volume and the terrain.
             for (Integer i : intersectionIndices)
             {
                 if (i < positions.size() - numAz)
@@ -428,6 +427,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             RadarVolume volume = new RadarVolume(positions.subList(1, positions.size()), obstructionFlags, numAz,
                 numEl);
             volume.setAttributes(attributes);
+            volume.setEnableSides(!CONE_VOLUME);
             layer.addRenderable(volume);
 
             // Create two paths to show their interaction with the radar volume. The first path goes through most
@@ -448,7 +448,7 @@ public class RadarVolumeExample extends ApplicationTemplate
             insertAfterPlacenames(getWwd(), layer);
         }
 
-        void showPositionsAndRays(List<Position> positions)
+        void showPositionsAndRays(List<Position> positions, int[] obstructionFlags)
         {
             MarkerLayer markerLayer = new MarkerLayer();
             markerLayer.setKeepSeparated(false);
@@ -474,6 +474,14 @@ public class RadarVolumeExample extends ApplicationTemplate
                 Path path = new Path(positions.get(0), positions.get(i + gridSize));
                 path.setAttributes(lineAttributes);
                 path.setAltitudeMode(WorldWind.ABSOLUTE);
+                if (obstructionFlags != null)
+                {
+                    int obstructionFlag = obstructionFlags[i + gridSize - 1];
+                    String msg = obstructionFlag == RadarVolume.NO_OBSTRUCTION ? "None"
+                        : obstructionFlag == RadarVolume.EXTERNAL_OBSTRUCTION ? "External"
+                            : obstructionFlag == RadarVolume.INTERNAL_OBSTRUCTION ? "Internal" : "UNKNOWN";
+                    path.setValue(AVKey.DISPLAY_NAME, msg);
+                }
                 lineLayer.addRenderable(path);
             }
 
