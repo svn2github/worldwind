@@ -388,6 +388,11 @@ public class RadarVolume extends AbstractShape
      */
     protected void makeGridTriangles()
     {
+        // This method first computes the triangles that form the near and far grid surfaces, then it computes the
+        // floor connecting those surface to either each other or the terrain intersections within the volume. For
+        // the grid face there are five relevant cases, each described in their implementation below. For the floor
+        // there are 8 relevant cases, also described in their implementation below.
+
         ShapeData shapeData = this.getCurrent();
         FloatBuffer vs = shapeData.gridVertices;
 
@@ -678,6 +683,7 @@ public class RadarVolume extends AbstractShape
                     else if (ul && !ur && ll && !lr) // case 3
                     {
                         // Draw the left side of the cell.
+
                         kk = llv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -709,6 +715,7 @@ public class RadarVolume extends AbstractShape
                     else if (ul && !ur && ll && lr) // case 5
                     {
                         // Draw the ul to lr diagonal of the cell.
+
                         kk = ulv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -740,6 +747,7 @@ public class RadarVolume extends AbstractShape
                     else if (ul && ur && ll && !lr) // case 7
                     {
                         // Draw the ur to ll diagonal of the cell.
+
                         kk = urv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -771,6 +779,7 @@ public class RadarVolume extends AbstractShape
                     else if (!ul && ur && ll && lr) // case 8
                     {
                         // Draw the ll to ur diagonal of the cell.
+
                         kk = urv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -802,6 +811,7 @@ public class RadarVolume extends AbstractShape
                     else if (!ul && ur && !ll && lr) // case 10
                     {
                         // Draw the right side of the cell.
+
                         kk = urv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -833,6 +843,7 @@ public class RadarVolume extends AbstractShape
                     else if (ul && ur && !ll && lr) // case 11
                     {
                         // Draw the ul to lr diagonal of the cell.
+
                         kk = ulv * 3;
                         triVerts.put(vs.get(kk)).put(vs.get(kk + 1)).put(vs.get(kk + 2));
                         triIndices[0] = kk;
@@ -899,7 +910,8 @@ public class RadarVolume extends AbstractShape
                     }
 
                     // If this is the bottom row of cells, then we may need to draw the floor connecting
-                    // the internally obstructed far grid positions to the near grid.
+                    // the far grid to the near grid along the edge.
+
                     if (j == 0 && ll && lr)
                     {
                         if (this.obstructionFlags[llv] == INTERNAL_OBSTRUCTION

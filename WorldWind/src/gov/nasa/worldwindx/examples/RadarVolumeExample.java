@@ -316,7 +316,7 @@ public class RadarVolumeExample extends ApplicationTemplate
                     && ((i > this.numAz && i <= gridSize) // near grid above the first row of elevations
                     || (i > gridSize + this.numAz))) // far grid above the first row of elevations
                 {
-                    if (obstructionFlags[i - numAz] == RadarVolume.NO_OBSTRUCTION)
+                    if (obstructionFlags[i - 1 - numAz] == RadarVolume.NO_OBSTRUCTION)
                     {
                         obstructionFlags[i - 1] = RadarVolume.NO_OBSTRUCTION;
                         continue;
