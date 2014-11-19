@@ -13,5 +13,5 @@ requirejs(['src/WorldWind'], function () {
     "use strict";
 
     var wwd = new WorldWind.WorldWindow("canvasOne");
-    wwd.drawScreen();
+    wwd.render();
 });
