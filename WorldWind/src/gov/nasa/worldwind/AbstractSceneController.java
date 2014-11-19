@@ -462,6 +462,12 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 //        dc.setGroupingFilters(this.groupingFilters);
 
         long frameTimeStamp = System.currentTimeMillis();
+        // Ensure that the frame time stamps differ between frames. This is necessary on machines with low-resolution
+        // JVM clocks or that are so fast that they render under 1 millisecond.
+        if (frameTimeStamp == dc.getFrameTimeStamp())
+        {
+            ++frameTimeStamp;
+        }
         dc.setFrameTimeStamp(frameTimeStamp);
         // Indicate the frame time stamp to apps.
         this.setValue(AVKey.FRAME_TIMESTAMP, frameTimeStamp);
