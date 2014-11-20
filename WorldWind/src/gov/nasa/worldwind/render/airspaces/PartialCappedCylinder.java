@@ -115,29 +115,12 @@ public class PartialCappedCylinder extends CappedCylinder
         if (angles == null)
             return super.computeMinimalGeometry(globe, verticalExaggeration);
 
-        double[] radii = this.getRadii();
-        Matrix transform = this.computeEllipsoidalTransform(globe, verticalExaggeration);
-
         GeometryBuilder gb = this.getGeometryBuilder();
-        int count = gb.getPartialDiskVertexCount(MINIMAL_GEOMETRY_SLICES, MINIMAL_GEOMETRY_LOOPS);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        gb.makePartialDiskVertices(
-            (float) radii[0], (float) radii[1], // Inner radius, outer radius.
-            MINIMAL_GEOMETRY_SLICES, MINIMAL_GEOMETRY_LOOPS, // Slices, loops,
-            (float) angles[0], (float) angles[2], // Start angle, sweep angle.
-            verts);
-
-        List<LatLon> locations = new ArrayList<LatLon>();
-        for (int i = 0; i < numCoords; i += 3)
-        {
-            Vec4 v = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
-            v = v.transformBy4(transform);
-            locations.add(globe.computePositionFromEllipsoidalPoint(v));
-        }
+        LatLon[] locations = gb.makePartialDiskLocations(globe, this.getCenter(), this.getRadii()[0],
+            this.getRadii()[1], MINIMAL_GEOMETRY_SLICES, MINIMAL_GEOMETRY_LOOPS, angles[0], angles[2]);
 
         ArrayList<Vec4> points = new ArrayList<Vec4>();
-        this.makeExtremePoints(globe, verticalExaggeration, locations, points);
+        this.makeExtremePoints(globe, verticalExaggeration, Arrays.asList(locations), points);
 
         return points;
     }
@@ -154,35 +137,24 @@ public class PartialCappedCylinder extends CappedCylinder
 
         double[] radii = this.getRadii();
         GeometryBuilder gb = this.getGeometryBuilder();
-        int vertexCount = gb.getPartialDiskVertexCount(this.getSlices(), 1);
-        float[] coords = new float[3 * vertexCount];
-        gb.makePartialDiskVertices((float) radii[0], (float) radii[1], this.getSlices(), 1, (float) angles[0],
-            (float) angles[2], coords);
 
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeEllipsoidalTransform(globe, dc.getVerticalExaggeration());
         ArrayList<LatLon> locations = new ArrayList<LatLon>();
 
-        if (radii[0] > 0) // inner radius is > 0
+        if (radii[0] > 0) // inner radius is > 0; add inner loop
         {
-            for (int i = 0; i < vertexCount; i += 2) // inner loop
-            {
-                int index = 3 * i;
-                Vec4 point = new Vec4(coords[index], coords[index + 1], coords[index + 2]).transformBy4(transform);
-                locations.add(globe.computePositionFromEllipsoidalPoint(point));
-            }
+            List<LatLon> innerLoop = Arrays.asList(gb.makePartialCylinderLocations(dc.getGlobe(), this.getCenter(),
+                this.getRadii()[0], this.getSlices(), angles[0], angles[2]));
+            locations.addAll(innerLoop);
         }
         else // inner radius == 0
         {
             locations.add(this.getCenter());
         }
 
-        for (int i = vertexCount - 1; i > 0; i -= 2) // outer loop in reverse
-        {
-            int index = 3 * i;
-            Vec4 point = new Vec4(coords[index], coords[index + 1], coords[index + 2]).transformBy4(transform);
-            locations.add(globe.computePositionFromEllipsoidalPoint(point));
-        }
+        List<LatLon> outerLoop = Arrays.asList(gb.makePartialCylinderLocations(dc.getGlobe(), this.getCenter(),
+            this.getRadii()[1], this.getSlices(), angles[0], angles[2]));
+        Collections.reverse(outerLoop);
+        locations.addAll(outerLoop); // outer loop in reverse
 
         ((SurfacePolygon) shape).getBoundaries().clear();
         ((SurfacePolygon) shape).setOuterBoundary(locations);
@@ -254,6 +226,7 @@ public class PartialCappedCylinder extends CappedCylinder
             return;
         }
 
+        LatLon center = this.getCenter();
         double[] altitudes = this.getAltitudes(dc.getVerticalExaggeration());
         boolean[] terrainConformant = this.isTerrainConforming();
         double[] radii = this.getRadii();
@@ -294,22 +267,22 @@ public class PartialCappedCylinder extends CappedCylinder
 
             if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
             {
-                this.drawRadialWallOutline(dc, radii, angles[0], altitudes, terrainConformant,
-                    loops, stacks, GeometryBuilder.INSIDE, referenceCenter);
-                this.drawRadialWallOutline(dc, radii, angles[1], altitudes, terrainConformant,
-                    loops, stacks, GeometryBuilder.OUTSIDE, referenceCenter);
+                this.drawRadialWallOutline(dc, center, radii, angles[0], altitudes, terrainConformant, loops, stacks,
+                    GeometryBuilder.INSIDE, referenceCenter);
+                this.drawRadialWallOutline(dc, center, radii, angles[1], altitudes, terrainConformant, loops, stacks,
+                    GeometryBuilder.OUTSIDE, referenceCenter);
 
                 // Outer cylinder isn't rendered if outer radius is zero.
                 if (radii[1] != 0.0)
                 {
-                    this.drawPartialCylinderOutline(dc, radii[1], altitudes, terrainConformant,
-                        slices, stacks, GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
+                    this.drawPartialCylinderOutline(dc, center, radii[1], altitudes, terrainConformant, slices, stacks,
+                        GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
                 }
                 // Inner cylinder isn't rendered if inner radius is zero.
                 if (radii[0] != 0.0)
                 {
-                    this.drawPartialCylinderOutline(dc, radii[0], altitudes, terrainConformant,
-                        slices, stacks, GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
+                    this.drawPartialCylinderOutline(dc, center, radii[0], altitudes, terrainConformant, slices, stacks,
+                        GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
                 }
             }
             else if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
@@ -326,13 +299,13 @@ public class PartialCappedCylinder extends CappedCylinder
                     // Caps aren't rendered if radii are equal.
                     if (radii[0] != radii[1])
                     {
-                        this.drawPartialDisk(dc, radii, altitudes[1], terrainConformant[1],
-                            slices, loops, GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
+                        this.drawPartialDisk(dc, center, radii, altitudes[1], terrainConformant[1], slices, loops,
+                            GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
                         // Bottom cap isn't rendered if airspace is collapsed.
                         if (!this.isAirspaceCollapsed())
                         {
-                            this.drawPartialDisk(dc, radii, altitudes[0], terrainConformant[0],
-                                slices, loops, GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
+                            this.drawPartialDisk(dc, center, radii, altitudes[0], terrainConformant[0], slices, loops,
+                                GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
                         }
                     }
                 }
@@ -340,22 +313,22 @@ public class PartialCappedCylinder extends CappedCylinder
                 // Cylinders aren't rendered if airspace is collapsed.
                 if (!this.isAirspaceCollapsed())
                 {
-                    this.drawRadialWall(dc, radii, angles[0], altitudes, terrainConformant,
-                        loops, stacks, GeometryBuilder.INSIDE, referenceCenter);
-                    this.drawRadialWall(dc, radii, angles[1], altitudes, terrainConformant,
-                        loops, stacks, GeometryBuilder.OUTSIDE, referenceCenter);
+                    this.drawRadialWall(dc, center, radii, angles[0], altitudes, terrainConformant, loops, stacks,
+                        GeometryBuilder.INSIDE, referenceCenter);
+                    this.drawRadialWall(dc, center, radii, angles[1], altitudes, terrainConformant, loops, stacks,
+                        GeometryBuilder.OUTSIDE, referenceCenter);
 
                     // Outer cylinder isn't rendered if outer radius is zero.
                     if (radii[1] != 0.0)
                     {
-                        this.drawPartialCylinder(dc, radii[1], altitudes, terrainConformant,
-                            slices, stacks, GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
+                        this.drawPartialCylinder(dc, center, radii[1], altitudes, terrainConformant, slices, stacks,
+                            GeometryBuilder.OUTSIDE, angles[0], angles[2], referenceCenter);
                     }
                     // Inner cylinder isn't rendered if inner radius is zero.
                     if (radii[0] != 0.0)
                     {
-                        this.drawPartialCylinder(dc, radii[0], altitudes, terrainConformant,
-                            slices, stacks, GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
+                        this.drawPartialCylinder(dc, center, radii[0], altitudes, terrainConformant, slices, stacks,
+                            GeometryBuilder.INSIDE, angles[0], angles[2], referenceCenter);
                     }
                 }
             }
@@ -371,16 +344,15 @@ public class PartialCappedCylinder extends CappedCylinder
     //********************  Partial Cylinder    ********************//
     //**************************************************************//
 
-    private void drawPartialCylinder(DrawContext dc, double radius, double[] altitudes, boolean[] terrainConformant,
-        int slices, int stacks, int orientation,
-        double start, double sweep,
+    private void drawPartialCylinder(DrawContext dc, LatLon center, double radius, double[] altitudes,
+        boolean[] terrainConformant, int slices, int stacks, int orientation, double start, double sweep,
         Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createPartialCylinderVertexGeometry(dc, radius, altitudes, terrainConformant,
+        Geometry vertexGeom = this.createPartialCylinderVertexGeometry(dc, center, radius, altitudes, terrainConformant,
             slices, stacks, orientation, start, sweep, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "PartialCylinder.Indices",
-            slices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "PartialCylinder.Indices", slices, stacks,
+            orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -392,17 +364,15 @@ public class PartialCappedCylinder extends CappedCylinder
         this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
-    private void drawPartialCylinderOutline(DrawContext dc, double radius, double[] altitudes,
-        boolean[] terrainConformant,
-        int slices, int stacks, int orientation,
-        double start, double sweep,
+    private void drawPartialCylinderOutline(DrawContext dc, LatLon center, double radius, double[] altitudes,
+        boolean[] terrainConformant, int slices, int stacks, int orientation, double start, double sweep,
         Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createPartialCylinderVertexGeometry(dc, radius, altitudes, terrainConformant,
+        Geometry vertexGeom = this.createPartialCylinderVertexGeometry(dc, center, radius, altitudes, terrainConformant,
             slices, stacks, orientation, start, sweep, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "PartialCylinder.OutlineIndices",
-            slices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "PartialCylinder.OutlineIndices", slices, stacks,
+            orientation);
         Geometry outlineIndexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (outlineIndexGeom == null)
         {
@@ -414,21 +384,20 @@ public class PartialCappedCylinder extends CappedCylinder
         this.drawGeometry(dc, outlineIndexGeom, vertexGeom);
     }
 
-    private Geometry createPartialCylinderVertexGeometry(DrawContext dc, double radius, double[] altitudes,
-        boolean[] terrainConformant, int slices, int stacks, int orientation,
-        double start, double sweep,
-        Vec4 referenceCenter)
+    private Geometry createPartialCylinderVertexGeometry(DrawContext dc, LatLon center, double radius,
+        double[] altitudes, boolean[] terrainConformant, int slices, int stacks, int orientation, double start,
+        double sweep, Vec4 referenceCenter)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "PartialCylinder.Vertices",
-            radius, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1],
-            slices, stacks, orientation, start, sweep, referenceCenter);
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "PartialCylinder.Vertices", center,
+            radius, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1], slices, stacks, orientation,
+            start, sweep, referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makePartialCylinder(dc, radius, altitudes, terrainConformant,
-                slices, stacks, orientation, start, sweep, referenceCenter, vertexGeom);
+            this.makePartialCylinder(dc, center, radius, altitudes, terrainConformant, slices, stacks, orientation,
+                start, sweep, referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
@@ -436,61 +405,23 @@ public class PartialCappedCylinder extends CappedCylinder
         return vertexGeom;
     }
 
-    private void makePartialCylinder(DrawContext dc, double radius, double[] altitudes, boolean[] terrainConformant,
-        int slices, int stacks, int orientation,
-        double start, double sweep,
-        Vec4 referenceCenter,
-        Geometry dest)
+    private void makePartialCylinder(DrawContext dc, LatLon center, double radius, double[] altitudes,
+        boolean[] terrainConformant, int slices, int stacks, int orientation, double start, double sweep,
+        Vec4 referenceCenter, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
         float height = (float) (altitudes[1] - altitudes[0]);
 
         int count = gb.getPartialCylinderVertexCount(slices, stacks);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
-        gb.makePartialCylinderVertices((float) radius, height, slices, stacks, (float) start, (float) sweep,
-            verts);
-        gb.makePartialCylinderNormals((float) radius, height, slices, stacks, (float) start, (float) sweep,
-            norms);
-        this.makePartialCylinderTerrainConformant(dc, slices, stacks, verts,
-            altitudes, terrainConformant, referenceCenter);
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
+        gb.makePartialCylinderVertices(dc.getTerrain(), center, radius, altitudes, terrainConformant, slices, stacks,
+            start, sweep, referenceCenter, verts);
+        gb.makePartialCylinderNormals((float) radius, height, slices, stacks, (float) start, (float) sweep, norms);
 
         dest.setVertexData(count, verts);
         dest.setNormalData(count, norms);
-    }
-
-    private void makePartialCylinderTerrainConformant(DrawContext dc, int slices, int stacks, float[] verts,
-        double[] altitudes, boolean[] terrainConformant,
-        Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
-
-        for (int i = 0; i <= slices; i++)
-        {
-            int index = i * (stacks + 1);
-            index = 3 * index;
-            Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
-            vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
-
-            for (int j = 0; j <= stacks; j++)
-            {
-                double elevation = altitudes[j];
-                if (terrainConformant[j])
-                    elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-                vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
-                    elevation); // final model-coordinate point
-
-                index = j + i * (stacks + 1);
-                index = 3 * index;
-                verts[index] = (float) (vec.x - referenceCenter.x);
-                verts[index + 1] = (float) (vec.y - referenceCenter.y);
-                verts[index + 2] = (float) (vec.z - referenceCenter.z);
-            }
-        }
     }
 
     private void makePartialCylinderIndices(int slices, int stacks, int orientation, Geometry dest)
@@ -523,27 +454,24 @@ public class PartialCappedCylinder extends CappedCylinder
     //********************  Partial Disk        ********************//
     //**************************************************************//
 
-    private void drawPartialDisk(DrawContext dc, double[] radii, double altitude, boolean terrainConformant,
-        int slices, int loops, int orientation,
-        double start, double sweep,
+    private void drawPartialDisk(DrawContext dc, LatLon center, double[] radii, double altitude,
+        boolean terrainConformant, int slices, int loops, int orientation, double start, double sweep,
         Vec4 referenceCenter)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "PartialDisk.Vertices",
-            radii[0], radii[1], altitude, terrainConformant,
-            slices, loops, orientation, start, sweep, referenceCenter);
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "PartialDisk.Vertices", center,
+            radii[0], radii[1], altitude, terrainConformant, slices, loops, orientation, start, sweep, referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makePartialDisk(dc, radii, altitude, terrainConformant,
-                slices, loops, orientation, start, sweep, referenceCenter, vertexGeom);
+            this.makePartialDisk(dc, center, radii, altitude, terrainConformant, slices, loops, orientation, start,
+                sweep, referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
 
-        cacheKey = new Geometry.CacheKey(this.getClass(), "PartialDisk.Indices",
-            slices, loops, orientation);
+        cacheKey = new Geometry.CacheKey(this.getClass(), "PartialDisk.Indices", slices, loops, orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -555,52 +483,23 @@ public class PartialCappedCylinder extends CappedCylinder
         this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
-    private void makePartialDisk(DrawContext dc, double[] radii, double altitude, boolean terrainConformant,
-        int slices, int loops, int orientation,
-        double start, double sweep,
-        Vec4 referenceCenter,
-        Geometry dest)
+    private void makePartialDisk(DrawContext dc, LatLon center, double[] radii, double altitude,
+        boolean terrainConformant, int slices, int loops, int orientation, double start, double sweep,
+        Vec4 referenceCenter, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
 
         int count = gb.getPartialDiskIndexCount(slices, loops);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
-        gb.makePartialDiskVertices((float) radii[0], (float) radii[1], slices, loops,
-            (float) start, (float) sweep, verts);
-        this.makePartialDiskTerrainConformant(dc, numCoords, verts, altitude, terrainConformant, referenceCenter);
-        gb.makePartialDiskVertexNormals((float) radii[0], (float) radii[1], slices, loops,
-            (float) start, (float) sweep, verts, norms);
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
+        gb.makePartialDiskVertices(dc.getTerrain(), center, radii[0], radii[1], altitude, terrainConformant, slices,
+            loops, start, sweep, referenceCenter, verts);
+        gb.makePartialDiskVertexNormals((float) radii[0], (float) radii[1], slices, loops, (float) start, (float) sweep,
+            verts, norms);
 
         dest.setVertexData(count, verts);
         dest.setNormalData(count, norms);
-    }
-
-    private void makePartialDiskTerrainConformant(DrawContext dc, int numCoords, float[] verts,
-        double altitude, boolean terrainConformant,
-        Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
-
-        for (int i = 0; i < numCoords; i += 3)
-        {
-            Vec4 vec = new Vec4(verts[i], verts[i + 1], verts[i + 2]);
-            vec = vec.transformBy4(transform);
-            Position p = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
-
-            double elevation = altitude;
-            if (terrainConformant)
-                elevation += this.computeElevationAt(dc, p.getLatitude(), p.getLongitude());
-
-            vec = globe.computePointFromPosition(p.getLatitude(), p.getLongitude(),
-                elevation); // final model-coordinate point
-            verts[i] = (float) (vec.x - referenceCenter.x);
-            verts[i + 1] = (float) (vec.y - referenceCenter.y);
-            verts[i + 2] = (float) (vec.z - referenceCenter.z);
-        }
     }
 
     private void makePartialDiskIndices(int slices, int loops, int orientation, Geometry dest)
@@ -620,16 +519,13 @@ public class PartialCappedCylinder extends CappedCylinder
     //********************  Radial Wall         ********************//
     //**************************************************************//
 
-    private void drawRadialWall(DrawContext dc, double[] radii, double angle,
-        double[] altitudes, boolean[] terrainConformant,
-        int pillars, int stacks, int orientation,
-        Vec4 referenceCenter)
+    private void drawRadialWall(DrawContext dc, LatLon center, double[] radii, double angle, double[] altitudes,
+        boolean[] terrainConformant, int pillars, int stacks, int orientation, Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createRadialWallVertexGeometry(dc, radii, angle, altitudes, terrainConformant,
-            pillars, stacks, orientation, referenceCenter);
+        Geometry vertexGeom = this.createRadialWallVertexGeometry(dc, center, radii, angle, altitudes,
+            terrainConformant, pillars, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "RadialWall.Indices",
-            pillars, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "RadialWall.Indices", pillars, stacks, orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -641,16 +537,14 @@ public class PartialCappedCylinder extends CappedCylinder
         this.drawGeometry(dc, indexGeom, vertexGeom);
     }
 
-    private void drawRadialWallOutline(DrawContext dc, double[] radii, double angle,
-        double[] altitudes, boolean[] terrainConformant,
-        int pillars, int stacks, int orientation,
-        Vec4 referenceCenter)
+    private void drawRadialWallOutline(DrawContext dc, LatLon center, double[] radii, double angle, double[] altitudes,
+        boolean[] terrainConformant, int pillars, int stacks, int orientation, Vec4 referenceCenter)
     {
-        Geometry vertexGeom = createRadialWallVertexGeometry(dc, radii, angle, altitudes, terrainConformant,
-            pillars, stacks, orientation, referenceCenter);
+        Geometry vertexGeom = this.createRadialWallVertexGeometry(dc, center, radii, angle, altitudes,
+            terrainConformant, pillars, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "RadialWall.OutlineIndices",
-            pillars, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "RadialWall.OutlineIndices", pillars, stacks,
+            orientation);
         Geometry outlineIndexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (outlineIndexGeom == null)
         {
@@ -662,21 +556,19 @@ public class PartialCappedCylinder extends CappedCylinder
         this.drawGeometry(dc, outlineIndexGeom, vertexGeom);
     }
 
-    private Geometry createRadialWallVertexGeometry(DrawContext dc, double[] radii, double angle,
-        double[] altitudes, boolean[] terrainConformant,
-        int pillars, int stacks, int orientation,
-        Vec4 referenceCenter)
+    private Geometry createRadialWallVertexGeometry(DrawContext dc, LatLon center, double[] radii, double angle,
+        double[] altitudes, boolean[] terrainConformant, int pillars, int stacks, int orientation, Vec4 referenceCenter)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "RadialWall.Vertices",
-            radii[0], radii[1], angle, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1],
-            pillars, stacks, orientation, referenceCenter);
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "RadialWall.Vertices", center, radii[0],
+            radii[1], angle, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1], pillars, stacks,
+            orientation, referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makeRadialWall(dc, radii, angle, altitudes, terrainConformant,
-                pillars, stacks, orientation, referenceCenter, vertexGeom);
+            this.makeRadialWall(dc, center, radii, angle, altitudes, terrainConformant, pillars, stacks, orientation,
+                referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
@@ -684,60 +576,22 @@ public class PartialCappedCylinder extends CappedCylinder
         return vertexGeom;
     }
 
-    private void makeRadialWall(DrawContext dc, double[] radii, double angle,
-        double[] altitudes, boolean[] terrainConformant,
-        int pillars, int stacks, int orientation,
-        Vec4 referenceCenter,
-        Geometry dest)
+    private void makeRadialWall(DrawContext dc, LatLon center, double[] radii, double angle, double[] altitudes,
+        boolean[] terrainConformant, int pillars, int stacks, int orientation, Vec4 referenceCenter, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
         float height = (float) (altitudes[1] - altitudes[0]);
 
         int count = gb.getRadialWallVertexCount(pillars, stacks);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
-        gb.makeRadialWallVertices((float) radii[0], (float) radii[1], height, (float) angle,
-            pillars, stacks, verts);
-        this.makeRadialWallTerrainConformant(dc, pillars, stacks, verts, altitudes, terrainConformant, referenceCenter);
-        gb.makeRadialWallNormals((float) radii[0], (float) radii[1], height, (float) angle,
-            pillars, stacks, norms);
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
+        gb.makeRadialWallVertices(dc.getTerrain(), center, radii[0], radii[1], angle, altitudes, terrainConformant,
+            pillars, stacks, referenceCenter, verts);
+        gb.makeRadialWallNormals((float) radii[0], (float) radii[1], height, (float) angle, pillars, stacks, norms);
 
         dest.setVertexData(count, verts);
         dest.setNormalData(count, norms);
-    }
-
-    private void makeRadialWallTerrainConformant(DrawContext dc, int pillars, int stacks, float[] verts,
-        double[] altitudes, boolean[] terrainConformant,
-        Vec4 referenceCenter)
-    {
-        Globe globe = dc.getGlobe();
-        Matrix transform = this.computeEllipsoidalTransform(dc.getGlobe(), dc.getVerticalExaggeration());
-
-        for (int p = 0; p <= pillars; p++)
-        {
-            int index = p;
-            index = 3 * index;
-            Vec4 vec = new Vec4(verts[index], verts[index + 1], verts[index + 2]);
-            vec = vec.transformBy4(transform);
-            Position pos = globe.computePositionFromEllipsoidalPoint(vec); // ellipsoidal-coordinate point
-
-            for (int s = 0; s <= stacks; s++)
-            {
-                double elevation = altitudes[s];
-                if (terrainConformant[s])
-                    elevation += this.computeElevationAt(dc, pos.getLatitude(), pos.getLongitude());
-                vec = globe.computePointFromPosition(pos.getLatitude(), pos.getLongitude(),
-                    elevation); // final model-coordinate point
-
-                index = p + s * (pillars + 1);
-                index = 3 * index;
-                verts[index] = (float) (vec.x - referenceCenter.x);
-                verts[index + 1] = (float) (vec.y - referenceCenter.y);
-                verts[index + 2] = (float) (vec.z - referenceCenter.z);
-            }
-        }
     }
 
     private void makeRadialWallIndices(int pillars, int stacks, int orientation, Geometry dest)
