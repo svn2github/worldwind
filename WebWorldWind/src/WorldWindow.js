@@ -29,7 +29,7 @@ define(['src/util/Logger'], function (Logger) {
         Logger.log(Logger.LEVEL_WARNING, "This is a test log message");
 
         if (!window.WebGLRenderingContext) {
-            console.log("No WebGL");
+            Logger.log(Logger.LEVEL_SEVERE, "Canvas does not support WebGL");
             return;
         }
 
