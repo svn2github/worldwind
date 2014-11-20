@@ -258,13 +258,11 @@ public class PolyArc extends Polygon
             double[] angles = this.computeAngles();
             double radius = this.radius;
             LatLon first = locations.get(0);
-            int arcCount = this.getArcVertexCount(slices);
-            LatLon[] arcLocations = new LatLon[arcCount];
-            this.makeArc(globe, first, radius, slices, angles[0], angles[2], arcLocations);
+            LatLon[] arcLocations = this.makeArc(globe, first, radius, slices, angles[0], angles[2]);
 
-            for (int i = 0; i < arcCount; i++)
+            for (LatLon ll : arcLocations)
             {
-                polyArcLocations.add(arcLocations[i]);
+                polyArcLocations.add(ll);
                 edgeFlags.add(false);
             }
 
@@ -305,38 +303,19 @@ public class PolyArc extends Polygon
         }
     }
 
-    private int getArcVertexCount(int slices)
+    private LatLon[] makeArc(Globe globe, LatLon center, double radius, int slices, double start, double sweep)
     {
-        return slices + 1;
-    }
-
-    private void makeArc(Globe globe, LatLon center, double radius, int slices, double start, double sweep,
-        LatLon[] locations)
-    {
-        int count = this.getArcVertexCount(slices);
-        Matrix transform = globe.computeEllipsoidalOrientationAtPosition(center.latitude, center.longitude, 0);
-        Vec4[] points = new Vec4[count];
-        this.makeArc(radius, slices, start, sweep, transform, points);
-
-        for (int i = 0; i < count; i++)
-        {
-            Position pos = globe.computePositionFromEllipsoidalPoint(points[i]);
-            locations[i] = new LatLon(pos.latitude, pos.longitude);
-        }
-    }
-
-    private void makeArc(double radius, int slices, double start, double sweep, Matrix transform, Vec4[] points)
-    {
-        double aStep = sweep / (double) slices;
+        double da = sweep / slices;
+        double r = radius / globe.getRadius();
+        LatLon[] locations = new LatLon[slices + 1];
 
         for (int i = 0; i <= slices; i++)
         {
-            double a = start + i * aStep;
-            double x = Math.sin(a);
-            double y = Math.cos(a);
-            points[i] = new Vec4(x * radius, y * radius, 0.0);
-            points[i] = points[i].transformBy4(transform);
+            double a = i * da + start;
+            locations[i] = LatLon.greatCircleEndPosition(center, a, r);
         }
+
+        return locations;
     }
 
     private Angle normalizedAzimuth(Angle azimuth)
