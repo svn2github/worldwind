@@ -500,14 +500,14 @@ public class CappedCylinder extends AbstractAirspace
                 // Outer cylinder isn't rendered if outer radius is zero.
                 if (radii[1] != 0.0)
                 {
-                    this.drawCylinderOutline(dc, center, radii[1], altitudes, terrainConformant,
-                        slices, stacks, GeometryBuilder.OUTSIDE, refCenter);
+                    this.drawCylinderOutline(dc, center, radii[1], altitudes, terrainConformant, slices, stacks,
+                        GeometryBuilder.OUTSIDE, refCenter);
                 }
                 // Inner cylinder isn't rendered if inner radius is zero.
                 if (radii[0] != 0.0)
                 {
-                    this.drawCylinderOutline(dc, center, radii[0], altitudes, terrainConformant,
-                        slices, stacks, GeometryBuilder.INSIDE, refCenter);
+                    this.drawCylinderOutline(dc, center, radii[0], altitudes, terrainConformant, slices, stacks,
+                        GeometryBuilder.INSIDE, refCenter);
                 }
             }
             else if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
@@ -524,13 +524,13 @@ public class CappedCylinder extends AbstractAirspace
                     // Caps aren't rendered if radii are equal.
                     if (radii[0] != radii[1])
                     {
-                        this.drawDisk(dc, center, radii, altitudes[1], terrainConformant[1],
-                            slices, loops, GeometryBuilder.OUTSIDE, refCenter);
+                        this.drawDisk(dc, center, radii, altitudes[1], terrainConformant[1], slices, loops,
+                            GeometryBuilder.OUTSIDE, refCenter);
                         // Bottom cap isn't rendered if airspace is collapsed
                         if (!this.isAirspaceCollapsed())
                         {
-                            this.drawDisk(dc, center, radii, altitudes[0], terrainConformant[0],
-                                slices, loops, GeometryBuilder.INSIDE, refCenter);
+                            this.drawDisk(dc, center, radii, altitudes[0], terrainConformant[0], slices, loops,
+                                GeometryBuilder.INSIDE, refCenter);
                         }
                     }
                 }
@@ -541,14 +541,14 @@ public class CappedCylinder extends AbstractAirspace
                     // Outer cylinder isn't rendered if outer radius is zero.
                     if (radii[1] != 0.0)
                     {
-                        this.drawCylinder(dc, center, radii[1], altitudes, terrainConformant,
-                            slices, stacks, GeometryBuilder.OUTSIDE, refCenter);
+                        this.drawCylinder(dc, center, radii[1], altitudes, terrainConformant, slices, stacks,
+                            GeometryBuilder.OUTSIDE, refCenter);
                     }
                     // Inner cylinder isn't rendered if inner radius is zero.
                     if (radii[0] != 0.0)
                     {
-                        this.drawCylinder(dc, center, radii[0], altitudes, terrainConformant,
-                            slices, stacks, GeometryBuilder.INSIDE, refCenter);
+                        this.drawCylinder(dc, center, radii[0], altitudes, terrainConformant, slices, stacks,
+                            GeometryBuilder.INSIDE, refCenter);
                     }
                 }
             }
@@ -565,14 +565,12 @@ public class CappedCylinder extends AbstractAirspace
     //**************************************************************//
 
     private void drawCylinder(DrawContext dc, LatLon center, double radius, double[] altitudes,
-        boolean[] terrainConformant, int slices, int stacks, int orientation,
-        Vec4 referenceCenter)
+        boolean[] terrainConformant, int slices, int stacks, int orientation, Vec4 referenceCenter)
     {
         Geometry vertexGeom = this.createCylinderVertexGeometry(dc, center, radius, altitudes, terrainConformant,
             slices, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "Cylinder.Indices",
-            slices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "Cylinder.Indices", slices, stacks, orientation);
         Geometry indexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (indexGeom == null)
         {
@@ -585,14 +583,13 @@ public class CappedCylinder extends AbstractAirspace
     }
 
     private void drawCylinderOutline(DrawContext dc, LatLon center, double radius, double[] altitudes,
-        boolean[] terrainConformant, int slices, int stacks, int orientation,
-        Vec4 referenceCenter)
+        boolean[] terrainConformant, int slices, int stacks, int orientation, Vec4 referenceCenter)
     {
         Geometry vertexGeom = this.createCylinderVertexGeometry(dc, center, radius, altitudes, terrainConformant,
             slices, stacks, orientation, referenceCenter);
 
-        Object cacheKey = new Geometry.CacheKey(this.getClass(), "Cylinder.OutlineIndices",
-            slices, stacks, orientation);
+        Object cacheKey = new Geometry.CacheKey(this.getClass(), "Cylinder.OutlineIndices", slices, stacks,
+            orientation);
         Geometry outlineIndexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (outlineIndexGeom == null)
         {
@@ -605,19 +602,18 @@ public class CappedCylinder extends AbstractAirspace
     }
 
     private Geometry createCylinderVertexGeometry(DrawContext dc, LatLon center, double radius, double[] altitudes,
-        boolean[] terrainConformant, int slices, int stacks, int orientation,
-        Vec4 referenceCenter)
+        boolean[] terrainConformant, int slices, int stacks, int orientation, Vec4 referenceCenter)
     {
-        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "Cylinder.Vertices",
-            center, radius, altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1],
-            slices, stacks, orientation, referenceCenter);
+        Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "Cylinder.Vertices", center, radius,
+            altitudes[0], altitudes[1], terrainConformant[0], terrainConformant[1], slices, stacks, orientation,
+            referenceCenter);
         Geometry vertexGeom = (Geometry) this.getGeometryCache().getObject(cacheKey);
         if (vertexGeom == null || this.isExpired(dc, vertexGeom))
         {
             if (vertexGeom == null)
                 vertexGeom = new Geometry();
-            this.makeCylinder(dc, center, radius, altitudes, terrainConformant,
-                slices, stacks, orientation, referenceCenter, vertexGeom);
+            this.makeCylinder(dc, center, radius, altitudes, terrainConformant, slices, stacks, orientation,
+                referenceCenter, vertexGeom);
             this.updateExpiryCriteria(dc, vertexGeom);
             this.getGeometryCache().add(cacheKey, vertexGeom);
         }
@@ -626,9 +622,7 @@ public class CappedCylinder extends AbstractAirspace
     }
 
     private void makeCylinder(DrawContext dc, LatLon center, double radius, double[] altitudes,
-        boolean[] terrainConformant, int slices, int stacks, int orientation,
-        Vec4 referenceCenter,
-        Geometry dest)
+        boolean[] terrainConformant, int slices, int stacks, int orientation, Vec4 referenceCenter, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
@@ -644,8 +638,7 @@ public class CappedCylinder extends AbstractAirspace
         dest.setNormalData(count, norms);
     }
 
-    private void makeCylinderIndices(int slices, int stacks, int orientation,
-        Geometry dest)
+    private void makeCylinderIndices(int slices, int stacks, int orientation, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
@@ -658,8 +651,7 @@ public class CappedCylinder extends AbstractAirspace
         dest.setElementData(mode, count, indices);
     }
 
-    private void makeCylinderOutlineIndices(int slices, int stacks, int orientation,
-        Geometry dest)
+    private void makeCylinderOutlineIndices(int slices, int stacks, int orientation, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
@@ -677,8 +669,7 @@ public class CappedCylinder extends AbstractAirspace
     //**************************************************************//
 
     private void drawDisk(DrawContext dc, LatLon center, double[] radii, double altitude, boolean terrainConformant,
-        int slices, int loops, int orientation,
-        Vec4 referenceCenter)
+        int slices, int loops, int orientation, Vec4 referenceCenter)
     {
         Object cacheKey = new Geometry.CacheKey(dc.getGlobe(), this.getClass(), "Disk.Vertices",
             center, radii[0], radii[1], altitude, terrainConformant,
@@ -707,17 +698,14 @@ public class CappedCylinder extends AbstractAirspace
     }
 
     private void makeDisk(DrawContext dc, LatLon center, double[] radii, double altitude, boolean terrainConformant,
-        int slices, int loops, int orientation,
-        Vec4 referenceCenter,
-        Geometry dest)
+        int slices, int loops, int orientation, Vec4 referenceCenter, Geometry dest)
     {
         GeometryBuilder gb = this.getGeometryBuilder();
         gb.setOrientation(orientation);
 
         int count = gb.getDiskVertexCount(slices, loops);
-        int numCoords = 3 * count;
-        float[] verts = new float[numCoords];
-        float[] norms = new float[numCoords];
+        float[] verts = new float[3 * count];
+        float[] norms = new float[3 * count];
         gb.makeDiskVertices(dc.getTerrain(), center, radii[0], radii[1], altitude, terrainConformant, slices, loops,
             referenceCenter, verts);
         gb.makeDiskVertexNormals((float) radii[0], (float) radii[1], slices, loops, verts, norms);
