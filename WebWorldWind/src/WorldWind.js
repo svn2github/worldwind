@@ -5,7 +5,7 @@
 /**
  * @version $Id$
  */
-define(['src/WorldWindow'], function (WorldWindow) {
+define(['src/WorldWindow', 'src/util/Logger'], function (WorldWindow, Logger) {
     "use strict";
 
     var WorldWind = {
@@ -13,6 +13,7 @@ define(['src/WorldWindow'], function (WorldWindow) {
     };
 
     WorldWind['WorldWindow'] = WorldWindow;
+    WorldWind['Logger'] = Logger;
 
     window.WorldWind = WorldWind;
 

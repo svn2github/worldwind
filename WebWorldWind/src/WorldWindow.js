@@ -6,7 +6,7 @@
  * @version $Id$
  */
 
-define(function () {
+define(['src/util/Logger'], function (Logger) {
     "use strict";
 
     function WorldWindow(canvasName) {
@@ -26,6 +26,8 @@ define(function () {
     }
 
     WorldWindow.prototype.render = function () {
+        Logger.log(Logger.LEVEL_WARNING, "This is a test log message");
+
         if (!window.WebGLRenderingContext) {
             console.log("No WebGL");
             return;

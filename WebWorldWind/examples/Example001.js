@@ -12,6 +12,8 @@ requirejs.config({
 requirejs(['src/WorldWind'], function () {
     "use strict";
 
+    WorldWind.Logger.setLoggingLevel(WorldWind.Logger.LEVEL_WARNING);
+
     var wwd = new WorldWind.WorldWindow("canvasOne");
     wwd.render();
 });
