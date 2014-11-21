@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
- * @version $Id:$
+ * @version $Id$
  */
 define(function () {
     "use strict";
