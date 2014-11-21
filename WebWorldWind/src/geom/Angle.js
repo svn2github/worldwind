@@ -11,6 +11,8 @@ define(['src/util/Logger'], function (Logger) {
     return {
         DEGREES_TO_RADIANS: Math.PI / 180.0,
         RADIANS_TO_DEGREES: 180.0 / Math.PI,
+        TWO_PI: 2 * Math.PI,
+        HALF_PI: Math.PI / 2,
 
         degreesToRadians: function (degrees) {
             return degrees * this.DEGREES_TO_RADIANS;
@@ -32,7 +34,7 @@ define(['src/util/Logger'], function (Logger) {
         normalizedDegrees : function(degrees) {
             var a = degrees % 360;
 
-            return a > 180 ? a - 360 : a < -180 ? 360 + 1 : a;
+            return a > 180 ? a - 360 : a < -180 ? 360 + a : a;
         },
 
         normalizedDegreesLatitude : function(degrees) {
@@ -45,6 +47,24 @@ define(['src/util/Logger'], function (Logger) {
             var lon = degrees % 360;
 
             return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
+        },
+
+        normalizedRadians : function(radians) {
+            var a = radians % this.TWO_PI;
+
+            return a > Math.PI ? a - this.TWO_PI : a < -Math.PI ? this.TWO_PI + a : a;
+        },
+
+        normalizedRadiansLatitude : function(radians) {
+            var lat = radians % Math.PI;
+
+            return lat > this.HALF_PI ? Math.PI - lat : lat < -this.HALF_PI ? -Math.PI - lat : lat;
+        },
+
+        normalizedRadiansLongitude : function(radians) {
+            var lon = radians % this.TWO_PI;
+
+            return lon > Math.PI ? lon - this.TWO_PI : lon < -Math.PI ? this.TWO_PI + lon : lon;
         },
 
         isValidLatitude : function(degrees) {

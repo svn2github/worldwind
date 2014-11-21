@@ -3,12 +3,19 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
+ * @exports WorldWindow
  * @version $Id$
  */
-
 define(['src/util/Logger'], function (Logger) {
     "use strict";
 
+    /**
+     * Constructs a World Wind window for an HTML canvas.
+     * @alias WorldWindow
+     * @constructor
+     * @classdesc Represents a World Wind window for an HTML canvas.
+     * @param canvasName the name assigned to the canvas in the HTML page.
+     */
     function WorldWindow(canvasName) {
         this.canvas = document.getElementById(canvasName);
 
@@ -25,6 +32,9 @@ define(['src/util/Logger'], function (Logger) {
         }
     }
 
+    /**
+     * Redraws the window.
+     */
     WorldWindow.prototype.render = function () {
         Logger.log(Logger.LEVEL_WARNING, "This is a test log message");
 

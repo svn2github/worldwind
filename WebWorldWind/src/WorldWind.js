@@ -7,9 +7,35 @@
  */
 define(['src/WorldWindow', 'src/util/Logger'], function (WorldWindow, Logger) {
     "use strict";
-
+    /**
+     * This is the top-level World Wind module. It is global.
+     * @exports WorldWind
+     * @global
+     */
     var WorldWind = {
-        VERSION: 0.0
+        /**
+         * The World Wind version number.
+         * @member
+         * @default "0.0.0"
+         * @constant
+         */
+        VERSION: "0.0.0",
+
+        /**
+         * Indicates a great circle path.
+         * @constant
+         */
+        GREAT_CIRCLE: "greatCircle",
+        /**
+         * Indicates a rhumb path -- a path of constant bearing.
+         * @constant
+         */
+        RHUMB_LINE: "rhumbLine",
+        /**
+         * Indicates a linear, straight line path.
+         * @constant
+         */
+        LINEAR:"linear"
     };
 
     WorldWind['WorldWindow'] = WorldWindow;
