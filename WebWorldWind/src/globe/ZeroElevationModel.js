@@ -8,7 +8,7 @@
 define([
         'src/util/Logger',
         'src/error/ArgumentError',
-        'Sector'],
+        'src/geom/Sector'],
     function (Logger,
               ArgumentError,
               Sector) {
@@ -109,20 +109,22 @@ define([
         ZeroElevationModel.prototype.getElevationsForSector = function (sector, numLatitude, numLongitude,
                                                                         targetResolution, verticalExaggeration,
                                                                         result) {
+            var msg;
+
             if (!sector) {
-                var msg1 = "ZeroElevationModel.getElevationsForSector: Sector is null or undefined";
+                msg = "ZeroElevationModel.getElevationsForSector: Sector is null or undefined";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
             if (numLatitude <= 0 || numLongitude <= 0) {
-                var msg2 = "ZeroElevationModel.getElevationsForSector: numLatitude or numLongitude is less than 1";
+                msg = "ZeroElevationModel.getElevationsForSector: numLatitude or numLongitude is less than 1";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
             if (!result || result.length < numLatitude * numLongitude) {
-                var msg2 = "ZeroElevationModel.getElevationsForSector: Result array is null, undefined or insufficient length";
+                msg = "ZeroElevationModel.getElevationsForSector: Result array is null, undefined or insufficient length";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }

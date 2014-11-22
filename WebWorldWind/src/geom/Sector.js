@@ -10,7 +10,7 @@ define([
         'src/util/Logger',
         'src/error/ArgumentError',
         'src/geom/Location',
-        'Angle'],
+        'src/geom/Angle'],
     function (Logger,
               ArgumentError,
               Location,
