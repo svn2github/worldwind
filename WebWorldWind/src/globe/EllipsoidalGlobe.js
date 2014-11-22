@@ -74,7 +74,7 @@ define([
                 cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
                 sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat),
-                x = (rpm + altitude) * cosLat * sinLat,
+                x = (rpm + altitude) * cosLat * sinLon,
                 y = (rpm * (1.0 - this.eccentricitySquared) + altitude) * sinLat,
                 z = (rpm + altitude) * cosLat * cosLon;
 
@@ -161,7 +161,7 @@ define([
                 numLonPoints = numLon + 2,
                 vertexOffset = 0,
                 elevOffset = 0,
-                lat = minLat,
+                lat,
                 lon = minLon,
                 cosLat,
                 sinLat,
