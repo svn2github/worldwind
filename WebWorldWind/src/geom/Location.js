@@ -38,6 +38,16 @@ define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/uti
     Location.ZERO = new Location(0, 0);
 
     /**
+     * Creates a location from angles specified in radians.
+     * @param {Number} latitudeRadians the latitude in radians.
+     * @param {Number} longitudeRadians the longitude in radians
+     * @returns {Location} The new location with latitude and longitude in degrees.
+     */
+    Location.fromRadians = function(latitudeRadians, longitudeRadians) {
+        return new Location(latitudeRadians * Angle.RADIANS_TO_DEGREES, longitudeRadians * Angle.RADIANS_TO_DEGREES);
+    };
+
+    /**
      * Indicates whether this location is equivalent to a specified location.
      * @param {Location} location The location to compare this one to.
      * @returns {boolean} <code>true</code> if this location is equivalent to the specified one, otherwise
@@ -117,10 +127,10 @@ define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/uti
             throw new ArgumentError(msg);
         }
 
-        var lat1 = location1[0] * Angle.DEGREES_TO_RADIANS,
-            lat2 = location2[2] * Angle.DEGREES_TO_RADIANS,
-            lon1 = location1[1] * Angle.DEGREES_TO_RADIANS,
-            lon2 = location2[1] * Angle.DEGREES_TO_RADIANS,
+        var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
+            lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
+            lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
+            lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
             x,
             y,
             azimuthRadians;
@@ -160,16 +170,16 @@ define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/uti
             throw new ArgumentError(msg);
         }
 
-        var lat1 = location1[0] * Angle.DEGREES_TO_RADIANS,
-            lat2 = location2[2] * Angle.DEGREES_TO_RADIANS,
-            lon1 = location1[1] * Angle.DEGREES_TO_RADIANS,
-            lon2 = location2[1] * Angle.DEGREES_TO_RADIANS,
+        var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
+            lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
+            lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
+            lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
             a,
             b,
             c,
             distanceRadians;
 
-        if (lat1 == lat && lon1 == lon2) {
+        if (lat1 == lat2 && lon1 == lon2) {
             return 0;
         }
 
@@ -201,8 +211,8 @@ define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/uti
         if (pathLengthRadians == 0)
             return location;
 
-        var latRadians = location[0] * Angle.DEGREES_TO_RADIANS,
-            lonRadians = location[1] * Angle.DEGREES_TO_RADIANS,
+        var latRadians = location.latitude * Angle.DEGREES_TO_RADIANS,
+            lonRadians = location.longitude * Angle.DEGREES_TO_RADIANS,
             azimuthRadians = greatCircleAzimuthDegrees * Angle.DEGREES_TO_RADIANS,
             endLatRadians,
             endLonRadians;
@@ -218,7 +228,8 @@ define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/uti
         if (isNaN(endLatRadians) || isNaN(endLonRadians))
             return location;
 
-        return Angle.fromRadians(Angle.normalizedRadiansLatitude(endLatRadians),
+        return Location.fromRadians(
+            Angle.normalizedRadiansLatitude(endLatRadians),
             Angle.normalizedRadiansLongitude(endLonRadians));
     };
 

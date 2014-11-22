@@ -15,7 +15,6 @@ define(['src/WorldWindow', 'src/util/Logger'], function (WorldWindow, Logger) {
     var WorldWind = {
         /**
          * The World Wind version number.
-         * @member
          * @default "0.0.0"
          * @constant
          */
