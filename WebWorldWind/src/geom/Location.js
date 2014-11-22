@@ -6,232 +6,258 @@
  * @exports Location
  * @version $Id$
  */
-define(['src/util/Logger', 'src/error/ArgumentError', 'src/geom/Angle', 'src/util/WWMath'], function (Logger, ArgumentError, Angle, WWMath) {
-    "use strict";
+define([
+        'src/util/Logger',
+        'src/error/ArgumentError',
+        'src/geom/Angle',
+        'src/util/WWMath'
+    ],
+    function (Logger,
+              ArgumentError,
+              Angle,
+              WWMath) {
+        "use strict";
 
-    /**
-     * Constructs a location from a specified latitude and longitude in degrees.
-     * @alias Location
-     * @constructor
-     * @classdesc Represents a latitude, longitude pair.
-     * @param {Number} latitude the latitude in degrees.
-     * @param {Number} longitude the longitude in degrees.
-     * @constructor
-     */
-    function Location(latitude, longitude) {
         /**
-         * The latitude in degrees.
-         * @type {Number}
+         * Constructs a location from a specified latitude and longitude in degrees.
+         * @alias Location
+         * @constructor
+         * @classdesc Represents a latitude, longitude pair.
+         * @param {Number} latitude the latitude in degrees.
+         * @param {Number} longitude the longitude in degrees.
+         * @constructor
          */
-        this.latitude = latitude;
+        function Location(latitude, longitude) {
+            /**
+             * The latitude in degrees.
+             * @type {Number}
+             */
+            this.latitude = latitude;
+            /**
+             * The longitude in degrees.
+             * @type {Number}
+             */
+            this.longitude = longitude;
+        }
+
         /**
-         * The longitude in degrees.
-         * @type {Number}
+         * A Location with latitude and longitude both 0.
+         * @constant
+         * @type {Location}
          */
-        this.longitude = longitude;
-    }
+        Location.ZERO = new Location(0, 0);
 
-    /**
-     * A Location with latitude and longitude both 0.
-     * @constant
-     */
-    Location.ZERO = new Location(0, 0);
+        /**
+         * Creates a location from angles specified in radians.
+         * @param {Number} latitudeRadians the latitude in radians.
+         * @param {Number} longitudeRadians the longitude in radians
+         * @returns {Location} The new location with latitude and longitude in degrees.
+         */
+        Location.fromRadians = function (latitudeRadians, longitudeRadians) {
+            return new Location(latitudeRadians * Angle.RADIANS_TO_DEGREES, longitudeRadians * Angle.RADIANS_TO_DEGREES);
+        };
 
-    /**
-     * Creates a location from angles specified in radians.
-     * @param {Number} latitudeRadians the latitude in radians.
-     * @param {Number} longitudeRadians the longitude in radians
-     * @returns {Location} The new location with latitude and longitude in degrees.
-     */
-    Location.fromRadians = function(latitudeRadians, longitudeRadians) {
-        return new Location(latitudeRadians * Angle.RADIANS_TO_DEGREES, longitudeRadians * Angle.RADIANS_TO_DEGREES);
-    };
+        /**
+         * Creates a new location from a specified location.
+         * @param {Location} location The location to copy.
+         * @returns {Location} The new location, initialized to the values of the specified location.
+         * @throws {ArgumentError} If the specified location is null or undefined.
+         */
+        Location.fromLocation = function (location) {
+            if (!sector) {
+                var msg = "Location.fromLocation: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-    /**
-     * Indicates whether this location is equivalent to a specified location.
-     * @param {Location} location The location to compare this one to.
-     * @returns {boolean} <code>true</code> if this location is equivalent to the specified one, otherwise
-     * <code>false</code>.
-     */
-    Location.prototype.equals = function (location) {
-        return location && location.latidude == this.latitude && location.longitude == this.longitude;
-    };
+            return new Location(location.latitude, location.longitude);
+        };
 
-    /**
-     * Compute a location along a path at a specified distance between two specified locations.
-     * @param {String} pathType The type of path to assume. Recognized values are WorldWind.GREAT_CIRCLE,
-     * WorldWind.RHUMB_LINE and WorldWind.LINEAR. If the path type is not recognized then WorldWind.LINEAR is
-     * used.
-     * @param {Number} amount The fraction of the path between the two locations at which to compute the new
-     * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
-     * @param {Location} location1 The starting location.
-     * @param {Location} location2 The ending location.
-     * @returns {Location} The computed location.
-     * @throws {ArgumentError} If either specified location is null or undefined.
-     */
-    Location.interpolateAlongPath = function (pathType, amount, location1, location2) {
-        if (!location1 || !location2) {
-            var msg = "Location.InterpolateAlongPath: Location is null or undefined";
-            Logger.log(Logger.LEVEL_SEVERE, msg);
-            throw new ArgumentError(msg);
-        }
+        /**
+         * Indicates whether this location is equivalent to a specified location.
+         * @param {Location} location The location to compare this one to.
+         * @returns {boolean} <code>true</code> if this location is equivalent to the specified one, otherwise
+         * <code>false</code>.
+         */
+        Location.prototype.equals = function (location) {
+            return location && location.latidude == this.latitude && location.longitude == this.longitude;
+        };
 
-        if (pathType && pathType === WorldWind.GREAT_CIRCLE) {
-            return this.interpolateGreatCircle(amount, location1, location2);
-        } else if (pathType && pathType === WorldWind.RHUMB_LINE) {
-            // TODO
-        } else {
-            // TODO
-        }
-    };
+        /**
+         * Compute a location along a path at a specified distance between two specified locations.
+         * @param {String} pathType The type of path to assume. Recognized values are WorldWind.GREAT_CIRCLE,
+         * WorldWind.RHUMB_LINE and WorldWind.LINEAR. If the path type is not recognized then WorldWind.LINEAR is
+         * used.
+         * @param {Number} amount The fraction of the path between the two locations at which to compute the new
+         * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
+         * @param {Location} location1 The starting location.
+         * @param {Location} location2 The ending location.
+         * @returns {Location} The computed location.
+         * @throws {ArgumentError} If either specified location is null or undefined.
+         */
+        Location.interpolateAlongPath = function (pathType, amount, location1, location2) {
+            if (!location1 || !location2) {
+                var msg = "Location.InterpolateAlongPath: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-    /**
-     * Compute a location along a great circle path at a specified distance between two specified locations.
-     * @param {Number} amount The fraction of the path between the two locations at which to compute the new
-     * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
-     * @param {Location} location1 The starting location.
-     * @param {Location} location2 The ending location.
-     * @returns {Location} The computed location.
-     * @throws {ArgumentError} If either specified location is null or undefined.
-     */
-    Location.interpolateGreatCircle = function (amount, location1, location2) {
-        if (!location1 || !location2) {
-            var msg = "Location.interpolateGreatCircle: Location is null or undefined";
-            Logger.log(Logger.LEVEL_SEVERE, msg);
-            throw new ArgumentError(msg);
-        }
+            if (pathType && pathType === WorldWind.GREAT_CIRCLE) {
+                return this.interpolateGreatCircle(amount, location1, location2);
+            } else if (pathType && pathType === WorldWind.RHUMB_LINE) {
+                // TODO
+            } else {
+                // TODO
+            }
+        };
 
-        if (this.equals(location1, location2))
-            return location1;
+        /**
+         * Compute a location along a great circle path at a specified distance between two specified locations.
+         * @param {Number} amount The fraction of the path between the two locations at which to compute the new
+         * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
+         * @param {Location} location1 The starting location.
+         * @param {Location} location2 The ending location.
+         * @returns {Location} The computed location.
+         * @throws {ArgumentError} If either specified location is null or undefined.
+         */
+        Location.interpolateGreatCircle = function (amount, location1, location2) {
+            if (!location1 || !location2) {
+                var msg = "Location.interpolateGreatCircle: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-        var t = WWMath.clamp(amount, 0, 1),
-            azimuthDegrees = this.greatCircleAzimuth(location1, location2),
-            distanceRadians = this.greatCircleDistance(location1, location2);
+            if (this.equals(location1, location2))
+                return location1;
 
-        return this.greatCircleEndPosition(location1, azimuthDegrees, t * distanceRadians);
-    };
+            var t = WWMath.clamp(amount, 0, 1),
+                azimuthDegrees = this.greatCircleAzimuth(location1, location2),
+                distanceRadians = this.greatCircleDistance(location1, location2);
 
-    /**
-     * Computes the azimuth angle (clockwise from North) that points from the first location to the second location.
-     * This angle can be used as the starting azimuth for a great circle arc that begins at the first location, and
-     * passes through the second location.
-     * @param {Location} location1 The starting location.
-     * @param {Location} location2 The ending location.
-     * @returns {Number} The computed azimuth, in degrees.
-     * @throws {ArgumentError} If either specified location is null or undefined.
-     */
-    Location.greatCircleAzimuth = function (location1, location2) {
-        if (!location1 || !location2) {
-            var msg = "Location.greatCircleAzimuth: Location is null or undefined";
-            Logger.log(Logger.LEVEL_SEVERE, msg);
-            throw new ArgumentError(msg);
-        }
+            return this.greatCircleEndPosition(location1, azimuthDegrees, t * distanceRadians);
+        };
 
-        var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
-            lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
-            lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
-            lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
-            x,
-            y,
-            azimuthRadians;
+        /**
+         * Computes the azimuth angle (clockwise from North) that points from the first location to the second location.
+         * This angle can be used as the starting azimuth for a great circle arc that begins at the first location, and
+         * passes through the second location.
+         * @param {Location} location1 The starting location.
+         * @param {Location} location2 The ending location.
+         * @returns {Number} The computed azimuth, in degrees.
+         * @throws {ArgumentError} If either specified location is null or undefined.
+         */
+        Location.greatCircleAzimuth = function (location1, location2) {
+            if (!location1 || !location2) {
+                var msg = "Location.greatCircleAzimuth: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-        if (lat1 == lat && lon1 == lon2) {
-            return 0;
-        }
+            var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
+                lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
+                lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
+                lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
+                x,
+                y,
+                azimuthRadians;
 
-        if (lon1 == lon2) {
-            return lat1 > lat2 ? 180 : 0;
-        }
+            if (lat1 == lat && lon1 == lon2) {
+                return 0;
+            }
 
-        // Taken from "Map Projections - A Working Manual", page 30, equation 5-4b.
-        // The atan2() function is used in place of the traditional atan(y/x) to simplify the case when x == 0.
-        y = Math.cos(lat2) * Math.sin(lon2 - lon1);
-        x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-        azimuthRadians = Math.atan2(y, x);
+            if (lon1 == lon2) {
+                return lat1 > lat2 ? 180 : 0;
+            }
 
-        return isNaN(azimuthRadians) ? 0 : azimuthRadians * Angle.RADIANS_TO_DEGREES;
-    };
+            // Taken from "Map Projections - A Working Manual", page 30, equation 5-4b.
+            // The atan2() function is used in place of the traditional atan(y/x) to simplify the case when x == 0.
+            y = Math.cos(lat2) * Math.sin(lon2 - lon1);
+            x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            azimuthRadians = Math.atan2(y, x);
 
-    /**
-     * Computes the great circle angular distance between two locations. The return value gives the distance as the
-     * angle between the two positions on the pi radius circle. In radians, this angle is also the arc length of the
-     * segment between the two positions on that circle. To compute a distance in meters from this value, multiply
-     * the return value by the radius of the globe.
-     *
-     * @param {Location} location1 The starting location.
-     * @param {Location} location2 The ending location.
-     * @returns {Number} The computed distance, in radians.
-     * @throws {ArgumentError} If either specified location is null or undefined.
-     */
-    Location.greatCircleDistance = function (location1, location2) {
-        if (!location1 || !location2) {
-            var msg = "Location.greatCircleAzimuth: Location is null or undefined";
-            Logger.log(Logger.LEVEL_SEVERE, msg);
-            throw new ArgumentError(msg);
-        }
+            return isNaN(azimuthRadians) ? 0 : azimuthRadians * Angle.RADIANS_TO_DEGREES;
+        };
 
-        var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
-            lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
-            lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
-            lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
-            a,
-            b,
-            c,
-            distanceRadians;
+        /**
+         * Computes the great circle angular distance between two locations. The return value gives the distance as the
+         * angle between the two positions on the pi radius circle. In radians, this angle is also the arc length of the
+         * segment between the two positions on that circle. To compute a distance in meters from this value, multiply
+         * the return value by the radius of the globe.
+         *
+         * @param {Location} location1 The starting location.
+         * @param {Location} location2 The ending location.
+         * @returns {Number} The computed distance, in radians.
+         * @throws {ArgumentError} If either specified location is null or undefined.
+         */
+        Location.greatCircleDistance = function (location1, location2) {
+            if (!location1 || !location2) {
+                var msg = "Location.greatCircleAzimuth: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-        if (lat1 == lat2 && lon1 == lon2) {
-            return 0;
-        }
+            var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
+                lat2 = location2.latitude * Angle.DEGREES_TO_RADIANS,
+                lon1 = location1.longitude * Angle.DEGREES_TO_RADIANS,
+                lon2 = location2.longitude * Angle.DEGREES_TO_RADIANS,
+                a,
+                b,
+                c,
+                distanceRadians;
 
-        // "Haversine formula," taken from http://en.wikipedia.org/wiki/Great-circle_distance#Formul.C3.A6
-        a = Math.sin((lat2 - lat1) / 2.0);
-        b = Math.sin((lon2 - lon1) / 2.0);
-        c = a * a + +Math.cos(lat1) * Math.cos(lat2) * b * b;
-        distanceRadians = 2.0 * Math.asin(Math.sqrt(c));
+            if (lat1 == lat2 && lon1 == lon2) {
+                return 0;
+            }
 
-        return isNaN(distanceRadians) ? 0 : distanceRadians;
-    };
+            // "Haversine formula," taken from http://en.wikipedia.org/wiki/Great-circle_distance#Formul.C3.A6
+            a = Math.sin((lat2 - lat1) / 2.0);
+            b = Math.sin((lon2 - lon1) / 2.0);
+            c = a * a + +Math.cos(lat1) * Math.cos(lat2) * b * b;
+            distanceRadians = 2.0 * Math.asin(Math.sqrt(c));
 
-    /**
-     * Computes the location on a great circle arc with the given starting location, azimuth, and arc distance.
-     *
-     * @param {Location} location The starting location.
-     * @param {Number} greatCircleAzimuthDegrees The azimuth in degrees.
-     * @param {Number} pathLengthRadians The radian distance along the path at which to compute the end location.
-     * @returns {Location} The computed location.
-     * @throws {ArgumentError} If the specified location is null or undefined.
-     */
-    Location.greatCircleEndPosition = function (location, greatCircleAzimuthDegrees, pathLengthRadians) {
-        if (!location) {
-            var msg = "Location.greatCircleEndPosition: Location is null or undefined";
-            Logger.log(Logger.LEVEL_SEVERE, msg);
-            throw new ArgumentError(msg);
-        }
+            return isNaN(distanceRadians) ? 0 : distanceRadians;
+        };
 
-        if (pathLengthRadians == 0)
-            return location;
+        /**
+         * Computes the location on a great circle arc with the given starting location, azimuth, and arc distance.
+         *
+         * @param {Location} location The starting location.
+         * @param {Number} greatCircleAzimuthDegrees The azimuth in degrees.
+         * @param {Number} pathLengthRadians The radian distance along the path at which to compute the end location.
+         * @returns {Location} The computed location.
+         * @throws {ArgumentError} If the specified location is null or undefined.
+         */
+        Location.greatCircleEndPosition = function (location, greatCircleAzimuthDegrees, pathLengthRadians) {
+            if (!location) {
+                var msg = "Location.greatCircleEndPosition: Location is null or undefined";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-        var latRadians = location.latitude * Angle.DEGREES_TO_RADIANS,
-            lonRadians = location.longitude * Angle.DEGREES_TO_RADIANS,
-            azimuthRadians = greatCircleAzimuthDegrees * Angle.DEGREES_TO_RADIANS,
-            endLatRadians,
-            endLonRadians;
+            if (pathLengthRadians == 0)
+                return location;
 
-        // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
-        endLatRadians = Math.asin(Math.sin(latRadians) * Math.cos(pathLengthRadians)
-        + Math.cos(latRadians) * Math.sin(pathLengthRadians) * Math.cos(azimuthRadians));
-        endLonRadians = lonRadians + Math.atan2(
-            Math.sin(pathLengthRadians) * Math.sin(azimuthRadians),
-            Math.cos(latRadians) * Math.cos(pathLengthRadians) - Math.sin(latRadians) * Math.sin(pathLengthRadians)
-            * Math.cos(azimuthRadians));
+            var latRadians = location.latitude * Angle.DEGREES_TO_RADIANS,
+                lonRadians = location.longitude * Angle.DEGREES_TO_RADIANS,
+                azimuthRadians = greatCircleAzimuthDegrees * Angle.DEGREES_TO_RADIANS,
+                endLatRadians,
+                endLonRadians;
 
-        if (isNaN(endLatRadians) || isNaN(endLonRadians))
-            return location;
+            // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
+            endLatRadians = Math.asin(Math.sin(latRadians) * Math.cos(pathLengthRadians)
+            + Math.cos(latRadians) * Math.sin(pathLengthRadians) * Math.cos(azimuthRadians));
+            endLonRadians = lonRadians + Math.atan2(
+                Math.sin(pathLengthRadians) * Math.sin(azimuthRadians),
+                Math.cos(latRadians) * Math.cos(pathLengthRadians) - Math.sin(latRadians) * Math.sin(pathLengthRadians)
+                * Math.cos(azimuthRadians));
 
-        return Location.fromRadians(
-            Angle.normalizedRadiansLatitude(endLatRadians),
-            Angle.normalizedRadiansLongitude(endLonRadians));
-    };
+            if (isNaN(endLatRadians) || isNaN(endLonRadians))
+                return location;
 
-    return Location;
-});
+            return Location.fromRadians(
+                Angle.normalizedRadiansLatitude(endLatRadians),
+                Angle.normalizedRadiansLongitude(endLonRadians));
+        };
+
+        return Location;
+    });
