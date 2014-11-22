@@ -7,83 +7,121 @@
  */
 define(['src/util/Logger'], function (Logger) {
     "use strict";
+    /**
+     * Provides constants and functions for working with angles.
+     * @exports Angle
+     */
 
-    return {
+    var Angle = {
+        /**
+         * Conversion factor for degrees to radians.
+         * @constant
+         */
         DEGREES_TO_RADIANS: Math.PI / 180.0,
+        /**
+         * Conversion factor for radians to degrees.
+         * @constant
+         */
         RADIANS_TO_DEGREES: 180.0 / Math.PI,
+        /**
+         * 2 pi.
+         * @constant
+         */
         TWO_PI: 2 * Math.PI,
+        /**
+         * pi / 2
+         * @constant
+         */
         HALF_PI: Math.PI / 2,
 
-        degreesToRadians: function (degrees) {
-            return degrees * this.DEGREES_TO_RADIANS;
-        },
-
-        radiansToDegrees: function (radians) {
-            return radians * this.RADIANS_TO_DEGREES;
-        },
-
-        mix: function (amount, value1, value2) {
-            if (amount < 0)
-                return value1;
-            else if (amount > 1)
-                return value2;
-
-            return value1; // TODO: implement the mixing.
-        },
-
-        normalizedDegrees : function(degrees) {
-            var a = degrees % 360;
-
-            return a > 180 ? a - 360 : a < -180 ? 360 + a : a;
-        },
-
-        normalizedDegreesLatitude : function(degrees) {
+        /**
+         * Normalizes a specified value to be within the range of [-90, 90] degrees.
+         * @param {Number} degrees The value to normalize, in degrees.
+         * @returns {Number} The specified value normalized to the normal range of latitude.
+         */
+        normalizedDegreesLatitude: function (degrees) {
             var lat = degrees % 180;
 
             return lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
         },
 
-        normalizedDegreesLongitude : function(degrees) {
+        /**
+         * Normalizes a specified value to be within the range of [-180, 180] degrees.
+         * @param {Number} degrees The value to normalize, in degrees.
+         * @returns {Number} The specified value normalized to the normal range of longitude.
+         */
+        normalizedDegreesLongitude: function (degrees) {
             var lon = degrees % 360;
 
             return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
         },
 
-        normalizedRadians : function(radians) {
-            var a = radians % this.TWO_PI;
-
-            return a > Math.PI ? a - this.TWO_PI : a < -Math.PI ? this.TWO_PI + a : a;
-        },
-
-        normalizedRadiansLatitude : function(radians) {
+        /**
+         * Normalizes a specified value to be within the range of [-PI/2, Pi/2] radians.
+         * @param {Number} radians The value to normalize, in radians.
+         * @returns {Number} The specified value normalized to the normal range of latitude.
+         */
+        normalizedRadiansLatitude: function (radians) {
             var lat = radians % Math.PI;
 
             return lat > this.HALF_PI ? Math.PI - lat : lat < -this.HALF_PI ? -Math.PI - lat : lat;
         },
 
-        normalizedRadiansLongitude : function(radians) {
+        /**
+         * Normalizes a specified value to be within the range of [-PI, Pi] radians.
+         * @param {Number} radians The value to normalize, in radians.
+         * @returns {Number} The specified value normalized to the normal range of longitude.
+         */
+        normalizedRadiansLongitude: function (radians) {
             var lon = radians % this.TWO_PI;
 
             return lon > Math.PI ? lon - this.TWO_PI : lon < -Math.PI ? this.TWO_PI + lon : lon;
         },
 
-        isValidLatitude : function(degrees) {
+        /**
+         * Indicates whether a specified value is within the normal range of latitude, [-90, 90].
+         * @param {Number} degrees The value to test, in degrees.
+         * @returns {boolean} <code>true</code> if the value is within the normal range of latitude, otherwise
+         * <code>false</code>.
+         */
+        isValidLatitude: function (degrees) {
             return degrees >= -90 && degrees <= 90;
         },
 
-        isValidLongitude : function(degrees) {
+        /**
+         * Indicates whether a specified value is within the normal range of longitude, [-180, 180].
+         * @param {Number} degrees The value to test, in degrees.
+         * @returns {boolean} <code>true</code> if the value is within the normal range of longitude, otherwise
+         * <code>false</code>.
+         */
+        isValidLongitude: function (degrees) {
             return degrees >= -180 && degrees <= 180;
         },
 
-        toString : function(degrees) {
+        /**
+         * Returns a string representation of a specified value in degrees.
+         * @param {Number} degrees The value for which to compute the string.
+         * @returns {string} The computed string, which is a decimal degrees value followed by the degree symbol.
+         */
+        toString: function (degrees) {
             return degrees.toString() + '\u00B0';
         },
 
-        toDecimalDegreesString : function(degrees) {
+        /**
+         * Returns a decimal degrees string representation of a specified value in degrees.
+         * @param {Number} degrees The value for which to compute the string.
+         * @returns {string} The computed string, which is a decimal degrees value followed by the degree symbol.
+         */
+        toDecimalDegreesString: function (degrees) {
             return degrees.toString() + '\u00B0';
         },
 
-        toDMSString : function(degrees) {
+        /**
+         * Returns a degrees-minutes-seconds string representation of a specified value in degrees.
+         * @param {Number} degrees The value for which to compute the string.
+         * @returns {string} The computed string in degrees, minutes and decimal seconds.
+         */
+        toDMSString: function (degrees) {
             var sign,
                 temp,
                 d,
@@ -110,7 +148,12 @@ define(['src/util/Logger'], function (Logger) {
             return (sign == -1 ? "-" : "") + d + "\u00B0" + " " + m + "\u2019" + " " + s + "\u201D";
         },
 
-        toDMString : function(degrees) {
+        /**
+         * Returns a degrees-minutes string representation of a specified value in degrees.
+         * @param {Number} degrees The value for which to compute the string.
+         * @returns {string} The computed string in degrees and decimal minutes.
+         */
+        toDMString: function (degrees) {
             var sign,
                 temp,
                 d,
@@ -140,4 +183,6 @@ define(['src/util/Logger'], function (Logger) {
             return (sign == -1 ? "-" : "") + d + "\u00B0" + " " + m + "\u2019";
         }
     };
+
+    return Angle;
 });
