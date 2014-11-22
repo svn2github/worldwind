@@ -3,12 +3,20 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
+ * @exports ArgumentError
  * @version $Id$
  */
 define(function () {
     "use strict";
 
-    var ArgumentError = function(message) {
+    /**
+     * Constructs and argument error with a specified message.
+     * @alias ArgumentError
+     * @constructor
+     * @classdesc Represents an error associated with invalid function arguments.
+     * @param {String} message The message.
+     */
+    var ArgumentError = function (message) {
         this.name = "ArgumentError";
         this.message = message;
 
@@ -21,7 +29,11 @@ define(function () {
         this.stack = stack;
     };
 
-    ArgumentError.prototype.toString = function() {
+    /**
+     * Returns the message and stack trace associated with this error.
+     * @returns {string} The message and stack trace associated with this error.
+     */
+    ArgumentError.prototype.toString = function () {
         var str = this.name + ': ' + this.message;
 
         if (this.stack) {
