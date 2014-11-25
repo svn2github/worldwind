@@ -2,19 +2,22 @@
  * Copyright (C) 2014 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
+/**
+ * @version $Id: Matrix.js 2458 2014-11-25 06:53:53Z danm $
+ */
 
 define([
-        '../util/Logger',
-        '../error/ArgumentError',
-        'Vec3',
-        'Angle',
-        '../globe/EllipsoidalGlobe'
+        'src/util/Logger',
+        'src/error/ArgumentError',
+        'src/geom/Vec3',
+        'src/geom/Angle',
+        'src/globe/EllipsoidalGlobe'
     ],
-    function (Logger, 
-              ArgumentError, 
+    function (Logger,
+              ArgumentError,
               Vec3,
               Angle,
-              Globe) {
+              EllipsoidalGlobe) {
         "use strict";
 
         /**
@@ -68,7 +71,7 @@ define([
         Matrix.EPSILON = 1.0e-6;
 
         /**
-         * Create an identity matrix scale by "value" 
+         * Create an identity matrix scale by "value"
          * @param {Number} value diagonal of matrix
          * @returns {Matrix}
          */
@@ -314,7 +317,7 @@ define([
          * @param {Number} axisX x component of rotation axis
          * @param {Number} axisY y component of rotation axis
          * @param {Number} axisZ z component of rotation axis
-         * @param {Boolean} normalize denotes that the axis might not be normalized 
+         * @param {Boolean} normalize denotes that the axis might not be normalized
          * @returns {Matrix} a rotation matrix
          */
         Matrix.fromAxisAngle = function (angle, axisX, axisY, axisZ, normalize) {
@@ -572,7 +575,7 @@ define([
             var cotTheta = 1.0e6,
                 cotPhi = 1.0e6;
 
-            if (angleTheta * Angle.DEGREES_TO_RADIANS < Matrix.EPSILON && 
+            if (angleTheta * Angle.DEGREES_TO_RADIANS < Matrix.EPSILON &&
                 anglePhi * Angle.DEGREES_TO_RADIANS < Matrix.EPSILON) {
                 cotTheta = 0;
                 cotPhi = 0;
@@ -605,10 +608,10 @@ define([
          *
          * @return {Matrix} a <code>Matrix</code> that transforms local coordinates to world coordinates.
          *
-         * @throws ArgumentError 
-         *      if <code>origin</code> is not a <code>Vec3</code>, 
-         *      if <code>axes</code> is not an <code>Array</code>, 
-         *      if <code>axes</code> contains less than three elements, or 
+         * @throws ArgumentError
+         *      if <code>origin</code> is not a <code>Vec3</code>,
+         *      if <code>axes</code> is not an <code>Array</code>,
+         *      if <code>axes</code> contains less than three elements, or
          *      if  any of the first three elements in <code>axes</code> are not <code>Vec3</code>.
          */
         Matrix.fromLocalOrientation = function (origin, axes) {
@@ -658,9 +661,9 @@ define([
          * @return {Matrix} a viewing matrix in model coordinates defined by the specified eye point, reference center point, and up
          *         vector.
          *
-         * @throws ArgumentError 
-         *      if any of the eye point, reference center point, or up vector are not <code>Vec3</code>, 
-         *      if the eye point and reference center point are coincident, or 
+         * @throws ArgumentError
+         *      if any of the eye point, reference center point, or up vector are not <code>Vec3</code>,
+         *      if the eye point and reference center point are coincident, or
          *      if the up vector and the line of sight are parallel.
          */
         Matrix.fromViewLookAt = function (eye, center, up) {
@@ -714,14 +717,14 @@ define([
          * @param {Vec3} center the scene's reference center point, in model coordinates.
          * @param {Vec3} up     the direction of the up vector, in model coordinates.
          *
-         * @return {Matrix} a viewing matrix in model coordinates defined by 
-         *          the specified eye point, 
-         *          reference center point, and 
+         * @return {Matrix} a viewing matrix in model coordinates defined by
+         *          the specified eye point,
+         *          reference center point, and
          *          up vector.
          *
-         * @throws ArgumentError 
-         *          if any of the eye point, reference center point, or up vector are not <code>Vec3</code>, 
-         *          if the eye point and reference center point are coincident, or 
+         * @throws ArgumentError
+         *          if any of the eye point, reference center point, or up vector are not <code>Vec3</code>,
+         *          if the eye point and reference center point are coincident, or
          *          if the up vector and the line of sight are parallel.
          */
         Matrix.fromModelLookAt = function (eye, center, up) {
@@ -2094,7 +2097,7 @@ define([
          * @param {Array} indx permutation vector of that LU factorization
          * @param {Array} b vector to be solved
          */
-        // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
+            // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
         Matrix.lubksb = function (/* double[][] */ A, /* int[] */ indx, /* double[] */ b) {
             var ii = -1,
                 i,
@@ -2417,7 +2420,7 @@ define([
          *
          * @param {Vec3} origin the origin of the viewing parameters, in model coordinates.
          * @param {Number} roll   the view's roll in degrees.
-         * @param {Globe} globe  the globe the viewer is looking at.
+         * @param {EllipsoidalGlobe} globe  the globe the viewer is looking at.
          *
          * @return a parameterization of this viewing matrix as a list of key-value pairs.
          *
@@ -2431,7 +2434,7 @@ define([
                 throw new ArgumentError(msg);
             }
 
-            if (!(globe instanceof Globe)) {
+            if (!(globe instanceof EllipsoidalGlobe)) {
                 msg = "Matrix.extractViewingParameters:" + "generic.GlobeExpected - " + "globe";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
