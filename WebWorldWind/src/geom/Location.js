@@ -23,8 +23,8 @@ define([
          * @alias Location
          * @constructor
          * @classdesc Represents a latitude, longitude pair.
-         * @param {Number} latitude the latitude in degrees.
-         * @param {Number} longitude the longitude in degrees.
+         * @param {Number} latitude The latitude in degrees.
+         * @param {Number} longitude The longitude in degrees.
          */
         var Location = function (latitude, longitude) {
             /**
@@ -48,8 +48,8 @@ define([
 
         /**
          * Creates a location from angles specified in radians.
-         * @param {Number} latitudeRadians the latitude in radians.
-         * @param {Number} longitudeRadians the longitude in radians
+         * @param {Number} latitudeRadians The latitude in radians.
+         * @param {Number} longitudeRadians The longitude in radians
          * @returns {Location} The new location with latitude and longitude in degrees.
          */
         Location.fromRadians = function (latitudeRadians, longitudeRadians) {
@@ -63,7 +63,7 @@ define([
          * @throws {ArgumentError} If the specified location is null or undefined.
          */
         Location.fromLocation = function (location) {
-            if (!sector) {
+            if (!position) {
                 var msg = "Location.fromLocation: Location is null or undefined";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);

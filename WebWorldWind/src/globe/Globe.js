@@ -12,24 +12,26 @@ define([
         'src/geom/Location',
         'src/geom/Angle',
         'src/geom/Sector',
-        'src/globe/ZeroElevationModel'],
+        'src/globe/ZeroElevationModel',
+        'src/geom/Vec3'],
     function (Logger,
               ArgumentError,
               Location,
               Angle,
               Sector,
-              ZeroElevationModel) {
+              ZeroElevationModel,
+              Vec3) {
         "use strict";
 
         /**
-         * Constructs an EllipsoidalGlobe with default radii for Earth.
-         * @alias EllipsoidalGlobe
+         * Constructs an ellipsoidal Globe with default radii for Earth (WGS84).
+         * @alias Globe
          * @constructor
          * @classdesc Represents an ellipsoidal globe.
          * @param {ElevationModel} elevationModel The elevation model to use for the constructed globe. If null,
          * {@link ZeroElevationModel} is used.
          */
-        var EllipsoidalGlobe = function (elevationModel) {
+        var Globe = function (elevationModel) {
             /**
              * This globe's elevation model.
              * @type {ElevationModel}
@@ -40,14 +42,14 @@ define([
             /**
              * This globe's equatorial radius.
              * @type {number}
-             * @default 6378137.0
+             * @default 6378137.0 meters
              */
             this.equatorialRadius = 6378137.0;
 
             /**
              * This globe's polar radius.
              * @type {number}
-             * @default 6356752.3
+             * @default 6356752.3 meters
              */
             this.polarRadius = 6356752.3;
 
@@ -64,11 +66,11 @@ define([
          * @param {Number} latitude The position's latitude.
          * @param {Number} longitude The position's longitude.
          * @param {Number} altitude The position's altitude.
-         * @param {Number[]} result A reference to a preallocated three-element array to contain, respectively, the X,
+         * @param {Number[]} result A reference to a pre-allocated three-element array to contain, respectively, the X,
          * Y and Z Cartesian coordinates.
          * @returns {Number[]} The result argument if specified, otherwise a newly created array with the results.
          */
-        EllipsoidalGlobe.prototype.computePointFromPosition = function (latitude, longitude, altitude, result) {
+        Globe.prototype.computePointFromPosition = function (latitude, longitude, altitude, result) {
             var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
                 sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
                 cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
@@ -107,43 +109,43 @@ define([
          * @throws {ArgumentError} if the specified sector, altitudes array and results arrays or null or undefined, if
          * the lengths of any of the results arrays are insufficient, or if the specified stride is less than 3.
          */
-        EllipsoidalGlobe.prototype.computePointsFromPositions = function (sector, numLat, numLon, altitudes,
-                                                                          borderAltitude, offset, resultPoints,
-                                                                          stride, resultElevations) {
+        Globe.prototype.computePointsFromPositions = function (sector, numLat, numLon, altitudes,
+                                                               borderAltitude, offset, resultPoints,
+                                                               stride, resultElevations) {
             var msg;
 
-            if (!sector) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Sector is null or undefined";
+            if (!sector instanceof Sector) {
+                msg = "Globe.computePointsFromPositions: Sector is null, undefined or not a Sector";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
             if (numLat < 1 || numLon < 1) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Number of latitude or longitude points is less than zero";
+                msg = "Globe.computePointsFromPositions: Number of latitude or longitude points is less than zero";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
-            if (!altitudes) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Altitudes is null or undefined";
+            if (!altitudes instanceof Array || altitudes.length < numLat * numLon) {
+                msg = "Globe.computePointsFromPositions: Altitudes is null, undefined, not an Array or insufficient length";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
-            if (!resultPoints || resultPoints.length < numLat * numLon) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Result points array is null, undefined or insufficient length";
+            if (!resultPoints instanceof Array || resultPoints.length < numLat * numLon) {
+                msg = "Globe.computePointsFromPositions: Result points array is null, undefined, not an Array or insufficient length";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
             if (resultStride < 3) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Stride is less than 3";
+                msg = "Globe.computePointsFromPositions: Stride is less than 3";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
 
-            if (!resultElevations || resultElevations.length < numLat * numLon) {
-                msg = "EllipsoidalGlobe.computePointsFromPositions: Result elevations array is null, undefined or insufficient length";
+            if (!resultElevations instanceof Array || resultElevations.length < numLat * numLon) {
+                msg = "Globe.computePointsFromPositions: Result elevations array is null, undefined, not an Array or insufficient length";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
             }
@@ -219,5 +221,112 @@ define([
             }
         };
 
-        return EllipsoidalGlobe;
+        Globe.prototype.computePositionFromPoint = function (x, y, z, result) {
+            if (!resultPoints instanceof Vec3) {
+                var msg = "Globe.computePointsFromPositions: Result points array is null, undefined, not an Array or insufficient length";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
+            // Contributed by Nathan Kronenfeld. Updated on 1/24/2011. Brings this calculation in line with Vermeille's most
+            // recent update.
+
+            // According to H. Vermeille, "An analytical method to transform geocentric into geodetic coordinates"
+            // http://www.springerlink.com/content/3t6837t27t351227/fulltext.pdf
+            // Journal of Geodesy, accepted 10/2010, not yet published
+            var X = z,
+                Y = x,
+                Z = y,
+                XXpYY = X * X + Y * Y,
+                sqrtXXpYY = sqrt(XXpYY),
+                a = this.equatorialRadius,
+                ra2 = 1 / (a * a),
+                e2 = this.eccentricitySquared,
+                e4 = e2 * e2,
+                p = XXpYY * ra2,
+                q = Z * Z * (1 - e2) * ra2,
+                r = (p + q - e4) / 6,
+                h,
+                phi,
+                u,
+                evoluteBorderTest = 8 * r * r * r + e4 * p * q,
+                rad1,
+                rad2,
+                rad3,
+                atan,
+                v,
+                w,
+                k,
+                D,
+                sqrtDDpZZ,
+                e,
+                lambda,
+                s2;
+
+            if (evoluteBorderTest > 0 || q != 0) {
+                if (evoluteBorderTest > 0) {
+                    // Step 2: general case
+                    rad1 = Math.sqrt(evoluteBorderTest);
+                    rad2 = Math.sqrt(e4 * p * q);
+
+                    // 10*e2 is my arbitrary decision of what Vermeille means by "near... the cusps of the evolute".
+                    if (evoluteBorderTest > 10 * e2) {
+                        rad3 = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
+                        u = r + 0.5 * rad3 + 2 * r * r / rad3;
+                    }
+                    else {
+                        u = r + 0.5 * Math.cbrt((rad1 + rad2) * (rad1 + rad2))
+                        + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
+                    }
+                }
+                else {
+                    // Step 3: near evolute
+                    rad1 = Math.sqrt(-evoluteBorderTest);
+                    rad2 = Math.sqrt(-8 * r * r * r);
+                    rad3 = Math.sqrt(e4 * p * q);
+                    atan = 2 * Math.atan2(rad3, rad1 + rad2) / 3;
+
+                    u = -4 * r * Math.sin(atan) * Math.cos(Math.PI / 6 + atan);
+                }
+
+                v = Math.sqrt(u * u + e4 * q);
+                w = e2 * (u + v - q) / (2 * v);
+                k = (u + v) / (Math.sqrt(w * w + u + v) + w);
+                D = k * sqrtXXpYY / (k + e2);
+                sqrtDDpZZ = Math.sqrt(D * D + Z * Z);
+
+                h = (k + e2 - 1) * sqrtDDpZZ / k;
+                phi = 2 * Math.atan2(Z, sqrtDDpZZ + D);
+            }
+            else {
+                // Step 4: singular disk
+                rad1 = Math.sqrt(1 - e2);
+                rad2 = Math.sqrt(e2 - p);
+                e = Math.sqrt(e2);
+
+                h = -a * rad1 * rad2 / e;
+                phi = rad2 / (e * rad2 + rad1 * Math.sqrt(p));
+            }
+
+            // Compute lambda
+            s2 = Math.sqrt(2);
+            if ((s2 - 1) * Y < sqrtXXpYY + X) {
+                // case 1 - -135deg < lambda < 135deg
+                lambda = 2 * Math.atan2(Y, sqrtXXpYY + X);
+            }
+            else if (sqrtXXpYY + Y < (s2 + 1) * X) {
+                // case 2 - -225deg < lambda < 45deg
+                lambda = -Math.PI * 0.5 + 2 * Math.atan2(X, sqrtXXpYY - Y);
+            }
+            else {
+                // if (sqrtXXpYY-Y<(s2=1)*X) {  // is the test, if needed, but it's not
+                // case 3: - -45deg < lambda < 225deg
+                lambda = Math.PI * 0.5 - 2 * Math.atan2(X, sqrtXXpYY + Y);
+            }
+
+            result.latitude = Angle.RADIANS_TO_DEGREES *  phi;
+            result.longitude = Angle.RADIANS_TO_DEGREES * lambda;
+            result.altitude = h;
+        };
+
+        return Globe;
     });
