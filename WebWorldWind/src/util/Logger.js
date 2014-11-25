@@ -61,6 +61,24 @@ define(function () {
             if (message && level > 0 && level <= loggingLevel) {
                 console.log(message);
             }
+        },
+
+        makeMessage: function (className, functionName, message) {
+            var msg = this.messageTable[message] ? this.messageTable[message] : message;
+
+            return className + "." + functionName + ": " + msg;
+        },
+
+        logMessage: function (level, className, functionName, message) {
+            var msg = this.makeMessage(className, functionName, message);
+            this.log(level, msg);
+
+            return msg;
+        },
+
+        messageTable: {
+            missingLocation: "The specified location is null, undefined or not a location.",
+            missingArray: "The specified array is null, undefined or of insufficient length."
         }
     };
 

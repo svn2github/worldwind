@@ -7,14 +7,14 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError',
         'src/geom/Angle',
+        'src/error/ArgumentError',
+        'src/util/Logger',
         'src/util/WWMath'
     ],
-    function (Logger,
+    function (Angle,
               ArgumentError,
-              Angle,
+              Logger,
               WWMath) {
         "use strict";
 
@@ -63,10 +63,9 @@ define([
          * @throws {ArgumentError} If the specified location is null or undefined.
          */
         Location.fromLocation = function (location) {
-            if (!position) {
-                var msg = "Location.fromLocation: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "fromLocation", "missingLocation"));
             }
 
             return new Location(location.latitude, location.longitude);
@@ -79,6 +78,11 @@ define([
          * <code>false</code>.
          */
         Location.prototype.equals = function (location) {
+            if (!(location instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "equals", "missingLocation"));
+            }
+
             return location && location.latitude == this.latitude && location.longitude == this.longitude;
         };
 
@@ -95,10 +99,9 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.interpolateAlongPath = function (pathType, amount, location1, location2) {
-            if (!location1 || !location2) {
-                var msg = "Location.InterpolateAlongPath: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateAlongPath", "missingLocation"));
             }
 
             if (pathType && pathType === WorldWind.GREAT_CIRCLE) {
@@ -120,10 +123,9 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.interpolateGreatCircle = function (amount, location1, location2) {
-            if (!location1 || !location2) {
-                var msg = "Location.interpolateGreatCircle: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateGreatCircle", "missingLocation"));
             }
 
             if (this.equals(location1, location2))
@@ -146,10 +148,9 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.greatCircleAzimuth = function (location1, location2) {
-            if (!location1 || !location2) {
-                var msg = "Location.greatCircleAzimuth: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleAzimuth", "missingLocation"));
             }
 
             var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
@@ -189,10 +190,9 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.greatCircleDistance = function (location1, location2) {
-            if (!location1 || !location2) {
-                var msg = "Location.greatCircleAzimuth: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleDistance", "missingLocation"));
             }
 
             var lat1 = location1.latitude * Angle.DEGREES_TO_RADIANS,
@@ -227,10 +227,9 @@ define([
          * @throws {ArgumentError} If the specified location is null or undefined.
          */
         Location.greatCircleEndPosition = function (location, greatCircleAzimuthDegrees, pathLengthRadians) {
-            if (!location) {
-                var msg = "Location.greatCircleEndPosition: Location is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(location instanceof Location)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleEndPosition", "missingLocation"));
             }
 
             if (pathLengthRadians == 0)
