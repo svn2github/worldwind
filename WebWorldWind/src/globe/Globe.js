@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
- * @exports EllipsoidalGlobe
+ * @exports Globe
  * @version $Id$
  */
 define([

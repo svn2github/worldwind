@@ -43,7 +43,7 @@ define([
              * @type {Number}
              */
             this.altitude = altitude;
-        }
+        };
 
         /**
          * A Position with latitude, longitude and altitude all 0.
@@ -94,4 +94,5 @@ define([
                 && position.altitude == this.altitude;
         };
 
+        return Position;
     });
