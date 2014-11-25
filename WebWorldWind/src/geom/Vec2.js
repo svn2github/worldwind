@@ -2,101 +2,224 @@
  * Copyright (C) 2014 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
+/**
+ * @version $Id: Vec2.js 2458 2014-11-25 06:53:53Z danm $
+ */
 
-define(function () {
-    "use strict";
+define([
+        'src/util/Logger',
+        'src/error/ArgumentError',
+        'src/geom/Vec3'
+    ],
+    function (Logger,
+              ArgumentError,
+              Vec3) {
+        "use strict";
 
-    function Vec2(x, y) {
-        this[0] = x;
-        this[1] = y;
-    }
+        /**
+         * Constructs a two component vector.
+         * @alias Vec2
+         * @classdesc Represents a two component vector.
+         * @param x x component of vector
+         * @param y y component of vector
+         * @constructor
+         */
+        function Vec2(x, y) {
+            this[0] = x;
+            this[1] = y;
+        }
 
-    Vec2.prototype = new Float64Array(2);
+        /**
+         * Number of elements in a Vec3.
+         * @type {number}
+         */
+        Vec2.NUM_ELEMENTS = 2;
 
-    Vec2.prototype.toArray = function (array, offset) {
-        array[offset] = this[0];
-        array[offset + 1] = this[1];
+        /**
+         * Vec2 inherits all methods and representation of FLoat64Array.
+         * @type {Float64Array}
+         */
+        Vec2.prototype = new Float64Array(Vec2.NUM_ELEMENTS);
 
-        return this;
-    };
+        /**
+         * Write a vector to an array at an offset.
+         * @param {Array} array array to write
+         * @param {number} offset initial index of array to write
+         * @returns {Vec2} <code>this</code> returned in the "fluent" style
+         */
+        Vec2.prototype.toArray = function (array, offset) {
+            var msg;
+            if (!(array instanceof Array)) {
+                msg = "Vec2.toArray: " + "generic.ArrayExpected - " + "array";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
+            if (array.length < offset + Vec2.NUM_ELEMENTS) {
+                msg = "Vec2.toArray: " + "generic.ArrayInvalidLength - " + "array";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
+            array[offset] = this[0];
+            array[offset + 1] = this[1];
 
-    Vec2.prototype.fromArray = function (array, offset) {
-        this[0] = array[offset];
-        this[1] = array[offset + 1];
+            return this;
+        };
 
-        return this;
-    };
+        /**
+         * Read a vector from an array.
+         * @param {Array} array array to read
+         * @param {number} offset initial index of array to read
+         * @returns {Vec2} <code>this</code> returned in the "fluent" style
+         */
+        Vec2.prototype.fromArray = function (array, offset) {
+            var msg;
+            if (!(array instanceof Array)) {
+                msg = "Vec2.fromArray: " + "generic.ArrayExpected - " + "array";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
+            if (array.length < offset + Vec2.NUM_ELEMENTS) {
+                msg = "Vec2.fromArray: " + "generic.ArrayInvalidLength - " + "array";
+                Logger.log(Logger.LEVEL_SEVERE, msg);
+                throw new ArgumentError(msg);
+            }
 
-    Vec2.prototype.add = function (vec) {
-        var x = this[0] + vec[0],
-            y = this[1] + vec[1];
+            this[0] = array[offset];
+            this[1] = array[offset + 1];
 
-        return new Vec2(x, y);
-    };
+            return this;
+        };
 
-    Vec2.prototype.subtract = function (vec) {
-        var x = this[0] - vec[0],
-            y = this[1] - vec[1];
+        /**
+         * Add a vector to <code>this</code> vector.
+         * @param {Vec2} vec vector to add
+         * @returns {Vec2} sum of two vectors
+         */
+        Vec2.prototype.add = function (vec) {
+            var x = this[0] + vec[0],
+                y = this[1] + vec[1];
 
-        return new Vec2(x, y);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.multiply = function (vec) {
-        var x = this[0] * vec[0],
-            y = this[1] * vec[1];
+        /**
+         * Subtract a vector from <code>this</code> vector.
+         * @param {Vec2} vec vector to subtract
+         * @returns {Vec2} difference of two vectors
+         */
+        Vec2.prototype.subtract = function (vec) {
+            var x = this[0] - vec[0],
+                y = this[1] - vec[1];
 
-        return new Vec2(x, y);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.scale = function (scale) {
-        var x = this[0] * scale,
-            y = this[1] * scale;
+        /**
+         * Multiply a vector to <code>this</code> vector.
+         * @param {Vec2} vec vector to multiply
+         * @returns {Vec2} product of two vectors
+         */
+        Vec2.prototype.multiply = function (vec) {
+            var x = this[0] * vec[0],
+                y = this[1] * vec[1];
 
-        return new Vec2(x, y);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.mix = function (vec, weight) {
-        var w0 = 1 - weight,
-            w1 = weight,
-            x = this[0] * w0 + vec[0] * w1,
-            y = this[1] * w0 + vec[1] * w1;
+        /**
+         * Multiply <code>this</code> vector by a scalar constant.
+         * @param {number} scale scale factor
+         * @returns {Vec2} product of <code>this</code> and scale factor
+         */
+        Vec2.prototype.scale = function (scale) {
+            var x = this[0] * scale,
+                y = this[1] * scale;
 
-        return new Vec2(x, y);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.negate = function () {
-        var x = -this[0],
-            y = -this[1];
+        /**
+         * Mix (interpolate) a vector with <code>this</code> vector.
+         * @param {Vec2} vec vector to mix
+         * @param {number} weight relative weight of <code>this</code> vector
+         * @returns {Vec2} a vector that is a blend of two vectors
+         */
+        Vec2.prototype.mix = function (vec, weight) {
+            var w0 = 1 - weight,
+                w1 = weight,
+                x = this[0] * w0 + vec[0] * w1,
+                y = this[1] * w0 + vec[1] * w1;
 
-        return new Vec2(x, y);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.dot = function (vec) {
-        return this[0] * vec[0] + this[1] * vec[1];
-    };
+        /**
+         * Negate <code>this</code> vector.
+         * @returns {Vec2} <code>this</code> vector negated
+         */
+        Vec2.prototype.negate = function () {
+            var x = -this[0],
+                y = -this[1];
 
-    Vec2.prototype.getLengthSquared = function () {
-        return this.dot(this);
-    };
+            return new Vec2(x, y);
+        };
 
-    Vec2.prototype.getLength = function () {
-        return Math.sqrt(this.getLengthSquared());
-    };
+        /**
+         * Compute the scalar dot product of <code>this</code> vector and another vector.
+         * @param {Vec2} vec vector to multiply
+         * @returns {number} scalar dot product of two vectors
+         */
+        Vec2.prototype.dot = function (vec) {
+            return this[0] * vec[0] + this[1] * vec[1];
+        };
 
-    Vec2.prototype.normalize = function () {
-        var length = this.getLength(),
-            lengthInverse = 1 / length,
-            x = this[0] * lengthInverse,
-            y = this[1] * lengthInverse;
+        /**
+         * Compute the squared length of <code>this</code> vector.
+         * @returns {number} squared magnitude of <code>this</code> vector
+         */
+        Vec2.prototype.getLengthSquared = function () {
+            return this.dot(this);
+        };
 
-        return new Vec2(x, y);
-    };
+        /**
+         * Compute the length of <code>this</code> vector.
+         * @returns {number} the magnitude of <code>this</code> vector
+         */
+        Vec2.prototype.getLength = function () {
+            return Math.sqrt(this.getLengthSquared());
+        };
 
-    Vec2.prototype.distanceTo = function (vec) {
-        var diff = this.subtract(vec);
+        /**
+         * Construct a unit vector from <code>this</code> vector.
+         * @returns {Vec2} a vector that is a unit vector
+         */
+        Vec2.prototype.normalize = function () {
+            var length = this.getLength(),
+                lengthInverse = 1 / length,
+                x = this[0] * lengthInverse,
+                y = this[1] * lengthInverse;
 
-        return diff.getLength();
-    }
+            return new Vec2(x, y);
+        };
 
-    return Vec2;
-});
+        /**
+         * Compute the distance from <code>this</code> vector to another vector
+         * @param {Vec2} vec other vector
+         * @returns {number} distance between the vectors
+         */
+        Vec2.prototype.distanceTo = function (vec) {
+            var diff = this.subtract(vec);
+
+            return diff.getLength();
+        };
+
+        /**
+         * Construct a three dimensional vector from a two dimensional vector by augmenting a 0 z component.
+         * @returns {Vec3} three dimensional version of <code>this</code> vector
+         */
+        Vec2.prototype.toVec3 = function () {
+            return new Vec3(this[0], this[1], 0);
+        };
+
+        return Vec2;
+    });
