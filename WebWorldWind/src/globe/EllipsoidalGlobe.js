@@ -29,7 +29,7 @@ define([
          * @param {ElevationModel} elevationModel The elevation model to use for the constructed globe. If null,
          * {@link ZeroElevationModel} is used.
          */
-        function EllipsoidalGlobe(elevationModel) {
+        var EllipsoidalGlobe = function (elevationModel) {
             /**
              * This globe's elevation model.
              * @type {ElevationModel}

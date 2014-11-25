@@ -27,7 +27,7 @@ define([
          * @param {Number} minLongitude the sector's minimum longitude in degrees.
          * @param {Number} maxLongitude the sector's maximum longitude in degrees.
          */
-        function Sector(minLatitude, maxLatitude, minLongitude, maxLongitude) {
+        var Sector = function (minLatitude, maxLatitude, minLongitude, maxLongitude) {
             /**
              * The minimum latitude in degrees.
              * @type {Number}

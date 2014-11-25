@@ -16,7 +16,7 @@ define(['src/util/Logger'], function (Logger) {
      * @classdesc Represents a World Wind window for an HTML canvas.
      * @param canvasName the name assigned to the canvas in the HTML page.
      */
-    function WorldWindow(canvasName) {
+    var WorldWindow = function (canvasName) {
         this.canvas = document.getElementById(canvasName);
 
         this.canvas.addEventListener("webglcontextlost", handleContextLost, false);

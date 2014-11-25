@@ -20,7 +20,7 @@ define([
          * @constructor
          * @classdesc Represents an elevation model whose elevations are zero at all locations.
          */
-        function ZeroElevationModel() {
+        var ZeroElevationModel = function () {
             /**
              * Indicates this elevation model's display name.
              * @type {string}

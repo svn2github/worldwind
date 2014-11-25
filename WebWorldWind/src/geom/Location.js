@@ -25,9 +25,8 @@ define([
          * @classdesc Represents a latitude, longitude pair.
          * @param {Number} latitude the latitude in degrees.
          * @param {Number} longitude the longitude in degrees.
-         * @constructor
          */
-        function Location(latitude, longitude) {
+        var Location = function (latitude, longitude) {
             /**
              * The latitude in degrees.
              * @type {Number}
@@ -80,7 +79,7 @@ define([
          * <code>false</code>.
          */
         Location.prototype.equals = function (location) {
-            return location && location.latidude == this.latitude && location.longitude == this.longitude;
+            return location && location.latitude == this.latitude && location.longitude == this.longitude;
         };
 
         /**
