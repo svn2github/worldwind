@@ -11,13 +11,13 @@ define([
         'src/error/ArgumentError',
         'src/geom/Vec3',
         'src/geom/Angle',
-        'src/globe/EllipsoidalGlobe'
+        'src/globe/Globe'
     ],
     function (Logger,
               ArgumentError,
               Vec3,
               Angle,
-              EllipsoidalGlobe) {
+              Globe) {
         "use strict";
 
         /**
@@ -2243,7 +2243,7 @@ define([
                 xRadians = 0;
             }
 
-            if (Number.NaN == xRadians) {
+            if (isNaN(xRadians)) {
                 return null;
             }
 
@@ -2257,7 +2257,7 @@ define([
          */
         Matrix.prototype.getRotationY = function () {
             var yRadians = Math.asin(this.m13);
-            if (Number.NaN == yRadians) {
+            if (isNaN(yRadians)) {
                 return null;
             }
 
@@ -2286,7 +2286,7 @@ define([
                 zRadians = Math.atan2(this.m21, this.m22);
             }
 
-            if (Number.NaN == zRadians) {
+            if (isNaN(zRadians)) {
                 return null;
             }
 
@@ -2295,7 +2295,7 @@ define([
 
         Matrix.prototype.getKMLRotationX = function () {   // KML assumes the order of rotations is YXZ, positive CW
             var xRadians = Math.asin(-this.m23);
-            if (Number.NaN == xRadians) {
+            if (isNaN(xRadians)) {
                 return null;
             }
 
@@ -2304,7 +2304,7 @@ define([
 
         Matrix.prototype.getKMLRotationY = function () {    // KML assumes the order of rotations is YXZ, positive CW
             var xRadians = Math.asin(-this.m23);
-            if (Number.NaN == xRadians) {
+            if (isNaN(xRadians)) {
                 return null;
             }
 
@@ -2321,7 +2321,7 @@ define([
                 yRadians = Math.atan2(-this.m12, this.m11);
             }
 
-            if (Number.NaN == yRadians) {
+            if (isNaN(yRadians)) {
                 return null;
             }
 
@@ -2330,7 +2330,7 @@ define([
 
         Matrix.prototype.getKMLRotationZ = function () {    // KML assumes the order of rotations is YXZ, positive CW
             var xRadians = Math.asin(-this.m23);
-            if (Number.NaN == xRadians) {
+            if (isNaN(xRadians)) {
                 return null;
             }
 
@@ -2342,7 +2342,7 @@ define([
                 zRadians = 0;
             }
 
-            if (Number.NaN == zRadians) {
+            if (isNaN(zRadians)) {
                 return null;
             }
 
@@ -2420,7 +2420,7 @@ define([
          *
          * @param {Vec3} origin the origin of the viewing parameters, in model coordinates.
          * @param {Number} roll   the view's roll in degrees.
-         * @param {EllipsoidalGlobe} globe  the globe the viewer is looking at.
+         * @param {Globe} globe  the globe the viewer is looking at.
          *
          * @return a parameterization of this viewing matrix as a list of key-value pairs.
          *
@@ -2434,7 +2434,7 @@ define([
                 throw new ArgumentError(msg);
             }
 
-            if (!(globe instanceof EllipsoidalGlobe)) {
+            if (!(globe instanceof Globe)) {
                 msg = "Matrix.extractViewingParameters:" + "generic.GlobeExpected - " + "globe";
                 Logger.log(Logger.LEVEL_SEVERE, msg);
                 throw new ArgumentError(msg);
