@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
- * @version $Id: Vec3.js 2458 2014-11-25 06:53:53Z danm $
+ * @version $Id$
  */
 
 define([
