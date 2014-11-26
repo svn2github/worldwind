@@ -7,20 +7,22 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError',
-        'src/geom/Location',
         'src/geom/Angle',
+        'src/error/ArgumentError',
+        'src/globe/ElevationModel',
+        'src/geom/Location',
+        'src/util/Logger',
         'src/geom/Sector',
-        'src/globe/ZeroElevationModel',
-        'src/geom/Vec3'],
-    function (Logger,
+        'src/geom/Vec3',
+        'src/util/WWMath'],
+    function (Angle,
               ArgumentError,
+              ElevationModel,
               Location,
-              Angle,
+              Logger,
               Sector,
-              ZeroElevationModel,
-              Vec3) {
+              Vec3,
+              WWMath) {
         "use strict";
 
         /**
@@ -28,16 +30,21 @@ define([
          * @alias Globe
          * @constructor
          * @classdesc Represents an ellipsoidal globe.
-         * @param {ElevationModel} elevationModel The elevation model to use for the constructed globe. If null,
-         * {@link ZeroElevationModel} is used.
+         * @param {ElevationModel} elevationModel The elevation model to use for the constructed globe.
+         * @throws {ArgumentError} If the specified elevation model is null, undefined or not an instance of
+         * {@link ElevationModel}.
          */
         var Globe = function (elevationModel) {
+            if (!(elevationModel instanceof ElevationModel)) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
+                    "constructor", "Elevation model is null, undefined or not an ElevationModel type."));
+            }
             /**
              * This globe's elevation model.
              * @type {ElevationModel}
              * @default {@link ZeroElevationModel}
              */
-            this.elevationModel = elevationModel ? elevationModel : new ZeroElevationModel();
+            this.elevationModel = elevationModel;
 
             /**
              * This globe's equatorial radius.
@@ -59,7 +66,7 @@ define([
              * @default 0.00669437999013
              */
             this.eccentricitySquared = 0.00669437999013;
-        }
+        };
 
         /**
          * Computes a Cartesian point from a specified position.
@@ -112,42 +119,34 @@ define([
         Globe.prototype.computePointsFromPositions = function (sector, numLat, numLon, altitudes,
                                                                borderAltitude, offset, resultPoints,
                                                                stride, resultElevations) {
-            var msg;
-
-            if (!sector instanceof Sector) {
-                msg = "Globe.computePointsFromPositions: Sector is null, undefined or not a Sector";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(sector instanceof Sector)) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
+                    "computePointsFromPositions", "missingSector"));
             }
 
             if (numLat < 1 || numLon < 1) {
-                msg = "Globe.computePointsFromPositions: Number of latitude or longitude points is less than zero";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
+                    "Number of latitude or longitude locations is less than zero."));
             }
 
-            if (!altitudes instanceof Array || altitudes.length < numLat * numLon) {
-                msg = "Globe.computePointsFromPositions: Altitudes is null, undefined, not an Array or insufficient length";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(altitudes instanceof Array) || altitudes.length < numLat * numLon) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
+                    "Altitudes is null, undefined, not an Array or insufficient length."));
             }
 
             if (!resultPoints instanceof Array || resultPoints.length < numLat * numLon) {
-                msg = "Globe.computePointsFromPositions: Result points array is null, undefined, not an Array or insufficient length";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
+                    "Result points array is null, undefined, not an Array or insufficient length."));
             }
 
             if (resultStride < 3) {
-                msg = "Globe.computePointsFromPositions: Stride is less than 3";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
+                    "Stride is less than 3."));
             }
 
             if (!resultElevations instanceof Array || resultElevations.length < numLat * numLon) {
-                msg = "Globe.computePointsFromPositions: Result elevations array is null, undefined, not an Array or insufficient length";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
+                    "Result elevations array is null, undefined, not an Array or insufficient length."));
             }
 
             var minLat = sector.minLatitude * Angle.DEGREES_TO_RADIANS,
@@ -206,7 +205,7 @@ define([
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 cosLat = Math.cos(lat);
                 sinLat = Math.sin(lat);
-                rpm = this.equatorialRadius / sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
 
                 for (i = 0; i < numLon + 2; i++) {
                     elev = (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1)
@@ -237,7 +236,7 @@ define([
                 Y = x,
                 Z = y,
                 XXpYY = X * X + Y * Y,
-                sqrtXXpYY = sqrt(XXpYY),
+                sqrtXXpYY = Math.sqrt(XXpYY),
                 a = this.equatorialRadius,
                 ra2 = 1 / (a * a),
                 e2 = this.eccentricitySquared,
@@ -270,12 +269,12 @@ define([
 
                     // 10*e2 is my arbitrary decision of what Vermeille means by "near... the cusps of the evolute".
                     if (evoluteBorderTest > 10 * e2) {
-                        rad3 = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
+                        rad3 = WWMath.cbrt((rad1 + rad2) * (rad1 + rad2));
                         u = r + 0.5 * rad3 + 2 * r * r / rad3;
                     }
                     else {
-                        u = r + 0.5 * Math.cbrt((rad1 + rad2) * (rad1 + rad2))
-                        + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
+                        u = r + 0.5 * WWMath.cbrt((rad1 + rad2) * (rad1 + rad2))
+                        + 0.5 * WWMath.cbrt((rad1 - rad2) * (rad1 - rad2));
                     }
                 }
                 else {
@@ -323,10 +322,12 @@ define([
                 lambda = Math.PI * 0.5 - 2 * Math.atan2(X, sqrtXXpYY + Y);
             }
 
-            result.latitude = Angle.RADIANS_TO_DEGREES *  phi;
+            result.latitude = Angle.RADIANS_TO_DEGREES * phi;
             result.longitude = Angle.RADIANS_TO_DEGREES * lambda;
             result.altitude = h;
         };
 
         return Globe;
-    });
+    }
+)
+;
