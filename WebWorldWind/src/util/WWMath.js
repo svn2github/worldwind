@@ -31,13 +31,8 @@ define(function () {
          * @param {Number} value2 The second number.
          * @returns {Number} the computed value.
          */
-        mix: function (amount, value1, value2) {
-            if (amount < 0)
-                return value1;
-            else if (amount > 1)
-                return value2;
-
-            return value1; // TODO: implement the mixing.
+        interpolate: function(amount, value1, value2) {
+            return (1 - amount) * value1 + amount * value2;
         }
     };
 

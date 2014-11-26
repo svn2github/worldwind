@@ -76,9 +76,11 @@ define(function () {
             return msg;
         },
 
-        messageTable: {
-            missingLocation: "The specified location is null, undefined or not a location.",
-            missingArray: "The specified array is null, undefined or of insufficient length."
+        messageTable: { // KEEP THIS TABLE IN ALPHABETICAL ORDER
+            missingArray: "The specified array is null, undefined or of insufficient length.",
+            missingLocation: "The specified location is null, undefined or not a Location.",
+            missingPosition: "The specified position is null, undefined or not a Position.",
+            missingResult: "The specified result variable is null, undefined or not the correct type."
         }
     };
 

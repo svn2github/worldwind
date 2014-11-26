@@ -63,7 +63,7 @@ define([
          * @throws {ArgumentError} If the specified location is null or undefined.
          */
         Location.fromLocation = function (location) {
-            if (!(location instanceof Location)) {
+            if (!location) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "fromLocation", "missingLocation"));
             }
@@ -78,12 +78,8 @@ define([
          * <code>false</code>.
          */
         Location.prototype.equals = function (location) {
-            if (!(location instanceof Location)) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "equals", "missingLocation"));
-            }
-
-            return location && location.latitude == this.latitude && location.longitude == this.longitude;
+            return (location instanceof Location)
+                && location.latitude == this.latitude && location.longitude == this.longitude;
         };
 
         /**
@@ -98,14 +94,14 @@ define([
          * @returns {Location} The computed location.
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
-        Location.interpolateAlongPath = function (pathType, amount, location1, location2) {
-            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+        Location.interpolateAlongPath = function (pathType, amount, location1, location2, result) {
+            if (!location1 || !location2) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateAlongPath", "missingLocation"));
             }
 
             if (pathType && pathType === WorldWind.GREAT_CIRCLE) {
-                return this.interpolateGreatCircle(amount, location1, location2);
+                this.interpolateGreatCircle(amount, location1, location2, result);
             } else if (pathType && pathType === WorldWind.RHUMB_LINE) {
                 // TODO
             } else {
@@ -119,23 +115,30 @@ define([
          * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
          * @param {Location} location1 The starting location.
          * @param {Location} location2 The ending location.
-         * @returns {Location} The computed location.
-         * @throws {ArgumentError} If either specified location is null or undefined.
+         * @param {Location} result A Location in which to return the result.
+         * @throws {ArgumentError} If either specified location or the result argument is null or undefined.
          */
-        Location.interpolateGreatCircle = function (amount, location1, location2) {
-            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+        Location.interpolateGreatCircle = function (amount, location1, location2, result) {
+            if (!location1 || !location2) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateGreatCircle", "missingLocation"));
             }
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateGreatCircle", "missingResult"));
+            }
 
-            if (this.equals(location1, location2))
-                return location1;
+            if (this.equals(location1, location2)) {
+                result.latitude = location1.latitude;
+                result.longitude = location1.longitude;
+                return;
+            }
 
             var t = WWMath.clamp(amount, 0, 1),
                 azimuthDegrees = this.greatCircleAzimuth(location1, location2),
                 distanceRadians = this.greatCircleDistance(location1, location2);
 
-            return this.greatCircleEndPosition(location1, azimuthDegrees, t * distanceRadians);
+            this.greatCircleEndPosition(location1, azimuthDegrees, t * distanceRadians, result);
         };
 
         /**
@@ -148,7 +151,7 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.greatCircleAzimuth = function (location1, location2) {
-            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+            if (!location1 || !location2) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleAzimuth", "missingLocation"));
             }
@@ -190,7 +193,7 @@ define([
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.greatCircleDistance = function (location1, location2) {
-            if (!(location1 instanceof Location) || !(location2 instanceof Location)) {
+            if (!location1 || !location2) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleDistance", "missingLocation"));
             }
@@ -223,17 +226,20 @@ define([
          * @param {Location} location The starting location.
          * @param {Number} greatCircleAzimuthDegrees The azimuth in degrees.
          * @param {Number} pathLengthRadians The radian distance along the path at which to compute the end location.
-         * @returns {Location} The computed location.
-         * @throws {ArgumentError} If the specified location is null or undefined.
+         * @param {Location} result A Location in which to return the result.
+         * @throws {ArgumentError} If the specified location or the result argument is null or undefined.
          */
-        Location.greatCircleEndPosition = function (location, greatCircleAzimuthDegrees, pathLengthRadians) {
-            if (!(location instanceof Location)) {
+        Location.greatCircleEndPosition = function (location, greatCircleAzimuthDegrees, pathLengthRadians, result) {
+            if (!location) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleEndPosition", "missingLocation"));
             }
 
-            if (pathLengthRadians == 0)
-                return location;
+            if (pathLengthRadians == 0) {
+                result.latitude = location.latitude;
+                result.longitude = location.longitude;
+                return;
+            }
 
             var latRadians = location.latitude * Angle.DEGREES_TO_RADIANS,
                 lonRadians = location.longitude * Angle.DEGREES_TO_RADIANS,
@@ -249,12 +255,14 @@ define([
                 Math.cos(latRadians) * Math.cos(pathLengthRadians) - Math.sin(latRadians) * Math.sin(pathLengthRadians)
                 * Math.cos(azimuthRadians));
 
-            if (isNaN(endLatRadians) || isNaN(endLonRadians))
-                return location;
+            if (isNaN(endLatRadians) || isNaN(endLonRadians)) {
+                result.latitude = location.latitude;
+                result.longitude = location.longitude;
+            } else {
+                result.latitude = Angle.normalizedRadiansLatitude(endLatRadians);
+                result.longitude = Angle.normalizedRadiansLongitude(endLonRadians);
+            }
 
-            return Location.fromRadians(
-                Angle.normalizedRadiansLatitude(endLatRadians),
-                Angle.normalizedRadiansLongitude(endLonRadians));
         };
 
         return Location;

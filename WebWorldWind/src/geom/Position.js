@@ -7,14 +7,16 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError',
         'src/geom/Angle',
+        'src/error/ArgumentError',
+        'src/geom/Location',
+        'src/util/Logger',
         'src/util/WWMath'
     ],
-    function (Logger,
+    function (Angle,
               ArgumentError,
-              Angle,
+              Location,
+              Logger,
               WWMath) {
         "use strict";
 
@@ -74,9 +76,8 @@ define([
          */
         Position.fromPosition = function (position) {
             if (!position instanceof Position) {
-                var msg = "Position.fromPosition: Position is null, undefined or not a Position";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Position", "fromPosition", "missingPosition"));
             }
 
             return new Position(position.latitude, position.longitude, position.altitude);
@@ -89,9 +90,30 @@ define([
          * <code>false</code> if the specified position is not equivalent, null, undefined or not a Position.
          */
         Position.prototype.equals = function (position) {
-            return position instanceof Position && position.latitude == this.latitude
+            return position instanceof Position
+                && position.latitude == this.latitude
                 && position.longitude == this.longitude
                 && position.altitude == this.altitude;
+        };
+
+        /**
+         * Compute a position along a great circle path at a specified distance between two specified positions.
+         * @param {Number} amount The fraction of the path between the two positions at which to compute the new
+         * position. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
+         * @param {Position} position1 The starting location.
+         * @param {Position} position2 The ending location.
+         * @param {Position} result A Location in which to return the result.
+         * @throws {ArgumentError} If either specified position or the result argument is null or undefined.
+         */
+        Position.interpolateGreatCircle = function (amount, position1, position2, result) {
+            if (!position1 || !position2) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Position", "interpolateGreatCircle", "missingPosition"));
+            }
+
+            var t = WWMath.clamp(amount, 0, 1);
+            Location.interpolateGreatCircle(t, position1, position2, result);
+            result.altitude = WWMath.interpolate(t, position1.altitude, position2.altitude);
         };
 
         return Position;
