@@ -37,7 +37,7 @@ define([
              * @type {Number}
              */
             this.longitude = longitude;
-        }
+        };
 
         /**
          * A Location with latitude and longitude both 0.
@@ -91,7 +91,7 @@ define([
          * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
          * @param {Location} location1 The starting location.
          * @param {Location} location2 The ending location.
-         * @returns {Location} The computed location.
+         * @param {Location} result A Location in which to return the result.
          * @throws {ArgumentError} If either specified location is null or undefined.
          */
         Location.interpolateAlongPath = function (pathType, amount, location1, location2, result) {
@@ -128,7 +128,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateGreatCircle", "missingResult"));
             }
 
-            if (this.equals(location1, location2)) {
+            if (location1.equals(location2)) {
                 result.latitude = location1.latitude;
                 result.longitude = location1.longitude;
                 return;
@@ -164,7 +164,7 @@ define([
                 y,
                 azimuthRadians;
 
-            if (lat1 == lat && lon1 == lon2) {
+            if (lat1 == lat2 && lon1 == lon2) {
                 return 0;
             }
 

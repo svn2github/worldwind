@@ -80,7 +80,8 @@ define(function () {
             missingArray: "The specified array is null, undefined or of insufficient length.",
             missingLocation: "The specified location is null, undefined or not a Location.",
             missingPosition: "The specified position is null, undefined or not a Position.",
-            missingResult: "The specified result variable is null, undefined or not the correct type."
+            missingResult: "The specified result variable is null, undefined or not the correct type.",
+            missingSector: "The specified sector is null, undefined or not the correct type."
         }
     };
 

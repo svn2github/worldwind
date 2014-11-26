@@ -22,6 +22,7 @@ define(function () {
 
         var stack;
         try {
+            //noinspection ExceptionCaughtLocallyJS
             throw new Error();
         } catch (e) {
             stack = e.stack;

@@ -7,14 +7,15 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
+        'src/geom/Angle',
         'src/error/ArgumentError',
         'src/geom/Location',
-        'src/geom/Angle'],
-    function (Logger,
+        'src/util/Logger'
+    ],
+    function (Angle,
               ArgumentError,
               Location,
-              Angle) {
+              Logger) {
         "use strict";
 
         /**
@@ -48,7 +49,7 @@ define([
              * @type {Number}
              */
             this.maxLongitude = maxLongitude;
-        }
+        };
 
         /**
          * A sector with minimum and maximum latitudes and minimum and maximum longitudes all zero.
@@ -180,7 +181,7 @@ define([
          * @returns {Location} The location of this sector's angular center.
          */
         Sector.prototype.centroid = function () {
-            return new Location(this.centroidLat(), this.centroidLon());
+            return new Location(this.centroidLatitude(), this.centroidLongitude());
         };
 
         /**
@@ -218,12 +219,15 @@ define([
         /**
          * Indicates whether this sector intersects a specified sector.
          * @param {Sector} sector The sector to test intersection with.
-         * @returns {boolean} <code>true</code> if the specifies sector intersections this sector. <code>false</code>
-         * if the specified sector does not intersect this sector or the specified sector is null or undefined.
+         * @returns {boolean} <code>true</code> if the specifies sector intersections this sector, otherwise
+         * <code>false</code>.
+         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.intersects = function (sector) {
-            if (!sector)
-                return false;
+            if (!sector instanceof Sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "intersects", "missingSector"));
+            }
 
             // Assumes normalized angles: [-90, 90], [-180, 180].
             return this.minLongitude <= sector.maxLongitude
@@ -235,12 +239,15 @@ define([
         /**
          * Indicates whether this sector intersects a specified sector exclusive of the sector boundaries.
          * @param {Sector} sector The sector to test overlap with.
-         * @returns {boolean} <code>true</code> if the specifies sector overlaps this sector. <code>false</code>
-         * if the specified sector does not overlaps this sector or the specified sector is null or undefined.
+         * @returns {boolean} <code>true</code> if the specifies sector overlaps this sector, otherwise
+         * <code>false</code>.
+         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.overlaps = function (sector) {
-            if (!sector)
-                return false;
+            if (!sector instanceof Sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "overlaps", "missingSector"));
+            }
 
             // Assumes normalized angles: [-90, 90], [-180, 180].
             return this.minLongitude < sector.maxLongitude
@@ -252,12 +259,15 @@ define([
         /**
          * Indicates whether this sector fully contains a specified sector.
          * @param {Sector} sector The sector to test containment with.
-         * @returns {boolean} <code>true</code> if the specifies sector contains this sector. <code>false</code>
-         * if the specified sector does not contain this sector or the specified sector is null or undefined.
+         * @returns {boolean} <code>true</code> if the specifies sector contains this sector, otherwise
+         * <code>false</code>.
+         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.contains = function (sector) {
-            if (!sector)
-                return false;
+            if (!sector instanceof Sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "contains", "missingSector"));
+            }
 
             // Assumes normalized angles: [-90, 90], [-180, 180].
             return this.minLatitude <= sector.minLatitude
@@ -270,27 +280,26 @@ define([
          * Indicates whether this sector contains a specified location.
          * @param {Number} latitude The location's latitude in degrees.
          * @param {Number} longitude The location's longitude in degrees.
-         * @returns {boolean} <code>true</code> if this sector contains the location. <code>false</code> if this
-         * sector does not contain the location or the location is null or undefined.
+         * @returns {boolean} <code>true</code> if this sector contains the location, otherwise <code>false</code>.
          */
         Sector.prototype.containsLocation = function (latitude, longitude) {
-            if (!sector)
-                return false;
-
             // Assumes normalized angles: [-90, 90], [-180, 180].
-            return this.minLatitude <= sector.latitude
-                && this.maxLatitude >= sector.latitude
-                && this.minLongitude <= sector.longitude
-                && this.maxLongitude >= sector.longitude;
+            return this.minLatitude <= latitude
+                && this.maxLatitude >= latitude
+                && this.minLongitude <= longitude
+                && this.maxLongitude >= longitude;
         };
 
         /**
          * Sets this sector to the intersection of it and a specified sector.
          * @param {Sector} sector The sector to intersect with this one.
+         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.intersection = function (sector) {
-            if (!sector)
-                return;
+            if (!sector instanceof Sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "intersection", "missingSector"));
+            }
 
             // Assumes normalized angles: [-180, 180], [-90, 90].
             if (this.minLatitude < sector.minLatitude)
@@ -314,10 +323,13 @@ define([
         /**
          * Sets this sector to the union of it and a specified sector.
          * @param {Sector} sector The sector to union with this one.
+         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.union = function (sector) {
-            if (!sector)
-                return;
+            if (!sector instanceof Sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "union", "missingSector"));
+            }
 
             // Assumes normalized angles: [-180, 180], [-90, 90].
             if (this.minLatitude > sector.minLatitude)
