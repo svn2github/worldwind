@@ -36,8 +36,6 @@ define(['src/util/Logger'], function (Logger) {
      * Redraws the window.
      */
     WorldWindow.prototype.render = function () {
-        Logger.log(Logger.LEVEL_WARNING, "This is a test log message");
-
         if (!window.WebGLRenderingContext) {
             Logger.log(Logger.LEVEL_SEVERE, "Canvas does not support WebGL");
             return;

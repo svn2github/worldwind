@@ -648,8 +648,8 @@ define([
          * the center of the scene, and up vector. The eye point, center point, and up vector are in model coordinates. The
          * returned viewing matrix maps the reference center point to the negative Z axis, and the eye point to the origin,
          * and the up vector to the positive Y axis. When this matrix is used to define an OGL viewing transform along with
-         * a typical projection matrix such as {@link #fromPerspective(Angle, double, double, double, double)} , this maps
-         * the center of the scene to the center of the viewport, and maps the up vector to the viewoport's positive Y axis
+         * a typical projection matrix such as {@link Matrix#fromPerspective} , this maps
+         * the center of the scene to the center of the viewport, and maps the up vector to the viewport's positive Y axis
          * (the up vector points up in the viewport). The eye point and reference center point must not be coincident, and
          * the up vector must not be parallel to the line of sight (the vector from the eye point to the reference center
          * point).
@@ -775,10 +775,10 @@ define([
          * @param {Number} near distance to near clipping plane
          * @param {Number} far distance to far clipping plane
          * @returns {Matrix} a projection matrix
-         * @throws ArgumentError
+         * @throws {ArgumentError}
          *          if any argument is outside the range of valid values (this depends on the specific parameter)
          */
-        Matrix.fromPerspective = function (/* Angle */ horizontalFieldOfView, viewportWidth, viewportHeight, near, far) {
+        Matrix.fromPerspective = function (horizontalFieldOfView, viewportWidth, viewportHeight, near, far) {
             var msg;
 
             var fovX = horizontalFieldOfView;
