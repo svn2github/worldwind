@@ -6,11 +6,11 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
         'src/error/ArgumentError',
+        'src/util/Logger',
         'src/geom/Sector'],
-    function (Logger,
-              ArgumentError,
+    function (ArgumentError,
+              Logger,
               Sector) {
         "use strict";
 
@@ -72,10 +72,10 @@ define([
          * @throws {ArgumentError} If the specified sector is null or undefined.
          */
         ZeroElevationModel.prototype.getExtremeElevationsForSector = function (sector) {
-            if (!sector) {
-                var msg = "ZeroElevationModel.getExtremeElevationsForSector: Sector is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(sector instanceof Sector)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "getExtremeElevationsForSector",
+                        "missingSector"));
             }
 
             return [0, 0];
@@ -111,22 +111,19 @@ define([
                                                                         result) {
             var msg;
 
-            if (!sector) {
-                msg = "ZeroElevationModel.getElevationsForSector: Sector is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(sector instanceof Sector)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "getElevationsForSector", "missingSector"));
             }
 
             if (numLatitude <= 0 || numLongitude <= 0) {
-                msg = "ZeroElevationModel.getElevationsForSector: numLatitude or numLongitude is less than 1";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel",
+                    "getElevationsForSector", "numLatitude or numLongitude is less than 1"));
             }
 
-            if (!result || result.length < numLatitude * numLongitude) {
-                msg = "ZeroElevationModel.getElevationsForSector: Result array is null, undefined or insufficient length";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!(result instanceof Array) || result.length < numLatitude * numLongitude) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel",
+                    "getElevationsForSector", "missingArray"));
             }
 
             for (var i = 0, len = locations.length; i < len; i++) {
