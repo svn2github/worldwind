@@ -73,8 +73,8 @@ define([
          * @param {Number} latitude The position's latitude.
          * @param {Number} longitude The position's longitude.
          * @param {Number} altitude The position's altitude.
-         * @param {Number[]} result A reference to a pre-allocated three-element array to contain, respectively, the X,
-         * Y and Z Cartesian coordinates.
+         * @param {Vec3} result A reference to a pre-allocated {@link Vec3} instance to contain, the X,
+         * Y and Z Cartesian coordinates. May be null, in which case a new instance is allocated and returned.
          * @returns {Number[]} The result argument if specified, otherwise a newly created array with the results.
          */
         Globe.prototype.computePointFromPosition = function (latitude, longitude, altitude, result) {
@@ -87,12 +87,13 @@ define([
                 y = (rpm * (1.0 - this.eccentricitySquared) + altitude) * sinLat,
                 z = (rpm + altitude) * cosLat * cosLon;
 
-            if (!result)
-                result = new Array(3); // TODO: Use a Vec3
-
-            result[0] = x;
-            result[1] = y;
-            result[2] = z;
+            if (!result) {
+                result = new Vec3(x, y, z);
+            } else {
+                result[0] = x;
+                result[1] = y;
+                result[2] = z;
+            }
 
             return result;
         };
@@ -220,6 +221,16 @@ define([
             }
         };
 
+        /**
+         * Computes a geographic position from a specified Cartesian point.
+         * @param {Number} x The X coordinate.
+         * @param {Number} y The Y coordinate.
+         * @param {Number} z The Z coordinate.
+         * @param {Position} result A pre-allocated {@link Position} instance in which to return the computed position.
+         * May be null or undefined, in which case a new Position is allocated and returned as the value of this function.
+         * @returns {Position} The specified result position, or a new Position instance if the one specified is null or
+         * undefined.
+         */
         Globe.prototype.computePositionFromPoint = function (x, y, z, result) {
             if (!resultPoints instanceof Vec3) {
                 var msg = "Globe.computePointsFromPositions: Result points array is null, undefined, not an Array or insufficient length";
@@ -322,9 +333,144 @@ define([
                 lambda = Math.PI * 0.5 - 2 * Math.atan2(X, sqrtXXpYY + Y);
             }
 
+            if (!result)
+                result = new Position(0, 0, 0);
+
             result.latitude = Angle.RADIANS_TO_DEGREES * phi;
             result.longitude = Angle.RADIANS_TO_DEGREES * lambda;
             result.altitude = h;
+
+            return result;
+        };
+
+        /**
+         * Computes the normal vector to this globe's surface at a specified location.
+         * @param {Number} latitude The location's latitude.
+         * @param {Number} longitude The location's longitude.
+         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
+         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * normal vector is unit length.
+         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
+         * or undefined.
+         */
+        Globe.prototype.surfaceNormalAtLocation = function (latitude, longitude, result) {
+            var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
+                cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
+                sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
+                sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
+                eqSquared = this.equatorialRadius * this.equatorialRadius,
+                polSquared = this.polarRadius * this.polarRadius,
+                x = cosLat * sinLon / eqSquared,
+                y = (1 - this.eccentricitySquared) * sinLat / polSquared,
+                z = cosLat * cosLon / eqSquared;
+
+            if (!result) {
+                result = new Vec3(x, y, z);
+            }
+            else {
+                result[0] = x;
+                result[1] = y;
+                result[2] = z;
+            }
+
+            result.normalize();
+
+            return result;
+        };
+
+        /**
+         * Computes the normal vector to this globe's surface at a specified Cartesian point.
+         * @param {Number} x The point's X coordinate.
+         * @param {Number} y The point's Y coordinate.
+         * @param {Number} z The point's Z coordinate.
+         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
+         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * normal vector is unit length.
+         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
+         * or undefined.
+         */
+        Globe.prototype.surfaceNormalAtPoint = function (x, y, z, result) {
+            var eqSquared = this.equatorialRadius * this.equatorialRadius,
+                polSquared = this.polarRadius * this.polarRadius,
+                nx = x / eSquared,
+                ny = y / polSquared,
+                nz = z / eSquared;
+
+            if (!result) {
+                result = new Vec3(nx, ny, nz);
+            }
+            else {
+                result[0] = nx;
+                result[1] = ny;
+                result[2] = nz;
+            }
+
+            result.normalize();
+
+            return result;
+        };
+
+        /**
+         * Computes the north-pointing tangent vector to this globe's surface at a specified location.
+         * @param {Number} latitude The location's latitude.
+         * @param {Number} longitude The location's longitude.
+         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
+         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * normal vector is unit length.
+         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
+         * or undefined.
+         */
+        Globe.prototype.northTangentAtLocation = function (latitude, longitude, result) {
+            // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
+            // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
+            // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
+            // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
+            // transforming the vector (0, 1, 0) by the combined transform:
+            //
+            // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
+            //
+            // This computation can be simplified and encoded inline by making two observations:
+            // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
+            // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the trigonimetric
+            //   identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+
+            var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
+                cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
+                sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
+                sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
+                x = -sinLat * sinLon,
+                y = cosLat,
+                z = -sinLat * cosLon;
+
+            if (!result) {
+                result = new Vec3(nx, ny, nz);
+            }
+            else {
+                result[0] = nx;
+                result[1] = ny;
+                result[2] = nz;
+            }
+
+            result.normalize();
+
+            return result;
+        };
+
+        /**
+         * Computes the north-pointing tangent vector to this globe's surface at a specified Cartesian position.
+         * @param {Number} x The point's X coordinate.
+         * @param {Number} y The point's Y coordinate.
+         * @param {Number} z The point's Z coordinate.
+         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
+         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * normal vector is unit length.
+         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
+         * or undefined.
+         */
+        Globe.prototype.northTangentAtPoint = function (x, y, z, result) {
+            var location = this.computePositionFromPoint(x, y, z, null);
+
+            return this.northTangentAtLocation(location.latitude, location.longitude, result);
         };
 
         return Globe;

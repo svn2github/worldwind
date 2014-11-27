@@ -30,7 +30,7 @@ define(['src/util/Logger'], function (Logger) {
         function handleContextRestored(event)
         {
         }
-    }
+    };
 
     /**
      * Redraws the window.
