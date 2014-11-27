@@ -50,6 +50,10 @@ define([
              * @returns {Number} The cube root of the specified number.
              */
             cbrt: function (x) {
+                // Use the built-in version if it exists. cbrt() is defined in ECMA6.
+                if (typeof Math.cbrt == 'function')
+                    return Math.cbrt(x);
+
                 // Taken from http://stackoverflow.com/questions/23402414/implementing-an-accurate-cbrt-function-without-extra-precision
                 if (x == 0)
                     return 0;

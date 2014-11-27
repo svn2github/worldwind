@@ -97,7 +97,7 @@ define([
          * specified numLatitude or numLongitude values is less than 1, or the result array is not of sufficient length
          * to hold numLatitude x numLongitude values.
          */
-        ZeroElevationModel.prototype.getElevationsForSector = function (sector, numLatitude, numLongitude,
+        ElevationModel.prototype.getElevationsForSector = function (sector, numLatitude, numLongitude,
                                                                         targetResolution, verticalExaggeration,
                                                                         result) {
             return 0;
