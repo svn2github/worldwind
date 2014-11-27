@@ -15,6 +15,14 @@ define([
               Vec3) {
         "use strict";
 
+        /**
+         * Constructs a line from an origin and direction.
+         * @alias Line
+         * @classdesc Represents a Cartesian line.
+         * @param origin The line's origin.
+         * @param direction The line's direction.
+         * @constructor
+         */
         var Line = function (origin, direction) {
             if (!(origin instanceof Vec3)) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Line", "constructor",
