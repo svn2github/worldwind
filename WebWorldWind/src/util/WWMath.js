@@ -140,6 +140,26 @@ define([
                     line.pointAt(t, result);
                     return true;
                 }
+            },
+
+            /**
+             * Computes the absolute value of a specified value.
+             * @param {Number} a The value whose absolute value to compute.
+             * @returns {Number} The absolute value of the specified number.
+             */
+            fabs: function(a) {
+                return a >= 0 ? a : -a;
+            },
+
+            /**
+             * Computes the floating-point modulus of a specified number.
+             * @param {Number} number The number whose modulus to compute.
+             * @param {Number} modulus The modulus.
+             * @returns {Number} The remainder after dividing the number by the modulus: <code>number % modulus</code>.
+             */
+            fmod: function(number, modulus) {
+                // TODO: Verify that javascript's modulo operator produces same values as Java's fmod function.
+                return number % modulus;
             }
         };
 
