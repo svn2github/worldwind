@@ -12,6 +12,7 @@ define([
         'src/globe/ElevationModel',
         'src/geom/Location',
         'src/util/Logger',
+        'src/geom/Position',
         'src/geom/Sector',
         'src/geom/Vec3',
         'src/util/WWMath'],
@@ -20,6 +21,7 @@ define([
               ElevationModel,
               Location,
               Logger,
+              Position,
               Sector,
               Vec3,
               WWMath) {
@@ -29,15 +31,22 @@ define([
          * Constructs an ellipsoidal Globe with default radii for Earth (WGS84).
          * @alias Globe
          * @constructor
-         * @classdesc Represents an ellipsoidal globe.
+         * @classdesc Represents an ellipsoidal globe. The default values represent Earth.
+         *
+         * A globe is used to generate terrain.
+         *
+         * The globe uses a Cartesian coordinate system in which the Y axis points to the north pole,
+         * the Z axis points to the intersection of the prime meridian and the equator,
+         * and the X axis completes a right-handed coordinate system, is in the equatorial plane and 90 degree east of the Z
+         * axis. The origin of the coordinate system lies at the center of the globe.
+
          * @param {ElevationModel} elevationModel The elevation model to use for the constructed globe.
-         * @throws {ArgumentError} If the specified elevation model is null, undefined or not an instance of
-         * {@link ElevationModel}.
+         * @throws {ArgumentError} If the specified elevation model is null or undefined.
          */
         var Globe = function (elevationModel) {
-            if (!(elevationModel instanceof ElevationModel)) {
+            if (!elevationModel) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
-                    "constructor", "Elevation model is null, undefined or not an ElevationModel type."));
+                    "constructor", "Elevation model is null or undefined."));
             }
             /**
              * This globe's elevation model.
@@ -48,106 +57,125 @@ define([
 
             /**
              * This globe's equatorial radius.
-             * @type {number}
+             * @type {Number}
              * @default 6378137.0 meters
              */
             this.equatorialRadius = 6378137.0;
 
             /**
              * This globe's polar radius.
-             * @type {number}
+             * @type {Number}
              * @default 6356752.3 meters
              */
             this.polarRadius = 6356752.3;
 
             /**
              * This globe's eccentricity squared.
-             * @type {number}
+             * @type {Number}
              * @default 0.00669437999013
              */
             this.eccentricitySquared = 0.00669437999013;
+
+            // Used internally to eliminate the need to create new positions for certain calculations.
+            this.scratchPosition = new Position(0, 0, 0);
         };
 
         /**
          * Computes a Cartesian point from a specified position.
+         * See this class' Overview section for a description of the Cartesian coordinate system used.
          * @param {Number} latitude The position's latitude.
          * @param {Number} longitude The position's longitude.
          * @param {Number} altitude The position's altitude.
-         * @param {Vec3} result A reference to a pre-allocated {@link Vec3} instance to contain, the X,
-         * Y and Z Cartesian coordinates. May be null, in which case a new instance is allocated and returned.
-         * @returns {Number[]} The result argument if specified, otherwise a newly created array with the results.
+         * @param {Vec3} result A reference to a pre-allocated {@link Vec3} instance to contain the computed X,
+         * Y and Z Cartesian coordinates.
+         * @returns {Vec3} The result argument.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.computePointFromPosition = function (latitude, longitude, altitude, result) {
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointFromPosition",
+                    "missingResult"));
+            }
+
             var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
                 sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
                 cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
                 sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
-                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat),
-                x = (rpm + altitude) * cosLat * sinLon,
-                y = (rpm * (1.0 - this.eccentricitySquared) + altitude) * sinLat,
-                z = (rpm + altitude) * cosLat * cosLon;
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
 
-            if (!result) {
-                result = new Vec3(x, y, z);
-            } else {
-                result[0] = x;
-                result[1] = y;
-                result[2] = z;
-            }
+            result[0] = (rpm + altitude) * cosLat * sinLon;
+            result[1] = (rpm * (1.0 - this.eccentricitySquared) + altitude) * sinLat;
+            result[2] = (rpm + altitude) * cosLat * cosLon;
 
             return result;
         };
 
         /**
-         * Computes the Cartesian coordinates of a specified number of positions within a specified sector.
+         * Computes a grid of Cartesian points within a specified sector and relative to a specified Cartesian offset.
+         *
+         * This method is used to compute a collection of points within a sector. It is used by tessellators to
+         * efficiently generate a tile's interior points. The number of points to generate is indicated by the numLat
+         * and numLon parameters, which specify respectively the number of points to generate in the latitudinal and
+         * longitudinal directions. In addition to the specified numLat and numLon points, this method generates an
+         * additional row and column of points along the sector's outer edges. These border points have the same
+         * latitude and longitude as the points on the sector's outer edges, but use the constant borderElevation
+         * instead of values from the array of elevations.
+         *
+         * For each implied position within the sector, an elevation value is specified via an array of elevations. The
+         * calculation at each position incorporates the associated elevation. The array of elevations need not supply
+         * elevations for the border points, which use the constant borderElevation.
+         *
          * @param {Sector} sector The sector in which to compute the points.
          * @param {Number} numLat The number of latitudinal locations at which to compute the points.
          * @param {Number} numLon The number of longitudinal locations at which to compute the points.
-         * @param {Number[]} altitudes The altitudes at each of the points implied by the specified number of
-         * latitudinal and longitudinal points.
-         * @param {Number} borderAltitude The altitude at the border of the sector. // TODO: Verify this
-         * @param {Number[]} offset Cartesian X, Y and Z values to offset the computed points. These offsets are
-         * subtracted from the computed points.
-         * @param {Number[]} resultPoints An array in which to return the computed points. It's length must be at least
-         * numLat x numLon * stride.
-         * @param {Number} stride The number of array elements between the X coordinates in the result array and the
-         * X coordinate of the subsequent point in the result array. A tightly packed array has a stride of 3.
-         * @param {Number[]} resultElevations An array to hold the elevations computed for each of the returned points.
-         * The array must have a length of at least numLat * numLon.
-         * @throws {ArgumentError} if the specified sector, altitudes array and results arrays or null or undefined, if
+         * @param {Number[]} elevations An array of elevations to incorporate in the point calculations. There must be
+         * one elevation value in the array for each generated point - ignoring border points - so there must be
+         * numLat x numLon elements in the array. Elevations are in meters.
+         * @param {Number} borderElevation The constant elevation assigned to border points, in meters.
+         * @param {Vec3} offset The X, Y and Z Cartesian coordinates to subtract from the computed coordinates. This
+         * makes the computed coordinates relative to the specified offset.
+         * @param {Float32Array} resultPoints A typed array to hold the computed coordinates. It must be at least of
+         * size ((numLat + 2) x (numLon + 2) x stride).
+         * The points are returned in row major order, beginning with the row of minimum latitude.
+         * @param {Number} stride The number of floats between successive points in the output array. Specifying a
+         * stride of 3 indicates that the points are tightly packed in the output array.
+         * @param {Float32Array} resultElevations A typed array to hold the elevation for each computed point. This
+         * elevation has vertical exaggeration applied. It must be at least of size ((numLat + 2) x (numLon + 2).
+         * @returns {Float32Array} The specified resultPoints argument.
+         * @throws {ArgumentError} if the specified sector, elevations array or results arrays are null or undefined, if
          * the lengths of any of the results arrays are insufficient, or if the specified stride is less than 3.
          */
-        Globe.prototype.computePointsFromPositions = function (sector, numLat, numLon, altitudes,
-                                                               borderAltitude, offset, resultPoints,
+        Globe.prototype.computePointsFromPositions = function (sector, numLat, numLon, elevations,
+                                                               borderElevation, offset, resultPoints,
                                                                stride, resultElevations) {
-            if (!(sector instanceof Sector)) {
+            if (!sector) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
                     "computePointsFromPositions", "missingSector"));
             }
 
             if (numLat < 1 || numLon < 1) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
-                    "Number of latitude or longitude locations is less than zero."));
+                    "Number of latitude or longitude locations is less than one."));
             }
 
-            if (!(altitudes instanceof Array) || altitudes.length < numLat * numLon) {
+            if (!elevations || elevations.length < numLat * numLon) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
-                    "Altitudes is null, undefined, not an Array or insufficient length."));
+                    "Elevations array is null, undefined or insufficient length."));
             }
 
-            if (!resultPoints instanceof Array || resultPoints.length < numLat * numLon) {
+            if (!resultPoints || resultPoints.length < (numLat + 2) * (numLon + 2) * stride) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
-                    "Result points array is null, undefined, not an Array or insufficient length."));
+                    "Result points array is null, undefined or insufficient length."));
             }
 
-            if (resultStride < 3) {
+            if (stride < 3) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Stride is less than 3."));
             }
 
-            if (!resultElevations instanceof Array || resultElevations.length < numLat * numLon) {
+            if (!resultElevations || resultElevations.length < (numLat + 2) * (numLon + 2)) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
-                    "Result elevations array is null, undefined, not an Array or insufficient length."));
+                    "Result elevations array is null, undefined or insufficient length."));
             }
 
             var minLat = sector.minLatitude * Angle.DEGREES_TO_RADIANS,
@@ -210,7 +238,7 @@ define([
 
                 for (i = 0; i < numLon + 2; i++) {
                     elev = (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1)
-                        ? borderAltitude : altitudes[elevOffset++];
+                        ? borderElevation : elevations[elevOffset++];
                     resultElevations[vertexOffset / stride] = elev;
 
                     resultPoints[vertexOffset] = (rpm + elev) * cosLat * sinLon[i] - offsetX;
@@ -219,24 +247,28 @@ define([
                     vertexOffset += stride;
                 }
             }
+
+            return resultPoints;
         };
 
         /**
          * Computes a geographic position from a specified Cartesian point.
+         *
+         * See this class' Overview section for a description of the Cartesian coordinate system used.
+         *
          * @param {Number} x The X coordinate.
          * @param {Number} y The Y coordinate.
          * @param {Number} z The Z coordinate.
          * @param {Position} result A pre-allocated {@link Position} instance in which to return the computed position.
-         * May be null or undefined, in which case a new Position is allocated and returned as the value of this function.
-         * @returns {Position} The specified result position, or a new Position instance if the one specified is null or
-         * undefined.
+         * @returns {Position} The specified result position.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.computePositionFromPoint = function (x, y, z, result) {
-            if (!resultPoints instanceof Vec3) {
-                var msg = "Globe.computePointsFromPositions: Result points array is null, undefined, not an Array or insufficient length";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePositionFromPoint",
+                    "missingResult"));
             }
+
             // Contributed by Nathan Kronenfeld. Updated on 1/24/2011. Brings this calculation in line with Vermeille's most
             // recent update.
 
@@ -333,9 +365,6 @@ define([
                 lambda = Math.PI * 0.5 - 2 * Math.atan2(X, sqrtXXpYY + Y);
             }
 
-            if (!result)
-                result = new Position(0, 0, 0);
-
             result.latitude = Angle.RADIANS_TO_DEGREES * phi;
             result.longitude = Angle.RADIANS_TO_DEGREES * lambda;
             result.altitude = h;
@@ -347,35 +376,29 @@ define([
          * Computes the normal vector to this globe's surface at a specified location.
          * @param {Number} latitude The location's latitude.
          * @param {Number} longitude The location's longitude.
-         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
-         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed vector. The returned
          * normal vector is unit length.
-         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
-         * or undefined.
+         * @returns {Vec3} The specified result vector.  The returned normal vector is unit length.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.surfaceNormalAtLocation = function (latitude, longitude, result) {
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "surfaceNormalAtLocation",
+                    "missingResult"));
+            }
+
             var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
                 cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
                 sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
                 sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
                 eqSquared = this.equatorialRadius * this.equatorialRadius,
-                polSquared = this.polarRadius * this.polarRadius,
-                x = cosLat * sinLon / eqSquared,
-                y = (1 - this.eccentricitySquared) * sinLat / polSquared,
-                z = cosLat * cosLon / eqSquared;
+                polSquared = this.polarRadius * this.polarRadius;
 
-            if (!result) {
-                result = new Vec3(x, y, z);
-            }
-            else {
-                result[0] = x;
-                result[1] = y;
-                result[2] = z;
-            }
+            result[0] = cosLat * sinLon / eqSquared;
+            result[1] = (1 - this.eccentricitySquared) * sinLat / polSquared;
+            result[2] = cosLat * cosLon / eqSquared;
 
-            result.normalize();
-
-            return result;
+            return result.normalize();
         };
 
         /**
@@ -383,44 +406,42 @@ define([
          * @param {Number} x The point's X coordinate.
          * @param {Number} y The point's Y coordinate.
          * @param {Number} z The point's Z coordinate.
-         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
-         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
+         * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed vector. The returned
          * normal vector is unit length.
-         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
-         * or undefined.
+         * @returns {Vec3} The specified result vector.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.surfaceNormalAtPoint = function (x, y, z, result) {
-            var eqSquared = this.equatorialRadius * this.equatorialRadius,
-                polSquared = this.polarRadius * this.polarRadius,
-                nx = x / eSquared,
-                ny = y / polSquared,
-                nz = z / eSquared;
-
             if (!result) {
-                result = new Vec3(nx, ny, nz);
-            }
-            else {
-                result[0] = nx;
-                result[1] = ny;
-                result[2] = nz;
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "surfaceNormalAtPoint",
+                    "missingResult"));
             }
 
-            result.normalize();
+            var eSquared = this.equatorialRadius * this.equatorialRadius,
+                polSquared = this.polarRadius * this.polarRadius;
 
-            return result;
+            result[0] = x / eSquared;
+            result[1] = y / polSquared;
+            result[2] = z / eSquared;
+
+            return result.normalize;
         };
 
         /**
          * Computes the north-pointing tangent vector to this globe's surface at a specified location.
          * @param {Number} latitude The location's latitude.
          * @param {Number} longitude The location's longitude.
-         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
-         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
-         * normal vector is unit length.
-         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
-         * or undefined.
+         * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed vector. The returned
+         * tangent vector is unit length.
+         * @returns {Vec3} The specified result vector.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.northTangentAtLocation = function (latitude, longitude, result) {
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "northTangentAtLocation",
+                    "missingResult"));
+            }
+
             // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
             // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
             // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
@@ -431,29 +452,19 @@ define([
             //
             // This computation can be simplified and encoded inline by making two observations:
             // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
-            // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the trigonimetric
-            //   identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+            // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
+            //  trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
 
             var cosLat = Math.cos(latitude * Angle.DEGREES_TO_RADIANS),
                 cosLon = Math.cos(longitude * Angle.DEGREES_TO_RADIANS),
                 sinLat = Math.sin(latitude * Angle.DEGREES_TO_RADIANS),
-                sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS),
-                x = -sinLat * sinLon,
-                y = cosLat,
-                z = -sinLat * cosLon;
+                sinLon = Math.sin(longitude * Angle.DEGREES_TO_RADIANS);
 
-            if (!result) {
-                result = new Vec3(nx, ny, nz);
-            }
-            else {
-                result[0] = nx;
-                result[1] = ny;
-                result[2] = nz;
-            }
+            result[0] = -sinLat * sinLon;
+            result[1] = cosLat;
+            result[2] = -sinLat * cosLon;
 
-            result.normalize();
-
-            return result;
+            return result.normalize;
         };
 
         /**
@@ -461,16 +472,20 @@ define([
          * @param {Number} x The point's X coordinate.
          * @param {Number} y The point's Y coordinate.
          * @param {Number} z The point's Z coordinate.
-         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed vector. May be null,
-         * in which case a new Vec3 is allocated and returned as the return value of this function. The returned
-         * normal vector is unit length.
-         * @returns {Vec3} The specified result vector, or a new Vec3 instance if the result argument specified is null
-         * or undefined.
+         * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed vector. The returned
+         * tangent vector is unit length.
+         * @returns {Vec3} The specified result vector.
+         * @throws {ArgumentError} If the specified result is null or undefined.
          */
         Globe.prototype.northTangentAtPoint = function (x, y, z, result) {
-            var location = this.computePositionFromPoint(x, y, z, null);
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "northTangentAtPoint",
+                    "missingResult"));
+            }
 
-            return this.northTangentAtLocation(location.latitude, location.longitude, result);
+            this.computePositionFromPoint(x, y, z, this.scratchPosition);
+
+            return this.northTangentAtLocation(this.scratchPosition.latitude, this.scratchPosition.longitude, result);
         };
 
         return Globe;
