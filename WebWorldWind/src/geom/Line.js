@@ -18,30 +18,30 @@ define([
         /**
          * Constructs a line from an origin and direction.
          * @alias Line
-         * @classdesc Represents a Cartesian line.
-         * @param origin The line's origin.
-         * @param direction The line's direction.
+         * @classdesc Represents a line in Cartesian coordinates.
+         * @param {Vec3} origin The line's origin.
+         * @param {Vec3} direction The line's direction.
          * @constructor
          */
         var Line = function (origin, direction) {
-            if (!(origin instanceof Vec3)) {
+            if (!origin) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Line", "constructor",
-                    "Origin is null, undefined or not a Vec3 type."));
+                    "Origin is null or undefined."));
             }
 
-            if (!(direction instanceof Vec3)) {
+            if (!direction) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Line", "constructor",
-                    "Direction is null, undefined or not a Vec3 type."));
+                    "Direction is null or undefined."));
             }
 
             /**
-             * The line's origin.
+             * This line's origin.
              * @type {Vec3}
              */
             this.origin = origin;
 
             /**
-             * The line's direction.
+             * This line's direction.
              * @type {Vec3}
              */
             this.direction = direction;
@@ -50,10 +50,11 @@ define([
         /**
          * Computes a Cartesian point a specified distance along this line.
          * @param {Number} distance The distance at which to compute the point.
-         * @param {Vec3} result A pre-allocated{@Link Vec3} instance in which to return the computed point.
+         * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed point.
+         * @returns {Vec3} The specified result argument.
          */
         Line.prototype.pointAt = function (distance, result) {
-            if (!(result instanceof Vec3)) {
+            if (!result ) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Line", "pointAt", "missingResult."));
             }
 
