@@ -94,16 +94,13 @@ define([
          * @returns {Matrix}
          */
         Matrix.fromArray = function (compArray, offset, rowMajor) {
-            var msg;
-            if (!(compArray instanceof Array)) {
-                msg = "Matrix.fromArray: " + "generic.ArrayExpected - " + "compArray";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!compArray) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromArray", "missingArray"));
             }
             if ((compArray.length - offset) < Matrix.NUM_ELEMENTS) {
-                msg = "Matrix.fromArray: " + "generic.ArrayInvalidLength - " + "compArray";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromArray", "shortArray"));
             }
 
             if (rowMajor) {
@@ -169,16 +166,13 @@ define([
          * @returns {Array}
          */
         Matrix.prototype.toArray = function (compArray, offset, rowMajor) {
-            var msg;
-            if (!(compArray instanceof Array)) {
-                msg = "Matrix.toArray: " + "generic.ArrayExpected - " + "compArray";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!compArray) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "toArray", "missingArray"));
             }
             if ((compArray.length - offset) < Matrix.NUM_ELEMENTS) {
-                msg = "Matrix.toArray: " + "generic.ArrayInvalidLength - " + "compArray";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "toArray", "shortArray"));
             }
 
             if (rowMajor) {
@@ -248,23 +242,17 @@ define([
          *          if any of the first three elements in <code>axes</code> is not a <code>Vec3</code>.
          */
         Matrix.fromAxes = function (axes) {
-            var msg;
-            if (!(axes instanceof Array)) {
-                msg = "Matrix.fromAxes: " + "generic.ArrayExpected - " + "axes";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!axes) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "missingAxes"));
             }
-
-            if (axes.length < 3) {
-                msg = "Matrix.fromAxes: " + "generic.ArrayInvalidLength - " + "axes";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (axes.length < offset + Matrix.NUM_ELEMENTS) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "shortAxes"));
             }
-
-            if (!(axes[0] instanceof Vec3) || !(axes[1] instanceof Vec3) || !(axes[2] instanceof Vec3)) {
-                msg = "Matrix.fromAxes: " + "generic.Vec3Expected - " + "axes[0], axes[1], or axes[2]";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!axes[0] || !axes[1] || !axes[2]) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "missingAxesElements"));
             }
 
             var s = axes[0].normalize(),
@@ -615,29 +603,21 @@ define([
          *      if  any of the first three elements in <code>axes</code> are not <code>Vec3</code>.
          */
         Matrix.fromLocalOrientation = function (origin, axes) {
-            var msg;
-            if (!(origin instanceof Vec3)) {
-                msg = "Matrix.fromLocalOrientation: " + "generic.Vec3Expected - " + "origin";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!origin) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingOrigin"));
             }
-
-            if (!(axes instanceof Array)) {
-                msg = "Matrix.fromLocalOrientation: " + "generic.ArrayExpected - " + "axes";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!axes) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingAxes"));
             }
-
-            if (axes.length < 3) {
-                msg = "Matrix.fromLocalOrientation: " + "generic.ArrayInvalidLength - " + "axes";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (axes < 3) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "shortAxes"));
             }
-
-            if (!(axes[0] instanceof Vec3) || !(axes[1] instanceof Vec3) || !(axes[2] instanceof Vec3)) {
-                msg = "Matrix.fromLocalOrientation: " + "generic.Vec3Expected - " + "axes[0], axes[1], or axes[2]";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!axes[0] || !axes[1] || !axes[2]) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingAxesComponents"));
             }
 
             return Matrix.fromTranslation(origin.x, origin.y, origin.z).multiply(Matrix.fromAxes(axes));
@@ -667,28 +647,22 @@ define([
          *      if the up vector and the line of sight are parallel.
          */
         Matrix.fromViewLookAt = function (eye, center, up) {
-            var msg;
-            if (!(eye instanceof Vec3) || !(center instanceof Vec3) || !(up instanceof Vec3)) {
-                msg = "Matrix.fromViewLookAt: " + "generic.Vec3Expected - " + "eye, center, or up";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!eye || !center || !up) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "missingLookAtParameters"));
             }
-
             if (eye.distanceTo(center) <= Matrix.EPSILON) {
-                msg = "Matrix.fromViewLookAt: " + "Geom.EyeAndCenterInvalid - " + eye.toString() + center.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "tooShortEyeCenter"));
             }
 
             var forward = center.subtract(eye),
                 f = forward.normalize(),
                 s = f.cross(up).normalize();
 
-            // TODO: this is suspect since s.getLength() for a normalized vector should be 1
             if (s.getLength() <= Matrix.EPSILON) {
-                msg = "Matrix.fromViewLookAt: " + "Geom.UpAndLineOfSightInvalid - " + up.toString() + forward.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "tooShortS"));
             }
 
             var u = s.cross(forward).normalize();
@@ -728,28 +702,22 @@ define([
          *          if the up vector and the line of sight are parallel.
          */
         Matrix.fromModelLookAt = function (eye, center, up) {
-            var msg;
-            if (!(eye instanceof Vec3) || !(center instanceof Vec3) || !(up instanceof Vec3)) {
-                msg = "Matrix.fromModelLookAt: " + "generic.Vec3Expected - " + "eye, center, or up";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!eye || !center || !up) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "missingLookAtParameters"));
             }
-
             if (eye.distanceTo(center) <= Matrix.EPSILON) {
-                msg = "Matrix.fromModelLookAt: " + "Geom.EyeAndCenterInvalid - " + eye.toString() + center.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "tooShortEyeCenter"));
             }
 
             var forward = center.subtract(eye),
                 f = forward.normalize(),
                 s = up.cross(f).normalize();
 
-            // TODO: this is suspect, since s.getLength() for a normalized vector should be 1
             if (s.getLength() <= Matrix.EPSILON) {
-                msg = "Matrix.fromModelLookAt: " + "Geom.UpAndLineOfSightInvalid: " + up.toString() + forward.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "tooShortS"));
             }
 
             var u = f.cross(s).normalize();
@@ -783,34 +751,28 @@ define([
 
             var fovX = horizontalFieldOfView;
             if (fovX <= 0.0 || fovX > 180.0) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "horizontalFieldOfView=" + fovX.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - fovX"));
             }
             if (viewportWidth <= 0.0) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "viewportWidth=" + viewportWidth.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - viewportWidth"));
             }
             if (viewportHeight <= 0.0) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "viewportHeight=" + viewportHeight.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - viewportHeight"));
             }
             if (near <= 0.0) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "near=" + near.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - near"));
             }
             if (far <= 0.0) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "far=" + far.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - far"));
             }
             if (far <= near) {
-                msg = "Matrix.fromPerspective: " + "generic.ArgumentOutOfRange - " + "far=" + far.toString() + ",near=" + near.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - far <= near"));
             }
 
             var f = 1.0 / Math.tan(0.5 * horizontalFieldOfView * Angle.DEGREES_TO_RADIANS);
@@ -878,29 +840,24 @@ define([
         Matrix.fromOrthographic = function (width, height, near, far) {
             var msg;
             if (width <= 0.0) {
-                msg = "Matrix.fromOrthographic: " + "generic.ArgumentOutOfRange - " + "width";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - width"));
             }
             if (height <= 0.0) {
-                msg = "Matrix.fromOrthographic: " + "generic.ArgumentOutOfRange - " + "height";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - height"));
             }
             if (near <= 0.0) {
-                msg = "Matrix.fromOrthographic: " + "generic.ArgumentOutOfRange - " + "near";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - near"));
             }
             if (far <= 0.0) {
-                msg = "Matrix.fromOrthographic: " + "generic.ArgumentOutOfRange - " + "far";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - far"));
             }
             if (far <= near) {
-                msg = "Matrix.fromOrthographic: " + "generic.ArgumentOutOfRange - " + "far";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - far <= near"));
             }
 
             return new Matrix(
@@ -920,14 +877,12 @@ define([
         Matrix.fromOrthographic2D = function (width, height) {
             var msg;
             if (width <= 0.0) {
-                msg = "Matrix.fromOrthographic2D: " + "generic.ArgumentOutOfRange - " + "width";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic2D", "invalidParameter - width"));
             }
             if (height <= 0.0) {
-                msg = "Matrix.fromOrthographic2D: " + "generic.ArgumentOutOfRange - " + "height";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic2D", "invalidParameter - height"));
             }
 
             return new Matrix(
@@ -1425,11 +1380,9 @@ define([
          *      if the points array is not an array.
          */
         Matrix.fromCovarianceOfVertices = function (/* Iterable<? extends Vec3> */ points) {
-            var msg;
-            if (!(points instanceof Array)) {
-                msg = "Matrix.fromCovarianceOfVertices: " + "generic.ArrayExpected - " + "points";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!points) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromCovarianceOfVertices", "invalidPoints"));
             }
 
             var mean = Vec3.computeAveragePoint(points);
@@ -1573,35 +1526,29 @@ define([
                                                                   /* double[] */ outEigenvalues,
                                                                   /* Vec3[] */ outEigenvectors) {
             var msg;
-            if (!(matrix instanceof Matrix)) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingMatrix"));
             }
-            if (!(outEigenvalues instanceof Array)) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.ArrayExpected - " + "outEigenvalues";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!outEigenvalues) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvalues"));
             }
             if (outEigenvalues.length < 3) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.ArrayInvalidLength - " + "outEigenvalues";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvalues"));
             }
             if (!(outEigenvectors instanceof Array)) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.ArrayExpected - " + "outEigenvectors";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvectors"));
             }
             if (outEigenvectors.length < 3) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.ArrayInvalidLength - " + "outEigenvectors";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvectors"));
             }
             if (matrix.m12 != matrix.m21 || matrix.m13 != matrix.m31 || matrix.m23 != matrix.m32) {
-                msg = "Matrix.computeEigensystemFromSymmetricMatrix3: " + "generic.MatrixNotSymmetric - " + matrix.toString();
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "asymetricMatrix"));
             }
 
             // Take from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
@@ -1741,11 +1688,9 @@ define([
          *      if <code>matrix</code> is not a <code>Matrix</code>
          */
         Matrix.add = function (matrix) {
-            var msg;
-            if (!(matrix == Matrix)) {
-                msg = "Matrix.add: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "add", "missingMatrix"));
             }
 
             return new Matrix(
@@ -1764,11 +1709,9 @@ define([
          *      if matrix is not a <code>Matrix</code>
          */
         Matrix.subtract = function (/* Matrix */ matrix) {
-            var msg;
-            if (!(matrix instanceof Matrix)) {
-                msg = "Matrix.subtract: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "subtract", "missingMatrix"));
             }
 
             return new Matrix(
@@ -1801,11 +1744,9 @@ define([
          *      if matrix is not a <code>Matrix</code>
          */
         Matrix.prototype.multiply = function (/* Matrix */ matrix) {
-            var msg;
-            if (!(matrix instanceof Matrix)) {
-                msg = "Matrix.multiply: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiply", "missingMatrix"));
             }
 
             return new Matrix(
@@ -1840,11 +1781,9 @@ define([
          * @returns {Matrix} <code>this</code> matrix modified in place
          */
         Matrix.prototype.divideComponents = function (value) {
-            var msg;
             if (value == 0) {
-                msg = "Matrix.divideComponents: " + "generic.ArgumentOutOfRange - " + "value";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "divideComponents", "zeroDivisor"));
             }
 
             return new Matrix(
@@ -1863,11 +1802,9 @@ define([
          *      if matrix is not a <code>Matrix</code>
          */
         Matrix.prototype.divide = function (/* Matrix */ matrix) {
-            var msg;
-            if (!(matrix instanceof Matrix)) {
-                msg = "Matrix.divide: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "divide", "missingMatrix"));
             }
 
             return new Matrix(
@@ -1903,16 +1840,13 @@ define([
          * @returns {Vec3} a transformed vector
          */
         Matrix.transform = function (/* Matrix */ matrix, vec) {
-            var msg;
-            if (!(matrix instanceof Matrix)) {
-                msg = "Matrix.transform: " + "generic.MatrixExpected - " + "matrix";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "transform", "missingMatrix"));
             }
-            if (!(vec instanceof Vec3)) {
-                msg = "Matrix.transform: " + "generic.Vec3Expected - " + "vec";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!vec) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "transform", "missingVector"));
             }
 
             var x = (matrix.m11 * vec[0]) + (matrix.m12 * vec[1]) + (matrix.m13 * vec[2]) + matrix.m14,
@@ -2427,17 +2361,13 @@ define([
          * @throws IllegalArgumentException if arguments are not of correct type.
          */
         Matrix.prototype.extractViewingParameters = function (/* Vec3 */ origin, /* Angle */ roll, /* Globe */ globe) {
-            var msg;
-            if (!(origin instanceof Vec3)) {
-                msg = "Matrix.extractViewingParameters:" + "generic.Vec3Expected - " + "origin";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!origin) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingOrigin"));
             }
-
-            if (!(globe instanceof Globe)) {
-                msg = "Matrix.extractViewingParameters:" + "generic.GlobeExpected - " + "globe";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!globe) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingGlobe"));
             }
 
             // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic

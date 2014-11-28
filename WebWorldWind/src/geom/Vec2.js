@@ -48,16 +48,13 @@ define([
          * @returns {Vec2} <code>this</code> returned in the "fluent" style
          */
         Vec2.prototype.toArray = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec2.toArray: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "toArray", "missingArray"));
             }
             if (array.length < offset + Vec2.NUM_ELEMENTS) {
-                msg = "Vec2.toArray: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "toArray", "shortArray"));
             }
             array[offset] = this[0];
             array[offset + 1] = this[1];
@@ -72,16 +69,13 @@ define([
          * @returns {Vec2} <code>this</code> returned in the "fluent" style
          */
         Vec2.prototype.fromArray = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec2.fromArray: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "fromArray", "missingArray"));
             }
             if (array.length < offset + Vec2.NUM_ELEMENTS) {
-                msg = "Vec2.fromArray: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "fromArray", "shortArray"));
             }
 
             this[0] = array[offset];

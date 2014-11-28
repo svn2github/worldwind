@@ -48,16 +48,13 @@ define([
          * @returns {Vec3} <code>this</code> returned in the "fluent" style
          */
         Vec3.prototype.toArray = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec3.toArray: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "missingArray"));
             }
             if (array.length < offset + Vec3.NUM_ELEMENTS) {
-                msg = "Vec3.toArray: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "shortArray"));
             }
 
             array[offset] = this[0];
@@ -74,16 +71,13 @@ define([
          * @returns {Vec3} <code>this</code> returned in the "fluent" style
          */
         Vec3.prototype.toArray4 = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec3.toArray4: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "missingArray"));
             }
             if (array.length < offset + Vec3.NUM_ELEMENTS + 1) {
-                msg = "Vec3.toArray4: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "shortArray"));
             }
 
             array[offset] = this[0];
@@ -101,16 +95,13 @@ define([
          * @returns {Vec3} <code>this</code> returned in the "fluent" style
          */
         Vec3.prototype.fromArray = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec3.fromArray: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "fromArray", "missingArray"));
             }
             if (array.length < offset + Vec3.NUM_ELEMENTS) {
-                msg = "Vec3.fromArray: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "shortArray"));
             }
 
             this[0] = array[offset];
@@ -127,16 +118,13 @@ define([
          * @returns {Vec3} <code>this</code> returned in the "fluent" style
          */
         Vec3.prototype.fromArray4 = function (array, offset) {
-            var msg;
-            if (!(array instanceof Array)) {
-                msg = "Vec3.fromArray4: " + "generic.ArrayExpected - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+            if (!array) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "fromArray4", "missingArray"));
             }
             if (array.length < offset + Vec3.NUM_ELEMENTS + 1) {
-                msg = "Vec3.fromArray4: " + "generic.ArrayInvalidLength - " + "array";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "shortArray"));
             }
 
             var w = array[offset + 3];
