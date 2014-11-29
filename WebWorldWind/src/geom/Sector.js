@@ -30,22 +30,22 @@ define([
          */
         var Sector = function (minLatitude, maxLatitude, minLongitude, maxLongitude) {
             /**
-             * The minimum latitude in degrees.
+             * This sector's minimum latitude in degrees.
              * @type {Number}
              */
             this.minLatitude = minLatitude;
             /**
-             * The maximum latitude in degrees.
+             * This sector's maximum latitude in degrees.
              * @type {Number}
              */
             this.maxlatitude = maxLatitude;
             /**
-             * The minimum longitude in degrees.
+             * This sector's minimum longitude in degrees.
              * @type {Number}
              */
             this.minLongitude = minLongitude;
             /**
-             * The maximum longitude in degrees.
+             * This sector's maximum longitude in degrees.
              * @type {Number}
              */
             this.maxLongitude = maxLongitude;
@@ -66,77 +66,28 @@ define([
         Sector.FULL_SPHERE = new Sector(-90, 90, -180, 180);
 
         /**
-         * Creates a new sector from a specified sector.
+         * Sets this sector's latitudes and longitudes to those of a specified sector.
          * @param {Sector} sector The sector to copy.
-         * @returns {Sector} The new sector, initialized to the values of the specified sector.
+         * @returns {Sector} This sector, initialized to the values of the specified sector.
          * @throws {ArgumentError} If the specified sector is null or undefined.
          */
-        Sector.fromSector = function (sector) {
+        Sector.prototype.setToSector = function (sector) {
             if (!sector) {
-                var msg = "Sector.fromSector: Sector is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
-            }
-
-            return new Sector(sector.minLatitude, sector.maxlatitude, sector.minLongitude, sector.maxLongitude);
-        };
-
-        /**
-         * Creates a sector encompassing an array of specified locations.
-         * @param {Array} locations An array of locations. The array may be sparse.
-         * @returns {Sector} A sector that encompasses all locations in the specified array.
-         * @throws {ArgumentError} If the specified array is null, undefined or empty.
-         */
-        Sector.fromLocations = function (locations) {
-            if (!locations || locations.length < 1) {
-                var msg = "Sector.fromLocations: Locations are null are undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
-            }
-
-            var sector = new Sector(
-                locations[0].latitude, locations[0].latitude,
-                locations[0].longitude, locations[0].longitude);
-
-            for (var i = 1, len = locations.length; i < len; i++) {
-                if (!locations[i])
-                    continue;
-
-                if (locations[i].latitude < sector.minLatitude)
-                    sector.minLatitude = locations[i].latitude;
-                if (locations[i].latitude > sector.maxLatitude)
-                    sector.maxLatitude = locations[i].latitude;
-
-                if (locations[i].longitude < sector.minLongitude)
-                    sector.minLongitude = locations[i].longitude;
-                if (locations[i].longitude > sector.maxLongitude)
-                    sector.maxLongitude = locations[i].longitude;
-            }
-
-            return sector;
-        };
-
-        /**
-         * Sets the minimum and maximum angles of this sector to those of a specified sector.
-         * @param {Sector} sector The sector whose values this sector is to take on.
-         * @throws {ArgumentError} if the specified sector is null or undefined.
-         */
-        Sector.prototype.set = function (sector) {
-            if (!sector) {
-                var msg = "Sector.set: Sector is null or undefined";
-                Logger.log(Logger.LEVEL_SEVERE, msg);
-                throw new ArgumentError(msg);
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "setToSector",
+                    "missingSector"));
             }
 
             this.minLatitude = sector.minLatitude;
             this.maxLatitude = sector.maxLatitude;
             this.minLongitude = sector.minLongitude;
             this.maxLongitude = sector.maxLongitude;
+
+            return this;
         };
 
         /**
-         * Indicates whether this sector was width or height.
-         * @returns {boolean} <code>true</code> if this sectors minimum and maximum latitudes or minimum and maximum
+         * Indicates whether this sector has width or height.
+         * @returns {boolean} <code>true</code> if this sector's minimum and maximum latitudes or minimum and maximum
          * longitudes differ, otherwise <code>false</code>.
          */
         Sector.prototype.isEmpty = function () {
@@ -160,7 +111,7 @@ define([
         };
 
         /**
-         * Returns the latitude between this sector's minimum and maximum latitudes.
+         * Returns the angle midway between this sector's minimum and maximum latitudes.
          * @returns {number} The mid-angle of this sector's minimum and maximum latitudes, in degrees.
          */
         Sector.prototype.centroidLatitude = function () {
@@ -168,7 +119,7 @@ define([
         };
 
         /**
-         * Returns the longitude between this sector's minimum and maximum longitudes.
+         * Returns the angle midway between this sector's minimum and maximum longitudes.
          * @returns {number} The mid-angle of this sector's minimum and maximum longitudes, in degrees.
          */
         Sector.prototype.centroidLongitude = function () {
@@ -176,12 +127,21 @@ define([
         };
 
         /**
-         * Returns the location of the angular center of this sector, which is the mid-angle of each of this sector's
+         * Computes the location of the angular center of this sector, which is the mid-angle of each of this sector's
          * latitude and longitude dimensions.
-         * @returns {Location} The location of this sector's angular center.
+         * @param {Location} result A pre-allocated {@link Location} in which to return the computed centroid.
+         * @returns {Location} The specified result argument containing the computed centroid.
          */
-        Sector.prototype.centroid = function () {
-            return new Location(this.centroidLatitude(), this.centroidLongitude());
+        Sector.prototype.centroid = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "centroid", "missingResult"));
+            }
+
+            result.latitude = this.centroidLatitude();
+            result.longitude = this.centroidLongitude();
+
+            return result;
         };
 
         /**
@@ -196,7 +156,7 @@ define([
          * Returns this sector's maximum latitude in radians.
          * @returns {number} This sector's maximum latitude in radians.
          */
-        Sector.prototype.maxLatitude = function () {
+        Sector.prototype.maxLatitudeRadians = function () {
             return this.maxLatitude * Angle.DEGREES_TO_RADIANS;
         };
 
@@ -204,7 +164,7 @@ define([
          * Returns this sector's minimum longitude in radians.
          * @returns {number} This sector's minimum longitude in radians.
          */
-        Sector.prototype.minLongitude = function () {
+        Sector.prototype.minLongitudeRadians = function () {
             return this.minLongitude * Angle.DEGREES_TO_RADIANS;
         };
 
@@ -212,25 +172,53 @@ define([
          * Returns this sector's maximum longitude in radians.
          * @returns {number} This sector's maximum longitude in radians.
          */
-        Sector.prototype.maxLongitude = function () {
+        Sector.prototype.maxLongitudeRadians = function () {
             return this.maxLongitude * Angle.DEGREES_TO_RADIANS;
         };
 
         /**
-         * Indicates whether this sector intersects a specified sector.
-         * @param {Sector} sector The sector to test intersection with.
-         * @returns {boolean} <code>true</code> if the specifies sector intersections this sector, otherwise
-         * <code>false</code>.
-         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
+         * Modifies this sector to encompass an array of specified locations.
+         * @param {Location[]} locations An array of locations. The array may be sparse.
+         * @returns {Sector} This sector, modified to encompass all locations in the specified array.
+         * @throws {ArgumentError} If the specified array is null, undefined or empty.
          */
-        Sector.prototype.intersects = function (sector) {
-            if (!sector instanceof Sector) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "intersects", "missingSector"));
+        Sector.prototype.setToBoundingSector = function (locations) {
+            if (!locations || locations.length < 1) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "setToBoundingSector",
+                    "missingArray"));
             }
 
+            for (var i = 0, len = locations.length; i < len; i++) {
+                if (!locations[i])
+                    continue;
+
+                if (locations[i].latitude < this.minLatitude)
+                    this.minLatitude = locations[i].latitude;
+                if (locations[i].latitude > this.maxLatitude)
+                    this.maxLatitude = locations[i].latitude;
+
+                if (locations[i].longitude < this.minLongitude)
+                    this.minLongitude = locations[i].longitude;
+                if (locations[i].longitude > this.maxLongitude)
+                    this.maxLongitude = locations[i].longitude;
+            }
+
+            return this;
+        };
+
+        /**
+         * Indicates whether this sector intersects a specified sector.
+         * This sector intersects the specified sector when each of sector's boundaries either overlap with the specified
+         * sector or are adjacent to the specified sector.
+         * @param {Sector} sector The sector to test intersection with. May be null or undefined, in which case this
+         * function returns <code>false</code>.
+         * @returns {boolean} <code>true</code> if the specifies sector intersections this sector, otherwise
+         * <code>false</code>.
+         */
+        Sector.prototype.intersects = function (sector) {
             // Assumes normalized angles: [-90, 90], [-180, 180].
-            return this.minLongitude <= sector.maxLongitude
+            return sector
+                && this.minLongitude <= sector.maxLongitude
                 && this.maxLongitude >= sector.minLongitude
                 && this.minLatitude <= sector.maxLatitude
                 && this.maxLatitude >= sector.minLatitude;
@@ -238,19 +226,16 @@ define([
 
         /**
          * Indicates whether this sector intersects a specified sector exclusive of the sector boundaries.
-         * @param {Sector} sector The sector to test overlap with.
-         * @returns {boolean} <code>true</code> if the specifies sector overlaps this sector, otherwise
+         * This sector overlaps the specified sector when the union of the two sectors defines a non-empty sector.
+         * @param {Sector} sector The sector to test overlap with. May be null or undefined, in which case this
+         * function returns <code>false</code>.
+         * @returns {boolean} <code>true</code> if the specified sector overlaps this sector, otherwise
          * <code>false</code>.
-         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.overlaps = function (sector) {
-            if (!sector instanceof Sector) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "overlaps", "missingSector"));
-            }
-
             // Assumes normalized angles: [-90, 90], [-180, 180].
-            return this.minLongitude < sector.maxLongitude
+            return sector
+                && this.minLongitude < sector.maxLongitude
                 && this.maxLongitude > sector.minLongitude
                 && this.minLatitude < sector.maxLatitude
                 && this.maxLatitude > sector.minLatitude;
@@ -258,26 +243,24 @@ define([
 
         /**
          * Indicates whether this sector fully contains a specified sector.
-         * @param {Sector} sector The sector to test containment with.
-         * @returns {boolean} <code>true</code> if the specifies sector contains this sector, otherwise
+         * This sector contains the specified sector when the specified sector's boundaries are completely contained within this
+         * sector's boundaries, or are equal to this sector's boundaries.
+         * @param {Sector} sector The sector to test containment with. May be null or undefined, in which case this
+         * function returns <code>false</code>.
+         * @returns {boolean} <code>true</code> if the specified sector contains this sector, otherwise
          * <code>false</code>.
-         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
          */
         Sector.prototype.contains = function (sector) {
-            if (!sector instanceof Sector) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "contains", "missingSector"));
-            }
-
             // Assumes normalized angles: [-90, 90], [-180, 180].
-            return this.minLatitude <= sector.minLatitude
+            return sector
+                && this.minLatitude <= sector.minLatitude
                 && this.maxLatitude >= sector.maxLatitude
                 && this.minLongitude <= sector.minLongitude
                 && this.maxLongitude >= sector.maxLongitude;
         };
 
         /**
-         * Indicates whether this sector contains a specified location.
+         * Indicates whether this sector contains a specified geographic location.
          * @param {Number} latitude The location's latitude in degrees.
          * @param {Number} longitude The location's longitude in degrees.
          * @returns {boolean} <code>true</code> if this sector contains the location, otherwise <code>false</code>.
@@ -291,9 +274,10 @@ define([
         };
 
         /**
-         * Sets this sector to the intersection of it and a specified sector.
+         * Sets this sector to the intersection of itself and a specified sector.
          * @param {Sector} sector The sector to intersect with this one.
-         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
+         * @returns {Sector} This sector, set to its intersection with the specified sector.
+         * @throws {ArgumentError} If the specified sector is null or undefined.
          */
         Sector.prototype.intersection = function (sector) {
             if (!sector instanceof Sector) {
@@ -312,18 +296,21 @@ define([
                 this.maxLongitude = sector.maxLongitude;
 
             // If the sectors do not overlap in either latitude or longitude, then the result of the above logic results in
-            // the max begin greater than the min. In this case, set the max to indicate that the sector is empty in
+            // the max being greater than the min. In this case, set the max to indicate that the sector is empty in
             // that dimension.
             if (this.maxLatitude < this.minLatitude)
                 this.maxLatitude = this.minLatitude;
             if (this.maxLongitude < this.minLongitude)
                 this.maxLongitude = this.minLongitude;
+
+            return this;
         };
 
         /**
-         * Sets this sector to the union of it and a specified sector.
+         * Sets this sector to the union of itself and a specified sector.
          * @param {Sector} sector The sector to union with this one.
-         * @throws {ArgumentError} if the specified sector is null, undefined or not a Sector.
+         * @returns {Sector} This sector, set to its union with the specified sector.
+         * @throws {ArgumentError} if the specified sector is null or undefined.
          */
         Sector.prototype.union = function (sector) {
             if (!sector instanceof Sector) {
@@ -340,6 +327,8 @@ define([
                 this.minLongitude = sector.minLongitude;
             if (this.maxLongitude < sector.maxLongitude)
                 this.maxLongitude = sector.maxLongitude;
+
+            return this;
         };
 
         return Sector;
