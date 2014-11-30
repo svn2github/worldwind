@@ -78,10 +78,15 @@ define(function () {
 
         messageTable: { // KEEP THIS TABLE IN ALPHABETICAL ORDER
             missingArray: "The specified array is null, undefined or of insufficient length.",
+            missingFrustum: "The specified frustum is null or undefined.",
+            missingGlobe: "The specified globe is null or undefined.",
             missingLocation: "The specified location is null or undefined.",
+            missingMatrix: "The specified matrix is null or undefined.",
             missingPosition: "The specified position is null or undefined.",
             missingResult: "The specified result variable is null or undefined.",
-            missingSector: "The specified sector is null or undefined."
+            missingSector: "The specified sector is null or undefined.",
+            missingTexture: "The specified texture is null or undefined.",
+            missingViewport: "The specified viewport is null or undefined."
         }
     };
 

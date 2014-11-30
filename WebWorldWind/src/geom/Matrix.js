@@ -3,1989 +3,1425 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
+ * @exports Matrix
  * @version $Id$
  */
 
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError',
-        'src/geom/Vec3',
         'src/geom/Angle',
-        'src/globe/Globe'
+        'src/error/ArgumentError',
+        'src/geom/Frustum',
+        'src/globe/Globe',
+        'src/util/Logger',
+        'src/geom/Rectangle',
+        'src/render/Texture',
+        'src/geom/Vec3',
+        'src/util/WWMath'
     ],
-    function (Logger,
+    function (Angle,
               ArgumentError,
+              Frustum,
+              Globe,
+              Logger,
+              Rectangle,
+              Texture,
               Vec3,
-              Angle,
-              Globe) {
+              WWMath) {
         "use strict";
 
         /**
          * Transformation matrix.
          * @alias Matrix
-         * @param {Number} m11 matrix element at row 1, column 1
-         * @param {Number} m12 matrix element at row 1, column 2
-         * @param {Number} m13 matrix element at row 1, column 3
-         * @param {Number} m14 matrix element at row 1, column 4
-         * @param {Number} m21 matrix element at row 2, column 1
-         * @param {Number} m22 matrix element at row 2, column 2
-         * @param {Number} m23 matrix element at row 2, column 3
-         * @param {Number} m24 matrix element at row 2, column 4
-         * @param {Number} m31 matrix element at row 3, column 1
-         * @param {Number} m32 matrix element at row 3, column 2
-         * @param {Number} m33 matrix element at row 3, column 3
-         * @param {Number} m34 matrix element at row 3, column 4
-         * @param {Number} m41 matrix element at row 4, column 1
-         * @param {Number} m42 matrix element at row 4, column 2
-         * @param {Number} m43 matrix element at row 4, column 3
-         * @param {Number} m44 matrix element at row 4, column 4
-         * @param {Boolean} isOrthonormalTransform denotes that transformation matrix is orthonormal
          * @constructor
+         * @classdesc Represents a 4 x 4 double precision matrix stored in a Float64Array in row-major order.
+         * @param {Number} m11 matrix element at row 1, column 1.
+         * @param {Number} m12 matrix element at row 1, column 2.
+         * @param {Number} m13 matrix element at row 1, column 3.
+         * @param {Number} m14 matrix element at row 1, column 4.
+         * @param {Number} m21 matrix element at row 2, column 1.
+         * @param {Number} m22 matrix element at row 2, column 2.
+         * @param {Number} m23 matrix element at row 2, column 3.
+         * @param {Number} m24 matrix element at row 2, column 4.
+         * @param {Number} m31 matrix element at row 3, column 1.
+         * @param {Number} m32 matrix element at row 3, column 2.
+         * @param {Number} m33 matrix element at row 3, column 3.
+         * @param {Number} m34 matrix element at row 3, column 4.
+         * @param {Number} m41 matrix element at row 4, column 1.
+         * @param {Number} m42 matrix element at row 4, column 2.
+         * @param {Number} m43 matrix element at row 4, column 3.
+         * @param {Number} m44 matrix element at row 4, column 4.
+         * @param {Boolean} isOrthonormalTransform Denotes whether the matrix is orthonormal.
          */
-        function Matrix(m11, m12, m13, m14,
-                        m21, m22, m23, m24,
-                        m31, m32, m33, m34,
-                        m41, m42, m43, m44,
-                        isOrthonormalTransform) {
-            this.m11 = m11;
-            this.m12 = m12;
-            this.m13 = m13;
-            this.m14 = m14;
-            this.m21 = m21;
-            this.m22 = m22;
-            this.m23 = m23;
-            this.m24 = m24;
-            this.m31 = m31;
-            this.m32 = m32;
-            this.m33 = m33;
-            this.m34 = m34;
-            this.m41 = m41;
-            this.m42 = m42;
-            this.m43 = m43;
-            this.m44 = m44;
+        var Matrix = function (m11, m12, m13, m14,
+                               m21, m22, m23, m24,
+                               m31, m32, m33, m34,
+                               m41, m42, m43, m44,
+                               isOrthonormalTransform) {
+            this[0] = m11;
+            this[1] = m12;
+            this[2] = m13;
+            this[3] = m14;
+            this[4] = m21;
+            this[5] = m22;
+            this[6] = m23;
+            this[7] = m24;
+            this[8] = m31;
+            this[9] = m32;
+            this[10] = m33;
+            this[11] = m34;
+            this[12] = m41;
+            this[13] = m42;
+            this[14] = m43;
+            this[15] = m44;
             this.isOrthonormalTransform = isOrthonormalTransform;
-        }
+        };
 
         Matrix.NUM_ELEMENTS = 16;
 
         Matrix.EPSILON = 1.0e-6;
 
+        Matrix.prototype = new Float64Array(Vec3.NUM_ELEMENTS);
+
         /**
-         * Create an identity matrix scale by "value"
-         * @param {Number} value diagonal of matrix
-         * @returns {Matrix}
+         * Creates an identity matrix.
+         * @returns {Matrix} A new identity matrix.
          */
-        Matrix.fromNumber = function (value) {
+        Matrix.fromIdentity = function () {
             return new Matrix(
-                value, 0, 0, 0,
-                0, value, 0, 0,
-                0, 0, value, 0,
-                0, 0, 0, value,
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
                 true
             );
         };
 
         /**
-         * Create a matrix form a subset of an array.
-         *
-         * @param {Array} compArray data for source of matrix
-         * @param {Number} offset index to initial data element
-         * @param {Boolean} rowMajor determine whether to transpose matrix
-         * @returns {Matrix}
+         * Sets the components of this matrix to specified values.
+         * @param {Number} m11 matrix element at row 1, column 1.
+         * @param {Number} m12 matrix element at row 1, column 2.
+         * @param {Number} m13 matrix element at row 1, column 3.
+         * @param {Number} m14 matrix element at row 1, column 4.
+         * @param {Number} m21 matrix element at row 2, column 1.
+         * @param {Number} m22 matrix element at row 2, column 2.
+         * @param {Number} m23 matrix element at row 2, column 3.
+         * @param {Number} m24 matrix element at row 2, column 4.
+         * @param {Number} m31 matrix element at row 3, column 1.
+         * @param {Number} m32 matrix element at row 3, column 2.
+         * @param {Number} m33 matrix element at row 3, column 3.
+         * @param {Number} m34 matrix element at row 3, column 4.
+         * @param {Number} m41 matrix element at row 4, column 1.
+         * @param {Number} m42 matrix element at row 4, column 2.
+         * @param {Number} m43 matrix element at row 4, column 3.
+         * @param {Number} m44 matrix element at row 4, column 4.
+         * @param {Boolean} isOrthonormalTransform Indicates whether the matrix is orthonormal.
+         * @returns {Matrix} This matrix with its components set to the specified values.
          */
-        Matrix.fromArray = function (compArray, offset, rowMajor) {
-            if (!compArray) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromArray", "missingArray"));
-            }
-            if ((compArray.length - offset) < Matrix.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromArray", "shortArray"));
-            }
+        Matrix.prototype.set = function (m11, m12, m13, m14,
+                                         m21, m22, m23, m24,
+                                         m31, m32, m33, m34,
+                                         m41, m42, m43, m44,
+                                         isOrthonormalTransform) {
+            this[0] = m11;
+            this[1] = m12;
+            this[2] = m13;
+            this[3] = m14;
+            this[4] = m21;
+            this[5] = m22;
+            this[6] = m23;
+            this[7] = m24;
+            this[8] = m31;
+            this[9] = m32;
+            this[10] = m33;
+            this[11] = m34;
+            this[12] = m41;
+            this[13] = m42;
+            this[14] = m43;
+            this[15] = m44;
+            this.isOrthonormalTransform = isOrthonormalTransform;
 
-            if (rowMajor) {
-                return new Matrix(
-                    // Row 1
-                    compArray[0 + offset],
-                    compArray[1 + offset],
-                    compArray[2 + offset],
-                    compArray[3 + offset],
-                    // Row 2
-                    compArray[4 + offset],
-                    compArray[5 + offset],
-                    compArray[6 + offset],
-                    compArray[7 + offset],
-                    // Row 3
-                    compArray[8 + offset],
-                    compArray[9 + offset],
-                    compArray[10 + offset],
-                    compArray[11 + offset],
-                    // Row 4
-                    compArray[12 + offset],
-                    compArray[13 + offset],
-                    compArray[14 + offset],
-                    compArray[15 + offset],
-
-                    true
-                );
-            }
-            else {
-                return new Matrix(
-                    // Row 1
-                    compArray[0 + offset],
-                    compArray[4 + offset],
-                    compArray[8 + offset],
-                    compArray[12 + offset],
-                    // Row 2
-                    compArray[1 + offset],
-                    compArray[5 + offset],
-                    compArray[9 + offset],
-                    compArray[13 + offset],
-                    // Row 3
-                    compArray[2 + offset],
-                    compArray[6 + offset],
-                    compArray[10 + offset],
-                    compArray[14 + offset],
-                    // Row 4
-                    compArray[3 + offset],
-                    compArray[7 + offset],
-                    compArray[11 + offset],
-                    compArray[15 + offset],
-
-                    true
-                );
-            }
+            return this;
         };
 
         /**
-         * Store a matrix to a subset of an array.
-         *
-         * @param {Array} compArray array to write matrix to
-         * @param {Number} offset index of first element of array
-         * @param {Boolean} rowMajor determine whether to transpose matrix
-         * @returns {Array}
+         * Sets this matrix to the identity matrix.
+         * @returns {Matrix} This matrix set to the identity matrix.
          */
-        Matrix.prototype.toArray = function (compArray, offset, rowMajor) {
-            if (!compArray) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "toArray", "missingArray"));
-            }
-            if ((compArray.length - offset) < Matrix.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "toArray", "shortArray"));
-            }
-
-            if (rowMajor) {
-                // Row 1
-                //noinspection PointlessArithmeticExpression
-                compArray[0 + offset] = this.m11;
-                compArray[1 + offset] = this.m12;
-                compArray[2 + offset] = this.m13;
-                compArray[3 + offset] = this.m14;
-                // Row 2
-                compArray[4 + offset] = this.m21;
-                compArray[5 + offset] = this.m22;
-                compArray[6 + offset] = this.m23;
-                compArray[7 + offset] = this.m24;
-                // Row 3
-                compArray[8 + offset] = this.m31;
-                compArray[9 + offset] = this.m32;
-                compArray[10 + offset] = this.m33;
-                compArray[11 + offset] = this.m34;
-                // Row 4
-                compArray[12 + offset] = this.m41;
-                compArray[13 + offset] = this.m42;
-                compArray[14 + offset] = this.m43;
-                compArray[15 + offset] = this.m44;
-            }
-            else {
-                // Row 1
-                //noinspection PointlessArithmeticExpression
-                compArray[0 + offset] = this.m11;
-                compArray[4 + offset] = this.m12;
-                compArray[8 + offset] = this.m13;
-                compArray[12 + offset] = this.m14;
-                // Row 2
-                compArray[1 + offset] = this.m21;
-                compArray[5 + offset] = this.m22;
-                compArray[9 + offset] = this.m23;
-                compArray[13 + offset] = this.m24;
-                // Row 3
-                compArray[2 + offset] = this.m31;
-                compArray[6 + offset] = this.m32;
-                compArray[10 + offset] = this.m33;
-                compArray[14 + offset] = this.m34;
-                // Row 4
-                compArray[3 + offset] = this.m41;
-                compArray[7 + offset] = this.m42;
-                compArray[11 + offset] = this.m43;
-                compArray[15 + offset] = this.m44;
-            }
-
-            return compArray;
+        Matrix.prototype.setToIdentity = function () {
+            this[0] = 1;
+            this[1] = 0;
+            this[2] = 0;
+            this[3] = 0;
+            this[4] = 0;
+            this[5] = 1;
+            this[6] = 0;
+            this[7] = 0;
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = 1;
+            this[11] = 0;
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
+            this.isOrthonormalTransform = true;
         };
 
         /**
-         * Returns a Cartesian transform <code>Matrix</code> that maps a local orientation to model coordinates. The
-         * orientation is specified by an array of three <code>axes</code>. The <code>axes</code> array must contain three
-         * non-null vectors, which are interpreted in the following order: x-axis, y-axis, z-axis. This ensures that the
-         * axes in the returned <code>Matrix</code> have unit length and are orthogonal to each other.
-         *
-         * @param {Array} axes an array of three non-null vectors defining a local orientation in the following order:
-         *                  x-axis,
-         *                  y-axis,
-         *                  z-axis.
-         * @returns {Matrix} a <code>Matrix</code> that transforms local to global coordinates.
-         * @throws ArgumentError
-         *          if <code>axes</code> is not an <code>Array</code>,
-         *          if <code>axes</code> contains less than three elements, or
-         *          if any of the first three elements in <code>axes</code> is not a <code>Vec3</code>.
+         * Indicates whether this matrix is equal to a specified matrix.
+         * @param {Matrix} matrix The matrix to test equality with. May be null or undefined, in which case this
+         * function returns <code>false</code>.
+         * @returns {boolean} <code>true</code> if all components of this matrix are equal to the corresponding
+         * components of the specified matrix, otherwise <code>false</code>.
          */
-        Matrix.fromAxes = function (axes) {
-            if (!axes) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "missingAxes"));
-            }
-            if (axes.length < offset + Matrix.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "shortAxes"));
-            }
-            if (!axes[0] || !axes[1] || !axes[2]) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromAxes", "missingAxesElements"));
-            }
-
-            var s = axes[0].normalize(),
-                f = s.cross(axes[1]).normalize(),
-                u = f.cross(s).normalize();
-
-            return new Matrix(
-                s.x, u.x, f.x, 0.0,
-                s.y, u.y, f.y, 0.0,
-                s.z, u.z, f.z, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                true);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromAxisAngle(Angle angle, Vec3 axis)
-        //{
-        //    if (angle == null)
-        //    {
-        //        msg = "generic.AngleExpected";
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    if (axis == null)
-        //    {
-        //        msg = "nullValue.Vec3IsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    return fromAxisAngle(angle, axis.x, axis.y, axis.z, true);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromAxisAngle(Angle angle, double axisX, double axisY, double axisZ)
-        //{
-        //    if (angle == null)
-        //    {
-        //        msg = "generic.AngleExpected";
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    return fromAxisAngle(angle, axisX, axisY, axisZ, true);
-        //}
-
-        /**
-         * Create a rotation transformation transformation matrix from an axis and an angle.
-         *
-         * @param {Number} angle rotation angle in degrees
-         * @param {Number} axisX x component of rotation axis
-         * @param {Number} axisY y component of rotation axis
-         * @param {Number} axisZ z component of rotation axis
-         * @param {Boolean} normalize denotes that the axis might not be normalized
-         * @returns {Matrix} a rotation matrix
-         */
-        Matrix.fromAxisAngle = function (angle, axisX, axisY, axisZ, normalize) {
-            if (normalize) {
-                var length = Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ));
-                if (!isZero(length) && (length != 1.0)) {
-                    axisX /= length;
-                    axisY /= length;
-                    axisZ /= length;
-                }
-            }
-
-            var c = Math.cos(Angle.DEGREES_TO_RADIANS * angle),
-                s = Math.sin(Angle.DEGREES_TO_RADIANS * angle),
-                one_minus_c = 1 - c;
-
-            return new Matrix(
-                // Row 1
-                c + (one_minus_c * axisX * axisX),
-                (one_minus_c * axisX * axisY) - (s * axisZ),
-                (one_minus_c * axisX * axisZ) + (s * axisY),
-                0.0,
-                // Row 2
-                (one_minus_c * axisX * axisY) + (s * axisZ),
-                c + (one_minus_c * axisY * axisY),
-                (one_minus_c * axisY * axisZ) - (s * axisX),
-                0.0,
-                // Row 3
-                (one_minus_c * axisX * axisZ) - (s * axisY),
-                (one_minus_c * axisY * axisZ) + (s * axisX),
-                c + (one_minus_c * axisZ * axisZ),
-                0.0,
-                // Row 4
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromQuaternion(Quaternion quaternion)
-        //{
-        //    if (quaternion == null)
-        //    {
-        //        msg = "nullValue.QuaternionIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    return fromQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w, true);
-        //}
-
-        /**
-         * Create a rotation transformation matrix from a quaternion.
-         *
-         * @param {Number} x x component of quaternion
-         * @param {Number} y y component of quaternion
-         * @param {Number} z z component of quaternion
-         * @param {Number} w w component of quaternion
-         * @param {Boolean} normalize denotes that the quaternion might not be normalized
-         * @returns {Matrix} a rotation matrix
-         */
-        Matrix.fromQuaternion = function (x, y, z, w, normalize) {
-            if (normalize) {
-                var length = Math.sqrt((x * x) + (y * y) + (z * z) + (w * w));
-                if (!isZero(length) && (length != 1)) {
-                    x /= length;
-                    y /= length;
-                    z /= length;
-                    w /= length;
-                }
-            }
-
-            return new Matrix(
-                // Row 1
-                1.0 - (2.0 * y * y) - (2.0 * z * z),
-                (2.0 * x * y) - (2.0 * z * w),
-                (2.0 * x * z) + (2.0 * y * w),
-                0.0,
-                // Row 2
-                (2.0 * x * y) + (2.0 * z * w),
-                1.0 - (2.0 * x * x) - (2.0 * z * z),
-                (2.0 * y * z) - (2.0 * x * w),
-                0.0,
-                // Row 3
-                (2.0 * x * z) - (2.0 * y * w),
-                (2.0 * y * z) + (2.0 * x * w),
-                1.0 - (2.0 * x * x) - (2.0 * y * y),
-                0.0,
-                // Row 4
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
+        Matrix.prototype.equals = function (matrix) {
+            return matrix
+                && this[0] == matrix[0]
+                && this[1] == matrix[1]
+                && this[2] == matrix[2]
+                && this[3] == matrix[3]
+                && this[4] == matrix[4]
+                && this[5] == matrix[5]
+                && this[6] == matrix[6]
+                && this[7] == matrix[7]
+                && this[8] == matrix[8]
+                && this[9] == matrix[9]
+                && this[10] == matrix[10]
+                && this[11] == matrix[11]
+                && this[12] == matrix[12]
+                && this[13] == matrix[13]
+                && this[14] == matrix[14]
+                && this[15] == matrix[15];
         };
 
         /**
-         * Create a rotation transformation matrix from Euler angles.
+         * Stores this matrix's components in column-major order in the specified array.
+         * <p>
+         * The array must have space for at least 16 elements. This matrix's components are stored in the array
+         * starting with row 0 column 0 in index 0, row 1 column 0 in index 1, row 2 column 0 in index 2, and so on.
          *
-         * @param {Number} xAngle rotation about x axis in degrees
-         * @param {Number} yAngle rotation about y axis in degrees
-         * @param {Number} zAngle rotation about z axis in degrees
-         * @returns {Matrix} a rotation matrix
+         * @param {Number[]} result An array of at least 16 elements. Upon return, contains this matrix's components in
+         * column-major.
+         * @returns {Number[]} The specified result array.
+         * @throws {ArgumentError} If the specified result array in null or undefined.
          */
-        Matrix.fromRotationXYZ = function (xAngle, yAngle, zAngle) {
-            var cx = Math.cos(Angle.DEGREES_TO_RADIANS * xAngle),
-                sx = Math.sin(Angle.DEGREES_TO_RADIANS * xAngle),
-                cy = Math.cos(Angle.DEGREES_TO_RADIANS * yAngle),
-                sy = Math.sin(Angle.DEGREES_TO_RADIANS * yAngle),
-                cz = Math.cos(Angle.DEGREES_TO_RADIANS * zAngle),
-                sz = Math.sin(Angle.DEGREES_TO_RADIANS * zAngle);
+        Matrix.prototype.columnMajorComponents = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "columnMajorComponents", "missingResult"));
+            }
 
-            return new Matrix(
-                cy * cz, -cy * sz, sy, 0.0,
-                (sx * sy * cz) + (cx * sz), -(sx * sy * sz) + (cx * cz), -sx * cy, 0.0,
-                -(cx * sy * cz) + (sx * sz), (cx * sy * sz) + (sx * cz), cx * cy, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
+            // Column 1
+            result[0] = this[0];
+            result[1] = this[4];
+            result[2] = this[8];
+            result[3] = this[12];
+            // Column 2
+            result[4] = this[1];
+            result[5] = this[5];
+            result[6] = this[9];
+            result[7] = this[13];
+            // Column 3
+            result[8] = this[2];
+            result[9] = this[6];
+            result[10] = this[10];
+            result[11] = this[14];
+            // Column 4
+            result[12] = this[3];
+            result[13] = this[7];
+            result[14] = this[11];
+            result[15] = this[15];
+
+            return result;
         };
 
         /**
-         * Create a rotation transformation matrix about the x axis.
-         *
-         * @param {Number} angle rotation angle in degrees
-         * @returns {Matrix} a rotation matrix
+         * Sets this matrix to a translation matrix with specified translation components.
+         * @param {Number} x The X translation component.
+         * @param {Number} y The Y translation component.
+         * @param {Number} z The Z translation component.
+         * @returns {Matrix} This matrix with its translation components set to those specified and all other
+         * components set to that of an identity matrix.
          */
-        Matrix.fromRotationX = function (angle) {
-            var c = Math.cos(Angle.DEGREES_TO_RADIANS * angle),
-                s = Math.sin(Angle.DEGREES_TO_RADIANS * angle);
+        Matrix.prototype.setToTranslation = function (x, y, z) {
+            this[0] = 1;
+            this[1] = 0;
+            this[2] = 0;
+            this[3] = x;
+            this[4] = 0;
+            this[5] = 1;
+            this[6] = 0;
+            this[7] = y;
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = 1;
+            this[11] = z;
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
+            this.isOrthonormalTransform = true;
 
-            return new Matrix(
-                1.0, 0.0, 0.0, 0.0,
-                0.0, c, -s, 0.0,
-                0.0, s, c, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
+            return this;
         };
 
         /**
-         * Create a rotation transformation matrix about the y axis.
-         *
-         * @param {Number} angle rotation angle in degrees
-         * @returns {Matrix} a rotation matrix
+         * Sets the translation components of this matrix to specified values.
+         * @param {Number} x The X translation component.
+         * @param {Number} y The Y translation component.
+         * @param {Number} z The Z translation component.
+         * @returns {Matrix} This matrix with its translation components set to the specified values and all other
+         * components unmodified.
          */
-        Matrix.fromRotationY = function (angle) {
-            var c = Math.cos(Angle.DEGREES_TO_RADIANS * angle),
-                s = Math.sin(Angle.DEGREES_TO_RADIANS * angle);
+        Matrix.prototype.setTranslation = function (x, y, z) {
+            this[3] = x;
+            this[7] = y;
+            this[11] = z;
 
-            return new Matrix(
-                c, 0.0, s, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                -s, 0.0, c, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
+            return this;
         };
 
         /**
-         * Create a rotation transformation matrix about the z axis.
-         *
-         * @param {Number} angle rotation angle in degrees
-         * @returns {Matrix} a rotation matrix
+         * Sets this matrix to a scale matrix with specified scale components.
+         * @param {Number} xScale The X scale component.
+         * @param {Number} yScale The Y scale component.
+         * @param {Number} zScale The Z scale component.
+         * @returns {Matrix} This matrix with its scale components set to those specified and all other
+         * components set to that of an identity matrix.
          */
-        Matrix.fromRotationZ = function (angle) {
-            var c = Math.cos(Angle.DEGREES_TO_RADIANS * angle),
-                s = Math.sin(Angle.DEGREES_TO_RADIANS * angle);
+        Matrix.prototype.setToScale = function (xScale, yScale, zScale) {
+            this[0] = xScale;
+            this[1] = 0;
+            this[2] = 0;
+            this[3] = 0;
+            this[4] = 0;
+            this[5] = yScale;
+            this[6] = 0;
+            this[7] = 0;
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = zScale;
+            this[11] = 0;
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
+            this.isOrthonormalTransform = true;
 
-            return new Matrix(
-                c, -s, 0.0, 0.0,
-                s, c, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                // Rotation matrices are orthogonal, 3D transforms.
-                true);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromScale(double scale)
-        //{
-        //    return fromScale(scale, scale, scale);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromScale(Vec3 scale)
-        //{
-        //    if (scale == null)
-        //    {
-        //        msg = "nullValue.Vec3IsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    return fromScale(scale.x, scale.y, scale.z);
-        //}
-
-        /**
-         * Create a scale transformation matrix.
-         *
-         * @param {Number} scaleX scale factor along the x axis
-         * @param {Number} scaleY scale factor along the y axis
-         * @param {Number} scaleZ scale factor along the z axis
-         * @returns {Matrix} a scale matrix
-         */
-        Matrix.fromScale = function (scaleX, scaleY, scaleZ) {
-            return new Matrix(
-                scaleX, 0.0, 0.0, 0.0,
-                0.0, scaleY, 0.0, 0.0,
-                0.0, 0.0, scaleZ, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                // Scale matrices are non-orthogonal, 3D transforms.
-                false);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromTranslation(Vec3 translation)
-        //{
-        //    if (translation == null)
-        //    {
-        //        msg = "nullValue.Vec3IsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    return fromTranslation(translation.x, translation.y, translation.z);
-        //}
-
-        /**
-         * Create a translation transformation matrix.
-         *
-         * @param {Number} x x component of translation
-         * @param {Number} y y component of translation
-         * @param {Number} z z component of translation
-         * @returns {Matrix} a translation matrix
-         */
-        Matrix.fromTranslation = function (x, y, z) {
-            return new Matrix(
-                1.0, 0.0, 0.0, x,
-                0.0, 1.0, 0.0, y,
-                0.0, 0.0, 1.0, z,
-                0.0, 0.0, 0.0, 1.0,
-                // Translation matrices are orthogonal, 3D transforms.
-                true);
+            return this;
         };
 
         /**
-         * Create a skew matrix.
-         *
-         * @param {Number} angleTheta in degrees
-         * @param {Number} anglePhi in degrees
-         * @returns {Matrix} a skew matrix
+         * Sets the scale components of this matrix to specified values.
+         * @param {Number} xScale The X scale component.
+         * @param {Number} yScale The Y scale component.
+         * @param {Number} zScale The Z scale component.
+         * @returns {Matrix} This matrix with its scale components set to the specified values and all other
+         * components unmodified.
          */
-        Matrix.fromSkew = function (angleTheta, anglePhi) {
-            // from http://faculty.juniata.edu/rhodes/graphics/projectionmat.htm
+        Matrix.prototype.setScale = function (xScale, yScale, zScale) {
+            this[0] = xScale;
+            this[5] = yScale;
+            this[10] = zScale;
 
-            var cotTheta = 1.0e6,
-                cotPhi = 1.0e6;
-
-            if (angleTheta * Angle.DEGREES_TO_RADIANS < Matrix.EPSILON &&
-                anglePhi * Angle.DEGREES_TO_RADIANS < Matrix.EPSILON) {
-                cotTheta = 0;
-                cotPhi = 0;
-            }
-            else {
-                if (Math.abs(Math.tan(angleTheta * Angle.DEGREES_TO_RADIANS)) > Matrix.EPSILON)
-                    cotTheta = 1 / Math.tan(angleTheta * Angle.DEGREES_TO_RADIANS);
-                if (Math.abs(Math.tan(anglePhi * Angle.DEGREES_TO_RADIANS)) > Matrix.EPSILON)
-                    cotPhi = 1 / Math.tan(anglePhi * Angle.DEGREES_TO_RADIANS);
-            }
-
-            return new Matrix(
-                1.0, 0.0, -cotTheta, 0,
-                0.0, 1.0, -cotPhi, 0,
-                0.0, 0.0, 1.0, 0,
-                0.0, 0.0, 0.0, 1.0,
-                false);
+            return this;
         };
 
         /**
-         * Returns a Cartesian transform <code>Matrix</code> that maps a local origin and orientation to model coordinates.
-         * The transform is specified by a local <code>origin</code> and an array of three <code>axes</code>. The
-         * <code>axes</code> array must contain three non-null vectors, which are interpreted in the following order:
-         * x-axis, y-axis, z-axis. This ensures that the axes in the returned <code>Matrix</code> have unit length and are
-         * orthogonal to each other.
-         *
-         * @param {Vec3} origin the origin of the local coordinate system.
-         * @param {Array} axes   an array must of three non-null vectors defining a local orientation in the following order:
-         *                      x-axis, y-axis, z-axis.
-         *
-         * @return {Matrix} a <code>Matrix</code> that transforms local coordinates to world coordinates.
-         *
-         * @throws ArgumentError
-         *      if <code>origin</code> is not a <code>Vec3</code>,
-         *      if <code>axes</code> is not an <code>Array</code>,
-         *      if <code>axes</code> contains less than three elements, or
-         *      if  any of the first three elements in <code>axes</code> are not <code>Vec3</code>.
+         * Sets this matrix to the values of a specified matrix.
+         * @param {Matrix} matrix The matrix whose values to assign to this one.
+         * @returns {Matrix} This matrix with its values set to those of the specific matrix.
+         * @throws {ArgumentError} If the specified matrix in null or undefined.
          */
-        Matrix.fromLocalOrientation = function (origin, axes) {
-            if (!origin) {
+        Matrix.prototype.setToMatrix = function (matrix) {
+            if (!matrix) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingOrigin"));
-            }
-            if (!axes) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingAxes"));
-            }
-            if (axes < 3) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "shortAxes"));
-            }
-            if (!axes[0] || !axes[1] || !axes[2]) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromLocalOrientation", "missingAxesComponents"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToMatrix", "missingMatrix"));
             }
 
-            return Matrix.fromTranslation(origin.x, origin.y, origin.z).multiply(Matrix.fromAxes(axes));
+            this[0] = matrix[0];
+            this[1] = matrix[1];
+            this[2] = matrix[2];
+            this[3] = matrix[3];
+            this[4] = matrix[4];
+            this[5] = matrix[5];
+            this[6] = matrix[6];
+            this[7] = matrix[7];
+            this[8] = matrix[8];
+            this[9] = matrix[9];
+            this[10] = matrix[10];
+            this[11] = matrix[11];
+            this[12] = matrix[12];
+            this[13] = matrix[13];
+            this[14] = matrix[14];
+            this[15] = matrix[15];
+            this.isOrthonormalTransform = matrix.isOrthonormalTransform;
+
+            return this;
         };
 
         /**
-         * Returns a viewing matrix in model coordinates defined by the specified View eye point, reference point indicating
-         * the center of the scene, and up vector. The eye point, center point, and up vector are in model coordinates. The
-         * returned viewing matrix maps the reference center point to the negative Z axis, and the eye point to the origin,
-         * and the up vector to the positive Y axis. When this matrix is used to define an OGL viewing transform along with
-         * a typical projection matrix such as {@link Matrix#fromPerspective} , this maps
-         * the center of the scene to the center of the viewport, and maps the up vector to the viewport's positive Y axis
-         * (the up vector points up in the viewport). The eye point and reference center point must not be coincident, and
-         * the up vector must not be parallel to the line of sight (the vector from the eye point to the reference center
-         * point).
-         *
-         * @param {Vec3} eye    the eye point, in model coordinates.
-         * @param {Vec3} center the scene's reference center point, in model coordinates.
-         * @param {Vec3} up     the direction of the up vector, in model coordinates.
-         *
-         * @return {Matrix} a viewing matrix in model coordinates defined by the specified eye point, reference center point, and up
-         *         vector.
-         *
-         * @throws ArgumentError
-         *      if any of the eye point, reference center point, or up vector are not <code>Vec3</code>,
-         *      if the eye point and reference center point are coincident, or
-         *      if the up vector and the line of sight are parallel.
+         * Sets this matrix to the transpose of a specified matrix.
+         * @param {Matrix} matrix The matrix whose transpose is to be copied.
+         * @returns {Matrix} This matrix, with its values set to the transpose of the specified matrix.
+         * @throws {ArgumentError} If the specified matrix in null or undefined.
          */
-        Matrix.fromViewLookAt = function (eye, center, up) {
-            if (!eye || !center || !up) {
+        Matrix.prototype.setToTransposeOfMatrix = function (matrix) {
+            if (!matrix) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "missingLookAtParameters"));
-            }
-            if (eye.distanceTo(center) <= Matrix.EPSILON) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "tooShortEyeCenter"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToTransposeOfMatrix", "missingMatrix"));
             }
 
-            var forward = center.subtract(eye),
-                f = forward.normalize(),
-                s = f.cross(up).normalize();
+            this[0] = matrix[0];
+            this[1] = matrix[4];
+            this[2] = matrix[8];
+            this[3] = matrix[12];
+            this[4] = matrix[1];
+            this[5] = matrix[5];
+            this[6] = matrix[9];
+            this[7] = matrix[13];
+            this[8] = matrix[2];
+            this[9] = matrix[6];
+            this[10] = matrix[10];
+            this[11] = matrix[14];
+            this[12] = matrix[3];
+            this[13] = matrix[7];
+            this[14] = matrix[11];
+            this[15] = matrix[15];
+            this.isOrthonormalTransform = matrix.isOrthonormalTransform;
 
-            if (s.getLength() <= Matrix.EPSILON) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromViewLookAt", "tooShortS"));
-            }
-
-            var u = s.cross(forward).normalize();
-
-            var mAxes = new Matrix(
-                s.x, s.y, s.z, 0.0,
-                u.x, u.y, u.z, 0.0,
-                -f.x, -f.y, -f.z, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                true);
-
-            var mEye = Matrix.fromTranslation(-eye.x, -eye.y, -eye.z);
-
-            return mAxes.multiply(mEye);
+            return this;
         };
 
         /**
-         * Returns a local origin transform matrix in model coordinates defined by the specified eye point, reference point
-         * indicating the center of the local scene, and up vector. The eye point, center point, and up vector are in model
-         * coordinates. The returned viewing matrix maps the the positive Z axis to the reference center point, the origin
-         * to the eye point, and the positive Y axis to the up vector. The eye point and reference center point must not be
-         * coincident, and the up vector must not be parallel to the line of sight (the vector from the eye point to the
-         * reference center point).
-         *
-         * @param {Vec3} eye    the eye point, in model coordinates.
-         * @param {Vec3} center the scene's reference center point, in model coordinates.
-         * @param {Vec3} up     the direction of the up vector, in model coordinates.
-         *
-         * @return {Matrix} a viewing matrix in model coordinates defined by
-         *          the specified eye point,
-         *          reference center point, and
-         *          up vector.
-         *
-         * @throws ArgumentError
-         *          if any of the eye point, reference center point, or up vector are not <code>Vec3</code>,
-         *          if the eye point and reference center point are coincident, or
-         *          if the up vector and the line of sight are parallel.
+         * Sets this matrix to the matrix product of two specified matrices.
+         * @param {Matrix} matrixA The first matrix multiplicand.
+         * @param {Matrix} matrixB The second matrix multiplicand.
+         * @returns {Matrix} This matrix set to the product of matrixA x matrixB.
+         * @throws {ArgumentError} If either specified matrix is null or undefined.
          */
-        Matrix.fromModelLookAt = function (eye, center, up) {
-            if (!eye || !center || !up) {
+        Matrix.prototype.setToMultiply = function (matrixA, matrixB) {
+            if (!matrixA || !matrixB) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "missingLookAtParameters"));
-            }
-            if (eye.distanceTo(center) <= Matrix.EPSILON) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "tooShortEyeCenter"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToMultiply", "missingMatrix"));
             }
 
-            var forward = center.subtract(eye),
-                f = forward.normalize(),
-                s = up.cross(f).normalize();
+            var ma = matrixA,
+                mb = matrixB;
 
-            if (s.getLength() <= Matrix.EPSILON) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromModelLookAt", "tooShortS"));
-            }
+            this[0] = ma[0] * mb[0] + ma[1] * mb[4] + ma[2] * mb[8] + ma[3] * mb[12];
+            this[1] = ma[0] * mb[1] + ma[1] * mb[5] + ma[2] * mb[9] + ma[3] * mb[13];
+            this[2] = ma[0] * mb[2] + ma[1] * mb[6] + ma[2] * mb[10] + ma[3] * mb[14];
+            this[3] = ma[0] * mb[3] + ma[1] * mb[7] + ma[2] * mb[11] + ma[3] * mb[15];
 
-            var u = f.cross(s).normalize();
+            this[4] = ma[4] * mb[0] + ma[5] * mb[4] + ma[6] * mb[8] + ma[7] * mb[12];
+            this[5] = ma[4] * mb[1] + ma[5] * mb[5] + ma[6] * mb[9] + ma[7] * mb[13];
+            this[6] = ma[4] * mb[2] + ma[5] * mb[6] + ma[6] * mb[10] + ma[7] * mb[14];
+            this[7] = ma[4] * mb[3] + ma[5] * mb[7] + ma[6] * mb[11] + ma[7] * mb[15];
 
-            var mAxes = new Matrix(
-                s.x, u.x, f.x, 0.0,
-                s.y, u.y, f.y, 0.0,
-                s.z, u.z, f.z, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-                true);
+            this[8] = ma[8] * mb[0] + ma[9] * mb[4] + ma[10] * mb[8] + ma[11] * mb[12];
+            this[9] = ma[8] * mb[1] + ma[9] * mb[5] + ma[10] * mb[9] + ma[11] * mb[13];
+            this[10] = ma[8] * mb[2] + ma[9] * mb[6] + ma[10] * mb[10] + ma[11] * mb[14];
+            this[11] = ma[8] * mb[3] + ma[9] * mb[7] + ma[10] * mb[11] + ma[11] * mb[15];
 
-            var mEye = Matrix.fromTranslation(eye.x, eye.y, eye.z);
+            this[12] = ma[12] * mb[0] + ma[13] * mb[4] + ma[14] * mb[8] + ma[15] * mb[12];
+            this[13] = ma[12] * mb[1] + ma[13] * mb[5] + ma[14] * mb[9] + ma[15] * mb[13];
+            this[14] = ma[12] * mb[2] + ma[13] * mb[6] + ma[14] * mb[10] + ma[15] * mb[14];
+            this[15] = ma[12] * mb[3] + ma[13] * mb[7] + ma[14] * mb[11] + ma[15] * mb[15];
 
-            return mEye.multiply(mAxes);
+            this.isOrthonormalTransform = matrixA.isOrthonormalTransform && matrixB.isOrthonormalTransform;
+
+            return this;
         };
 
         /**
-         * Create a perspective projection matrix.
-         *
-         * @param {Number} horizontalFieldOfView horizontal field of view in degrees
-         * @param {Number} viewportWidth width of viewport
-         * @param {Number} viewportHeight height of viewport
-         * @param {Number} near distance to near clipping plane
-         * @param {Number} far distance to far clipping plane
-         * @returns {Matrix} a projection matrix
-         * @throws {ArgumentError}
-         *          if any argument is outside the range of valid values (this depends on the specific parameter)
-         */
-        Matrix.fromPerspective = function (horizontalFieldOfView, viewportWidth, viewportHeight, near, far) {
-            var msg;
-
-            var fovX = horizontalFieldOfView;
-            if (fovX <= 0.0 || fovX > 180.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - fovX"));
-            }
-            if (viewportWidth <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - viewportWidth"));
-            }
-            if (viewportHeight <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - viewportHeight"));
-            }
-            if (near <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - near"));
-            }
-            if (far <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - far"));
-            }
-            if (far <= near) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromPerspective", "invalidParameter - far <= near"));
-            }
-
-            var f = 1.0 / Math.tan(0.5 * horizontalFieldOfView * Angle.DEGREES_TO_RADIANS);
-            // We are using *horizontal* field-of-view here. This results in a different matrix than documented in sources
-            // using vertical field-of-view.
-            return new Matrix(
-                f, 0.0, 0.0, 0.0,
-                0.0, (f * viewportWidth) / viewportHeight, 0.0, 0.0,
-                0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
-                0.0, 0.0, -1.0, 0.0);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        //Matrix.fromPerspective = function(double width, double height, double near, double far)
-        //{
-        //    if (width <= 0.0)
-        //    {
-        //        msg = "generic.ArgumentOutOfRange", width);
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    if (height <= 0.0)
-        //    {
-        //        msg = "generic.ArgumentOutOfRange", height);
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    if (near <= 0.0)
-        //    {
-        //        msg = "generic.ArgumentOutOfRange", near);
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    if (far <= 0.0)
-        //    {
-        //        msg = "generic.ArgumentOutOfRange", far);
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //    if (far <= near)
-        //    {
-        //        msg = "generic.ArgumentOutOfRange", far);
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    return new Matrix(
-        //        2.0 / width, 0.0, 0.0, 0.0,
-        //        0.0, (2.0 * near) / height, 0.0, 0.0,
-        //        0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
-        //        0.0, 0.0, -1.0, 0.0);
-        //};
-
-        /**
-         * Create an orthographic projection matrix.
-         *
-         * @param {Number} width width if the enclosing space
-         * @param {Number} height height of the enclosing space
-         * @param {Number} near distance to the near clipping plane
-         * @param {Number} far distance to the far clipping plane
-         * @returns {Matrix} a projection matrix
-         * @throws ArgumentError
-         *      if any arguments are outside the range of valid values (this depends on the specific parameter)
-         */
-        Matrix.fromOrthographic = function (width, height, near, far) {
-            var msg;
-            if (width <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - width"));
-            }
-            if (height <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - height"));
-            }
-            if (near <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - near"));
-            }
-            if (far <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - far"));
-            }
-            if (far <= near) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic", "invalidParameter - far <= near"));
-            }
-
-            return new Matrix(
-                2.0 / width, 0.0, 0.0, 0.0,
-                0.0, 2.0 / height, 0.0, 0.0,
-                0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
-                0.0, 0.0, 0.0, 1.0);
-        };
-
-        /**
-         * Create a 2D orthographic projection matrix.
-         *
-         * @param {Number} width of the enclosing space
-         * @param {Number} height height of the enclosing space
-         * @returns {Matrix} a projection matrix
-         */
-        Matrix.fromOrthographic2D = function (width, height) {
-            var msg;
-            if (width <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic2D", "invalidParameter - width"));
-            }
-            if (height <= 0.0) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromOrthographic2D", "invalidParameter - height"));
-            }
-
-            return new Matrix(
-                2.0 / width, 0.0, 0.0, 0.0,
-                0.0, 2.0 / height, 0.0, 0.0,
-                0.0, 0.0, -1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0);
-        };
-
-        // TODO: re-enable after dealing with polymorphism
-        ///**
-        // * Computes a <code>Matrix</code> that will map a aligned 2D grid coordinates to geographic coordinates in degrees.
-        // * It is assumed that the destination grid is parallel with lines of latitude and longitude, and has its origin in
-        // * the upper left hand corner.
-        // *
-        // * @param sector      the grid sector.
-        // * @param imageWidth  the grid width.
-        // * @param imageHeight the grid height.
-        // *
-        // * @return <code>Matrix</code> that will map from grid coordinates to geographic coordinates in degrees.
-        // *
-        // * @throws IllegalArgumentException if <code>sector</code> is null, or if either <code>width</code> or
-        // *                                  <code>height</code> are less than 1.
-        // */
-        //Matrix.fromImageToGeographic = function(imageWidth, imageHeight, /* Sector */ sector)
-        //{
-        //    // TODO: re-enable validation
-        //    //if (imageWidth < 1 || imageHeight < 1)
-        //    //{
-        //    //    String message = "generic.InvalidImageSize", imageWidth, imageHeight);
-        //    //    Logger.log(Logger.LEVEL_SEVERE, message);
-        //    //    throw new ArgumentError(message);
-        //    //}
-        //    //if (sector == null)
-        //    //{
-        //    //    String message = "nullValue.SectorIsNull");
-        //    //    Logger.log(Logger.LEVEL_SEVERE, message);
-        //    //    throw new ArgumentError(message);
-        //    //}
-        //
-        //    // Transform from grid coordinates to geographic coordinates. Since the grid is parallel with lines of latitude
-        //    // and longitude, this is a simple scale and translation.
-        //
-        //    var sx = sector.getDeltaLonDegrees() / imageWidth,
-        //        sy = -sector.getDeltaLatDegrees() / imageHeight,
-        //        tx = sector.getMinLongitude().degrees,
-        //        ty = sector.getMaxLatitude().degrees;
-        //
-        //    return new Matrix(
-        //        sx, 0.0, tx, 0.0,
-        //        0.0, sy, ty, 0.0,
-        //        0.0, 0.0, 1.0, 0.0,
-        //        0.0, 0.0, 0.0, 0.0);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromImageToGeographic(AVList worldFileParams)
-        //{
-        //    if (worldFileParams == null)
-        //    {
-        //        String message = "nullValue.ParamsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    // Transform from geographic coordinates to source grid coordinates. Start with the following system of
-        //    // equations. The values a-f are defined by the world file, which construct and affine transform mapping grid
-        //    // coordinates to geographic coordinates. We can simply plug these into the upper 3x3 values of our matrix.
-        //    //
-        //    // | a b c |   | x |   | lon |
-        //    // | d e f | * | y | = | lat |
-        //    // | 0 0 1 |   | 1 |   | 1   |
-        //
-        //    Double a = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_PIXEL_SIZE);
-        //    Double d = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_COEFFICIENT);
-        //    Double b = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_COEFFICIENT);
-        //    Double e = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_PIXEL_SIZE);
-        //    Double c = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_LOCATION);
-        //    Double f = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_LOCATION);
-        //
-        //    if (a == null || b == null || c == null || d == null || e == null || f == null)
-        //    {
-        //        return null;
-        //    }
-        //
-        //    return new Matrix(
-        //        a, b, c, 0.0,
-        //        d, e, f, 0.0,
-        //        0.0, 0.0, 1.0, 0.0,
-        //        0.0, 0.0, 0.0, 0.0);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromGeographicToImage(AVList worldFileParams)
-        //{
-        //    if (worldFileParams == null)
-        //    {
-        //        String message = "nullValue.ParamsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    // Transform from geographic coordinates to source grid coordinates. Start with the following system of
-        //    // equations. The values a-f are defined by the world file, which construct and affine transform mapping grid
-        //    // coordinates to geographic coordinates. We want to find the transform that maps geographic coordinates to
-        //    // grid coordinates.
-        //    //
-        //    // | a b c |   | x |   | lon |
-        //    // | d e f | * | y | = | lat |
-        //    // | 0 0 1 |   | 1 |   | 1   |
-        //    //
-        //    // Expanding the matrix multiplication:
-        //    //
-        //    // a*x + b*y + c = lon
-        //    // d*x + e*y + f = lat
-        //    //
-        //    // Then solving for x and y by eliminating variables:
-        //    //
-        //    // x0 = d - (e*a)/b
-        //    // y0 = e - (d*b)/a
-        //    // (-e/(b*x0))*lon + (1/x0)*lat + (e*c)/(b*x0) - f/x0 = x
-        //    // (-d/(a*y0))*lon + (1/y0)*lat + (d*c)/(a*y0) - f/y0 = y
-        //    //
-        //    // And extracting new the matrix coefficients a'-f':
-        //    //
-        //    // a' = -e/(b*x0)
-        //    // b' = 1/x0
-        //    // c' = (e*c)/(b*x0) - f/x0
-        //    // d' = -d/(a*y0)
-        //    // e' = 1/y0
-        //    // f' = (d*c)/(a*y0) - f/y0
-        //    //
-        //    // If b==0 and d==0, then we have the equation simplifies to:
-        //    //
-        //    // (1/a)*lon + (-c/a) = x
-        //    // (1/e)*lat + (-f/e) = y
-        //    //
-        //    // And and the new matrix coefficients will be:
-        //    //
-        //    // a' = 1/a
-        //    // b' = 0
-        //    // c' = -c/a
-        //    // d' = 0
-        //    // e' = 1/e
-        //    // f' = -f/e
-        //
-        //    Double a = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_PIXEL_SIZE);
-        //    Double d = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_COEFFICIENT);
-        //    Double b = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_COEFFICIENT);
-        //    Double e = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_PIXEL_SIZE);
-        //    Double c = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_X_LOCATION);
-        //    Double f = AVListImpl.getDoubleValue(worldFileParams, WorldFile.WORLD_FILE_Y_LOCATION);
-        //
-        //    if (a == null || b == null || c == null || d == null || e == null || f == null)
-        //    {
-        //        return null;
-        //    }
-        //
-        //    if (b == 0.0 && d == 0.0)
-        //    {
-        //        return new Matrix(
-        //            1.0 / a, 0.0, (-c / a), 0.0,
-        //            0.0, 1.0 / e, (-f / e), 0.0,
-        //            0.0, 0.0, 1.0, 0.0,
-        //            0.0, 0.0, 0.0, 0.0);
-        //    }
-        //    else
-        //    {
-        //        double x0 = d - (e * a) / b;
-        //        double ap = -e / (b * x0);
-        //        double bp = 1.0 / x0;
-        //        double cp = (e * c) / (b * x0) - f / x0;
-        //
-        //        double y0 = e - (d * b) / a;
-        //        double dp = -d / (a * y0);
-        //        double ep = 1.0 / y0;
-        //        double fp = (d * c) / (a * y0) - f / y0;
-        //
-        //        return new Matrix(
-        //            ap, bp, cp, 0.0,
-        //            dp, ep, fp, 0.0,
-        //            0.0, 0.0, 1.0, 0.0,
-        //            0.0, 0.0, 0.0, 0.0);
-        //    }
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        ///**
-        // * Computes a <code>Matrix</code> that will map constrained 2D grid coordinates to geographic coordinates in
-        // * degrees. The grid is defined by three control points. Each control point maps a location in the source grid to a
-        // * geographic location.
-        // *
-        // * @param imagePoints three control points in the source grid.
-        // * @param geoPoints   three geographic locations corresponding to each grid control point.
-        // *
-        // * @return <code>Matrix</code> that will map from geographic coordinates to grid coordinates in degrees.
-        // *
-        // * @throws IllegalArgumentException if either <code>imagePoints</code> or <code>geoPoints</code> is null or have
-        // *                                  length less than 3.
-        // */
-        //public static Matrix fromImageToGeographic(java.awt.geom.Point2D[] imagePoints, LatLon[] geoPoints)
-        //{
-        //    if (imagePoints == null)
-        //    {
-        //        String message = "nullValue.ImagePointsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (geoPoints == null)
-        //    {
-        //        String message = "nullValue.GeoPointsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (imagePoints.length < 3)
-        //    {
-        //        String message = "generic.ArrayInvalidLength", "imagePoints.length < 3");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (geoPoints.length < 3)
-        //    {
-        //        String message = "generic.ArrayInvalidLength", "geoPoints.length < 3");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    // Transform from geographic coordinates to source grid coordinates. Start with the following system of
-        //    // equations. The values a-f are the unknown coefficients we want to derive, The (lat,lon) and (x,y)
-        //    // coordinates are constants defined by the caller via geoPoints and imagePoints, respectively.
-        //    //
-        //    // | a b c |   | x1 x2 x3 |   | lon1 lon2 lon3 |
-        //    // | d e f | * | y1 y2 y3 | = | lat1 lat2 lat3 |
-        //    // | 0 0 1 |   | 1  1  1  |   | 1    1    1    |
-        //    //
-        //    // Expanding the matrix multiplication:
-        //    //
-        //    // a*x1 + b*y1 + c = lon1
-        //    // a*x2 + b*y2 + c = lon2
-        //    // a*x3 + b*y3 + c = lon3
-        //    // d*x1 + e*y1 + f = lat1
-        //    // d*x2 + e*y2 + f = lat2
-        //    // d*x3 + e*y3 + f = lat3
-        //    //
-        //    // Then solving for a-c, and d-f by repeatedly eliminating variables:
-        //    //
-        //    // a0 = (x3-x1) - (x2-x1)*(y3-y1)/(y2-y1)
-        //    // a = (1/a0) * [(lon3-lon1) - (lon2-lon1)*(y3-y1)/(y2-y1)]
-        //    // b = (lon2-lon1)/(y2-y1) - a*(x2-x1)/(y2-y1)
-        //    // c = lon1 - a*x1 - b*y1
-        //    //
-        //    // d0 = (x3-x1) - (x2-x1)*(y3-y1)/(y2-y1)
-        //    // d = (1/d0) * [(lat3-lat1) - (lat2-lat1)*(y3-y1)/(y2-y1)]
-        //    // e = (lat2-lat1)/(y2-y1) - d*(x2-x1)/(y2-y1)
-        //    // f = lat1 - d*x1 - e*y1
-        //
-        //    double lat1 = geoPoints[0].getLatitude().degrees;
-        //    double lat2 = geoPoints[1].getLatitude().degrees;
-        //    double lat3 = geoPoints[2].getLatitude().degrees;
-        //    double lon1 = geoPoints[0].getLongitude().degrees;
-        //    double lon2 = geoPoints[1].getLongitude().degrees;
-        //    double lon3 = geoPoints[2].getLongitude().degrees;
-        //
-        //    double x1 = imagePoints[0].getX();
-        //    double x2 = imagePoints[1].getX();
-        //    double x3 = imagePoints[2].getX();
-        //    double y1 = imagePoints[0].getY();
-        //    double y2 = imagePoints[1].getY();
-        //    double y3 = imagePoints[2].getY();
-        //
-        //    double a0 = (x3 - x1) - (x2 - x1) * (y3 - y1) / (y2 - y1);
-        //    double a = (1 / a0) * ((lon3 - lon1) - (lon2 - lon1) * (y3 - y1) / (y2 - y1));
-        //    double b = (lon2 - lon1) / (y2 - y1) - a * (x2 - x1) / (y2 - y1);
-        //    double c = lon1 - a * x1 - b * y1;
-        //
-        //    double d0 = (x3 - x1) - (x2 - x1) * (y3 - y1) / (y2 - y1);
-        //    double d = (1 / d0) * ((lat3 - lat1) - (lat2 - lat1) * (y3 - y1) / (y2 - y1));
-        //    double e = (lat2 - lat1) / (y2 - y1) - d * (x2 - x1) / (y2 - y1);
-        //    double f = lat1 - d * x1 - e * y1;
-        //
-        //    return new Matrix(
-        //        a, b, c, 0.0,
-        //        d, e, f, 0.0,
-        //        0.0, 0.0, 1.0, 0.0,
-        //        0.0, 0.0, 0.0, 0.0);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        //public static Matrix fromGeographicToImage(java.awt.geom.Point2D[] imagePoints, LatLon[] geoPoints)
-        //{
-        //    if (imagePoints == null)
-        //    {
-        //        String message = "nullValue.ImagePointsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (geoPoints == null)
-        //    {
-        //        String message = "nullValue.GeoPointsIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (imagePoints.length < 3)
-        //    {
-        //        String message = "generic.ArrayInvalidLength", "imagePoints.length < 3");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //    if (geoPoints.length < 3)
-        //    {
-        //        String message = "generic.ArrayInvalidLength", "geoPoints.length < 3");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    // Transform from geographic coordinates to source grid coordinates. Start with the following system of
-        //    // equations. The values a-f are the unknown coefficients we want to derive, The (lat,lon) and (x,y)
-        //    // coordinates are constants defined by the caller via geoPoints and imagePoints, respectively.
-        //    //
-        //    // | a b c |   | lon1 lon2 lon3 |   | x1 x2 x3 |
-        //    // | d e f | * | lat1 lat2 lat3 | = | y1 y2 y3 |
-        //    // | 0 0 1 |   | 1    1    1    |   | 1  1  1  |
-        //    //
-        //    // Expanding the matrix multiplication:
-        //    //
-        //    // a*lon1 + b*lat1 + c = x1
-        //    // a*lon2 + b*lat2 + c = x2
-        //    // a*lon3 + b*lat3 + c = x3
-        //    // d*lon1 + e*lat1 + f = y1
-        //    // d*lon2 + e*lat2 + f = y2
-        //    // d*lon3 + e*lat3 + f = y3
-        //    //
-        //    // Then solving for a-c, and d-f by repeatedly eliminating variables:
-        //    //
-        //    // a0 = (lon3-lon1) - (lon2-lon1)*(lat3-lat1)/(lat2-lat1)
-        //    // a = (1/a0) * [(x3-x1) - (x2-x1)*(lat3-lat1)/(lat2-lat1)]
-        //    // b = (x2-x1)/(lat2-lat1) - a*(lon2-lon1)/(lat2-lat1)
-        //    // c = x1 - a*lon1 - b*lat1
-        //    //
-        //    // d0 = (lon3-lon1) - (lon2-lon1)*(lat3-lat1)/(lat2-lat1)
-        //    // d = (1/d0) * [(y3-y1) - (y2-y1)*(lat3-lat1)/(lat2-lat1)]
-        //    // e = (y2-y1)/(lat2-lat1) - d*(lon2-lon1)/(lat2-lat1)
-        //    // f = y1 - d*lon1 - e*lat1
-        //
-        //    double lat1 = geoPoints[0].getLatitude().degrees;
-        //    double lat2 = geoPoints[1].getLatitude().degrees;
-        //    double lat3 = geoPoints[2].getLatitude().degrees;
-        //    double lon1 = geoPoints[0].getLongitude().degrees;
-        //    double lon2 = geoPoints[1].getLongitude().degrees;
-        //    double lon3 = geoPoints[2].getLongitude().degrees;
-        //
-        //    double x1 = imagePoints[0].getX();
-        //    double x2 = imagePoints[1].getX();
-        //    double x3 = imagePoints[2].getX();
-        //    double y1 = imagePoints[0].getY();
-        //    double y2 = imagePoints[1].getY();
-        //    double y3 = imagePoints[2].getY();
-        //
-        //    double a0 = (lon3 - lon1) - (lon2 - lon1) * (lat3 - lat1) / (lat2 - lat1);
-        //    double a = (1 / a0) * ((x3 - x1) - (x2 - x1) * (lat3 - lat1) / (lat2 - lat1));
-        //    double b = (x2 - x1) / (lat2 - lat1) - a * (lon2 - lon1) / (lat2 - lat1);
-        //    double c = x1 - a * lon1 - b * lat1;
-        //
-        //    double d0 = (lon3 - lon1) - (lon2 - lon1) * (lat3 - lat1) / (lat2 - lat1);
-        //    double d = (1 / d0) * ((y3 - y1) - (y2 - y1) * (lat3 - lat1) / (lat2 - lat1));
-        //    double e = (y2 - y1) / (lat2 - lat1) - d * (lon2 - lon1) / (lat2 - lat1);
-        //    double f = y1 - d * lon1 - e * lat1;
-        //
-        //    return new Matrix(
-        //        a, b, c, 0.0,
-        //        d, e, f, 0.0,
-        //        0.0, 0.0, 1.0, 0.0,
-        //        0.0, 0.0, 0.0, 0.0);
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        ///**
-        // * Computes a Matrix that will map the geographic region defined by sector onto a Cartesian region of the specified
-        // * <code>width</code> and <code>height</code> and centered at the point <code>(x, y)</code>.
-        // *
-        // * @param sector the geographic region which will be mapped to the Cartesian region
-        // * @param x      x-coordinate of lower left hand corner of the Cartesian region
-        // * @param y      y-coordinate of lower left hand corner of the Cartesian region
-        // * @param width  width of the Cartesian region, extending to the right from the x-coordinate
-        // * @param height height of the Cartesian region, extending up from the y-coordinate
-        // *
-        // * @return Matrix that will map from the geographic region to the Cartesian region.
-        // *
-        // * @throws IllegalArgumentException if <code>sector</code> is null, or if <code>width</code> or <code>height</code>
-        // *                                  are less than zero.
-        // */
-        //public static Matrix fromGeographicToViewport(Sector sector, int x, int y, int width, int height)
-        //{
-        //    if (sector == null)
-        //    {
-        //        String message = "nullValue.SectorIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    if (width <= 0)
-        //    {
-        //        String message = "Geom.WidthInvalid", width);
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    if (height <= 0)
-        //    {
-        //        String message = "Geom.HeightInvalid", height);
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    Matrix transform = Matrix.IDENTITY;
-        //    transform = transform.multiply(
-        //        Matrix.fromTranslation(-x, -y, 0.0));
-        //    transform = transform.multiply(
-        //        Matrix.fromScale(width / sector.getDeltaLonDegrees(), height / sector.getDeltaLatDegrees(), 1.0));
-        //    transform = transform.multiply(
-        //        Matrix.fromTranslation(-sector.getMinLongitude().degrees, -sector.getMinLatitude().degrees, 0.0));
-        //
-        //    return transform;
-        //}
-
-        // TODO: re-enable after dealing with polymorphism
-        ///**
-        // * Computes a Matrix that will map a Cartesian region of the specified <code>width</code> and <code>height</code>
-        // * and centered at the point <code>(x, y)</code> to the geographic region defined by sector onto .
-        // *
-        // * @param sector the geographic region the Cartesian region will be mapped to
-        // * @param x      x-coordinate of lower left hand corner of the Cartesian region
-        // * @param y      y-coordinate of lower left hand corner of the Cartesian region
-        // * @param width  width of the Cartesian region, extending to the right from the x-coordinate
-        // * @param height height of the Cartesian region, extending up from the y-coordinate
-        // *
-        // * @return Matrix that will map from Cartesian region to the geographic region.
-        // *
-        // * @throws IllegalArgumentException if <code>sector</code> is null, or if <code>width</code> or <code>height</code>
-        // *                                  are less than zero.
-        // */
-        //public static Matrix fromViewportToGeographic(Sector sector, int x, int y, int width, int height)
-        //{
-        //    if (sector == null)
-        //    {
-        //        String message = "nullValue.SectorIsNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    if (width <= 0)
-        //    {
-        //        String message = "Geom.WidthInvalid", width);
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    if (height <= 0)
-        //    {
-        //        String message = "Geom.HeightInvalid", height);
-        //        Logger.log(Logger.LEVEL_SEVERE, message);
-        //        throw new ArgumentError(message);
-        //    }
-        //
-        //    Matrix transform = Matrix.IDENTITY;
-        //    transform = transform.multiply(
-        //        Matrix.fromTranslation(sector.getMinLongitude().degrees, sector.getMinLatitude().degrees, 0.0));
-        //    transform = transform.multiply(
-        //        Matrix.fromScale(sector.getDeltaLonDegrees() / width, sector.getDeltaLatDegrees() / height, 1.0));
-        //    transform = transform.multiply(
-        //        Matrix.fromTranslation(x, y, 0.0));
-        //
-        //    return transform;
-        //}
-
-        /**
-         * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified points array. This
-         * returns null if the points array is empty, or if all of the points are null.
+         * Sets this matrix to the symmetric covariance Matrix computed from the x, y, z coordinates of a specified
+         * points array.
          * <p/>
-         * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
+         * The computed covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
          * they're distributed about the point array's arithmetic mean. Its layout is as follows:
          * <p/>
          * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
          * <p/>
          * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
          * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
-         * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point Iterable is
+         * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is
          * distributed evenly about its mean point.
-         *
-         * @param {Array} points the array of points for which to compute a Covariance matrix.
-         *
-         * @return {Matrix} the covariance matrix for the iterable of 3D points.
-         *
-         * @throws ArgumentError
-         *      if the points array is not an array.
+         * @param {Vec3[]} points The points to consider.
+         * @returns {Matrix} This matrix set to the covariance matrix for the specified list of points.
+         * @throws {ArgumentError} If the specified array of points is null, undefined or empty.
          */
-        Matrix.fromCovarianceOfVertices = function (/* Iterable<? extends Vec3> */ points) {
-            if (!points) {
+        Matrix.prototype.setToCovarianceOfPoints = function (points) {
+            if (!points || points.length < 1) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "fromCovarianceOfVertices", "invalidPoints"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToCovarianceOfPoints", "missingArray"));
             }
 
-            var mean = Vec3.computeAveragePoint(points);
-            if (mean == null) {
-                return null;
-            }
-
-            var count = 0,
+            var mean,
+                dx,
+                dy,
+                dz,
+                count = 0,
                 c11 = 0,
                 c22 = 0,
                 c33 = 0,
                 c12 = 0,
                 c13 = 0,
-                c23 = 0;
+                c23 = 0,
+                vec;
 
-            for (var idx = 0; idx < points.length; idx += 1) {
-                var vec = point[idx];
+            mean = Vec3.average(points, new Vec3(0, 0, 0));
 
-                if (vec == null)
-                    continue;
+            for (var i = 0, len = points.length; i < len; i++) {
+                vec = points[i];
 
-                count++;
-                c11 += (vec.x - mean.x) * (vec.x - mean.x);
-                c22 += (vec.y - mean.y) * (vec.y - mean.y);
-                c33 += (vec.z - mean.z) * (vec.z - mean.z);
-                c12 += (vec.x - mean.x) * (vec.y - mean.y); // c12 = c21
-                c13 += (vec.x - mean.x) * (vec.z - mean.z); // c13 = c31
-                c23 += (vec.y - mean.y) * (vec.z - mean.z); // c23 = c32
+                dx = vec[0] - mean[0];
+                dy = vec[1] - mean[1];
+                dz = vec[2] - mean[2];
+
+                ++count;
+                c11 += dx * dx;
+                c22 += dy * dy;
+                c33 += dz * dz;
+                c12 += dx * dy; // c12 = c21
+                c13 += dx * dz; // c13 = c31
+                c23 += dy * dz; // c23 = c32
             }
 
-            if (count == 0) {
-                return null;
-            }
+            // Row 1
+            this[0] = c11 / count;
+            this[1] = c12 / count;
+            this[2] = c13 / count;
+            this[3] = 0;
 
-            return new Matrix(
-                c11 / count, c12 / count, c13 / count, 0,
-                c12 / count, c22 / count, c23 / count, 0,
-                c13 / count, c23 / count, c33 / count, 0,
-                0, 0, 0, 0);
-        };
+            // Row 2
+            this[4] = c12 / count;
+            this[5] = c22 / count;
+            this[6] = c23 / count;
+            this[7] = 0;
 
-        // TODO: re-enable after dealing with polymorphism
-        ///**
-        // * Computes a symmetric covariance Matrix from the x, y, z coordinates of the specified buffer of points. This
-        // * returns null if the buffer is empty.
-        // * <p/>
-        // * The returned covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
-        // * they're distributed about the points arithmetic mean. Its layout is as follows:
-        // * <p/>
-        // * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
-        // * <p/>
-        // * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
-        // * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
-        // * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified points are
-        // * distributed evenly about their mean point.
-        // * <p/>
-        // * The buffer must contain XYZ coordinate tuples which are either tightly packed or offset by the specified stride.
-        // * The stride specifies the number of buffer elements between the first coordinate of consecutive tuples. For
-        // * example, a stride of 3 specifies that each tuple is tightly packed as XYZXYZXYZ, whereas a stride of 5 specifies
-        // * that there are two elements between each tuple as XYZabXYZab (the elements "a" and "b" are ignored). The stride
-        // * must be at least 3. If the buffer's length is not evenly divisible into stride-sized tuples, this ignores the
-        // * remaining elements that follow the last complete tuple.
-        // *
-        // * @param coordinates the buffer containing the point coordinates for which to compute a Covariance matrix.
-        // * @param stride      the number of elements between the first coordinate of consecutive points. If stride is 3,
-        // *                    this interprets the buffer has having tightly packed XYZ coordinate tuples.
-        // *
-        // * @return the covariance matrix for the buffer of points.
-        // *
-        // * @throws IllegalArgumentException if the buffer is null, or if the stride is less than three.
-        // */
-        //public static Matrix fromCovarianceOfVertices(BufferWrapper coordinates, int stride)
-        //{
-        //    if (coordinates == null)
-        //    {
-        //        msg = "nullValue.CoordinatesAreNull");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    if (stride < 3)
-        //    {
-        //        msg = "generic.StrideIsInvalid");
-        //        Logger.log(Logger.LEVEL_SEVERE, msg);
-        //        throw new ArgumentError(msg);
-        //    }
-        //
-        //    Vec3 mean = Vec3.computeAveragePoint(coordinates, stride);
-        //    if (mean == null)
-        //        return null;
-        //
-        //    int count = 0;
-        //    double c11 = 0d;
-        //    double c22 = 0d;
-        //    double c33 = 0d;
-        //    double c12 = 0d;
-        //    double c13 = 0d;
-        //    double c23 = 0d;
-        //
-        //    for (int i = 0; i <= coordinates.length() - stride; i += stride)
-        //    {
-        //        double x = coordinates.getDouble(i);
-        //        double y = coordinates.getDouble(i + 1);
-        //        double z = coordinates.getDouble(i + 2);
-        //        count++;
-        //        c11 += (x - mean.x) * (x - mean.x);
-        //        c22 += (y - mean.y) * (y - mean.y);
-        //        c33 += (z - mean.z) * (z - mean.z);
-        //        c12 += (x - mean.x) * (y - mean.y); // c12 = c21
-        //        c13 += (x - mean.x) * (z - mean.z); // c13 = c31
-        //        c23 += (y - mean.y) * (z - mean.z); // c23 = c32
-        //    }
-        //
-        //    if (count == 0)
-        //        return null;
-        //
-        //    return new Matrix(
-        //        c11 / (double) count, c12 / (double) count, c13 / (double) count, 0d,
-        //c12 / (double) count, c22 / (double) count, c23 / (double) count, 0d,
-        //c13 / (double) count, c23 / (double) count, c33 / (double) count, 0d,
-        //    0d, 0d, 0d, 0d);
-        //}
+            // Row 3
+            this[8] = c13 / count;
+            this[9] = c23 / count;
+            this[10] = c33 / count;
+            this[11] = 0;
 
-        /**
-         * Computes the eigensystem of the specified symmetric Matrix's upper 3x3 matrix. If the Matrix's upper 3x3 matrix
-         * is not symmetric, this throws an IllegalArgumentException. This writes the eigensystem parameters to the
-         * specified arrays <code>outEigenValues</code> and <code>outEigenVectors</code>, placing the eigenvalues in the
-         * entries of array <code>outEigenValues</code>, and the corresponding eigenvectors in the entires of array
-         * <code>outEigenVectors</code>. These arrays must be non-null, and have length three or greater.
-         *
-         * @param {Matrix} matrix         the symmetric matrix for which to compute an eigensystem.
-         * @param {Array} outEigenvalues  the array which receives the three output eigenvalues.
-         * @param {Array} outEigenvectors the array which receives the three output eigenvectors.
-         *
-         * @throws ArgumentError
-         *      if the matrix is a Matrix or is not symmetric,
-         *      if the output eigenvalue array is not an Array or has length less than 3, or
-         *      if the output eigenvector is not an Array or has length less than 3.
-         */
-        Matrix.computeEigensystemFromSymmetricMatrix3 = function (/* Matrix */ matrix,
-                                                                  /* double[] */ outEigenvalues,
-                                                                  /* Vec3[] */ outEigenvectors) {
-            var msg;
-            if (!matrix) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingMatrix"));
-            }
-            if (!outEigenvalues) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvalues"));
-            }
-            if (outEigenvalues.length < 3) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvalues"));
-            }
-            if (!(outEigenvectors instanceof Array)) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvectors"));
-            }
-            if (outEigenvectors.length < 3) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvectors"));
-            }
-            if (matrix.m12 != matrix.m21 || matrix.m13 != matrix.m31 || matrix.m23 != matrix.m32) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "asymetricMatrix"));
-            }
+            // Row 4
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 0;
 
-            // Take from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
-            // Listing 14.6 (pages 441-444).
-
-            var EPSILON = 1.0e-10,// NOTE: different from Matrix.EPSILON
-                MAX_SWEEPS = 32;
-
-            // Since the Matrix is symmetric, m12=m21, m13=m31, and m23=m32. Therefore we can ignore the values m21, m31,
-            // and m32.
-            var m11 = matrix.m11,
-                m12 = matrix.m12,
-                m13 = matrix.m13,
-                m22 = matrix.m22,
-                m23 = matrix.m23,
-                m33 = matrix.m33;
-
-            /* double[][] r = new double[3][3]; */
-            /* r[0][0] = r[1][1] = r[2][2] = 1d; */
-            var r = [
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1]
-            ];
-            var u,
-                u2,
-                u2p1,
-                t,
-                c,
-                s,
-                i,
-                temp;
-
-            for (var a = 0; a < MAX_SWEEPS; a += 1) {
-                // Exit if off-diagonal entries small enough
-                if ((Math.abs(m12) < EPSILON) && (Math.abs(m13) < EPSILON) && (Math.abs(m23) < EPSILON))
-                    break;
-
-                // Annihilate (1,2) entry
-                if (m12 != 0) {
-                    u = (m22 - m11) * 0.5 / m12;
-                    u2 = u * u;
-                    u2p1 = u2 + 1;
-                    t = (u2p1 != u2) ?
-                    ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-                    0.5 / u;
-                    c = 1 / Math.sqrt(t * t + 1);
-                    s = c * t;
-
-                    m11 -= t * m12;
-                    m22 += t * m12;
-                    m12 = 0;
-
-                    temp = c * m13 - s * m23;
-                    m23 = s * m13 + c * m23;
-                    m13 = temp;
-
-                    for (i = 0; i < 3; i += 1) {
-                        temp = c * r[i][0] - s * r[i][1];
-                        r[i][1] = s * r[i][0] + c * r[i][1];
-                        r[i][0] = temp;
-                    }
-                }
-
-                // Annihilate (1,3) entry
-                if (m13 != 0) {
-                    u = (m33 - m11) * 0.5 / m13;
-                    u2 = u * u;
-                    u2p1 = u2 + 1;
-                    t = (u2p1 != u2) ?
-                    ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-                    0.5 / u;
-                    c = 1 / Math.sqrt(t * t + 1);
-                    s = c * t;
-
-                    m11 -= t * m13;
-                    m33 += t * m13;
-                    m13 = 0;
-
-                    temp = c * m12 - s * m23;
-                    m23 = s * m12 + c * m23;
-                    m12 = temp;
-
-                    for (i = 0; i < 3; i += 1) {
-                        temp = c * r[i][0] - s * r[i][2];
-                        r[i][2] = s * r[i][0] + c * r[i][2];
-                        r[i][0] = temp;
-                    }
-                }
-
-                // Annihilate (2,3) entry
-                if (m23 != 0) {
-                    u = (m33 - m22) * 0.5 / m23;
-                    u2 = u * u;
-                    u2p1 = u2 + 1;
-                    t = (u2p1 != u2) ?
-                    ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-                    0.5 / u;
-                    c = 1 / Math.sqrt(t * t + 1);
-                    s = c * t;
-
-                    m22 -= t * m23;
-                    m33 += t * m23;
-                    m23 = 0;
-
-                    temp = c * m12 - s * m13;
-                    m13 = s * m12 + c * m13;
-                    m12 = temp;
-
-                    for (i = 0; i < 3; i += 1) {
-                        temp = c * r[i][1] - s * r[i][2];
-                        r[i][2] = s * r[i][1] + c * r[i][2];
-                        r[i][1] = temp;
-                    }
-                }
-            }
-
-            outEigenvalues[0] = m11;
-            outEigenvalues[1] = m22;
-            outEigenvalues[2] = m33;
-
-            outEigenvectors[0] = new Vec3(r[0][0], r[1][0], r[2][0]);
-            outEigenvectors[1] = new Vec3(r[0][1], r[1][1], r[2][1]);
-            outEigenvectors[2] = new Vec3(r[0][2], r[1][2], r[2][2]);
-        };
-
-        // ============== Arithmetic Functions ======================= //
-        // ============== Arithmetic Functions ======================= //
-        // ============== Arithmetic Functions ======================= //
-
-        /**
-         * Add a matrix to <code>this</code> matrix.
-         *
-         * @param {Matrix} matrix to add
-         * @returns {Matrix} the sum of the matrices
-         * @throws ArgumentError
-         *      if <code>matrix</code> is not a <code>Matrix</code>
-         */
-        Matrix.add = function (matrix) {
-            if (!matrix) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "add", "missingMatrix"));
-            }
-
-            return new Matrix(
-                this.m11 + matrix.m11, this.m12 + matrix.m12, this.m13 + matrix.m13, this.m14 + matrix.m14,
-                this.m21 + matrix.m21, this.m22 + matrix.m22, this.m23 + matrix.m23, this.m24 + matrix.m24,
-                this.m31 + matrix.m31, this.m32 + matrix.m32, this.m33 + matrix.m33, this.m34 + matrix.m34,
-                this.m41 + matrix.m41, this.m42 + matrix.m42, this.m43 + matrix.m43, this.m44 + matrix.m44);
+            return this;
         };
 
         /**
-         * Subtract a matrix from <code>this</code> matrix.
-         *
-         * @param {Matrix} matrix matrix to subtract
-         * @returns {Matrix} the difference of <code>this</code> and <code>matrix</code>
-         * @throws ArgumentError
-         *      if matrix is not a <code>Matrix</code>
+         * Multiplies this matrix by a translation matrix with specified translation values.
+         * @param {Number} x The X translation component.
+         * @param {Number} y The Y translation component.
+         * @param {Number} z The Z translation component.
+         * @returns {Matrix} This matrix multiplied by the translation matrix implied by the specified values.
          */
-        Matrix.subtract = function (/* Matrix */ matrix) {
-            if (!matrix) {
+        Matrix.prototype.multiplyByTranslation = function (x, y, z) {
+
+            this.multiply(
+                1, 0, 0, x,
+                0, 1, 0, y,
+                0, 0, 1, z,
+                0, 0, 0, 1);
+
+            return this;
+        };
+
+        /**
+         * Multiplies this matrix by a rotation matrix about a specified axis and angle.
+         * @param {Number} x The X component of the rotation axis.
+         * @param {Number} y The Y component of the rotation axis.
+         * @param {Number} z The Z component of the rotation axis.
+         * @param {Number} angleDegrees The angle to rotate, in degrees.
+         * @returns {Matrix} This matrix multiplied by the rotation matrix implied by the specified values.
+         */
+        Matrix.prototype.multiplyByRotation = function (x, y, z, angleDegrees) {
+
+            var c = Math.cos(angleDegrees * Angle.DEGREES_TO_RADIANS),
+                s = Math.sin(angleDegrees * Angle.DEGREES_TO_RADIANS);
+
+            this.multiply(
+                c + (1 - c) * x * x, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0,
+                (1 - c) * x * y + s * z, c + (1 - c) * y * y, (1 - c) * y * z - s * x, 0,
+                (1 - c) * x * z - s * y, (1 - c) * y * z + s * x, c + (1 - c) * z * z, 0,
+                0, 0, 0, 1);
+
+            return this;
+        };
+
+        /**
+         * Multiplies this matrix by a scale matrix with specified values.
+         * @param {Number} xScale The X scale component.
+         * @param {Number} yScale The Y scale component.
+         * @param {Number} zScale The Z scale component.
+         * @returns {Matrix} This matrix multiplied by the scale matrix implied by the specified values.
+         */
+        Matrix.prototype.multiplyByScale = function (xScale, yScale, zScale) {
+
+            this.multiply(
+                xScale, 0, 0, 0,
+                0, yScale, 0, 0,
+                0, 0, zScale, 0,
+                0, 0, 0, 1);
+
+            return this;
+        };
+
+        /**
+         * Sets this matrix to one that flips and shifts the y-axis.
+         * <p>
+         * The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0. All existing values are overwritten. This matrix is
+         * usually used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate
+         * origin. This is typically necessary to align the coordinate system of images (top-left origin) with that of
+         * OpenGL (bottom-left origin).
+         * @returns {Matrix} This matrix set to values described above.
+         */
+        Matrix.prototype.setToUnitYFlip = function () {
+
+            this[0] = 1;
+            this[1] = 0;
+            this[2] = 0;
+            this[3] = 0;
+            this[4] = 0;
+            this[5] = -1;
+            this[6] = 0;
+            this[7] = 1;
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = 1;
+            this[11] = 0;
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
+
+            return this;
+        };
+
+        /**
+         * Multiplies this matrix by a local coordinate system transform for the specified globe.
+         * <p>
+         * The local coordinate system is defined such that the local origin (0, 0, 0) maps to the specified origin
+         * point, the z axis maps to the globe's surface normal at the point, the y-axis maps to the north pointing
+         * tangent, and the x-axis maps to the east pointing tangent.
+         *
+         * @param {Vec3} origin The local coordinate system origin, in model coordinates.
+         * @param {Globe} globe The globe the coordinate system is relative to.
+         *
+         * @throws {ArgumentError} If either argument is null or undefined.
+         */
+        Matrix.prototype.multiplyByLocalCoordinateTransform = function (origin, globe) {
+            if (!origin) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "subtract", "missingMatrix"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByLocalCoordinateTransform",
+                        "Origin vector is null or undefined"));
             }
 
-            return new Matrix(
-                this.m11 - matrix.m11, this.m12 - matrix.m12, this.m13 - matrix.m13, this.m14 - matrix.m14,
-                this.m21 - matrix.m21, this.m22 - matrix.m22, this.m23 - matrix.m23, this.m24 - matrix.m24,
-                this.m31 - matrix.m31, this.m32 - matrix.m32, this.m33 - matrix.m33, this.m34 - matrix.m34,
-                this.m41 - matrix.m41, this.m42 - matrix.m42, this.m43 - matrix.m43, this.m44 - matrix.m44);
-        };
-
-        /**
-         * Multiply <code>this</code> matrix by a constant factor.
-         *
-         * @param {Number} value scale factor for matrix
-         * @returns {Matrix} <code>this</code> matrix modified in place
-         */
-        Matrix.prototype.multiplyComponents = function (value) {
-            return new Matrix(
-                this.m11 * value, this.m12 * value, this.m13 * value, this.m14 * value,
-                this.m21 * value, this.m22 * value, this.m23 * value, this.m24 * value,
-                this.m31 * value, this.m32 * value, this.m33 * value, this.m34 * value,
-                this.m41 * value, this.m42 * value, this.m43 * value, this.m44 * value);
-        };
-
-        /**
-         * Multiply a matrix to <code>this</code> matrix, modifying <code>this</code> matrix.
-         *
-         * @param {Matrix} matrix matrix to multiply
-         * @returns {Matrix} <code>this</code> matrix modified in place
-         * @throws ArgumentError
-         *      if matrix is not a <code>Matrix</code>
-         */
-        Matrix.prototype.multiply = function (/* Matrix */ matrix) {
-            if (!matrix) {
+            if (!globe) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiply", "missingMatrix"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByLocalCoordinateTransform",
+                        "missingGlobe"));
             }
 
-            return new Matrix(
-                // Row 1
-                (this.m11 * matrix.m11) + (this.m12 * matrix.m21) + (this.m13 * matrix.m31) + (this.m14 * matrix.m41),
-                (this.m11 * matrix.m12) + (this.m12 * matrix.m22) + (this.m13 * matrix.m32) + (this.m14 * matrix.m42),
-                (this.m11 * matrix.m13) + (this.m12 * matrix.m23) + (this.m13 * matrix.m33) + (this.m14 * matrix.m43),
-                (this.m11 * matrix.m14) + (this.m12 * matrix.m24) + (this.m13 * matrix.m34) + (this.m14 * matrix.m44),
-                // Row 2
-                (this.m21 * matrix.m11) + (this.m22 * matrix.m21) + (this.m23 * matrix.m31) + (this.m24 * matrix.m41),
-                (this.m21 * matrix.m12) + (this.m22 * matrix.m22) + (this.m23 * matrix.m32) + (this.m24 * matrix.m42),
-                (this.m21 * matrix.m13) + (this.m22 * matrix.m23) + (this.m23 * matrix.m33) + (this.m24 * matrix.m43),
-                (this.m21 * matrix.m14) + (this.m22 * matrix.m24) + (this.m23 * matrix.m34) + (this.m24 * matrix.m44),
-                // Row 3
-                (this.m31 * matrix.m11) + (this.m32 * matrix.m21) + (this.m33 * matrix.m31) + (this.m34 * matrix.m41),
-                (this.m31 * matrix.m12) + (this.m32 * matrix.m22) + (this.m33 * matrix.m32) + (this.m34 * matrix.m42),
-                (this.m31 * matrix.m13) + (this.m32 * matrix.m23) + (this.m33 * matrix.m33) + (this.m34 * matrix.m43),
-                (this.m31 * matrix.m14) + (this.m32 * matrix.m24) + (this.m33 * matrix.m34) + (this.m34 * matrix.m44),
-                // Row 4
-                (this.m41 * matrix.m11) + (this.m42 * matrix.m21) + (this.m43 * matrix.m31) + (this.m44 * matrix.m41),
-                (this.m41 * matrix.m12) + (this.m42 * matrix.m22) + (this.m43 * matrix.m32) + (this.m44 * matrix.m42),
-                (this.m41 * matrix.m13) + (this.m42 * matrix.m23) + (this.m43 * matrix.m33) + (this.m44 * matrix.m43),
-                (this.m41 * matrix.m14) + (this.m42 * matrix.m24) + (this.m43 * matrix.m34) + (this.m44 * matrix.m44),
-                // Product of orthonormal 3D transform matrices is also an orthonormal 3D transform.
-                this.isOrthonormalTransform && matrix.isOrthonormalTransform);
+            var xAxis = new Vec3(0, 0, 0),
+                yAxis = new Vec3(0, 0, 0),
+                zAxis = new Vec3(0, 0, 0);
+
+            WWMath.localCoordinateAxesAtPoint(origin, globe, xAxis, yAxis, zAxis);
+
+            this.multiply(
+                xAxis[0], yAxis[0], zAxis[0], origin[0],
+                xAxis[1], yAxis[1], zAxis[1], origin[1],
+                xAxis[2], yAxis[2], zAxis[2], origin[2],
+                0, 0, 0, 1);
+
+            return this;
         };
 
         /**
-         * Divide <code>this</code> matrix by a constant factor.
+         * Multiplies this matrix by a texture transform for the specified texture.
+         * <p>
+         * A texture image transform maps the bottom-left corner of the texture's image data to coordinate [0,0] and maps the
+         * top-right of the texture's image data to coordinate [1,1]. This correctly handles textures whose image data has
+         * non-power-of-two dimensions, and correctly orients textures whose image data has its origin in the upper-left corner.
          *
-         * @param {Number} value divisor for matrix
-         * @returns {Matrix} <code>this</code> matrix modified in place
+         * @param {Texture} texture The texture to multiply a transform for.
+         *
+         * @throws {ArgumentError} If the texture is null or undefined.
          */
-        Matrix.prototype.divideComponents = function (value) {
-            if (value == 0) {
+        Matrix.prototype.multiplyByTextureTransform = function (texture) {
+            if (!texture) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "divideComponents", "zeroDivisor"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByTextureTransform",
+                        "missingTexture"));
             }
 
-            return new Matrix(
-                this.m11 / value, this.m12 / value, this.m13 / value, this.m14 / value,
-                this.m21 / value, this.m22 / value, this.m23 / value, this.m24 / value,
-                this.m31 / value, this.m32 / value, this.m33 / value, this.m34 / value,
-                this.m41 / value, this.m42 / value, this.m43 / value, this.m44 / value);
+            // Compute the scale necessary to map the edge of the image data to the range [0,1]. When the texture contains
+            // power-of-two image data the scale is 1 and has no effect. Otherwise, the scale is computed such that the portion
+            // of the texture containing image data maps to the range [0,1].
+            var sx = texture.originalImageWidth / texture.imageWidth,
+                sy = texture.originalImageHeight / texture.imageHeight;
+
+            // Multiply this by a scaling matrix that maps the texture's image data to the range [0,1] and inverts the y axis.
+            // We have precomputed the result here in order to avoid an unnecessary matrix multiplication.
+            this.multiply(
+                sx, 0, 0, 0,
+                0, -sy, 0, sy,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+
+            return this;
         };
 
         /**
-         * Component-wise divide the <code>this</code> matrix by another matrix.
-         *
-         * @param {Matrix} matrix matrix to divide
-         * @returns {Matrix} <code>this</code> matrix modified in place
-         * @throws ArgumentError
-         *      if matrix is not a <code>Matrix</code>
+         * Returns the translation components of this matrix.
+         * @param {Vec3} result A pre-allocated {@link Vec3} in which to store the translation components.
+         * @returns {Vec3} The specified result argument set to the translation components of this matrix.
+         * @throws {ArgumentError} If the specified result argument is null or undefined.
          */
-        Matrix.prototype.divide = function (/* Matrix */ matrix) {
-            if (!matrix) {
+        Matrix.prototype.extractTranslation = function (result) {
+            if (!result) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "divide", "missingMatrix"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractTranslation", "missingResult"));
             }
 
-            return new Matrix(
-                this.m11 / matrix.m11, this.m12 / matrix.m12, this.m13 / matrix.m13, this.m14 / matrix.m14,
-                this.m21 / matrix.m21, this.m22 / matrix.m22, this.m23 / matrix.m23, this.m24 / matrix.m24,
-                this.m31 / matrix.m31, this.m32 / matrix.m32, this.m33 / matrix.m33, this.m34 / matrix.m34,
-                this.m41 / matrix.m41, this.m42 / matrix.m42, this.m43 / matrix.m43, this.m44 / matrix.m44);
-        };
+            result[0] = this[3];
+            result[1] = this[7];
+            result[2] = this[11];
 
-        /**
-         * Negate the <code>this</code> matrix.
-         *
-         * @returns {Matrix} <code>this</code> matrix modified in place
-         */
-        Matrix.prototype.negate = function () {
-            return new Matrix(
-                0.0 - this.m11, 0.0 - this.m12, 0.0 - this.m13, 0.0 - this.m14,
-                0.0 - this.m21, 0.0 - this.m22, 0.0 - this.m23, 0.0 - this.m24,
-                0.0 - this.m31, 0.0 - this.m32, 0.0 - this.m33, 0.0 - this.m34,
-                0.0 - this.m41, 0.0 - this.m42, 0.0 - this.m43, 0.0 - this.m44,
-                // Negative of orthonormal 3D transform matrix is also an orthonormal 3D transform.
-                this.isOrthonormalTransform);
-        };
-
-        /**
-         * Transform a 3-vector by a transformation matrix. The vector is augmented by an implicit <code>w</code> component,
-         * which is assumed to be 1. The resultant 4-vector will also have a <code>w</code> component. A 3-vector is
-         * created by dividing the <code>x</code>, <code>y</code>, and <code>z</code> components by the resultant
-         * <code>w</code> component.
-         *
-         * @param {Matrix} matrix transformation matrix
-         * @param {Vec3} vec vector to be transformed
-         * @returns {Vec3} a transformed vector
-         */
-        Matrix.transform = function (/* Matrix */ matrix, vec) {
-            if (!matrix) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "transform", "missingMatrix"));
-            }
-            if (!vec) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "transform", "missingVector"));
-            }
-
-            var x = (matrix.m11 * vec[0]) + (matrix.m12 * vec[1]) + (matrix.m13 * vec[2]) + matrix.m14,
-                y = (matrix.m21 * vec[0]) + (matrix.m22 * vec[1]) + (matrix.m23 * vec[2]) + matrix.m24,
-                z = (matrix.m31 * vec[0]) + (matrix.m32 * vec[1]) + (matrix.m33 * vec[2]) + matrix.m34,
-                w = (matrix.m41 * vec[0]) + (matrix.m42 * vec[1]) + (matrix.m43 * vec[2]) + matrix.m44;
-
-            if (w == 1.0) {
-                return new Vec3(x, y, z);
-            }
-            else if (w != 0) {
-                return new Vec3(x / w, y / w, z / w);
-            }
-            else {
-                return null;
-            }
-        };
-
-        // ============== Matrix Arithmetic Functions ======================= //
-        // ============== Matrix Arithmetic Functions ======================= //
-        // ============== Matrix Arithmetic Functions ======================= //
-
-        /**
-         * Compute the determinant of <code>this</code> matrix.
-         *
-         * @returns {Number} determinant of <code>this</code> matrix
-         */
-        Matrix.prototype.getDeterminant = function () {
-            var result = 0.0;
-            // Columns 2, 3, 4.
-            result += this.m11 *
-            (this.m22 * (this.m33 * this.m44 - this.m43 * this.m34)
-            - this.m23 * (this.m32 * this.m44 - this.m42 * this.m34)
-            + this.m24 * (this.m32 * this.m43 - this.m42 * this.m33));
-            // Columns 1, 3, 4.
-            result -= this.m12 *
-            (this.m21 * (this.m33 * this.m44 - this.m43 * this.m34)
-            - this.m23 * (this.m31 * this.m44 - this.m41 * this.m34)
-            + this.m24 * (this.m31 * this.m43 - this.m41 * this.m33));
-            // Columns 1, 2, 4.
-            result += this.m13 *
-            (this.m21 * (this.m32 * this.m44 - this.m42 * this.m34)
-            - this.m22 * (this.m31 * this.m44 - this.m41 * this.m34)
-            + this.m24 * (this.m31 * this.m42 - this.m41 * this.m32));
-            // Columns 1, 2, 3.
-            result -= this.m14 *
-            (this.m21 * (this.m32 * this.m43 - this.m42 - this.m33)
-            - this.m22 * (this.m31 * this.m43 - this.m41 * this.m33)
-            + this.m23 * (this.m31 * this.m42 - this.m41 * this.m32));
             return result;
         };
 
         /**
-         * Create the transpose of <code>this</code> matrix.
-         *
-         * @returns {Matrix} the transpose of <code>this</code> matrix
+         * Returns the rotation angles of this matrix.
+         * @param {Vec3} result A pre-allocated {@link Vec3} in which to store the rotation angles.
+         * @returns {Vec3} The specified result argument set to the rotation angles of this matrix. The angles are in
+         * degrees.
+         * @throws {ArgumentError} If the specified result argument is null or undefined.
          */
-        Matrix.prototype.getTranspose = function () {
-            // Swap rows with columns.
-            return new Matrix(
-                this.m11, this.m21, this.m31, this.m41,
-                this.m12, this.m22, this.m32, this.m42,
-                this.m13, this.m23, this.m33, this.m43,
-                this.m14, this.m24, this.m34, this.m44,
-                // Transpose of orthonormal 3D transform matrix is not an orthonormal 3D transform matrix.
-                false);
-        };
-
-        /**
-         * Compute the trace (the sum of the diagonals) of <code>this</code> matrix
-         * @returns {Number} the trace of <code>this</code> matrix
-         */
-        Matrix.prototype.getTrace = function () {
-            return this.m11 + this.m22 + this.m33 + this.m44;
-        };
-
-        /**
-         * Returns the inverse of <code>this</code> matrix, or <code>null</code> if <code>this</code> matrix
-         * is singular and has no inverse.
-         *
-         * @return the inverse of <code>this</code> matrix, or <code>null</code> if <code>this</code> matrix has no inverse.
-         */
-        Matrix.prototype.getInverse = function () {
-            if (this.isOrthonormalTransform) {
-                return Matrix.computeTransformInverse(this);
+        Matrix.prototype.extractRotationAngles = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractRotationAngles", "missingResult"));
             }
-            else {
-                return Matrix.computeGeneralInverse(this);
+
+            // Taken from Extracting Euler Angles from a Rotation Matrix by Mike Day, Insomniac Games.
+            // http://www.insomniacgames.com/mike-day-extracting-euler-angles-from-a-rotation-matrix/
+
+            var x = Math.atan2(this[6], this[10]),
+                y = Math.atan2(-this[2], Math.sqrt(this[0] * this[0] + this[1] * this[1])),
+                cx = Math.cos(x),
+                sx = Math.sin(x),
+                z = Math.atan2(sx * this[8] - cx * this[4], cx * this[5] - sx * this[9]);
+
+            result[0] = x * Angle.RADIANS_TO_DEGREES;
+            result[1] = y * Angle.RADIANS_TO_DEGREES;
+            result[2] = z * Angle.RADIANS_TO_DEGREES;
+
+            return result;
+        };
+
+        /**
+         * Multiplies this matrix by a first person viewing matrix for the specified globe.
+         * <p>
+         * A first person viewing matrix places the viewer's eye at the specified eyePosition. By default the viewer is looking
+         * straight down at the globe's surface from the eye position, with the globe's normal vector coming out of the screen
+         * and north pointing toward the top of the screen.
+         * <p>
+         * Heading specifies the viewer's azimuth, or its angle relative to North. Heading values range from -180 degrees to 180
+         * degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
+         * West.
+         * <p>
+         * Tilt specifies the viewer's angle relative to the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+         * of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
+         * straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+         * <p>
+         * Roll specifies the viewer's angle relative to the horizon. Roll values range from -180 degrees to 180 degrees. A roll
+         * of 0 degrees orients the viewer so that up is pointing to the top of the screen, at 90 degrees up is pointing to the
+         * right, at +-180 degrees up is pointing to the bottom, and at -90 up is pointing to the left.
+         *
+         * @param {Position} eyePosition The viewer's geographic eye position relative to the specified globe.
+         * @param {Number} heading The viewer's angle relative to north, in degrees.
+         * @param {Number} tilt The viewer's angle relative to the surface, in degrees.
+         * @param {Number} roll The viewer's angle relative to the horizon, in degrees.
+         * @param {Globe} globe The globe the viewer is looking at.
+         *
+         * @throws {ArgumentError} If the specified position or globe is null or undefined.
+         */
+        Matrix.prototype.multiplyByFirstPersonModelview = function (eyePosition, heading, tilt, roll, globe) {
+            if (!eyePosition) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByFirstPersonModelview", "missingPosition"));
             }
+
+            if (!globe) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByFirstPersonModelview", "missingGlobe"));
+            }
+
+            var c,
+                s,
+                ex, ey, ez,
+                xx, xy, xz,
+                yx, yy, yz,
+                zx, zy, zz,
+                eyePoint = new Vec3(0, 0, 0),
+                xAxis = new Vec3(0, 0, 0),
+                yAxis = new Vec3(0, 0, 0),
+                zAxis = new Vec3(0, 0, 0);
+
+            // Roll. Rotate the eye point in a counter-clockwise direction about the z axis. Note that we invert the sines used
+            // in the rotation matrix in order to produce the counter-clockwise rotation. We invert only the cosines since
+            // sin(-a) = -sin(a) and cos(-a) = cos(a).
+            c = Math.cos(roll * Angle.DEGREES_TO_RADIANS);
+            s = Math.sin(roll * Angle.DEGREES_TO_RADIANS);
+            this.multiply(
+                c, s, 0, 0,
+                -s, c, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+
+            // Tilt. Rotate the eye point in a counter-clockwise direction about the x axis. Note that we invert the sines used
+            // in the rotation matrix in order to produce the counter-clockwise rotation. We invert only the cosines since
+            // sin(-a) = -sin(a) and cos(-a) = cos(a).
+            c = Math.cos(tilt * Angle.DEGREES_TO_RADIANS);
+            s = Math.sin(tilt * Angle.DEGREES_TO_RADIANS);
+            this.multiply(1, 0, 0, 0,
+                0, c, s, 0,
+                0, -s, c, 0,
+                0, 0, 0, 1);
+
+            // Heading. Rotate the eye point in a clockwise direction about the z axis again. This has a different effect than
+            // roll when tilt is non-zero because the viewer is no longer looking down the z axis.
+            c = Math.cos(heading * Angle.DEGREES_TO_RADIANS);
+            s = Math.sin(heading * Angle.DEGREES_TO_RADIANS);
+            this.multiply(c, -s, 0, 0,
+                s, c, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+
+            // Compute the eye point in model coordinates. This point is mapped to the origin in the look at transform below.
+            globe.computePointFromPosition(eyePosition.latitude, eyePosition.longitude, eyePosition.altitude, eyePoint);
+            ex = eyePoint[0];
+            ey = eyePoint[1];
+            ez = eyePoint[2];
+
+            // Transform the origin to the local coordinate system at the eye point.
+            WWMath.localCoordinateAxesAtPoint(eyePoint, globe, xAxis, yAxis, zAxis);
+            xx = xAxis[0];
+            xy = xAxis[1];
+            xz = xAxis[2];
+            yx = yAxis[0];
+            yy = yAxis[1];
+            yz = yAxis[2];
+            zx = zAxis[0];
+            zy = zAxis[1];
+            zz = zAxis[2];
+
+            this.multiply(xx, xy, xz, -xx * ex - xy * ey - xz * ez,
+                yx, yy, yz, -yx * ex - yy * ey - yz * ez,
+                zx, zy, zz, -zx * ex - zy * ey - zz * ez,
+                0, 0, 0, 1);
+
+            return this;
         };
 
         /**
-         * Invert a matrix assumed not to translate or project. This assumption is valid only if
-         * <code>isOthronormalTransform</code> is <code>true</code>.
+         * Multiplies this matrix by a look at viewing matrix for the specified globe.
+         * <p>
+         * A look at viewing matrix places the center of the screen at the specified lookAtPosition. By default the viewer is
+         * looking straight down at the look at position from the specified range, with the globe's normal vector coming out of
+         * the screen and north pointing toward the top of the screen.
+         * <p>
+         * Range specifies the distance between the look at position and the viewer's eye point. Range values may be any positive
+         * real number. A range of 0 places the eye point at the look at point, while a positive range moves the eye point away
+         * from but still looking at the look at point.
+         * <p>
+         * Heading specifies the viewer's azimuth, or its angle relative to North. Heading values range from -180 degrees to 180
+         * degrees. A heading of 0 degrees looks North, 90 degrees looks East, +-180 degrees looks South, and -90 degrees looks
+         * West.
+         * <p>
+         * Tilt specifies the viewer's angle relative to the surface. Tilt values range from -180 degrees to 180 degrees. A tilt
+         * of 0 degrees looks straight down at the globe's surface, 90 degrees looks at the horizon, and 180 degrees looks
+         * straight up. Tilt values greater than 180 degrees cause the viewer to turn upside down, and are therefore rarely used.
+         * <p>
+         * Roll specifies the viewer's angle relative to the horizon. Roll values range from -180 degrees to 180 degrees. A roll
+         * of 0 degrees orients the viewer so that up is pointing to the top of the screen, at 90 degrees up is pointing to the
+         * right, at +-180 degrees up is pointing to the bottom, and at -90 up is pointing to the left.
          *
-         * @param {Matrix} a matrix to invert
-         * @returns {Matrix} the inverse of the input
+         * @param {Position} lookAtPosition The viewer's geographic look at position relative to the specified globe.
+         * @param {Number} range The distance between the eye point and the look at point, in model coordinates.
+         * @param {Number} heading The viewer's angle relative to north, in degrees.
+         * @param {Number} tilt The viewer's angle relative to the surface, in degrees.
+         * @param {Number} roll The viewer's angle relative to the horizon, in degrees.
+         * @param {Globe} globe The globe the viewer is looking at.
+         *
+         * @throws {ArgumentError} If either the specified look-at position or globe is null or undefined, or the
+         * specified range is less than zero.
          */
-        Matrix.computeTransformInverse = function (/* Matrix */ a) {
-            // 'a' is assumed to contain a 3D transformation matrix.
-            // Upper-3x3 is inverted, translation is transformed by inverted-upper-3x3 and negated.
-            return new Matrix(
-                a.m11, a.m21, a.m31, 0.0 - (a.m11 * a.m14) - (a.m21 * a.m24) - (a.m31 * a.m34),
-                a.m12, a.m22, a.m32, 0.0 - (a.m12 * a.m14) - (a.m22 * a.m24) - (a.m32 * a.m34),
-                a.m13, a.m23, a.m33, 0.0 - (a.m13 * a.m14) - (a.m23 * a.m24) - (a.m33 * a.m34),
-                0.0, 0.0, 0.0, 1.0,
-                false); // Inverse of an orthogonal, 3D transform matrix is not an orthogonal 3D transform.
+        Matrix.prototype.multiplyByLookAtModelview = function (lookAtPosition, range, heading, tilt, roll, globe) {
+            if (!lookAtPosition) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByLookAtModelview", "missingPosition"));
+            }
+
+            if (range < 0) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByLookAtModelview",
+                        "Range is less than zero"));
+            }
+
+            if (!globe) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyByLookAtModelview", "missingGlobe"));
+            }
+
+            // Translate the eye point along the positive z axis while keeping the look at point in the center of the viewport.
+            this.multiplyByTranslation(0, 0, -range);
+
+            // Transform the origin to the local coordinate system at the look at position, and rotate the viewer by the
+            // specified heading, tilt and roll.
+            this.multiplyByFirstPersonModelview(lookAtPosition, heading, tilt, roll, globe);
+
+            return this;
         };
 
         /**
-         * Invert an arbitrary 4x4 matrix.
+         * Sets this matrix to a perspective projection matrix for the specified viewport and clip distances.
+         * <p>
+         * A perspective projection matrix maps points in eye coordinates into clip coordinates in a way that causes distant
+         * objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates, a
+         * perspective projection is defined by frustum originating at the eye position and extending outward in the viewer's
+         * direction. The near distance and the far distance identify the minimum and maximum distance, respectively, at which an
+         * object in the scene is visible. Near and far distances must be positive and may not be equal.
+         * <p>
+         * The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+         * up and to the right from the origin point. The resultant projection matrix preserves the scene's size on screen when
+         * the viewport width and height are swapped. This has the effect of maintaining the scene's size when the device is
+         * rotated.
          *
-         * @param {Matrix} a matrix to invert
-         * @returns {Matrix} the inverse of the input matrix
+         * @param {Rectangle} viewport The viewport rectangle, in OpenGL screen coordinates.
+         * @param {Number} nearDistance The near clip plane distance, in model coordinates.
+         * @param {Number} farDistance The far clip plane distance, in model coordinates.
+         *
+         * @exception NSInvalidArgumentException If either the viewport width or the viewport height are zero, if near and far
+         * are equivalent, or if either near or far ar not positive.
          */
-        Matrix.computeGeneralInverse = function (/* Matrix */ a) {
+        Matrix.prototype.setToPerspectiveProjection = function (viewport, nearDistance, farDistance) {
+            if (!viewport) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection", "missingViewport"));
+            }
+
+            if (!viewport.width <= 0 || viewport.height <= 0) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection",
+                        "Viewport width or height is zero or negative."));
+            }
+
+            if (nearDistance == farDistance) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection",
+                        "Near and far distance are the same."));
+            }
+
+            if (nearDistance <= 0 || farDistance <= 0) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection",
+                        "Near or far distance is less than or equal to zero."));
+            }
+
+            // Compute the dimensions of the near clip rectangle corresponding to the specified viewport rectangle.
+            var nearRect = WWMath.perspectiveFrustumRectangle(viewport, nearDistance),
+                left = nearRect.getMinX(),
+                right = nearRect.getMaxX(),
+                bottom = nearRect.getMinY,
+                top = nearRect.getMaxY();
+
+            // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
+
+            // Row 1
+            this[0] = 2 * nearDistance / (right - left);
+            this[1] = 0;
+            this[2] = (right + left) / (right - left);
+            this[3] = 0;
+            // Row 2
+            this[4] = 0;
+            this[5] = 2 * nearDistance / (top - bottom);
+            this[6] = (top + bottom) / (top - bottom);
+            this[7] = 0;
+            // Row 3
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = -(farDistance + nearDistance) / (farDistance - nearDistance);
+            this[11] = -2 * nearDistance * farDistance / (farDistance - nearDistance);
+            // Row 4
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = -1;
+            this[15] = 0;
+
+            return this;
+        };
+
+        /**
+         * Sets this matrix to an screen projection matrix for the specified viewport.
+         * <p>
+         * A screen projection matrix is an orthographic projection that assumes that points in model coordinates represent
+         * screen coordinates and screen depth values. Screen projection matrices therefore map model coordinates directly into
+         * screen coordinates without modification. A point's xy coordinates are interpreted as literal screen coordinates and
+         * must be in the viewport rectangle to be visible. A point's z coordinate is interpreted as a depth value that ranges
+         * from 0 to 1.
+         * <p>
+         * The resultant projection matrix has the effect of preserving coordinates that have already been projected using
+         * [WWNavigatorState project:result:].
+         * <p>
+         * The viewport is in the OpenGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+         * up and to the right from the origin point.
+         *
+         * @param {Rectangle} viewport The viewport rectangle, in OpenGL screen coordinates.
+         *
+         * @throws {ArgumentError} If the viewport is null or undefined or either the viewport width or the viewport
+         * height are zero.
+         */
+        Matrix.prototype.setToScreenProjection = function (viewport) {
+            if (!viewport) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToScreenProjection", "missingViewport"));
+            }
+
+            if (!viewport.width <= 0 || viewport.height <= 0) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToScreenProjection",
+                        "Viewport width or height is zero or negative."));
+            }
+
+            var left = viewport.getMinX(),
+                right = viewport.getMaxX(),
+                bottom = viewport.getMinY(),
+                top = viewport.getMaxY();
+
+            // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.57.
+            //
+            // The third row of this projection matrix is configured so that points with z coordinates representing depth values
+            // ranging from 0 to 1 are not modified after transformation into window coordinates. This projection matrix maps z
+            // values in the range [0, 1] to the range [-1, 1] by applying the following function to incoming z coordinates:
+            //
+            // zp = z0 * 2 - 1
+            //
+            // Where 'z0' is the point's z coordinate and 'zp' is the projected z coordinate. The GPU then maps the projected z
+            // coordinate into window coordinates in the range [0, 1] by applying the following function:
+            //
+            // zw = zp * 0.5 + 0.5
+            //
+            // The result is that a point's z coordinate is effectively passed to the GPU without modification.
+
+            // Row 1
+            this[0] = 2 / (right - left);
+            this[1] = 0;
+            this[2] = 0;
+            this[3] = -(right + left) / (right - left);
+            // Row 2
+            this[4] = 0;
+            this[5] = 2 / (top - bottom);
+            this[6] = 0;
+            this[7] = -(top + bottom) / (top - bottom);
+            // Row 3
+            this[8] = 0;
+            this[9] = 0;
+            this[10] = 2;
+            this[11] = -1;
+            // Row 4
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
+
+            return this;
+        };
+
+        /**
+         * Returns this viewing matrix's eye point.
+         * <p>
+         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+         * results are undefined.
+         * <p>
+         * In model coordinates, a viewing matrix's eye point is the point the viewer is looking from and maps to the center of
+         * the screen.
+         *
+         * @param {Vec3} result A pre-allocated {@link Vec3} in which to return the extracted values.
+         * @return {Vec3} The specified result argument containing the viewing matrix's eye point, in model coordinates.
+         * @throws {ArgumentError} If the specified result argument is null or undefined.
+         */
+        Matrix.prototype.extractEyePoint = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractEyePoint", "missingResult"));
+            }
+
+            // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
+            // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
+            // the transpose of its upper 3x3 components.
+            result[0] = -(this[0] * this[3]) - (this[4] * this[7]) - (this[8] * this[11]);
+            result[1] = -(this[1] * this[3]) - (this[5] * this[7]) - (this[9] * this[11]);
+            result[2] = -(this[2] * this[3]) - (this[6] * this[7]) - (this[10] * this[11]);
+
+            return result;
+        };
+
+        /**
+         * Returns this viewing matrix's forward vector.
+         * <p>
+         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+         * results are undefined.
+         *
+         * @param {Vec3} result A pre-allocated {@link Vec3} in which to return the extracted values.
+         * @return {Vec3} The specified result argument containing the viewing matrix's forward vector, in model coordinates.
+         * @throws {ArgumentError} If the specified result argument is null or undefined.
+         */
+        Matrix.prototype.extractForwardVector = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractForwardVector", "missingResult"));
+            }
+
+            // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
+            // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
+            result[0] = -this[8];
+            result[1] = -this[9];
+            result[2] = -this[10];
+
+            return result;
+        };
+
+        /**
+         * Extracts this viewing matrix's parameters given a viewing origin and a globe.
+         * <p>
+         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
+         * results are undefined.
+         * <p>
+         * This returns a parameterization of this viewing matrix based on the specified origin and globe. The origin indicates
+         * the model coordinate point that the view's orientation is relative to, while the globe provides the necessary model
+         * coordinate context for the origin and the orientation. The origin should be either the view's eye point or a point on
+         * the view's forward vector. The view's roll must be specified in order to disambiguate heading and roll when the view's
+         * tilt is zero.
+         * <p>
+         * The following list outlines the returned key-value pairs and their meanings:
+         * <ul>
+         * <li> 'origin' - The geographic position corresponding to the origin point.</li>
+         * <li> 'range' - The distance between the specified origin point and the view's eye point, in model coordinates.</li>
+         * <li> 'heading' - The view's heading angle relative to the globe's north pointing tangent at the origin point, in degrees.</li>
+         * <li> 'tilt' - The view's tilt angle relative to the globe's normal vector at the origin point, in degrees.</li>
+         * <li> 'roll' - The view's roll relative to the globe's normal vector at the origin point, in degrees.</li>
+         * </ul>
+         * @param {Vec3} origin The origin of the viewing parameters, in model coordinates.
+         * @param {Number} roll The view's roll, in degrees.
+         * @param {Globe} globe The globe the viewer is looking at.
+         * @param {Object} result A pre-allocated object in which to return the viewing parameters.
+         *
+         * @return {Object} The specified result argument containing a parameterization of this viewing matrix.
+         *
+         * @throws {ArgumentError} If either the specified origin or globe are null or undefined or the specified
+         * result argument is null or undefined.
+         */
+        Matrix.prototype.extractViewingParameters = function (origin, roll, globe, result) {
+            if (!origin) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters",
+                        "The specified origin is null or undefined."));
+            }
+
+            if (!globe) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingGlobe"));
+            }
+
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingResult"));
+            }
+
+            var originPos = new Position(0, 0, 0),
+                modelviewLocal = Matrix.fromIdentity(),
+                range,
+                ct,
+                st,
+                tilt,
+                cr, sr,
+                ch, sh,
+                heading;
+
+            globe.computePositionFromPoint(origin[0], origin[1], origin[2], originPos);
+
+            // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic
+            // transform contained in the modelview matrix while maintaining rotation and translation relative to the origin.
+            modelviewLocal.multiplyByLocalCoordinateTransform(origin, globe);
+
+            range = -modelviewLocal[11];
+            ct = modelviewLocal[10];
+            st = Math.sqrt(modelviewLocal[2] * modelviewLocal[2] + modelviewLocal[6] * modelviewLocal[6]);
+            tilt = Math.atan2(st, ct);
+
+            cr = Math.cos(roll * Angle.DEGREES_TO_RADIANS);
+            sr = Math.sin(roll * Angle.DEGREES_TO_RADIANS);
+            ch = cr * modelviewLocal[0] - sr * modelviewLocal[4];
+            sh = sr * modelviewLocal[5] - cr * modelviewLocal[1];
+            heading = Math.atan2(sh, ch);
+
+            result['origin'] = originPos;
+            result['range'] = range;
+            result['heading'] = heading;
+            result['tilt'] = tilt;
+            result['roll'] = roll;
+
+            return result;
+        };
+
+        /**
+         * Extracts this projection matrix's view frustum.
+         * <p>
+         * This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
+         * the results are undefined.
+         * <p>
+         * A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
+         * using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
+         * for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
+         * outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
+         * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
+         *
+         * @param {Frustum} result A pre-allocated frustum in which to return this matrix's frustum.
+         * @return {Frustum} The specified return argument containing this projection matrix's view frustum, in eye coordinates.
+         * @throws {ArgumentError} If the specified frustum is null or undefined.
+         */
+        Matrix.prototype.extractFrustum = function (result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractFrustum", "missingFrustum"));
+            }
+
+            // TODO
+
+            return result;
+        };
+
+        /**
+         * Applies a specified depth offset to this projection matrix.
+         * <p>
+         * This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
+         * the results are undefined. Projection matrices can be created by calling
+         * setToPerspectiveProjection:nearDistance:farDistance: or setToScreenProjection:.
+         * <p>
+         * The depth offset may be any real number and is typically used to draw geometry slightly closer to the user's eye in
+         * order to give those shapes visual priority over nearby or geometry. An offset of zero has no effect. An offset less
+         * than zero brings depth values closer to the eye, while an offset greater than zero pushes depth values away from the
+         * eye.
+         * <p>
+         * Depth offset may be applied to both perspective and orthographic projection matrices. The effect on each projection
+         * type is outlined here:
+         * <p>
+         * *Perspective Projection*
+         * <p>
+         * The effect of depth offset on a perspective projection increases exponentially with distance from the eye. This
+         * has the effect of adjusting the offset for the loss in depth precision with geometry drawn further from the eye.
+         * Distant geometry requires a greater offset to differentiate itself from nearby geometry, while close geometry does
+         * not.
+         * <p>
+         * *Orthographic Projection*
+         * <p>
+         * The effect of depth offset on an orthographic projection increases linearly with distance from the eye. While it is
+         * reasonable to apply a depth offset to an orthographic projection, the effect is most appropriate when applied to the
+         * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective projection
+         * into screen coordinates then drawn using an orthographic projection, it is best to apply the offset to the original
+         * perspective projection. The method [WWNavigatorState project:result:depthOffset:] performs the correct behavior
+         * for the projection type used to draw the scene.
+         *
+         * @param {Number} depthOffset The amount of offset to apply.
+         * @returns {Matrix} This matrix with it's depth offset set to the specified offset.
+         */
+        Matrix.prototype.offsetProjectionDepth = function (depthOffset) {
+
+            this[10] *= 1 + depthOffset;
+
+            return this;
+        };
+
+        /**
+         * Multiplies this matrix by a specified matrix.
+         *
+         * @param {Matrix} matrix The matrix to multiply with this matrix.
+         * @returns {Matrix} This matrix after multiplying it by the specified matrix.
+         * @throws {ArgumentError} if the specified matrix is null or undefined.
+         */
+        Matrix.prototype.multiplyMatrix = function (matrix) {
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "multiplyMatrix", "missingMatrix"));
+            }
+
+            var ma = this,
+                mb = matrix,
+                ma0, ma1, ma2, ma3;
+
+            // Row 1
+            ma0 = ma[0];
+            ma1 = ma[1];
+            ma2 = ma[2];
+            ma3 = ma[3];
+            ma[0] = (ma0 * mb[0]) + (ma1 * mb[4]) + (ma2 * mb[8]) + (ma3 * mb[12]);
+            ma[1] = (ma0 * mb[1]) + (ma1 * mb[5]) + (ma2 * mb[9]) + (ma3 * mb[13]);
+            ma[2] = (ma0 * mb[2]) + (ma1 * mb[6]) + (ma2 * mb[10]) + (ma3 * mb[14]);
+            ma[3] = (ma0 * mb[3]) + (ma1 * mb[7]) + (ma2 * mb[11]) + (ma3 * mb[15]);
+
+            // Row 2
+            ma0 = ma[4];
+            ma1 = ma[5];
+            ma2 = ma[6];
+            ma3 = ma[7];
+            ma[4] = (ma0 * mb[0]) + (ma1 * mb[4]) + (ma2 * mb[8]) + (ma3 * mb[12]);
+            ma[5] = (ma0 * mb[1]) + (ma1 * mb[5]) + (ma2 * mb[9]) + (ma3 * mb[13]);
+            ma[6] = (ma0 * mb[2]) + (ma1 * mb[6]) + (ma2 * mb[10]) + (ma3 * mb[14]);
+            ma[7] = (ma0 * mb[3]) + (ma1 * mb[7]) + (ma2 * mb[11]) + (ma3 * mb[15]);
+
+            // Row 3
+            ma0 = ma[8];
+            ma1 = ma[9];
+            ma2 = ma[10];
+            ma3 = ma[11];
+            ma[8] = (ma0 * mb[0]) + (ma1 * mb[4]) + (ma2 * mb[8]) + (ma3 * mb[12]);
+            ma[9] = (ma0 * mb[1]) + (ma1 * mb[5]) + (ma2 * mb[9]) + (ma3 * mb[13]);
+            ma[10] = (ma0 * mb[2]) + (ma1 * mb[6]) + (ma2 * mb[10]) + (ma3 * mb[14]);
+            ma[11] = (ma0 * mb[3]) + (ma1 * mb[7]) + (ma2 * mb[11]) + (ma3 * mb[15]);
+
+            // Row 4
+            ma0 = ma[12];
+            ma1 = ma[13];
+            ma2 = ma[14];
+            ma3 = ma[15];
+            ma[12] = (ma0 * mb[0]) + (ma1 * mb[4]) + (ma2 * mb[8]) + (ma3 * mb[12]);
+            ma[13] = (ma0 * mb[1]) + (ma1 * mb[5]) + (ma2 * mb[9]) + (ma3 * mb[13]);
+            ma[14] = (ma0 * mb[2]) + (ma1 * mb[6]) + (ma2 * mb[10]) + (ma3 * mb[14]);
+            ma[15] = (ma0 * mb[3]) + (ma1 * mb[7]) + (ma2 * mb[11]) + (ma3 * mb[15]);
+
+            return this;
+        };
+
+        /**
+         * Multiplies this matrix by a matrix specified by individual components.
+         *
+         * @param {Number} m00 matrix element at row 1, column 1.
+         * @param {Number} m01 matrix element at row 1, column 2.
+         * @param {Number} m02 matrix element at row 1, column 3.
+         * @param {Number} m03 matrix element at row 1, column 4.
+         * @param {Number} m10 matrix element at row 2, column 1.
+         * @param {Number} m11 matrix element at row 2, column 2.
+         * @param {Number} m12 matrix element at row 2, column 3.
+         * @param {Number} m13 matrix element at row 2, column 4.
+         * @param {Number} m20 matrix element at row 3, column 1.
+         * @param {Number} m21 matrix element at row 3, column 2.
+         * @param {Number} m22 matrix element at row 3, column 3.
+         * @param {Number} m23 matrix element at row 3, column 4.
+         * @param {Number} m30 matrix element at row 4, column 1.
+         * @param {Number} m31 matrix element at row 4, column 2.
+         * @param {Number} m32 matrix element at row 4, column 3.
+         * @param {Number} m33 matrix element at row 4, column 4.
+         * @returns {Matrix} This matrix with its components multiplied by the specified values.
+         */
+        Matrix.prototype.multiply = function (m00, m01, m02, m03,
+                                              m10, m11, m12, m13,
+                                              m20, m21, m22, m23,
+                                              m30, m31, m32, m33) {
+
+            var ma = this,
+                ma0, ma1, ma2, ma3;
+
+            // Row 1
+            ma0 = ma[0];
+            ma1 = ma[1];
+            ma2 = ma[2];
+            ma3 = ma[3];
+            ma[0] = (ma0 * m00) + (ma1 * m10) + (ma2 * m20) + (ma3 * m30);
+            ma[1] = (ma0 * m01) + (ma1 * m11) + (ma2 * m21) + (ma3 * m31);
+            ma[2] = (ma0 * m02) + (ma1 * m12) + (ma2 * m22) + (ma3 * m32);
+            ma[3] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
+
+            // Row 2
+            ma0 = ma[4];
+            ma1 = ma[5];
+            ma2 = ma[6];
+            ma3 = ma[7];
+            ma[4] = (ma0 * m00) + (ma1 * m10) + (ma2 * m20) + (ma3 * m30);
+            ma[5] = (ma0 * m01) + (ma1 * m11) + (ma2 * m21) + (ma3 * m31);
+            ma[6] = (ma0 * m02) + (ma1 * m12) + (ma2 * m22) + (ma3 * m32);
+            ma[7] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
+
+            // Row 3
+            ma0 = ma[8];
+            ma1 = ma[9];
+            ma2 = ma[10];
+            ma3 = ma[11];
+            ma[8] = (ma0 * m00) + (ma1 * m10) + (ma2 * m20) + (ma3 * m30);
+            ma[9] = (ma0 * m01) + (ma1 * m11) + (ma2 * m21) + (ma3 * m31);
+            ma[10] = (ma0 * m02) + (ma1 * m12) + (ma2 * m22) + (ma3 * m32);
+            ma[11] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
+
+            // Row 4
+            ma0 = ma[12];
+            ma1 = ma[13];
+            ma2 = ma[14];
+            ma3 = ma[15];
+            ma[12] = (ma0 * m00) + (ma1 * m10) + (ma2 * m20) + (ma3 * m30);
+            ma[13] = (ma0 * m01) + (ma1 * m11) + (ma2 * m21) + (ma3 * m31);
+            ma[14] = (ma0 * m02) + (ma1 * m12) + (ma2 * m22) + (ma3 * m32);
+            ma[15] = (ma0 * m03) + (ma1 * m13) + (ma2 * m23) + (ma3 * m33);
+
+            return this;
+        };
+
+        /**
+         * Inverts the specified matrix and stores the result in this matrix.
+         * <p>
+         * This throws an exception if the specified matrix is singular.
+         * <p>
+         * The result of this method is undefined if this matrix is passed in as the matrix to invert.
+         *
+         * @param {Matrix} matrix The matrix whose inverse is computed.
+         * @returns {Matrix} This matrix set to the inverse of the specified matrix.
+         *
+         * @throws {ArgumentError} If the specified matrix is null, undefined or cannot be inverted.
+         */
+        Matrix.prototype.invertMatrix = function (matrix) {
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "invertMatrix", "missingMatrix"));
+            }
+
             // Copy the specified matrix into a mutable two-dimensional array.
-            /* double[][] A = new double[4][4]; */
             var A = [[], [], [], []];
-            A[0][0] = a.m11;
-            A[0][1] = a.m12;
-            A[0][2] = a.m13;
-            A[0][3] = a.m14;
-            A[1][0] = a.m21;
-            A[1][1] = a.m22;
-            A[1][2] = a.m23;
-            A[1][3] = a.m24;
-            A[2][0] = a.m31;
-            A[2][1] = a.m32;
-            A[2][2] = a.m33;
-            A[2][3] = a.m34;
-            A[3][0] = a.m41;
-            A[3][1] = a.m42;
-            A[3][2] = a.m43;
-            A[3][3] = a.m44;
+            A[0][0] = matrix[0];
+            A[0][1] = matrix[1];
+            A[0][2] = matrix[2];
+            A[0][3] = matrix[3];
+            A[1][0] = matrix[4];
+            A[1][1] = matrix[5];
+            A[1][2] = matrix[6];
+            A[1][3] = matrix[7];
+            A[2][0] = matrix[8];
+            A[2][1] = matrix[9];
+            A[2][2] = matrix[10];
+            A[2][3] = matrix[11];
+            A[3][0] = matrix[12];
+            A[3][1] = matrix[13];
+            A[3][2] = matrix[14];
+            A[3][3] = matrix[15];
 
-            /* int[] indx = new int[4]; */
-            var indx = [],
-                d = ludcmp(A, indx),
+            var index = [],
+                d = this.ludcmp(A, index),
                 i,
                 j;
 
@@ -1995,11 +1431,9 @@ define([
             }
 
             // The matrix is singular if its determinant is zero or very close to zero.
-            if (Math.abs(d) < NEAR_ZERO_THRESHOLD)
+            if (Math.abs(d) < 1.0e-8)
                 return null;
 
-            /* double[][] Y = new double[4][4];*/
-            /* double[] col = new double[4];*/
             var Y = [[], [], [], []],
                 col = [];
             for (j = 0; j < 4; j += 1) {
@@ -2008,18 +1442,31 @@ define([
                 }
 
                 col[j] = 1.0;
-                lubksb(A, indx, col);
+                this.lubksb(A, index, col);
 
                 for (i = 0; i < 4; i += 1) {
                     Y[i][j] = col[i];
                 }
             }
 
-            return new Matrix(
-                Y[0][0], Y[0][1], Y[0][2], Y[0][3],
-                Y[1][0], Y[1][1], Y[1][2], Y[1][3],
-                Y[2][0], Y[2][1], Y[2][2], Y[2][3],
-                Y[3][0], Y[3][1], Y[3][2], Y[3][3]);
+            this[0] = Y[0][0];
+            this[1] = Y[0][1];
+            this[2] = Y[0][2];
+            this[3] = Y[0][3];
+            this[4] = Y[1][0];
+            this[5] = Y[1][1];
+            this[6] = Y[1][2];
+            this[7] = Y[1][3];
+            this[8] = Y[2][0];
+            this[9] = Y[2][1];
+            this[10] = Y[2][2];
+            this[11] = Y[2][3];
+            this[12] = Y[3][0];
+            this[13] = Y[3][1];
+            this[14] = Y[3][2];
+            this[15] = Y[3][3];
+
+            return this;
         };
 
         /**
@@ -2027,18 +1474,18 @@ define([
          * Solves Ax=b, where A is in LU factorized form.
          * Algorithm derived from "Numerical Recipes in C", Press et al., 1988.
          *
-         * @param {Matrix} A an LU factorization of a matrix
-         * @param {Array} indx permutation vector of that LU factorization
-         * @param {Array} b vector to be solved
+         * @param {Number[]} A an LU factorization of a matrix
+         * @param {Number[]} index permutation vector of that LU factorization
+         * @param {Number[]} b vector to be solved
          */
             // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
-        Matrix.lubksb = function (/* double[][] */ A, /* int[] */ indx, /* double[] */ b) {
+        Matrix.lubksb = function (A, index, b) {
             var ii = -1,
                 i,
                 j,
                 sum;
             for (i = 0; i < 4; i += 1) {
-                var ip = indx[i];
+                var ip = index[i];
                 sum = b[ip];
                 b[ip] = b[i];
 
@@ -2065,14 +1512,14 @@ define([
         };
 
         /**
-         * Utility method to perform an LU factoization of a matrix.
+         * Utility method to perform an LU factorization of a matrix.
          * "ludcmp" is derived from "Numerical Recipes in C", Press et al., 1988.
          *
-         * @param {Matrix} A matix to be factored
-         * @param {Array} indx permutation vector
-         * @returns {number} Condition number of matrix???
+         * @param {Number[]} A matrix to be factored
+         * @param {Number[]} index permutation vector
+         * @returns {Number} Condition number of matrix.
          */
-        Matrix.ludcmp = function (/* double[][] */ A, /* int[] */ indx) {
+        Matrix.ludcmp = function (A, index) {
             var TINY = 1.0e-20,
                 vv = [], /* new double[4]; */
                 d = 1.0,
@@ -2137,7 +1584,7 @@ define([
                     vv[imax] = vv[j];
                 }
 
-                indx[j] = imax;
+                index[j] = imax;
                 if (A[j][j] == 0.0)
                     A[j][j] = TINY;
 
@@ -2152,254 +1599,246 @@ define([
             return d;
         };
 
-        // ============== Accessor Functions ======================= //
-        // ============== Accessor Functions ======================= //
-        // ============== Accessor Functions ======================= //
-
         /**
-         * Compute the x-axis rotation component of <code>this</code> transformation matrix.
+         * Inverts the specified matrix and stores the result in this matrix.
+         * <p>
+         * The specified matrix is assumed to represent an orthonormal transform matrix. This matrix's upper 3x3 is
+         * transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.
+         * <p>
+         * The result of this method is undefined if this matrix is passed in as the matrix to invert.
          *
-         * @returns {Number} the rotation angle about the x axis in degrees.
+         * @param {Matrix} matrix The matrix whose inverse is computed. This matrix is assumed to represent an
+         * orthonormal transform matrix.
+         * @returns {Matrix} This matrix set to the inverse of the specified matrix.
+         *
+         * @throws {ArgumentError} If the specified matrix is null or undefined.
          */
-        Matrix.prototype.getRotationX = function () {
-            var yRadians = Math.asin(this.m13),
-                cosY = Math.cos(yRadians);
-            if (cosY == 0)
-                return null;
-
-            var xRadians;
-            // No Gimbal lock.
-            if (Math.abs(cosY) > 0.005) {
-                xRadians = Math.atan2(-this.m23 / cosY, this.m33 / cosY);
-            }
-            // Gimbal lock has occurred. Rotation around X axis becomes rotation around Z axis.
-            else {
-                xRadians = 0;
-            }
-
-            if (isNaN(xRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * xRadians;
-        };
-
-        /**
-         * Compute the y-axis rotation component of <code>this</code> transformation matrix.
-         *
-         * @returns {Number} the rotation angle about the y axis in degrees.
-         */
-        Matrix.prototype.getRotationY = function () {
-            var yRadians = Math.asin(this.m13);
-            if (isNaN(yRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * yRadians;
-        };
-
-        /**
-         * Compute the z-axis rotation component of <code>this</code> transformation matrix.
-         *
-         * @returns {Number} the rotation angle about the z axis in degrees.
-         */
-        Matrix.prototype.getRotationZ = function () {
-            var yRadians = Math.asin(this.m13),
-                cosY = Math.cos(yRadians);
-            if (cosY == 0) {
-                return null;
-            }
-
-            var zRadians;
-            // No Gimbal lock.
-            if (Math.abs(cosY) > 0.005) {
-                zRadians = Math.atan2(-this.m12 / cosY, this.m11 / cosY);
-            }
-            // Gimbal lock has occurred. Rotation around X axis becomes rotation around Z axis.
-            else {
-                zRadians = Math.atan2(this.m21, this.m22);
-            }
-
-            if (isNaN(zRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * zRadians;
-        };
-
-        Matrix.prototype.getKMLRotationX = function () {   // KML assumes the order of rotations is YXZ, positive CW
-            var xRadians = Math.asin(-this.m23);
-            if (isNaN(xRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * -xRadians;    // negate to make angle CW
-        };
-
-        Matrix.prototype.getKMLRotationY = function () {    // KML assumes the order of rotations is YXZ, positive CW
-            var xRadians = Math.asin(-this.m23);
-            if (isNaN(xRadians)) {
-                return null;
-            }
-
-            var yRadians;
-            if (xRadians < Math.PI / 2) {
-                if (xRadians > -Math.PI / 2) {
-                    yRadians = Math.atan2(this.m13, this.m33);
-                }
-                else {
-                    yRadians = -Math.atan2(-this.m12, this.m11);
-                }
-            }
-            else {
-                yRadians = Math.atan2(-this.m12, this.m11);
-            }
-
-            if (isNaN(yRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * -yRadians;    // negate angle to make it CW
-        };
-
-        Matrix.prototype.getKMLRotationZ = function () {    // KML assumes the order of rotations is YXZ, positive CW
-            var xRadians = Math.asin(-this.m23);
-            if (isNaN(xRadians)) {
-                return null;
-            }
-
-            var zRadians;
-            if (xRadians < Math.PI / 2 && xRadians > -Math.PI / 2) {
-                zRadians = Math.atan2(this.m21, this.m22);
-            }
-            else {
-                zRadians = 0;
-            }
-
-            if (isNaN(zRadians)) {
-                return null;
-            }
-
-            return Angle.DEGREES_TO_RADIANS * -zRadians;    // negate angle to make it CW
-        };
-
-        /**
-         * Compute the translation component of <code>this</code> transformation matrix.
-         *
-         * @returns {Vec3} the translation component of the matrix.
-         */
-        Matrix.prototype.getTranslation = function () {
-            return new Vec3(this.m14, this.m24, this.m34);
-        };
-
-        /**
-         * Extracts this viewing matrix's eye point.
-         * <p/>
-         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
-         * results are undefined.
-         * <p/>
-         * In model coordinates, a viewing matrix's eye point is the point the viewer is looking from and maps to the center
-         * of the screen.
-         *
-         * @return {Vec3} this viewing matrix's eye point, in model coordinates.
-         */
-        Matrix.prototype.extractEyePoint = function () {
-            // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's
-            // inverse. This is equivalent to transforming the inverse of this matrix's translation components in the
-            // rightmost column by the transpose of its upper 3x3 components.
-            var x = -(this.m11 * this.m14) - (this.m21 * this.m24) - (this.m31 * this.m34);
-            var y = -(this.m12 * this.m14) - (this.m22 * this.m24) - (this.m32 * this.m34);
-            var z = -(this.m13 * this.m14) - (this.m23 * this.m24) - (this.m33 * this.m34);
-
-            return new Vec3(x, y, z);
-        };
-
-        /**
-         * Extracts this viewing matrix's forward vector.
-         * <p/>
-         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
-         * results are undefined.
-         * <p/>
-         * In model coordinates, a viewing matrix's forward vector is the direction the viewer is looking and maps to a
-         * vector going into the screen.
-         *
-         * @return this viewing matrix's forward vector, in model coordinates.
-         */
-        Matrix.prototype.extractForwardVector = function () {
-            // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
-            // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
-            return new Vec3(-this.m31, -this.m32, -this.m33);
-        };
-
-        /**
-         * Extracts this viewing matrix's parameters given a viewing origin and a globe.
-         * <p/>
-         * This method assumes that this matrix represents a viewing matrix. If this does not represent a viewing matrix the
-         * results are undefined.
-         * <p/>
-         * This returns a parameterization of this viewing matrix based on the specified origin and globe. The origin
-         * indicates the model coordinate point that the view's orientation is relative to, while the globe provides the
-         * necessary model coordinate context for the origin and the orientation. The origin should be either the view's eye
-         * point or a point on the view's forward vector. The view's roll must be specified in order to disambiguate heading
-         * and roll when the view's tilt is zero.
-         *
-         * The following list outlines the returned key-value pairs and their meanings:
-         * <ul>
-         * <li>AVKey.ORIGIN - The geographic position corresponding to the origin point.</li>
-         * <li>AVKey.RANGE - The distance between the specified origin point and the view's eye point, in model coordinates.</li>
-         * <li>AVKey.HEADING - The view's heading angle relative to the globe's north pointing tangent at the origin point.</li>
-         * <li>AVKey.TILT - The view's tilt angle relative to the globe's normal vector at the origin point.</li>
-         * <li>AVKey.ROLL - The view's roll relative to the globe's normal vector at the origin point.</li>
-         * </ul>
-         *
-         * @param {Vec3} origin the origin of the viewing parameters, in model coordinates.
-         * @param {Number} roll   the view's roll in degrees.
-         * @param {Globe} globe  the globe the viewer is looking at.
-         *
-         * @return a parameterization of this viewing matrix as a list of key-value pairs.
-         *
-         * @throws IllegalArgumentException if arguments are not of correct type.
-         */
-        Matrix.prototype.extractViewingParameters = function (/* Vec3 */ origin, /* Angle */ roll, /* Globe */ globe) {
-            if (!origin) {
+        Matrix.prototype.invertOrthonormalMatrix = function (matrix) {
+            if (!matrix) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingOrigin"));
-            }
-            if (!globe) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractViewingParameters", "missingGlobe"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "invertOrthonormalMatrix", "missingMatrix"));
             }
 
-            // Transform the modelview matrix to a local coordinate system at the origin. This eliminates the geographic
-            // transform contained in the modelview matrix while maintaining rotation and translation relative to the origin.
-            var originPos = globe.computePositionFromPoint(origin),
-                modelviewLocal = this.multiply(globe.computeModelCoordinateOriginTransform(originPos));
+            // 'a' is assumed to contain a 3D transformation matrix.
+            // Upper-3x3 is inverted, translation is transformed by inverted-upper-3x3 and negated.
 
-            // Extract the viewing parameters from the transform in local coordinates.
-            // TODO: Document how these parameters are extracted. See [WWMatrix extractViewingParameters] in WWiOS.
+            var a = matrix;
 
-            var m = modelviewLocal,
-                range = -m.m34;
+            this[0] = a[0];
+            this[1] = a[4];
+            this[2] = a[8];
+            this[3] = 0.0 - (a[0] * a[3]) - (a[4] * a[7]) - (a[8] * a[11]);
 
-            var ct = m.m33,
-                st = Math.sqrt(m.m13 * m.m13 + m.m23 * m.m23),
-                tilt = Math.atan2(st, ct);
+            this[4] = a[1];
+            this[5] = a[5];
+            this[6] = a[9];
+            this[7] = 0.0 - (a[1] * a[3]) - (a[5] * a[7]) - (a[9] * a[11]);
 
-            var cr = Math.cos(Angle.DEGREES_TO_RADIANS * roll),
-                sr = Math.sin(Angle.DEGREES_TO_RADIANS * roll),
-                ch = cr * m.m11 - sr * m.m21,
-                sh = sr * m.m22 - cr * m.m12,
-                heading = Math.atan2(sh, ch);
+            this[8] = a[2];
+            this[9] = a[6];
+            this[10] = a[10];
+            this[11] = 0.0 - (a[2] * a[3]) - (a[6] * a[7]) - (a[10] * a[11]);
 
-            var params = new AVListImpl();
-            params.setValue(AVKey.ORIGIN, originPos);
-            params.setValue(AVKey.RANGE, range);
-            params.setValue(AVKey.HEADING, Angle.DEGREES_TO_RADIANS * heading);
-            params.setValue(AVKey.TILT, Angle.DEGREES_TO_RADIANS * tilt);
-            params.setValue(AVKey.ROLL, roll);
+            this[12] = 0;
+            this[13] = 0;
+            this[14] = 0;
+            this[15] = 1;
 
-            return params;
+            // Inverse of an orthogonal, 3D transform matrix is not an orthogonal 3D transform.
+            this.isOrthonormalTransform = false;
+
+            return this;
         };
+
+        /**
+         * Computes the eigenvectors of this matrix.
+         * <p>
+         * The eigenvectors are returned sorted from the most prominent vector to the least prominent vector.
+         * Each eigenvector has length equal to its corresponding eigenvalue.
+         *
+         * @param result1 A pre-allocated vector in which to return the most prominent eigenvector.
+         * @param result2 A pre-allocated vector in which to return the second most prominent eigenvector.
+         * @param result3 A pre-allocated vector in which to return the least prominent eigenvector.
+         *
+         * @throws {ArgumentError} if any argument is null or undefined.
+         */
+        Matrix.prototype.eigensystemFromSymmetricMatrix = function (result1, result2, result3) {
+            if (!result1 || !result2 || !result3) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "eigensystemFromSymmetricMatrix", "missingResult"));
+            }
+
+            // TODO
+        };
+        //
+        ///**
+        // * Computes the eigensystem of the specified symmetric Matrix's upper 3x3 matrix. If the Matrix's upper 3x3 matrix
+        // * is not symmetric, this throws an IllegalArgumentException. This writes the eigensystem parameters to the
+        // * specified arrays <code>outEigenvalues</code> and <code>outEigenvectors</code>, placing the eigenvalues in the
+        // * entries of array <code>outEigenvalues</code>, and the corresponding eigenvectors in the entries of array
+        // * <code>outEigenvectors</code>. These arrays must be non-null, and have length three or greater.
+        // *
+        // * @param {Matrix} matrix         the symmetric matrix for which to compute an eigensystem.
+        // * @param {Array} outEigenvalues  the array which receives the three output eigenvalues.
+        // * @param {Array} outEigenvectors the array which receives the three output eigenvectors.
+        // *
+        // * @throws ArgumentError
+        // *      if the matrix is a Matrix or is not symmetric,
+        // *      if the output eigenvalue array is not an Array or has length less than 3, or
+        // *      if the output eigenvector is not an Array or has length less than 3.
+        // */
+        //Matrix.computeEigensystemFromSymmetricMatrix3 = function (/* Matrix */ matrix,
+        //                                                          /* double[] */ outEigenvalues,
+        //                                                          /* Vec3[] */ outEigenvectors) {
+        //    var msg;
+        //    if (!matrix) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingMatrix"));
+        //    }
+        //    if (!outEigenvalues) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvalues"));
+        //    }
+        //    if (outEigenvalues.length < 3) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvalues"));
+        //    }
+        //    if (!(outEigenvectors instanceof Array)) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvectors"));
+        //    }
+        //    if (outEigenvectors.length < 3) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvectors"));
+        //    }
+        //    if (matrix.m12 != matrix.m21 || matrix.m13 != matrix.m31 || matrix.m23 != matrix.m32) {
+        //        throw new ArgumentError(
+        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "asymmetricMatrix"));
+        //    }
+        //
+        //    // Take from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
+        //    // Listing 14.6 (pages 441-444).
+        //
+        //    var EPSILON = 1.0e-10,// NOTE: different from Matrix.EPSILON
+        //        MAX_SWEEPS = 32;
+        //
+        //    // Since the Matrix is symmetric, m12=m21, m13=m31, and m23=m32. Therefore we can ignore the values m21, m31,
+        //    // and m32.
+        //    var m11 = matrix.m11,
+        //        m12 = matrix.m12,
+        //        m13 = matrix.m13,
+        //        m22 = matrix.m22,
+        //        m23 = matrix.m23,
+        //        m33 = matrix.m33;
+        //
+        //    /* double[][] r = new double[3][3]; */
+        //    /* r[0][0] = r[1][1] = r[2][2] = 1d; */
+        //    var r = [
+        //        [1, 0, 0],
+        //        [0, 1, 0],
+        //        [0, 0, 1]
+        //    ];
+        //    var u,
+        //        u2,
+        //        u2p1,
+        //        t,
+        //        c,
+        //        s,
+        //        i,
+        //        temp;
+        //
+        //    for (var a = 0; a < MAX_SWEEPS; a += 1) {
+        //        // Exit if off-diagonal entries small enough
+        //        if ((Math.abs(m12) < EPSILON) && (Math.abs(m13) < EPSILON) && (Math.abs(m23) < EPSILON))
+        //            break;
+        //
+        //        // Annihilate (1,2) entry
+        //        if (m12 != 0) {
+        //            u = (m22 - m11) * 0.5 / m12;
+        //            u2 = u * u;
+        //            u2p1 = u2 + 1;
+        //            t = (u2p1 != u2) ?
+        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
+        //            0.5 / u;
+        //            c = 1 / Math.sqrt(t * t + 1);
+        //            s = c * t;
+        //
+        //            m11 -= t * m12;
+        //            m22 += t * m12;
+        //            m12 = 0;
+        //
+        //            temp = c * m13 - s * m23;
+        //            m23 = s * m13 + c * m23;
+        //            m13 = temp;
+        //
+        //            for (i = 0; i < 3; i += 1) {
+        //                temp = c * r[i][0] - s * r[i][1];
+        //                r[i][1] = s * r[i][0] + c * r[i][1];
+        //                r[i][0] = temp;
+        //            }
+        //        }
+        //
+        //        // Annihilate (1,3) entry
+        //        if (m13 != 0) {
+        //            u = (m33 - m11) * 0.5 / m13;
+        //            u2 = u * u;
+        //            u2p1 = u2 + 1;
+        //            t = (u2p1 != u2) ?
+        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
+        //            0.5 / u;
+        //            c = 1 / Math.sqrt(t * t + 1);
+        //            s = c * t;
+        //
+        //            m11 -= t * m13;
+        //            m33 += t * m13;
+        //            m13 = 0;
+        //
+        //            temp = c * m12 - s * m23;
+        //            m23 = s * m12 + c * m23;
+        //            m12 = temp;
+        //
+        //            for (i = 0; i < 3; i += 1) {
+        //                temp = c * r[i][0] - s * r[i][2];
+        //                r[i][2] = s * r[i][0] + c * r[i][2];
+        //                r[i][0] = temp;
+        //            }
+        //        }
+        //
+        //        // Annihilate (2,3) entry
+        //        if (m23 != 0) {
+        //            u = (m33 - m22) * 0.5 / m23;
+        //            u2 = u * u;
+        //            u2p1 = u2 + 1;
+        //            t = (u2p1 != u2) ?
+        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
+        //            0.5 / u;
+        //            c = 1 / Math.sqrt(t * t + 1);
+        //            s = c * t;
+        //
+        //            m22 -= t * m23;
+        //            m33 += t * m23;
+        //            m23 = 0;
+        //
+        //            temp = c * m12 - s * m13;
+        //            m13 = s * m12 + c * m13;
+        //            m12 = temp;
+        //
+        //            for (i = 0; i < 3; i += 1) {
+        //                temp = c * r[i][1] - s * r[i][2];
+        //                r[i][2] = s * r[i][1] + c * r[i][2];
+        //                r[i][1] = temp;
+        //            }
+        //        }
+        //    }
+        //
+        //    outEigenvalues[0] = m11;
+        //    outEigenvalues[1] = m22;
+        //    outEigenvalues[2] = m33;
+        //
+        //    outEigenvectors[0] = new Vec3(r[0][0], r[1][0], r[2][0]);
+        //    outEigenvectors[1] = new Vec3(r[0][1], r[1][1], r[2][1]);
+        //    outEigenvectors[2] = new Vec3(r[0][2], r[1][2], r[2][2]);
+        //};
 
         return Matrix;
     });

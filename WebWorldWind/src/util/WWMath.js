@@ -20,6 +20,15 @@ define([
          * @exports WWMath
          */
         var WWMath = {
+
+            POSITIVE_ZERO: +0.0,
+
+            NEGATIVE_ZERO: -0.0,
+
+            isZero: function (value) {
+                return value === this.POSITIVE_ZERO || value === this.NEGATIVE_ZERO;
+            },
+
             /**
              * Returns a number within the range of a specified minimum and maximum.
              * @param {Number} value The value to clamp.
@@ -147,7 +156,7 @@ define([
              * @param {Number} a The value whose absolute value to compute.
              * @returns {Number} The absolute value of the specified number.
              */
-            fabs: function(a) {
+            fabs: function (a) {
                 return a >= 0 ? a : -a;
             },
 
@@ -157,9 +166,17 @@ define([
              * @param {Number} modulus The modulus.
              * @returns {Number} The remainder after dividing the number by the modulus: <code>number % modulus</code>.
              */
-            fmod: function(number, modulus) {
+            fmod: function (number, modulus) {
                 // TODO: Verify that javascript's modulo operator produces same values as Java's fmod function.
                 return number % modulus;
+            },
+
+            localCoordinateAxesAtPoint : function(origin, globe, xAxisResult, yAxisResult, zAxisResult) {
+                // TODO
+            },
+
+            perspectiveFrustumRectangle: function(viewport, distance) {
+                // TODO
             }
         };
 

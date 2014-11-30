@@ -36,6 +36,37 @@ define([
         Vec3.NUM_ELEMENTS = 3;
 
         /**
+         * Computes the average of a specified array of points.
+         * @param {Vec3[]} points The points whose average to compute.
+         * @param {Vec3} result A pre-allocated Vec3 in which to return the computed average.
+         * @returns {Vec3} The result argument set to the average of the specified lists of points.
+         * @throws {ArgumentError} If the specified array of points is null, undefined or empty.
+         */
+        Vec3.average = function (points, result) {
+            if (!points || points.length < 1) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "average", "missingArray"));
+            }
+
+            var count = points.length,
+                vec;
+
+            result[0] = 0;
+            result[1] = 0;
+            result[2] = 0;
+
+            for (var i = 0, len = points.length; i < len; i++) {
+                vec = points[i];
+
+                result[0] += vec[0] / count;
+                result[1] += vec[1] / count;
+                result[2] += vec[2] / count;
+            }
+
+            return result;
+        };
+
+        /**
          * Vec3 inherits all methods and representation of FLoat64Array.
          * @type {Float64Array}
          */
