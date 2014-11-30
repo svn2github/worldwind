@@ -207,16 +207,16 @@ define([
         };
 
         /**
-         * Multiply <code>this</code> vector by a scalar constant.
-         * @param {number} scale scale factor
-         * @returns {Vec3} product of <code>this</code> and scale factor
+         * Multiply this vector by a scalar value.
+         * @param {Number} scale The scale factor.
+         * @returns {Vec3} This vector multiplied by the specified scale factor.
          */
         Vec3.prototype.scale = function (scale) {
-            var x = this[0] * scale,
-                y = this[1] * scale,
-                z = this[2] * scale;
+            this[0] *= scale;
+            this[1] *= scale;
+            this[2] *= scale;
 
-            return new Vec3(x, y, z);
+            return this;
         };
 
         /**

@@ -13,6 +13,7 @@ define([
         'src/geom/Frustum',
         'src/globe/Globe',
         'src/util/Logger',
+        'src/geom/Plane',
         'src/geom/Rectangle',
         'src/render/Texture',
         'src/geom/Vec3',
@@ -23,6 +24,7 @@ define([
               Frustum,
               Globe,
               Logger,
+              Plane,
               Rectangle,
               Texture,
               Vec3,
@@ -30,7 +32,7 @@ define([
         "use strict";
 
         /**
-         * Transformation matrix.
+         * Constructs a matrix.
          * @alias Matrix
          * @constructor
          * @classdesc Represents a 4 x 4 double precision matrix stored in a Float64Array in row-major order.
@@ -1195,19 +1197,60 @@ define([
          * outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
          * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
          *
-         * @param {Frustum} result A pre-allocated frustum in which to return this matrix's frustum.
-         * @return {Frustum} The specified return argument containing this projection matrix's view frustum, in eye coordinates.
-         * @throws {ArgumentError} If the specified frustum is null or undefined.
+         * @return {Frustum} A new frustum containing this projection matrix's view frustum, in eye coordinates.
          */
-        Matrix.prototype.extractFrustum = function (result) {
-            if (!result) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "extractFrustum", "missingFrustum"));
-            }
+        Matrix.prototype.extractFrustum = function () {
+            var x, y, z, w, d, left, right, top, bottom, near, far;
 
-            // TODO
+            // Left Plane = row 4 + row 1:
+            x = this[12] + this[0];
+            y = this[13] + this[1];
+            z = this[14] + this[2];
+            w = this[15] + this[3];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            left = new Plane(x / d, y / d, z / d, w / d);
 
-            return result;
+            // Right Plane = row 4 - row 1:
+            x = this[12] - this[0];
+            y = this[13] - this[1];
+            z = this[14] - this[2];
+            w = this[15] - this[3];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            right = new Plane(x / d, y / d, z / d, w / d);
+
+            // Bottom Plane = row 4 + row 2:
+            x = this[12] + this[4];
+            y = this[13] + this[5];
+            z = this[14] + this[6];
+            w = this[15] + this[7];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            bottom = new Plane(x / d, y / d, z / d, w / d);
+
+            // Top Plane = row 4 - row 2:
+            x = this[12] - this[4];
+            y = this[13] - this[5];
+            z = this[14] - this[6];
+            w = this[15] - this[7];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            top = new Plane(x / d, y / d, z / d, w / d);
+
+            // Near Plane = row 4 + row 3:
+            x = this[12] + this[8];
+            y = this[13] + this[9];
+            z = this[14] + this[10];
+            w = this[15] + this[11];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            near = new Plane(x / d, y / d, z / d, w / d);
+
+            // Far Plane = row 4 - row 3:
+            x = this[12] - this[8];
+            y = this[13] - this[9];
+            z = this[14] - this[10];
+            w = this[15] - this[11];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            far = new Plane(x / d, y / d, z / d, w / d);
+
+            return new Frustum(left, right, bottom, top, near, far);
         };
 
         /**
@@ -1660,7 +1703,7 @@ define([
          * @param result2 A pre-allocated vector in which to return the second most prominent eigenvector.
          * @param result3 A pre-allocated vector in which to return the least prominent eigenvector.
          *
-         * @throws {ArgumentError} if any argument is null or undefined.
+         * @throws {ArgumentError} if any argument is null or undefined or if this matrix is not symmetric.
          */
         Matrix.prototype.eigensystemFromSymmetricMatrix = function (result1, result2, result3) {
             if (!result1 || !result2 || !result3) {
@@ -1668,177 +1711,163 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "eigensystemFromSymmetricMatrix", "missingResult"));
             }
 
-            // TODO
+            if (this[1] != this[4] || this[2] != this[8] || this[6] != this[9]) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "eigensystemFromSymmetricMatrix",
+                        "Matrix is not symmetric"));
+            }
+
+            // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, listing 14.6.
+
+            var epsilon = 1.0e-10,
+            // Since the matrix is symmetric m12=m21, m13=m31 and m23=m32, therefore we can ignore the values m21,
+            // m32 and m32.
+                m11 = this[0],
+                m12 = this[1],
+                m13 = this[2],
+                m22 = this[5],
+                m23 = this[6],
+                m33 = this[10],
+                r = [
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1]
+                ],
+                maxSweeps = 32,
+                u, u2, u2p1, t, c, s, temp, i, i1, i2, i3;
+
+            for (var a = 0; a < maxSweeps; a++) {
+                // Exit if off-diagonal entries small enough
+                if (WWMath.fabs(m12) < epsilon && WWMath.fabs(m13) < epsilon && WWMath.fabs(m23) < epsilon)
+                    break;
+
+                // Annihilate (1,2) entry.
+                if (m12 != 0) {
+                    u = (m22 - m11) * 0.5 / m12;
+                    u2 = u * u;
+                    u2p1 = u2 + 1;
+                    t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - WWMath.fabs(u)) : 0.5 / u;
+                    c = 1 / Math.sqrt(t * t + 1);
+                    s = c * t;
+
+                    m11 -= t * m12;
+                    m22 += t * m12;
+                    m12 = 0;
+
+                    temp = c * m13 - s * m23;
+                    m23 = s * m13 + c * m23;
+                    m13 = temp;
+
+                    for (i = 0; i < 3; i++) {
+                        temp = c * r[i][0] - s * r[i][1];
+                        r[i][1] = s * r[i][0] + c * r[i][1];
+                        r[i][0] = temp;
+                    }
+                }
+
+                // Annihilate (1,3) entry.
+                if (m13 != 0) {
+                    u = (m33 - m11) * 0.5 / m13;
+                    u2 = u * u;
+                    u2p1 = u2 + 1;
+                    t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - WWMath.fabs(u)) : 0.5 / u;
+                    c = 1 / Math.sqrt(t * t + 1);
+                    s = c * t;
+
+                    m11 -= t * m13;
+                    m33 += t * m13;
+                    m13 = 0;
+
+                    temp = c * m12 - s * m23;
+                    m23 = s * m12 + c * m23;
+                    m12 = temp;
+
+                    for (i = 0; i < 3; i++) {
+                        temp = c * r[i][0] - s * r[i][2];
+                        r[i][2] = s * r[i][0] + c * r[i][2];
+                        r[i][0] = temp;
+                    }
+                }
+
+                // Annihilate (2,3) entry.
+                if (m23 != 0) {
+                    u = (m33 - m22) * 0.5 / m23;
+                    u2 = u * u;
+                    u2p1 = u2 + 1;
+                    t = (u2p1 != u2) ? ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - WWMath.fabs(u)) : 0.5 / u;
+                    c = 1 / Math.sqrt(t * t + 1);
+                    s = c * t;
+
+                    m22 -= t * m23;
+                    m33 += t * m23;
+                    m23 = 0;
+
+                    temp = c * m12 - s * m13;
+                    m13 = s * m12 + c * m13;
+                    m12 = temp;
+
+                    for (i = 0; i < 3; i++) {
+                        temp = c * r[i][1] - s * r[i][2];
+                        r[i][2] = s * r[i][1] + c * r[i][2];
+                        r[i][1] = temp;
+                    }
+                }
+            }
+
+            i1 = 0;
+            i2 = 1;
+            i3 = 2;
+
+            if (m11 < m22) {
+                temp = m11;
+                m11 = m22;
+                m22 = temp;
+
+                temp = i1;
+                i1 = i2;
+                i2 = temp;
+            }
+
+            if (m22 < m33) {
+                temp = m22;
+                m22 = m33;
+                m33 = temp;
+
+                temp = i2;
+                i2 = i3;
+                i3 = temp;
+            }
+
+            if (m11 < m22) {
+                temp = m11;
+                m11 = m22;
+                m22 = temp;
+
+                temp = i1;
+                i1 = i2;
+                i2 = temp;
+            }
+
+            result1[0] = r[0][i1];
+            result1[1] = r[1][i1];
+            result1[2] = r[2][i1];
+
+            result2[0] = r[0][i2];
+            result2[1] = r[1][i2];
+            result2[2] = r[2][i2];
+
+            result3[0] = r[0][i3];
+            result3[1] = r[1][i3];
+            result3[2] = r[2][i3];
+
+            result1.normalize();
+            result2.normalize();
+            result3.normalize();
+
+            result1.scale(m11);
+            result2.scale(m22);
+            result3.scale(m33);
         };
-        //
-        ///**
-        // * Computes the eigensystem of the specified symmetric Matrix's upper 3x3 matrix. If the Matrix's upper 3x3 matrix
-        // * is not symmetric, this throws an IllegalArgumentException. This writes the eigensystem parameters to the
-        // * specified arrays <code>outEigenvalues</code> and <code>outEigenvectors</code>, placing the eigenvalues in the
-        // * entries of array <code>outEigenvalues</code>, and the corresponding eigenvectors in the entries of array
-        // * <code>outEigenvectors</code>. These arrays must be non-null, and have length three or greater.
-        // *
-        // * @param {Matrix} matrix         the symmetric matrix for which to compute an eigensystem.
-        // * @param {Array} outEigenvalues  the array which receives the three output eigenvalues.
-        // * @param {Array} outEigenvectors the array which receives the three output eigenvectors.
-        // *
-        // * @throws ArgumentError
-        // *      if the matrix is a Matrix or is not symmetric,
-        // *      if the output eigenvalue array is not an Array or has length less than 3, or
-        // *      if the output eigenvector is not an Array or has length less than 3.
-        // */
-        //Matrix.computeEigensystemFromSymmetricMatrix3 = function (/* Matrix */ matrix,
-        //                                                          /* double[] */ outEigenvalues,
-        //                                                          /* Vec3[] */ outEigenvectors) {
-        //    var msg;
-        //    if (!matrix) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingMatrix"));
-        //    }
-        //    if (!outEigenvalues) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvalues"));
-        //    }
-        //    if (outEigenvalues.length < 3) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvalues"));
-        //    }
-        //    if (!(outEigenvectors instanceof Array)) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "missingOutEigenvectors"));
-        //    }
-        //    if (outEigenvectors.length < 3) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "shortOutEigenvectors"));
-        //    }
-        //    if (matrix.m12 != matrix.m21 || matrix.m13 != matrix.m31 || matrix.m23 != matrix.m32) {
-        //        throw new ArgumentError(
-        //            Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "computeEigensystem", "asymmetricMatrix"));
-        //    }
-        //
-        //    // Take from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition" by Eric Lengyel,
-        //    // Listing 14.6 (pages 441-444).
-        //
-        //    var EPSILON = 1.0e-10,// NOTE: different from Matrix.EPSILON
-        //        MAX_SWEEPS = 32;
-        //
-        //    // Since the Matrix is symmetric, m12=m21, m13=m31, and m23=m32. Therefore we can ignore the values m21, m31,
-        //    // and m32.
-        //    var m11 = matrix.m11,
-        //        m12 = matrix.m12,
-        //        m13 = matrix.m13,
-        //        m22 = matrix.m22,
-        //        m23 = matrix.m23,
-        //        m33 = matrix.m33;
-        //
-        //    /* double[][] r = new double[3][3]; */
-        //    /* r[0][0] = r[1][1] = r[2][2] = 1d; */
-        //    var r = [
-        //        [1, 0, 0],
-        //        [0, 1, 0],
-        //        [0, 0, 1]
-        //    ];
-        //    var u,
-        //        u2,
-        //        u2p1,
-        //        t,
-        //        c,
-        //        s,
-        //        i,
-        //        temp;
-        //
-        //    for (var a = 0; a < MAX_SWEEPS; a += 1) {
-        //        // Exit if off-diagonal entries small enough
-        //        if ((Math.abs(m12) < EPSILON) && (Math.abs(m13) < EPSILON) && (Math.abs(m23) < EPSILON))
-        //            break;
-        //
-        //        // Annihilate (1,2) entry
-        //        if (m12 != 0) {
-        //            u = (m22 - m11) * 0.5 / m12;
-        //            u2 = u * u;
-        //            u2p1 = u2 + 1;
-        //            t = (u2p1 != u2) ?
-        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-        //            0.5 / u;
-        //            c = 1 / Math.sqrt(t * t + 1);
-        //            s = c * t;
-        //
-        //            m11 -= t * m12;
-        //            m22 += t * m12;
-        //            m12 = 0;
-        //
-        //            temp = c * m13 - s * m23;
-        //            m23 = s * m13 + c * m23;
-        //            m13 = temp;
-        //
-        //            for (i = 0; i < 3; i += 1) {
-        //                temp = c * r[i][0] - s * r[i][1];
-        //                r[i][1] = s * r[i][0] + c * r[i][1];
-        //                r[i][0] = temp;
-        //            }
-        //        }
-        //
-        //        // Annihilate (1,3) entry
-        //        if (m13 != 0) {
-        //            u = (m33 - m11) * 0.5 / m13;
-        //            u2 = u * u;
-        //            u2p1 = u2 + 1;
-        //            t = (u2p1 != u2) ?
-        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-        //            0.5 / u;
-        //            c = 1 / Math.sqrt(t * t + 1);
-        //            s = c * t;
-        //
-        //            m11 -= t * m13;
-        //            m33 += t * m13;
-        //            m13 = 0;
-        //
-        //            temp = c * m12 - s * m23;
-        //            m23 = s * m12 + c * m23;
-        //            m12 = temp;
-        //
-        //            for (i = 0; i < 3; i += 1) {
-        //                temp = c * r[i][0] - s * r[i][2];
-        //                r[i][2] = s * r[i][0] + c * r[i][2];
-        //                r[i][0] = temp;
-        //            }
-        //        }
-        //
-        //        // Annihilate (2,3) entry
-        //        if (m23 != 0) {
-        //            u = (m33 - m22) * 0.5 / m23;
-        //            u2 = u * u;
-        //            u2p1 = u2 + 1;
-        //            t = (u2p1 != u2) ?
-        //            ((u < 0) ? -1 : 1) * (Math.sqrt(u2p1) - Math.abs(u)) :
-        //            0.5 / u;
-        //            c = 1 / Math.sqrt(t * t + 1);
-        //            s = c * t;
-        //
-        //            m22 -= t * m23;
-        //            m33 += t * m23;
-        //            m23 = 0;
-        //
-        //            temp = c * m12 - s * m13;
-        //            m13 = s * m12 + c * m13;
-        //            m12 = temp;
-        //
-        //            for (i = 0; i < 3; i += 1) {
-        //                temp = c * r[i][1] - s * r[i][2];
-        //                r[i][2] = s * r[i][1] + c * r[i][2];
-        //                r[i][1] = temp;
-        //            }
-        //        }
-        //    }
-        //
-        //    outEigenvalues[0] = m11;
-        //    outEigenvalues[1] = m22;
-        //    outEigenvalues[2] = m33;
-        //
-        //    outEigenvectors[0] = new Vec3(r[0][0], r[1][0], r[2][0]);
-        //    outEigenvectors[1] = new Vec3(r[0][1], r[1][1], r[2][1]);
-        //    outEigenvectors[2] = new Vec3(r[0][2], r[1][2], r[2][2]);
-        //};
 
         return Matrix;
     });
