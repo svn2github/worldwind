@@ -8,14 +8,27 @@
 define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Angle',
         'src/error/ArgumentError',
-        'src/globe/Globe',
+        'src/render/DrawContext',
         'src/globe/ElevationModel',
+        'src/util/FrameStatistics',
+        'src/geom/Frustum',
+        'src/globe/Globe',
+        'src/render/GpuProgram',
+        'src/render/GpuResourceCache',
+        'src/layer/Layer',
+        'src/Layer/LayerList',
         'src/geom/Line',
         'src/geom/Location',
         'src/util/Logger',
         'src/geom/Matrix',
+        'src/navigate/NavigatorState',
+        'src/geom/Plane',
         'src/geom/Position',
+        'src/geom/Rectangle',
         'src/geom/Sector',
+        'src/render/SurfaceTileRenderer',
+        'src/globe/Terrain',
+        'src/render/Texture',
         'src/geom/Vec2',
         'src/geom/Vec3',
         'src/WorldWindow',
@@ -23,14 +36,27 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/globe/ZeroElevationModel'],
     function (Angle,
               ArgumentError,
-              Globe,
+              DrawContext,
               ElevationModel,
+              FrameStatistics,
+              Frustum,
+              Globe,
+              GpuProgram,
+              GpuResourceCache,
+              Layer,
+              LayerList,
               Line,
               Location,
               Logger,
               Matrix,
+              NavigatorState,
+              Plane,
               Position,
+              Rectangle,
               Sector,
+              SurfaceTileRenderer,
+              Terrain,
+              Texture,
               Vec2,
               Vec3,
               WorldWindow,
@@ -67,13 +93,29 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
             LINEAR: "linear"
         };
 
+        WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
+        WorldWind['DrawContext'] = DrawContext;
+        WorldWind['ElevationModel'] = ElevationModel;
+        WorldWind['FrameStatistics'] = FrameStatistics;
+        WorldWind['Frustum'] = Frustum;
         WorldWind['Globe'] = Globe;
+        WorldWind['GpuProgram'] = GpuProgram;
+        WorldWind['GpuResourceCache'] = GpuResourceCache;
+        WorldWind['Layer'] = Layer;
+        WorldWind['LayerList'] = LayerList;
+        WorldWind['Line'] = Line;
         WorldWind['Location'] = Location;
         WorldWind['Logger'] = Logger;
         WorldWind['Matrix'] = Matrix;
+        WorldWind['NavigatorState'] = NavigatorState;
+        WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
+        WorldWind['Rectangle'] = Rectangle;
         WorldWind['Sector'] = Sector;
+        WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
+        WorldWind['Terrain'] = Terrain;
+        WorldWind['Texture'] = Texture;
         WorldWind['Vec2'] = Vec2;
         WorldWind['Vec3'] = Vec3;
         WorldWind['WWMath'] = WWMath;
