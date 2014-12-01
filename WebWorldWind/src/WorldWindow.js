@@ -7,8 +7,30 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger'],
-    function (Logger) {
+        'src/error/ArgumentError',
+        'src/render/DrawContext',
+        'src/util/FrameStatistics',
+        'src/globe/Globe',
+        'src/render/GpuResourceCache',
+        'src/layer/LayerList',
+        'src/util/Logger',
+        'src/navigate/LookAtNavigator',
+        'src/navigate/NavigatorState',
+        'src/geom/Rectangle',
+        'src/globe/Tessellator',
+        'src/globe/ZeroElevationModel'],
+    function (ArgumentError,
+              DrawContext,
+              FrameStatistics,
+              Globe,
+              GpuResourceCache,
+              LayerList,
+              Logger,
+              LookAtNavigator,
+              NavigatorState,
+              Rectangle,
+              Tessellator,
+              ZeroElevationModel) {
         "use strict";
 
         /**
@@ -30,22 +52,94 @@ define([
 
             function handleContextRestored(event) {
             }
+
+            this.globe = new Globe(new ZeroElevationModel());
+
+            this.tessellator = new Tessellator();
+
+            this.verticalExaggeration = 1;
+
+            this.gpuResourceCache = new GpuResourceCache();
+
+            this.layers = new LayerList();
+
+            this.navigator = new LookAtNavigator();
+
+            this.frameStatistics = new FrameStatistics();
+
+            this.drawContext = new DrawContext();
         };
 
         /**
          * Redraws the window.
          */
         WorldWindow.prototype.render = function () {
-            if (!window.WebGLRenderingContext) {
+            if (!(window.WebGLRenderingContext)) {
                 Logger.log(Logger.LEVEL_SEVERE, "Canvas does not support WebGL");
                 return;
             }
 
-            var gl = this.canvas.getContext("webgl");
+            try {
+                this.resetDrawContext();
+                this.drawFrame();
+            } catch (e) {
+                Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "render",
+                    "Exception occurred during rendering: " + e.toString());
+            }
+        };
 
-            gl.clearColor(1.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+        WorldWindow.prototype.resetDrawContext = function () {
+            var dc = this.drawContext;
+
+            dc.reset();
+            dc.globe = this.globe;
+            dc.layerList = this.layers;
+            dc.navigatorState = this.navigator.currentState();
+            dc.verticalExaggeration = this.verticalExaggeration;
+            dc.frameStatistics = this.frameStatistics;
+            dc.update();
+        };
+
+        WorldWindow.prototype.drawFrame = function () {
+            var viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
+
+            this.drawContext.currentGLContext = this.canvas.getContext("webgl");
+
+            try {
+                this.beginFrame(this.drawContext, viewport);
+                this.createTerrain(this.drawContext);
+                this.clearFrame(this.drawContext);
+                this.doDraw(this.drawContext);
+            } finally {
+                this.endFrame(this.drawContext);
+            }
+        };
+
+        WorldWindow.prototype.beginFrame = function (dc, viewport) {
+            var gl = dc.currentGLContext;
+
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        };
+
+        WorldWindow.prototype.endFrame = function (dc) {
+        };
+
+        WorldWindow.prototype.clearFrame = function (dc) {
+            var gl = dc.currentGLContext;
+
+            gl.clearColor(dc.clearColor[0], dc.clearColor[1], dc.clearColor[2], dc.clearColor[3]);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        };
+
+        WorldWindow.prototype.doDraw = function (dc) {
+        };
+
+        WorldWindow.prototype.createTerrain = function (dc) {
+            this.drawContext.terrain = this.tessellator.tessellate(this.globe, dc.navigatorState,
+                dc.verticalExaggeration);
         };
 
         return WorldWindow;
-    });
+    }
+)
+;

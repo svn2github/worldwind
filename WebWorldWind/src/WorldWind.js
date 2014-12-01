@@ -20,6 +20,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Line',
         'src/geom/Location',
         'src/util/Logger',
+        'src/navigate/LookAtNavigator',
         'src/geom/Matrix',
         'src/navigate/NavigatorState',
         'src/geom/Plane',
@@ -49,6 +50,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               Line,
               Location,
               Logger,
+              LookAtNavigator,
               Matrix,
               NavigatorState,
               Plane,
@@ -127,6 +129,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['Line'] = Line;
         WorldWind['Location'] = Location;
         WorldWind['Logger'] = Logger;
+        WorldWind['LookAtNavigator'] = LookAtNavigator;
         WorldWind['Matrix'] = Matrix;
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['Plane'] = Plane;
@@ -142,6 +145,9 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['WWMath'] = WWMath;
         WorldWind['WorldWindow'] = WorldWindow;
         WorldWind['ZeroElevationModel'] = ZeroElevationModel;
+
+        WorldWind.configuration = {
+        };
 
         window.WorldWind = WorldWind;
 

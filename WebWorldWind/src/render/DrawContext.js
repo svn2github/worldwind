@@ -74,7 +74,7 @@ define([
 
             this.screenProjection = Matrix.fromIdentity();
 
-            this.clearColor = 0;
+            this.clearColor = [1, 0, 0, 1];
 
             this.frameStatistics = new FrameStatistics();
         };
@@ -87,10 +87,10 @@ define([
         };
 
         DrawContext.prototype.update = function () {
-            var eyePoint = this.navigatorState.eyePoint;
-
-            this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
-            this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
+            //var eyePoint = this.navigatorState.eyePoint;
+            //
+            //this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
+            //this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
         };
 
         return DrawContext;

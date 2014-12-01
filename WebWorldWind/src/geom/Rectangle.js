@@ -12,15 +12,15 @@ define([
     function (Logger) {
         "use strict";
 
-        var Rectangle = function() {
+        var Rectangle = function(x, y, width, height) {
 
-            this.x = 0;
+            this.x = x;
 
-            this.y = 0;
+            this.y = y;
 
-            this.width = 0;
+            this.width = width;
 
-            this.height = 0;
+            this.height = height;
         };
 
         Rectangle.prototype.getMinX = function() {
