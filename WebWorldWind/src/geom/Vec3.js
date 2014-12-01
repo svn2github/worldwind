@@ -18,16 +18,16 @@ define([
          * Constructs a three component vector.
          * @alias Vec3
          * @classdesc Represents a three component vector.
-         * @param x x component of vector
-         * @param y y component of vector
-         * @param z z component of vector
+         * @param x x component of vector.
+         * @param y y component of vector.
+         * @param z z component of vector.
          * @constructor
          */
-        function Vec3(x, y, z) {
+        var Vec3 = function Vec3(x, y, z) {
             this[0] = x;
             this[1] = y;
             this[2] = z;
-        }
+        };
 
         /**
          * Number of elements in a Vec3.
@@ -74,18 +74,15 @@ define([
 
         /**
          * Write a vector to an array at an offset.
-         * @param {Array} array array to write
-         * @param {number} offset initial index of array to write
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style
+         * @param {Array} array Array to write.
+         * @param {number} offset Initial index of array to write.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.toArray = function (array, offset) {
-            if (!array) {
+            if (!array || array.length < offset + Vec3.NUM_ELEMENTS) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "missingArray"));
-            }
-            if (array.length < offset + Vec3.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "shortArray"));
             }
 
             array[offset] = this[0];
@@ -97,18 +94,15 @@ define([
 
         /**
          * Write a vector to an array in homogeneous form.
-         * @param {Array} array array to write
-         * @param {number} offset initial index of array to write
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style
+         * @param {Array} array Array to write.
+         * @param {number} offset Initial index of array to write.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.toArray4 = function (array, offset) {
-            if (!array) {
+            if (!array || array.length < offset + Vec3.NUM_ELEMENTS + 1) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "missingArray"));
-            }
-            if (array.length < offset + Vec3.NUM_ELEMENTS + 1) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "shortArray"));
             }
 
             array[offset] = this[0];
@@ -121,18 +115,15 @@ define([
 
         /**
          * Read a vector from an array.
-         * @param {Array} array array to read
-         * @param {number} offset initial index of array to read
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style
+         * @param {Array} array array to read.
+         * @param {number} offset Initial index of array to read.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.fromArray = function (array, offset) {
-            if (!array) {
+            if (!array || array.length < offset + Vec3.NUM_ELEMENTS) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "fromArray", "missingArray"));
-            }
-            if (array.length < offset + Vec3.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray", "shortArray"));
             }
 
             this[0] = array[offset];
@@ -144,18 +135,15 @@ define([
 
         /**
          * Read a vector from an array in homogeneous form.
-         * @param {Array} array array to read
-         * @param {number} offset initial index of array to read
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style
+         * @param {Array} array Array to read.
+         * @param {number} offset Initial index of array to read.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.fromArray4 = function (array, offset) {
-            if (!array) {
+            if (!array || array.length < offset + Vec3.NUM_ELEMENTS + 1) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "fromArray4", "missingArray"));
-            }
-            if (array.length < offset + Vec3.NUM_ELEMENTS + 1) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "toArray4", "shortArray"));
             }
 
             var w = array[offset + 3];
@@ -168,149 +156,227 @@ define([
         };
 
         /**
-         * Add a vector to <code>this</code> vector.
-         * @param {Vec3} vec vector to add
-         * @returns {Vec3} sum of two vectors
+         * Add a vector to <code>this</code> vector, modifying <code>this</code> vector.
+         * @param {Vec3} addend Vector to add.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the addend is null, undefined, or empty.
          */
-        Vec3.prototype.add = function (vec) {
-            var x = this[0] + vec[0],
-                y = this[1] + vec[1],
-                z = this[2] + vec[2];
-
-            return new Vec3(x, y, z);
-        };
-
-        /**
-         * Subtract a vector from <code>this</code> vector.
-         * @param {Vec3} vec vector to subtract
-         * @returns {Vec3} difference of two vectors
-         */
-        Vec3.prototype.subtract = function (vec) {
-            var x = this[0] - vec[0],
-                y = this[1] - vec[1],
-                z = this[2] - vec[2];
-
-            return new Vec3(x, y, z);
-        };
-
-        /**
-         * Multiply a vector to <code>this</code> vector.
-         * @param {Vec3} vec vector to multiply
-         * @returns {Vec3} product of two vectors
-         */
-        Vec3.prototype.multiply = function (vec) {
-            var x = this[0] * vec[0],
-                y = this[1] * vec[1],
-                z = this[2] * vec[2];
-
-            return new Vec3(x, y, z);
-        };
-
-        /**
-         * Multiply this vector by a scalar value.
-         * @param {Number} scale The scale factor.
-         * @returns {Vec3} This vector multiplied by the specified scale factor.
-         */
-        Vec3.prototype.scale = function (scale) {
-            this[0] *= scale;
-            this[1] *= scale;
-            this[2] *= scale;
+        Vec3.prototype.add = function (addend) {
+            this[0] += addend[0];
+            this[1] += addend[1];
+            this[2] += addend[2];
 
             return this;
         };
 
         /**
-         * Mix (interpolate) a vector with <code>this</code> vector.
-         * @param {Vec3} vec vector to mix
-         * @param {number} weight relative weight of <code>this</code> vector
-         * @returns {Vec3} a vector that is a blend of two vectors
+         * Subtract a vector from <code>this</code> vector, modifying <code>this</code> vector.
+         * @param {Vec3} subtrahend vector to subtract
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the subtrahend is null, undefined, or empty.
          */
-        Vec3.prototype.mix = function (vec, weight) {
-            var w0 = 1 - weight,
-                w1 = weight,
-                x = this[0] * w0 + vec[0] * w1,
-                y = this[1] * w0 + vec[1] * w1,
-                z = this[2] * w0 + vec[2] * w1;
-
-            return new Vec3(x, y, z);
+        Vec3.prototype.subtract = function (subtrahend) {
+            this[0] -= subtrahend[0];
+            this[1] -= subtrahend[1];
+            this[2] -= subtrahend[2];
         };
 
         /**
-         * Negate <code>this</code> vector.
-         * @returns {Vec3} <code>this</code> vector negated
+         * Multiply <code>this</code> vector by a constant factor, modifying <code>this</code> vector.
+         * @param {number} scaler Constant factor to multiply.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         */
+        Vec3.prototype.multiply = function (scaler) {
+            this[0] *= scaler;
+            this[1] *= scaler;
+            this[2] *= scaler;
+
+            return this;
+        };
+
+        /**
+         * Divide <code>this</code> vector by a constant factor, modifying <code>this</code> vector.
+         * @param {number} divisor Constant factor to divide.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         */
+        Vec3.prototype.divide = function (divisor) {
+            this[0] *= divisor;
+            this[1] *= divisor;
+            this[2] *= divisor;
+
+            return this;
+        };
+
+        /**
+         * Multiply <code>this</code> vector by a 4x4 matrix, modifying <code>this</code> vector.
+         *
+         * It is assumed that <code>this</code> vector has an implicit w component, which intereacts with the fourth
+         * column of the matrix.
+         *
+         * The resultant w component of the product is then divided through the x, y, and z components.
+         *
+         * @param {Matrix} matrix Matrix to multiply.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws ArgumentError An invalid matrix argument was passed to this function.
+         */
+        Vec3.prototype.multiplyByMatrix = function (matrix) {
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "multiplyByMatrix", "missingMatrix"));
+            }
+
+            var x = matrix[0] * this[0] + matrix[1] * this[1] + matrix[2] * this[2] + matrix[3],
+                y = matrix[4] * this[0] + matrix[5] * this[1] + matrix[6] * this[2] + matrix[7],
+                z = matrix[8] * this[0] + matrix[9] * this[1] + matrix[10] * this[2] + matrix[11],
+                w = matrix[12] * this[0] + matrix[13] * this[1] + matrix[14] * this[2] + matrix[15];
+
+            this[0] = x / w;
+            this[1] = y / w;
+            this[2] = z / w;
+
+            return this;
+        };
+
+        /**
+         * Mix (interpolate) a vector with <code>this</code> vector, modifying <code>this</code> vector.
+         * @param {Vec3} vector Vector to mix.
+         * @param {number} weight Relative weight of <code>this</code> vector
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the vector is null, undefined, or empty.
+         */
+        Vec3.prototype.mix = function (vector, weight) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "mix", "missingVector"));
+            }
+
+            var w0 = 1 - weight,
+                w1 = weight;
+
+            this[0] = this[0] * w0 + vector[0] * w1;
+            this[1] = this[1] * w0 + vector[1] * w1;
+            this[2] = this[2] * w0 + vector[2] * w1;
+
+            return this;
+        };
+
+        /**
+         * Negate <code>this</code> vector, modifying <code>this</code> vector.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
          */
         Vec3.prototype.negate = function () {
-            var x = -this[0],
-                y = -this[1],
-                z = -this[2];
+            this[0] = -this[0];
+            this[1] = -this[1];
+            this[2] = -this[2];
 
-            return new Vec3(x, y, z);
+            return this;
         };
 
         /**
          * Compute the scalar dot product of <code>this</code> vector and another vector.
-         * @param {Vec3} vec vector to multiply
-         * @returns {number} scalar dot product of two vectors
+         * @param {Vec3} vector vector to multiply
+         * @returns {number} Scalar dot product of two vectors
+         * @throws {ArgumentError} If the vector is null, undefined, or empty.
          */
-        Vec3.prototype.dot = function (vec) {
-            return this[0] * vec[0] +
-                this[1] * vec[1] +
-                this[2] * vec[2];
+        Vec3.prototype.dot = function (vector) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "dot", "missingVector"));
+            }
+
+            return this[0] * vector[0] +
+                this[1] * vector[1] +
+                this[2] * vector[2];
         };
 
         /**
-         * Compute the cross product of <code>this</code> vector and another vector.
-         * @param {Vec3} vec vector to multiply in cross product
-         * @returns {Vec3} a vector that is mutually perpendicular to both vectors
+         * Compute the cross product of <code>this</code> vector and another vector, modifying <code>this</code> vector.
+         * @param {Vec3} vector Vector to multiply in cross product
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @throws {ArgumentError} If the vector is null, undefined, or empty.
          */
-        Vec3.prototype.cross = function (vec) {
-            var x = this[1] * vec[2] - this[2] * vec[1],
-                y = this[2] * vec[0] - this[0] * vec[2],
-                z = this[0] * vec[1] - this[1] * vec[0];
+        Vec3.prototype.cross = function (vector) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "cross", "missingVector"));
+            }
 
-            return new Vec3(x, y, z);
+            var x = this[1] * vector[2] - this[2] * vector[1],
+                y = this[2] * vector[0] - this[0] * vector[2],
+                z = this[0] * vector[1] - this[1] * vector[0];
+
+            this[0] = x;
+            this[1] = y;
+            this[2] = z;
+
+            return this;
         };
 
         /**
          * Compute the squared length of <code>this</code> vector.
-         * @returns {number} squared magnitude of <code>this</code> vector
+         * @returns {number} Squared magnitude of <code>this</code> vector.
          */
-        Vec3.prototype.getLengthSquared = function () {
+        Vec3.prototype.lengthSquared = function () {
             return this.dot(this);
         };
 
         /**
          * Compute the length of <code>this</code> vector.
-         * @returns {number} the magnitude of <code>this</code> vector
+         * @returns {number} The magnitude of <code>this</code> vector.
          */
-        Vec3.prototype.getLength = function () {
-            return Math.sqrt(this.getLengthSquared());
+        Vec3.prototype.length = function () {
+            return Math.sqrt(this.lengthSquared());
         };
 
         /**
-         * Construct a unit vector from <code>this</code> vector.
-         * @returns {Vec3} a vector that is a unit vector
+         * Construct a unit vector from <code>this</code> vector, modifying <code>this</code> vector.
+         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
          */
         Vec3.prototype.normalize = function () {
-            var length = this.getLength(),
-                lengthInverse = 1 / length,
-                x = this[0] * lengthInverse,
-                y = this[1] * lengthInverse,
-                z = this[2] * lengthInverse;
+            var length = this.length(),
+                lengthInverse = 1 / length;
 
-            return new Vec3(x, y, z);
+            this[0] *= lengthInverse;
+            this[1] *= lengthInverse;
+            this[2] *= lengthInverse;
+
+            return this;
         };
 
         /**
-         * Compute the distance from <code>this</code> vector to another vector
-         * @param {Vec3} vec other vector
-         * @returns {number} distance between the vectors
+         * Compute the squared distance from <code>this</code> vector to another vector.
+         * @param {Vec3} vector Other vector
+         * @returns {number} Squared distance between the vectors
+         * @throws {ArgumentError} If the vector is null, undefined, or empty.
          */
-        Vec3.prototype.distanceTo = function (vec) {
-            var diff = this.subtract(vec);
+        Vec3.prototype.distanceToSquared = function (vector) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "distanceToSquared", "missingVector"));
+            }
 
-            return diff.getLength();
+            var dx = this[0] - vector[0],
+                dy = this[1] - vector[1],
+                dz = this[2] - vector[2];
+
+            return dx * dx + dy * dy + dz * dz;
+        };
+
+        /**
+         * Compute the distance from <code>this</code> vector to another vector.
+         * @param {Vec3} vector Other vector
+         * @returns {number} Squared distance between the vectors
+         * @throws {ArgumentError} If the vector is null, undefined, or empty.
+         */
+        Vec3.prototype.distanceTo = function (vector) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec3", "distanceTo", "missingVector"));
+            }
+
+            return Math.sqrt(this.distanceToSquared(vector));
         };
 
         return Vec3;
-    });
+    }
+);
