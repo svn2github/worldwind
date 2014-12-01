@@ -81,6 +81,7 @@ define(function () {
             missingGlobe: "The specified globe is null or undefined.",
             missingLocation: "The specified location is null or undefined.",
             missingMatrix: "The specified matrix is null or undefined.",
+            missingNavigatorState: "The specified navigator state is null or undefined.",
             missingPlane: "The specified plane is null or undefined.",
             missingPosition: "The specified position is null or undefined.",
             missingResult: "The specified result variable is null or undefined.",

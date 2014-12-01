@@ -9,16 +9,20 @@
 define([
         'src/util/Logger',
         'src/geom/Matrix',
+        'src/geom/Rectangle',
         'src/geom/Vec3'
     ],
     function (Logger,
               Matrix,
+              Rectangle,
               Vec3) {
         "use strict";
 
         var NavigatorState = function () {
 
             this.eyePoint = new Vec3(0, 0, 0);
+
+            this.viewport = new Rectangle(0, 0, 0, 0);
 
             this.modelview = Matrix.fromIdentity();
 

@@ -20,7 +20,8 @@ define([
         'src/geom/Rectangle',
         'src/geom/Sector',
         'src/render/SurfaceTileRenderer',
-        'src/globe/Terrain'
+        'src/globe/Terrain',
+        'src/globe/Tessellator'
     ],
     function (FrameStatistics,
               Globe,
@@ -35,7 +36,8 @@ define([
               Rectangle,
               Sector,
               SurfaceTileRenderer,
-              Terrain) {
+              Terrain,
+              Tessellator) {
         "use strict";
 
         /**
@@ -58,8 +60,6 @@ define([
 
             this.terrain = null;
 
-            this.surfaceGeometry = null;
-
             this.visibleSector = null;
 
             this.currentProgram = null;
@@ -79,19 +79,21 @@ define([
             this.frameStatistics = new FrameStatistics();
         };
 
-        DrawContext.prototype.reset = function() {
+        DrawContext.prototype.reset = function () {
             var oldTimeStamp = this.timestamp;
             this.timestamp = new Date().getTime();
             if (this.timestamp === oldTimeStamp)
                 ++this.timestamp;
-        }
+        };
 
-        DrawContext.prototype.update = function() {
+        DrawContext.prototype.update = function () {
             var eyePoint = this.navigatorState.eyePoint;
 
             this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
-            this.screenProjection.setT
-        }
+            this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
+        };
 
         return DrawContext;
-    });
+    }
+)
+;

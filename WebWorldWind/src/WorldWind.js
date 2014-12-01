@@ -28,6 +28,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Sector',
         'src/render/SurfaceTileRenderer',
         'src/globe/Terrain',
+        'src/globe/Tessellator',
         'src/render/Texture',
         'src/geom/Vec2',
         'src/geom/Vec3',
@@ -56,6 +57,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               Sector,
               SurfaceTileRenderer,
               Terrain,
+              Tessellator,
               Texture,
               Vec2,
               Vec3,
@@ -90,7 +92,25 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
              * Indicates a linear, straight line path.
              * @constant
              */
-            LINEAR: "linear"
+            LINEAR: "linear",
+
+            /**
+             * Indicates an altitude mode relative to the globe's ellipsoid.
+             * @constant
+             */
+            ABSOLUTE: "absolute",
+
+            /**
+             * Indicates an altitude mode always on the terrain.
+             * @constant
+             */
+            CLAMP_TO_GROUND: "clampToGround",
+
+            /**
+             * Indicates an altitude mode relative to the terrain.
+             * @constant
+             */
+            RELATIVE_TO_GROUND: "relativeToGround"
         };
 
         WorldWind['Angle'] = Angle;
@@ -115,6 +135,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['Sector'] = Sector;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['Terrain'] = Terrain;
+        WorldWind['Tessellator'] = Tessellator;
         WorldWind['Texture'] = Texture;
         WorldWind['Vec2'] = Vec2;
         WorldWind['Vec3'] = Vec3;
