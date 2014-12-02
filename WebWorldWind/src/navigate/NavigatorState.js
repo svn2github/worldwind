@@ -7,12 +7,14 @@
  * @version $Id$
  */
 define([
+        'src/geom/Frustum',
         'src/util/Logger',
         'src/geom/Matrix',
         'src/geom/Rectangle',
         'src/geom/Vec3'
     ],
-    function (Logger,
+    function (Frustum,
+              Logger,
               Matrix,
               Rectangle,
               Vec3) {
@@ -61,6 +63,42 @@ define([
              * @type {Matrix}
              */
             this.modelviewProjection = Matrix.fromIdentity();
+
+            this.forwardRay = new Vec3(0, 0, 0);
+
+            this.frustumInModelCoordinates = null;
+
+            this.heading = 0;
+
+            this.tilt = 0;
+        };
+
+        NavigatorState.prototype.project = function(modelPoint, result) {
+            // TODO
+        };
+
+        NavigatorState.prototype.projectWithDepth = function(modelPoint, depthOffset, result) {
+            // TODO
+        };
+
+        NavigatorState.prototype.unProject = function(screenPoint, result) {
+            // TODO
+        };
+
+        NavigatorState.prototype.convertPointToView = function(screenPoint) {
+            // TODO
+        };
+
+        NavigatorState.prototype.convertPointToViewport = function(point) {
+            // TODO
+        };
+
+        NavigatorState.prototype.rayFromScreenPoint = function(screenPoint) {
+            // TODO
+        };
+
+        NavigatorState.prototype.pixelSizeAtDistance = function(distance) {
+            // TODO
         };
 
         return NavigatorState;
