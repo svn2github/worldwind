@@ -12,6 +12,12 @@ define([
     function (Logger) {
         "use strict";
 
+        /**
+         * Constructs a terrain tile.
+         * @alias TerrainTile
+         * @constructor
+         * @classdesc Represents a portion of a globe's terrain.
+         */
         var TerrainTile = function() {
         };
 

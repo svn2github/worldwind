@@ -12,7 +12,14 @@ define([
     function (Logger) {
         "use strict";
 
-        var Layer = function() {
+        /**
+         * Constructs a layer. This constructor is meant to be called by subclasses and not directly by an application.
+         * @alias Layer
+         * @constructor
+         * @classdesc Provides a base class for layer implementations. This class is not meant to be instantiated
+         * directly.
+         */
+        var Layer = function () {
         };
 
         return Layer;
