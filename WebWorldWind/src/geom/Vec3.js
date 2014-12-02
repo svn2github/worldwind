@@ -74,9 +74,9 @@ define([
 
         /**
          * Write a vector to an array at an offset.
-         * @param {Array} array Array to write.
+         * @param {number[]} array Array of numbers to write.
          * @param {number} offset Initial index of array to write.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.toArray = function (array, offset) {
@@ -94,9 +94,9 @@ define([
 
         /**
          * Write a vector to an array in homogeneous form.
-         * @param {Array} array Array to write.
+         * @param {number[]} array Array of numbers to write.
          * @param {number} offset Initial index of array to write.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.toArray4 = function (array, offset) {
@@ -115,9 +115,9 @@ define([
 
         /**
          * Read a vector from an array.
-         * @param {Array} array array to read.
+         * @param {number[]} array Array of numbers to read.
          * @param {number} offset Initial index of array to read.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.fromArray = function (array, offset) {
@@ -135,9 +135,9 @@ define([
 
         /**
          * Read a vector from an array in homogeneous form.
-         * @param {Array} array Array to read.
+         * @param {number[]} array Array of numbers to read.
          * @param {number} offset Initial index of array to read.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
          */
         Vec3.prototype.fromArray4 = function (array, offset) {
@@ -156,9 +156,9 @@ define([
         };
 
         /**
-         * Add a vector to <code>this</code> vector, modifying <code>this</code> vector.
+         * Add a vector to this vector, modifying this vector.
          * @param {Vec3} addend Vector to add.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the addend is null, undefined, or empty.
          */
         Vec3.prototype.add = function (addend) {
@@ -170,9 +170,9 @@ define([
         };
 
         /**
-         * Subtract a vector from <code>this</code> vector, modifying <code>this</code> vector.
+         * Subtract a vector from this vector, modifying this vector.
          * @param {Vec3} subtrahend vector to subtract
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the subtrahend is null, undefined, or empty.
          */
         Vec3.prototype.subtract = function (subtrahend) {
@@ -182,9 +182,9 @@ define([
         };
 
         /**
-         * Multiply <code>this</code> vector by a constant factor, modifying <code>this</code> vector.
+         * Multiply this vector by a constant factor, modifying this vector.
          * @param {number} scaler Constant factor to multiply.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.multiply = function (scaler) {
             this[0] *= scaler;
@@ -195,9 +195,9 @@ define([
         };
 
         /**
-         * Divide <code>this</code> vector by a constant factor, modifying <code>this</code> vector.
+         * Divide this vector by a constant factor, modifying this vector.
          * @param {number} divisor Constant factor to divide.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.divide = function (divisor) {
             this[0] *= divisor;
@@ -208,15 +208,15 @@ define([
         };
 
         /**
-         * Multiply <code>this</code> vector by a 4x4 matrix, modifying <code>this</code> vector.
+         * Multiply this vector by a 4x4 matrix, modifying this vector.
          *
-         * It is assumed that <code>this</code> vector has an implicit w component, which intereacts with the fourth
+         * It is assumed that this vector has an implicit w component, which intereacts with the fourth
          * column of the matrix.
          *
          * The resultant w component of the product is then divided through the x, y, and z components.
          *
          * @param {Matrix} matrix Matrix to multiply.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws ArgumentError An invalid matrix argument was passed to this function.
          */
         Vec3.prototype.multiplyByMatrix = function (matrix) {
@@ -238,10 +238,10 @@ define([
         };
 
         /**
-         * Mix (interpolate) a vector with <code>this</code> vector, modifying <code>this</code> vector.
+         * Mix (interpolate) a vector with this vector, modifying this vector.
          * @param {Vec3} vector Vector to mix.
-         * @param {number} weight Relative weight of <code>this</code> vector
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @param {number} weight Relative weight of this vector
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the vector is null, undefined, or empty.
          */
         Vec3.prototype.mix = function (vector, weight) {
@@ -261,8 +261,8 @@ define([
         };
 
         /**
-         * Negate <code>this</code> vector, modifying <code>this</code> vector.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * Negate this vector, modifying this vector.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.negate = function () {
             this[0] = -this[0];
@@ -273,7 +273,7 @@ define([
         };
 
         /**
-         * Compute the scalar dot product of <code>this</code> vector and another vector.
+         * Compute the scalar dot product of this vector and another vector.
          * @param {Vec3} vector vector to multiply
          * @returns {number} Scalar dot product of two vectors
          * @throws {ArgumentError} If the vector is null, undefined, or empty.
@@ -290,9 +290,9 @@ define([
         };
 
         /**
-         * Compute the cross product of <code>this</code> vector and another vector, modifying <code>this</code> vector.
+         * Compute the cross product of this vector and another vector, modifying this vector.
          * @param {Vec3} vector Vector to multiply in cross product
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          * @throws {ArgumentError} If the vector is null, undefined, or empty.
          */
         Vec3.prototype.cross = function (vector) {
@@ -313,24 +313,24 @@ define([
         };
 
         /**
-         * Compute the squared length of <code>this</code> vector.
-         * @returns {number} Squared magnitude of <code>this</code> vector.
+         * Compute the squared magnitude of this vector.
+         * @returns {number} Squared magnitude of this vector.
          */
-        Vec3.prototype.lengthSquared = function () {
+        Vec3.prototype.magnitudeSquared = function () {
             return this.dot(this);
         };
 
         /**
-         * Compute the length of <code>this</code> vector.
-         * @returns {number} The magnitude of <code>this</code> vector.
+         * Compute the magnitude of this vector.
+         * @returns {number} The magnitude of this vector.
          */
-        Vec3.prototype.length = function () {
-            return Math.sqrt(this.lengthSquared());
+        Vec3.prototype.magnitude = function () {
+            return Math.sqrt(this.magnitudeSquared());
         };
 
         /**
-         * Construct a unit vector from <code>this</code> vector, modifying <code>this</code> vector.
-         * @returns {Vec3} <code>this</code> returned in the "fluent" style.
+         * Construct a unit vector from this vector, modifying this vector.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.normalize = function () {
             var length = this.length(),
@@ -344,7 +344,7 @@ define([
         };
 
         /**
-         * Compute the squared distance from <code>this</code> vector to another vector.
+         * Compute the squared distance from this vector to another vector.
          * @param {Vec3} vector Other vector
          * @returns {number} Squared distance between the vectors
          * @throws {ArgumentError} If the vector is null, undefined, or empty.
@@ -363,7 +363,7 @@ define([
         };
 
         /**
-         * Compute the distance from <code>this</code> vector to another vector.
+         * Compute the distance from this vector to another vector.
          * @param {Vec3} vector Other vector
          * @returns {number} Squared distance between the vectors
          * @throws {ArgumentError} If the vector is null, undefined, or empty.
