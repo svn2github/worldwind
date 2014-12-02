@@ -102,29 +102,36 @@ define([
 
         /**
          * Returns the {@link Level} for a specified level set.
-         * @param levelNumber
+         * @param {Number} levelNumber The number of the desired level.
+         * @returns {Level} The requested level, or null if the level does not exist.
          */
         LevelSet.prototype.level = function(levelNumber) {
             // TODO
         };
 
+        /**
+         * Returns the level with a specified texel size.
+         * This function returns the first level if the specified texel size is greater than the first level's texel
+         * size, and returns the last level if the delta is less than the last level's texel size.
+         * @param {Number} texelSize The size of pixels or elevation cells in the level, in radians per pixel or cell.
+         */
         LevelSet.prototype.levelForTexelSize = function(texelSize) {
             // TODO
         };
 
+        /**
+         * Returns the first (lowest resolution) level of this level set.
+         * @returns {Level} The first level of this level set.
+         */
         LevelSet.prototype.firstLevel = function() {
             // TODO
         };
 
+        /**
+         * Returns the last (highest resolution) level of this level set.
+         * @returns {Level} The last level of this level set.
+         */
         LevelSet.prototype.lastLevel = function() {
-            // TODO
-        };
-
-        LevelSet.prototype.tileCountForSector = function(sector, lastLevel) {
-            // TODO
-        };
-
-        LevelSet.prototype.tileEnumeratorForSector = function(sector, lastLeve) {
             // TODO
         };
 
