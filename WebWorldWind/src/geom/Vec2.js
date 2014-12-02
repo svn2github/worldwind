@@ -225,11 +225,11 @@ define([
          * @returns {Vec2} this vector returned in the "fluent" style.
          */
         Vec2.prototype.normalize = function () {
-            var length = this.length(),
-                lengthInverse = 1 / length;
+            var magnitude = this.magnitude(),
+                magnitudeInverse = 1 / magnitude;
 
-            this[0] *= lengthInverse;
-            this[1] *= lengthInverse;
+            this[0] *= magnitudeInverse;
+            this[1] *= magnitudeInverse;
 
             return this;
         };

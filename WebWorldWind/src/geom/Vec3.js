@@ -333,12 +333,12 @@ define([
          * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.normalize = function () {
-            var length = this.length(),
-                lengthInverse = 1 / length;
+            var magnitude = this.magnitude(),
+                magnitudeInverse = 1 / magnitude;
 
-            this[0] *= lengthInverse;
-            this[1] *= lengthInverse;
-            this[2] *= lengthInverse;
+            this[0] *= magnitudeInverse;
+            this[1] *= magnitudeInverse;
+            this[2] *= magnitudeInverse;
 
             return this;
         };
