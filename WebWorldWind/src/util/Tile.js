@@ -8,9 +8,11 @@
  */
 define([
         'src/util/Logger',
+        'src/geom/Matrix',
         'src/util/Sector'
     ],
     function (Logger,
+              Matrix,
               Sector) {
         "use strict";
 
@@ -63,6 +65,8 @@ define([
             this.tileHeight = 0;
 
             this.texelSize = 0;
+
+            this.transformationMatrix = new Matrix(1);
         };
 
         Tile.prototype.isEqual = function (that) {
