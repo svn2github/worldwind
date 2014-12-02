@@ -3,21 +3,21 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
- * @exports ArgumentError
+ * @exports UnsupportedOperationError
  * @version $Id$
  */
 define(function () {
     "use strict";
 
     /**
-     * Constructs an argument error with a specified message.
+     * Constructs an unsupported-operation error with a specified message.
      * @alias ArgumentError
      * @constructor
-     * @classdesc Represents an error associated with invalid function arguments.
+     * @classdesc Represents an error associated with an operation that is not available or should not be invoked.
      * @param {String} message The message.
      */
-    var ArgumentError = function (message) {
-        this.name = "ArgumentError";
+    var UnsupportedOperationError = function (message) {
+        this.name = "UnsupportedOperationError";
         this.message = message;
 
         var stack;
@@ -34,7 +34,7 @@ define(function () {
      * Returns the message and stack trace associated with this error.
      * @returns {string} The message and stack trace associated with this error.
      */
-    ArgumentError.prototype.toString = function () {
+    UnsupportedOperationError.prototype.toString = function () {
         var str = this.name + ': ' + this.message;
 
         if (this.stack) {
@@ -44,6 +44,6 @@ define(function () {
         return str;
     };
 
-    return ArgumentError;
+    return UnsupportedOperationError;
 
 });
