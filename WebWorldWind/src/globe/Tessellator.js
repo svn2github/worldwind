@@ -11,13 +11,15 @@ define([
         'src/globe/Globe',
         'src/util/Logger',
         'src/navigate/NavigatorState',
-        'src/globe/Terrain'
+        'src/globe/Terrain',
+        'src/globe/TerrainTile'
     ],
     function (ArgumentError,
               Globe,
               Logger,
               NavigatorState,
-              Terrain) {
+              Terrain,
+              TerrainTile) {
         "use strict";
 
         /**
@@ -50,6 +52,63 @@ define([
             // TODO
 
             return null;
+        };
+
+        /**
+         * Initializes rendering state to draw a succession of terrain tiles.
+         */
+        Tessellator.prototype.beginRendering = function () {
+            // TODO
+        };
+
+        /**
+         * Restores rendering state after drawing a succession of terrain tiles.
+         */
+        Tessellator.prototype.endRendering = function () {
+            // TODO
+        };
+
+        /**
+         * Initializes rendering state for drawing a specified terrain tile.
+         * @param {TerrainTile} terrainTile The terrain tile subsequently drawn via this tessellator's render function.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Tessellator.prototype.beginRenderingTile = function (terrainTile) {
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "missingTile"));
+            }
+
+            // TODO
+        };
+
+        /**
+         * Restores rendering state after drawing the most recent tile specified to
+         * [beginRenderingTile{@link Tessellator#beginRenderingTile}.
+         * @param {TerrainTile} terrainTile The terrain tile most recently rendered.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Tessellator.prototype.endRenderingTile = function (terrainTile) {
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingTile"));
+            }
+
+            // TODO
+        };
+
+        /**
+         * Renders a specified terrain tile.
+         * @param {TerrainTile} terrainTile The terrain tile to render.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Tessellator.prototype.renderTile = function (terrainTile) {
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "missingTile"));
+            }
+
+            // TODO
         };
 
         return Tessellator;
