@@ -92,7 +92,8 @@ define(function () {
             missingTile: "The specified tile is null or undefined.",
             missingTexture: "The specified texture is null or undefined.",
             missingVector: "The specified vector is null or undefined.",
-            missingViewport: "The specified viewport is null or undefined."
+            missingViewport: "The specified viewport is null or undefined.",
+            notYetImplemented: "This function is not yet implemented"
         }
     };
 

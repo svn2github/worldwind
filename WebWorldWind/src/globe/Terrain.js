@@ -10,12 +10,14 @@ define([
         'src/error/ArgumentError',
         'src/globe/Globe',
         'src/util/Logger',
+        'src/geom/Sector',
         'src/globe/TerrainTile',
         'src/geom/Vec3'
     ],
     function (ArgumentError,
               Globe,
               Logger,
+              Sector,
               TerrainTile,
               Vec3) {
         "use strict";
@@ -29,18 +31,24 @@ define([
         var Terrain = function () {
 
             /**
-             * The globe associated with the terrain.
+             * The globe associated with this terrain.
              * @type {Globe}
              * @default null
              */
             this.globe = null;
 
             /**
-             * The vertical exaggeration of the terrain.
+             * The vertical exaggeration of this terrain.
              * @type {Number}
              * @default 1
              */
             this.verticalExaggeration = 1;
+
+            /**
+             * The sector spanned by this terrain.
+             * @type {Sector}
+             */
+            this.sector = null;
         };
 
         /**
@@ -50,6 +58,8 @@ define([
          */
         Terrain.prototype.surfaceGeometry = function () {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "Terrain", "surfaceGeometry", "notYetImplemented"));
         };
 
         /**
@@ -68,6 +78,8 @@ define([
             }
 
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "Terrain", "surfacePoint", "notYetImplemented"));
 
             return result;
         };

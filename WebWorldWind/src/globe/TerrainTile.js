@@ -7,9 +7,25 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger'
+        'src/error/ArgumentError',
+        'src/globe/Globe',
+        'src/util/Level',
+        'src/util/Logger',
+        'src/geom/Matrix',
+        'src/error/NotYetImplementedError',
+        'src/geom/Sector',
+        'src/util/Tile',
+        'src/geom/Vec3'
     ],
-    function (Logger) {
+    function (ArgumentError,
+              Globe,
+              Level,
+              Logger,
+              Matrix,
+              NotYetImplementedError,
+              Sector,
+              Tile,
+              Vec3) {
         "use strict";
 
         /**
@@ -17,8 +33,88 @@ define([
          * @alias TerrainTile
          * @constructor
          * @classdesc Represents a portion of a globe's terrain.
+         * @param {Sector} sector The sector this tile covers.
+         * @param {Level} level The level this tile is associated with.
+         * @param {Number} row This tile's row in the associated level.
+         * @param {Number} column This tile's column in the associated level.
+         * @param {Globe} globe The globe associated with this tile.
+         *
          */
-        var TerrainTile = function() {
+        var TerrainTile = function (sector, level, row, column, globe) {
+            Tile.call(this, sector, level, row, column); // args are checked in the superclass' constructor
+
+            /**
+             * The globe associated with this terrain tile.
+             * @type {Globe}
+             */
+            this.globe = globe;
+
+            /**
+             * The transformation matrix that maps tile local coordinates to model coordinates.
+             * @type {Matrix}
+             */
+            this.transformationMatrix = null;
+
+            /**
+             * The number of model coordinate points this tile contains.
+             * @type {number}
+             */
+            this.numPoints = 0;
+
+            /**
+             * The tile's model coordinate points.
+             * @type {null}
+             */
+            this.points = null;
+
+            /**
+             * The elevations corresponding to the tile's model coordinate points.
+             * @type {null}
+             */
+            this.elevations = null;
+
+            /**
+             * Indicates the date and time at which this tile's terrain geometry was computed.
+             * This is used to invalidate the terrain geometry when the globe's elevations change.
+             * @type {number}
+             */
+            this.geometryTimeStamp = 0;
+
+            /**
+             * Indicates the date and time at which this tile's terrain geometry VBO was loaded.
+             * This is used to invalidate the terrain geometry when the globe's elevations change.
+             * @type {number}
+             */
+            this.geometryVboTimeStamp = 0;
+
+            /**
+             * The GPU resource cache ID for this tile's model coordinates VBO.
+             * @type {null}
+             */
+            this.geometryVboCacheKey = null;
+        };
+
+        TerrainTile.prototype = Object.create(Tile.prototype);
+
+        /**
+         * Computes a point on the terrain at a specified location.
+         * @param {Number} latitude The location's latitude.
+         * @param {Number} longitude The location's longitude.
+         * @param {Number} offset An distance in meters from the terrain surface at which to place the point. The
+         * computed point is located this distance along the normal vector to the globe at the specified location.
+         * @param {Vec3} result A pre-allocated Vec3 in which to return the computed point.
+         * @returns {Vec3} The result argument set to the computed point.
+         * @throws {ArgumentError} If the specified result is null or undefined.
+         */
+        TerrainTile.prototype.surfacePoint = function (latitude, longitude, offset, result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "TerrainTile", "surfacePoint", "missingResult"));
+            }
+
+            // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "TerrainTile", "surfacePoint", "notYetImplemented"));
         };
 
         return TerrainTile;

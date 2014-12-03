@@ -28,6 +28,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/cache/MemoryCache',
         'src/cache/MemoryCacheListener',
         'src/navigate/NavigatorState',
+        'src/error/NotYetImplementedError',
         'src/geom/Plane',
         'src/geom/Position',
         'src/geom/Rectangle',
@@ -68,6 +69,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               MemoryCache,
               MemoryCacheListener,
               NavigatorState,
+              NotYetImplementedError,
               Plane,
               Position,
               Rectangle,
@@ -157,6 +159,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['MemoryCache'] = MemoryCache;
         WorldWind['MemoryCacheListener'] = MemoryCacheListener;
         WorldWind['NavigatorState'] = NavigatorState;
+        WorldWind['NotYetImplementedError'] = NotYetImplementedError;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
