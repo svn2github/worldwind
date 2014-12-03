@@ -26,8 +26,6 @@ define([
          * Constructs a new program.
          * Initializes, compiles and links this GLSL program with the source code for its vertex and fragment shaders.
          * <p>
-         * A WebGL context must be current when this method is called.
-         * <p>
          * This method creates WebGL shaders for the program's shader sources and attaches them to a new GLSL program. This
          * method then compiles the shaders and links the program if compilation is successful. Use the bind method to make the
          * program current during rendering.
@@ -35,13 +33,14 @@ define([
          * @alias BasicProgram
          * @constructor
          * @classdesc BasicProgram is a GLSL program that draws geometry in a solid color.
+         * @param {WebGLRenderingContext} gl The current WebGL context.
          */
-        var BasicProgram = function () {
-            GpuProgram.call(this, null, null); // TODO
+        var BasicProgram = function (gl) {
+            GpuProgram.call(this, gl, null, null); // TODO
 
             /**
              * A unique string that identifies an instance of this class.
-             * @type {null}
+             * @type {String}
              */
             this.programKey = null;
 
@@ -56,13 +55,12 @@ define([
 
         /**
          * Loads the specified matrix as the value of this program's mvpMatrix uniform variable.
-         * <p>
-         * A WebGL context must be current when this method is called.
          *
+         * @param {WebGLRenderingContext} gl The current WebGL context.
          * @param {Matrix} matrix The matrix to load.
          * @throws {ArgumentError} If the specified matrix is null or undefined.
          */
-        BasicProgram.prototype.loadModelviewProjection = function (matrix) {
+        BasicProgram.prototype.loadModelviewProjection = function (gl, matrix) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadModelviewProjection", "notYetImplemented"));
@@ -70,13 +68,12 @@ define([
 
         /**
          * Loads the specified color as the value of this program's color uniform variable.
-         * <p>
-         * A WebGL context must be current when this method is called.
          *
+         * @param {WebGLRenderingContext} gl The current WebGL context.
          * @param {Color} color The color to load.
          * @throws {ArgumentError} If the specified color is null or undefined.
          */
-        BasicProgram.prototype.loadColor = function (color) {
+        BasicProgram.prototype.loadColor = function (gl, color) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadColor", "notYetImplemented"));
@@ -84,12 +81,11 @@ define([
 
         /**
          * Loads the specified pick color as the value of this program's color uniform variable.
-         * <p>
-         * A WebGL context must be current when this method is called.
          *
+         * @param {WebGLRenderingContext} gl The current WebGL context.
          * @param {Number} pickColor The color to load, expressed as a Number.
          */
-        BasicProgram.prototype.loadPickColor = function (pickColor) {
+        BasicProgram.prototype.loadPickColor = function (gl, pickColor) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadPickColor", "notYetImplemented"));
