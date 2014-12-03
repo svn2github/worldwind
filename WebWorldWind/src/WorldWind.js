@@ -7,6 +7,7 @@
  */
 define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Angle',
+        'src/geom/BoundingBox',
         'src/error/ArgumentError',
         'src/render/DrawContext',
         'src/globe/ElevationModel',
@@ -17,11 +18,15 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/render/GpuResourceCache',
         'src/layer/Layer',
         'src/Layer/LayerList',
+        'src/util/Level',
+        'src/util/LevelSet',
         'src/geom/Line',
         'src/geom/Location',
         'src/util/Logger',
         'src/navigate/LookAtNavigator',
         'src/geom/Matrix',
+        'src/cache/MemoryCache',
+        'src/cache/MemoryCacheListener',
         'src/navigate/NavigatorState',
         'src/geom/Plane',
         'src/geom/Position',
@@ -29,8 +34,12 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Sector',
         'src/render/SurfaceTileRenderer',
         'src/globe/Terrain',
+        'src/globe/TerrainTile',
         'src/globe/Tessellator',
         'src/render/Texture',
+        'src/util/Tile',
+        'src/util/TileFactory',
+        'src/error/UnsupportedOperationError',
         'src/geom/Vec2',
         'src/geom/Vec3',
         'src/WorldWindow',
@@ -38,6 +47,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/globe/ZeroElevationModel'],
     function (Angle,
               ArgumentError,
+              BoundingBox,
               DrawContext,
               ElevationModel,
               FrameStatistics,
@@ -47,11 +57,15 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               GpuResourceCache,
               Layer,
               LayerList,
+              Level,
+              LevelSet,
               Line,
               Location,
               Logger,
               LookAtNavigator,
               Matrix,
+              MemoryCache,
+              MemoryCacheListener,
               NavigatorState,
               Plane,
               Position,
@@ -59,8 +73,12 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               Sector,
               SurfaceTileRenderer,
               Terrain,
+              TerrainTile,
               Tessellator,
               Texture,
+              Tile,
+              TileFactory,
+              UnsupportedOperationError,
               Vec2,
               Vec3,
               WorldWindow,
@@ -117,6 +135,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
 
         WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
+        WorldWind['BoundingBox'] = BoundingBox;
         WorldWind['DrawContext'] = DrawContext;
         WorldWind['ElevationModel'] = ElevationModel;
         WorldWind['FrameStatistics'] = FrameStatistics;
@@ -126,11 +145,15 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['GpuResourceCache'] = GpuResourceCache;
         WorldWind['Layer'] = Layer;
         WorldWind['LayerList'] = LayerList;
+        WorldWind['Level'] = Level;
+        WorldWind['LevelSet'] = LevelSet;
         WorldWind['Line'] = Line;
         WorldWind['Location'] = Location;
         WorldWind['Logger'] = Logger;
         WorldWind['LookAtNavigator'] = LookAtNavigator;
         WorldWind['Matrix'] = Matrix;
+        WorldWind['MemoryCache'] = MemoryCache;
+        WorldWind['MemoryCacheListener'] = MemoryCacheListener;
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
@@ -138,8 +161,12 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['Sector'] = Sector;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['Terrain'] = Terrain;
+        WorldWind['TerrainTile'] = TerrainTile;
         WorldWind['Tessellator'] = Tessellator;
         WorldWind['Texture'] = Texture;
+        WorldWind['Tile'] = Tile;
+        WorldWind['TileFactory'] = TileFactory;
+        WorldWind['UnsupportedOperationError'] = UnsupportedOperationError;
         WorldWind['Vec2'] = Vec2;
         WorldWind['Vec3'] = Vec3;
         WorldWind['WWMath'] = WWMath;

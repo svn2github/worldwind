@@ -9,7 +9,7 @@
 define([
         'src/error/ArgumentError',
         'src/util/Logger',
-        'src/util/MemoryCacheListener'
+        'src/cache/MemoryCacheListener'
     ],
     function (ArgumentError,
               Logger,
