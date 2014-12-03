@@ -6,32 +6,39 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger'
+        'src/util/Logger',
+        'src/error/UnsupportedOperationError'
     ],
-    function (Logger) {
+    function (Logger,
+              UnsupportedOperationError) {
         "use strict";
 
         /**
          * Defines an interface for {@link MemoryCache} listeners.
+         * This is an interface class and is not meant to be instantiated directly.
          * @exports MemoryCacheListener
          */
         var MemoryCacheListener = {
 
             /**
              * Called when an entry is removed from the cache.
+             * Implementers of this interface must implement this function.
              * @param {Object} key The key of the entry removed.
              * @param {Object} value The value of the entry.
              */
             entryRemoved: function (key, value) {
-                // TODO
+                throw new UnsupportedOperationError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCacheListener", "entryRemoved", "abstractInvocation"));
             },
 
             /**
              * Called when an error occurs during entry removal.
+             * Implementers of this interface must implement this function.
              * @param {Object} error The error object describing the error that occurred.
              */
             removalError: function (error) {
-                // TODO
+                throw new UnsupportedOperationError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCacheListener", "removalError", "abstractInvocation"));
             }
         };
 

@@ -32,6 +32,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/geom/Position',
         'src/geom/Rectangle',
         'src/geom/Sector',
+        'src/render/SurfaceTile',
         'src/render/SurfaceTileRenderer',
         'src/globe/Terrain',
         'src/globe/TerrainTile',
@@ -71,6 +72,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               Position,
               Rectangle,
               Sector,
+              SurfaceTile,
               SurfaceTileRenderer,
               Terrain,
               TerrainTile,
@@ -159,6 +161,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
         WorldWind['Sector'] = Sector;
+        WorldWind['SurfaceTile'] = SurfaceTile;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['Terrain'] = Terrain;
         WorldWind['TerrainTile'] = TerrainTile;
