@@ -10,7 +10,7 @@ define([
         'src/util/Color',
         'src/util/FrameStatistics',
         'src/globe/Globe',
-        'src/render/GpuProgram',
+        'src/shaders/GpuProgram',
         'src/render/GpuResourceCache',
         'src/layer/LayerList',
         'src/navigate/NavigatorState',

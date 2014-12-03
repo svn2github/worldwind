@@ -14,7 +14,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/util/FrameStatistics',
         'src/geom/Frustum',
         'src/globe/Globe',
-        'src/render/GpuProgram',
+        'src/shaders/GpuProgram',
         'src/render/GpuResourceCache',
         'src/layer/Layer',
         'src/Layer/LayerList',

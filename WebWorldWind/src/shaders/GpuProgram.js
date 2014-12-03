@@ -7,7 +7,7 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
+        '../error/ArgumentError',
         'src/util/Color',
         'src/util/Logger'
     ],
