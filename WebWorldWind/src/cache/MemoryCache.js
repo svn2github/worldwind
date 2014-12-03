@@ -27,12 +27,12 @@ define([
          * or equal to the capacity.
          */
         var MemoryCache = function (capacity, lowWater) {
-            if (!capacity < 1) {
+            if (capacity < 1) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCache", "constructor",
                     "The specified capacity is zero or negative"));
             }
 
-            if (!lowWater >= capacity) {
+            if (lowWater >= capacity) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCache", "constructor",
                     "The specified low-water value is greater than or equal to the capacity"));
             }
