@@ -8,9 +8,11 @@
  */
 define([
         'src/error/ArgumentError',
+        'src/util/Color',
         'src/util/Logger'
     ],
     function (ArgumentError,
+              Color,
               Logger) {
         "use strict";
 

@@ -127,7 +127,7 @@ define([
         WorldWindow.prototype.clearFrame = function (dc) {
             var gl = dc.currentGLContext;
 
-            gl.clearColor(dc.clearColor[0], dc.clearColor[1], dc.clearColor[2], dc.clearColor[3]);
+            gl.clearColor(dc.clearColor.red, dc.clearColor.green, dc.clearColor.blue, dc.clearColor.alpha);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         };
 

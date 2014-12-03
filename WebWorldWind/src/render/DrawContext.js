@@ -7,6 +7,7 @@
  * @version $Id$
  */
 define([
+        'src/util/Color',
         'src/util/FrameStatistics',
         'src/globe/Globe',
         'src/render/GpuProgram',
@@ -23,7 +24,8 @@ define([
         'src/globe/Terrain',
         'src/globe/Tessellator'
     ],
-    function (FrameStatistics,
+    function (Color,
+              FrameStatistics,
               Globe,
               LayerList,
               GpuProgram,
@@ -122,10 +124,10 @@ define([
 
             /**
              * The current clear color, expressed as an array of Number in the order red, green, blue, alpha.
-             * @type {number[]}
-             * @default 0, 0, 0, 1
+             * @type {Color}
+             * @default red = 0, green = 0, blue = 0, alpha = 1
              */
-            this.clearColor = [1, 0, 0, 1];
+            this.clearColor = new Color(1, 0, 0, 1);
 
             /**
              * Frame statistics.

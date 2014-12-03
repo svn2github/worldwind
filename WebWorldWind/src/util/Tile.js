@@ -11,8 +11,8 @@ define([
         'src/geom/BoundingBox',
         'src/render/DrawContext',
         'src/util/Logger',
-        'src/util/MemoryCache',
-        'src/util/Sector',
+        'src/cache/MemoryCache',
+        'src/geom/Sector',
         'src/util/TileFactory',
         'src/geom/Vec3'
     ],
