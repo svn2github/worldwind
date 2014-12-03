@@ -7,7 +7,7 @@
  * @version $Id$
  */
 define([
-        '../error/ArgumentError',
+        'src/error/ArgumentError',
         'src/util/Color',
         'src/util/Logger'
     ],
@@ -17,7 +17,8 @@ define([
         "use strict";
 
         /**
-         * Constructs a GPU program with specified source code for vertex and fragment shaders.
+         * Constructs a GPU program with specified source code for vertex and fragment shaders. This is an abstract
+         * class and not intended to be created directly.
          * <p>
          * An WebGL context must be current when this method is called.
          * <p>
@@ -44,6 +45,8 @@ define([
             }
 
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "constructor", "notYetImplemented"));
         };
 
         /**
@@ -52,6 +55,8 @@ define([
          */
         GpuProgram.prototype.bind = function () {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "bind", "notYetImplemented"));
         };
 
         /**
@@ -60,6 +65,8 @@ define([
          */
         GpuProgram.prototype.dispose = function () {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "dispose", "notYetImplemented"));
         };
 
         /**
@@ -76,6 +83,8 @@ define([
             }
 
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "attributeLocation", "notYetImplemented"));
 
             return -1;
         };
@@ -94,6 +103,8 @@ define([
             }
 
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "uniformLocation", "notYetImplemented"));
 
             return -1;
         };
@@ -118,6 +129,8 @@ define([
             }
 
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "loadUniformMatrix", "notYetImplemented"));
         };
 
         /**
@@ -135,6 +148,8 @@ define([
          */
         GpuProgram.prototype.loadUniformColor = function (color, location) {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "loadUniformColor", "notYetImplemented"));
         };
 
         /**
@@ -148,6 +163,8 @@ define([
          */
         GpuProgram.prototype.loadUniformFloat = function (value, location) {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "loadUniformFloat", "notYetImplemented"));
         };
 
         /**
@@ -158,6 +175,8 @@ define([
          */
         GpuProgram.prototype.link = function (program) {
             // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "link", "notYetImplemented"));
 
             return false;
         };
