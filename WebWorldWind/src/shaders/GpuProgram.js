@@ -46,6 +46,12 @@ define([
                     "The specified shader source is null or undefined"));
             }
 
+            /**
+             * A unique string that identifies an instance of this class.
+             * @type {String}
+             */
+            this.programKey = null;
+
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "constructor", "notYetImplemented"));

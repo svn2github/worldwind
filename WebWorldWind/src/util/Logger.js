@@ -79,6 +79,7 @@ define(function () {
         messageTable: { // KEEP THIS TABLE IN ALPHABETICAL ORDER
             abstractInvocation: "The function called is abstract and should be overridden in a subclass.",
             missingArray: "The specified array is null, undefined or of insufficient length.",
+            missingColor: "The specified color is null or undefined.",
             missingFrustum: "The specified frustum is null or undefined.",
             missingGlobe: "The specified globe is null or undefined.",
             missingLocation: "The specified location is null or undefined.",

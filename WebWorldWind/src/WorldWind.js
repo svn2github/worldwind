@@ -35,6 +35,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Sector',
         './render/SurfaceTile',
         './render/SurfaceTileRenderer',
+        './shaders/SurfaceTileRendererProgram',
         './globe/Terrain',
         './globe/TerrainTile',
         './globe/TerrainTileList',
@@ -77,6 +78,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Sector,
               SurfaceTile,
               SurfaceTileRenderer,
+              SurfaceTileRendererProgram,
               Terrain,
               TerrainTile,
               TerrainTileList,
@@ -168,6 +170,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Sector'] = Sector;
         WorldWind['SurfaceTile'] = SurfaceTile;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
+        WorldWind['SurfaceTileRendererProgram'] = SurfaceTileRendererProgram;
         WorldWind['Terrain'] = Terrain;
         WorldWind['TerrainTile'] = TerrainTile;
         WorldWind['TerrainTileList'] = TerrainTileList;

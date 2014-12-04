@@ -17,7 +17,7 @@ define([
          * @alias SurfaceTileRenderer
          * @constructor
          * @classdesc This class is responsible for rendering imagery onto the terrain.
-         * it is meant to be used internally. Applications typically do not interact with this class.
+         * It is meant to be used internally. Applications typically do not interact with this class.
          */
         var SurfaceTileRenderer = function() {
         };
