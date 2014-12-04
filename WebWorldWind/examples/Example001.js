@@ -5,9 +5,6 @@
 /**
  * @version $Id$
  */
-//requirejs.config({
-//    baseUrl : ".."
-//});
 
 requirejs(['../src/WorldWind'], function () {
     "use strict";
