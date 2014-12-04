@@ -37,6 +37,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         'src/render/SurfaceTileRenderer',
         'src/globe/Terrain',
         'src/globe/TerrainTile',
+        'src/globe/TerrainTileList',
         'src/globe/Tessellator',
         'src/render/Texture',
         'src/util/Tile',
@@ -78,6 +79,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
               SurfaceTileRenderer,
               Terrain,
               TerrainTile,
+              TerrainTileList,
               Tessellator,
               Texture,
               Tile,
@@ -168,6 +170,7 @@ define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['Terrain'] = Terrain;
         WorldWind['TerrainTile'] = TerrainTile;
+        WorldWind['TerrainTileList'] = TerrainTileList;
         WorldWind['Tessellator'] = Tessellator;
         WorldWind['Texture'] = Texture;
         WorldWind['Tile'] = Tile;
