@@ -7,12 +7,12 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Color',
-        'src/shaders/GpuProgram',
-        'src/util/Logger',
-        'src/geom/Matrix',
-        'src/error/NotYetImplementedError'
+        '../error/ArgumentError',
+        '../util/Color',
+        '../shaders/GpuProgram',
+        '../util/Logger',
+        '../geom/Matrix',
+        '../error/NotYetImplementedError'
     ],
     function (ArgumentError,
               Color,

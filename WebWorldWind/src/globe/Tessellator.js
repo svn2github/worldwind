@@ -7,12 +7,12 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/globe/Globe',
-        'src/util/Logger',
-        'src/navigate/NavigatorState',
-        'src/globe/Terrain',
-        'src/globe/TerrainTile'
+        '../error/ArgumentError',
+        '../globe/Globe',
+        '../util/Logger',
+        '../navigate/NavigatorState',
+        '../globe/Terrain',
+        '../globe/TerrainTile'
     ],
     function (ArgumentError,
               Globe,

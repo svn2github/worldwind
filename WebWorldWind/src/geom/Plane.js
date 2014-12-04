@@ -7,9 +7,9 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Logger',
-        'src/geom/Vec3'
+        '../error/ArgumentError',
+        '../util/Logger',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
               Logger,

@@ -7,8 +7,8 @@
  * @version $Id$
  */
 define([
-        'src/layer/Layer',
-        'src/util/Logger'
+        '../layer/Layer',
+        '../util/Logger'
     ],
     function (Layer,
               Logger) {

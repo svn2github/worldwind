@@ -7,9 +7,9 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Logger',
-        'src/cache/MemoryCacheListener'
+        '../error/ArgumentError',
+        '../util/Logger',
+        '../cache/MemoryCacheListener'
     ],
     function (ArgumentError,
               Logger,

@@ -7,8 +7,8 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
-        'src/navigate/NavigatorState'
+        '../util/Logger',
+        '../navigate/NavigatorState'
     ],
     function (Logger,
               NavigatorState) {

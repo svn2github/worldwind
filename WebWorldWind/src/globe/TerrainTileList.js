@@ -6,8 +6,8 @@
  * @exports TerrainTileList
  * @version $Id$
  */
-define(['src/error/ArgumentError',
-        'src/util/Logger'
+define(['../error/ArgumentError',
+        '../util/Logger'
     ],
     function (ArgumentError,
               Logger) {

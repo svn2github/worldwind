@@ -5,7 +5,7 @@
 /**
  * @version $Id$
  */
-define(['src/util/Logger'], function (Logger) {
+define(['../util/Logger'], function (Logger) {
     "use strict";
     /**
      * Provides constants and functions for working with angles.

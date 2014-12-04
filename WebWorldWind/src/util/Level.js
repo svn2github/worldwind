@@ -7,11 +7,11 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/LevelSet', // TODO: This is a circular dependency. Try to eliminate the need for it.
-        'src/geom/Location',
-        'src/util/Logger',
-        'src/geom/Sector'
+        '../error/ArgumentError',
+        '../util/LevelSet', // TODO: This is a circular dependency. Try to eliminate the need for it.
+        '../geom/Location',
+        '../util/Logger',
+        '../geom/Sector'
     ],
     function (ArgumentError,
               LevelSet,

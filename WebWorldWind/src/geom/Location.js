@@ -7,10 +7,10 @@
  * @version $Id$
  */
 define([
-        'src/geom/Angle',
-        'src/error/ArgumentError',
-        'src/util/Logger',
-        'src/util/WWMath'
+        '../geom/Angle',
+        '../error/ArgumentError',
+        '../util/Logger',
+        '../util/WWMath'
     ],
     function (Angle,
               ArgumentError,

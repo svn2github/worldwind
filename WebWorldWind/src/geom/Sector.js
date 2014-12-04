@@ -7,10 +7,10 @@
  * @version $Id$
  */
 define([
-        'src/geom/Angle',
-        'src/error/ArgumentError',
-        'src/geom/Location',
-        'src/util/Logger'
+        '../geom/Angle',
+        '../error/ArgumentError',
+        '../geom/Location',
+        '../util/Logger'
     ],
     function (Angle,
               ArgumentError,

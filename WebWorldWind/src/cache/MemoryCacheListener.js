@@ -6,8 +6,8 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger',
-        'src/error/UnsupportedOperationError'
+        '../util/Logger',
+        '../error/UnsupportedOperationError'
     ],
     function (Logger,
               UnsupportedOperationError) {

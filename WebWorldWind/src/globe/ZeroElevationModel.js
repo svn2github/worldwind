@@ -7,10 +7,10 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/globe/ElevationModel',
-        'src/util/Logger',
-        'src/geom/Sector'],
+        '../error/ArgumentError',
+        '../globe/ElevationModel',
+        '../util/Logger',
+        '../geom/Sector'],
     function (ArgumentError,
               ElevationModel,
               Logger,

@@ -7,10 +7,10 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Color',
-        'src/util/Logger',
-        'src/error/NotYetImplementedError'
+        '../error/ArgumentError',
+        '../util/Color',
+        '../util/Logger',
+        '../error/NotYetImplementedError'
     ],
     function (ArgumentError,
               Color,

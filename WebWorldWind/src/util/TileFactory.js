@@ -6,11 +6,11 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Level',
-        'src/util/Logger',
-        'src/geom/Sector',
-        'src/error/UnsupportedOperationError'
+        '../error/ArgumentError',
+        '../util/Level',
+        '../util/Logger',
+        '../geom/Sector',
+        '../error/UnsupportedOperationError'
     ],
     function (Level,
               Logger,

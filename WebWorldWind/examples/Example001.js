@@ -5,13 +5,14 @@
 /**
  * @version $Id$
  */
-requirejs.config({
-    baseUrl : ".."
-});
+//requirejs.config({
+//    baseUrl : ".."
+//});
 
-requirejs(['src/WorldWind'], function () {
+requirejs(['../src/WorldWind'], function () {
     "use strict";
 
+    //TestStart.showMessage("Hi There! This is yet another message");
     WorldWind.Logger.setLoggingLevel(WorldWind.Logger.LEVEL_WARNING);
 
     var wwd = new WorldWind.WorldWindow("canvasOne");

@@ -7,9 +7,9 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/util/Logger',
-        'src/geom/Sector'],
+        '../error/ArgumentError',
+        '../util/Logger',
+        '../geom/Sector'],
     function (ArgumentError,
               Logger,
               Sector) {

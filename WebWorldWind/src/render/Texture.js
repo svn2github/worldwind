@@ -7,7 +7,7 @@
  * @version $Id$
  */
 define([
-        'src/util/Logger'
+        '../util/Logger'
     ],
     function (Logger) {
         "use strict";

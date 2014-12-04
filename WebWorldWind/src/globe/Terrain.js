@@ -7,12 +7,12 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/globe/Globe',
-        'src/util/Logger',
-        'src/geom/Sector',
-        'src/globe/TerrainTile',
-        'src/geom/Vec3'
+        '../error/ArgumentError',
+        '../globe/Globe',
+        '../util/Logger',
+        '../geom/Sector',
+        '../globe/TerrainTile',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
               Globe,

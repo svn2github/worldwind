@@ -7,16 +7,16 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/geom/BoundingBox',
-        'src/render/DrawContext',
-        'src/util/Level',
-        'src/util/Logger',
-        'src/cache/MemoryCache',
-        'src/error/NotYetImplementedError',
-        'src/geom/Sector',
-        'src/util/TileFactory',
-        'src/geom/Vec3'
+        '../error/ArgumentError',
+        '../geom/BoundingBox',
+        '../render/DrawContext',
+        '../util/Level',
+        '../util/Logger',
+        '../cache/MemoryCache',
+        '../error/NotYetImplementedError',
+        '../geom/Sector',
+        '../util/TileFactory',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
               BoundingBox,

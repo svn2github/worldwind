@@ -7,13 +7,13 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/geom/Frustum',
-        'src/util/Logger',
-        'src/geom/Matrix',
-        'src/geom/Rectangle',
-        'src/geom/Vec2',
-        'src/geom/Vec3'
+        '../error/ArgumentError',
+        '../geom/Frustum',
+        '../util/Logger',
+        '../geom/Matrix',
+        '../geom/Rectangle',
+        '../geom/Vec2',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
               Frustum,

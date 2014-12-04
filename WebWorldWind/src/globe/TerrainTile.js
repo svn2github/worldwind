@@ -7,15 +7,15 @@
  * @version $Id$
  */
 define([
-        'src/error/ArgumentError',
-        'src/globe/Globe',
-        'src/util/Level',
-        'src/util/Logger',
-        'src/geom/Matrix',
-        'src/error/NotYetImplementedError',
-        'src/geom/Sector',
-        'src/util/Tile',
-        'src/geom/Vec3'
+        '../error/ArgumentError',
+        '../globe/Globe',
+        '../util/Level',
+        '../util/Logger',
+        '../geom/Matrix',
+        '../error/NotYetImplementedError',
+        '../geom/Sector',
+        '../util/Tile',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
               Globe,

@@ -7,9 +7,9 @@
  */
 
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError',
-        'src/geom/Vec3'
+        '../util/Logger',
+        '../error/ArgumentError',
+        '../geom/Vec3'
     ],
     function (Logger,
               ArgumentError,

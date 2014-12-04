@@ -7,8 +7,8 @@
  */
 
 define([
-        'src/util/Logger',
-        'src/error/ArgumentError'
+        '../util/Logger',
+        '../error/ArgumentError'
     ],
     function (Logger,
               ArgumentError) {

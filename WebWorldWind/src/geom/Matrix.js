@@ -8,16 +8,16 @@
  */
 
 define([
-        'src/geom/Angle',
-        'src/error/ArgumentError',
-        'src/geom/Frustum',
-        'src/globe/Globe',
-        'src/util/Logger',
-        'src/geom/Plane',
-        'src/geom/Rectangle',
-        'src/render/Texture',
-        'src/geom/Vec3',
-        'src/util/WWMath'
+        '../geom/Angle',
+        '../error/ArgumentError',
+        '../geom/Frustum',
+        '../globe/Globe',
+        '../util/Logger',
+        '../geom/Plane',
+        '../geom/Rectangle',
+        '../render/Texture',
+        '../geom/Vec3',
+        '../util/WWMath'
     ],
     function (Angle,
               ArgumentError,
