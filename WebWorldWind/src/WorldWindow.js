@@ -169,8 +169,7 @@ define([
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.createTerrain = function (dc) {
-            this.drawContext.terrain = this.tessellator.tessellate(this.globe, dc.navigatorState,
-                dc.verticalExaggeration);
+            this.drawContext.terrain = this.tessellator.tessellate(dc);
         };
 
         return WorldWindow;
