@@ -5,7 +5,7 @@
 /**
  * @version $Id$
  */
-define([ // KEEP ALL THIS IN ALPHABETICAL ORDER.
+define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not directory name).
         './geom/Angle',
         './geom/BoundingBox',
         './error/ArgumentError',

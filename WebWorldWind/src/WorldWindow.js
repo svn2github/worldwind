@@ -38,7 +38,7 @@ define([
          * @alias WorldWindow
          * @constructor
          * @classdesc Represents a World Wind window for an HTML canvas.
-         * @param canvasName the name assigned to the canvas in the HTML page.
+         * @param {String} canvasName The name assigned to the canvas in the HTML page.
          */
         var WorldWindow = function (canvasName) {
             this.canvas = document.getElementById(canvasName);
@@ -53,27 +53,54 @@ define([
             function handleContextRestored(event) {
             }
 
+            /**
+             * The globe displayed.
+             * @type {Globe}
+             */
             this.globe = new Globe(new ZeroElevationModel());
 
-            this.tessellator = new Tessellator();
-
-            this.verticalExaggeration = 1;
-
-            this.gpuResourceCache = new GpuResourceCache();
-
+            /**
+             * The layers to display.
+             * @type {LayerList}
+             */
             this.layers = new LayerList();
 
+            /**
+             * The navigator used to manipulate the globe.
+             * @type {LookAtNavigator}
+             * @default [LookAtNavigator]{@link LookAtNavigator}
+             */
             this.navigator = new LookAtNavigator();
 
+            /**
+             * The tessellator used to create the globe's terrain.
+             * @type {Tessellator}
+             */
+            this.tessellator = new Tessellator();
+
+            /**
+             * The vertical exaggeration to apply to the terrain.
+             * @type {Number}
+             */
+            this.verticalExaggeration = 1;
+
+            /**
+             * Performance statistics for this WorldWindow.
+             * @type {FrameStatistics}
+             */
             this.frameStatistics = new FrameStatistics();
 
+            // Internal. Intentionally not documented.
+            this.gpuResourceCache = new GpuResourceCache();
+
+            // Internal. Intentionally not documented.
             this.drawContext = new DrawContext();
         };
 
         /**
          * Redraws the window.
          */
-        WorldWindow.prototype.render = function () {
+        WorldWindow.prototype.redraw = function () {
             if (!(window.WebGLRenderingContext)) {
                 Logger.log(Logger.LEVEL_SEVERE, "Canvas does not support WebGL");
                 return;
@@ -88,6 +115,7 @@ define([
             }
         };
 
+        // Internal. Intentionally not documented.
         WorldWindow.prototype.resetDrawContext = function () {
             var dc = this.drawContext;
 
@@ -100,10 +128,11 @@ define([
             dc.update();
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.drawFrame = function () {
             var viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
-            this.drawContext.currentGLContext = this.canvas.getContext("webgl");
+            this.drawContext.currentGlContext = this.canvas.getContext("webgl");
 
             try {
                 this.beginFrame(this.drawContext, viewport);
@@ -115,25 +144,30 @@ define([
             }
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.beginFrame = function (dc, viewport) {
-            var gl = dc.currentGLContext;
+            var gl = dc.currentGlContext;
 
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.endFrame = function (dc) {
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.clearFrame = function (dc) {
-            var gl = dc.currentGLContext;
+            var gl = dc.currentGlContext;
 
             gl.clearColor(dc.clearColor.red, dc.clearColor.green, dc.clearColor.blue, dc.clearColor.alpha);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.doDraw = function (dc) {
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.createTerrain = function (dc) {
             this.drawContext.terrain = this.tessellator.tessellate(this.globe, dc.navigatorState,
                 dc.verticalExaggeration);

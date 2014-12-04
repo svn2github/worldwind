@@ -134,6 +134,12 @@ define([
              * @type {FrameStatistics}
              */
             this.frameStatistics = new FrameStatistics();
+
+            /**
+             * The current WebGL context.
+             * @type {WebGLRenderingContext}
+             */
+            this.currentGlContext = null;
         };
 
         /**

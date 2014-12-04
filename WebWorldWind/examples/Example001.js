@@ -12,5 +12,5 @@ requirejs(['../src/WorldWind'], function () {
     WorldWind.Logger.setLoggingLevel(WorldWind.Logger.LEVEL_WARNING);
 
     var wwd = new WorldWind.WorldWindow("canvasOne");
-    wwd.render();
+    wwd.redraw();
 });
