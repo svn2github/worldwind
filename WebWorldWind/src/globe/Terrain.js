@@ -10,15 +10,19 @@ define([
         '../error/ArgumentError',
         '../globe/Globe',
         '../util/Logger',
+        '../error/NotYetImplementedError',
         '../geom/Sector',
         '../globe/TerrainTile',
+        '../globe/Tessellator',
         '../geom/Vec3'
     ],
     function (ArgumentError,
               Globe,
               Logger,
+              NotYetImplementedError,
               Sector,
               TerrainTile,
+              Tessellator,
               Vec3) {
         "use strict";
 
@@ -49,17 +53,18 @@ define([
              * @type {Sector}
              */
             this.sector = null;
-        };
 
-        /**
-         * Returns the surface geometry for this terrain.
-         * @returns {TerrainTile[]} The surface geometry for this terrain, or null if there is no current surface
-         * geometry for this terrain.
-         */
-        Terrain.prototype.surfaceGeometry = function () {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Terrain", "surfaceGeometry", "notYetImplemented"));
+            /**
+             * The tessellator used to generate this terrain.
+             * @type {Tessellator}
+             */
+            this.tessellator = null;
+
+            /**
+             * The surface geometry for this terrain
+             * @type {TerrainTile[]}
+             */
+            this.surfaceGeometry = null;
         };
 
         /**
@@ -118,6 +123,71 @@ define([
             }
 
             return result;
+        };
+
+        /**
+         * Initializes rendering state to draw a succession of terrain tiles.
+         * @param {DrawContext} dc The current draw context.
+         */
+        Terrain.prototype.beginRendering = function (dc) {
+            if (this.tessellator) {
+                this.tessellator.beginRendering(dc);
+            }
+        };
+
+        /**
+         * Restores rendering state after drawing a succession of terrain tiles.
+         * @param {DrawContext} dc The current draw context.
+         */
+        Terrain.prototype.endRendering = function (dc) {
+            if (this.tessellator) {
+                this.tessellator.endRendering(dc);
+            }
+        };
+
+        /**
+         * Initializes rendering state for drawing a specified terrain tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The terrain tile subsequently drawn via this tessellator's render function.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Terrain.prototype.beginRenderingTile = function (dc, terrainTile) {
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Terrain", "beginRenderingTile", "missingTile"));
+            }
+
+            if (this.tessellator) {
+                this.tessellator.beginRenderingTile(dc, terrainTile);
+            }
+        };
+
+        /**
+         * Restores rendering state after drawing the most recent tile specified to
+         * [beginRenderingTile{@link Tessellator#beginRenderingTile}.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The terrain tile most recently rendered.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Terrain.prototype.endRenderingTile = function (dc, terrainTile) {
+            // Intentionally empty.
+        };
+
+        /**
+         * Renders a specified terrain tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The terrain tile to render.
+         * @throws {ArgumentError} If the specified tile is null or undefined.
+         */
+        Terrain.prototype.renderTile = function (dc, terrainTile) {
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Terrain", "renderTile", "missingTile"));
+            }
+
+            if (this.tessellator) {
+                this.tessellator.renderTile(dc, terrainTile);
+            }
         };
 
         return Terrain;

@@ -11,12 +11,14 @@ define([
         './render/DrawContext',
         './util/FrameStatistics',
         './globe/Globe',
-        './render/GpuResourceCache',
+        './cache/GpuResourceCache',
         './layer/LayerList',
         './util/Logger',
         './navigate/LookAtNavigator',
         './navigate/NavigatorState',
         './geom/Rectangle',
+        './geom/Sector',
+        './globe/Terrain',
         './globe/Tessellator',
         './globe/ZeroElevationModel'],
     function (ArgumentError,
@@ -29,6 +31,8 @@ define([
               LookAtNavigator,
               NavigatorState,
               Rectangle,
+              Sector,
+              Terrain,
               Tessellator,
               ZeroElevationModel) {
         "use strict";
@@ -110,7 +114,7 @@ define([
                 this.resetDrawContext();
                 this.drawFrame();
             } catch (e) {
-                Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "render",
+                Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "redraw",
                     "Exception occurred during rendering: " + e.toString());
             }
         };
@@ -130,6 +134,8 @@ define([
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.drawFrame = function () {
+            this.drawContext.frameStatistics.beginFrame();
+
             var viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
             this.drawContext.currentGlContext = this.canvas.getContext("webgl");
@@ -141,6 +147,7 @@ define([
                 this.doDraw(this.drawContext);
             } finally {
                 this.endFrame(this.drawContext);
+                this.drawContext.frameStatistics.endFrame();
             }
         };
 
@@ -169,7 +176,17 @@ define([
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.createTerrain = function (dc) {
-            this.drawContext.terrain = this.tessellator.tessellate(dc);
+            // TODO: Implement Tessellator to return a Terrain rather than synthesizing this copy here.
+            dc.terrain = new Terrain(); // TODO: have Tessellator.tessellate() return a filled out one of these
+            dc.terrain.surfaceGeometry = this.tessellator.tessellate(dc).tileArray;
+            dc.terrain.globe = dc.globe;
+            dc.terrain.tessellator = this.tessellator;
+            dc.terrain.verticalExaggeration = dc.verticalExaggeration;
+            dc.terrain.sector = Sector.FULL_SPHERE;
+
+            dc.frameStatistics.setTerrainTileCount(
+                this.drawContext.terrain && this.drawContext.terrain.surfaceGeometry ?
+                    this.drawContext.terrain.surfaceGeometry.length : 0);
         };
 
         return WorldWindow;

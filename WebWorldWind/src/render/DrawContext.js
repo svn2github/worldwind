@@ -11,7 +11,7 @@ define([
         '../util/FrameStatistics',
         '../globe/Globe',
         '../shaders/GpuProgram',
-        '../render/GpuResourceCache',
+        '../cache/GpuResourceCache',
         '../layer/LayerList',
         '../navigate/NavigatorState',
         '../layer/Layer',

@@ -15,7 +15,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Frustum',
         './globe/Globe',
         './shaders/GpuProgram',
-        './render/GpuResourceCache',
+        './cache/GpuResourceCache',
         './layer/Layer',
         './Layer/LayerList',
         './util/Level',

@@ -46,12 +46,6 @@ define([
                     "The specified shader source is null or undefined"));
             }
 
-            /**
-             * A unique string that identifies an instance of this class.
-             * @type {String}
-             */
-            this.programKey = null;
-
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "constructor", "notYetImplemented"));
@@ -189,6 +183,14 @@ define([
                 Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "link", "notYetImplemented"));
 
             return false;
+        };
+
+        /**
+         * Generates a unique string to associate with a GPU program.
+         * @returns {string} A unique string.
+         */
+        GpuProgram.programKey = function () {
+            return "AKey"; // TODO: generate UUID
         };
 
         return GpuProgram;
