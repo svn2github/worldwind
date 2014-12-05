@@ -9,9 +9,11 @@
 define([
         '../error/ArgumentError',
         '../globe/Globe',
+        '../util/Level',
         '../util/LevelSet',
         '../geom/Location',
         '../util/Logger',
+        '../cache/MemoryCache',
         '../navigate/NavigatorState',
         '../error/NotYetImplementedError',
         '../geom/Sector',
@@ -23,9 +25,11 @@ define([
     ],
     function (ArgumentError,
               Globe,
+              Level,
               LevelSet,
               Location,
               Logger,
+              MemoryCache,
               NavigatorState,
               NotYetImplementedError,
               Sector,
@@ -45,20 +49,16 @@ define([
         var Tessellator = function () {
             this.levels = new LevelSet(Sector.FULL_SPHERE, new Location(45, 45), 15, 32, 32);
 
-            this.topLevelTiles = {};
+            this.topLevelTiles = undefined;
             this.currentTiles = new TerrainTileList(this);
-            this.currentCoverage = {};
+            this.currentCoverage = undefined;
 
-            //this.tileCache = [[WWMemoryCache alloc] initWithCapacity:5000000 lowWater:4000000]; // Holds 316 32x32 tiles.
+            this.tileCache = new MemoryCache(5000000, 4000000); // Holds 316 32x32 tiles.
 
             this.detailHintOrigin = 1.1;
 
             this.elevationTimeStamp = undefined;
             this.lastModelViewProjection = undefined;
-
-            this.expiration = undefined;
-
-            this.currentAncestorTile = undefined;
 
             this.tileFactory = TileFactory;
 
@@ -70,7 +70,7 @@ define([
             this.elevationShadingEnabled = false;
 
             this.sharedGeometry = undefined;
-
+            this.tileElevations = undefined;
         };
 
         /**
@@ -85,21 +85,23 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "tessellate", "missingDC"));
             }
 
-            // TODO: validate currentTiles with this.lastElevationChanged and this.lastModelViewProjection
-            if (this.currentTiles) {
+            var lastElevationsChange = dc.globe.elevationTimestamp;
+            if (this.currentTiles &&
+                this.elevationTimeStamp == lastElevationsChange &&
+                !this.lastModelViewProjection &&
+                dc.navigatorState.modelviewProjection.equals(this.lastModelViewProjection)) {
                 return this.currentTiles;
             }
 
-            var globe = dc.globe;
             var navigatorState = dc.navigatorState;
 
             this.lastModelViewProjection = navigatorState.modelviewProjection;
 
             this.currentTiles.removeAllTiles();
-            this.currentCoverage = {};
+            this.currentCoverage = undefined;
 
-            if (!this.topLevelTiles[globe].length == 0) {
-                this.topLevelTiles[globe] = this.createTopLevelTiles();
+            if (!this.topLevelTiles || this.topLevelTiles.length == 0) {
+                this.topLevelTiles = this.createTopLevelTiles();
             }
 
             for (var index = 0; index < this.topLevelTiles.length; index += 1) {
@@ -141,24 +143,23 @@ define([
             this.vertexTexCoordLocation = program.attributeLocation("vertexTexCoord");
             this.vertexElevationLocation = program.attributeLocation("vertexElevation");
             this.modelViewProjectionMatrixLocation = program.uniformLocation("mvpMatrix");
-            dc.currentGlContext.glEnableVertexAttribArray(vertexPointLocation);
+            dc.currentGlContext.enableVertexAttribArray(this.vertexPointLocation);
 
-            if (this._elevationShadingEnabled && vertexElevationLocation >= 0) {
-                dc.currentGlContext.glEnableVertexAttribArray(vertexElevationLocation);
+            if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0) {
+                dc.currentGlContext.enableVertexAttribArray(this.vertexElevationLocation);
             }
 
             var gpuResourceCache = dc.gpuResourceCache;
 
-            if (this.vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
-            {
-                var texCoordVboId = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVboId.intValue);
-                dc.currentGlContext.glVertexAttribPointer(vertexTexCoordLocation, 2, dc.currentGlContext.GL_FLOAT, false, 0, 0);
-                dc.currentGlContext.glEnableVertexAttribArray(vertexTexCoordLocation);
+            if (this.vertexTexCoordLocation >= 0) {// location of vertexTexCoord attribute is -1 when the basic program is bound
+                var texCoordVbo = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVbo);
+                dc.currentGlContext.vertexAttribPointer(this.vertexTexCoordLocation, 2, dc.currentGlContext.GL_FLOAT, false, 0, 0);
+                dc.currentGlContext.enableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            var indicesVboId = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVboId.intValue);
+            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
         };
 
         /**
@@ -172,17 +173,17 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRendering", "missingDc"));
             }
 
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, 0);
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, 0);
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, null);
 
             // Restore the global OpenGL vertex attribute array state.
-            dc.currentGlContext.glDisableVertexAttribArray(vertexPointLocation);
-            if (_elevationShadingEnabled && vertexElevationLocation >= 0)
-                dc.currentGlContext.glDisableVertexAttribArray(vertexElevationLocation);
+            dc.currentGlContext.disableVertexAttribArray(this.vertexPointLocation);
+            if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0)
+                dc.currentGlContext.disableVertexAttribArray(this.vertexElevationLocation);
 
-            if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
+            if (this.vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
             {
-                dc.currentGlContext.glDisableVertexAttribArray(vertexTexCoordLocation);
+                dc.currentGlContext.disableVertexAttribArray(this.vertexTexCoordLocation);
             }
         };
 
@@ -202,44 +203,40 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "missingTile"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "notYetImplemented"));
-
             var modelViewProjection = new Object(dc.navigatorState.modelviewProjection); // TODO: verify that this cloned
             modelViewProjection.multiplyMatrix(tile.transformationMatrix);
             GpuProgram.loadUniformMatrix(dc.currentGlContext, modelViewProjection, this.modelViewProjectionMatrixLocation);
 
             var gpuResourceCache = dc.gpuResourceCache;
             var vbo = gpuResourceCache.resourceForKey(tile.geometryVboCacheKey);
-            if (vbo) {
-                var size = tile.numPoints * 3 * sizeof(float);
-                var vbo = dc.currentGlContext.createBuffer();
+            if (!vbo) {
+                vbo = dc.currentGlContext.createBuffer();
                 dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
                 dc.currentGlContext.bufferData(dc.currentGlContext.GL_ARRAY_BUFFER,
-                    size,
                     tile.points,
                     dc.currentGlContext.GL_STATIC_DRAW);
-                gpuResourceCache.putResource(vboId, WW_GPU_VBO, size, tile.geometryVboCacheKey);
-                tile.setGeometryVboTimestamp(tile.geometryTimestamp);
+                gpuResourceCache.putResource(vbo, gpuResourceCache.WW_GPU_VBO, tile.geometryVboCacheKey); // TODO: no need for size in WebGL
+                tile.geometryVboTimestamp = tile.geometryTimestamp;
                 dc.frameStatistics.incrementVboLoadCount(1);
             }
             else if (tile.geometryVboTimestamp != tile.geometryTimestamp) {
-                var size = tile.numPoints * 3 * sizeof(float);
-                var vbo = dc.currentGlContext.createBuffer();
                 dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
-                dc.currentGlContext.bufferSubData(dc.currentGlContext.GL_ARRAY_BUFFER, 0, size, tile.points);
-                tile.setGeometryVboTimestamp(tile.geometryTimestamp);
+                dc.currentGlContext.bufferSubData(dc.currentGlContext.GL_ARRAY_BUFFER, 0, tile.points);
+                tile.geometryVboTimestamp = tile.geometryTimestamp;
             }
             else {
-                var vbo = dc.currentGlContext.createBuffer();
                 dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
             }
 
             dc.currentGlContext.vertexAttribPointer(this.vertexPointLocation, 3, dc.currentGlContext.GL_FLOAT, false, 0, 0);
             if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0) {
-                dc.currentGlContext.bindBuffer(GL_ARRAY_BUFFER, 0);
-                dc.currentGlContext.vertexAttribPointer(this.vertexElevationLocation, 1, dc.currentGlContext.GL_FLOAT, false, 0, tile.elevations);
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
+                dc.currentGlContext.vertexAttribPointer(this.vertexElevationLocation,
+                    1,
+                    dc.currentGlContext.GL_FLOAT,
+                    false,
+                    0,
+                    tile.elevations);
             }
         };
 
@@ -261,6 +258,7 @@ define([
             }
 
             /*
+             *  TODO ???
              *  Note: the body of this function in the iOS version is empty.
              *  Perhaps this implementation is complete?
              */
@@ -282,23 +280,20 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "missingTile"));
             }
 
-            dc.currentGlContext.glDrawElements(
+            dc.currentGlContext.drawElements(
                 dc.currentGlContext.GL_TRIANGLE_STRIP,
                 this.sharedGeometry.numIndices,
                 dc.currentGlContext.GL_UNSIGNED_SHORT,
                 0);
         };
 
-        Tessellator.prototype.createTopLevelTiles = function () {
-            var tops = new Array(this.numLevel0LatSubdivisions * this.numLevel0LonSubdivisions);
+        /***********************************************************************
+         * Internal methods - assume that arguments have been validated already.
+         ***********************************************************************/
 
-            Tile.createTilesForLevel(0, this.tileFactory, tops);
-
-            return tops;
-        };
-
-        Tessellator.prototype.isTileVisible = function (dc, tile) {
-            return tile.extent.intersectsFrustum(dc.navigatorState.frustumInModelCoordinates);
+        Tessellator.prototype.createTopLevelTiles = function (dc) {
+            this.topLevelTiles.removeAllObjects();
+            Tile.createTilesForLevel(this.levels.firstLevel(), this.tileFactory, this.topLevelTiles);
         };
 
         Tessellator.prototype.addTileOrDescendants = function (dc, tile) {
@@ -307,40 +302,20 @@ define([
                 return;
             }
 
-            var ancestorTile;
+            var nextLevel = tile.level.nextLevel;
+            var subTiles = tile.subdivideToCache(nextLevel, this.tileFactory, this.tileCache);
+            for (var index = 0; index < subTiles.length; index += 1) {
+                var child = subTiles[index];
 
-            if (this.isTileInTextureMemory(dc, tile) || tile.level == 0) {
-                ancestorTile = this.currentAncestorTile;
-                this.currentAncestorTile = tile;
-            }
-
-            var nextLevel = this.levels[tile.level + 1];
-            var subTiles = [];
-            tile.subdivideToCache(nextLevel, this.tileFactory, subTiles);
-            subTiles.foreach(function (child) {
                 child.update(dc);
 
-                // TODO: confirm that "this" below is same as "this" of tessellator
-                if (this.levels.sector.intersects(child.sector) &&
-                    this.isTileVisible(dc, child)) {
+                if (this.levels.sector.intersects(child.sector) && this.isTileVisible(dc, child)) {
                     this.addTileOrDescendants(dc, child);
                 }
-            });
-
-            if (ancestorTile) {
-                this.currentAncestorTile = ancestorTile;
             }
-
-        };
-
-        Tessellator.prototype.tileMeetsRenderCriteria = function (dc, tile) {
-            this.addTile(dc, tile);
         };
 
         Tessellator.prototype.addTile = function (dc, tile) {
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "addTile", "notYetImplemented"));
-
             if (this.mustRegenerateTileGeometry(dc, tile)) {
                 this.regenerateTileGeometry(dc, tile);
             }
@@ -348,92 +323,326 @@ define([
             this.currentTiles[dc.globe].addTile(dc, tile);
 
             if (!this.currentCoverage) {
-                this.currentCoverage = tile.sector;
+                this.currentCoverage = new Object(tile.sector); // TODO: confirm that sector was cloned
             }
             else {
                 this.currentCoverage.union(tile.sector);
             }
         };
 
+        Tessellator.prototype.isTileVisible = function (dc, tile) {
+            return tile.extent.intersectsFrustum(dc.navigatorState.frustumInModelCoordinates);
+        };
+
+        Tessellator.prototype.tileMeetsRenderCriteria = function (dc, tile) {
+            return tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailHintOrigin + this.detailHint)
+        };
+
         Tessellator.prototype.mustRegenerateTileGeometry = function (dc, tile) {
-            // TODO: tile doesn't have a timestamp yet
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "mustRegenerateTileGeometry", "notYetImplemented"));
-            return tile.timestamp != this.elevationTimeStamp;
+            return tile.geometryTimestamp != this.elevationTimestamp;
         };
 
         Tessellator.prototype.regenerateTileGeometry = function (dc, tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "regenerateTileGeometry", "notYetImplemented"));
+            this.buildTileVertices(dc, tile);
+            this.buildSharedGeometry(tile);
+            tile.geometryTimestamp = this.elevationTimestamp;
         };
 
-        Tessellator.prototype.isTextureExpired = function (texture) {
-            // TODO: way too much undefined instance data to complete
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTextureExpired", "notYetImplemented"));
+        Tessellator.prototype.buildTileVertices = function (dc, tile) {
+            var sector = tile.sector,
+                ve = dc.verticalExaggeration;
 
-            if (!this.expiration /* TODO || this.expiration > timeIntervalSinceNow */) {
-                return false;
+            // Cartesian tile coordinates are relative to a local origin, called the reference center. Compute the reference
+            // center here and establish a translation transform that is used later to move the tile coordinates into place
+            // relative to the globe.
+            var refCenter = tile.referencePoint;
+            tile.transformationMatrix.setTranslation(refCenter[0], refCenter[1], refCenter[2]);
+
+            // The number of vertices in each dimension is 1 more than the number of cells.
+            var numLatVertices = tile.tileWidth + 1,
+                numLonVertices = tile.tileHeight + 1,
+                vertexStride = 3;
+
+            // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
+            // exaggeration applied.
+            if (!this.tileElevations) {
+                this.tileElevations = new Float64Array(numLatVertices * numLonVertices * vertexStride);
+            }
+            dc.globe.elevationsForSector(sector, numLatVertices, numLonVertices, tile.texelSize, ve, this.tileElevations);
+
+            // Allocate space for the Cartesian vertices.
+            var points = tile.points,
+                numPoints = -1;
+            if (!points) {
+                numPoints = (numLatVertices + 2) * (numLonVertices + 2);
+                points = new Float32Array(numPoints * vertexStride);
+                tile.numPoints = numPoints;
+                tile.points = points;
             }
 
-            return false; // TODO: texture.fileModificationDate < this.expiration;
+            var elevations = tile.elevations;
+            if (!elevations) {
+                elevations = new Float32Array(tile.numPoints * vertexStride);
+                tile.elevations = elevations;
+            }
+
+            // Compute the tile's Cartesian vertices. The tile's min elevation is used to determine the necessary depth of the
+            // tile border. Use the tile's min elevation instead of the global min elevation in order to reduce tile border
+            // height. As of SVN revision 1768 this change reduces worst-case frame time for terrain rendering by ~20 ms.
+            var borderElevation = tile.minElevation * ve;
+            dc.globe.computePointsFromPositions(
+                sector,
+                numLatVertices,
+                numLonVertices,
+                this.tileElevations,
+                borderElevation,
+                refCenter,
+                points,
+                vertexStride,
+                elevations);
+
+            if (ve != 1.0) {
+                // Need to back out vertical exaggeration from the elevations computed above.
+                numPoints = tile.numPoints;
+                for (var i = 0; i < numPoints; i += 1) {
+                    elevations[i] /= ve;
+                }
+            }
         };
 
-        Tessellator.prototype.loadOrRetrieveTileImage = function (dc, tile) {
-            if (this.isTileTextureOnDisk(tile)) {
-                if (this.isTextureOnDiskExpired(tile)) {
-                    this.retrieveTileImage(tile);// Existing image file is out of date, so initiate retrieval of an up-to-date one.
+        Tessellator.prototype.buildSharedGeometry = function (tile) {
+            if (this.sharedGeometry)
+                return;
 
-                    if (!this.isTileTextureInMemory(dc, tile)) {
-                        return; // Out-of-date tile is in memory so don't load the old image file again.
-                    }
+            this.sharedGeometry = new TerrainSharedGeometry(); // TODO: does this exist yet?
+
+            var count; // holds the returned number of elements returned from the methods below
+
+            this.buildTexCoords(tile.tileWidth, tile.tileHeight);
+
+            // Build the surface-tile indices.
+            this.buildIndices(tile.tileWidth, tile.tileHeight);
+
+            // Build the wireframe indices.
+            this.buildWireframeIndices(tile.tileWidth, tile.tileHeight);
+
+            // Build the outline indices.
+            this.buildOutlineIndices(tile.tileWidth, tile.tileHeight);
+        };
+
+        Tessellator.prototype.buildTexCoords = function (tileWidth, tileHeight) {
+            // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
+            var numLatVertices = tileHeight + 3,
+                numLonVertices = tileWidth + 3,
+                vertexStride = 2;
+
+            // Allocate an array to hold the texture coordinates.
+            var numTexCoords = numLatVertices * numLonVertices,
+                texCoords = new Float32Array(numTexCoords * vertexStride);
+
+            var minS = 0,
+                maxS = 1,
+                minT = 0,
+                maxT = 1,
+                deltaS = (maxS - minS) / tileWidth,
+                deltaT = (maxT - minT) / tileHeight,
+                s = minS, // Horizontal texture coordinate; varies along tile width or longitude.
+                t = minT; // Vertical texture coordinate; varies along tile height or latitude.
+
+            var k = 0;
+            for (var j = 0; j < numLatVertices; j += 1) {
+                if (j <= 1) {// First two columns repeat the min T-coordinate to provide a column for the skirt.
+                    t = minT;
+                }
+                else if (j >= numLatVertices - 2) {// Last two columns repeat the max T-coordinate to provide a column for the skirt.
+                    t = maxT;
+                }
+                else {
+                    t += deltaT; // Non-boundary latitudes are separated by the cell latitude delta.
                 }
 
-                // Load the existing image file whether it's out of date or not. This has the effect of showing expired
-                // images until new ones arrive.
-                this.loadTileImage(dc, tile);
+                for (var i = 0; i < numLonVertices; i += 1) {
+                    if (i <= 1) {// First two rows repeat the min S-coordinate to provide a row for the skirt.
+                        s = minS;
+                    }
+                    else if (i >= numLonVertices - 2) {// Last two rows repeat the max S-coordinate to provide a row for the skirt.
+                        s = maxS;
+                    }
+                    else {
+                        s += deltaS; // Non-boundary longitudes are separated by the cell longitude delta.
+                    }
+
+                    texCoords[k] = s;
+                    texCoords[k + 1] = t;
+                    k += vertexStride;
+                }
             }
-            else {
-                this.retrieveTileImage(tile);
+
+            this.sharedGeometry.texCoords = texCoords;
+            this.sharedGeometry.numTexCoords = numTexCoords;
+        };
+
+        Tessellator.prototype.buildIndices = function (tileWidth, tileHeight) {
+            // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
+            var numLatVertices = tileHeight + 3;
+            var numLonVertices = tileWidth + 3;
+
+            // Allocate an array to hold the indices used to draw a tile of the specified width and height as a triangle strip.
+            // Shorts are the largest primitive that OpenGL ES allows for an index buffer. The largest tileWidth and tileHeight
+            // that can be indexed by a short is 256x256 (excluding the extra rows and columns to convert between cell count and
+            // vertex count, and the extra rows and columns for the tile skirt).
+            var numIndices = 2 * (numLatVertices - 1) * numLonVertices + 2 * (numLatVertices - 2);
+            var indices = new Int32Array(numIndices);
+
+            var k = 0;
+            for (var j = 0; j < numLatVertices - 1; j += 1) {
+                if (j != 0) {
+                    // Attach the previous and next triangle strips by repeating the last and first vertices of the previous
+                    // and current strips, respectively. This creates a degenerate triangle between the two strips which is
+                    // not rasterized because it has zero area. We don't perform this step when j==0 because there is no
+                    // previous triangle strip to connect with.
+                    indices[k] = ((numLonVertices - 1) + (j - 1) * numLonVertices); // last vertex of previous strip
+                    indices[k + 1] = (j * numLonVertices + numLonVertices); // first vertex of current strip
+                    k += 2;
+                }
+
+                for (var i = 0; i < numLonVertices; i += 1) {
+                    // Create a triangle strip joining each adjacent row of vertices, starting in the lower left corner and
+                    // proceeding upward. The first vertex starts with the upper row of vertices and moves down to create a
+                    // counter-clockwise winding order.
+                    var vertex = i + j * numLonVertices;
+                    indices[k] = (vertex + numLonVertices);
+                    indices[k + 1] = vertex;
+                    k += 2;
+                }
             }
+
+            this.sharedGeometry.indices = indices;
+            this.sharedGeometry.numIndices = numIndices;
         };
 
-        Tessellator.prototype.isTileInTextureMemory = function (dc, tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTileInTextureMemory", "notYetImplemented"));
+        Tessellator.prototype.buildWireframeIndices = function (tileWidth, tileHeight) {
+            // The wireframe representation ignores the tile skirt and draws only the vertices that appear on the surface.
+
+            // The number of vertices in each dimension is 1 more than the number of cells.
+            var numLatVertices = tileHeight + 1;
+            var numLonVertices = tileWidth + 1;
+
+            // Allocate an array to hold the computed indices.
+            var numIndices = 2 * tileWidth * (tileHeight + 1) + 2 * tileHeight * (tileWidth + 1);
+            var indices = new Int32Array(numIndices);
+
+            // Add two columns of vertices to the row stride to account for the west and east skirt vertices.
+            var rowStride = numLonVertices + 2;
+            // Skip the skirt row and column to start an the first interior vertex.
+            var offset = rowStride + 1;
+
+            // Add a line between each row to define the horizontal cell outlines. Starts and ends at the vertices that
+            // appear on the surface, thereby ignoring the tile skirt.
+            var k = 0,
+                i,
+                j,
+                vertex;
+            for (j = 0; j < numLatVertices; j += 1) {
+                for (i = 0; i < tileWidth; i += 1) {
+                    vertex = offset + i + j * rowStride;
+                    indices[k] = vertex;
+                    indices[k + 1] = (vertex + 1);
+                    k += 2
+                }
+            }
+
+            // Add a line between each column to define the vertical cell outlines. Starts and ends at the vertices that
+            // appear on the surface, thereby ignoring the tile skirt.
+            for (i = 0; i < numLonVertices; i += 1) {
+                for (j = 0; j < tileHeight; j += 1) {
+                    vertex = offset + i + j * rowStride;
+                    indices[k] = vertex;
+                    indices[k + 1] = (vertex + rowStride);
+                    k += 2;
+                }
+            }
+
+            this.sharedGeometry.wireframeIndices = indices;
+            this.sharedGeometry.numWireframeIndices = numIndices;
         };
 
-        Tessellator.prototype.isTileTextureOnDisk = function (tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTileTextureOnDisk", "notYetImplemented"));
-        };
+        Tessellator.prototype.buildOutlineIndices = function (tileWidth, tileHeight) {
+            // The outline representation traces the tile's outer edge on the surface.
 
-        Tessellator.prototype.isTextureOnDiskExpired = function (tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTextureOnDiskExpired", "notYetImplemented"));
-        };
+            // The number of vertices in each dimension is 1 more than the number of cells.
+            var numLatVertices = tileHeight + 1;
+            var numLonVertices = tileWidth + 1;
 
-        Tessellator.prototype.loadTileImage = function (dc, tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "loadTileImage", "notYetImplemented"));
-        };
+            // Allocate an array to hold the computed indices. The outline indices ignore the extra rows and columns for the
+            // tile skirt.
+            var numIndices = 2 * (numLatVertices - 1) + 2 * numLonVertices - 1;
+            var indices = new Int32Array(numIndices);
 
-        Tessellator.prototype.retrieveTileImage = function (tile) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "retrieveTileImage", "notYetImplemented"));
+            // Add two columns of vertices to the row stride to account for the two additional vertices that provide an
+            // outer row/column for the tile skirt.
+            var rowStride = numLonVertices + 2;
+
+            // Bottom row. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt.
+            var offset = rowStride + 1,
+                k = 0,
+                i,
+                j;
+            for (i = 0; i < numLonVertices; i += 1) {
+                indices[k] = (offset + i);
+                k += 1;
+            }
+
+            // Rightmost column. Offset by rowStride - 2 to start at the lower right corner, ignoring the tile skirt. Skips
+            // the bottom vertex, which is already included in the bottom row.
+            offset = 2 * rowStride - 2;
+            for (j = 1; j < numLatVertices; j += 1) {
+                indices[k] = (offset + j * rowStride);
+                k += 1
+            }
+
+            // Top row. Offset by tileHeight* rowStride + 1 to start at the top left corner, ignoring the tile skirt. Skips
+            // the rightmost vertex, which is already included in the rightmost column.
+            offset = numLatVertices * rowStride + 1;
+            for (i = numLonVertices - 2; i >= 0; i -= 1) {
+                indices[k] = (offset + i);
+                k += 1
+            }
+
+            // Leftmost column. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt. Skips
+            // the topmost vertex, which is already included in the top row.
+            offset = rowStride + 1;
+            for (j = numLatVertices - 2; j >= 0; j -= 1) {
+                indices[k] = (offset + j * rowStride);
+                k += 1
+            }
+
+            this.sharedGeometry.outlineIndices = indices;
+            this.sharedGeometry.numOutlineIndices = numIndices;
         };
 
         Tessellator.prototype.cacheSharedGeometryVBOs = function (dc) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "cacheSharedGeometryVBOs", "notYetImplemented"));
+            var gpuResourceCache = dc.gpuResourceCache;
 
+            var texCoordVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
+            if (!texCoordVbo) {
+                texCoordVbo = dc.currentGlContext.createBuffer();
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVbo);
+                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ARRAY_BUFFER, this.sharedGeometry.texCoords, dc.currentGlContext.GL_STATIC_DRAW);
+                gpuResourceCache.putResource(texCoordVbo, gpuResourceCache.WW_GPU_VBO, this.sharedGeometry.texCoordVboCacheKey); // TODO: no need for size in WebGL
+                dc.frameStatistics.incrementVboLoadCount(1);
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
+            }
+
+            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
+            if (!indicesVbo) {
+                indicesVbo = dc.currentGlContext.createBuffer();
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
+                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, this.sharedGeometry.indices, dc.currentGlContext.GL_STATIC_DRAW);
+                gpuResourceCache.putResource(indicesVbo, gpuResourceCache.WW_GPU_VBO, this.sharedGeometry.indicesVboCacheKey); // TODO: no need for size in WebGL
+                dc.frameStatistics.incrementVboLoadCount(1);
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, null);
+            }
         };
 
         return Tessellator;
