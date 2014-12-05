@@ -61,11 +61,23 @@ define([
             this.currentAncestorTile = undefined;
 
             this.tileFactory = TileFactory;
+
+            this.vertexPointLocation = -1;
+            this.vertexTexCoordLocation = -1;
+            this.vertexElevationLocation = -1;
+            this.modelViewProjectionMatrixLocation = -1;
+
+            this.elevationShadingEnabled = false;
+
+            this.sharedGeometry = undefined;
+
         };
 
         /**
          * Tessellates the geometry of the globe associated with this terrain.
+         * @param {DrawContext} dc The draw context.
          * @returns {Terrain} The computed terrain, or null if terrain could not be computed.
+         * @throws {ArgumentError} If the dc is null or undefined.
          */
         Tessellator.prototype.tessellate = function (dc) {
             if (!dc) {
@@ -101,35 +113,90 @@ define([
 
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "tessellate", "notYetImplemented"));
-
-            return null;
+            return this.currentTiles;
         };
 
         /**
          * Initializes rendering state to draw a succession of terrain tiles.
+         * @param {DrawContext} dc The draw context.
+         * @throws {ArgumentError} If the dc is null or undefined.
          */
-        Tessellator.prototype.beginRendering = function () {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "notYetImplemented"));
+        Tessellator.prototype.beginRendering = function (dc) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "missingDc"));
+            }
+
+            var program = dc.currentProgram; // use the current program; the caller configures other program state
+            if (!program) {
+                Logger.logMessage(Logger.LEVEL_INFO, "Tessellator", "beginRendering", "Current Program is empty");
+                return;
+            }
+
+            this.cacheSharedGeometryVBOs(dc);
+
+            // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
+            // bound, and therefore must look up the location of attributes by name.
+            this.vertexPointLocation = program.attributeLocation("vertexPoint");
+            this.vertexTexCoordLocation = program.attributeLocation("vertexTexCoord");
+            this.vertexElevationLocation = program.attributeLocation("vertexElevation");
+            this.modelViewProjectionMatrixLocation = program.uniformLocation("mvpMatrix");
+            dc.currentGlContext.glEnableVertexAttribArray(vertexPointLocation);
+
+            if (this._elevationShadingEnabled && vertexElevationLocation >= 0) {
+                dc.currentGlContext.glEnableVertexAttribArray(vertexElevationLocation);
+            }
+
+            var gpuResourceCache = dc.gpuResourceCache;
+
+            if (this.vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
+            {
+                var texCoordVboId = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVboId.intValue);
+                dc.currentGlContext.glVertexAttribPointer(vertexTexCoordLocation, 2, dc.currentGlContext.GL_FLOAT, false, 0, 0);
+                dc.currentGlContext.glEnableVertexAttribArray(vertexTexCoordLocation);
+            }
+
+            var indicesVboId = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVboId.intValue);
         };
 
         /**
          * Restores rendering state after drawing a succession of terrain tiles.
+         * @param {DrawContext} dc The draw context.
+         * @throws {ArgumentError} If the dc or the specified tile is null or undefined.
          */
-        Tessellator.prototype.endRendering = function () {
-            // TODO
+        Tessellator.prototype.endRendering = function (dc) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRendering", "missingDc"));
+            }
+
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, 0);
+            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+            // Restore the global OpenGL vertex attribute array state.
+            dc.currentGlContext.glDisableVertexAttribArray(vertexPointLocation);
+            if (_elevationShadingEnabled && vertexElevationLocation >= 0)
+                dc.currentGlContext.glDisableVertexAttribArray(vertexElevationLocation);
+
+            if (vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
+            {
+                dc.currentGlContext.glDisableVertexAttribArray(vertexTexCoordLocation);
+            }
         };
 
         /**
          * Initializes rendering state for drawing a specified terrain tile.
+         * @param {DrawContext} dc The draw context.
          * @param {TerrainTile} terrainTile The terrain tile subsequently drawn via this tessellator's render function.
-         * @throws {ArgumentError} If the specified tile is null or undefined.
+         * @throws {ArgumentError} If the dc or the specified tile is null or undefined.
          */
-        Tessellator.prototype.beginRenderingTile = function (terrainTile) {
+        Tessellator.prototype.beginRenderingTile = function (dc, terrainTile) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "missingDc"));
+            }
             if (!terrainTile) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "missingTile"));
@@ -138,39 +205,88 @@ define([
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "notYetImplemented"));
+
+            var modelViewProjection = new Object(dc.navigatorState.modelviewProjection); // TODO: verify that this cloned
+            modelViewProjection.multiplyMatrix(tile.transformationMatrix);
+            GpuProgram.loadUniformMatrix(dc.currentGlContext, modelViewProjection, this.modelViewProjectionMatrixLocation);
+
+            var gpuResourceCache = dc.gpuResourceCache;
+            var vbo = gpuResourceCache.resourceForKey(tile.geometryVboCacheKey);
+            if (vbo) {
+                var size = tile.numPoints * 3 * sizeof(float);
+                var vbo = dc.currentGlContext.createBuffer();
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
+                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ARRAY_BUFFER,
+                    size,
+                    tile.points,
+                    dc.currentGlContext.GL_STATIC_DRAW);
+                gpuResourceCache.putResource(vboId, WW_GPU_VBO, size, tile.geometryVboCacheKey);
+                tile.setGeometryVboTimestamp(tile.geometryTimestamp);
+                dc.frameStatistics.incrementVboLoadCount(1);
+            }
+            else if (tile.geometryVboTimestamp != tile.geometryTimestamp) {
+                var size = tile.numPoints * 3 * sizeof(float);
+                var vbo = dc.currentGlContext.createBuffer();
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
+                dc.currentGlContext.bufferSubData(dc.currentGlContext.GL_ARRAY_BUFFER, 0, size, tile.points);
+                tile.setGeometryVboTimestamp(tile.geometryTimestamp);
+            }
+            else {
+                var vbo = dc.currentGlContext.createBuffer();
+                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
+            }
+
+            dc.currentGlContext.vertexAttribPointer(this.vertexPointLocation, 3, dc.currentGlContext.GL_FLOAT, false, 0, 0);
+            if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0) {
+                dc.currentGlContext.bindBuffer(GL_ARRAY_BUFFER, 0);
+                dc.currentGlContext.vertexAttribPointer(this.vertexElevationLocation, 1, dc.currentGlContext.GL_FLOAT, false, 0, tile.elevations);
+            }
         };
 
         /**
          * Restores rendering state after drawing the most recent tile specified to
          * [beginRenderingTile{@link Tessellator#beginRenderingTile}.
+         * @param {DrawContext} dc The draw context.
          * @param {TerrainTile} terrainTile The terrain tile most recently rendered.
-         * @throws {ArgumentError} If the specified tile is null or undefined.
+         * @throws {ArgumentError} If the dc or the specified tile is null or undefined.
          */
-        Tessellator.prototype.endRenderingTile = function (terrainTile) {
+        Tessellator.prototype.endRenderingTile = function (dc, terrainTile) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingDc"));
+            }
             if (!terrainTile) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingTile"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "notYetImplemented"));
+            /*
+             *  Note: the body of this function in the iOS version is empty.
+             *  Perhaps this implementation is complete?
+             */
         };
 
         /**
          * Renders a specified terrain tile.
+         * @param {DrawContext} dc The draw context.
          * @param {TerrainTile} terrainTile The terrain tile to render.
-         * @throws {ArgumentError} If the specified tile is null or undefined.
+         * @throws {ArgumentError} If the dc or the specified tile is null or undefined.
          */
-        Tessellator.prototype.renderTile = function (terrainTile) {
+        Tessellator.prototype.renderTile = function (dc, terrainTile) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingDc"));
+            }
             if (!terrainTile) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "missingTile"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "notYetImplemented"));
+            dc.currentGlContext.glDrawElements(
+                dc.currentGlContext.GL_TRIANGLE_STRIP,
+                this.sharedGeometry.numIndices,
+                dc.currentGlContext.GL_UNSIGNED_SHORT,
+                0);
         };
 
         Tessellator.prototype.createTopLevelTiles = function () {
@@ -217,7 +333,7 @@ define([
 
         };
 
-        Tessellator.prototype.tileMeetsRenderCriteria = function(dc, tile) {
+        Tessellator.prototype.tileMeetsRenderCriteria = function (dc, tile) {
             this.addTile(dc, tile);
         };
 
@@ -239,14 +355,14 @@ define([
             }
         };
 
-        Tessellator.prototype.mustRegenerateTileGeometry = function(dc, tile) {
+        Tessellator.prototype.mustRegenerateTileGeometry = function (dc, tile) {
             // TODO: tile doesn't have a timestamp yet
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "mustRegenerateTileGeometry", "notYetImplemented"));
             return tile.timestamp != this.elevationTimeStamp;
         };
 
-        Tessellator.prototype.regenerateTileGeometry = function(dc, tile) {
+        Tessellator.prototype.regenerateTileGeometry = function (dc, tile) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "regenerateTileGeometry", "notYetImplemented"));
@@ -289,28 +405,35 @@ define([
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTileInTextureMemory", "notYetImplemented"));
         };
 
-        Tessellator.prototype.isTileTextureOnDisk = function(tile) {
+        Tessellator.prototype.isTileTextureOnDisk = function (tile) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTileTextureOnDisk", "notYetImplemented"));
         };
 
-        Tessellator.prototype.isTextureOnDiskExpired = function(tile) {
+        Tessellator.prototype.isTextureOnDiskExpired = function (tile) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "isTextureOnDiskExpired", "notYetImplemented"));
         };
 
-        Tessellator.prototype.loadTileImage = function(dc, tile) {
+        Tessellator.prototype.loadTileImage = function (dc, tile) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "loadTileImage", "notYetImplemented"));
         };
 
-        Tessellator.prototype.retrieveTileImage = function(tile) {
+        Tessellator.prototype.retrieveTileImage = function (tile) {
             // TODO
             throw new NotYetImplementedError(
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "retrieveTileImage", "notYetImplemented"));
+        };
+
+        Tessellator.prototype.cacheSharedGeometryVBOs = function (dc) {
+            // TODO
+            throw new NotYetImplementedError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "cacheSharedGeometryVBOs", "notYetImplemented"));
+
         };
 
         return Tessellator;
