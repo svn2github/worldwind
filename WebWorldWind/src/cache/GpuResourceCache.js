@@ -45,7 +45,9 @@ define([
 
         GpuResourceCache.prototype.entryRemoved = function (key, entry) { // MemoryCacheListener method
             if (typeof entry.resource.dispose === 'function') {
-                entry.resource.dispose(); // TODO: verify this call when the resources are implemented
+                entry.resource.dispose(entry.gl);
+            } else if (entry.resourceType === WorldWind.GPU_BUFFER) {
+                entry.gl.deleteBuffer(entry.resource);
             }
         };
 
@@ -97,6 +99,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "GpuResourceCache", "setCapacity",
                         "Specified cache capacity is 0 or negative."));
             }
+
             this.entries.setCapacity(capacity);
         };
 
@@ -118,17 +121,18 @@ define([
         /**
          * Adds a specified resource to this cache. Replaces the existing resource for the specified key if the
          * cache currently contains a resource for that key.
+         * @param {WebGLRenderingContext} gl The current WebGL context.
          * @param {Object} key The key of the resource to add.
          * @param {Object} resource The resource to add to the cache.
          * @param {String} resourceType The type of resource. Recognized values are
          * WorldWind.GPU_PROGRAM,
          * WorldWind.GPU_TEXTURE
-         * and WorldWind.GPU_VBO.
+         * and WorldWind.GPU_BUFFER.
          * @param {Number} size The resource's size in bytes. Must be greater than 0.
          * @throws {ArgumentError} If any of the key, resource or resource-type arguments is null or undefined
          * or the specified size is less than 1.
          */
-        GpuResourceCache.prototype.putResource = function (key, resource, resourceType, size) {
+        GpuResourceCache.prototype.putResource = function (gl, key, resource, resourceType, size) {
             if (!key) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "GpuResourceCache", "putResource", "missingKey."));
@@ -152,6 +156,7 @@ define([
             }
 
             var entry = {
+                gl: gl,
                 resource: resource,
                 resourceType: resourceType
             };

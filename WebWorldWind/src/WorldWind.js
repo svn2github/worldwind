@@ -130,9 +130,9 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
             GPU_TEXTURE: "gpuTexture",
 
             /**
-             * Indicates a GPU VBO resource.
+             * Indicates a GPU buffer resource.
              */
-            GPU_VBO: "gpuVbo",
+            GPU_BUFFER: "gpuBuffer",
 
             /**
              * Indicates a great circle path.
