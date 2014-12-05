@@ -24,9 +24,9 @@ define([
              * Called when an entry is removed from the cache.
              * Implementers of this interface must implement this function.
              * @param {Object} key The key of the entry removed.
-             * @param {Object} value The value of the entry.
+             * @param {Object} entry The entry removed.
              */
-            entryRemoved: function (key, value) {
+            entryRemoved: function (key, entry) {
                 throw new UnsupportedOperationError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCacheListener", "entryRemoved", "abstractInvocation"));
             },

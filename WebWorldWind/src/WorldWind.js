@@ -106,22 +106,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
              */
             VERSION: "0.0.0",
 
-            /**
-             * Indicates a great circle path.
-             * @constant
-             */
-            GREAT_CIRCLE: "greatCircle",
-            /**
-             * Indicates a rhumb path -- a path of constant bearing.
-             * @constant
-             */
-            RHUMB_LINE: "rhumbLine",
-            /**
-             * Indicates a linear, straight line path.
-             * @constant
-             */
-            LINEAR: "linear",
-
+            // PLEASE KEEP THE ENTRIES BELOW IN ALPHABETICAL ORDER
             /**
              * Indicates an altitude mode relative to the globe's ellipsoid.
              * @constant
@@ -135,10 +120,43 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
             CLAMP_TO_GROUND: "clampToGround",
 
             /**
+             * Indicates a GPU program resource.
+             */
+            GPU_PROGRAM: "gpuProgram",
+
+            /**
+             * Indicates a GPU texture resource.
+             */
+            GPU_TEXTURE: "gpuTexture",
+
+            /**
+             * Indicates a GPU VBO resource.
+             */
+            GPU_VBO: "gpuVbo",
+
+            /**
+             * Indicates a great circle path.
+             * @constant
+             */
+            GREAT_CIRCLE: "greatCircle",
+
+            /**
+             * Indicates a linear, straight line path.
+             * @constant
+             */
+            LINEAR: "linear",
+
+            /**
              * Indicates an altitude mode relative to the terrain.
              * @constant
              */
-            RELATIVE_TO_GROUND: "relativeToGround"
+            RELATIVE_TO_GROUND: "relativeToGround",
+
+            /**
+             * Indicates a rhumb path -- a path of constant bearing.
+             * @constant
+             */
+            RHUMB_LINE: "rhumbLine"
         };
 
         WorldWind['Angle'] = Angle;
@@ -185,8 +203,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['WorldWindow'] = WorldWindow;
         WorldWind['ZeroElevationModel'] = ZeroElevationModel;
 
-        WorldWind.configuration = {
-        };
+        WorldWind.configuration = {};
 
         window.WorldWind = WorldWind;
 

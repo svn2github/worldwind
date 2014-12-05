@@ -12,6 +12,12 @@ define([
     function (Logger) {
         "use strict";
 
+        /**
+         * Constructs a GPU resource cache for a specified size and low-water value in bytes.
+         * @alias Texture
+         * @constructor
+         * @classdesc Represents a WebGL texture.
+         */
         var Texture = function() {
 
             this.originalImageWidth = 0;

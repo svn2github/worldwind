@@ -20,9 +20,11 @@ define([
          * Constructs a memory cache of a specified size.
          * @alias MemoryCache
          * @constructor
-         * @classdesc Provides a fixed-size memory cache of key-value pairs.
-         * @param capacity The cache's capacity, in bytes.
-         * @param lowWater The number of bytes to clear the cache to when its capacity is exceeded.
+         * @classdesc Provides a fixed-size memory cache of key-value pairs. The meaning of size depends on usage.
+         * Some instances of this class work in bytes while others work in counts. See the documentation for the
+         * specific use to determine the size units.
+         * @param capacity The cache's capacity.
+         * @param lowWater The size to clear the cache to when its capacity is exceeded.
          * @throws {ArgumentError} If either the capacity is zero or negative, the low-water value is greater than
          * or equal to the capacity.
          */
@@ -37,38 +39,64 @@ define([
                     "The specified low-water value is greater than or equal to the capacity"));
             }
 
-            /**
-             * The maximum number of bytes this cache may hold. This value is intended to be read-only and is specified
-             * to the memory cache's constructor.
-             * @type {Number}
-             */
-            this.capacity = capacity;
+            // Internal. Intentionally not documented.
+            this.capacityHidden = capacity;
 
             /**
-             * The number of bytes to clear this cache to when its capacity is exceeded. This value is intended to be
+             * The size to clear this cache to when its capacity is exceeded. This value is intended to be
              * read-only and is specified to the memory cache's constructor.
              * @type {Number}
              */
             this.lowWater = lowWater;
 
             /**
-             * The number of bytes currently used by this cache. This property is intended to be read-only.
+             * The size currently used by this cache. This property is intended to be read-only.
              * @type {number}
              */
             this.usedCapacity = 0;
 
             /**
-             * The number of bytes currently unused by this cache. This property is intended to be read-only.
+             * The size currently unused by this cache. This property is intended to be read-only.
              */
             this.freeCapacity = capacity;
         };
 
         /**
-         * Returns the value for a specified key.
-         * @param {Object} key The key of the value to return.
-         * @returns {Object} The value associated with the specified key, or null if the key is not in the cache.
+         * Specifies the capacity of this cache.
+         * @param {Number} capacity The capacity of this cache. If the specified capacity is less than this cache's
+         * low-water value, the low-water value is set to 85% of the specified capacity.
+         * @throws {ArgumentError} If the specified capacity is less than or equal to 0.
          */
-        MemoryCache.prototype.valueForKey = function (key) {
+        MemoryCache.prototype.setCapacity = function (capacity) {
+            if (capacity < 1) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCache", "setCapacity",
+                        "Specified cache capacity is 0 or negative."));
+            }
+
+            // TODO: Trim the cache to the new capacity if its less than the old capacity
+            this.capacityHidden = capacity;
+
+            if (this.capacityHidden < this.lowWater) {
+                this.lowWater = 0.85 * this.capacityHidden;
+            }
+        };
+
+        /**
+         * The maximum size this cache may hold.
+         * @returns {Number} This cache's capacity.
+         */
+        MemoryCache.prototype.capacity = function () {
+            return this.capacityHidden;
+        };
+
+        /**
+         * Returns the entry for a specified key.
+         * @param {Object} key The key of the value to return.
+         * @returns {Object} The entry associated with the specified key, or null if the key is not in the cache or
+         * is null or undefined.
+         */
+        MemoryCache.prototype.entryForKey = function (key) {
             // TODO
 
             return null;
