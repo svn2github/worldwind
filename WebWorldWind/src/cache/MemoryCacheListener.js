@@ -35,8 +35,10 @@ define([
              * Called when an error occurs during entry removal.
              * Implementers of this interface must implement this function.
              * @param {Object} error The error object describing the error that occurred.
+             * @param {Object} key The key of the entry being removed.
+             * @param {Object} entry The entry being removed.
              */
-            removalError: function (error) {
+            removalError: function (error, key, entry) {
                 throw new UnsupportedOperationError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "MemoryCacheListener", "removalError", "abstractInvocation"));
             }

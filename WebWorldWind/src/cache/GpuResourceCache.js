@@ -45,11 +45,11 @@ define([
 
         GpuResourceCache.prototype.entryRemoved = function (key, entry) { // MemoryCacheListener method
             if (typeof entry.resource.dispose === 'function') {
-                entry.resource.dispose();
+                entry.resource.dispose(); // TODO: verify this call when the resources are implemented
             }
         };
 
-        GpuResourceCache.prototype.removalError = function (error) { // MemoryCacheListener method
+        GpuResourceCache.prototype.removalError = function (error, key, entry) { // MemoryCacheListener method
             Logger.log(Logger.LEVEL_INFO, error.message());
         };
 
@@ -153,11 +153,10 @@ define([
 
             var entry = {
                 resource: resource,
-                resourceType: resourceType,
-                size: size
+                resourceType: resourceType
             };
 
-            this.entries.addEntry(key, entry);
+            this.entries.putEntry(key, entry, size);
         };
 
         /**
