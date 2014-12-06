@@ -10,6 +10,7 @@ define([
         '../geom/Angle',
         '../error/ArgumentError',
         '../globe/ElevationModel',
+        '../geom/Line',
         '../geom/Location',
         '../util/Logger',
         '../geom/Position',
@@ -19,6 +20,7 @@ define([
     function (Angle,
               ArgumentError,
               ElevationModel,
+              Line,
               Location,
               Logger,
               Position,
@@ -488,9 +490,114 @@ define([
             return this.northTangentAtLocation(this.scratchPosition.latitude, this.scratchPosition.longitude, result);
         };
 
-        Globe.prototype.elevationsForSector = function (sector, numLat, numLon, targetResolution,
+        /**
+         * Computes the first intersection of this globe with a specified line. The line is interpreted as a ray;
+         * intersection points behind the line's origin are ignored.
+         * @param {Line} line The line to intersect with this globe.
+         * @param {Vec3} result A pre-allocated Vec3 in which to return the computed point.
+         * @returns {boolean} <code>true</code> If the ray intersects the globe, otherwise <code>false</code>.
+         * @throws {ArgumentError} If the specified line or result is null or undefined.
+         */
+        Globe.prototype.intersectWithRay = function (line, result) {
+            if (!line) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "intersectWithRay", "missingLine"));
+            }
+
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "intersectWithRay", "missingResult"));
+            }
+
+            return WWMath.computeEllipsoidalGlobeIntersection(line, this.equatorialRadius, this.polarRadius, result);
+        };
+
+        /**
+         * Returns the time at which any elevations associated with this globe last changed.
+         * @returns {number} The time in milliseconds relative to the Epoch of the most recent elevation change.
+         */
+        Globe.prototype.elevationTimestamp = function () {
+            return this.elevationModel.timestamp;
+        };
+
+        /**
+         * Returns this globe's minimum elevation.
+         * @returns {number} This globe's minimum elevation.
+         */
+        Globe.prototype.minElevation = function () {
+            return this.elevationModel.minElevation
+        };
+
+        /**
+         * Returns this globe's maximum elevation.
+         * @returns {number} This globe's maximum elevation.
+         */
+        Globe.prototype.minElevation = function () {
+            return this.elevationModel.maxElevation
+        };
+
+        /**
+         * Returns the minimum and maximum elevations at a specified location on this globe.
+         * @param {Number} latitude The location's latitude in degrees.
+         * @param {Number} longitude The location's longitude in degrees.
+         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
+         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
+         * @throws {ArgumentError} If the specified result array is null or undefined.
+         */
+        Globe.prototype.minAndMaxElevationsAtLocation = function (latitude, longitude, result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "minAndMaxElevationsAtLocation",
+                        "missingResult"));
+            }
+
+            return this.elevationModel.minAndMaxElevationsAtLocation(latitude, longitude, result);
+        };
+
+        /**
+         * Returns the minimum and maximum elevations within a specified sector of this globe.
+         * @param {Sector} sector The sector for which to determine extreme elevations.
+         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
+         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
+         * @throws {ArgumentError} If the specified sector or result array is null or undefined.
+         */
+        Globe.prototype.minAndMaxElevationsForSector = function (sector, result) {
+            if (!sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "minAndMaxElevationsForSector",
+                        "missingSector"));
+            }
+
+            if (!result) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "minAndMaxElevationsForSector",
+                    "missingResult"));
+            }
+
+            return this.elevationModel.minAndMaxElevationsForSector(sector, result);
+        };
+
+        Globe.prototype.elevationAtLocation = function (latitude, longitude) {
+            return this.elevationModel.elevationAtLocation(latitude, longitude);
+        };
+
+        Globe.prototype.elevationsForSector = function (sector, numLatitude, numLongitude, targetResolution,
                                                         verticalExaggeration, result) {
-            // TODO
+            if (!sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "elevationsForSector", "missingSector"));
+            }
+
+            if (numLatitude <= 0 || numLongitude <= 0) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
+                    "elevationsForSector", "numLatitude or numLongitude is less than 1"));
+            }
+
+            if (!result || result.length < numLatitude * numLongitude) {
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe",
+                    "elevationsForSector", "missingArray"));
+            }
+
+            return this.elevationModel.elevationsForSector(sector, numLatitude, numLongitude, targetResolution,
+                verticalExaggeration, result);
         };
 
         return Globe;

@@ -84,6 +84,7 @@ define(function () {
             missingFrustum: "The specified frustum is null or undefined.",
             missingGlobe: "The specified globe is null or undefined.",
             missingKey: "The specified key is null or undefined.",
+            missingLine: "The specified line is null or undefined.",
             missingLocation: "The specified location is null or undefined.",
             missingMatrix: "The specified matrix is null or undefined.",
             missingNavigatorState: "The specified navigator state is null or undefined.",

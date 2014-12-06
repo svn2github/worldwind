@@ -92,7 +92,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "tessellate", "missingDC"));
             }
 
-            var lastElevationsChange = dc.globe.elevationTimestamp;
+            var lastElevationsChange = dc.globe.elevationTimestamp();
             if (this.currentTiles &&
                 this.elevationTimestamp == lastElevationsChange && !this.lastModelViewProjection &&
                 dc.navigatorState.modelviewProjection.equals(this.lastModelViewProjection)) {

@@ -9,10 +9,12 @@
 define([
         '../error/ArgumentError',
         '../util/Logger',
-        '../geom/Sector'],
+        '../geom/Sector',
+        '../error/UnsupportedOperationError'],
     function (ArgumentError,
               Logger,
-              Sector) {
+              Sector,
+              UnsupportedOperationError) {
         "use strict";
 
         /**
@@ -41,24 +43,26 @@ define([
              * @type {number}
              * @default 0
              */
-            this.minimumElevation = 0;
+            this.minElevation = 0;
 
             /**
              * This elevation model's maximum elevation.
              * @type {number}
              */
-            this.maximumElevation = 0;
+            this.maxElevation = 0;
         };
 
         /**
          * Returns the minimum and maximum elevations at a specified location.
          * @param {Number} latitude The location's latitude in degrees.
          * @param {Number} longitude The location's longitude in degrees.
-         * @returns {Number[]} A two-element array containing, respectively, the minimum and maximum elevations at the
-         * specified location.
+         * @param {Number[]} result A pre-allocated two-element array in which to return the minimum and maximum elevations.
+         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
+         * @throws {ArgumentError} If the specified result array is null or undefined.
          */
-        ElevationModel.prototype.getExtremeElevationsAtLocation = function (latitude, longitude) {
-            return [0, 0];
+        ElevationModel.prototype.minAndMaxElevationsAtLocation = function (latitude, longitude, result) {
+            throw new UnsupportedOperationError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationModel", "minAndMaxElevationsAtLocation", "abstractInvocation"));
         };
 
         /**
@@ -66,10 +70,11 @@ define([
          * @param {Sector} sector The sector for which to determine extreme elevations.
          * @returns {Number[]} A two-element array containing, respectively, the minimum and maximum elevations within
          * the specified sector.
-         * @throws {ArgumentError} If the specified sector is null or undefined.
+         * @throws {ArgumentError} If the specified sector or result array is null or undefined.
          */
-        ElevationModel.prototype.getExtremeElevationsForSector = function (sector) {
-            return [0, 0];
+        ElevationModel.prototype.minAndMaxElevationsForSector = function (sector, result) {
+            throw new UnsupportedOperationError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationModel", "minAndMaxElevationsForSector", "abstractInvocation"));
         };
 
         /**
@@ -78,8 +83,9 @@ define([
          * @param {Number} longitude The location's longitude in degrees.
          * @returns {Number} The elevation at the specified location.
          */
-        ElevationModel.prototype.getElevationAtLocation = function (latitude, longitude) {
-            return 0;
+        ElevationModel.prototype.elevationAtLocation = function (latitude, longitude) {
+            throw new UnsupportedOperationError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationModel", "elevationAtLocation", "abstractInvocation"));
         };
 
         /**
@@ -97,10 +103,11 @@ define([
          * specified numLatitude or numLongitude values is less than 1, or the result array is not of sufficient length
          * to hold numLatitude x numLongitude values.
          */
-        ElevationModel.prototype.getElevationsForSector = function (sector, numLatitude, numLongitude,
-                                                                        targetResolution, verticalExaggeration,
-                                                                        result) {
-            return 0;
+        ElevationModel.prototype.elevationsForSector = function (sector, numLatitude, numLongitude,
+                                                                 targetResolution, verticalExaggeration,
+                                                                 result) {
+            throw new UnsupportedOperationError(
+                Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationModel", "elevationsForSector", "abstractInvocation"));
         };
 
         return ElevationModel;

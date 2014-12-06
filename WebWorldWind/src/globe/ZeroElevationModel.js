@@ -24,6 +24,8 @@ define([
          * @classdesc Represents an elevation model whose elevations are zero at all locations.
          */
         var ZeroElevationModel = function () {
+            ElevationModel.call(this);
+
             /**
              * Indicates this elevation model's display name.
              * @type {string}
@@ -45,45 +47,63 @@ define([
              * @type {number}
              * @default 0
              */
-            this.minimumElevation = 0;
+            this.minElevation = 0;
 
             /**
              * This elevation model's maximum elevation, which is always zero.
              * @type {number}
              * @default 0
              */
-            this.maximumElevation = 0;
+            this.maxElevation = 0;
         };
 
         // Inherit from the abstract elevation model class.
-        ZeroElevationModel.prototype = new ElevationModel();
+        ZeroElevationModel.prototype = Object.create(ElevationModel.prototype);
 
         /**
          * Returns the minimum and maximum elevations at a specified location.
          * @param {Number} latitude The location's latitude in degrees.
          * @param {Number} longitude The location's longitude in degrees.
-         * @returns {Number[]} A two-element array containing, respectively, the minimum and maximum elevations at the
-         * specified location.
+         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
+         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
+         * @throws {ArgumentError} If the specified result array is null or undefined.
          */
-        ZeroElevationModel.prototype.getExtremeElevationsAtLocation = function (latitude, longitude) {
-            return [0, 0];
+        ZeroElevationModel.prototype.minAndMaxElevationsAtLocation = function (latitude, longitude, result) {
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "minAndMaxElevationsAtLocation",
+                        "missingResult"));
+            }
+
+            result[0] = 0;
+            result[1] = 0;
+
+            return result;
         };
 
         /**
          * Returns the minimum and maximum elevations within a specified sector.
          * @param {Sector} sector The sector for which to determine extreme elevations.
-         * @returns {Number[]} A two-element array containing, respectively, the minimum and maximum elevations within
-         * the specified sector.
-         * @throws {ArgumentError} If the specified sector is null or undefined.
+         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
+         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
+         * @throws {ArgumentError} If the specified sector or result array is null or undefined.
          */
-        ZeroElevationModel.prototype.getExtremeElevationsForSector = function (sector) {
-            if (!(sector instanceof Sector)) {
+        ZeroElevationModel.prototype.minAndMaxElevationsForSector = function (sector, result) {
+            if (!sector) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "getExtremeElevationsForSector",
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "minAndMaxElevationsForSector",
                         "missingSector"));
             }
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "minAndMaxElevationsAtLocation",
+                        "missingResult"));
+            }
 
-            return [0, 0];
+            result[0] = 0;
+            result[1] = 0;
+
+            return result;
         };
 
         /**
@@ -92,7 +112,7 @@ define([
          * @param {Number} longitude The location's longitude in degrees.
          * @returns {Number} The elevation at the specified location.
          */
-        ZeroElevationModel.prototype.getElevationAtLocation = function (latitude, longitude) {
+        ZeroElevationModel.prototype.elevationAtLocation = function (latitude, longitude) {
             return 0;
         };
 
@@ -111,25 +131,25 @@ define([
          * specified numLatitude or numLongitude values is less than 1, or the result array is not of sufficient length
          * to hold numLatitude x numLongitude values.
          */
-        ZeroElevationModel.prototype.getElevationsForSector = function (sector, numLatitude, numLongitude,
+        ZeroElevationModel.prototype.elevationsForSector = function (sector, numLatitude, numLongitude,
                                                                         targetResolution, verticalExaggeration,
                                                                         result) {
-            if (!(sector instanceof Sector)) {
+            if (!sector) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "getElevationsForSector", "missingSector"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "elevationsForSector", "missingSector"));
             }
 
             if (numLatitude <= 0 || numLongitude <= 0) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel",
-                    "getElevationsForSector", "numLatitude or numLongitude is less than 1"));
+                    "elevationsForSector", "numLatitude or numLongitude is less than 1"));
             }
 
-            if (!(result instanceof Array) || result.length < numLatitude * numLongitude) {
+            if (!result || result.length < numLatitude * numLongitude) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel",
-                    "getElevationsForSector", "missingArray"));
+                    "elevationsForSector", "missingArray"));
             }
 
-            for (var i = 0, len = locations.length; i < len; i++) {
+            for (var i = 0, len = result.length; i < len; i++) {
                 result[i] = 0;
             }
 
