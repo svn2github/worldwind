@@ -127,7 +127,7 @@ define([
 
             dc.reset();
             dc.globe = this.globe;
-            dc.layerList = this.layers;
+            dc.layers = this.layers;
             dc.navigatorState = this.navigator.currentState();
             dc.verticalExaggeration = this.verticalExaggeration;
             dc.frameStatistics = this.frameStatistics;
@@ -144,7 +144,7 @@ define([
 
             try {
                 this.beginFrame(this.drawContext, viewport);
-                //this.createTerrain(this.drawContext);
+                //this.createTerrain(this.drawContext); // TODO: uncomment this when terrain creation works
                 this.clearFrame(this.drawContext);
                 this.doDraw(this.drawContext);
             } finally {
@@ -174,7 +174,7 @@ define([
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.doDraw = function (dc) {
-            this.drawWireframeTerrain(dc);
+            this.drawLayers();
         };
 
         // Internal function. Intentionally not documented.
@@ -192,8 +192,27 @@ define([
                     this.drawContext.terrain.surfaceGeometry.length : 0);
         };
 
-        WorldWindow.prototype.drawWireframeTerrain = function (dc) {
-            // TODO
+        WorldWindow.prototype.drawLayers = function () {
+            var beginTime = new Date().getTime(),
+                dc = this.drawContext,
+                layers = this.drawContext.layers.layers,
+                layer;
+
+            for (var i = 0, len = layers.length; i < len; i++) {
+                layer = layers[i];
+                if (layer) {
+                    dc.currentLayer = layer;
+                    try {
+                        layer.render(dc);
+                    } catch (e) {
+                        Logger.log(Logger.LEVEL_SEVERE, "Error while rendering layer " + layer.displayName + ".");
+                        // Keep going. Render the rest of the layers.
+                    }
+                }
+            }
+
+            var now = new Date().getTime();
+            dc.frameStatistics.layerRenderingTime = now - beginTime;
         };
 
         return WorldWindow;

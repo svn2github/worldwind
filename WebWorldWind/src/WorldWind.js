@@ -33,6 +33,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Position',
         './geom/Rectangle',
         './geom/Sector',
+        './layer/ShowTessellationLayer',
         './render/SurfaceTile',
         './render/SurfaceTileRenderer',
         './shaders/SurfaceTileRendererProgram',
@@ -76,6 +77,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Position,
               Rectangle,
               Sector,
+              ShowTessellationLayer,
               SurfaceTile,
               SurfaceTileRenderer,
               SurfaceTileRendererProgram,
@@ -186,6 +188,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
         WorldWind['Sector'] = Sector;
+        WorldWind['ShowTessellationLayer'] = ShowTessellationLayer;
         WorldWind['SurfaceTile'] = SurfaceTile;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['SurfaceTileRendererProgram'] = SurfaceTileRendererProgram;

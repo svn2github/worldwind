@@ -640,10 +640,20 @@ define([
             }
         };
 
+        /**
+         * Draws outlines of the triangles composing the tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The tile to draw.
+         */
         Tessellator.prototype.renderWireframeTile = function(dc, terrainTile) {
             // TODO
         };
 
+        /**
+         * Draws the outer boundary of a specified terrain tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The tile whose outer boundar to draw.
+         */
         Tessellator.prototype.renderTileOutline = function(dc, terrainTile) {
             // TODO
         };
