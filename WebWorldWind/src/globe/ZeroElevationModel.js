@@ -22,6 +22,7 @@ define([
          * @alias ZeroElevationModel
          * @constructor
          * @classdesc Represents an elevation model whose elevations are zero at all locations.
+         * @augments ElevationModel
          */
         var ZeroElevationModel = function () {
             ElevationModel.call(this);
