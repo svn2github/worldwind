@@ -49,8 +49,8 @@ define([
             var program, vShader, fShader;
 
             try {
-                vShader = new GpuShader(gl, WorldWind.VERTEX_SHADER, vertexShaderSource);
-                fShader = new GpuShader(gl, WorldWind.FRAGMENT_SHADER, fragmentShaderSource);
+                vShader = new GpuShader(gl, WebGLRenderingContext.VERTEX_SHADER, vertexShaderSource);
+                fShader = new GpuShader(gl, WebGLRenderingContext.FRAGMENT_SHADER, fragmentShaderSource);
             } catch (e) {
                 if (vShader)
                     vShader.dispose(gl);
@@ -61,7 +61,7 @@ define([
             }
 
             program = gl.createProgram();
-            if (program <= 0) { // TODO: Understand this return type and how to validate it.
+            if (!program) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "GpuProgram", "constructor",
                     "Unable to create shader program."));
             }
@@ -142,7 +142,7 @@ define([
          *
          * @param {WebGLRenderingContext} gl The current WebGL context.
          * @param {String} attributeName The name of the attribute whose location is determined.
-         * @returns {WebGLUniformLocation} The WebGL attribute location of the specified attribute, or -1 if the attribute is not
+         * @returns {Number} The WebGL attribute location of the specified attribute, or -1 if the attribute is not
          * found.
          * @throws {ArgumentError} If the specified attribute name is null, empty or undefined.
          */

@@ -8,6 +8,7 @@
  */
 define([
         './error/ArgumentError',
+        './shaders/BasicProgram',
         './render/DrawContext',
         './util/FrameStatistics',
         './globe/Globe',
@@ -22,6 +23,7 @@ define([
         './globe/Tessellator',
         './globe/ZeroElevationModel'],
     function (ArgumentError,
+              BasicProgram,
               DrawContext,
               FrameStatistics,
               Globe,
@@ -167,11 +169,14 @@ define([
             var gl = dc.currentGlContext;
 
             gl.clearColor(dc.clearColor.red, dc.clearColor.green, dc.clearColor.blue, dc.clearColor.alpha);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT);
         };
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.doDraw = function (dc) {
+            var basicProgram = new BasicProgram(dc.currentGlContext);
+
+            basicProgram.dispose(dc.currentGlContext);
         };
 
         // Internal function. Intentionally not documented.
