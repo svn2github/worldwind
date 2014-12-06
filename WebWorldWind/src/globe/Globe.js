@@ -488,6 +488,11 @@ define([
             return this.northTangentAtLocation(this.scratchPosition.latitude, this.scratchPosition.longitude, result);
         };
 
+        Globe.prototype.elevationsForSector = function (sector, numLat, numLon, targetResolution,
+                                                        verticalExaggeration, result) {
+            // TODO
+        };
+
         return Globe;
     }
 )

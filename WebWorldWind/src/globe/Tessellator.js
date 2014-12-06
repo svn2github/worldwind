@@ -9,10 +9,12 @@
 define([
         '../error/ArgumentError',
         '../globe/Globe',
+        '../shaders/GpuProgram',
         '../util/Level',
         '../util/LevelSet',
         '../geom/Location',
         '../util/Logger',
+        '../geom/Matrix',
         '../cache/MemoryCache',
         '../navigate/NavigatorState',
         '../error/NotYetImplementedError',
@@ -25,10 +27,12 @@ define([
     ],
     function (ArgumentError,
               Globe,
+              GpuProgram,
               Level,
               LevelSet,
               Location,
               Logger,
+              Matrix,
               MemoryCache,
               NavigatorState,
               NotYetImplementedError,
@@ -56,8 +60,9 @@ define([
             this.tileCache = new MemoryCache(5000000, 4000000); // Holds 316 32x32 tiles.
 
             this.detailHintOrigin = 1.1;
+            this.detailHint = 0;
 
-            this.elevationTimeStamp = undefined;
+            this.elevationTimestamp = undefined;
             this.lastModelViewProjection = undefined;
 
             this.tileFactory = TileFactory;
@@ -71,6 +76,8 @@ define([
 
             this.sharedGeometry = undefined;
             this.tileElevations = undefined;
+
+            this.scratchMatrix = Matrix.fromIdentity();
         };
 
         /**
@@ -87,8 +94,7 @@ define([
 
             var lastElevationsChange = dc.globe.elevationTimestamp;
             if (this.currentTiles &&
-                this.elevationTimeStamp == lastElevationsChange &&
-                !this.lastModelViewProjection &&
+                this.elevationTimestamp == lastElevationsChange && !this.lastModelViewProjection &&
                 dc.navigatorState.modelviewProjection.equals(this.lastModelViewProjection)) {
                 return this.currentTiles;
             }
@@ -126,7 +132,7 @@ define([
         Tessellator.prototype.beginRendering = function (dc) {
             if (!dc) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "missingDc"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "missingDc")); //  TODO: missingDc not defined in Logger
             }
 
             var program = dc.currentProgram; // use the current program; the caller configures other program state
@@ -139,10 +145,11 @@ define([
 
             // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
             // bound, and therefore must look up the location of attributes by name.
-            this.vertexPointLocation = program.attributeLocation("vertexPoint");
-            this.vertexTexCoordLocation = program.attributeLocation("vertexTexCoord");
-            this.vertexElevationLocation = program.attributeLocation("vertexElevation");
-            this.modelViewProjectionMatrixLocation = program.uniformLocation("mvpMatrix");
+            var gl = dc.currentGlContext;
+            this.vertexPointLocation = program.attributeLocation(gl, "vertexPoint");
+            this.vertexTexCoordLocation = program.attributeLocation(gl, "vertexTexCoord");
+            this.vertexElevationLocation = program.attributeLocation(gl, "vertexElevation");
+            this.modelViewProjectionMatrixLocation = program.uniformLocation(gl, "mvpMatrix");
             dc.currentGlContext.enableVertexAttribArray(this.vertexPointLocation);
 
             if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0) {
@@ -152,14 +159,14 @@ define([
             var gpuResourceCache = dc.gpuResourceCache;
 
             if (this.vertexTexCoordLocation >= 0) {// location of vertexTexCoord attribute is -1 when the basic program is bound
-                var texCoordVbo = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVbo);
-                dc.currentGlContext.vertexAttribPointer(this.vertexTexCoordLocation, 2, dc.currentGlContext.GL_FLOAT, false, 0, 0);
-                dc.currentGlContext.enableVertexAttribArray(this.vertexTexCoordLocation);
+                var texCoordVbo = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey); // TODO: unresolved
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
+                gl.vertexAttribPointer(this.vertexTexCoordLocation, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
+            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey); // TODO: unresolved
+            dc.currentGlContext.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
         };
 
         /**
@@ -173,8 +180,8 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRendering", "missingDc"));
             }
 
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
-            dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, null);
+            dc.currentGlContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
+            dc.currentGlContext.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
 
             // Restore the global OpenGL vertex attribute array state.
             dc.currentGlContext.disableVertexAttribArray(this.vertexPointLocation);
@@ -203,40 +210,40 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRenderingTile", "missingTile"));
             }
 
-            var modelViewProjection = new Object(dc.navigatorState.modelviewProjection); // TODO: verify that this cloned
-            modelViewProjection.multiplyMatrix(tile.transformationMatrix);
-            GpuProgram.loadUniformMatrix(dc.currentGlContext, modelViewProjection, this.modelViewProjectionMatrixLocation);
+            var gl = dc.currentGlContext;
 
-            var gpuResourceCache = dc.gpuResourceCache;
-            var vbo = gpuResourceCache.resourceForKey(tile.geometryVboCacheKey);
+            this.scratchMatrix.setToMultiply(dc.navigatorState.modelviewProjection, terrainTile.transformationMatrix);
+            GpuProgram.loadUniformMatrix(gl, this.scratchMatrix, this.modelViewProjectionMatrixLocation);
+
+            var vbo = dc.gpuResourceCache.resourceForKey(terrainTile.geometryVboCacheKey);
             if (!vbo) {
-                vbo = dc.currentGlContext.createBuffer();
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
-                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ARRAY_BUFFER,
-                    tile.points,
-                    dc.currentGlContext.GL_STATIC_DRAW);
-                gpuResourceCache.putResource(vbo, gpuResourceCache.WW_GPU_VBO, tile.geometryVboCacheKey); // TODO: no need for size in WebGL
-                tile.geometryVboTimestamp = tile.geometryTimestamp;
+                vbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vbo);
+                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+                    terrainTile.points,
+                    WebGLRenderingContext.STATIC_DRAW);
+                dc.gpuResourceCache.putResource(gl, terrainTile.geometryVboCacheKey, vbo, WorldWind.GPU_BUFFER, 1); // TODO: use correct size instead of "1"
+                terrainTile.geometryVboTimestamp = terrainTile.geometryTimestamp;
                 dc.frameStatistics.incrementVboLoadCount(1);
             }
-            else if (tile.geometryVboTimestamp != tile.geometryTimestamp) {
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
-                dc.currentGlContext.bufferSubData(dc.currentGlContext.GL_ARRAY_BUFFER, 0, tile.points);
-                tile.geometryVboTimestamp = tile.geometryTimestamp;
+            else if (terrainTile.geometryVboTimestamp != terrainTile.geometryTimestamp) {
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vbo);
+                gl.bufferSubData(WebGLRenderingContext.ARRAY_BUFFER, 0, terrainTile.points);
+                terrainTile.geometryVboTimestamp = terrainTile.geometryTimestamp;
             }
             else {
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, vbo);
+                dc.currentGlContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vbo);
             }
 
-            dc.currentGlContext.vertexAttribPointer(this.vertexPointLocation, 3, dc.currentGlContext.GL_FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(this.vertexPointLocation, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
             if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0) {
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
-                dc.currentGlContext.vertexAttribPointer(this.vertexElevationLocation,
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
+                gl.vertexAttribPointer(this.vertexElevationLocation,
                     1,
-                    dc.currentGlContext.GL_FLOAT,
+                    WebGLRenderingContext.FLOAT,
                     false,
                     0,
-                    tile.elevations);
+                    terrainTile.elevations);
             }
         };
 
@@ -248,20 +255,7 @@ define([
          * @throws {ArgumentError} If the dc or the specified tile is null or undefined.
          */
         Tessellator.prototype.endRenderingTile = function (dc, terrainTile) {
-            if (!dc) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingDc"));
-            }
-            if (!terrainTile) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingTile"));
-            }
-
-            /*
-             *  TODO ???
-             *  Note: the body of this function in the iOS version is empty.
-             *  Perhaps this implementation is complete?
-             */
+            // Intentionally empty until there's some reason to add code here.
         };
 
         /**
@@ -281,9 +275,9 @@ define([
             }
 
             dc.currentGlContext.drawElements(
-                dc.currentGlContext.GL_TRIANGLE_STRIP,
+                WebGLRenderingContext.TRIANGLE_STRIP,
                 this.sharedGeometry.numIndices,
-                dc.currentGlContext.GL_UNSIGNED_SHORT,
+                WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
         };
 
@@ -292,7 +286,7 @@ define([
          ***********************************************************************/
 
         Tessellator.prototype.createTopLevelTiles = function (dc) {
-            this.topLevelTiles.removeAllObjects();
+            this.topLevelTiles.removeAllObjects(); // TODO: unresolved
             Tile.createTilesForLevel(this.levels.firstLevel(), this.tileFactory, this.topLevelTiles);
         };
 
@@ -335,7 +329,7 @@ define([
         };
 
         Tessellator.prototype.tileMeetsRenderCriteria = function (dc, tile) {
-            return tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailHintOrigin + this.detailHint)
+            return tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailHintOrigin + this.detailHint);
         };
 
         Tessellator.prototype.mustRegenerateTileGeometry = function (dc, tile) {
@@ -414,9 +408,9 @@ define([
             if (this.sharedGeometry)
                 return;
 
-            this.sharedGeometry = new TerrainSharedGeometry(); // TODO: does this exist yet?
+            this.sharedGeometry = new TerrainSharedGeometry(); // TODO: Class not needed externally so implement internally, perhaps as a shared object
 
-            var count; // holds the returned number of elements returned from the methods below
+            var count; // holds the returned number of elements returned from the methods below // TODO: unused
 
             this.buildTexCoords(tile.tileWidth, tile.tileHeight);
 
@@ -622,26 +616,27 @@ define([
         };
 
         Tessellator.prototype.cacheSharedGeometryVBOs = function (dc) {
-            var gpuResourceCache = dc.gpuResourceCache;
+            var gl = dc.currentGlContext,
+                gpuResourceCache = dc.gpuResourceCache;
 
-            var texCoordVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey);
+            var texCoordVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey); // TODO: unresolved
             if (!texCoordVbo) {
-                texCoordVbo = dc.currentGlContext.createBuffer();
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, texCoordVbo);
-                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ARRAY_BUFFER, this.sharedGeometry.texCoords, dc.currentGlContext.GL_STATIC_DRAW);
-                gpuResourceCache.putResource(texCoordVbo, gpuResourceCache.WW_GPU_VBO, this.sharedGeometry.texCoordVboCacheKey); // TODO: no need for size in WebGL
+                texCoordVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
+                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.sharedGeometry.texCoords, WebGLRenderingContext.STATIC_DRAW);
+                gpuResourceCache.putResource(gl, this.sharedGeometry.texCoordVboCacheKey, texCoordVbo, WorldWind.GPU_BUFFER, 1); // TODO: replace "1" with actual size
                 dc.frameStatistics.incrementVboLoadCount(1);
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ARRAY_BUFFER, null);
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
             }
 
-            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey);
+            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey); // TODO: unresolved
             if (!indicesVbo) {
                 indicesVbo = dc.currentGlContext.createBuffer();
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
-                dc.currentGlContext.bufferData(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, this.sharedGeometry.indices, dc.currentGlContext.GL_STATIC_DRAW);
-                gpuResourceCache.putResource(indicesVbo, gpuResourceCache.WW_GPU_VBO, this.sharedGeometry.indicesVboCacheKey); // TODO: no need for size in WebGL
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.sharedGeometry.indices, WebGLRenderingContext.STATIC_DRAW);
+                gpuResourceCache.putResource(gl, this.sharedGeometry.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, 1); // TODO: replace "1" with actual size
                 dc.frameStatistics.incrementVboLoadCount(1);
-                dc.currentGlContext.bindBuffer(dc.currentGlContext.GL_ELEMENT_ARRAY_BUFFER, null);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
             }
         };
 

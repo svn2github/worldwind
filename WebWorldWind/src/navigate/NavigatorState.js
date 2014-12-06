@@ -254,7 +254,7 @@ define([
          * @throws {ArgumentError} If either argument is null or undefined.
          */
         NavigatorState.prototype.convertPointToViewport = function (point, result) {
-            if (!screenPoint) {
+            if (!point) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "convertPointToViewport",
                     "missingPoint"));
             }

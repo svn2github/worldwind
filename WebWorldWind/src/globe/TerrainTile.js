@@ -78,14 +78,14 @@ define([
              * This is used to invalidate the terrain geometry when the globe's elevations change.
              * @type {number}
              */
-            this.geometryTimeStamp = 0;
+            this.geometryTimestamp = 0;
 
             /**
              * Indicates the date and time at which this tile's terrain geometry VBO was loaded.
              * This is used to invalidate the terrain geometry when the globe's elevations change.
              * @type {number}
              */
-            this.geometryVboTimeStamp = 0;
+            this.geometryVboTimestamp = 0;
 
             /**
              * The GPU resource cache ID for this tile's model coordinates VBO.
