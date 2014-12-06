@@ -91,6 +91,7 @@ define(function () {
             missingPlane: "The specified plane is null or undefined.",
             missingPoint: "The specified point is null or undefined.",
             missingPosition: "The specified position is null or undefined.",
+            missingProgram: "The specified program is null or undefined.",
             missingResource: "The specified resource is null or undefined.",
             missingResult: "The specified result variable is null or undefined.",
             missingSector: "The specified sector is null or undefined.",

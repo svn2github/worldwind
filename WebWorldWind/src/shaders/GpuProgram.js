@@ -90,6 +90,8 @@ define([
             this.programId = program;
             this.vertexShader = vShader;
             this.fragmentShader = fShader;
+
+            this.size = vertexShaderSource.length + fragmentShaderSource.length;
         };
 
         /**
@@ -133,9 +135,6 @@ define([
             this.attributeLocations = {};
             this.uniformLocations = {};
         };
-
-        // Provides unique IDs to be used as program keys.
-        GpuProgram.programKeyCounter = 0;
 
         /**
          * Returns the GLSL attribute location of a specified attribute name.
@@ -197,14 +196,6 @@ define([
             gl.linkProgram(program);
 
             return gl.getProgramParameter(program, WebGLRenderingContext.LINK_STATUS);
-        };
-
-        /**
-         * Generates a unique string to associate with a GPU program.
-         * @returns {string} A unique string.
-         */
-        GpuProgram.programKey = function () {
-            return (GpuProgram.programKeyCounter++).toString();
         };
 
         /**

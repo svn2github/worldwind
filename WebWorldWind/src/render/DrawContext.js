@@ -7,6 +7,7 @@
  * @version $Id$
  */
 define([
+        '../error/ArgumentError',
         '../util/Color',
         '../util/FrameStatistics',
         '../globe/Globe',
@@ -24,12 +25,13 @@ define([
         '../globe/Terrain',
         '../globe/Tessellator'
     ],
-    function (Color,
+    function (ArgumentError,
+              Color,
               FrameStatistics,
               Globe,
-              LayerList,
               GpuProgram,
               GpuResourceCache,
+              LayerList,
               NavigatorState,
               Layer,
               Logger,
@@ -140,6 +142,12 @@ define([
              * @type {WebGLRenderingContext}
              */
             this.currentGlContext = null;
+
+            /**
+             * Indicates whether the frame is being drawn for picking.
+             * @type {boolean}
+             */
+            this.pickingMode = false;
         };
 
         /**
@@ -156,11 +164,64 @@ define([
          * Computes any values necessary to render the upcoming frame. Called after all draw context state for the
          * frame has been set.
          */
-        DrawContext.prototype.update = function () {
+        DrawContext.prototype.update = function () { // TODO
             //var eyePoint = this.navigatorState.eyePoint;
             //
             //this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
             //this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
+        };
+
+        /**
+         * Indicates whether terrain exists.
+         * @returns {boolean} <code>true</code> if there is terrain, otherwise <code>false</code>.
+         */
+        DrawContext.prototype.hasTerrain = function () {
+            return this.terrain && this.terrain.surfaceGeometry && (this.terrain.surfaceGeometry.length > 0);
+        };
+
+        /**
+         * Binds a specified GPU program.
+         * This function also makes the program the current program.
+         * @param {WebGLRenderingContext} gl The current WebGL drawing context.
+         * @param {GpuProgram} program The program to bind. May be null or undefined, in which case the currently
+         * bound program is unbound.
+         */
+        DrawContext.prototype.bindProgram = function (gl, program) {
+            if (program) {
+                program.bind(gl);
+            } else {
+                gl.useProgram(0);
+            }
+
+            this.currentProgram = program;
+        };
+
+        /**
+         * Binds a potentially cached GPU program, creating and caching it if it isn't already cached.
+         * This function also makes the program the current program.
+         * @param {WebGLRenderingContext} gl The current WebGL drawing context.
+         * @param {function} programConstructor The constructor to use to create the program.
+         * @throws {ArgumentError} If the specified constructor is null or undefined.
+         */
+        DrawContext.prototype.findAndBindProgram = function (gl, programConstructor) {
+            if (!programConstructor) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "DrawContext", "bindProgramForKey",
+                        "The specified program constructor is null or undefined."));
+            }
+
+            var program = this.gpuResourceCache.programForKey(programConstructor);
+            if (program) {
+                this.bindProgram(gl, program);
+            } else {
+                try {
+                    program = new programConstructor(gl);
+                    this.bindProgram(gl, program);
+                    this.gpuResourceCache.putResource(gl, programConstructor, program, WorldWind.GPU_PROGRAM, program.size);
+                } catch (e) {
+                    Logger.log(Logger.LEVEL_SEVERE, "Error attempting to create GPU program.")
+                }
+            }
         };
 
         return DrawContext;

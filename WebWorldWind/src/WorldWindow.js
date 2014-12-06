@@ -144,7 +144,7 @@ define([
 
             try {
                 this.beginFrame(this.drawContext, viewport);
-                this.createTerrain(this.drawContext);
+                //this.createTerrain(this.drawContext);
                 this.clearFrame(this.drawContext);
                 this.doDraw(this.drawContext);
             } finally {
@@ -174,9 +174,7 @@ define([
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.doDraw = function (dc) {
-            var basicProgram = new BasicProgram(dc.currentGlContext);
-
-            basicProgram.dispose(dc.currentGlContext);
+            this.drawWireframeTerrain(dc);
         };
 
         // Internal function. Intentionally not documented.
@@ -192,6 +190,10 @@ define([
             dc.frameStatistics.setTerrainTileCount(
                 this.drawContext.terrain && this.drawContext.terrain.surfaceGeometry ?
                     this.drawContext.terrain.surfaceGeometry.length : 0);
+        };
+
+        WorldWindow.prototype.drawWireframeTerrain = function (dc) {
+            // TODO
         };
 
         return WorldWindow;

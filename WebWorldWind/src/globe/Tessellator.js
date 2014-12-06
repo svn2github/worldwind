@@ -640,5 +640,13 @@ define([
             }
         };
 
+        Tessellator.prototype.renderWireframeTile = function(dc, terrainTile) {
+            // TODO
+        };
+
+        Tessellator.prototype.renderTileOutline = function(dc, terrainTile) {
+            // TODO
+        };
+
         return Tessellator;
     });
