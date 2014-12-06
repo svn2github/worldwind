@@ -11,15 +11,13 @@ define([
         '../util/Color',
         '../shaders/GpuProgram',
         '../util/Logger',
-        '../geom/Matrix',
-        '../error/NotYetImplementedError'
+        '../geom/Matrix'
     ],
     function (ArgumentError,
               Color,
               GpuProgram,
               Logger,
-              Matrix,
-              NotYetImplementedError) {
+              Matrix) {
         "use strict";
 
         /**
@@ -27,7 +25,7 @@ define([
          * Initializes, compiles and links this GLSL program with the source code for its vertex and fragment shaders.
          * <p>
          * This method creates WebGL shaders for the program's shader sources and attaches them to a new GLSL program. This
-         * method then compiles the shaders and links the program if compilation is successful. Use the bind method to make the
+         * method then compiles the shaders and then links the program if compilation is successful. Use the bind method to make the
          * program current during rendering.
          *
          * @alias BasicProgram
@@ -35,17 +33,42 @@ define([
          * @augments GpuProgram
          * @classdesc BasicProgram is a GLSL program that draws geometry in a solid color.
          * @param {WebGLRenderingContext} gl The current WebGL context.
+         * @throws {ArgumentError} If the shaders cannot be compiled, or linking of
+         * the compiled shaders into a program fails.
          */
         var BasicProgram = function (gl) {
-            GpuProgram.call(this, gl, null, null); // TODO
+            var vertexShaderSource =
+                    'attribute vec4 vertexPoint;\n' +
+                    'uniform mat4 mvpMatrix;\n' +
+                    'void main() {gl_Position = mvpMatrix * vertexPoint;}',
+                fragmentShaderSource =
+                    'precision mediump float;\n' +
+                    'uniform vec4 color;\n' +
+                    'void main() {gl_FragColor = color;}';
+
+            // Call to the superclass, which performs shader program compiling and linking.
+            GpuProgram.call(this, gl, vertexShaderSource, fragmentShaderSource);
 
             /**
              * The WebGL location for this program's 'vertexPoint' attribute.
              * @type {Number}
              */
-            this.vertexPointLocation = -1;
+            this.vertexPointLocation = this.attributeLocation(gl, "vertexPoint");
+
+            /**
+             * The WebGL location for this program's 'mvpMatrix' uniform.
+             * @type {WebGLUniformLocation}
+             */
+            this.mvpMatrixLocation = this.uniformLocation(gl, "mvpMatrix");
+
+            /**
+             * The WebGL location for this program's 'color' uniform.
+             * @type {WebGLUniformLocation}
+             */
+            this.colorLocation = this.uniformLocation(gl, "color");
         };
 
+        // Inherit from GpuProgram.
         BasicProgram.prototype = Object.create(GpuProgram.prototype);
 
         /**
@@ -61,9 +84,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadModelviewProjection", "missingMatrix"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadModelviewProjection", "notYetImplemented"));
+            GpuProgram.loadUniformMatrix(gl, matrix, this.mvpMatrixLocation);
         };
 
         /**
@@ -79,9 +100,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadColor", "missingColor"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadColor", "notYetImplemented"));
+            GpuProgram.loadUniformColor(gl, color, this.colorLocation);
         };
 
         /**
@@ -91,9 +110,7 @@ define([
          * @param {Number} pickColor The color to load, expressed as a Number.
          */
         BasicProgram.prototype.loadPickColor = function (gl, pickColor) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BasicProgram", "loadPickColor", "notYetImplemented"));
+            GpuProgram.loadUniformPickColor(gl, pickColor, this.colorLocation);
         };
 
         return BasicProgram;

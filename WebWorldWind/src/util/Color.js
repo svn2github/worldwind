@@ -49,5 +49,21 @@ define([
             this.alpha = alpha;
         };
 
+        /**
+         * Returns this color's components premultiplied by this color's alpha component.
+         * @param {Float32Array} array A pre-allocated array in which to return the color components.
+         * @returns {Float32Array} This colors premultiplied components as an array, in the order RGBA.
+         */
+        Color.prototype.premultipliedComponents = function (array) {
+            var a = this.alpha;
+
+            array[0] = this.red * a;
+            array[1] = this.green * a;
+            array[2] = this.blue * a;
+            array[3] = a;
+
+            return array;
+        };
+
         return Color;
     });

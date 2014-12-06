@@ -202,9 +202,9 @@ define([
          * The array must have space for at least 16 elements. This matrix's components are stored in the array
          * starting with row 0 column 0 in index 0, row 1 column 0 in index 1, row 2 column 0 in index 2, and so on.
          *
-         * @param {Number[]} result An array of at least 16 elements. Upon return, contains this matrix's components in
+         * @param {Float32Array} result An array of at least 16 elements. Upon return, contains this matrix's components in
          * column-major.
-         * @returns {Number[]} The specified result array.
+         * @returns {Float32Array} The specified result array.
          * @throws {ArgumentError} If the specified result array in null or undefined.
          */
         Matrix.prototype.columnMajorComponents = function (result) {
