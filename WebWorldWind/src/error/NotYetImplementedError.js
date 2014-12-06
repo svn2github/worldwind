@@ -6,44 +6,33 @@
  * @exports NotYetImplementedError
  * @version $Id$
  */
-define(function () {
-    "use strict";
+define(['../error/AbstractError'],
+    function (AbstractError) {
+        "use strict";
 
-    /**
-     * Constructs an not-yet-implemented error with a specified message.
-     * @alias ArgumentError
-     * @constructor
-     * @classdesc Represents an error associated with an operation that is not yet implemented.
-     * @param {String} message The message.
-     */
-    var NotYetImplementedError = function (message) {
-        this.name = "NotYetImplementedError";
-        this.message = message;
+        /**
+         * Constructs an not-yet-implemented error with a specified message.
+         * @alias NotYetImplementedError
+         * @constructor
+         * @classdesc Represents an error associated with an operation that is not yet implemented.
+         * @augments AbstractError
+         * @param {String} message The message.
+         */
+        var NotYetImplementedError = function (message) {
+            AbstractError.call(this, "NotYetImplementedError", message);
 
-        var stack;
-        try {
-            //noinspection ExceptionCaughtLocallyJS
-            throw new Error();
-        } catch (e) {
-            stack = e.stack;
-        }
-        this.stack = stack;
-    };
+            var stack;
+            try {
+                //noinspection ExceptionCaughtLocallyJS
+                throw new Error();
+            } catch (e) {
+                stack = e.stack;
+            }
+            this.stack = stack;
+        };
 
-    /**
-     * Returns the message and stack trace associated with this error.
-     * @returns {string} The message and stack trace associated with this error.
-     */
-    NotYetImplementedError.prototype.toString = function () {
-        var str = this.name + ': ' + this.message;
+        NotYetImplementedError.prototype = Object.create(AbstractError.prototype);
 
-        if (this.stack) {
-            str += '\n' + this.stack.toString();
-        }
+        return NotYetImplementedError;
 
-        return str;
-    };
-
-    return NotYetImplementedError;
-
-});
+    });

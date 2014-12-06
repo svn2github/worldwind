@@ -6,44 +6,35 @@
  * @exports UnsupportedOperationError
  * @version $Id$
  */
-define(function () {
-    "use strict";
+define(['../error/AbstractError'],
+    function (AbstractError) {
+        "use strict";
 
-    /**
-     * Constructs an unsupported-operation error with a specified message.
-     * @alias ArgumentError
-     * @constructor
-     * @classdesc Represents an error associated with an operation that is not available or should not be invoked.
-     * @param {String} message The message.
-     */
-    var UnsupportedOperationError = function (message) {
-        this.name = "UnsupportedOperationError";
-        this.message = message;
+        /**
+         * Constructs an unsupported-operation error with a specified message.
+         * @alias UnsupportedOperationError
+         * @constructor
+         * @classdesc Represents an error associated with an operation that is not available or should not be invoked.
+         * Typically raised when an abstract function of an abstract base class is called because a subclass has not
+         * implemented the function.
+         * @augments AbstractError
+         * @param {String} message The message.
+         */
+        var UnsupportedOperationError = function (message) {
+            AbstractError.call(this, "UnsupportedOperationError", message);
 
-        var stack;
-        try {
-            //noinspection ExceptionCaughtLocallyJS
-            throw new Error();
-        } catch (e) {
-            stack = e.stack;
-        }
-        this.stack = stack;
-    };
+            var stack;
+            try {
+                //noinspection ExceptionCaughtLocallyJS
+                throw new Error();
+            } catch (e) {
+                stack = e.stack;
+            }
+            this.stack = stack;
+        };
 
-    /**
-     * Returns the message and stack trace associated with this error.
-     * @returns {string} The message and stack trace associated with this error.
-     */
-    UnsupportedOperationError.prototype.toString = function () {
-        var str = this.name + ': ' + this.message;
+        UnsupportedOperationError.prototype = Object.create(AbstractError.prototype);
 
-        if (this.stack) {
-            str += '\n' + this.stack.toString();
-        }
+        return UnsupportedOperationError;
 
-        return str;
-    };
-
-    return UnsupportedOperationError;
-
-});
+    });
