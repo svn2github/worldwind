@@ -7,21 +7,25 @@
  * @version $Id$
  */
 define([
+        '../geom/Angle',
         '../error/ArgumentError',
         '../render/DrawContext',
         '../util/Logger',
         '../geom/Matrix',
         '../error/NotYetImplementedError',
         '../render/SurfaceTile',
+        '../shaders/SurfaceTileRendererProgram',
         '../globe/Terrain',
         '../globe/Tessellator'
     ],
-    function (ArgumentError,
+    function (Angle,
+              ArgumentError,
               DrawContext,
               Logger,
               Matrix,
               NotYetImplementedError,
               SurfaceTile,
+              SurfaceTileRendererProgram,
               Terrain,
               Tesselator) {
         "use strict";
@@ -98,16 +102,45 @@ define([
         };
 
         SurfaceTileRenderer.prototype.beginRendering = function (dc, opacity) {
-            // TODO
+            var gl = dc.currentGlContext,
+                program = dc.findAndBindProgram(gl, SurfaceTileRendererProgram);
+            program.loadTexSampler(gl, WebGLRenderingContext.TEXTURE0);
+            program.loadOpacity(gl, opacity);
         };
 
         SurfaceTileRenderer.prototype.endRendering = function (dc) {
-            // TODO
+            dc.bindProgram(null);
         };
 
         SurfaceTileRenderer.prototype.applyTileState = function (dc, terrainTile, surfaceTile) {
-            // TODO
+            // Sets up the texture transform and mask that applies the texture tile to the terrain tile.
+            var gl = dc.currentGlContext,
+                program = dc.currentProgram,
+                terrainSector = terrainTile.sector,
+                terrainDeltaLat = terrainSector.deltaLatitude() * Angle.DEGREES_TO_RADIANS,
+                terrainDeltaLon = terrainSector.deltaLongitude() * Angle.DEGREES_TO_RADIANS,
+                surfaceSector = surfaceTile.sector,
+                surfaceDeltaLat = surfaceSector.deltaLatitude() * Angle.DEGREES_TO_RADIANS,
+                surfaceDeltaLon = surfaceSector.deltaLongitude() * Angle.DEGREES_TO_RADIANS,
+                sScale = surfaceDeltaLon > 0 ? terrainDeltaLon / surfaceDeltaLon : 1,
+                tScale = surfaceDeltaLat > 0 ? terrainDeltaLat / surfaceDeltaLat : 1,
+                sTrans = -(surfaceSector.minLongitudeRadians() - terrainSector.minLongitudeRadians()) / terrainDeltaLon,
+                tTrans = -(surfaceSector.minLatitudeRadians() - terrainSector.minLatitudeRadians()) / terrainDeltaLat;
+
+            this.texMaskMatrix.set(
+                sScale, 0, 0, sScale * sTrans,
+                0, tScale, 0, tScale * tTrans,
+                0, 0, 1, 0,
+                0, 0, 0, 1, true
+            );
+            this.texMaskMatrix.setToUnitYFlip();
+            surfaceTile.applyInternalTransform(dc, this.texSamplerMatrix);
+            this.texSamplerMatrix.multiplyMatrix(this.texMaskMatrix);
+
+            program.loadTexSamplerMatrix(gl, this.texSamplerMatrix);
+            program.loadTexMaskMatrix(gl, this.texMaskMatrix);
         };
 
         return SurfaceTileRenderer;
-    });
+    }
+);

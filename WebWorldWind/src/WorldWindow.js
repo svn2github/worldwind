@@ -8,7 +8,6 @@
  */
 define([
         './error/ArgumentError',
-        './shaders/BasicProgram',
         './render/DrawContext',
         './util/FrameStatistics',
         './globe/Globe',
@@ -23,7 +22,6 @@ define([
         './globe/Tessellator',
         './globe/ZeroElevationModel'],
     function (ArgumentError,
-              BasicProgram,
               DrawContext,
               FrameStatistics,
               Globe,

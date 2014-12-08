@@ -201,6 +201,7 @@ define([
          * This function also makes the program the current program.
          * @param {WebGLRenderingContext} gl The current WebGL drawing context.
          * @param {function} programConstructor The constructor to use to create the program.
+         * @returns {GpuProgram} The bound program.
          * @throws {ArgumentError} If the specified constructor is null or undefined.
          */
         DrawContext.prototype.findAndBindProgram = function (gl, programConstructor) {
@@ -222,6 +223,8 @@ define([
                     Logger.log(Logger.LEVEL_SEVERE, "Error attempting to create GPU program.")
                 }
             }
+
+            return program;
         };
 
         return DrawContext;

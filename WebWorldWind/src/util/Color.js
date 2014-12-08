@@ -47,63 +47,63 @@ define([
              * @type {Number}
              */
             this.alpha = alpha;
-
-            /**
-             * The color white.
-             * @type {Color}
-             * @constant
-             */
-            this.WHITE = new Color(1, 1, 1, 1);
-
-            /**
-             * The color black.
-             * @type {Color}
-             * @constant
-             */
-            this.BLACK = new Color(0, 0, 0, 1);
-
-            /**
-             * The color red.
-             * @type {Color}
-             * @constant
-             */
-            this.RED = new Color(1, 0, 0, 1);
-
-            /**
-             * The color green.
-             * @type {Color}
-             * @constant
-             */
-            this.GREEN = new Color(0, 1, 0, 1);
-
-            /**
-             * The color blue.
-             * @type {Color}
-             * @constant
-             */
-            this.BLUE = new Color(0, 0, 1, 1);
-
-            /**
-             * The color cyan.
-             * @type {Color}
-             * @constant
-             */
-            this.CYAN = new Color(0, 1, 1, 1);
-
-            /**
-             * The color yellow.
-             * @type {Color}
-             * @constant
-             */
-            this.YELLOW = new Color(1, 1, 0, 1);
-
-            /**
-             * The color magenta.
-             * @type {Color}
-             * @constant
-             */
-            this.MAGENTA = new Color(1, 0, 1, 1);
         };
+
+        /**
+         * The color white.
+         * @type {Color}
+         * @constant
+         */
+        Color.WHITE = new Color(1, 1, 1, 1);
+
+        /**
+         * The color black.
+         * @type {Color}
+         * @constant
+         */
+        Color.BLACK = new Color(0, 0, 0, 1);
+
+        /**
+         * The color red.
+         * @type {Color}
+         * @constant
+         */
+        Color.RED = new Color(1, 0, 0, 1);
+
+        /**
+         * The color green.
+         * @type {Color}
+         * @constant
+         */
+        Color.GREEN = new Color(0, 1, 0, 1);
+
+        /**
+         * The color blue.
+         * @type {Color}
+         * @constant
+         */
+        Color.BLUE = new Color(0, 0, 1, 1);
+
+        /**
+         * The color cyan.
+         * @type {Color}
+         * @constant
+         */
+        Color.CYAN = new Color(0, 1, 1, 1);
+
+        /**
+         * The color yellow.
+         * @type {Color}
+         * @constant
+         */
+        Color.YELLOW = new Color(1, 1, 0, 1);
+
+        /**
+         * The color magenta.
+         * @type {Color}
+         * @constant
+         */
+        Color.MAGENTA = new Color(1, 0, 1, 1);
 
         /**
          * Returns this color's components premultiplied by this color's alpha component.
