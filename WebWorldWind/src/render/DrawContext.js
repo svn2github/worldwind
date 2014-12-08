@@ -129,7 +129,7 @@ define([
              * @type {Color}
              * @default red = 0, green = 0, blue = 0, alpha = 1
              */
-            this.clearColor = new Color(1, 0, 0, 1);
+            this.clearColor = Color.RED;
 
             /**
              * Frame statistics.
