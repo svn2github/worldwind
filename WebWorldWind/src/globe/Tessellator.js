@@ -74,7 +74,19 @@ define([
 
             this.elevationShadingEnabled = false;
 
-            this.sharedGeometry = undefined;
+            // was in sharedGeometry
+            this.texCoords = undefined;
+            this.numTexCoords = undefined;
+            this.indices = undefined;
+            this.numIndices = undefined;
+            this.outlineIndices = undefined;
+            this.numOutlineIndices = undefined;
+            this.wireframeIndices = undefined;
+            this.numWireframeIndices = undefined;
+
+            this.indicesVboCacheKey = undefined;
+            this.texCoordVboCacheKey = undefined;
+
             this.tileElevations = undefined;
 
             this.scratchMatrix = Matrix.fromIdentity();
@@ -131,7 +143,7 @@ define([
         Tessellator.prototype.beginRendering = function (dc) {
             if (!dc) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "missingDc")); //  TODO: missingDc not defined in Logger
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "beginRendering", "missingDc"));
             }
 
             var program = dc.currentProgram; // use the current program; the caller configures other program state
@@ -158,13 +170,13 @@ define([
             var gpuResourceCache = dc.gpuResourceCache;
 
             if (this.vertexTexCoordLocation >= 0) {// location of vertexTexCoord attribute is -1 when the basic program is bound
-                var texCoordVbo = dc.gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey); // TODO: unresolved
+                var texCoordVbo = dc.gpuResourceCache.resourceForKey(this.texCoordVboCacheKey);
                 gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
                 gl.vertexAttribPointer(this.vertexTexCoordLocation, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey); // TODO: unresolved
+            var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
             dc.currentGlContext.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
         };
 
@@ -221,7 +233,7 @@ define([
                 gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
                     terrainTile.points,
                     WebGLRenderingContext.STATIC_DRAW);
-                dc.gpuResourceCache.putResource(gl, terrainTile.geometryVboCacheKey, vbo, WorldWind.GPU_BUFFER, 1); // TODO: use correct size instead of "1"
+                dc.gpuResourceCache.putResource(gl, terrainTile.geometryVboCacheKey, vbo, WorldWind.GPU_BUFFER, terrainTile.points.length * 3 * 4);
                 terrainTile.geometryVboTimestamp = terrainTile.geometryTimestamp;
                 dc.frameStatistics.incrementVboLoadCount(1);
             }
@@ -407,8 +419,6 @@ define([
             if (this.sharedGeometry)
                 return;
 
-            this.sharedGeometry = new TerrainSharedGeometry(); // TODO: Class not needed externally so implement internally, perhaps as a shared object
-
             this.buildTexCoords(tile.tileWidth, tile.tileHeight);
 
             // Build the surface-tile indices.
@@ -469,8 +479,8 @@ define([
                 }
             }
 
-            this.sharedGeometry.texCoords = texCoords;
-            this.sharedGeometry.numTexCoords = numTexCoords;
+            this.texCoords = texCoords;
+            this.numTexCoords = numTexCoords;
         };
 
         Tessellator.prototype.buildIndices = function (tileWidth, tileHeight) {
@@ -508,8 +518,8 @@ define([
                 }
             }
 
-            this.sharedGeometry.indices = indices;
-            this.sharedGeometry.numIndices = numIndices;
+            this.indices = indices;
+            this.numIndices = numIndices;
         };
 
         Tessellator.prototype.buildWireframeIndices = function (tileWidth, tileHeight) {
@@ -554,8 +564,8 @@ define([
                 }
             }
 
-            this.sharedGeometry.wireframeIndices = indices;
-            this.sharedGeometry.numWireframeIndices = numIndices;
+            this.wireframeIndices = indices;
+            this.numWireframeIndices = numIndices;
         };
 
         Tessellator.prototype.buildOutlineIndices = function (tileWidth, tileHeight) {
@@ -608,30 +618,30 @@ define([
                 k += 1
             }
 
-            this.sharedGeometry.outlineIndices = indices;
-            this.sharedGeometry.numOutlineIndices = numIndices;
+            this.outlineIndices = indices;
+            this.numOutlineIndices = numIndices;
         };
 
         Tessellator.prototype.cacheSharedGeometryVBOs = function (dc) {
             var gl = dc.currentGlContext,
                 gpuResourceCache = dc.gpuResourceCache;
 
-            var texCoordVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.texCoordVboCacheKey); // TODO: unresolved
+            var texCoordVbo = gpuResourceCache.resourceForKey(this.texCoordVboCacheKey);
             if (!texCoordVbo) {
                 texCoordVbo = gl.createBuffer();
                 gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
-                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.sharedGeometry.texCoords, WebGLRenderingContext.STATIC_DRAW);
-                gpuResourceCache.putResource(gl, this.sharedGeometry.texCoordVboCacheKey, texCoordVbo, WorldWind.GPU_BUFFER, 1); // TODO: replace "1" with actual size
+                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.texCoords, WebGLRenderingContext.STATIC_DRAW);
+                gpuResourceCache.putResource(gl, this.texCoordVboCacheKey, texCoordVbo, WorldWind.GPU_BUFFER, this.texCoords.length * 2 * 4);
                 dc.frameStatistics.incrementVboLoadCount(1);
                 gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
             }
 
-            var indicesVbo = gpuResourceCache.resourceForKey(this.sharedGeometry.indicesVboCacheKey); // TODO: unresolved
+            var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
             if (!indicesVbo) {
                 indicesVbo = dc.currentGlContext.createBuffer();
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
-                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.sharedGeometry.indices, WebGLRenderingContext.STATIC_DRAW);
-                gpuResourceCache.putResource(gl, this.sharedGeometry.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, 1); // TODO: replace "1" with actual size
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indices, WebGLRenderingContext.STATIC_DRAW);
+                gpuResourceCache.putResource(gl, this.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, this.indices.length * 4);
                 dc.frameStatistics.incrementVboLoadCount(1);
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
             }
