@@ -107,7 +107,7 @@ define([
             this.currentCoverage = undefined;
 
             if (!this.topLevelTiles || this.topLevelTiles.length == 0) {
-                this.topLevelTiles = this.createTopLevelTiles();
+                this.createTopLevelTiles();
             }
 
             for (var index = 0; index < this.topLevelTiles.length; index += 1) {
@@ -115,10 +115,9 @@ define([
 
                 tile.update(dc);
 
-                if (this.isTileVisible(tile)) {
+                if (this.isTileVisible(dc, tile)) {
                     this.addTileOrDescendants(dc, tile);
                 }
-
             }
 
             return this.currentTiles;

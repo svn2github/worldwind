@@ -181,7 +181,7 @@ define([
             }
 
             var minLat = sector.minLatitude * Angle.DEGREES_TO_RADIANS,
-                maxLat = sector.maxlatitude * Angle.DEGREES_TO_RADIANS,
+                maxLat = sector.maxLatitude * Angle.DEGREES_TO_RADIANS,
                 minLon = sector.minLongitude * Angle.DEGREES_TO_RADIANS,
                 maxLon = sector.maxLongitude * Angle.DEGREES_TO_RADIANS,
                 deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1),

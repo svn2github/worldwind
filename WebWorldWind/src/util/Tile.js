@@ -130,6 +130,9 @@ define([
              * @type {Number}
              */
             this.texelSize = 0;
+
+            this.extentTimestamp = undefined;
+            this.extentVerticalExaggeration = undefined;
         };
 
         /**
@@ -262,11 +265,6 @@ define([
          * @returns {boolean} <code>true</code> if the tile should be subdivided, otherwise <code>false</code>.
          */
         Tile.prototype.mustSubdivide = function (dc, detailFactor) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "mustSubdivide", "notYetImplemented"));
-
-            return false;
             var globe = dc.globe,
                 eyePos = dc.eyePosition;
 
@@ -307,9 +305,48 @@ define([
          * @param {DrawContext} dc The current draw context.
          */
         Tile.prototype.update = function (dc) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "update", "notYetImplemented"));
+            var globe = dc.globe,
+                elevationTimestamp = globe.elevationTimestamp(),
+                verticalExaggeration = dc.verticalExaggeration;
+
+            if (!this.extentTimestamp ||
+                this.extentTimestamp != elevationTimestamp ||
+                !this.extentVerticalExaggeration ||
+                this.extentVerticalExaggeration != verticalExaggeration) {
+                // Compute the minimum and maximum elevations for this tile's sector, or use zero if the globe has no elevations
+                // in this tile's coverage area. In the latter case the globe does not modify the result parameter.
+                var extremes = [0, 0];
+                globe.minAndMaxElevationsForSector(this.sector, extremes);
+                var minElevation = extremes[0],
+                    maxElevation = extremes[1];
+
+                // Multiply the minimum and maximum elevations by the scene's vertical exaggeration. This ensures that the
+                // elevations to used build the terrain are contained by this tile's extent.
+                var minHeight = this.minElevation * verticalExaggeration,
+                    maxHeight = this.maxElevation * verticalExaggeration;
+                if (minHeight == maxHeight) {
+                    minHeight = maxHeight + 10; // TODO: Determine if this is necessary.
+                }
+
+                // Compute a bounding box for this tile that contains the terrain surface in the tile's coverage area.
+                if (!this.extent) {
+                    this.extent = new BoundingBox();
+                }
+                this.extent.setToSector(this.sector, globe, minHeight, maxHeight);
+
+                // Compute the reference point used as a local coordinate origin for the tile.
+                if (!this.referencePoint) {
+                    this.referencePoint = new Vec3();
+                }
+                globe.computePointFromPosition(this.sector.centroidLatitude(), this.sector.centroidLongitude(), minHeight, this.referencePoint);
+
+                // Set the geometry extent to the globe's elevation timestamp on which the geometry is based. This ensures that
+                // the geometry timestamp can be reliably compared to the elevation timestamp in subsequent frames.
+                this.extentTimestamp = elevationTimestamp;
+                this.extentVerticalExaggeration = verticalExaggeration;
+
+                dc.frameStatistics.incrementTileUpdateCount(1);
+            }
         };
 
         /**
@@ -469,8 +506,9 @@ define([
                         maxLat,
                         minLon,
                         maxLon),
-                        tile = tileFactory.createTile(tileSector, level, row, col);
-                    tilesOut.push(tile);
+                        //tile = tileFactory.createTile(tileSector, level, row, col);
+                        tile = new Tile(tileSector, level, row, col); // TODO: replace with tileFactory
+                    result.push(tile);
 
                     minLon = maxLon;
                 }

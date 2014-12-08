@@ -38,7 +38,7 @@ define([
              * This sector's maximum latitude in degrees.
              * @type {Number}
              */
-            this.maxlatitude = maxLatitude;
+            this.maxLatitude = maxLatitude;
             /**
              * This sector's minimum longitude in degrees.
              * @type {Number}
@@ -91,7 +91,7 @@ define([
          * longitudes differ, otherwise <code>false</code>.
          */
         Sector.prototype.isEmpty = function () {
-            return this.minLatitude === this.maxlatitude && this.minLongitude === this.maxLongitude;
+            return this.minLatitude === this.maxLatitude && this.minLongitude === this.maxLongitude;
         };
 
         /**
@@ -99,7 +99,7 @@ define([
          * @returns {Number} The difference between this sector's minimum and maximum latitudes, in degrees.
          */
         Sector.prototype.deltaLatitude = function () {
-            return this.maxlatitude - this.minLatitude;
+            return this.maxLatitude - this.minLatitude;
         };
 
         /**
@@ -115,7 +115,7 @@ define([
          * @returns {number} The mid-angle of this sector's minimum and maximum latitudes, in degrees.
          */
         Sector.prototype.centroidLatitude = function () {
-            return 0.5 * (this.minLatitude + this.maxlatitude);
+            return 0.5 * (this.minLatitude + this.maxLatitude);
         };
 
         /**
