@@ -98,6 +98,18 @@ define([
              * @type {Number}
              */
             this.tileHeight = tileHeight;
+
+            this.levels = [];
+
+            for (var i = 0; i < numLevels; i += 1) {
+                var n = Math.pow(2, i),
+                    latDelta = levelZeroDelta.latitude / n,
+                    lonDelta = levelZeroDelta.longitude / n,
+                    tileDelta = new Location(latDelta, lonDelta),
+                    level = new Level(i, tileDelta, this);
+
+                this.levels[i] = level;
+            }
         };
 
         /**
@@ -106,7 +118,7 @@ define([
          * @returns {Level} The requested level, or null if the level does not exist.
          */
         LevelSet.prototype.level = function(levelNumber) {
-            // TODO
+            return this.levels[levelNumber];
         };
 
         /**
@@ -116,7 +128,21 @@ define([
          * @param {Number} texelSize The size of pixels or elevation cells in the level, in radians per pixel or cell.
          */
         LevelSet.prototype.levelForTexelSize = function(texelSize) {
-            // TODO
+            // TODO: Replace this loop with a computation.
+            var lastLevel = this.lastLevel();
+
+            if (lastLevel.texelSize >= texelSize) {
+                return lastLevel; // Can't do any better than the last level.
+            }
+
+            for (var index = 0, length = this.levels.length; index < length; index += 1) {
+                var level = this.levels[index];
+                if (level.texelSize <= texelSize) {
+                    return level;
+                }
+            }
+
+            return lastLevel;
         };
 
         /**
@@ -124,7 +150,7 @@ define([
          * @returns {Level} The first level of this level set.
          */
         LevelSet.prototype.firstLevel = function() {
-            // TODO
+            return this.levels[0];
         };
 
         /**
@@ -132,7 +158,7 @@ define([
          * @returns {Level} The last level of this level set.
          */
         LevelSet.prototype.lastLevel = function() {
-            // TODO
+            return this.levels[this.levels.length - 1];
         };
 
         return LevelSet;

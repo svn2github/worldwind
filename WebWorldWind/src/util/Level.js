@@ -8,16 +8,12 @@
  */
 define([
         '../error/ArgumentError',
-        '../util/LevelSet', // TODO: This is a circular dependency. Try to eliminate the need for it.
         '../geom/Location',
-        '../util/Logger',
-        '../geom/Sector'
+        '../util/Logger'
     ],
     function (ArgumentError,
-              LevelSet,
               Location,
-              Logger,
-              Sector) {
+              Logger) {
         "use strict";
 
         /**
@@ -63,25 +59,25 @@ define([
              * The size of pixels or elevation cells within this level, in radians per pixel or per cell.
              * @type {Number}
              */
-            this.texelSize = 0;
+            this.texelSize = parent.texelSize;
 
             /**
              * The width in pixels or cells of the resource associated with tiles within this level.
              * @type {Number}
              */
-            this.tileWidth = 0;
+            this.tileWidth = parent.tileWidth;
 
             /**
              * The height in pixels or cells of the resource associated with tiles within this level.
              * @type {Number}
              */
-            this.tileHeight = 0;
+            this.tileHeight = parent.tileHeight;
 
             /**
              * The sector spanned by this level.
              * @type {Sector}
              */
-            this.sector = null;
+            this.sector = parent.sector;
         };
 
         /**
@@ -90,9 +86,7 @@ define([
          * otherwise <code>false</code>.
          */
         Level.prototype.isFirstLevel = function () {
-            // TODO
-
-            return false;
+            return this.parent.firstLevel() == this;
         };
 
         /**
@@ -101,9 +95,7 @@ define([
          * otherwise <code>false</code>.
          */
         Level.prototype.isLastLevel = function () {
-            // TODO
-
-            return false;
+            return this.parent.lastLevel() == this;
         };
 
         /**
@@ -112,9 +104,7 @@ define([
          * @returns {Level} The previous level, or null if this is the first level.
          */
         Level.prototype.previousLevel = function () {
-            // TODO
-
-            return null;
+            return this.parent.level(this.levelNumber - 1);
         };
 
         /**
@@ -123,9 +113,7 @@ define([
          * @returns {Level} The next level, or null if this is the last level.
          */
         Level.prototype.nextLevel = function () {
-            // TODO
-
-            return null;
+            return this.parent.level(this.levelNumber + 1);
         };
 
         /**
@@ -141,7 +129,12 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Level", "compare",
                         "The specified level is null or undefined"));
             }
-            // TODO
+
+            if (this.levelNumber < that.levelNumber)
+                return 1;
+
+            if (this.levelNumber > that.levelNumber)
+                return -1;
 
             return 0;
         };

@@ -16,7 +16,8 @@ define([
         '../error/NotYetImplementedError',
         '../geom/Sector',
         '../util/TileFactory',
-        '../geom/Vec3'
+        '../geom/Vec3',
+        '../util/WWMath'
     ],
     function (ArgumentError,
               BoundingBox,
@@ -27,7 +28,8 @@ define([
               NotYetImplementedError,
               Sector,
               TileFactory,
-              Vec3) {
+              Vec3,
+              WWMath) {
         "use strict";
 
         /**
@@ -185,9 +187,38 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "subdivide", "missingResult"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "subdivide", "notYetImplemented"));
+            var nextLevel = level.nextLevel(),
+                latMin = this.sector.minLatitude,
+                latMax = this.sector.maxLatitude,
+                latMid = this.sector.centroidLat,
+
+                lonMin = this.sector.minLongitude,
+                lonMax = this.sector.maxLongitude,
+                lonMid = this.sector.centroidLon,
+
+                subRow,
+                subCol,
+                childSector;
+
+            subRow = 2 * this.row;
+            subCol = 2 * this.column;
+            childSector = new Sector(latMin, latMid, lonMin, lonMid);
+            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+
+            subRow = 2 * this.row;
+            subCol = 2 * this.column + 1;
+            childSector = new Sector(latMin, latMid, lonMid,lonMax);
+            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+
+            subRow = 2 * this.row + 1;
+            subCol = 2 * this.column;
+            childSector = new Sector(latMid, latMax, lonMin, lonMid);
+            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+
+            subRow = 2 * this.row + 1;
+            subCol = 2 * this.column + 1;
+            childSector = new Sector(latMid, latMax, lonMid, lonMax);
+            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
 
             return result;
         };
@@ -236,6 +267,32 @@ define([
                 Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "mustSubdivide", "notYetImplemented"));
 
             return false;
+            var globe = dc.globe,
+                eyePos = dc.eyePosition;
+
+            // Compute the point on the tile that is nearest to the eye point. Use the minimum elevation because it provides a
+            // reasonable estimate for distance, and the eye point always gets closer to the point as it moves closer to the
+            // terrain surface.
+            var nearestLat = WWMath.clamp(eyePos.latitude, this.sector.minLatitude, this.sector.maxLatitude),
+                nearestLon = WWMath.clamp(eyePos.longitude, this.sector.minLongitude, this.sector.maxLongitude),
+                minHeight = this.minElevation * dc.verticalExaggeration;
+
+            var nearestPoint = new Vec3();
+            globe.computePointFromPosition(nearestLat, nearestLon, minHeight, nearestPoint);
+
+            // Compute the cell size and distance to the nearest point on the tile. Cell size is radius * radian texel size.
+            var cellSize = Math.max(globe.equatorialRadius, globe.polarRadius) * this.texelSize,
+                distance = nearestPoint.distanceTo(dc.navigatorState.eyePoint);
+
+            // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye distance.
+            // The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the cell height
+            // becomes more than one thousandth of the eye distance. Another way to say it is, use the current tile if the cell
+            // height is less than the specified fraction of the eye distance.
+            //
+            // Note: It's tempting to instead compare a screen pixel size to the texel size, but that calculation is window-
+            // size dependent and results in selecting an excessive number of tiles when the window is large.
+
+            return cellSize > distance * Math.pow(10, -detailFactor);
         };
 
         /**
@@ -262,11 +319,15 @@ define([
          * @returns {Number} The computed row number.
          */
         Tile.computeRow = function (delta, latitude) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeRow", "notYetImplemented"));
+            var row = Math.floor((latitude + 90) / delta);
 
-            return 0;
+            // If latitude is at the end of the grid, subtract 1 from the computed row to return the last row.
+            if (latitude == 90)
+            {
+                row -= 1;
+            }
+
+            return row;
         };
 
         /**
@@ -276,11 +337,15 @@ define([
          * @returns {Number} The computed column number.
          */
         Tile.computeColumn = function (delta, longitude) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeColumn", "notYetImplemented"));
+            var col = Math.floor((longitude + 180) / delta);
 
-            return 0;
+            // If longitude is at the end of the grid, subtract 1 from the computed column to return the last column.
+            if (longitude == 180)
+            {
+                col -= 1;
+            }
+
+            return col;
         };
 
         /**
@@ -290,11 +355,15 @@ define([
          * @returns {Number} The computed row number.
          */
         Tile.computeLastRow = function (delta, maxLatitude) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeLastRow", "notYetImplemented"));
+            var row = Math.ceil((maxLatitude + 90) / delta - 1);
 
-            return 0;
+            // If max latitude is in the first row, set the max row to 0.
+            if (maxLatitude + 90 < delta)
+            {
+                row = 0;
+            }
+
+            return row;
         };
 
         /**
@@ -304,11 +373,15 @@ define([
          * @returns {Number} The computed column number.
          */
         Tile.computeLastColumn = function (delta, maxLongitude) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeLastColumn", "notYetImplemented"));
+            var col = Math.ceil((maxLongitude + 180) / delta - 1);
 
-            return 0;
+            // If max longitude is in the first column, set the max column to 0.
+            if (maxLongitude + 180 < delta)
+            {
+                col = 0;
+            }
+
+            return col;
         };
 
         /**
@@ -332,11 +405,15 @@ define([
                         "The specified row or column is less than zero."));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeSector", "notYetImplemented"));
+            var deltaLat = level.tileDelta.latitude,
+                deltaLon = level.tileDelta.longitude,
 
-            return Sector.ZERO;
+                minLat = -90 + row * deltaLat,
+                minLon = -180 + column * deltaLon,
+                maxLat = minLat + deltaLat,
+                maxLon = minLon + deltaLon;
+
+            return new Sector(minLat, maxLat, minLon, maxLon);
         };
 
         /**
@@ -364,9 +441,42 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "createTilesForLevel", "missingResult"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "createTilesForLevel", "notYetImplemented"));
+            var deltaLat = level.tileDelta.latitude,
+                deltaLon = level.tileDelta.longitude,
+
+                sector = level.sector,
+                firstRow = Tile.computeRow(deltaLat, sector.minLatitude),
+                lastRow = Tile.computeRow(deltaLat, sector.maxLatitude),
+
+                firstCol = Tile.computeColumn(deltaLon, sector.minLongitude),
+                lastCol = Tile.computeColumn(deltaLon, sector.maxLongitude),
+
+                firstRowLat = -90 + firstRow * deltaLat,
+                firstRowLon = -180 + firstCol * deltaLon,
+
+                minLat = firstRowLat,
+                minLon,
+                maxLat,
+                maxLon;
+
+            for (var row = firstRow; row <= lastRow; row += 1) {
+                maxLat = minLat + deltaLat;
+                minLon = firstRowLon;
+
+                for (var col = firstCol; col <= lastCol; col += 1) {
+                    maxLon = minLon + deltaLon;
+                    var tileSector = new Sector(minLat,
+                        maxLat,
+                        minLon,
+                        maxLon),
+                        tile = tileFactory.createTile(tileSector, level, row, col);
+                    tilesOut.push(tile);
+
+                    minLon = maxLon;
+                }
+
+                minLat = maxLat;
+            }
         };
 
         return Tile;

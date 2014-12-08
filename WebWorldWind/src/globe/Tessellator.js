@@ -286,7 +286,7 @@ define([
          ***********************************************************************/
 
         Tessellator.prototype.createTopLevelTiles = function (dc) {
-            this.topLevelTiles.removeAllObjects(); // TODO: unresolved
+            this.topLevelTiles = [];
             Tile.createTilesForLevel(this.levels.firstLevel(), this.tileFactory, this.topLevelTiles);
         };
 
@@ -409,8 +409,6 @@ define([
                 return;
 
             this.sharedGeometry = new TerrainSharedGeometry(); // TODO: Class not needed externally so implement internally, perhaps as a shared object
-
-            var count; // holds the returned number of elements returned from the methods below // TODO: unused
 
             this.buildTexCoords(tile.tileWidth, tile.tileHeight);
 
