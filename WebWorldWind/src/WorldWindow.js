@@ -77,6 +77,7 @@ define([
              * @default [LookAtNavigator]{@link LookAtNavigator}
              */
             this.navigator = new LookAtNavigator();
+            this.navigator.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
             /**
              * The tessellator used to create the globe's terrain.
@@ -138,12 +139,10 @@ define([
         WorldWindow.prototype.drawFrame = function () {
             this.drawContext.frameStatistics.beginFrame();
 
-            var viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
-
             this.drawContext.currentGlContext = this.canvas.getContext("webgl");
 
             try {
-                this.beginFrame(this.drawContext, viewport);
+                this.beginFrame(this.drawContext, this.navigator.viewport);
                 //this.createTerrain(this.drawContext); // TODO: uncomment this when terrain creation works
                 this.clearFrame(this.drawContext);
                 this.doDraw(this.drawContext);
@@ -192,7 +191,10 @@ define([
                     this.drawContext.terrain.surfaceGeometry.length : 0);
         };
 
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.drawLayers = function () {
+            // Draw all the layers attached to this WorldWindow.
+
             var beginTime = new Date().getTime(),
                 dc = this.drawContext,
                 layers = this.drawContext.layers.layers,

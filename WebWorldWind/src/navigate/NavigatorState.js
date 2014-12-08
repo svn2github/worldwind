@@ -9,19 +9,23 @@
 define([
         '../error/ArgumentError',
         '../geom/Frustum',
+        '../geom/Line',
         '../util/Logger',
         '../geom/Matrix',
         '../geom/Rectangle',
         '../geom/Vec2',
-        '../geom/Vec3'
+        '../geom/Vec3',
+        '../util/WWMath'
     ],
     function (ArgumentError,
               Frustum,
+              Line,
               Logger,
               Matrix,
               Rectangle,
               Vec2,
-              Vec3) {
+              Vec3,
+              WWMath) {
         "use strict";
 
         /**
@@ -35,37 +39,52 @@ define([
          * read-only because they are values captured from a {@link Navigator} upon request. Setting the properties
          * on NavigatorState instances has no effect on the Navigator from which they came.
          */
-        var NavigatorState = function () {
-
-            /**
-             * The navigator's Cartesian eye point relative to the globe's center.
-             * @type {Vec3}
-             */
-            this.eyePoint = null;
+        var NavigatorState = function (modelViewMatrix, projectionMatrix, viewport, heading, tilt) {
 
             /**
              * The navigator's viewport, in screen coordinates.
              * @type {Rectangle}
              */
-            this.viewport = null;
+            this.viewport = viewport;
+            this.viewBounds = this.viewport; // TODO: Is this property necessary?
 
             /**
              * The navigator's model-view matrix.
              * @type {Matrix}
              */
-            this.modelview = null;
+            this.modelview = modelViewMatrix;
 
             /**
              * The navigator's projection matrix.
              * @type {Matrix}
              */
-            this.projection = null;
+            this.projection = projectionMatrix;
 
             /**
              * The concatenation of the navigator's model-view and projection matrices.
              * @type {Matrix}
              */
-            this.modelviewProjection = null;
+            this.modelviewProjection = Matrix.fromIdentity();
+            this.modelviewProjection.setToMultiply(projectionMatrix, modelViewMatrix);
+
+            /**
+             * Indicates the number of degrees clockwise from north to which the view is directed.
+             * @type {Number}
+             */
+            this.heading = heading;
+
+            /**
+             * The number of degrees the globe is tilted relative to its surface being parallel to the screen. Values are
+             * typically in the range 0 to 90 but may vary from that depending on the navigator in use.
+             * @type {Number}
+             */
+            this.tilt = tilt;
+
+            /**
+             * The navigator's Cartesian eye point relative to the globe's center.
+             * @type {Vec3}
+             */
+            this.eyePoint = this.modelview.extractEyePoint(new Vec3(0, 0, 0));
 
             /**
              * The navigator's forward ray in model coordinates. The forward ray originates at the eye point and
@@ -73,7 +92,7 @@ define([
              * the screen's center.
              * @type {Vec3}
              */
-            this.forwardRay = null;
+            this.forwardRay = new Line(this.eyePoint, this.modelview.extractForwardVector(new Vec3(0, 0, 0)));
 
             /**
              * The navigator's view frustum in model coordinates.
@@ -82,19 +101,49 @@ define([
              * @type {Frustum}
              */
             this.frustumInModelCoordinates = null;
+            // Compute the frustum in model coordinates. Start by computing the frustum in eye coordinates from the projection
+            // matrix, then transform this frustum to model coordinates by multiplying its planes by the transpose of the
+            // modelview matrix. We use the transpose of the modelview matrix because planes are transformed by the inverse
+            // transpose of a matrix, and we want to transform from eye coordinates to model coordinates.
+            var modelviewTranspose = Matrix.fromIdentity();
+            modelviewTranspose.setToTransposeOfMatrix(this.modelview);
+            this.frustumInModelCoordinates = Frustum.fromProjectionMatrix(this.projection);
+            this.frustumInModelCoordinates.transformByMatrix(modelviewTranspose);
+            this.frustumInModelCoordinates.normalize(); // TODO
 
-            /**
-             * Indicates the number of degrees clockwise from north to which the view is directed.
-             * @type {Number}
-             */
-            this.heading = 0;
+            // Compute the inverse of the modelview, projection, and modelview-projection matrices. The inverse matrices are
+            // used to support operations on navigator state, such as project, unProject, and pixelSizeAtDistance.
+            this.modelviewInv = Matrix.fromIdentity();
+            this.modelviewInv.invertOrthonormalMatrix(this.modelview);
+            this.projectionInv = Matrix.fromIdentity();
+            this.projectionInv.invertMatrix(this.projection);
 
-            /**
-             * The number of degrees the globe is tilted relative to its surface being parallel to the screen. Values are
-             * typically in the range 0 to 90 but may vary from that depending on the navigator in use.
-             * @type {Number}
-             */
-            this.tilt = 0;
+            // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
+            // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
+            // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye coordinates.
+            var nbl = new Vec3(-1, -1, -1),
+                ntr = new Vec3(+1, +1, -1),
+                fbl = new Vec3(-1, -1, +1),
+                ftr = new Vec3(+1, +1, +1);
+            // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse projection
+            // matrix.
+            nbl.multiplyByMatrix(this.projectionInv);
+            ntr.multiplyByMatrix(this.projectionInv);
+            fbl.multiplyByMatrix(this.projectionInv);
+            ftr.multiplyByMatrix(this.projectionInv);
+
+            var nrRectWidth = WWMath.fabs(ntr[0] - nbl[0]),
+                frRectWidth = WWMath.fabs(ftr[0] - fbl[0]),
+                nrDistance = -nbl[2],
+                frDistance = -fbl[2];
+
+            // Compute the scale and offset used to determine the width of a pixel on a rectangle carved out of the frustum
+            // at a distance along the -Z axis in eye coordinates. These values are found by computing the scale and offset
+            // of a frustum rectangle at a given distance, then dividing each by the viewport width.
+            var frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance),
+                frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance;
+            this.pixelSizeScale = frustumWidthScale / viewport.width;
+            this.pixelSizeOffset = frustumWidthOffset / viewport.height;
         };
 
         /**
@@ -127,9 +176,46 @@ define([
                     "missingResult"));
             }
 
-            // TODO
+            var mx = modelPoint[0],
+                my = modelPoint[1],
+                mz = modelPoint[2],
+            // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This
+            // inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+                m = this.modelviewProjection,
+                x = m[0] * mx + m[1] * my + m[2] * mz + m[3],
+                y = m[4] * mx + m[5] * my + m[6] * mz + m[7],
+                z = m[8] * mx + m[9] * my + m[10] * mz + m[11],
+                w = m[12] * mx + m[13] * my + m[14] * mz + m[15],
+                viewport = this.viewport;
 
-            return false;
+            if (w == 0)
+                return false;
+
+            // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant
+            // X, Y and Z coordinates are in the range [-1,1].
+            x /= w;
+            y /= w;
+            z /= w;
+
+            // Clip the point against the near and far clip planes.
+            if (z < -1 || z > 1)
+                return false;
+
+            // Convert the point from clip coordinate to the range [0,1]. This enables the X and Y coordinates to be
+            // converted to screen coordinates, and the Z coordinate to represent a depth value in the range[0,1].
+            x = x * 0.5 + 0.5;
+            y = y * 0.5 + 0.5;
+            z = z * 0.5 + 0.5;
+
+            // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
+            x = x * viewport.width + viewport.x;
+            y = y * viewport.height + viewport.y;
+
+            result[0] = x;
+            result[1] = y;
+            result[2] = z;
+
+            return true;
         };
         /**
          * Transforms the specified modelPoint from model coordinates to OpenGL screen coordinates, applying an offset to the
@@ -170,9 +256,64 @@ define([
                     "missingResult"));
             }
 
-            // TODO
+            var mx = modelPoint[0],
+                my = modelPoint[1],
+                mz = modelPoint[2],
+            // Transform the model point from model coordinates to eye coordinates then to clip coordinates. The eye
+            // coordinate and clip coordinate are computed separately in order to reuse the eye coordinate below.
+                m = this.modelview,
+                ex = m[0] * mx + m[1] * my + m[2] * mz + m[3],
+                ey = m[4] * mx + m[5] * my + m[6] * mz + m[7],
+                ez = m[8] * mx + m[9] * my + m[10] * mz + m[11],
+                ew = m[12] * mx + m[13] * my + m[14] * mz + m[15],
+                p = this.projection,
+                x = p[0] * ex + p[1] * ey + p[2] * ez + p[3] * ew,
+                y = p[4] * ex + p[5] * ey + p[6] * ez + p[7] * ew,
+                z = p[8] * ex + p[9] * ey + p[10] * ez + p[11] * ew,
+                w = p[12] * ex + p[13] * ey + p[14] * ez + p[15] * ew,
+                viewport = this.viewport;
 
-            return false;
+            if (w === 0)
+                return false;
+
+            // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant
+            // X, Y and Z coordinates are in the range [-1,1].
+            x /= w;
+            y /= w;
+            z /= w;
+
+            // Clip the point against the near and far clip planes.
+            if (z < -1 || z > 1)
+                return false;
+
+            // Transform the Z eye coordinate to clip coordinates again, this time applying a depth offset. The depth offset is
+            // applied only to the matrix element affecting the projected Z coordinate, so we inline the computation here
+            // instead of re-computing X, Y, Z and W in order to improve performance. See WWMatrix.offsetProjectionDepth for
+            // more information on the effect of this offset.
+            z = p[8] * ex + p[9] * ey + p[10] * ez * (1 + depthOffset) + p[11] * ew;
+            z /= w;
+
+            // Clamp the point to the near and far clip planes. We know the point's original Z value is contained within the
+            // clip planes, so we limit its offset z value to the range [-1, 1] in order to ensure it is not clipped by OpenGL.
+            // In clip coordinates the near and far clip planes are perpendicular to the Z axis and are located at -1 and 1,
+            // respectively.
+            z = WWMath.clamp(z, -1, 1);
+
+            // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be converted to
+            // screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
+            x = x * 0.5 + 0.5;
+            y = y * 0.5 + 0.5;
+            z = z * 0.5 + 0.5;
+
+            // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
+            x = x * viewport.width + viewport.x;
+            y = y * viewport.height + viewport.y;
+
+            result[0] = x;
+            result[1] = y;
+            result[2] = z;
+
+            return true;
         };
 
         /**
@@ -204,9 +345,44 @@ define([
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "unProject",
                     "missingResult"));
             }
-            // TODO
 
-            return false;
+            var sx = screenPoint[0],
+                sy = screenPoint[1],
+                sz = screenPoint[2],
+                viewport = this.viewport;
+
+            // Convert the XY screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates to be
+            // converted to clip coordinates.
+            sx = (sx - viewport.x) / viewport.width;
+            sy = (sy - viewport.y) / viewport.height;
+
+            // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
+            sx = sx * 2 - 1;
+            sy = sy * 2 - 1;
+            sz = sz * 2 - 1;
+
+            // Clip the point against the near and far clip planes. In clip coordinates the near and far clip planes are
+            // perpendicular to the Z axis and are located at -1 and 1, respectively.
+            if (sz < -1 || sz > 1)
+                return false;
+
+            // Transform the screen point from clip coordinates to eye coordinates, then to model coordinates. This inverts the
+            // Z axis and stores the  negative of the eye coordinate Z value in the W coordinate.
+            var m = this.modelviewProjection,
+                x = m[0] * sx + m[1] * sy + m[2] * sz + m[3],
+                y = m[4] * sx + m[5] * sy + m[6] * sz + m[7],
+                z = m[8] * sx + m[9] * sy + m[10] * sz + m[11],
+                w = m[12] * sx + m[13] * sy + m[14] * sz + m[15];
+
+            if (w === 0)
+                return false;
+
+            // Complete the conversion from model coordinates to clip coordinates by dividing by W.
+            result[0] = x / w;
+            result[1] = y / w;
+            result[2] = z / w;
+
+            return true;
         };
 
         /**
@@ -234,7 +410,22 @@ define([
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "convertPointToWindow",
                     "missingResult"));
             }
-            // TODO
+
+            var x = screenPoint[0],
+                y = screenPoint[1],
+                viewport = this.viewport,
+                viewBounds = this.viewBounds;
+
+            // Convert the point form OpenGL screen coordinates to normalized coordinates in the range [0, 1].
+            x = (x - viewport.x) / viewport.width;
+            y = (y - viewport.y) / viewport.height;
+
+            // Transform the origin from the bottom-left corner to the top-left corner.
+            y = 1 - y;
+
+            // Convert the point from normalized coordinates in the range [0, 1] to window coordinates.
+            result[0] = x * viewBounds.width + viewBounds.x;
+            result[1] = y * viewBounds.height + viewBounds.y;
 
             return result;
         };
@@ -249,8 +440,8 @@ define([
          * corner and axes that extend up and to the right from the origin point.
          *
          * @param {Vec2} point The window-coordinate point to convert.
-         * @param {Vec2} result A pre-allocated {@link Vec2} in which to return the computed point.
-         * @returns {Vec2} The specified result parameter set to the computed point.
+         * @param {Vec3} result A pre-allocated {@link Vec3} in which to return the computed point.
+         * @returns {Vec3} The specified result parameter set to the computed point.
          * @throws {ArgumentError} If either argument is null or undefined.
          */
         NavigatorState.prototype.convertPointToViewport = function (point, result) {
@@ -263,7 +454,23 @@ define([
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "convertPointToViewport",
                     "missingResult"));
             }
-            // TODO
+
+            var x = point[0],
+                y = point[1],
+                viewport = this.viewport,
+                viewBounds = this.viewBounds;
+
+            // Convert the point from window coordinates to normalized coordinates in the range [0, 1].
+            x = (x - viewBounds.x) / viewBounds.width;
+            y = (y - viewBounds.y) / viewBounds.height;
+
+            // Transform the origin from the top-left corner to the bottom-left corner.
+            y = 1 - y;
+
+            // Convert the point from normalized coordinates in the range [0, 1] to OpenGL screen coordinates.
+            result[0] = x * viewport.width + viewport.x;
+            result[1] = y * viewport.height + viewport.y;
+            result[2] = 0;
 
             return result;
         };
@@ -277,23 +484,39 @@ define([
          *
          * The results of this method are undefined if the specified point is outside of the {@link WorldWindow}'s bounds.
          *
-         * @param {Vec2} screenPoint The point to convert.
-         * @param {Line} result A pre-allocated {@link Line} in which to return the computed ray.
-         * @returns {Line} The result argument set to the origin and direction of the computed ray.
+         * @param {Vec2} point The point to convert.
+         * @returns {Line} A new Line initialized to the origin and direction of the computed ray, or null if the
+         * ray could not be computed.
          */
-        NavigatorState.prototype.rayFromScreenPoint = function (screenPoint, result) {
-            if (!screenPoint) {
+        NavigatorState.prototype.rayFromScreenPoint = function (point) {
+            if (!point) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "rayFromScreenPoint",
                     "missingPoint"));
             }
 
-            if (!result) {
-                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "NavigatorState", "rayFromScreenPoint",
-                    "missingResult"));
-            }
-            // TODO
+            // Convert the point's xy coordinates from window coordinates to OpenGL coordinates.
+            var screenPoint = this.convertPointToViewport(point, new Vec3(0, 0, 0)),
+                nearPoint = new Vec3(0, 0, 0),
+                farPoint = new Vec3(0, 0, 0);
 
-            return result;
+            // Compute the model coordinate point on the near clip plane with the xy coordinates and depth 0.
+            if (!this.unProject(screenPoint, nearPoint))
+                return null;
+
+            // Compute the model coordinate point on the far clip plane with the xy coordinates and depth 1.
+            screenPoint[2] = 1;
+            if (!this.unProject(screenPoint, farPoint))
+                return null;
+
+            // Compute a ray originating at the eye point and with direction pointing from the xy coordinate on the near plane
+            // to the same xy coordinate on the far plane.
+            var origin = new Vec3(this.eyePoint),
+                direction = new Vec3(farPoint[0], farPoint[1], farPoint[2]);
+
+            direction.subtract(nearPoint);
+            direction.normalize();
+
+            return new Line(origin, direction);
         };
 
         /**
@@ -308,9 +531,17 @@ define([
          * @returns {Number} The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
          */
         NavigatorState.prototype.pixelSizeAtDistance = function (distance) {
-            // TODO
+            // Compute the pixel size from the width of a rectangle carved out of the frustum in model coordinates at the
+            // specified distance along the -Z axis and the viewport width in screen coordinates. The pixel size is expressed
+            // in model coordinates per screen coordinate (e.g. meters per pixel).
+            //
+            // The frustum width is determined by noticing that the frustum size is a linear function of distance from the eye
+            // point. The linear equation constants are determined during initialization, then solved for distance here.
+            //
+            // This considers only the frustum width by assuming that the frustum and viewport share the same aspect ratio, so
+            // that using either the frustum width or height results in the same pixel size.
 
-            return 0;
+            return this.pixelSizeScale * distance + this.pixelSizeOffset;
         };
 
         return NavigatorState;

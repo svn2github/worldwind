@@ -8,12 +8,10 @@
  */
 define([
         '../error/ArgumentError',
-        '../util/Logger',
-        '../geom/Vec3'
+        '../util/Logger'
     ],
     function (ArgumentError,
-              Logger,
-              Vec3) {
+              Logger) {
         "use strict";
 
         /**
@@ -63,6 +61,57 @@ define([
          * @throws {ArgumentError} If the specified vector is null or undefined.
          */
         Plane.prototype.dot = function (vector) {
+            if (!vector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "dot", "missingVector"));
+            }
+
+            return this.x * vector[0] + this.y * vector[1] + this.z * vector[2] + this.distance;
+        };
+
+        /**
+         * Transforms this plane by a specified matrix.
+         * @param {Matrix} matrix The matrix to apply to this plane.
+         * @returns {Plane} This plane with its values set to their original values multiplied the the specified
+         * matrix.
+         * @throws {ArgumentError} If the specified matrix is null or undefined.
+         */
+        Plane.prototype.transformByMatrix = function (matrix){
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "transformByMatrix", "missingMatrix"));
+            }
+
+            this.x = matrix[0] * this.x + matrix[1] * this.y + matrix[2] * this.z + matrix[3];
+            this.y = matrix[4] * this.x + matrix[5] * this.y + matrix[6] * this.z + matrix[7];
+            this.z =  matrix[8] * this.x + matrix[9] * this.y + matrix[10] * this.z + matrix[11];
+            this.distance = matrix[12] * this.x + matrix[13] * this.y + matrix[14] * this.z + matrix[15];
+
+            return this;
+        };
+
+        /**
+         * Normalizes the components of this plane.
+         * @returns {Plane} This plane with its components normalized.
+         */
+        Plane.prototype.normalize = function () {
+            var magnitude = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+
+            this.x /= magnitude;
+            this.y /= magnitude;
+            this.z /= magnitude;
+            this.distance /= magnitude;
+
+            return this;
+        };
+
+        /**
+         * Computes the dot product of this plane with a specified vector.
+         * @param {Vec3} vector The vector to dot with this plane.
+         * @returns {number} The dot product of this plane with the specified vector.
+         * @throws {ArgumentError} If the specified vector is null or undefined.
+         */
+        Plane.prototype.dot = function(vector) {
             if (!vector) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "dot", "missingVector"));

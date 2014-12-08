@@ -7,10 +7,14 @@
  * @version $Id$
  */
 define([
+        '../geom/Frustum',
         '../util/Logger',
+        '../geom/Matrix',
         '../navigate/NavigatorState'
     ],
-    function (Logger,
+    function (Frustum,
+              Logger,
+              Matrix,
               NavigatorState) {
         "use strict";
 
@@ -21,6 +25,10 @@ define([
          * @classdesc Represents a navigator that enables the user to pan, zoom and tilt the globe.
          */
         var LookAtNavigator = function () {
+            this.modelview = Matrix.fromIdentity();
+            this.projection = Matrix.fromIdentity();
+            this.heading = 0;
+            this.tilt = 0;
         };
 
         /**
@@ -28,7 +36,7 @@ define([
          * @returns {NavigatorState} This navigator's current navigator state.
          */
         LookAtNavigator.prototype.currentState = function () {
-            return new NavigatorState();
+            return new NavigatorState(this.modelview, this.projection, this.viewport, this.heading, this.tilt);
         };
 
         return LookAtNavigator;

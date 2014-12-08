@@ -8,10 +8,12 @@
  */
 define([
         '../error/ArgumentError',
+        '../geom/Matrix',
         '../geom/Plane',
         '../util/Logger'
     ],
     function (ArgumentError,
+              Matrix,
               Plane,
               Logger) {
         "use strict";
@@ -40,6 +42,133 @@ define([
             this.top = top;
             this.near = near;
             this.far = far;
+        };
+
+        /**
+         * Transforms this frustum by a specified matrix.
+         * @param {Matrix} matrix The matrix to apply to this frustum.
+         * @returns {Frustum} This frustum set to its original value multiplied by the specified matrix.
+         * @throws {ArgumentError} If the specified matrix is null or undefined.
+         */
+        Frustum.prototype.transformByMatrix = function (matrix) {
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Frustum", "transformByMatrix", "missingMatrix"));
+            }
+
+            this.left.transformByMatrix(matrix);
+            this.right.transformByMatrix(matrix);
+            this.bottom.transformByMatrix(matrix);
+            this.top.transformByMatrix(matrix);
+            this.near.transformByMatrix(matrix);
+            this.far.transformByMatrix(matrix);
+
+            return this;
+        };
+
+        /**
+         * Normalizes the plane vectors of the planes composing this frustum.
+         * @returns {Frustum} This frustum with its planes normalized.
+         */
+        Frustum.prototype.normalize = function () {
+            this.left.normalize();
+            this.right.normalize();
+            this.bottom.normalize();
+            this.top.normalize();
+            this.near.normalize();
+            this.far.normalize();
+
+            return this;
+        };
+
+        /**
+         * Returns a new frustum with each of its planes 1 meter from the center.
+         * @returns {Frustum} The new frustum.
+         */
+        Frustum.unitFrustum = function () {
+            return new Frustum(
+                new Plane(1, 0, 0, 1), // left
+                new Plane(-1, 0, 0, 1), // right
+                new Plane(0, 1, 1, 1), // bottom
+                new Plane(0, -1, 0, 1), // top
+                new Plane(0, 0, -1, 1), // near
+                new Plane(0, 0, 1, 1) // far
+            );
+        };
+
+        /**
+         * Extracts a frustum from a projection matrix view frustum.
+         * <p>
+         * This method assumes that this matrix represents a projection matrix. If it does not represent a projection matrix
+         * the results are undefined.
+         * <p>
+         * A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
+         * using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
+         * for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
+         * outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
+         * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
+         *
+         * @param {Matrix} matrix The projection matrix to extract the frustum from.
+         * @return {Frustum} A new frustum containing the projection matrix's view frustum, in eye coordinates.
+         * @throws {ArgumentError} If the specified matrix is null or undefined.
+         */
+        Frustum.fromProjectionMatrix = function (matrix) {
+            if (!matrix) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Frustum", "extractFrustum", "missingMatrix"));
+            }
+
+            var x, y, z, w, d, left, right, top, bottom, near, far;
+
+            // Left Plane = row 4 + row 1:
+            x = matrix[12] + matrix[0];
+            y = matrix[13] + matrix[1];
+            z = matrix[14] + matrix[2];
+            w = matrix[15] + matrix[3];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            left = new Plane(x / d, y / d, z / d, w / d);
+
+            // Right Plane = row 4 - row 1:
+            x = matrix[12] - matrix[0];
+            y = matrix[13] - matrix[1];
+            z = matrix[14] - matrix[2];
+            w = matrix[15] - matrix[3];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            right = new Plane(x / d, y / d, z / d, w / d);
+
+            // Bottom Plane = row 4 + row 2:
+            x = matrix[12] + matrix[4];
+            y = matrix[13] + matrix[5];
+            z = matrix[14] + matrix[6];
+            w = matrix[15] + matrix[7];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            bottom = new Plane(x / d, y / d, z / d, w / d);
+
+            // Top Plane = row 4 - row 2:
+            x = matrix[12] - matrix[4];
+            y = matrix[13] - matrix[5];
+            z = matrix[14] - matrix[6];
+            w = matrix[15] - matrix[7];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            top = new Plane(x / d, y / d, z / d, w / d);
+
+            // Near Plane = row 4 + row 3:
+            x = matrix[12] + matrix[8];
+            y = matrix[13] + matrix[9];
+            z = matrix[14] + matrix[10];
+            w = matrix[15] + matrix[11];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            near = new Plane(x / d, y / d, z / d, w / d);
+
+            // Far Plane = row 4 - row 3:
+            x = matrix[12] - matrix[8];
+            y = matrix[13] - matrix[9];
+            z = matrix[14] - matrix[10];
+            w = matrix[15] - matrix[11];
+            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
+            far = new Plane(x / d, y / d, z / d, w / d);
+
+            return new Frustum(left, right, bottom, top, near, far);
         };
 
         return Frustum;

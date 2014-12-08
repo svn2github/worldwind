@@ -10,7 +10,6 @@
 define([
         '../geom/Angle',
         '../error/ArgumentError',
-        '../geom/Frustum',
         '../globe/Globe',
         '../util/Logger',
         '../geom/Plane',
@@ -21,7 +20,6 @@ define([
     ],
     function (Angle,
               ArgumentError,
-              Frustum,
               Globe,
               Logger,
               Plane,
@@ -1186,74 +1184,6 @@ define([
         };
 
         /**
-         * Extracts this projection matrix's view frustum.
-         * <p>
-         * This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
-         * the results are undefined.
-         * <p>
-         * A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
-         * using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
-         * for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
-         * outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
-         * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
-         *
-         * @return {Frustum} A new frustum containing this projection matrix's view frustum, in eye coordinates.
-         */
-        Matrix.prototype.extractFrustum = function () {
-            var x, y, z, w, d, left, right, top, bottom, near, far;
-
-            // Left Plane = row 4 + row 1:
-            x = this[12] + this[0];
-            y = this[13] + this[1];
-            z = this[14] + this[2];
-            w = this[15] + this[3];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            left = new Plane(x / d, y / d, z / d, w / d);
-
-            // Right Plane = row 4 - row 1:
-            x = this[12] - this[0];
-            y = this[13] - this[1];
-            z = this[14] - this[2];
-            w = this[15] - this[3];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            right = new Plane(x / d, y / d, z / d, w / d);
-
-            // Bottom Plane = row 4 + row 2:
-            x = this[12] + this[4];
-            y = this[13] + this[5];
-            z = this[14] + this[6];
-            w = this[15] + this[7];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            bottom = new Plane(x / d, y / d, z / d, w / d);
-
-            // Top Plane = row 4 - row 2:
-            x = this[12] - this[4];
-            y = this[13] - this[5];
-            z = this[14] - this[6];
-            w = this[15] - this[7];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            top = new Plane(x / d, y / d, z / d, w / d);
-
-            // Near Plane = row 4 + row 3:
-            x = this[12] + this[8];
-            y = this[13] + this[9];
-            z = this[14] + this[10];
-            w = this[15] + this[11];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            near = new Plane(x / d, y / d, z / d, w / d);
-
-            // Far Plane = row 4 - row 3:
-            x = this[12] - this[8];
-            y = this[13] - this[9];
-            z = this[14] - this[10];
-            w = this[15] - this[11];
-            d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-            far = new Plane(x / d, y / d, z / d, w / d);
-
-            return new Frustum(left, right, bottom, top, near, far);
-        };
-
-        /**
          * Applies a specified depth offset to this projection matrix.
          * <p>
          * This method assumes that this matrix represents a projection matrix. If this does not represent a projection matrix
@@ -1464,7 +1394,7 @@ define([
             A[3][3] = matrix[15];
 
             var index = [],
-                d = this.ludcmp(A, index),
+                d = Matrix.ludcmp(A, index),
                 i,
                 j;
 
@@ -1485,7 +1415,7 @@ define([
                 }
 
                 col[j] = 1.0;
-                this.lubksb(A, index, col);
+                Matrix.lubksb(A, index, col);
 
                 for (i = 0; i < 4; i += 1) {
                     Y[i][j] = col[i];
@@ -1699,9 +1629,9 @@ define([
          * The eigenvectors are returned sorted from the most prominent vector to the least prominent vector.
          * Each eigenvector has length equal to its corresponding eigenvalue.
          *
-         * @param result1 A pre-allocated vector in which to return the most prominent eigenvector.
-         * @param result2 A pre-allocated vector in which to return the second most prominent eigenvector.
-         * @param result3 A pre-allocated vector in which to return the least prominent eigenvector.
+         * @param {Vec3} result1 A pre-allocated vector in which to return the most prominent eigenvector.
+         * @param {Vec3} result2 A pre-allocated vector in which to return the second most prominent eigenvector.
+         * @param {Vec3} result3 A pre-allocated vector in which to return the least prominent eigenvector.
          *
          * @throws {ArgumentError} if any argument is null or undefined or if this matrix is not symmetric.
          */
@@ -1864,9 +1794,9 @@ define([
             result2.normalize();
             result3.normalize();
 
-            result1.scale(m11);
-            result2.scale(m22);
-            result3.scale(m33);
+            result1.multiply(m11);
+            result2.multiply(m22);
+            result3.multiply(m33);
         };
 
         return Matrix;
