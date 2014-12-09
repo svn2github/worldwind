@@ -6,9 +6,13 @@
  * @version $Id$
  */
 define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not directory name).
+        './error/AbstractError',
         './geom/Angle',
-        './geom/BoundingBox',
         './error/ArgumentError',
+        './shaders/BasicProgram',
+        './layer/BMNGOneImageLayer',
+        './geom/BoundingBox',
+        './util/Color',
         './render/DrawContext',
         './globe/ElevationModel',
         './util/FrameStatistics',
@@ -16,6 +20,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './globe/Globe',
         './shaders/GpuProgram',
         './cache/GpuResourceCache',
+        './shaders/GpuShader',
         './layer/Layer',
         './Layer/LayerList',
         './util/Level',
@@ -32,8 +37,11 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Plane',
         './geom/Position',
         './geom/Rectangle',
+        './render/Renderable',
+        './layer/RenderableLayer',
         './geom/Sector',
         './layer/ShowTessellationLayer',
+        './shapes/SurfaceImage',
         './render/SurfaceTile',
         './render/SurfaceTileRenderer',
         './shaders/SurfaceTileRendererProgram',
@@ -50,9 +58,13 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './WorldWindow',
         './util/WWMath',
         './globe/ZeroElevationModel'],
-    function (Angle,
+    function (AbstractError,
+              Angle,
               ArgumentError,
+              BasicProgram,
+              BMNGOneImageLayer,
               BoundingBox,
+              Color,
               DrawContext,
               ElevationModel,
               FrameStatistics,
@@ -60,6 +72,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Globe,
               GpuProgram,
               GpuResourceCache,
+              GpuShader,
               Layer,
               LayerList,
               Level,
@@ -76,8 +89,11 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Plane,
               Position,
               Rectangle,
+              Renderable,
+              RenderableLayer,
               Sector,
               ShowTessellationLayer,
+              SurfaceImage,
               SurfaceTile,
               SurfaceTileRenderer,
               SurfaceTileRendererProgram,
@@ -161,9 +177,13 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
             RHUMB_LINE: "rhumbLine"
         };
 
+        WorldWind['AbstractError'] = AbstractError;
         WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
+        WorldWind['BasicProgram'] = BasicProgram;
+        WorldWind['BMNGOneImageLayer'] = BMNGOneImageLayer;
         WorldWind['BoundingBox'] = BoundingBox;
+        WorldWind['Color'] = Color;
         WorldWind['DrawContext'] = DrawContext;
         WorldWind['ElevationModel'] = ElevationModel;
         WorldWind['FrameStatistics'] = FrameStatistics;
@@ -171,6 +191,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Globe'] = Globe;
         WorldWind['GpuProgram'] = GpuProgram;
         WorldWind['GpuResourceCache'] = GpuResourceCache;
+        WorldWind['GpuShader'] = GpuShader;
         WorldWind['Layer'] = Layer;
         WorldWind['LayerList'] = LayerList;
         WorldWind['Level'] = Level;
@@ -187,8 +208,11 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
+        WorldWind['Renderable'] = Renderable;
+        WorldWind['RenderableLayer'] = RenderableLayer;
         WorldWind['Sector'] = Sector;
         WorldWind['ShowTessellationLayer'] = ShowTessellationLayer;
+        WorldWind['SurfaceImage'] = SurfaceImage;
         WorldWind['SurfaceTile'] = SurfaceTile;
         WorldWind['SurfaceTileRenderer'] = SurfaceTileRenderer;
         WorldWind['SurfaceTileRendererProgram'] = SurfaceTileRendererProgram;

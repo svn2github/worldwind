@@ -14,6 +14,7 @@ requirejs(['../src/WorldWind'], function () {
     var wwd = new WorldWind.WorldWindow("canvasOne");
     wwd.globe.equatorialRadius = 1;
     wwd.globe.polarRadius = 1;
+    wwd.layers.addLayer(new WorldWind.BMNGOneImageLayer);
     wwd.layers.addLayer(new WorldWind.ShowTessellationLayer());
     wwd.redraw();
 });

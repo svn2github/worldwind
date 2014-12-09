@@ -32,7 +32,7 @@ define([
          * @classdesc Displays a globe's tessellated geometry.
          */
         var ShowTessellationLayer = function () {
-            Layer.call(this, "Tessellation Layer");
+            Layer.call(this, "Show Tessellation");
 
         };
 
