@@ -36,6 +36,18 @@ define([
         Vec3.NUM_ELEMENTS = 3;
 
         /**
+         * Assign the components of a vector.
+         * @param x x component of vector.
+         * @param y y component of vector.
+         * @param z z component of vector.
+         */
+        Vec3.prototype.set = function(x, y, z) {
+            this[0] = x;
+            this[1] = y;
+            this[2] = z;
+        };
+
+        /**
          * Computes the average of a specified array of points.
          * @param {Vec3[]} points The points whose average to compute.
          * @param {Vec3} result A pre-allocated Vec3 in which to return the computed average.
@@ -375,6 +387,27 @@ define([
             }
 
             return Math.sqrt(this.distanceToSquared(vector));
+        };
+
+        /**
+         * Swap this vector with that vector.
+         * @param {Vec3} that The vector to swap.
+         * @returns {Vec3} this vector returned in the "fluent" style.
+         */
+        Vec3.prototype.swap = function(that) {
+            var tmp = this[0];
+            this[0] = that[0];
+            that[0] = tmp;
+
+            var tmp = this[1];
+            this[1] = that[1];
+            that[1] = tmp;
+
+            var tmp = this[2];
+            this[2] = that[2];
+            that[2] = tmp;
+
+            return this;
         };
 
         return Vec3;

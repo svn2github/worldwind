@@ -36,6 +36,16 @@ define([
         Vec2.NUM_ELEMENTS = 2;
 
         /**
+         * Assign the components of a vector.
+         * @param x x component of vector.
+         * @param y y component of vector.
+         */
+        Vec2.prototype.set = function(x, y) {
+            this[0] = x;
+            this[1] = y;
+        };
+
+        /**
          * Computes the average of a specified array of points.
          * @param {Vec2[]} points The points whose average to compute.
          * @param {Vec2} result A pre-allocated Vec2 in which to return the computed average.
@@ -270,6 +280,24 @@ define([
         Vec2.prototype.toVec3 = function() {
             return new Vec3(this[0], this[1], 0);
         };
+
+        /**
+         * Swap this vector with that vector.
+         * @param {Vec2} that The vector to swap.
+         * @returns {Vec2} this vector returned in the "fluent" style.
+         */
+        Vec3.prototype.swap = function(that) {
+            var tmp = this[0];
+            this[0] = that[0];
+            that[0] = tmp;
+
+            var tmp = this[1];
+            this[1] = that[1];
+            that[1] = tmp;
+
+            return this;
+        };
+
 
         return Vec2;
     });
