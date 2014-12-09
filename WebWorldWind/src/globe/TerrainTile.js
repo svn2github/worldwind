@@ -37,17 +37,10 @@ define([
          * @param {Level} level The level this tile is associated with.
          * @param {Number} row This tile's row in the associated level.
          * @param {Number} column This tile's column in the associated level.
-         * @param {Globe} globe The globe associated with this tile.
          *
          */
-        var TerrainTile = function (sector, level, row, column, globe) {
+        var TerrainTile = function (sector, level, row, column) {
             Tile.call(this, sector, level, row, column); // args are checked in the superclass' constructor
-
-            /**
-             * The globe associated with this terrain tile.
-             * @type {Globe}
-             */
-            this.globe = globe;
 
             /**
              * The transformation matrix that maps tile local coordinates to model coordinates.

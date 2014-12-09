@@ -132,7 +132,48 @@ define([
                 }
             }
 
+            /*
+            var terrain = new Terrain();
+            terrain.surfaceGeometry = this.currentTiles.tileArray;
+            terrain.globe = globe;
+            terrain.tessellator = this;
+            terrain.verticalExaggeration = dc.verticalExaggeration;
+            terrain.sector = Sector.FULL_SPHERE;
+
+            return terrain;
+            */
+
             return this.currentTiles;
+        };
+
+        /**
+         * Constructs a tile for a specified sector, level, row and column. Called as a factory method.
+         * @param {Sector} tileSector The sector represented by the tile.
+         * @param {Number} level The tile's level in a tile pyramid.
+         * @param {Number} row The tile's row in the specified level in a tile pyramid.
+         * @param {Number} column The tile's column in the specified level in a tile pyramid.
+         * @throws {ArgumentError} If the specified sector or level is null or undefined or the row or column arguments
+         * are less than zero.
+         */
+        Tessellator.prototype.createTile = function(tileSector, level, row, column) {
+            if (!tileSector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "constructor", "missingSector"));
+            }
+
+            if (!level) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "constructor",
+                        "The specified level is null or undefined."));
+            }
+
+            if (row < 0 || column < 0) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "constructor",
+                        "The specified row or column is less than zero."));
+            }
+
+            return new TerrainTile(tileSector, level, row, column);
         };
 
         /**
@@ -199,8 +240,7 @@ define([
             if (this.elevationShadingEnabled && this.vertexElevationLocation >= 0)
                 dc.currentGlContext.disableVertexAttribArray(this.vertexElevationLocation);
 
-            if (this.vertexTexCoordLocation >= 0) // location of vertexTexCoord attribute is -1 when the basic program is bound
-            {
+            if (this.vertexTexCoordLocation >= 0) { // location of vertexTexCoord attribute is -1 when the basic program is bound
                 dc.currentGlContext.disableVertexAttribArray(this.vertexTexCoordLocation);
             }
         };
@@ -278,7 +318,7 @@ define([
         Tessellator.prototype.renderTile = function (dc, terrainTile) {
             if (!dc) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "endRenderingTile", "missingDc"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "missingDc"));
             }
             if (!terrainTile) {
                 throw new ArgumentError(
@@ -287,9 +327,69 @@ define([
 
             dc.currentGlContext.drawElements(
                 WebGLRenderingContext.TRIANGLE_STRIP,
-                this.sharedGeometry.numIndices,
+                this.numIndices,
                 WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
+        };
+
+        /**
+         * Draws outlines of the triangles composing the tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The tile to draw.
+         */
+        Tessellator.prototype.renderWireframeTile = function (dc, terrainTile) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderWireframeTile", "missingDc"));
+            }
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderWireframeTile", "missingTile"));
+            }
+
+            var gl = dc.currentGlContext;
+
+            // Must turn off texture coordinates, which were turned on in beginRendering.
+            gl.disableVertexAttribArray(this.vertexTexCoordLocation);
+
+            // Must turn off indices buffer, which was turned on in beginRendering.
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
+
+            gl.drawElements(
+                WebGLRenderingContext.LINES,
+                this.numWireframeIndices,
+                WebGLRenderingContext.UNSIGNED_SHORT,
+                this.wireframeIndices);
+        };
+
+        /**
+         * Draws the outer boundary of a specified terrain tile.
+         * @param {DrawContext} dc The current draw context.
+         * @param {TerrainTile} terrainTile The tile whose outer boundary to draw.
+         */
+        Tessellator.prototype.renderTileOutline = function (dc, terrainTile) {
+            if (!dc) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTileOutline", "missingDc"));
+            }
+            if (!terrainTile) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTileOutline", "missingTile"));
+            }
+
+            var gl = dc.currentGlContext;
+
+            // Must turn off texture coordinates, which were turned on in beginRendering.
+            gl.disableVertexAttribArray(this.vertexTexCoordLocation);
+
+            // Must turn off indices buffer, which was turned on in beginRendering.
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
+
+            gl.drawElements(
+                WebGLRenderingContext.LINE_LOOP,
+                this.numOutlineIndices,
+                WebGLRenderingContext.UNSIGNED_SHORT,
+                this.outlineIndices);
         };
 
         /***********************************************************************
@@ -298,7 +398,7 @@ define([
 
         Tessellator.prototype.createTopLevelTiles = function (dc) {
             this.topLevelTiles = [];
-            Tile.createTilesForLevel(this.levels.firstLevel(), this.tileFactory, this.topLevelTiles);
+            Tile.createTilesForLevel(this.levels.firstLevel(), this, this.topLevelTiles);
         };
 
         Tessellator.prototype.addTileOrDescendants = function (dc, tile) {
@@ -645,24 +745,6 @@ define([
                 dc.frameStatistics.incrementVboLoadCount(1);
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
             }
-        };
-
-        /**
-         * Draws outlines of the triangles composing the tile.
-         * @param {DrawContext} dc The current draw context.
-         * @param {TerrainTile} terrainTile The tile to draw.
-         */
-        Tessellator.prototype.renderWireframeTile = function(dc, terrainTile) {
-            // TODO
-        };
-
-        /**
-         * Draws the outer boundary of a specified terrain tile.
-         * @param {DrawContext} dc The current draw context.
-         * @param {TerrainTile} terrainTile The tile whose outer boundar to draw.
-         */
-        Tessellator.prototype.renderTileOutline = function(dc, terrainTile) {
-            // TODO
         };
 
         return Tessellator;

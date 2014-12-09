@@ -506,8 +506,7 @@ define([
                         maxLat,
                         minLon,
                         maxLon),
-                        //tile = tileFactory.createTile(tileSector, level, row, col);
-                        tile = new Tile(tileSector, level, row, col); // TODO: replace with tileFactory
+                        tile = tileFactory.createTile(tileSector, level, row, col);
                     result.push(tile);
 
                     minLon = maxLon;
