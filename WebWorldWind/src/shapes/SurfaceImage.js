@@ -69,11 +69,16 @@ define([
             }
 
             var image = new Image(),
+                imagePath = this.imagePath,
                 cache = dc.gpuResourceCache,
                 gl = dc.currentGlContext;
+
             image.onload = function () {
                 var texture = new Texture(gl, image);
-                cache.putResource(gl, image.src, texture, WorldWind.GPU_TEXTURE, texture.size);
+                cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
+
+                // Send an event to request a redraw.
+                dc.canvas.dispatchEvent(new CustomEvent("WorldWindRedraw"));
             };
             image.src = this.imagePath;
         };

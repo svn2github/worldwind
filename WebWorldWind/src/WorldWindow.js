@@ -100,6 +100,13 @@ define([
 
             // Internal. Intentionally not documented.
             this.drawContext = new DrawContext();
+            this.drawContext.canvas = this.canvas;
+
+            // Set up to handle redraw events.
+            var thisWindow = this;
+            this.canvas.addEventListener("WorldWindRedraw", function (event) {
+                thisWindow.redraw();
+            }, false);
         };
 
         /**
