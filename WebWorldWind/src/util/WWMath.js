@@ -9,10 +9,12 @@ define([
         '../error/ArgumentError',
         '../geom/Line',
         '../util/Logger',
+        '../geom/Rectangle',
         '../geom/Vec3'],
     function (ArgumentError,
               Line,
               Logger,
+              Rectangle,
               Vec3) {
         "use strict";
         /**
@@ -115,6 +117,7 @@ define([
                         "computeEllipsoidalGlobeIntersection",
                         "The specified line is null, undefined or not a Line type"));
                 }
+
                 if (!result instanceof Vec3) {
                     throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
                         "computeEllipsoidalGlobeIntersection", "missingResult"));
@@ -181,24 +184,177 @@ define([
                 return value1 > value2 ? value1 : value2;
             },
 
-            localCoordinateAxesAtPoint : function(origin, globe, xAxisResult, yAxisResult, zAxisResult) {
+            localCoordinateAxesAtPoint: function (origin, globe, xAxisResult, yAxisResult, zAxisResult) {
                 // TODO
             },
 
-            perspectiveFrustumRectangle: function(viewport, distance) {
-                // TODO
+            /**
+             * Computes the distance to a globe's horizon from a viewer at a given altitude.
+             *
+             * Only the globe's ellipsoid is considered; terrain height is not incorporated. This returns zero if the radius is zero
+             * or if the altitude is less than or equal to zero.
+             *
+             * @param {number} radius The globe's radius, in meters.
+             * @param {number} altitude The viewer's altitude above the globe, in meters.
+             * @returns {number} The distance to the horizon, in model coordinates.
+             * @throws {ArgumentError} If the specified globe radius is negative.
+             */
+            horizonDistanceForGlobeRadius: function (radius, altitude) {
+                if (radius < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
+                        "horizontalDistanceForGlobeRadius", "The specified globe radius is negative."));
+                }
+
+                return (radius > 0 && altitude > 0) ? Math.sqrt(altitude * (2 * radius + altitude)) : 0;
             },
 
-            horizontalDistanceFor: function (globeRadius, eyeAltitude) {
-                // TODO
+            /**
+             * Computes the near clip distance that corresponds to a specified far clip distance and resolution at the far clip
+             * plane.
+             *
+             * This computes a near clip distance appropriate for use in [perspectiveFrustumRect]{@link WWMath#perspectiveFrustumRect}
+             * and [setToPerspectiveProjection]{@link Matrix#setToPerspectiveProjection}. This returns zero if either the distance or the
+             * resolution are zero.
+             *
+             * @param {number} farDistance The far clip distance, in meters.
+             * @param {number} farResolution The depth resolution at the far clip plane, in meters.
+             * @param {number} depthBits The number of bit-planes in the depth buffer.
+             * @returns {number} The near clip distance, in meters.
+             * @throws {ArgumentError} If either the distance or resolution is negative, or if the depth bits is less
+             * than one.
+             */
+            perspectiveNearDistanceForFarDistance: function (farDistance, farResolution, depthBits) {
+                if (farDistance < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistanceForFarDistance",
+                        "The specified distance is negative."));
+                }
+
+                if (farResolution < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistanceForFarDistance",
+                        "The specified resolution is negative."));
+                }
+
+                if (depthBits < 1) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistanceForFarDistance",
+                        "The specified depth bits is negative."));
+                }
+
+                var maxDepthValue = (1 << depthBits) - 1;
+
+                return farDistance / (maxDepthValue / (1 - farResolution / farDistance) - maxDepthValue + 1);
             },
 
-            perspectiveNearDistanceForFarDistance: function (farDistance, farResolution, viewDeptBits) {
-                // TODO
-            },
-
+            /**
+             * Computes the maximum near clip distance for a perspective projection that avoids clipping an object at a given
+             * distance from the eye point.
+             *
+             * This computes a near clip distance appropriate for use in [perspectiveFrustumRect]{@link WWMath#perspectiveFrustumRect}
+             * and [setToPerspectiveProjection]{@link Matrix#setToPerspectiveProjection}. The given distance should specify the
+             * smallest distance between the eye and the object being viewed, but may be an approximation if an exact distance is not
+             * required.
+             *
+             * The viewport is in the WebGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+             * up and to the right from the origin point.
+             *
+             * @param {Rectangle} viewport The viewport rectangle, in WebGL screen coordinates.
+             * @param {number} distanceToSurface The distance from the perspective eye point to the nearest object, in
+             * meters.
+             * @returns {number} The maximum near clip distance, in meters.
+             * @throws {ArgumentError} If the specified viewport is null or undefined or either its width or height is
+             * less than or equal to zero, or if the specified distance is negative.
+             */
             perspectiveNearDistance: function (viewport, distanceToSurface) {
-                // TODO
+                if (!viewport) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistance",
+                        "missingViewport"));
+                }
+
+                if (viewport.width <= 0 || viewport.height <= 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistance",
+                        "invalidViewport"));
+                }
+
+                if (distanceToSurface < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveNearDistance",
+                        "The specified distance is negative."));
+                }
+
+                // Compute the maximum near clip distance that avoids clipping an object at the specified distance from the eye.
+                // Since the furthest points on the near clip rectangle are the four corners, we compute a near distance that puts
+                // any one of these corners exactly at the given distance. The distance to one of the four corners can be expressed
+                // in terms of the near clip distance, given distance to a corner 'd', near distance 'n', and aspect ratio 'a':
+                //
+                // d*d = x*x + y*y + z*z
+                // d*d = (n*n/4 * a*a) + (n*n/4) + (n*n)
+                //
+                // Extracting 'n*n/4' from the right hand side gives:
+                //
+                // d*d = (n*n/4) * (a*a + 1 + 4)
+                // d*d = (n*n/4) * (a*a + 5)
+                //
+                // Finally, solving for 'n' gives:
+                //
+                // n*n = 4 * d*d / (a*a + 5)
+                // n = 2 * d / sqrt(a*a + 5)
+
+                var aspect = (viewport.width < viewport.height) ?
+                    (viewport.height / viewport.width) : (viewport.width / viewport.height);
+
+                return 2 * distanceToSurface / Math.sqrt(aspect * aspect + 5);
+            },
+
+            /**
+             * Computes the coordinates of a rectangle carved out of a perspective projection's frustum at a given distance in model
+             * coordinates.
+             *
+             * This computes a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
+             * height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
+             *
+             * The viewport is in the WebGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+             * up and to the right from the origin point.
+             *
+             * @param {Rectangle} viewport The viewport rectangle, in WebGL screen coordinates.
+             * @param {number} distanceToSurface The distance along the negative Z axis, in model coordinates.
+             * @returns {Rectangle} The frustum rectangle, in model coordinates.
+             * @throws {ArgumentError} If the specified viewport is null or undefined or either its width or height is
+             * less than or equal to zero, or if the specified distance is negative.
+             */
+            perspectiveFrustumRectangle: function (viewport, distanceToSurface) {
+                if (!viewport) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "missingViewport"));
+                }
+
+                if (viewport.width <= 0 || viewport.height <= 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "invalidViewport"));
+                }
+
+                if (distanceToSurface < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "The specified distance is negative."));
+                }
+
+                var viewportWidth = viewport.width,
+                    viewportHeight = viewport.height,
+                    x, y, width, height;
+
+                // Compute a frustum rectangle that preserves the scene's size relative to the viewport when the viewport width and
+                // height are swapped. This has the effect of maintaining the scene's size on screen when the device is rotated.
+
+                if (viewportWidth < viewportHeight) {
+                    width = distanceToSurface;
+                    height = distanceToSurface * viewportHeight / viewportWidth;
+                    x = -width / 2;
+                    y = -height / 2;
+                } else {
+                    width = distanceToSurface * viewportWidth / viewportHeight;
+                    height = distanceToSurface;
+                    x = -width / 2;
+                    y = -height / 2;
+                }
+
+                return new Rectangle(x, y, width, height);
             }
         };
 
