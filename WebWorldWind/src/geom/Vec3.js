@@ -36,18 +36,6 @@ define([
         Vec3.NUM_ELEMENTS = 3;
 
         /**
-         * Assign the components of a vector.
-         * @param x x component of vector.
-         * @param y y component of vector.
-         * @param z z component of vector.
-         */
-        Vec3.prototype.set = function(x, y, z) {
-            this[0] = x;
-            this[1] = y;
-            this[2] = z;
-        };
-
-        /**
          * Computes the average of a specified array of points.
          * @param {Vec3[]} points The points whose average to compute.
          * @param {Vec3} result A pre-allocated Vec3 in which to return the computed average.
@@ -83,6 +71,18 @@ define([
          * @type {Float64Array}
          */
         Vec3.prototype = new Float64Array(Vec3.NUM_ELEMENTS);
+
+        /**
+         * Assign the components of a vector.
+         * @param x x component of vector.
+         * @param y y component of vector.
+         * @param z z component of vector.
+         */
+        Vec3.prototype.set = function(x, y, z) {
+            this[0] = x;
+            this[1] = y;
+            this[2] = z;
+        };
 
         /**
          * Write a vector to an array at an offset.

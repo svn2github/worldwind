@@ -941,7 +941,7 @@ define([
             var nearRect = WWMath.perspectiveFrustumRectangle(viewport, nearDistance),
                 left = nearRect.getMinX(),
                 right = nearRect.getMaxX(),
-                bottom = nearRect.getMinY,
+                bottom = nearRect.getMinY(),
                 top = nearRect.getMaxY();
 
             // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.

@@ -148,7 +148,7 @@ define([
             dc.reset();
             dc.globe = this.globe;
             dc.layers = this.layers;
-            //dc.navigatorState = this.navigator.currentState();
+            dc.navigatorState = this.navigator.currentState();
             dc.verticalExaggeration = this.verticalExaggeration;
             dc.frameStatistics = this.frameStatistics;
             dc.update();

@@ -112,13 +112,13 @@ define([
              * @throws {ArgumentError} If the specified line or result is null, undefined or not the correct type.
              */
             computeEllipsoidalGlobeIntersection: function (line, equatorialRadius, polarRadius, result) {
-                if (!line instanceof Line) {
+                if (line) {
                     throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
                         "computeEllipsoidalGlobeIntersection",
                         "The specified line is null, undefined or not a Line type"));
                 }
 
-                if (!result instanceof Vec3) {
+                if (result) {
                     throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
                         "computeEllipsoidalGlobeIntersection", "missingResult"));
                 }
@@ -184,8 +184,62 @@ define([
                 return value1 > value2 ? value1 : value2;
             },
 
+            /**
+             * Computes the axes of a local coordinate system on the specified globe, placing the resultant axes in the specified
+             * _axis_ arguments.
+             *
+             * Upon returning the specified axis arguments contain three orthogonal axes identifying the X, Y, and Z axes. Each
+             * axis has unit length.
+             *
+             * The local coordinate system is defined such that the Z axis maps to the globe's surface normal at the point, the
+             * Y axis maps to the north pointing tangent, and the X axis maps to the east pointing tangent.
+             *
+             * @param {Vec3} origin The local coordinate system origin, in model coordinates.
+             * @param {Globe} globe The globe the coordinate system is relative to.
+             * @param {Vec3} xAxisResult A pre-allocated Vec3 in which to return the computed X axis.
+             * @param {Vec3} yAxisResult A pre-allocated Vec3 in which to return the computed Y axis.
+             * @param {Vec3} zAxisResult A pre-allocated Vec3 in which to return the computed Z axis.
+             * @throws {ArgumentError} If any argument is null or undefined.
+             */
             localCoordinateAxesAtPoint: function (origin, globe, xAxisResult, yAxisResult, zAxisResult) {
-                // TODO
+                if (!origin) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
+                        "localCoordinateAxesAtPoint", "missingVector"));
+                }
+
+                if (!globe) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
+                        "localCoordinateAxesAtPoint", "missingGlobe"));
+                }
+
+                if (!xAxisResult || ! yAxisResult || !zAxisResult) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
+                        "localCoordinateAxesAtPoint", "missingResult"));
+                }
+
+                var x = origin[0],
+                    y = origin[1],
+                    z = origin[2];
+
+                // Compute the z axis from the surface normal in model coordinates. This axis is used to determine the other two
+                // axes, and is the only constant in the computations below.
+                globe.surfaceNormalAtPoint(x, y, z, zAxisResult);
+
+                // Compute the y axis from the north pointing tangent in model coordinates. This axis is known to be orthogonal to
+                // the z axis, and is therefore used to compute the x axis.
+                globe.northTangentAtPoint(x, y, z, yAxisResult);
+
+                // Compute the x axis as the cross product of the y and z axes. This ensures that the x and z axes are orthogonal.
+                xAxisResult.set(yAxisResult[0], yAxisResult[1], yAxisResult[2]);
+                xAxisResult.cross(zAxisResult);
+                xAxisResult.normalize();
+
+                // Re-compute the y axis as the cross product of the z and x axes. This ensures that all three axes are orthogonal.
+                // Though the initial y axis computed above is likely to be very nearly orthogonal, we re-compute it using cross
+                // products to reduce the effect of floating point rounding errors caused by working with Earth sized coordinates.
+                yAxisResult.set(zAxisResult[0], zAxisResult[1], zAxisResult[2]);
+                yAxisResult.cross(xAxisResult);
+                yAxisResult.normalize();
             },
 
             /**

@@ -62,21 +62,21 @@ define([
              * @type {Number}
              * @default 6378137.0 meters
              */
-            this.equatorialRadius = 1;// TODO 6378137.0;
+            this.equatorialRadius = 6378137.0;
 
             /**
              * This globe's polar radius.
              * @type {Number}
              * @default 6356752.3 meters
              */
-            this.polarRadius = 1;// TODO 6356752.3;
+            this.polarRadius = 6356752.3;
 
             /**
              * This globe's eccentricity squared.
              * @type {Number}
              * @default 0.00669437999013
              */
-            this.eccentricitySquared = 0;// TODO 0.00669437999013;
+            this.eccentricitySquared = 0.00669437999013;
 
             // Used internally to eliminate the need to create new positions for certain calculations.
             this.scratchPosition = new Position(0, 0, 0);
@@ -426,7 +426,7 @@ define([
             result[1] = y / polSquared;
             result[2] = z / eSquared;
 
-            return result.normalize;
+            return result.normalize();
         };
 
         /**
@@ -466,7 +466,7 @@ define([
             result[1] = cosLat;
             result[2] = -sinLat * cosLon;
 
-            return result.normalize;
+            return result.normalize();
         };
 
         /**

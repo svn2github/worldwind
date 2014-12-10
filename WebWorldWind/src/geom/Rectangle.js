@@ -54,7 +54,7 @@ define([
          * @returns {Number} The rectangle's maximum X value.
          */
         Rectangle.prototype.getMaxX = function() {
-            return this.x + this.width - 1;
+            return this.x + this.width;
         };
 
         /**
@@ -62,7 +62,7 @@ define([
          * @returns {Number} The rectangle's maximum Y value.
          */
         Rectangle.prototype.getMaxY = function() {
-            return this.y + this.height - 1;
+            return this.y + this.height;
         };
 
         return Rectangle;
