@@ -32,6 +32,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Matrix',
         './cache/MemoryCache',
         './cache/MemoryCacheListener',
+        './navigate/Navigator',
         './navigate/NavigatorState',
         './error/NotYetImplementedError',
         './geom/Plane',
@@ -84,6 +85,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Matrix,
               MemoryCache,
               MemoryCacheListener,
+              Navigator,
               NavigatorState,
               NotYetImplementedError,
               Plane,
@@ -203,6 +205,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Matrix'] = Matrix;
         WorldWind['MemoryCache'] = MemoryCache;
         WorldWind['MemoryCacheListener'] = MemoryCacheListener;
+        WorldWind['Navigator'] = Navigator;
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['NotYetImplementedError'] = NotYetImplementedError;
         WorldWind['Plane'] = Plane;

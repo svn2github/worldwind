@@ -45,6 +45,12 @@ define([
          * @param {String} canvasName The name assigned to the canvas in the HTML page.
          */
         var WorldWindow = function (canvasName) {
+            if (!(window.WebGLRenderingContext)) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "constructor",
+                        "The specified canvas does not support WebGL."));
+            }
+
             this.canvas = document.getElementById(canvasName);
 
             this.canvas.addEventListener("webglcontextlost", handleContextLost, false);
@@ -56,6 +62,20 @@ define([
 
             function handleContextRestored(event) {
             }
+
+            var gl = this.canvas.getContext("webgl");
+
+            /**
+             * The number of bits in the depth buffer associated with this World Window.
+             * @type {number}
+             */
+            this.depthBits = gl.getParameter(WebGLRenderingContext.DEPTH_BITS);
+
+            /**
+             * The current viewport of this World Window.
+             * @type {Rectangle}
+             */
+            this.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
             /**
              * The globe displayed.
@@ -74,8 +94,7 @@ define([
              * @type {LookAtNavigator}
              * @default [LookAtNavigator]{@link LookAtNavigator}
              */
-            this.navigator = new LookAtNavigator();
-            this.navigator.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
+            this.navigator = new LookAtNavigator(this);
 
             /**
              * The tessellator used to create the globe's terrain.
@@ -113,11 +132,6 @@ define([
          * Redraws the window.
          */
         WorldWindow.prototype.redraw = function () {
-            if (!(window.WebGLRenderingContext)) {
-                Logger.log(Logger.LEVEL_SEVERE, "Canvas does not support WebGL");
-                return;
-            }
-
             try {
                 this.resetDrawContext();
                 this.drawFrame();
@@ -147,7 +161,7 @@ define([
             this.drawContext.currentGlContext = this.canvas.getContext("webgl");
 
             try {
-                this.beginFrame(this.drawContext, this.navigator.viewport);
+                this.beginFrame(this.drawContext, this.viewport);
                 //this.createTerrain(this.drawContext); // TODO: uncomment this when terrain creation works
                 this.clearFrame(this.drawContext);
                 this.doDraw(this.drawContext);

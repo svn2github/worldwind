@@ -77,10 +77,10 @@ define(function () {
         },
 
         messageTable: { // KEEP THIS TABLE IN ALPHABETICAL ORDER
-            abstractInvocation: "The function called is abstract and should be overridden in a subclass.",
+            abstractInvocation: "The function called is abstract and must be overridden in a subclass.",
             missingArray: "The specified array is null, undefined or of insufficient length.",
             missingColor: "The specified color is null or undefined.",
-            missingDc: "The specified dc is null or undefined.",
+            missingDc: "The specified draw context is null or undefined.",
             missingEntry: "The specified entry is null or undefined.",
             missingFrustum: "The specified frustum is null or undefined.",
             missingGlContext: "The specified WebGL rendering context is null or undefined.",
@@ -104,6 +104,7 @@ define(function () {
             missingTexture: "The specified texture is null or undefined.",
             missingVector: "The specified vector is null or undefined.",
             missingViewport: "The specified viewport is null or undefined.",
+            missingWorldWindow: "The specified World Window is null or undefined.",
             notYetImplemented: "This function is not yet implemented"
         }
     };

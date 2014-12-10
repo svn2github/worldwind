@@ -919,13 +919,13 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection", "missingViewport"));
             }
 
-            if (!viewport.width <= 0 || viewport.height <= 0) {
+            if (viewport.width <= 0 || viewport.height <= 0) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection",
                         "Viewport width or height is zero or negative."));
             }
 
-            if (nearDistance == farDistance) {
+            if (nearDistance === farDistance) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Matrix", "setToPerspectiveProjection",
                         "Near and far distance are the same."));

@@ -10,33 +10,51 @@ define([
         '../geom/Frustum',
         '../util/Logger',
         '../geom/Matrix',
-        '../navigate/NavigatorState'
+        '../navigate/Navigator',
+        '../geom/Position'
     ],
     function (Frustum,
               Logger,
               Matrix,
-              NavigatorState) {
+              Navigator,
+              Position) {
         "use strict";
 
         /**
          * Constructs a look-at navigator.
          * @alias LookAtNavigator
          * @constructor
+         * @augments Navigator
          * @classdesc Represents a navigator that enables the user to pan, zoom and tilt the globe.
          */
-        var LookAtNavigator = function () {
-            this.modelview = Matrix.fromIdentity();
-            this.projection = Matrix.fromIdentity();
-            this.heading = 0;
-            this.tilt = 0;
+        var LookAtNavigator = function (worldWindow) {
+            Navigator.call(this, worldWindow);
+            /**
+             * The geographic position this navigator is directed towards.
+             * @type {Position}
+             */
+            this.lookAtPosition = new Position(0, 0, 0);
+
+            /**
+             * The distance of the eye from this navigator's look-at position.
+             * @type {number}
+             */
+            this.range = 10e6; // TODO: Compute initial range to fit globe in viewport.
         };
+
+        LookAtNavigator.prototype = Object.create(Navigator.prototype);
 
         /**
          * Returns the navigator state for this navigator's current settings.
          * @returns {NavigatorState} This navigator's current navigator state.
          */
         LookAtNavigator.prototype.currentState = function () {
-            return new NavigatorState(this.modelview, this.projection, this.viewport, this.heading, this.tilt);
+            var modelview = Matrix.fromIdentity();
+
+            modelview.multiplyByLookAtModelview(this.lookAtPosition, this.range, this.heading, this.tilt, this.roll,
+                this.worldWindow.globe);
+
+            return this.currentStateForModelview(modelview);
         };
 
         return LookAtNavigator;

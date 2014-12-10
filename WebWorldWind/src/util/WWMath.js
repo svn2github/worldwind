@@ -171,11 +171,33 @@ define([
                 return number % modulus;
             },
 
+            /**
+             * Returns the maximum of two specified numbers.
+             * @param {number} value1 The first value to compare.
+             * @param {number} value2 The second value to compare.
+             * @returns {number} The maximum of the two specified values.
+             */
+            max: function (value1, value2) {
+                return value1 > value2 ? value1 : value2;
+            },
+
             localCoordinateAxesAtPoint : function(origin, globe, xAxisResult, yAxisResult, zAxisResult) {
                 // TODO
             },
 
             perspectiveFrustumRectangle: function(viewport, distance) {
+                // TODO
+            },
+
+            horizontalDistanceFor: function (globeRadius, eyeAltitude) {
+                // TODO
+            },
+
+            perspectiveNearDistanceForFarDistance: function (farDistance, farResolution, viewDeptBits) {
+                // TODO
+            },
+
+            perspectiveNearDistance: function (viewport, distanceToSurface) {
                 // TODO
             }
         };
