@@ -1532,6 +1532,7 @@ public abstract class AbstractAirspace extends WWObjectImpl
     private void doMyGetRestorableState(RestorableSupport rs, RestorableSupport.StateObject context)
     {
         rs.addStateValueAsBoolean(context, "visible", this.isVisible());
+        rs.addStateValueAsBoolean(context, "highlighted", this.isHighlighted());
         rs.addStateValueAsDouble(context, "lowerAltitude", this.getAltitudes()[0]);
         rs.addStateValueAsDouble(context, "upperAltitude", this.getAltitudes()[1]);
         rs.addStateValueAsBoolean(context, "lowerTerrainConforming", this.isTerrainConforming()[0]);
@@ -1540,9 +1541,19 @@ public abstract class AbstractAirspace extends WWObjectImpl
         rs.addStateValueAsString(context, "upperAltitudeDatum", this.getAltitudeDatum()[1]);
         if (this.getGroundReference() != null)
             rs.addStateValueAsLatLon(context, "groundReference", this.getGroundReference());
+        rs.addStateValueAsBoolean(context, "enableBatchRendering", this.isEnableBatchRendering());
+        rs.addStateValueAsBoolean(context, "enableBatchPicking", this.isEnableBatchPicking());
+        rs.addStateValueAsBoolean(context, "enableDepthOffset", this.isEnableDepthOffset());
+        rs.addStateValueAsInteger(context, "outlinePickWidth", this.getOutlinePickWidth());
+        rs.addStateValueAsBoolean(context, "alwaysOnTop", this.isAlwaysOnTop());
+        rs.addStateValueAsBoolean(context, "drawSurfaceShape", this.isDrawSurfaceShape());
+        rs.addStateValueAsBoolean(context, "enableLevelOfDetail", this.isEnableLevelOfDetail());
 
-        this.attributes.getRestorableState(rs, rs.addStateObject(context, "attributes"));
-        this.highlightAttributes.getRestorableState(rs, rs.addStateObject(context, "highlightAttributes"));
+        if (this.attributes != null)
+            this.attributes.getRestorableState(rs, rs.addStateObject(context, "attributes"));
+
+        if (this.highlightAttributes != null)
+            this.highlightAttributes.getRestorableState(rs, rs.addStateObject(context, "highlightAttributes"));
     }
 
     public void restoreState(String stateInXml)
@@ -1582,6 +1593,10 @@ public abstract class AbstractAirspace extends WWObjectImpl
         if (booleanState != null)
             this.setVisible(booleanState);
 
+        booleanState = rs.getStateValueAsBoolean(context, "highlighted");
+        if (booleanState != null)
+            this.setHighlighted(booleanState);
+
         Double lo = rs.getStateValueAsDouble(context, "lowerAltitude");
         if (lo == null)
             lo = this.getAltitudes()[0];
@@ -1615,6 +1630,34 @@ public abstract class AbstractAirspace extends WWObjectImpl
         LatLon groundRef = rs.getStateValueAsLatLon(context, "groundReference");
         if (groundRef != null)
             this.setGroundReference(groundRef);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableBatchRendering");
+        if (booleanState != null)
+            this.setEnableBatchRendering(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableBatchPicking");
+        if (booleanState != null)
+            this.setEnableBatchPicking(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableDepthOffset");
+        if (booleanState != null)
+            this.setEnableDepthOffset(booleanState);
+
+        Integer intState = rs.getStateValueAsInteger(context, "outlinePickWidth");
+        if (intState != null)
+            this.setOutlinePickWidth(intState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "alwaysOnTop");
+        if (booleanState != null)
+            this.setAlwaysOnTop(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "drawSurfaceShape");
+        if (booleanState != null)
+            this.setDrawSurfaceShape(booleanState);
+
+        booleanState = rs.getStateValueAsBoolean(context, "enableLevelOfDetail");
+        if (booleanState != null)
+            this.setEnableLevelOfDetail(booleanState);
 
         RestorableSupport.StateObject so = rs.getStateObject(context, "attributes");
         if (so != null)

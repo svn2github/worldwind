@@ -595,6 +595,8 @@ public class TrackAirspace extends AbstractAirspace
         super.doGetRestorableState(rs, context);
 
         rs.addStateValueAsBoolean(context, "enableInnerCaps", this.isEnableInnerCaps());
+        rs.addStateValueAsBoolean(context, "enableCenterLine", this.isEnableCenterLine());
+        rs.addStateValueAsDouble(context, "smallAngleThresholdDegrees", this.getSmallAngleThreshold().degrees);
 
         RestorableSupport.StateObject so = rs.addStateObject(context, "legs");
         for (Box leg : this.legs)
@@ -612,6 +614,14 @@ public class TrackAirspace extends AbstractAirspace
         Boolean b = rs.getStateValueAsBoolean(context, "enableInnerCaps");
         if (b != null)
             this.setEnableInnerCaps(b);
+
+        b = rs.getStateValueAsBoolean(context, "enableCenterLine");
+        if (b != null)
+            this.setEnableCenterLine(b);
+
+        Double d = rs.getStateValueAsDouble(context, "smallAngleThresholdDegrees");
+        if (d != null)
+            this.setSmallAngleThreshold(Angle.fromDegrees(d));
 
         RestorableSupport.StateObject so = rs.getStateObject(context, "legs");
         if (so == null)
