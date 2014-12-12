@@ -154,15 +154,49 @@ define([
             dc.update();
         };
 
+        /* useful stuff to debug WebGL */
+        /*
+        function logGLCall(functionName, args) {
+            console.log("gl." + functionName + "(" +
+            WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+        };
+
+        function validateNoneOfTheArgsAreUndefined(functionName, args) {
+            for (var ii = 0; ii < args.length; ++ii) {
+                if (args[ii] === undefined) {
+                    console.error("undefined passed to gl." + functionName + "(" +
+                    WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+                }
+            }
+        };
+
+        WorldWindow.prototype.logAndValidate = function logAndValidate(functionName, args) {
+            logGLCall(functionName, args);
+            validateNoneOfTheArgsAreUndefined (functionName, args);
+        };
+
+        WorldWindow.prototype.throwOnGLError = function throwOnGLError(err, funcName, args) {
+            throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+        };
+        */
+
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.drawFrame = function () {
             this.drawContext.frameStatistics.beginFrame();
 
-            this.drawContext.currentGlContext = this.canvas.getContext("webgl");
+            var gl = this.canvas.getContext("webgl");
+
+            // uncomment to debug WebGL
+            //var gl = WebGLDebugUtils.makeDebugContext(this.canvas.getContext("webgl"),
+            //        this.throwOnGLError,
+            //        this.logAndValidate
+            //);
+
+            this.drawContext.currentGlContext = gl;
 
             try {
                 this.beginFrame(this.drawContext, this.viewport);
-                //this.createTerrain(this.drawContext); // TODO: uncomment this when terrain creation works
+                this.createTerrain(this.drawContext);
                 this.clearFrame(this.drawContext);
                 this.doDraw(this.drawContext);
             } finally {

@@ -36,13 +36,34 @@ define([
         Vec2.NUM_ELEMENTS = 2;
 
         /**
+         * Vec2 inherits all methods and representation of FLoat64Array.
+         * @type {Float64Array}
+         */
+        Vec2.prototype = new Float64Array(Vec2.NUM_ELEMENTS);
+
+        /**
          * Assign the components of a vector.
-         * @param x x component of vector.
-         * @param y y component of vector.
+         * @param {Number} x x component of vector.
+         * @param {Number} y y component of vector.
+         * @returns {Vec2} this vector returned in the "fluent" style.
          */
         Vec2.prototype.set = function(x, y) {
             this[0] = x;
             this[1] = y;
+
+            return this;
+        };
+
+        /**
+         * Copy a vector.
+         * @param vector The vector to copy.
+         * @returns {Vec2} this vector returned in the "fluent" style.
+         */
+        Vec2.prototype.copy = function(vector) {
+            this[0] = vector[0];
+            this[1] = vector[1];
+
+            return this;
         };
 
         /**
@@ -73,12 +94,6 @@ define([
 
             return result;
         };
-
-        /**
-         * Vec2 inherits all methods and representation of FLoat64Array.
-         * @type {Float64Array}
-         */
-        Vec2.prototype = new Float64Array(Vec2.NUM_ELEMENTS);
 
         /**
          * Write a vector to an array at an offset.

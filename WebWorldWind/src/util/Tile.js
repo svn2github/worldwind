@@ -40,7 +40,7 @@ define([
          * Provides a base class for texture tiles used by tiled image layers and elevation tiles used by elevation models.
          * Applications typically do not interact with this class.
          * @param {Sector} sector The sector represented by the tile.
-         * @param {Number} level The tile's level in a tile pyramid.
+         * @param {Level} level The tile's level in a tile pyramid.
          * @param {Number} row The tile's row in the specified level in a tile pyramid.
          * @param {Number} column The tile's column in the specified level in a tile pyramid.
          * @throws {ArgumentError} If the specified sector or level is null or undefined or the row or column arguments
@@ -117,13 +117,13 @@ define([
              * The width in pixels or cells of this tile's associated resource.
              * @type {Number}
              */
-            this.tileWidth = 0;
+            this.tileWidth = level.tileWidth;
 
             /**
              * The height in pixels or cells of this tile's associated resource.
              * @type {Number}
              */
-            this.tileHeight = 0;
+            this.tileHeight = level.tileHeight;
 
             /**
              * The size in radians of pixels or cells of this tile's associated resource.
@@ -336,7 +336,7 @@ define([
 
                 // Compute the reference point used as a local coordinate origin for the tile.
                 if (!this.referencePoint) {
-                    this.referencePoint = new Vec3();
+                    this.referencePoint = new Vec3(0, 0, 0);
                 }
                 globe.computePointFromPosition(this.sector.centroidLatitude(), this.sector.centroidLongitude(), minHeight, this.referencePoint);
 

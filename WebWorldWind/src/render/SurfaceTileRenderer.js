@@ -81,7 +81,7 @@ define([
                     try {
                         // Render the terrain tile for each overlapping surface tile.
                         for (var j = 0, stLen = surfaceTiles.length; j < stLen; j++) {
-                            surfaceTile = surfaceTiles[i];
+                            surfaceTile = surfaceTiles[j];
                             if (surfaceTile.sector.overlaps(terrainTileSector)) {
                                 if (surfaceTile.bind(dc)) {
                                     this.applyTileState(dc, terrainTile, surfaceTile);
@@ -109,7 +109,7 @@ define([
         };
 
         SurfaceTileRenderer.prototype.endRendering = function (dc) {
-            dc.bindProgram(null);
+            dc.bindProgram(dc.currentGlContext, null);
         };
 
         SurfaceTileRenderer.prototype.applyTileState = function (dc, terrainTile, surfaceTile) {

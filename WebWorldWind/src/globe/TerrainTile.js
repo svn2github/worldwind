@@ -46,7 +46,7 @@ define([
              * The transformation matrix that maps tile local coordinates to model coordinates.
              * @type {Matrix}
              */
-            this.transformationMatrix = null;
+            this.transformationMatrix = Matrix.fromIdentity();
 
             /**
              * The number of model coordinate points this tile contains.

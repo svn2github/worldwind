@@ -190,7 +190,7 @@ define([
             if (program) {
                 program.bind(gl);
             } else {
-                gl.useProgram(0);
+                gl.useProgram(null);
             }
 
             this.currentProgram = program;

@@ -36,6 +36,12 @@ define([
         Vec3.NUM_ELEMENTS = 3;
 
         /**
+         * Vec3 inherits all methods and representation of FLoat64Array.
+         * @type {Float64Array}
+         */
+        Vec3.prototype = new Float64Array(Vec3.NUM_ELEMENTS);
+
+        /**
          * Computes the average of a specified array of points.
          * @param {Vec3[]} points The points whose average to compute.
          * @param {Vec3} result A pre-allocated Vec3 in which to return the computed average.
@@ -67,21 +73,31 @@ define([
         };
 
         /**
-         * Vec3 inherits all methods and representation of FLoat64Array.
-         * @type {Float64Array}
-         */
-        Vec3.prototype = new Float64Array(Vec3.NUM_ELEMENTS);
-
-        /**
          * Assign the components of a vector.
          * @param x x component of vector.
          * @param y y component of vector.
          * @param z z component of vector.
+         * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.set = function(x, y, z) {
             this[0] = x;
             this[1] = y;
             this[2] = z;
+
+            return this;
+        };
+
+        /**
+         * Copy a vector.
+         * @param {Vec3} vector The vector to copy.
+         * @returns {Vec3} this vector returned in the "fluent" style.
+         */
+        Vec3.prototype.copy = function(vector) {
+            this[0] = vector[0];
+            this[1] = vector[1];
+            this[2] = vector[2];
+
+            return this;
         };
 
         /**

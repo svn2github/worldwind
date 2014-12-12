@@ -8,15 +8,17 @@
  */
 define([
         '../error/ArgumentError',
-        '../util/Logger'
+        '../util/Logger',
+        '../geom/Vec3'
     ],
     function (ArgumentError,
-              Logger) {
+              Logger,
+              Vec3) {
         "use strict";
 
         /**
          * Constructs a plane.
-         * This constructor does not normalize the components.
+         * This constructor does not normalize the components. It assumes that a unit normal vector is provided.
          * @alias Plane
          * @constructor
          * @classdesc Represents a plane in Cartesian coordinates.
@@ -28,24 +30,11 @@ define([
          * @param {Number} distance The negative of the plane's distance from the origin.
          */
         var Plane = function (x, y, z, distance) {
-
             /**
-             * The X coordinate of the plane's unit normal vector.
-             * @type {Number}
+             * The normal vector to the plane.
+             * @type {Vec3}
              */
-            this.x = x;
-
-            /**
-             * The Y coordinate of the plane's unit normal vector.
-             * @type {Number}
-             */
-            this.y = y;
-
-            /**
-             * The Z coordinate of the plane's unit normal vector.
-             * @type {Number}
-             */
-            this.z = z;
+            this.normal = new Vec3(x, y, z);
 
             /**
              * The negative of the plane's distance from the origin.
@@ -56,6 +45,8 @@ define([
 
         /**
          * Computes the dot product of this plane's normal vector with a specified vector.
+         * Since the plane was defined with a unit normal vector, this function returns the distance of the vector from
+         * the plane.
          * @param {Vec3} vector The vector to dot with this plane's normal vector.
          * @returns {Number} The computed dot product.
          * @throws {ArgumentError} If the specified vector is null or undefined.
@@ -66,7 +57,7 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "dot", "missingVector"));
             }
 
-            return this.x * vector[0] + this.y * vector[1] + this.z * vector[2] + this.distance;
+            return this.normal.dot(vector) + this.distance;
         };
 
         /**
@@ -82,11 +73,16 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "transformByMatrix", "missingMatrix"));
             }
 
-            this.x = matrix[0] * this.x + matrix[1] * this.y + matrix[2] * this.z + matrix[3];
-            this.y = matrix[4] * this.x + matrix[5] * this.y + matrix[6] * this.z + matrix[7];
-            this.z =  matrix[8] * this.x + matrix[9] * this.y + matrix[10] * this.z + matrix[11];
-            this.distance = matrix[12] * this.x + matrix[13] * this.y + matrix[14] * this.z + matrix[15];
+            var x = matrix[0] * this.normal[0] + matrix[1] * this.normal[1] + matrix[2] * this.normal[2] + matrix[3],
+                y = matrix[4] * this.normal[0] + matrix[5] * this.normal[1] + matrix[6] * this.normal[2] + matrix[7],
+                z = matrix[8] * this.normal[0] + matrix[9] * this.normal[1] + matrix[10] * this.normal[2] + matrix[11],
+                distance = matrix[12] * this.normal[0] + matrix[13] * this.normal[1] + matrix[14] * this.normal[2] + matrix[15];
 
+            this.normal[0] = x;
+            this.normal[1] = y;
+            this.normal[2] = z;
+            this.distance = distance;
+            
             return this;
         };
 
@@ -95,11 +91,9 @@ define([
          * @returns {Plane} This plane with its components normalized.
          */
         Plane.prototype.normalize = function () {
-            var magnitude = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+            var magnitude = this.normal.magnitude();
 
-            this.x /= magnitude;
-            this.y /= magnitude;
-            this.z /= magnitude;
+            this.normal.divide(magnitude);
             this.distance /= magnitude;
 
             return this;
@@ -117,7 +111,58 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "dot", "missingVector"));
             }
 
-            return this.x * vector[0] + this.y * vector[1] + this.z * vector[2] + this.distance;
+            return this.normal.dot(vector) + this.distance;
+        };
+
+        /**
+         * Determines whether an line defined by two endpoints straddles a plane.
+         *
+         * @param {Vec3} endPoint1 The first end point of the line of interest.
+         * @param {Vec3} endPoint2 The second end point of the line of interest.
+         * @returns {boolean} The endpoints straddle the plane.
+         */
+        Plane.prototype.isIntersecting = function(endPoint1, endPoint2) {
+            var distance1 = this.dot(endPoint1),
+                distance2 = this.dot(endPoint2);
+
+            return distance1 * distance2 <= 0;
+        };
+
+        /**
+         * Computes the intersection of a line defined by two endpoints and the plane.
+         *
+         * @param {Vec3} endPoint1 The first end point of the line of interest.
+         * @param {Vec3} endPoint2 The second end point of the line of interest.
+         * @param {Vec3} result The intersection of the line with the plane.
+         * @returns {boolean} The endpoints straddle the plane.
+         */
+        Plane.prototype.intersectsAt = function (endPoint1, endPoint2, result) {
+            // Compute the distance from the end-points.
+            var distance1 = this.dot(endPoint1),
+                distance2 = this.dot(endPoint2);
+
+            // If both points points lie on the plane, ...
+            if (distance1 == 0 && distance2 == 0) {
+                // Choose an arbitrary endpoint as the intersection.
+                result[0] = endPoint1[0];
+                result[1] = endPoint1[1];
+                result[2] = endPoint1[2];
+
+                return true;
+            }
+            else if (disance1 == distance2) {
+                // The intersection is undefined.
+                return false;
+            }
+
+            var weight1 = -distance1 / (distance2 - distance1),
+                weight2 = 1 - weight1;
+
+            result[0] = weight1 * endPoint1[0] + weight2 * endPoint2[0];
+            result[1] = weight1 * endPoint1[1] + weight2 * endPoint2[1];
+            result[2] = weight1 * endPoint1[2] + weight2 * endPoint2[2];
+
+            return distance1 * distance2 <= 0;
         };
 
         return Plane;

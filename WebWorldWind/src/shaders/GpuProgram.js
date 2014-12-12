@@ -236,7 +236,10 @@ define([
                     "missingColor"));
             }
 
-            gl.uniform4fv(location, 1, color.premultipliedComponents(new Float32Array(4)));
+            // TODO: investigate - WebGL throws an exception when using uniform4fv
+            var premul = color.premultipliedComponents(new Float32Array(4));
+            //gl.uniform4fv(location, 1, color.premultipliedComponents(new Float32Array(4)));
+            gl.uniform4f(location, premul[0], premul[1], premul[2], premul[3]);
         };
 
         /**
