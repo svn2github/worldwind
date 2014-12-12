@@ -92,7 +92,7 @@ public class Route extends TrackAirspace
         }
 
         this.invalidateAirspaceData();
-        this.setLegsOutOfDate();
+        this.setLegsOutOfDate(true);
     }
 
     public double getWidth()
@@ -118,7 +118,7 @@ public class Route extends TrackAirspace
         }
 
         this.invalidateAirspaceData();
-        this.setLegsOutOfDate();
+        this.setLegsOutOfDate(true);
     }
 
     public Box addLeg(LatLon start, LatLon end)

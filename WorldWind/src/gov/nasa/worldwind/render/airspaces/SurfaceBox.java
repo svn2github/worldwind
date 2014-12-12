@@ -16,8 +16,9 @@ import java.util.*;
 
 public class SurfaceBox extends AbstractSurfaceShape
 {
-    protected LatLon[] locations;
-    protected LatLon[] corners;
+    protected List<LatLon> locations;
+    protected int lengthSegments;
+    protected int widthSegments;
     protected boolean enableStartCap = true;
     protected boolean enableEndCap = true;
     protected boolean enableCenterLine;
@@ -27,15 +28,36 @@ public class SurfaceBox extends AbstractSurfaceShape
     {
     }
 
-    public LatLon[] getLocations()
+    public List<LatLon> getLocations()
     {
         return this.locations;
     }
 
-    public void setLocations(LatLon[] locations, LatLon[] corners)
+    public void setLocations(List<LatLon> locations)
     {
         this.locations = locations;
-        this.corners = corners;
+        this.onShapeChanged();
+    }
+
+    public int getLengthSegments()
+    {
+        return this.lengthSegments;
+    }
+
+    public void setLengthSegments(int lengthSegments)
+    {
+        this.lengthSegments = lengthSegments;
+        this.onShapeChanged();
+    }
+
+    public int getWidthSegments()
+    {
+        return this.widthSegments;
+    }
+
+    public void setWidthSegments(int widthSegments)
+    {
+        this.widthSegments = widthSegments;
         this.onShapeChanged();
     }
 
@@ -64,7 +86,7 @@ public class SurfaceBox extends AbstractSurfaceShape
     @Override
     public Position getReferencePosition()
     {
-        return this.locations != null ? new Position(this.locations[0].latitude, this.locations[0].longitude, 0) : null;
+        return this.locations != null && this.locations.size() > 0 ? new Position(this.locations.get(0), 0) : null;
     }
 
     @Override
@@ -86,41 +108,62 @@ public class SurfaceBox extends AbstractSurfaceShape
 
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
 
+        // Generate the box interior locations. Store the interior geometry in index 0.
         ArrayList<LatLon> interior = new ArrayList<LatLon>();
-        geom.add(interior); // store interior geometry in index 0
+        geom.add(interior);
 
-        for (int i = 0; i < 4; i++) // iterate over this box's four segments
+        for (int i = 0; i < this.locations.size() - 1; i++)
         {
-            LatLon a = this.corners[i];
-            LatLon b = this.corners[(i + 1) % 4];
-
-            // Generate intermediate locations between the segment begin and end locations.
-            ArrayList<LatLon> intermediate = new ArrayList<LatLon>();
-            this.addIntermediateLocations(a, b, edgeIntervalsPerDegree, intermediate);
-
-            // Add segment locations to the interior geometry.
+            LatLon a = this.locations.get(i);
+            LatLon b = this.locations.get(i + 1); // first and last location are the same
             interior.add(a);
-            interior.addAll(intermediate);
-
-            // Add segment locations to the outline geometry.
-            if ((i != 0 || this.enableStartCap) && (i != 2 || this.enableEndCap))
-            {
-                ArrayList<LatLon> outline = new ArrayList<LatLon>();
-                outline.add(a);
-                outline.addAll(intermediate);
-                outline.add(b);
-                geom.add(outline); // store outline geometry in indices 1+
-            }
+            this.addIntermediateLocations(a, b, edgeIntervalsPerDegree, interior);
         }
 
-        // Store the center line geometry at the end of the geometry list.
+        // Generate the box outline locations. Store the outline locations in indices 1 through size-2.
+        int[] sideSegments = {2 * this.widthSegments, this.lengthSegments, 2 * this.widthSegments, this.lengthSegments};
+        boolean[] sideFlag = {this.enableStartCap, true, this.enableEndCap, true};
+
+        int offset = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            if (sideFlag[i])
+            {
+                geom.add(this.makeLocations(offset, sideSegments[i], edgeIntervalsPerDegree));
+            }
+
+            offset += sideSegments[i] + 1;
+        }
+
+        // Generate the box center line locations. Store the center line geometry at index size-1.
+        LatLon beginLocation = this.locations.get(this.widthSegments);
+        LatLon endLocation = this.locations.get(3 * this.widthSegments + this.lengthSegments + 2);
         ArrayList<LatLon> centerLine = new ArrayList<LatLon>();
-        centerLine.add(this.locations[0]);
-        this.addIntermediateLocations(this.locations[0], this.locations[1], edgeIntervalsPerDegree, centerLine);
-        centerLine.add(this.locations[1]);
+        centerLine.add(beginLocation);
+        this.addIntermediateLocations(beginLocation, endLocation, edgeIntervalsPerDegree, centerLine);
+        centerLine.add(endLocation);
         geom.add(centerLine);
 
         return geom;
+    }
+
+    protected ArrayList<LatLon> makeLocations(int offset, int count, double edgeIntervalsPerDegree)
+    {
+        ArrayList<LatLon> locations = new ArrayList<LatLon>();
+
+        for (int i = offset; i < offset + count; i++)
+        {
+            LatLon a = this.locations.get(i);
+            LatLon b = this.locations.get(i + 1);
+
+            locations.add(a);
+            this.addIntermediateLocations(a, b, edgeIntervalsPerDegree, locations);
+
+            if (i == offset + count - 1)
+                locations.add(b);
+        }
+
+        return locations;
     }
 
     @Override
@@ -163,7 +206,7 @@ public class SurfaceBox extends AbstractSurfaceShape
             }
         }
 
-        if (index < geom.size()) // outline geometry stored in index size-1
+        if (index < geom.size()) // center line geometry stored in index size-1
         {
             List<LatLon> centerLine = geom.get(index);
             if (LatLon.locationsCrossDateLine(centerLine)) // outlines compensate for dateline crossing, see WWJ-452
@@ -221,6 +264,6 @@ public class SurfaceBox extends AbstractSurfaceShape
             throw new IllegalArgumentException(message);
         }
 
-        return this.corners != null ? Arrays.asList(this.corners) : null;
+        return this.locations;
     }
 }
