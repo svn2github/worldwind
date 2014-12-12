@@ -1394,6 +1394,27 @@ public class ShapeEditor implements SelectListener
     }
 
     /**
+     * Computes a control point location at the edge of a rectangular shape.
+     *
+     * @param begin the beginning of the shape's center.
+     * @param end   the end of the shape's center.
+     * @param width the distance of the edge from the great circle arc between begin and end.
+     *
+     * @return a location centered along the edge parallel to the great circle arc between begin and end.
+     */
+    protected Position computeRectangularEdgeLocation(LatLon begin, LatLon end, double width)
+    {
+        LatLon center = LatLon.interpolateGreatCircle(0.5, begin, end);
+        Angle edgeAzimuth = LatLon.greatCircleAzimuth(center, end).add(Angle.POS90);
+        Angle edgeLength = Angle.fromRadians(width / this.getWwd().getModel().getGlobe().getRadius());
+
+        LatLon edgeLocation = LatLon.greatCircleEndPosition(center, edgeAzimuth, edgeLength);
+        double edgeAltitude = this.getControlPointAltitude(edgeLocation);
+
+        return new Position(edgeLocation, edgeAltitude);
+    }
+
+    /**
      * Computes the point on a specified line segment that is nearest a specified point.
      *
      * @param p1    the line's first point.
@@ -2021,7 +2042,7 @@ public class ShapeEditor implements SelectListener
 
         LatLon center = LatLon.interpolateGreatCircle(0.5, locations[0], locations[1]);
         double centerAltitude = this.getControlPointAltitude(center);
-        Position widthPosition = this.computeEdgeLocation(center, locations[0], 0.5 * orbit.getWidth());
+        Position widthPosition = this.computeRectangularEdgeLocation(locations[0], locations[1], 0.5 * width);
 
         Globe globe = this.getWwd().getModel().getGlobe();
         Vec4 centerPoint = globe.computeEllipsoidalPointFromLocation(center);
@@ -2153,9 +2174,11 @@ public class ShapeEditor implements SelectListener
             return;
 
         Globe globe = this.getWwd().getModel().getGlobe();
-        LatLon legCenter = LatLon.getCenter(globe, locations.subList(0, 2));
-        Position leftWidthPosition = this.computeEdgeLocation(legCenter, locations.get(1), 0.5 * route.getWidth());
-        Position rightWidthPosition = this.computeEdgeLocation(legCenter, locations.get(0), 0.5 * route.getWidth());
+        double width = route.getWidth();
+        Position leftWidthPosition = this.computeRectangularEdgeLocation(locations.get(0), locations.get(1),
+            -0.5 * width);
+        Position rightWidthPosition = this.computeRectangularEdgeLocation(locations.get(0), locations.get(1),
+            0.5 * width);
 
         LatLon routeCenter = LatLon.getCenter(globe, locations);
         double centerAltitude = this.getControlPointAltitude(routeCenter);
@@ -2476,9 +2499,8 @@ public class ShapeEditor implements SelectListener
             LatLon[] legLocations = leg.getLocations();
             double[] widths = leg.getWidths();
 
-            LatLon legCenter = LatLon.interpolateGreatCircle(0.5, legLocations[0], legLocations[1]);
-            Position cwLPosition = this.computeEdgeLocation(legCenter, legLocations[1], widths[0]);
-            Position cwRPosition = this.computeEdgeLocation(legCenter, legLocations[0], widths[1]);
+            Position cwLPosition = this.computeRectangularEdgeLocation(legLocations[0], legLocations[1], -widths[0]);
+            Position cwRPosition = this.computeRectangularEdgeLocation(legLocations[0], legLocations[1], widths[1]);
 
             if (markers == null)
             {
