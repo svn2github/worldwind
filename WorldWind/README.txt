@@ -61,6 +61,9 @@ New features and improvements in World Wind Java SDK 2.1.0
 ------------------------------------------------------------
 - See http://goworldwind.org/releases/ for a description of this release's major features.
 
+- Repaired an issue with the accuracy of airspace shape projection to the 3D globe. The geometry for airspace shapes
+  with large dimensions are now displayed correctly. The following airspace shapes are affected: CappedCylinder,
+  PartialCappedCylinder, Orbit, PolyArc, TrackAirspace, Route, Cake.
 - Repaired WWJ-521, LevelSet.getLastLevel not returning correct level for sector resolution limits.
 - Repaired WWJ-522, HighResolutionTerrain bulk intersector not notifying of exceptions. Added notification interface.
 - Added ability to retrieve elevations via WCS. Added WCSElevations example.
