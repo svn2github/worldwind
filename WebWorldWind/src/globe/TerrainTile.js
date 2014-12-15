@@ -84,7 +84,7 @@ define([
              * The GPU resource cache ID for this tile's model coordinates VBO.
              * @type {null}
              */
-            this.geometryVboCacheKey = null;
+            this.geometryVboCacheKey = level.levelNumber.toString() + "." + row.toString() + "." + column.toString();
         };
 
         TerrainTile.prototype = Object.create(Tile.prototype);
