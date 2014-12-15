@@ -86,10 +86,10 @@ define([
             this.wireframeIndices = undefined;
             this.numWireframeIndices = undefined;
 
-            this.indicesVboCacheKey = undefined;
-            this.wireframeIndicesVboCacheKey = undefined;
-            this.outlineIndicesVboCacheKey = undefined;
-            this.texCoordVboCacheKey = undefined;
+            this.indicesVboCacheKey = 'global_indices';
+            this.wireframeIndicesVboCacheKey = 'global_wireframe_indices';
+            this.outlineIndicesVboCacheKey = 'global_outline_indices';
+            this.texCoordVboCacheKey = 'global_tex_coords';
 
             this.tileElevations = undefined;
 
@@ -216,20 +216,14 @@ define([
             }
 
             if (this.vertexTexCoordLocation >= 0) { // location of vertexTexCoord attribute is -1 when the basic program is bound
-                //var texCoordVbo = gpuResourceCache.resourceForKey(this.texCoordVboCacheKey);
-                //gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
-                var vboTex = gl.createBuffer(); // HACK - work around bindBuffer issues
-                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vboTex); // HACK - work around bindBuffer issues
-                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.texCoords, WebGLRenderingContext.DYNAMIC_DRAW); // HACK - work around bindBuffer issues
+                var texCoordVbo = gpuResourceCache.resourceForKey(this.texCoordVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
                 gl.vertexAttribPointer(this.vertexTexCoordLocation, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            //var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
-            //gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
-            var vboIndex = gl.createBuffer(); // HACK - work around bindBuffer issues
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, vboIndex); // HACK - work around bindBuffer issues
-            gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indices, WebGLRenderingContext.DYNAMIC_DRAW); // HACK - work around bindBuffer issues
+            var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
         };
 
         /**
@@ -282,14 +276,12 @@ define([
             this.scratchMatrix.setToMultiply(dc.navigatorState.modelviewProjection, terrainTile.transformationMatrix);
             GpuProgram.loadUniformMatrix(gl, this.scratchMatrix, this.modelViewProjectionMatrixLocation);
 
-            //var vbo = gpuResourceCache.resourceForKey(terrainTile.geometryVboCacheKey);
-            var vbo = undefined; // HACK - work around bindBuffer issues
+            var vbo = gpuResourceCache.resourceForKey(terrainTile.geometryVboCacheKey);
             if (!vbo) {
                 vbo = gl.createBuffer();
                 gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vbo);
                 gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, terrainTile.points, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                terrainTile.geometryVboCacheKey = vbo;
                 gpuResourceCache.putResource(gl, terrainTile.geometryVboCacheKey, vbo, WorldWind.GPU_BUFFER, terrainTile.points.length * 3 * 4);
                 terrainTile.geometryVboTimestamp = terrainTile.geometryTimestamp;
             }
@@ -373,23 +365,14 @@ define([
                 gl.disableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            // Must turn off indices buffer, which was turned on in beginRendering.
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
-
-            //var wireframeIndicesVbo = gpuResourceCache.resourceForKey(this.wireframeIndicesVboCacheKey);
-            //gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, wireframeIndicesVbo);
-
-            var vbo = gl.createBuffer();
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, vbo);
-            gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.wireframeIndices, WebGLRenderingContext.DYNAMIC_DRAW);
+            var wireframeIndicesVbo = gpuResourceCache.resourceForKey(this.wireframeIndicesVboCacheKey);
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, wireframeIndicesVbo);
 
             gl.drawElements(
                 WebGLRenderingContext.LINES,
                 this.numWireframeIndices,
                 WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
-
-            gl.deleteBuffer(vbo);
         };
 
         /**
@@ -415,23 +398,14 @@ define([
                 gl.disableVertexAttribArray(this.vertexTexCoordLocation);
             }
 
-            // Must turn off indices buffer, which was turned on in beginRendering.
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
-
-            //var outlineIndicesVbo = gpuResourceCache.resourceForKey(this.outlineIndicesVboCacheKey);
-            //gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, outlineIndicesVbo);
-
-            var vbo = gl.createBuffer();
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, vbo);
-            gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.outlineIndices, WebGLRenderingContext.DYNAMIC_DRAW);
+            var outlineIndicesVbo = gpuResourceCache.resourceForKey(this.outlineIndicesVboCacheKey);
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, outlineIndicesVbo);
 
             gl.drawElements(
                 WebGLRenderingContext.LINE_LOOP,
                 this.numOutlineIndices,
                 WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
-
-            gl.deleteBuffer(vbo);
         };
 
         /***********************************************************************
@@ -774,48 +748,36 @@ define([
             var texCoordVbo = gpuResourceCache.resourceForKey(this.texCoordVboCacheKey);
             if (!texCoordVbo) {
                 texCoordVbo = gl.createBuffer();
-                texCoordVbo.numItems = this.texCoords.length / 2;
-                texCoordVbo.itemSize = 2;
                 gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, texCoordVbo);
                 gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.texCoords, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                this.texCoordVboCacheKey = texCoordVbo;
                 gpuResourceCache.putResource(gl, this.texCoordVboCacheKey, texCoordVbo, WorldWind.GPU_BUFFER, this.texCoords.length * 4 / 2);
             }
 
             var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
             if (!indicesVbo) {
                 indicesVbo = gl.createBuffer();
-                indicesVbo.numItems = this.indices.length;
-                indicesVbo.itemSize = 1;
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                this.indicesVboCacheKey = indicesVbo;
                 gpuResourceCache.putResource(gl, this.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, this.indices.length * 4);
             }
 
             var outlineIndicesVbo = gpuResourceCache.resourceForKey(this.outlineIndicesVboCacheKey);
             if (!outlineIndicesVbo) {
                 outlineIndicesVbo = gl.createBuffer();
-                outlineIndicesVbo.numItems = this.outlineIndices.length;
-                outlineIndicesVbo.itemSize = 1;
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, outlineIndicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.outlineIndices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                this.outlineIndicesVboCacheKey = outlineIndicesVbo;
                 gpuResourceCache.putResource(gl, this.outlineIndicesVboCacheKey, outlineIndicesVbo, WorldWind.GPU_BUFFER, this.outlineIndices.length * 4);
             }
 
             var wireframeIndicesVbo = gpuResourceCache.resourceForKey(this.wireframeIndicesVboCacheKey);
             if (!wireframeIndicesVbo) {
                 wireframeIndicesVbo = gl.createBuffer();
-                wireframeIndicesVbo.numItems = this.wireframeIndices.length;
-                wireframeIndicesVbo.itemSize = 1;
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, wireframeIndicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.wireframeIndices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                this.wireframeIndicesVboCacheKey = wireframeIndicesVbo;
                 gpuResourceCache.putResource(gl, this.wireframeIndicesVboCacheKey, wireframeIndicesVbo, WorldWind.GPU_BUFFER, this.wireframeIndices.length * 4);
             }
         };
