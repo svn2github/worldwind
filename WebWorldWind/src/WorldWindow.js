@@ -58,6 +58,7 @@ define([
 
             function handleContextLost(event) {
                 event.preventDefault();
+                this.gpuResourceCache.clear();
             }
 
             function handleContextRestored(event) {
@@ -193,6 +194,8 @@ define([
             //);
 
             this.drawContext.currentGlContext = gl;
+
+            this.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
             try {
                 this.beginFrame(this.drawContext, this.viewport);
