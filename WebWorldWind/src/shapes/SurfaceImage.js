@@ -80,6 +80,7 @@ define([
                 // Send an event to request a redraw.
                 dc.canvas.dispatchEvent(new CustomEvent("WorldWindRedraw"));
             };
+            image.crossOrigin = 'anonymous';
             image.src = this.imagePath;
         };
 
