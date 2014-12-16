@@ -122,6 +122,7 @@ define([
 
             this.currentTiles.removeAllTiles();
             this.currentCoverage = undefined;
+            this.elevationTimestamp = lastElevationsChange;
 
             if (!this.topLevelTiles || this.topLevelTiles.length == 0) {
                 this.createTopLevelTiles();
@@ -444,7 +445,10 @@ define([
             this.currentTiles.addTile(tile);
 
             if (!this.currentCoverage) {
-                this.currentCoverage = new Object(tile.sector); // TODO: confirm that sector was cloned
+                this.currentCoverage = new Sector(tile.sector.minLatitude,
+                    tile.sector.maxLatitude,
+                    tile.sector.minLongitude,
+                    tile.sector.maxLongitude);
             }
             else {
                 this.currentCoverage.union(tile.sector);
