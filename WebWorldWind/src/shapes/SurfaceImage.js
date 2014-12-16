@@ -80,7 +80,7 @@ define([
                 cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
 
                 // Send an event to request a redraw.
-                dc.canvas.dispatchEvent(new RedrawEvent());
+                dc.canvas.dispatchEvent(new CustomEvent(RedrawEvent.EVENT_TYPE));
             };
             image.crossOrigin = 'anonymous';
             image.src = this.imagePath;
