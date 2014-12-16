@@ -167,6 +167,11 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
             LINEAR: "linear",
 
             /**
+             * The event name of World Wind redraw events.
+             */
+            REDRAW_EVENT_TYPE: "WorldWindRedraw",
+
+            /**
              * Indicates an altitude mode relative to the terrain.
              * @constant
              */
