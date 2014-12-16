@@ -88,6 +88,7 @@ define(function () {
             missingGlobe: "The specified globe is null or undefined.",
             missingImage: "The specified image is null or undefined.",
             missingKey: "The specified key is null or undefined.",
+            missingLevel: "The specified level is null or undefined.",
             missingLine: "The specified line is null or undefined.",
             missingLocation: "The specified location is null or undefined.",
             missingMatrix: "The specified matrix is null or undefined.",
