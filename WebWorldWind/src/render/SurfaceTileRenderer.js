@@ -133,7 +133,7 @@ define([
                 0, 0, 1, 0,
                 0, 0, 0, 1, true
             );
-            this.texMaskMatrix.setToUnitYFlip();
+            this.texSamplerMatrix.setToUnitYFlip();
             surfaceTile.applyInternalTransform(dc, this.texSamplerMatrix);
             this.texSamplerMatrix.multiplyMatrix(this.texMaskMatrix);
 

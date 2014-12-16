@@ -33,7 +33,7 @@ define([
              * The geographic position this navigator is directed towards.
              * @type {Position}
              */
-            this.lookAtPosition = new Position(0, -120, 0);
+            this.lookAtPosition = new Position(30, -90, 0);
 
             /**
              * The distance of the eye from this navigator's look-at position.
