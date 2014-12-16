@@ -76,6 +76,7 @@ define([
         Texture.prototype.bind = function (dc) {
             dc.currentGlContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.textureId);
             dc.frameStatistics.incrementTextureLoadCount(1);
+            return true;
         };
 
         return Texture;
