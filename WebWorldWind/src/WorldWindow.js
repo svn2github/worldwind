@@ -17,6 +17,7 @@ define([
         './navigate/LookAtNavigator',
         './navigate/NavigatorState',
         './geom/Rectangle',
+        './event/RedrawEvent',
         './geom/Sector',
         './globe/Terrain',
         './globe/Tessellator',
@@ -31,6 +32,7 @@ define([
               LookAtNavigator,
               NavigatorState,
               Rectangle,
+              RedrawEvent,
               Sector,
               Terrain,
               Tessellator,
@@ -124,7 +126,7 @@ define([
 
             // Set up to handle redraw events.
             var thisWindow = this;
-            this.canvas.addEventListener("WorldWindRedraw", function (event) {
+            this.canvas.addEventListener(RedrawEvent.EVENT_TYPE, function (event) {
                 thisWindow.redraw();
             }, false);
         };

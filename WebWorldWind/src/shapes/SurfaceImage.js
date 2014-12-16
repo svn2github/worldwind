@@ -9,11 +9,13 @@
 define([
         '../error/ArgumentError',
         '../util/Logger',
+        '../event/RedrawEvent',
         '../render/SurfaceTile',
         '../render/Texture'
     ],
     function (ArgumentError,
               Logger,
+              RedrawEvent,
               SurfaceTile,
               Texture) {
         "use strict";
@@ -78,7 +80,7 @@ define([
                 cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
 
                 // Send an event to request a redraw.
-                dc.canvas.dispatchEvent(new CustomEvent("WorldWindRedraw"));
+                dc.canvas.dispatchEvent(new RedrawEvent());
             };
             image.crossOrigin = 'anonymous';
             image.src = this.imagePath;
