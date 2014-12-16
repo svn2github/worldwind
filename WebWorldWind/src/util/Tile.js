@@ -129,10 +129,17 @@ define([
              * The size in radians of pixels or cells of this tile's associated resource.
              * @type {Number}
              */
-            this.texelSize = 0;
+            this.texelSize = level.texelSize;
+
+            /**
+             * A key that uniquely identifies this tile within a level set.
+             * @type {string}
+             */
+            this.tileKey = this.level.toString() + "." + this.row.toString() + "." + this.column.toString();
 
             this.extentTimestamp = undefined;
             this.extentVerticalExaggeration = undefined;
+            this.nearestPoint = new Vec3(0, 0, 0); // scratch variable used in mustSubdivide
         };
 
         /**
@@ -142,37 +149,36 @@ define([
          * they are not equivalent or the specified tile is null or undefined.
          */
         Tile.prototype.isEqual = function (that) {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "isEqual", "notYetImplemented"));
+            if (!that)
+                return false;
 
-            return false;
+            if (!that.tileKey)
+                return false;
+
+            return this.tileKey == that.tileKey;
         };
 
-        /**
-         * Computes a hash value for this tile.
-         * <p>
-         * If two tiles are considered equivalent then their hash values are identical.
-         * @returns {Number} The computed hash value.
-         */
-        Tile.prototype.hash = function () {
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "hash", "notYetImplemented"));
-
-            return 0;
+        Tile.prototype.size = function () {
+            return 4 // child pointer
+                + (4 + 32) // sector
+                + 4 //level pointer (the level is common to the layer or tessellator so is not included here)
+                + 8 // row and column
+                + 8 // texel size
+                + (4 + 32) // reference point
+                + (4 + 676) // bounding box
+                + 8 // min and max height
+                + (4 + 32) // nearest point
+                + 8; // extent timestamp and vertical exaggeration
         };
 
         /**
          * Returns the four children formed by subdividing this tile.
          * @param {Level} level The level of the children.
          * @param {TileFactory} tileFactory The tile factory to use to create the children.
-         * @param {Tile[]} result A pre-allocated array in which to return the results.
-         * @returns {Tile[]} The specified result array containing the four tiles.
-         * @throws {ArgumentError} if the specified tile factory or level is null or undefined or the specified result
-         * array is null or undefined.
+         * @returns {Tile[]} An array containing the four tiles.
+         * @throws {ArgumentError} if the specified tile factory or level is null or undefined.
          */
-        Tile.prototype.subdivide = function (level, tileFactory, result) {
+        Tile.prototype.subdivide = function (level, tileFactory) {
             if (!level) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "subdivide",
@@ -185,45 +191,40 @@ define([
                         "The specified tile factory is null or undefined."));
             }
 
-            if (!result) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "subdivide", "missingResult"));
-            }
-
-            var nextLevel = level.nextLevel(),
-                latMin = this.sector.minLatitude,
+            var latMin = this.sector.minLatitude,
                 latMax = this.sector.maxLatitude,
-                latMid = this.sector.centroidLat,
+                latMid = this.sector.centroidLatitude(),
 
                 lonMin = this.sector.minLongitude,
                 lonMax = this.sector.maxLongitude,
-                lonMid = this.sector.centroidLon,
+                lonMid = this.sector.centroidLongitude(),
 
                 subRow,
                 subCol,
-                childSector;
+                childSector,
+                children = [];
 
             subRow = 2 * this.row;
             subCol = 2 * this.column;
             childSector = new Sector(latMin, latMid, lonMin, lonMid);
-            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+            children.push(tileFactory.createTile(childSector, level, subRow, subCol));
 
             subRow = 2 * this.row;
             subCol = 2 * this.column + 1;
-            childSector = new Sector(latMin, latMid, lonMid,lonMax);
-            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+            childSector = new Sector(latMin, latMid, lonMid, lonMax);
+            children.push(tileFactory.createTile(childSector, level, subRow, subCol));
 
             subRow = 2 * this.row + 1;
             subCol = 2 * this.column;
             childSector = new Sector(latMid, latMax, lonMin, lonMid);
-            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+            children.push(tileFactory.createTile(childSector, level, subRow, subCol));
 
             subRow = 2 * this.row + 1;
             subCol = 2 * this.column + 1;
             childSector = new Sector(latMid, latMax, lonMid, lonMax);
-            result.push(tileFactory.createTile(childSector, nextLevel, subRow, subCol));
+            children.push(tileFactory.createTile(childSector, level, subRow, subCol));
 
-            return result;
+            return children;
         };
 
         /**
@@ -250,11 +251,15 @@ define([
                         "The specified tile factory is null or undefined."));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "subdivideToCache", "notYetImplemented"));
+            var childList = cache.entryForKey(this.tileKey);
+            if (!childList) {
+                childList = this.subdivide(level, tileFactory);
+                if (childList) {
+                    cache.putEntry(this.tileKey, childList, 4 * childList[0].size);
+                }
+            }
 
-            return null;
+            return childList;
         };
 
         /**
@@ -275,12 +280,11 @@ define([
                 nearestLon = WWMath.clamp(eyePos.longitude, this.sector.minLongitude, this.sector.maxLongitude),
                 minHeight = this.minElevation * dc.verticalExaggeration;
 
-            var nearestPoint = new Vec3();
-            globe.computePointFromPosition(nearestLat, nearestLon, minHeight, nearestPoint);
+            globe.computePointFromPosition(nearestLat, nearestLon, minHeight, this.nearestPoint);
 
             // Compute the cell size and distance to the nearest point on the tile. Cell size is radius * radian texel size.
             var cellSize = Math.max(globe.equatorialRadius, globe.polarRadius) * this.texelSize,
-                distance = nearestPoint.distanceTo(dc.navigatorState.eyePoint);
+                distance = this.nearestPoint.distanceTo(dc.navigatorState.eyePoint);
 
             // Split when the cell height (length of a texel) becomes greater than the specified fraction of the eye distance.
             // The fraction is specified as a power of 10. For example, a detail factor of 3 means split when the cell height
@@ -310,15 +314,14 @@ define([
                 verticalExaggeration = dc.verticalExaggeration;
 
             if (!this.extentTimestamp ||
-                this.extentTimestamp != elevationTimestamp ||
-                !this.extentVerticalExaggeration ||
+                this.extentTimestamp != elevationTimestamp || !this.extentVerticalExaggeration ||
                 this.extentVerticalExaggeration != verticalExaggeration) {
                 // Compute the minimum and maximum elevations for this tile's sector, or use zero if the globe has no elevations
                 // in this tile's coverage area. In the latter case the globe does not modify the result parameter.
                 var extremes = [0, 0];
                 globe.minAndMaxElevationsForSector(this.sector, extremes);
-                var minElevation = extremes[0],
-                    maxElevation = extremes[1];
+                this.minElevation = extremes[0];
+                this.maxElevation = extremes[1];
 
                 // Multiply the minimum and maximum elevations by the scene's vertical exaggeration. This ensures that the
                 // elevations to used build the terrain are contained by this tile's extent.
@@ -359,8 +362,7 @@ define([
             var row = Math.floor((latitude + 90) / delta);
 
             // If latitude is at the end of the grid, subtract 1 from the computed row to return the last row.
-            if (latitude == 90)
-            {
+            if (latitude == 90) {
                 row -= 1;
             }
 
@@ -377,8 +379,7 @@ define([
             var col = Math.floor((longitude + 180) / delta);
 
             // If longitude is at the end of the grid, subtract 1 from the computed column to return the last column.
-            if (longitude == 180)
-            {
+            if (longitude == 180) {
                 col -= 1;
             }
 
@@ -395,8 +396,7 @@ define([
             var row = Math.ceil((maxLatitude + 90) / delta - 1);
 
             // If max latitude is in the first row, set the max row to 0.
-            if (maxLatitude + 90 < delta)
-            {
+            if (maxLatitude + 90 < delta) {
                 row = 0;
             }
 
@@ -413,8 +413,7 @@ define([
             var col = Math.ceil((maxLongitude + 180) / delta - 1);
 
             // If max longitude is in the first column, set the max column to 0.
-            if (maxLongitude + 180 < delta)
-            {
+            if (maxLongitude + 180 < delta) {
                 col = 0;
             }
 
@@ -423,17 +422,16 @@ define([
 
         /**
          * Computes a sector spanned by a tile with the specified level number, row and column.
-         * @param {Number} levelNumber The tile's level number.
+         * @param {Level} level The tile's level number.
          * @param {Number} row The tile's row number.
          * @param {Number} column The tile's column number.
          * @returns {Sector} The sector spanned by the tile.
-         * @throws {ArgumentError} if any argument is less than zero.
+         * @throws {ArgumentError} If the specified level is null or undefined or the row or column are less than zero.
          */
-        Tile.computeSector = function (levelNumber, row, column) {
-            if (levelNumber < 0) {
+        Tile.computeSector = function (level, row, column) {
+            if (!level) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeSector",
-                        "The specified level number is less than zero."));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "computeSector", "missingLevel"));
             }
 
             if (row < 0 || column < 0) {
@@ -463,8 +461,7 @@ define([
         Tile.createTilesForLevel = function (level, tileFactory, result) {
             if (!level) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "createTilesForLevel",
-                        "The specified level is null or undefined."));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Tile", "createTilesForLevel", "missingLevel"));
             }
 
             if (!tileFactory) {
@@ -502,10 +499,7 @@ define([
 
                 for (var col = firstCol; col <= lastCol; col += 1) {
                     maxLon = minLon + deltaLon;
-                    var tileSector = new Sector(minLat,
-                        maxLat,
-                        minLon,
-                        maxLon),
+                    var tileSector = new Sector(minLat, maxLat, minLon, maxLon),
                         tile = tileFactory.createTile(tileSector, level, row, col);
                     result.push(tile);
 
