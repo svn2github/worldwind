@@ -10,14 +10,12 @@ define([
         '../error/ArgumentError',
         '../util/Level',
         '../geom/Location',
-        '../util/Logger',
-        '../geom/Sector'
+        '../util/Logger'
     ],
     function (ArgumentError,
               Level,
               Location,
-              Logger,
-              Sector) {
+              Logger) {
         "use strict";
 
         /**

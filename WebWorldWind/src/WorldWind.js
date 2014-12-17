@@ -10,6 +10,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Angle',
         './error/ArgumentError',
         './shaders/BasicProgram',
+        './layer/BMNGLandsatLayer',
         './layer/BMNGOneImageLayer',
         './geom/BoundingBox',
         './util/Color',
@@ -51,18 +52,23 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './globe/TerrainTileList',
         './globe/Tessellator',
         './render/Texture',
+        './render/TextureTile',
         './util/Tile',
+        './layer/TiledImageLayer',
         './util/TileFactory',
         './error/UnsupportedOperationError',
         './geom/Vec2',
         './geom/Vec3',
+        './util/WmsUrlBuilder',
         './WorldWindow',
         './util/WWMath',
+        './util/WWUtil',
         './globe/ZeroElevationModel'],
     function (AbstractError,
               Angle,
               ArgumentError,
               BasicProgram,
+              BMNGLandsatLayer,
               BMNGOneImageLayer,
               BoundingBox,
               Color,
@@ -104,13 +110,17 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               TerrainTileList,
               Tessellator,
               Texture,
+              TextureTile,
               Tile,
+              TiledImageLayer,
               TileFactory,
               UnsupportedOperationError,
               Vec2,
               Vec3,
+              WmsUrlBuilder,
               WorldWindow,
               WWMath,
+              WWUtil,
               ZeroElevationModel) {
         "use strict";
         /**
@@ -188,6 +198,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
         WorldWind['BasicProgram'] = BasicProgram;
+        WorldWind['BMNGLandsatLayer'] = BMNGLandsatLayer;
         WorldWind['BMNGOneImageLayer'] = BMNGOneImageLayer;
         WorldWind['BoundingBox'] = BoundingBox;
         WorldWind['Color'] = Color;
@@ -229,12 +240,16 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['TerrainTileList'] = TerrainTileList;
         WorldWind['Tessellator'] = Tessellator;
         WorldWind['Texture'] = Texture;
+        WorldWind['TextureTile'] = TextureTile;
         WorldWind['Tile'] = Tile;
+        WorldWind['TiledImageLayer'] = TiledImageLayer;
         WorldWind['TileFactory'] = TileFactory;
         WorldWind['UnsupportedOperationError'] = UnsupportedOperationError;
         WorldWind['Vec2'] = Vec2;
         WorldWind['Vec3'] = Vec3;
+        WorldWind['WmsUrlBuilder'] = WmsUrlBuilder;
         WorldWind['WWMath'] = WWMath;
+        WorldWind['WWUtil'] = WWUtil;
         WorldWind['WorldWindow'] = WorldWindow;
         WorldWind['ZeroElevationModel'] = ZeroElevationModel;
 

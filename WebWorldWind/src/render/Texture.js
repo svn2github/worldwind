@@ -34,11 +34,11 @@ define([
                     "missingImage"));
             }
 
-            this.imagePath = image.src;
-
             this.imageWidth = image.width;
 
             this.imageHeight = image.height;
+
+            this.size = image.width * image.height * 4;
 
             // TODO: Deal with non-power-of-two textures.
 

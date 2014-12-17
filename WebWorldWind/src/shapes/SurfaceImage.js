@@ -58,6 +58,9 @@ define([
              * @type {string}
              */
             this.displayName = "Surface Image";
+
+            // Internal. Intentionally not documented.
+            this.retrievalInProgress = false;
         };
 
         SurfaceImage.prototype = Object.create(SurfaceTile.prototype);
@@ -68,23 +71,26 @@ define([
                 return texture.bind(dc);
             }
 
-            var image = new Image(),
-                imagePath = this.imagePath,
-                cache = dc.gpuResourceCache,
-                gl = dc.currentGlContext;
+            if (!this.retrievalInProgress) {
+                var image = new Image(),
+                    imagePath = this.imagePath,
+                    cache = dc.gpuResourceCache,
+                    gl = dc.currentGlContext,
+                    surfaceImage = this;
 
-            image.onload = function () {
-                var resource = cache.resourceForKey(imagePath);
-                if (!resource) {
+                image.onload = function () {
                     var texture = new Texture(gl, image);
                     cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
 
+                    surfaceImage.retrievalInProgress = false;
+
                     // Send an event to request a redraw.
                     dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
-                }
-            };
-            image.crossOrigin = 'anonymous';
-            image.src = this.imagePath;
+                };
+                this.retrievalInProgress = true;
+                image.crossOrigin = 'anonymous';
+                image.src = this.imagePath;
+            }
         };
 
         SurfaceImage.prototype.applyInternalTransform = function (dc, matrix) {

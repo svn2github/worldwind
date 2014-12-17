@@ -9,25 +9,15 @@
 define([
         '../error/ArgumentError',
         '../geom/BoundingBox',
-        '../render/DrawContext',
-        '../util/Level',
         '../util/Logger',
-        '../cache/MemoryCache',
-        '../error/NotYetImplementedError',
         '../geom/Sector',
-        '../util/TileFactory',
         '../geom/Vec3',
         '../util/WWMath'
     ],
     function (ArgumentError,
               BoundingBox,
-              DrawContext,
-              Level,
               Logger,
-              MemoryCache,
-              NotYetImplementedError,
               Sector,
-              TileFactory,
               Vec3,
               WWMath) {
         "use strict";

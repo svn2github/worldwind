@@ -12,7 +12,8 @@ requirejs(['../src/WorldWind'], function () {
     WorldWind.Logger.setLoggingLevel(WorldWind.Logger.LEVEL_WARNING);
 
     var wwd = new WorldWind.WorldWindow("canvasOne");
-    wwd.layers.addLayer(new WorldWind.BMNGOneImageLayer());
+    //wwd.layers.addLayer(new WorldWind.BMNGOneImageLayer());
+    wwd.layers.addLayer(new WorldWind.BMNGLandsatLayer());
     wwd.layers.addLayer(new WorldWind.ShowTessellationLayer());
     wwd.redraw();
 });

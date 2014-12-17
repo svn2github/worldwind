@@ -147,11 +147,19 @@ define([],
         };
 
         /**
-         * Increments the terrain tile count.
-         * @param {number} tileCount The amount to increment the counter.
+         * Sets the terrain tile count.
+         * @param {number} tileCount The amount to set the counter to.
          */
         FrameStatistics.prototype.setTerrainTileCount = function (tileCount) {
             this.terrainTileCount = tileCount;
+        };
+
+        /**
+         * Increments the image tile count.
+         * @param {number} tileCount The amount to increment the counter.
+         */
+        FrameStatistics.prototype.incrementImageTileCount = function (tileCount) {
+            this.imageTileCount = tileCount;
         };
 
         /**
