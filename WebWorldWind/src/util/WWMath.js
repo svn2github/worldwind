@@ -212,7 +212,7 @@ define([
                         "localCoordinateAxesAtPoint", "missingGlobe"));
                 }
 
-                if (!xAxisResult || ! yAxisResult || !zAxisResult) {
+                if (!xAxisResult || !yAxisResult || !zAxisResult) {
                     throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath",
                         "localCoordinateAxesAtPoint", "missingResult"));
                 }
@@ -409,6 +409,58 @@ define([
                 }
 
                 return new Rectangle(x, y, width, height);
+            },
+
+            /**
+             * Computes the approximate size of a pixel in model coordinates at a given distance from the eye point in a perspective
+             * projection.
+             *
+             * This method assumes the model of a screen composed of rectangular pixels, where pixel coordinates denote infinitely
+             * thin space between pixels. The units of the returned size are in model coordinates per pixel (usually meters per
+             * pixel). This returns 0 if the specified distance is zero. The returned size is undefined if the distance is less than
+             * zero.
+             *
+             * The viewport is in the WebGL screen coordinate system, with its origin in the bottom-left corner and axes that extend
+             * up and to the right from the origin point.
+             *
+             * @param {Rectangle} viewport The viewport rectangle, in WebGL screen coordinates.
+             * @param {Number} distanceToSurface The distance from the perspective eye point at which to determine pixel size, in model coordinates.
+             * @returns {Number} The approximate pixel size at the specified distance from the eye point, in model coordinates per pixel.
+             * @throws {ArgumentError} If the specified viewport is null or undefined or either its width or height is
+             * less than or equal to zero, or if the specified distance is negative.
+             */
+            perspectivePixelSize: function (viewport, distanceToSurface) {
+                if (!viewport) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "missingViewport"));
+                }
+
+                if (viewport.width <= 0 || viewport.height <= 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "invalidViewport"));
+                }
+
+                if (distanceToSurface < 0) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "perspectiveFrustumRectangle",
+                        "The specified distance is negative."));
+                }
+
+                var frustRect,
+                    xPixelSize,
+                    yPixelSize;
+
+                // Compute the dimensions of a rectangle in model coordinates carved out of the frustum at the given distance along
+                // the negative z axis, also in model coordinates.
+                frustRect = WWMath.perspectiveFrustumRectangle(viewport, distanceToSurface);
+
+                // Compute the pixel size in model coordinates as a ratio of the rectangle dimensions to the viewport dimensions.
+                // The resultant units are model coordinates per pixel (usually meters per pixel).
+                xPixelSize = frustRect.width / viewport.width;
+                yPixelSize = frustRect.height / viewport.height;
+
+                // Return the maximum of the x and y pixel sizes. These two sizes are usually equivalent but we select the maximum
+                // in order to correctly handle the case where the x and y pixel sizes differ.
+                return WWMath.max(xPixelSize, yPixelSize);
             }
         };
 
