@@ -213,10 +213,25 @@ define([
             var gl = dc.currentGlContext;
 
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+            gl.enable(WebGLRenderingContext.BLEND);
+            gl.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA);
+
+            gl.enable(WebGLRenderingContext.CULL_FACE);
+            gl.enable(WebGLRenderingContext.DEPTH_TEST);
+            gl.depthFunc(WebGLRenderingContext.LEQUAL);
         };
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.endFrame = function (dc) {
+            var gl = dc.currentGlContext;
+
+            gl.disable(WebGLRenderingContext.BLEND);
+            gl.disable(WebGLRenderingContext.CULL_FACE);
+            gl.disable(WebGLRenderingContext.DEPTH_TEST);
+            gl.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ZERO);
+            gl.depthFunc(WebGLRenderingContext.LESS);
+            gl.clearColor(0, 0, 0, 1);
         };
 
         // Internal function. Intentionally not documented.
