@@ -73,8 +73,8 @@ define([
                     terrainTile = surfaceGeometry[i];
 
                     tessellator.beginRenderingTile(dc, terrainTile);
-                    //program.loadColor(gl, Color.GREEN); // wireframe color
-                    //tessellator.renderWireframeTile(dc, terrainTile);
+                    program.loadColor(gl, Color.RED); // wireframe color
+                    tessellator.renderWireframeTile(dc, terrainTile);
                     program.loadColor(gl, Color.WHITE); // outline color
                     tessellator.renderTileOutline(dc, terrainTile);
                     tessellator.endRenderingTile(dc, terrainTile);

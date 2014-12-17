@@ -7,11 +7,13 @@
  * @version $Id$
  */
 define([
+        '../geom/Angle',
         '../error/ArgumentError',
         '../geom/Location',
         '../util/Logger'
     ],
-    function (ArgumentError,
+    function (Angle,
+              ArgumentError,
               Location,
               Logger) {
         "use strict";
@@ -59,7 +61,7 @@ define([
              * The size of pixels or elevation cells within this level, in radians per pixel or per cell.
              * @type {Number}
              */
-            this.texelSize = parent.texelSize;
+            this.texelSize = (tileDelta.latitude * Angle.DEGREES_TO_RADIANS) / parent.tileHeight;
 
             /**
              * The width in pixels or cells of the resource associated with tiles within this level.

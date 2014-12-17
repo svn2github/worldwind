@@ -53,7 +53,7 @@ define([
          * @classdesc Represents a tessellator for a specified globe.
          */
         var Tessellator = function () {
-            this.levels = new LevelSet(Sector.FULL_SPHERE, new Location(45, 45), 15, 32, 32);
+            this.levels = new LevelSet(Sector.FULL_SPHERE, new Location(45, 45), 20, 2, 2);
 
             this.topLevelTiles = undefined;
             this.currentTiles = new TerrainTileList(this);
@@ -66,8 +66,6 @@ define([
 
             this.elevationTimestamp = undefined;
             this.lastModelViewProjection = undefined;
-
-            this.tileFactory = TileFactory;
 
             this.vertexPointLocation = -1;
             this.vertexTexCoordLocation = -1;
@@ -424,8 +422,8 @@ define([
                 return;
             }
 
-            var nextLevel = tile.level.nextLevel;
-            var subTiles = tile.subdivideToCache(nextLevel, this.tileFactory, this.tileCache);
+            var nextLevel = tile.level.nextLevel();
+            var subTiles = tile.subdivideToCache(nextLevel, this, this.tileCache);
             for (var index = 0; index < subTiles.length; index += 1) {
                 var child = subTiles[index];
 

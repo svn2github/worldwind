@@ -135,7 +135,7 @@ define([
              * A key that uniquely identifies this tile within a level set.
              * @type {string}
              */
-            this.tileKey = this.level.toString() + "." + this.row.toString() + "." + this.column.toString();
+             this.tileKey = this.level.levelNumber.toString() + "." + this.row.toString() + "." + this.column.toString();
 
             this.extentTimestamp = undefined;
             this.extentVerticalExaggeration = undefined;

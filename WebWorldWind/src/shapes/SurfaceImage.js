@@ -74,11 +74,14 @@ define([
                 gl = dc.currentGlContext;
 
             image.onload = function () {
-                var texture = new Texture(gl, image);
-                cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
+                var resource = cache.resourceForKey(imagePath);
+                if (!resource) {
+                    var texture = new Texture(gl, image);
+                    cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
 
-                // Send an event to request a redraw.
-                dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                    // Send an event to request a redraw.
+                    dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                }
             };
             image.crossOrigin = 'anonymous';
             image.src = this.imagePath;
