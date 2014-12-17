@@ -106,6 +106,24 @@ define([
         Color.MAGENTA = new Color(1, 0, 1, 1);
 
         /**
+         * A light gray.
+         * @type {Color}
+         */
+        Color.LIGHT_GRAY = new Color(0.75, 0.75, 0.75, 1);
+
+        /**
+         * A medium gray.
+         * @type {Color}
+         */
+        Color.MEDIUM_GRAY = new Color(0.5, 0.5, 0.5, 1);
+
+        /**
+         * A dark gray.
+         * @type {Color}
+         */
+        Color.DARK_GRAY = new Color(0.25, 0.25, 0.25, 1);
+
+        /**
          * Returns this color's components premultiplied by this color's alpha component.
          * @param {Float32Array} array A pre-allocated array in which to return the color components.
          * @returns {Float32Array} This colors premultiplied components as an array, in the order RGBA.
