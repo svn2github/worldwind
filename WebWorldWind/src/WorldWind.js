@@ -11,6 +11,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './error/ArgumentError',
         './shaders/BasicProgram',
         './layer/BMNGLandsatLayer',
+        './layer/BMNGLayer',
         './layer/BMNGOneImageLayer',
         './geom/BoundingBox',
         './util/Color',
@@ -69,6 +70,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               ArgumentError,
               BasicProgram,
               BMNGLandsatLayer,
+              BMNGLayer,
               BMNGOneImageLayer,
               BoundingBox,
               Color,
@@ -199,6 +201,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['ArgumentError'] = ArgumentError;
         WorldWind['BasicProgram'] = BasicProgram;
         WorldWind['BMNGLandsatLayer'] = BMNGLandsatLayer;
+        WorldWind['BMNGLayer'] = BMNGLayer;
         WorldWind['BMNGOneImageLayer'] = BMNGOneImageLayer;
         WorldWind['BoundingBox'] = BoundingBox;
         WorldWind['Color'] = Color;

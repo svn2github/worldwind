@@ -164,11 +164,11 @@ define([
          * Computes any values necessary to render the upcoming frame. Called after all draw context state for the
          * frame has been set.
          */
-        DrawContext.prototype.update = function () { // TODO
-            //var eyePoint = this.navigatorState.eyePoint;
-            //
-            //this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
-            //this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
+        DrawContext.prototype.update = function () {
+            var eyePoint = this.navigatorState.eyePoint;
+
+            this.globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], this.eyePosition);
+            this.screenProjection.setToScreenProjection(this.navigatorState.viewport);
         };
 
         /**
