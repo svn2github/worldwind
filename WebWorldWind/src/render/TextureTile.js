@@ -101,7 +101,7 @@ define([
             var twoN = 2 << (deltaLevel - 1),
                 sxy = 1 / twoN,
                 tx = sxy * (this.column % twoN),
-                ty = sxy * (this.roll % twoN);
+                ty = sxy * (this.row % twoN);
 
             // Apply a transform to the matrix that maps texture coordinates for this tile to texture coordinates for the
             // fallback tile. Rather than perform the full set of matrix operations, a single multiply is performed with the
