@@ -73,10 +73,10 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "transformByMatrix", "missingMatrix"));
             }
 
-            var x = matrix[0] * this.normal[0] + matrix[1] * this.normal[1] + matrix[2] * this.normal[2] + matrix[3],
-                y = matrix[4] * this.normal[0] + matrix[5] * this.normal[1] + matrix[6] * this.normal[2] + matrix[7],
-                z = matrix[8] * this.normal[0] + matrix[9] * this.normal[1] + matrix[10] * this.normal[2] + matrix[11],
-                distance = matrix[12] * this.normal[0] + matrix[13] * this.normal[1] + matrix[14] * this.normal[2] + matrix[15];
+            var x = matrix[0] * this.normal[0] + matrix[1] * this.normal[1] + matrix[2] * this.normal[2] + matrix[3] * this.distance,
+                y = matrix[4] * this.normal[0] + matrix[5] * this.normal[1] + matrix[6] * this.normal[2] + matrix[7] * this.distance,
+                z = matrix[8] * this.normal[0] + matrix[9] * this.normal[1] + matrix[10] * this.normal[2] + matrix[11] * this.distance,
+                distance = matrix[12] * this.normal[0] + matrix[13] * this.normal[1] + matrix[14] * this.normal[2] + matrix[15] * this.distance;
 
             this.normal[0] = x;
             this.normal[1] = y;
