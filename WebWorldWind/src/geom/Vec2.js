@@ -301,7 +301,7 @@ define([
          * @param {Vec2} that The vector to swap.
          * @returns {Vec2} this vector returned in the "fluent" style.
          */
-        Vec3.prototype.swap = function(that) {
+        Vec2.prototype.swap = function(that) {
             var tmp = this[0];
             this[0] = that[0];
             that[0] = tmp;
