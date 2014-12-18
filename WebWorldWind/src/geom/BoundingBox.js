@@ -369,12 +369,9 @@ define([
             if (this.intersectionPoint(frustum.near) < 0) {
                 return false;
             }
-            /* TODO: investigate - this test fails
             if (this.intersectionPoint(frustum.far) < 0) {
-                console.log("outside far");
                 return false;
             }
-            */
             if (this.intersectionPoint(frustum.left) < 0) {
                 return false;
             }
