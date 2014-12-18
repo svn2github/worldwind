@@ -228,9 +228,9 @@ define([
          * @returns {Vec3} this vector returned in the "fluent" style.
          */
         Vec3.prototype.divide = function (divisor) {
-            this[0] *= divisor;
-            this[1] *= divisor;
-            this[2] *= divisor;
+            this[0] /= divisor;
+            this[1] /= divisor;
+            this[2] /= divisor;
 
             return this;
         };

@@ -175,8 +175,8 @@ define([
          * @returns {Vec2} this vector returned in the "fluent" style.
          */
         Vec2.prototype.divide = function (divisor) {
-            this[0] *= divisor;
-            this[1] *= divisor;
+            this[0] /= divisor;
+            this[1] /= divisor;
 
             return this;
         };
