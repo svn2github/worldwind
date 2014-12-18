@@ -54,12 +54,12 @@ define([
          */
         var Tessellator = function () {
             // Parameterize top level subdivision in one place.
-            this.numRowsTopLevel = 2;
-            this.numColumnsTopLevel = 2;
-            this.maximumSubdivisionDepth = 20;
+            this.numRowsTopLevel = 32;
+            this.numColumnsTopLevel = 32;
+            this.maximumSubdivisionDepth = 15;
 
             this.levels = new LevelSet(Sector.FULL_SPHERE,
-                new Location(180 / this.numRowsTopLevel, 360 / this.numColumnsTopLevel),
+                new Location(45, 45),
                 this.maximumSubdivisionDepth,
                 this.numRowsTopLevel,
                 this.numColumnsTopLevel);
