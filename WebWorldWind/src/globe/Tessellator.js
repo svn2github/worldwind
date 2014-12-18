@@ -53,7 +53,16 @@ define([
          * @classdesc Represents a tessellator for a specified globe.
          */
         var Tessellator = function () {
-            this.levels = new LevelSet(Sector.FULL_SPHERE, new Location(45, 45), 20, 2, 2);
+            // Parameterize top level subdivision in one place.
+            this.numRowsTopLevel = 2;
+            this.numColumnsTopLevel = 2;
+            this.maximumSubdivisionDepth = 20;
+
+            this.levels = new LevelSet(Sector.FULL_SPHERE,
+                new Location(180 / this.numRowsTopLevel, 360 / this.numColumnsTopLevel),
+                this.maximumSubdivisionDepth,
+                this.numRowsTopLevel,
+                this.numColumnsTopLevel);
 
             this.topLevelTiles = undefined;
             this.currentTiles = new TerrainTileList(this);
