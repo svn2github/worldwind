@@ -96,44 +96,6 @@ define([
         };
 
         /**
-         * Write a vector to an array at an offset.
-         * @param {number[]} array Array numbers to write.
-         * @param {number} offset Initial index of array to write.
-         * @returns {Vec2} this returned in the "fluent" style.
-         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
-         */
-        Vec2.prototype.toArray = function (array, offset) {
-            if (!array || array.length < offset + Vec2.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "toArray", "missingArray"));
-            }
-
-            array[offset] = this[0];
-            array[offset + 1] = this[1];
-
-            return this;
-        };
-
-        /**
-         * Read a vector from an array.
-         * @param {number[]} array Array of numbers to read.
-         * @param {number} offset Initial index of array to read.
-         * @returns {Vec2} this vector returned in the "fluent" style.
-         * @throws {ArgumentError} If the specified array is null, undefined, empty or too short.
-         */
-        Vec2.prototype.fromArray = function (array, offset) {
-            if (!array || array.length < offset + Vec2.NUM_ELEMENTS) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "fromArray", "missingArray"));
-            }
-
-            this[0] = array[offset];
-            this[1] = array[offset + 1];
-
-            return this;
-        };
-
-        /**
          * Add a vector to this vector, modifying this vector.
          * @param {Vec2} addend Vector to add.
          * @returns {Vec2} this vector returned in the "fluent" style.
