@@ -131,7 +131,7 @@ define([
                 sScale, 0, 0, sScale * sTrans,
                 0, tScale, 0, tScale * tTrans,
                 0, 0, 1, 0,
-                0, 0, 0, 1, true
+                0, 0, 0, 1
             );
             this.texSamplerMatrix.setToUnitYFlip();
             surfaceTile.applyInternalTransform(dc, this.texSamplerMatrix);

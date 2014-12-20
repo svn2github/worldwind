@@ -50,13 +50,11 @@ define([
          * @param {Number} m42 matrix element at row 4, column 2.
          * @param {Number} m43 matrix element at row 4, column 3.
          * @param {Number} m44 matrix element at row 4, column 4.
-         * @param {Boolean} isOrthonormalTransform Denotes whether the matrix is orthonormal.
          */
         var Matrix = function (m11, m12, m13, m14,
                                m21, m22, m23, m24,
                                m31, m32, m33, m34,
-                               m41, m42, m43, m44,
-                               isOrthonormalTransform) {
+                               m41, m42, m43, m44) {
             this[0] = m11;
             this[1] = m12;
             this[2] = m13;
@@ -73,7 +71,6 @@ define([
             this[13] = m42;
             this[14] = m43;
             this[15] = m44;
-            this.isOrthonormalTransform = isOrthonormalTransform;
         };
 
         Matrix.NUM_ELEMENTS = 16;
@@ -91,8 +88,7 @@ define([
                 1, 0, 0, 0,
                 0, 1, 0, 0,
                 0, 0, 1, 0,
-                0, 0, 0, 1,
-                true
+                0, 0, 0, 1
             );
         };
 
@@ -114,14 +110,12 @@ define([
          * @param {Number} m42 matrix element at row 4, column 2.
          * @param {Number} m43 matrix element at row 4, column 3.
          * @param {Number} m44 matrix element at row 4, column 4.
-         * @param {Boolean} isOrthonormalTransform Indicates whether the matrix is orthonormal.
          * @returns {Matrix} This matrix with its components set to the specified values.
          */
         Matrix.prototype.set = function (m11, m12, m13, m14,
                                          m21, m22, m23, m24,
                                          m31, m32, m33, m34,
-                                         m41, m42, m43, m44,
-                                         isOrthonormalTransform) {
+                                         m41, m42, m43, m44) {
             this[0] = m11;
             this[1] = m12;
             this[2] = m13;
@@ -138,7 +132,6 @@ define([
             this[13] = m42;
             this[14] = m43;
             this[15] = m44;
-            this.isOrthonormalTransform = isOrthonormalTransform;
 
             return this;
         };
@@ -164,7 +157,6 @@ define([
             this[13] = 0;
             this[14] = 0;
             this[15] = 1;
-            this.isOrthonormalTransform = true;
         };
 
         /**
@@ -260,7 +252,6 @@ define([
             this[13] = 0;
             this[14] = 0;
             this[15] = 1;
-            this.isOrthonormalTransform = true;
 
             return this;
         };
@@ -306,7 +297,6 @@ define([
             this[13] = 0;
             this[14] = 0;
             this[15] = 1;
-            this.isOrthonormalTransform = true;
 
             return this;
         };
@@ -355,7 +345,6 @@ define([
             this[13] = matrix[13];
             this[14] = matrix[14];
             this[15] = matrix[15];
-            this.isOrthonormalTransform = matrix.isOrthonormalTransform;
 
             return this;
         };
@@ -388,7 +377,6 @@ define([
             this[13] = matrix[7];
             this[14] = matrix[11];
             this[15] = matrix[15];
-            this.isOrthonormalTransform = matrix.isOrthonormalTransform;
 
             return this;
         };
@@ -428,8 +416,6 @@ define([
             this[13] = ma[12] * mb[1] + ma[13] * mb[5] + ma[14] * mb[9] + ma[15] * mb[13];
             this[14] = ma[12] * mb[2] + ma[13] * mb[6] + ma[14] * mb[10] + ma[15] * mb[14];
             this[15] = ma[12] * mb[3] + ma[13] * mb[7] + ma[14] * mb[11] + ma[15] * mb[15];
-
-            this.isOrthonormalTransform = matrixA.isOrthonormalTransform && matrixB.isOrthonormalTransform;
 
             return this;
         };
@@ -1616,9 +1602,6 @@ define([
             this[13] = 0;
             this[14] = 0;
             this[15] = 1;
-
-            // Inverse of an orthogonal, 3D transform matrix is not an orthogonal 3D transform.
-            this.isOrthonormalTransform = false;
 
             return this;
         };
