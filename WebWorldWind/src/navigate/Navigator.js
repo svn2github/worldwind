@@ -45,12 +45,6 @@ define([
             this.worldWindow = worldWindow;
 
             /**
-             * This navigator's modelview matrix.
-             * @type {Matrix}
-             */
-            this.modelview = Matrix.fromIdentity();
-
-            /**
              * This navigator's heading, in degrees clockwise from north.
              * @type {number}
              */
@@ -99,25 +93,25 @@ define([
 
             var globe = this.worldWindow.globe,
                 globeRadius = WWMath.max(globe.equatorialRadius, globe.polarRadius),
-                viewport = this.worldWindow.viewport,
                 eyePoint = modelviewMatrix.extractEyePoint(new Vec3(0, 0, 0)),
                 eyePos = globe.computePositionFromPoint(eyePoint[0], eyePoint[1], eyePoint[2], new Position(0, 0, 0)),
+                viewport = this.worldWindow.viewport,
                 viewDepthBits = this.worldWindow.depthBits,
                 distanceToSurface,
                 maxNearDistance,
                 projectionMatrix = Matrix.fromIdentity();
 
-            // Compute the far clip distance based on the current eye altitude. This must be done after computing the modelview
-            // matrix and before computing the near clip distance. The far clip distance depends on the modelview matrix, and
-            // the near clip distance depends on the far clip distance.
+            // Compute the far clip distance based on the current eye altitude. This must be done after computing the
+            // modelview matrix and before computing the near clip distance. The far clip distance depends on the
+            // modelview matrix, and the near clip distance depends on the far clip distance.
             this.farDistance = WWMath.horizonDistanceForGlobeRadius(globeRadius, eyePos.altitude);
             if (this.farDistance < 1e3)
                 this.farDistance = 1e3;
 
-            // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance. This
-            // computed distance is limited such that it does not intersect the terrain when possible and is never less than
-            // a predetermined minimum (usually one). The computed near distance automatically scales with the resolution of
-            // the OpenGL depth buffer.
+            // Compute the near clip distance in order to achieve a desired depth resolution at the far clip distance.
+            // This computed distance is limited such that it does not intersect the terrain when possible and is never
+            // less than a predetermined minimum (usually one). The computed near distance automatically scales with the
+            // resolution of the WebGL depth buffer.
             this.nearDistance = WWMath.perspectiveNearDistanceForFarDistance(this.farDistance, 10, viewDepthBits);
 
             // Prevent the near clip plane from intersecting the terrain.
@@ -131,8 +125,8 @@ define([
             if (this.nearDistance < 1)
                 this.nearDistance = 1;
 
-            // Compute the current projection matrix based on this Navigator's perspective properties and the current OpenGL
-            // viewport.
+            // Compute the current projection matrix based on this navigator's perspective properties and the current
+            // WebGL viewport.
             projectionMatrix.setToPerspectiveProjection(viewport, this.nearDistance, this.farDistance);
 
             return new NavigatorState(modelviewMatrix, projectionMatrix, viewport, this.heading, this.tilt);
