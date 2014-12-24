@@ -9,6 +9,7 @@
 define([
         './error/ArgumentError',
         './render/DrawContext',
+        './globe/EarthElevationModel',
         './util/FrameStatistics',
         './globe/Globe',
         './cache/GpuResourceCache',
@@ -23,6 +24,7 @@ define([
         './globe/ZeroElevationModel'],
     function (ArgumentError,
               DrawContext,
+              EarthElevationModel,
               FrameStatistics,
               Globe,
               GpuResourceCache,
@@ -56,9 +58,10 @@ define([
             this.canvas.addEventListener("webglcontextlost", handleContextLost, false);
             this.canvas.addEventListener("webglcontextrestored", handleContextRestored, false);
 
+            var thisWindow = this;
             function handleContextLost(event) {
                 event.preventDefault();
-                this.gpuResourceCache.clear();
+                thisWindow.gpuResourceCache.clear();
             }
 
             function handleContextRestored(event) {
@@ -82,7 +85,7 @@ define([
              * The globe displayed.
              * @type {Globe}
              */
-            this.globe = new Globe(new ZeroElevationModel());
+            this.globe = new Globe(new EarthElevationModel());
 
             /**
              * The layers to display.

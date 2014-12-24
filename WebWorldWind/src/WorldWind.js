@@ -24,7 +24,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './cache/GpuResourceCache',
         './shaders/GpuShader',
         './layer/Layer',
-        './Layer/LayerList',
+        './layer/LayerList',
         './util/Level',
         './util/LevelSet',
         './geom/Line',
