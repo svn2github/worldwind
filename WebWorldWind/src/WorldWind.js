@@ -10,6 +10,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Angle',
         './error/ArgumentError',
         './shaders/BasicProgram',
+        './layer/BingWMSLayer',
         './layer/BMNGLandsatLayer',
         './layer/BMNGLayer',
         './layer/BMNGOneImageLayer',
@@ -69,6 +70,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Angle,
               ArgumentError,
               BasicProgram,
+              BingWMSLayer,
               BMNGLandsatLayer,
               BMNGLayer,
               BMNGOneImageLayer,
@@ -200,6 +202,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
         WorldWind['BasicProgram'] = BasicProgram;
+        WorldWind['BingWMSLayer'] = BingWMSLayer;
         WorldWind['BMNGLandsatLayer'] = BMNGLandsatLayer;
         WorldWind['BMNGLayer'] = BMNGLayer;
         WorldWind['BMNGOneImageLayer'] = BMNGOneImageLayer;

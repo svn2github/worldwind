@@ -13,8 +13,9 @@ requirejs(['../src/WorldWind'], function () {
 
     var wwd = new WorldWind.WorldWindow("canvasOne");
     //wwd.layers.addLayer(new WorldWind.BMNGOneImageLayer());
-    //wwd.layers.addLayer(new WorldWind.BMNGLandsatLayer());
-    wwd.layers.addLayer(new WorldWind.BMNGLayer());
-    wwd.layers.addLayer(new WorldWind.ShowTessellationLayer());
+    wwd.layers.addLayer(new WorldWind.BMNGLandsatLayer());
+    wwd.layers.addLayer(new WorldWind.BingWMSLayer());
+//wwd.layers.addLayer(new WorldWind.BMNGLayer());
+    //wwd.layers.addLayer(new WorldWind.ShowTessellationLayer());
     wwd.redraw();
 });
