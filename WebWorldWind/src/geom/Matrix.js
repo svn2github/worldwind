@@ -77,7 +77,7 @@ define([
 
         Matrix.EPSILON = 1.0e-6;
 
-        Matrix.prototype = new Float64Array(Vec3.NUM_ELEMENTS);
+        Matrix.prototype = new Float64Array(Matrix.NUM_ELEMENTS);
 
         /**
          * Creates an identity matrix.
