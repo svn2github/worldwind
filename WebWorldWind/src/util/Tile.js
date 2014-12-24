@@ -119,7 +119,7 @@ define([
              * The size in radians of pixels or cells of this tile's associated resource.
              * @type {Number}
              */
-            this.texelSize = level.texelSize;
+            this.texelSize = level.texelSize; // TODO: Can clients draw this directly from the level?
 
             /**
              * A key that uniquely identifies this tile within a level set.
