@@ -239,8 +239,12 @@ define([
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
 
                 for (i = 0; i < numLon + 2; i++) {
-                    elev = (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1)
-                        ? borderElevation : elevations[elevOffset++];
+                    if (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1) {
+                        elev = borderElevation;
+                    } else {
+                        elev = elevations[elevOffset];
+                        ++elevOffset;
+                    }
                     resultElevations[vertexOffset / stride] = elev;
 
                     resultPoints[vertexOffset] = (rpm + elev) * cosLat * sinLon[i] - offsetX;
@@ -533,24 +537,6 @@ define([
          */
         Globe.prototype.minElevation = function () {
             return this.elevationModel.maxElevation
-        };
-
-        /**
-         * Returns the minimum and maximum elevations at a specified location on this globe.
-         * @param {Number} latitude The location's latitude in degrees.
-         * @param {Number} longitude The location's longitude in degrees.
-         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
-         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
-         * @throws {ArgumentError} If the specified result array is null or undefined.
-         */
-        Globe.prototype.minAndMaxElevationsAtLocation = function (latitude, longitude, result) {
-            if (!result) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "minAndMaxElevationsAtLocation",
-                        "missingResult"));
-            }
-
-            return this.elevationModel.minAndMaxElevationsAtLocation(latitude, longitude, result);
         };
 
         /**
