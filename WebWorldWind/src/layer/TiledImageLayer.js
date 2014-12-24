@@ -121,15 +121,6 @@ define([
             return new TextureTile(sector, level, row, column, path);
         };
 
-        TiledImageLayer.createTileForKey = function (tileKey) {
-            var level = this.levels.level(tileKey.levelNumber),
-                row = tileKey.row,
-                column = tileKey.column,
-                sector = Tile.computeSector(level, row, column);
-
-            return this.createTile(sector, level, row, column);
-        };
-
         TiledImageLayer.prototype.doRender = function (dc) {
             if (!dc.terrain.surfaceGeometry)
                 return;
