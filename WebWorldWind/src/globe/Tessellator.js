@@ -499,7 +499,7 @@ define([
             // Retrieve the elevations for all vertices in the tile. The returned elevations will already have vertical
             // exaggeration applied.
             if (!this.tileElevations) {
-                this.tileElevations = new Float64Array(numLatVertices * numLonVertices * vertexStride);
+                this.tileElevations = new Float64Array(numLatVertices * numLonVertices);
             }
             dc.globe.elevationsForSector(sector, numLatVertices, numLonVertices, tile.texelSize, ve, this.tileElevations);
 
@@ -515,7 +515,7 @@ define([
 
             var elevations = tile.elevations;
             if (!elevations) {
-                elevations = new Float32Array(tile.numPoints * vertexStride);
+                elevations = new Float32Array(tile.numPoints);
                 tile.elevations = elevations;
             }
 
