@@ -62,27 +62,6 @@ define([
         ZeroElevationModel.prototype = Object.create(ElevationModel.prototype);
 
         /**
-         * Returns the minimum and maximum elevations at a specified location.
-         * @param {Number} latitude The location's latitude in degrees.
-         * @param {Number} longitude The location's longitude in degrees.
-         * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
-         * @returns {Number[]} The specified result argument containing, respectively, the minimum and maximum elevations.
-         * @throws {ArgumentError} If the specified result array is null or undefined.
-         */
-        ZeroElevationModel.prototype.minAndMaxElevationsAtLocation = function (latitude, longitude, result) {
-            if (!result) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "ZeroElevationModel", "minAndMaxElevationsAtLocation",
-                        "missingResult"));
-            }
-
-            result[0] = 0;
-            result[1] = 0;
-
-            return result;
-        };
-
-        /**
          * Returns the minimum and maximum elevations within a specified sector.
          * @param {Sector} sector The sector for which to determine extreme elevations.
          * @param {Number[]} result A pre-allocated array in which to return the minimum and maximum elevations.
