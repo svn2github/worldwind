@@ -125,9 +125,17 @@ define([
             this.drawContext = new DrawContext();
             this.drawContext.canvas = this.canvas;
 
-            // Set up to handle redraw events.
             var thisWindow = this;
+
+            // Set up to handle redraw requests sent to the canvas. Imagery uses this target because images are
+            // generally specific to the WebGL context associated with the canvas.
             this.canvas.addEventListener(WorldWind.REDRAW_EVENT_TYPE, function (event) {
+                thisWindow.redraw();
+            }, false);
+
+            // Set up to handel redraw requests sent to the global window. Elevation models use this target because
+            // they can be shared among world windows.
+            window.addEventListener(WorldWind.REDRAW_EVENT_TYPE, function (event) {
                 thisWindow.redraw();
             }, false);
         };

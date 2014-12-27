@@ -452,8 +452,8 @@ define([
                                 Logger.log(Logger.LEVEL_INFO, "Elevations retrieval succeeded: " + url);
                                 elevationModel.loadElevationImage(tile, xhr);
 
-                                // Send an event to request a redraw. TODO: The event is not being received by WorldWindow
-                                document.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                                // Send an event to request a redraw.
+                                window.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
                             } else if (contentType == "text/xml") {
                                 Logger.log(Logger.LEVEL_WARNING,
                                     "Elevations retrieval failed (" + xhr.statusText + "): " + url + ".\n "
