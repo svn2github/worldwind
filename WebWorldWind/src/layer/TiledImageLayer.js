@@ -265,22 +265,32 @@ define([
                     return;
 
                 image.onload = function () {
+                    Logger.log(Logger.LEVEL_INFO, "Image retrieval succeeded: " + url);
                     var texture = new Texture(gl, image);
                     cache.putResource(gl, imagePath, texture, WorldWind.GPU_TEXTURE, texture.size);
 
-                    var index = layer.currentRetrievals.indexOf(imagePath);
-                    if (index > -1) {
-                        layer.currentRetrievals.splice(index, 1);
-                    }
-
+                    layer.removeFromCurrentRetrievals(imagePath);
                     layer.currentTilesInvalid = true;
 
                     // Send an event to request a redraw.
                     dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
                 };
+
+                image.onerror = function () {
+                    layer.removeFromCurrentRetrievals(imagePath);
+                    Logger.log(Logger.LEVEL_WARNING, "Image retrieval failed: " + url);
+                };
+
                 this.currentRetrievals.push(imagePath);
                 image.crossOrigin = 'anonymous';
                 image.src = url;
+            }
+        };
+
+        TiledImageLayer.prototype.removeFromCurrentRetrievals = function (imagePath) {
+            var index = this.currentRetrievals.indexOf(imagePath);
+            if (index > -1) {
+                this.currentRetrievals.splice(index, 1);
             }
         };
 

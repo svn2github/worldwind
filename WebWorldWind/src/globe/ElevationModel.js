@@ -443,22 +443,48 @@ define([
                 xhr.responseType = 'arraybuffer';
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === 4) {
-                        var index = elevationModel.currentRetrievals.indexOf(tile.imagePath);
-                        if (index > -1) {
-                            elevationModel.currentRetrievals.splice(index, 1);
-                        }
+                        elevationModel.removeFromCurrentRetrievals(tile.imagePath);
+
+                        var contentType = xhr.getResponseHeader("content-type");
 
                         if (xhr.status === 200) {
-                            elevationModel.loadElevationImage(tile, xhr);
+                            if (contentType == elevationModel.retrievalImageFormat) {
+                                Logger.log(Logger.LEVEL_INFO, "Elevations retrieval succeeded: " + url);
+                                elevationModel.loadElevationImage(tile, xhr);
 
-                            // Send an event to request a redraw. TODO: The event is not being received by WorldWindow
-                            document.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                                // Send an event to request a redraw. TODO: The event is not being received by WorldWindow
+                                document.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                            } else if (contentType == "text/xml") {
+                                Logger.log(Logger.LEVEL_WARNING,
+                                    "Elevations retrieval failed (" + xhr.statusText + "): " + url + ".\n "
+                                    + String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+                            } else {
+                                Logger.log(Logger.LEVEL_WARNING,
+                                    "Elevations retrieval failed: " + url + ". " + "Unexpected content type "
+                                    + contentType);
+                            }
+                        } else {
+                            Logger.log(Logger.LEVEL_WARNING,
+                                "Elevations retrieval failed (" + xhr.statusText + "): " + url);
                         }
                     }
                 };
+
+                xhr.onerror = function () {
+                    elevationModel.removeFromCurrentRetrievals(tile.imagePath);
+                    Logger.log(Logger.LEVEL_WARNING, "Elevations retrieval failed: " + url);
+                };
+
                 xhr.send(null);
 
                 this.currentRetrievals.push(tile.imagePath);
+            }
+        };
+
+        ElevationModel.prototype.removeFromCurrentRetrievals = function (imagePath) {
+            var index = this.currentRetrievals.indexOf(imagePath);
+            if (index > -1) {
+                this.currentRetrievals.splice(index, 1);
             }
         };
 
