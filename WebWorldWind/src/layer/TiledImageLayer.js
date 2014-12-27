@@ -7,6 +7,7 @@
  * @version $Id$
  */
 define([
+        '../util/AbsentResourceList',
         '../error/ArgumentError',
         '../layer/Layer',
         '../util/LevelSet',
@@ -17,7 +18,8 @@ define([
         '../util/Tile',
         '../util/WWUtil'
     ],
-    function (ArgumentError,
+    function (AbsentResourceList,
+              ArgumentError,
               Layer,
               LevelSet,
               Logger,
@@ -108,6 +110,7 @@ define([
             this.detailHintOrigin = 2.4;
             this.detailHint = 0;
             this.currentRetrievals = [];
+            this.absentResourceList = new AbsentResourceList(3, 50e3);
 
             this.pickEnabled = false;
         };
@@ -254,6 +257,10 @@ define([
 
         TiledImageLayer.prototype.retrieveTileImage = function (dc, tile) {
             if (this.currentRetrievals.indexOf(tile.imagePath) < 0) {
+                if (this.absentResourceList.isResourceAbsent(tile.imagePath)) {
+                    return;
+                }
+
                 var url = this.resourceUrlForTile(tile, this.retrievalImageFormat),
                     image = new Image(),
                     imagePath = tile.imagePath,
@@ -271,6 +278,7 @@ define([
 
                     layer.removeFromCurrentRetrievals(imagePath);
                     layer.currentTilesInvalid = true;
+                    layer.absentResourceList.unmarkResourceAbsent(imagePath);
 
                     // Send an event to request a redraw.
                     dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
@@ -278,6 +286,7 @@ define([
 
                 image.onerror = function () {
                     layer.removeFromCurrentRetrievals(imagePath);
+                    layer.absentResourceList.markResourceAbsent(imagePath);
                     Logger.log(Logger.LEVEL_WARNING, "Image retrieval failed: " + url);
                 };
 

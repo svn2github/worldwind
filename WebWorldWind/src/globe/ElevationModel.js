@@ -7,6 +7,7 @@
  * @version $Id$
  */
 define([
+        '../util/AbsentResourceList',
         '../geom/Angle',
         '../error/ArgumentError',
         '../globe/ElevationImage',
@@ -16,7 +17,8 @@ define([
         '../cache/MemoryCache',
         '../geom/Sector',
         '../util/Tile'],
-    function (Angle,
+    function (AbsentResourceList,
+              Angle,
               ArgumentError,
               ElevationImage,
               ElevationTile,
@@ -140,6 +142,7 @@ define([
             this.tileCache = new MemoryCache(1000000, 800000); // for elevation tiles
             this.imageCache = new MemoryCache(10000000, 8000000); // for the elevations, themselves
             this.currentRetrievals = []; // Identifies elevation retrievals in progress
+            this.absentResourceList = new AbsentResourceList(3, 5e3);
         };
 
         /**
@@ -451,19 +454,23 @@ define([
                             if (contentType == elevationModel.retrievalImageFormat) {
                                 Logger.log(Logger.LEVEL_INFO, "Elevations retrieval succeeded: " + url);
                                 elevationModel.loadElevationImage(tile, xhr);
+                                elevationModel.absentResourceList.unmarkResourceAbsent(tile.imagePath);
 
                                 // Send an event to request a redraw.
                                 window.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
                             } else if (contentType == "text/xml") {
+                                elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                                 Logger.log(Logger.LEVEL_WARNING,
                                     "Elevations retrieval failed (" + xhr.statusText + "): " + url + ".\n "
                                     + String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
                             } else {
+                                elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                                 Logger.log(Logger.LEVEL_WARNING,
                                     "Elevations retrieval failed: " + url + ". " + "Unexpected content type "
                                     + contentType);
                             }
                         } else {
+                            elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                             Logger.log(Logger.LEVEL_WARNING,
                                 "Elevations retrieval failed (" + xhr.statusText + "): " + url);
                         }
@@ -472,7 +479,14 @@ define([
 
                 xhr.onerror = function () {
                     elevationModel.removeFromCurrentRetrievals(tile.imagePath);
+                    elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                     Logger.log(Logger.LEVEL_WARNING, "Elevations retrieval failed: " + url);
+                };
+
+                xhr.ontimeout = function () {
+                    elevationModel.removeFromCurrentRetrievals(tile.imagePath);
+                    elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
+                    Logger.log(Logger.LEVEL_WARNING, "Elevations retrieval timed out: " + url);
                 };
 
                 xhr.send(null);
