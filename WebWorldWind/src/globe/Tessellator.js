@@ -23,8 +23,7 @@ define([
         '../globe/Terrain',
         '../globe/TerrainTile',
         '../globe/TerrainTileList',
-        '../util/Tile',
-        '../util/TileFactory'
+        '../util/Tile'
     ],
     function (ArgumentError,
               Globe,
@@ -42,8 +41,7 @@ define([
               Terrain,
               TerrainTile,
               TerrainTileList,
-              Tile,
-              TileFactory) {
+              Tile) {
         "use strict";
 
         /**
@@ -54,15 +52,33 @@ define([
          */
         var Tessellator = function () {
             // Parameterize top level subdivision in one place.
-            this.numRowsTopLevel = 32;
-            this.numColumnsTopLevel = 32;
-            this.maximumSubdivisionDepth = 15;
 
-            this.levels = new LevelSet(Sector.FULL_SPHERE,
-                new Location(45, 45),
+            // TilesInTopLevel describes the most coarse tile structure.
+            this.numRowsTilesInTopLevel = 4; // baseline: 4
+            this.numColumnsTilesInTopLevel = 8; // baseline: 8
+
+            // The maximum number of levels that will ever be tessellated.
+            this.maximumSubdivisionDepth = 15; // baseline: 15
+
+            // TileSamples - the sampling grid for vertices in a tile.
+            this.numRowsTileSamples = 32; // baseline: 32
+            this.numColumnsTileSamples = 32; // baseline: 32
+
+            // detailHintOrigin - a parameter that describes the size of the sampling grid when fully zoomed in.
+            // The size of the tile sampling grid when fully zoomed in is related to the logarithm base 10 of this parameter.
+            // A parameter of 2 will have a sampling size approximately 10 times finer than a parameter of 1.
+            // Parameters which result in changes of a factor of two are: 1.1, 1.4, 1.7, 2.0.
+            this.detailHintOrigin = 1.1; // baseline: 1.1
+            this.detailHint = 0;
+
+            this.levels = new LevelSet(
+                Sector.FULL_SPHERE,
+                new Location(
+                    180 / this.numRowsTilesInTopLevel,
+                    360 / this.numColumnsTilesInTopLevel),
                 this.maximumSubdivisionDepth,
-                this.numRowsTopLevel,
-                this.numColumnsTopLevel);
+                this.numRowsTileSamples,
+                this.numColumnsTileSamples);
 
             this.topLevelTiles = undefined;
             this.currentTiles = new TerrainTileList(this);
