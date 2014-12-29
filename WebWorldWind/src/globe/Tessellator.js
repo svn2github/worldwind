@@ -60,9 +60,9 @@ define([
             // The maximum number of levels that will ever be tessellated.
             this.maximumSubdivisionDepth = 15; // baseline: 15
 
-            // TileSamples - the sampling grid for vertices in a tile.
-            this.numRowsTileSamples = 32; // baseline: 32
-            this.numColumnsTileSamples = 32; // baseline: 32
+            // tileWidth, tileHeight - the number of subdivisions a single tile has; this determines the sampling grid.
+            this.tileWidth = 32; // baseline: 32
+            this.tileHeight = 32; // baseline: 32
 
             // detailHintOrigin - a parameter that describes the size of the sampling grid when fully zoomed in.
             // The size of the tile sampling grid when fully zoomed in is related to the logarithm base 10 of this parameter.
@@ -77,8 +77,8 @@ define([
                     180 / this.numRowsTilesInTopLevel,
                     360 / this.numColumnsTilesInTopLevel),
                 this.maximumSubdivisionDepth,
-                this.numRowsTileSamples,
-                this.numColumnsTileSamples);
+                this.tileWidth,
+                this.tileHeight);
 
             this.topLevelTiles = undefined;
             this.currentTiles = new TerrainTileList(this);
@@ -523,7 +523,7 @@ define([
             var points = tile.points,
                 numPoints = -1;
             if (!points) {
-                numPoints = (numLatVertices + 2) * (numLonVertices + 2);
+                numPoints = numLatVertices * numLonVertices;
                 points = new Float32Array(numPoints * vertexStride);
                 tile.numPoints = numPoints;
                 tile.points = points;
@@ -541,8 +541,8 @@ define([
             var borderElevation = tile.minElevation * ve;
             dc.globe.computePointsFromPositions(
                 sector,
-                numLatVertices,
-                numLonVertices,
+                tile.tileWidth,
+                tile.tileHeight,
                 this.tileElevations,
                 borderElevation,
                 refCenter,
@@ -578,50 +578,27 @@ define([
         };
 
         Tessellator.prototype.buildTexCoords = function (tileWidth, tileHeight) {
-            // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
-            var numLatVertices = tileHeight + 3,
-                numLonVertices = tileWidth + 3,
+            var numLatVertices = tileHeight + 1,
+                numLonVertices = tileWidth + 1,
                 vertexStride = 2;
 
             // Allocate an array to hold the texture coordinates.
             var numTexCoords = numLatVertices * numLonVertices,
                 texCoords = new Float32Array(numTexCoords * vertexStride);
 
-            var minS = 0,
-                maxS = 1,
-                minT = 0,
-                maxT = 1,
-                deltaS = (maxS - minS) / tileWidth,
-                deltaT = (maxT - minT) / tileHeight,
-                s = minS, // Horizontal texture coordinate; varies along tile width or longitude.
-                t = minT; // Vertical texture coordinate; varies along tile height or latitude.
+            var s, // Horizontal texture coordinate; varies along tile width or longitude.
+                t; // Vertical texture coordinate; varies along tile height or latitude.
 
-            var k = 0;
-            for (var j = 0; j < numLatVertices; j += 1) {
-                if (j <= 1) {// First two columns repeat the min T-coordinate to provide a column for the skirt.
-                    t = minT;
-                }
-                else if (j >= numLatVertices - 2) {// Last two columns repeat the max T-coordinate to provide a column for the skirt.
-                    t = maxT;
-                }
-                else {
-                    t += deltaT; // Non-boundary latitudes are separated by the cell latitude delta.
-                }
+            var texIndex = 0;
+            for (var row = 0; row <= tileHeight; row += 1) {
+                t = row / tileHeight;
 
-                for (var i = 0; i < numLonVertices; i += 1) {
-                    if (i <= 1) {// First two rows repeat the min S-coordinate to provide a row for the skirt.
-                        s = minS;
-                    }
-                    else if (i >= numLonVertices - 2) {// Last two rows repeat the max S-coordinate to provide a row for the skirt.
-                        s = maxS;
-                    }
-                    else {
-                        s += deltaS; // Non-boundary longitudes are separated by the cell longitude delta.
-                    }
+                for (var col = 0; col <= tileWidth; col += 1) {
+                    s = col / tileWidth;
 
-                    texCoords[k] = s;
-                    texCoords[k + 1] = t;
-                    k += vertexStride;
+                    texCoords[texIndex] = s;
+                    texCoords[texIndex + 1] = t;
+                    texIndex += vertexStride;
                 }
             }
 
@@ -630,38 +607,36 @@ define([
         };
 
         Tessellator.prototype.buildIndices = function (tileWidth, tileHeight) {
-            // The number of vertices in each dimension is 3 more than the number of cells. Two of those are for the skirt.
-            var numLatVertices = tileHeight + 3;
-            var numLonVertices = tileWidth + 3;
+            // The number of vertices in each dimension is 1 more than the number of cells.
+            var numLatVertices = tileHeight + 1,
+                numLonVertices = tileWidth + 1;
 
-            // Allocate an array to hold the indices used to draw a tile of the specified width and height as a triangle strip.
-            // Shorts are the largest primitive that OpenGL ES allows for an index buffer. The largest tileWidth and tileHeight
-            // that can be indexed by a short is 256x256 (excluding the extra rows and columns to convert between cell count and
-            // vertex count, and the extra rows and columns for the tile skirt).
-            var numIndices = 2 * (numLatVertices - 1) * numLonVertices + 2 * (numLatVertices - 2);
+            // Each vertex has two indices associated with it: the current vertex index and the index of the row.
+            // There are tileHeight rows.
+            // There are tileHeight + 2 columns
+            var numIndices = 2 * (numLatVertices - 1) * (numLonVertices + 1);
             var indices = new Int16Array(numIndices);
 
-            var k = 0;
-            for (var j = 0; j < numLatVertices - 1; j += 1) {
-                if (j != 0) {
-                    // Attach the previous and next triangle strips by repeating the last and first vertices of the previous
-                    // and current strips, respectively. This creates a degenerate triangle between the two strips which is
-                    // not rasterized because it has zero area. We don't perform this step when j==0 because there is no
-                    // previous triangle strip to connect with.
-                    indices[k] = ((numLonVertices - 1) + (j - 1) * numLonVertices); // last vertex of previous strip
-                    indices[k + 1] = (j * numLonVertices + numLonVertices); // first vertex of current strip
-                    k += 2;
+            var index = 0;
+            for (var latIndex = 0; latIndex < numLatVertices - 1; latIndex += 1) {
+                var vertexIndex; // The index of the vertex in the sample grid.
+                for (var lonIndex = 0; lonIndex < numLonVertices; lonIndex += 1) {
+                    vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                    // Create a triangle strip joining each adjacent row of vertices, starting in the top left corner and
+                    // proceeding downward. The first vertex starts with the upper row of vertices and moves down to create a
+                    // clockwise winding order.
+                    indices[index] = vertexIndex;
+                    indices[index + 1] = vertexIndex + numLonVertices;
+                    index += 2;
                 }
 
-                for (var i = 0; i < numLonVertices; i += 1) {
-                    // Create a triangle strip joining each adjacent row of vertices, starting in the lower left corner and
-                    // proceeding upward. The first vertex starts with the upper row of vertices and moves down to create a
-                    // counter-clockwise winding order.
-                    var vertex = i + j * numLonVertices;
-                    indices[k] = (vertex + numLonVertices);
-                    indices[k + 1] = vertex;
-                    k += 2;
-                }
+                // Insert indices to create 2 degenerate triangles:
+                //      one for the end of the current row, and
+                //      one for the beginning of the next row.
+                indices[index] = vertexIndex + numLonVertices;
+                indices[index + 1] = vertexIndex + 1;
+                index += 2;
             }
 
             this.indices = indices;
@@ -669,44 +644,40 @@ define([
         };
 
         Tessellator.prototype.buildWireframeIndices = function (tileWidth, tileHeight) {
-            // The wireframe representation ignores the tile skirt and draws only the vertices that appear on the surface.
+            // The wireframe representation draws the vertices that appear on the surface.
 
             // The number of vertices in each dimension is 1 more than the number of cells.
             var numLatVertices = tileHeight + 1;
             var numLonVertices = tileWidth + 1;
 
             // Allocate an array to hold the computed indices.
-            var numIndices = 2 * tileWidth * (tileHeight + 1) + 2 * tileHeight * (tileWidth + 1);
+            var numIndices = 2 * tileWidth * numLatVertices + 2 * tileHeight * numLonVertices;
             var indices = new Int16Array(numIndices);
 
-            // Add two columns of vertices to the row stride to account for the west and east skirt vertices.
-            var rowStride = numLonVertices + 2;
-            // Skip the skirt row and column to start an the first interior vertex.
-            var offset = rowStride + 1;
+            var rowStride = numLonVertices;
 
-            // Add a line between each row to define the horizontal cell outlines. Starts and ends at the vertices that
-            // appear on the surface, thereby ignoring the tile skirt.
-            var k = 0,
-                i,
-                j,
-                vertex;
-            for (j = 0; j < numLatVertices; j += 1) {
-                for (i = 0; i < tileWidth; i += 1) {
-                    vertex = offset + i + j * rowStride;
-                    indices[k] = vertex;
-                    indices[k + 1] = (vertex + 1);
-                    k += 2
+            var index = 0,
+                lonIndex,
+                latIndex,
+                vertexIndex;
+
+            // Add a line between each row to define the horizontal cell outlines.
+            for (latIndex = 0; latIndex < numLatVertices; latIndex += 1) {
+                for (lonIndex = 0; lonIndex < tileWidth; lonIndex += 1) {
+                    vertexIndex = lonIndex + latIndex * rowStride;
+                    indices[index] = vertexIndex;
+                    indices[index + 1] = (vertexIndex + 1);
+                    index += 2
                 }
             }
 
-            // Add a line between each column to define the vertical cell outlines. Starts and ends at the vertices that
-            // appear on the surface, thereby ignoring the tile skirt.
-            for (i = 0; i < numLonVertices; i += 1) {
-                for (j = 0; j < tileHeight; j += 1) {
-                    vertex = offset + i + j * rowStride;
-                    indices[k] = vertex;
-                    indices[k + 1] = (vertex + rowStride);
-                    k += 2;
+            // Add a line between each column to define the vertical cell outlines.
+            for (lonIndex = 0; lonIndex < numLonVertices; lonIndex += 1) {
+                for (latIndex = 0; latIndex < tileHeight; latIndex += 1) {
+                    vertexIndex = lonIndex + latIndex * rowStride;
+                    indices[index] = vertexIndex;
+                    indices[index + 1] = (vertexIndex + rowStride);
+                    index += 2;
                 }
             }
 
@@ -721,47 +692,47 @@ define([
             var numLatVertices = tileHeight + 1;
             var numLonVertices = tileWidth + 1;
 
-            // Allocate an array to hold the computed indices. The outline indices ignore the extra rows and columns for the
-            // tile skirt.
-            var numIndices = 2 * (numLatVertices - 1) + 2 * numLonVertices - 1;
+            // Allocate an array to hold the computed indices.
+            var numIndices = 2 * (numLatVertices - 2) + 2 * numLonVertices + 1;
             var indices = new Int16Array(numIndices);
 
-            // Add two columns of vertices to the row stride to account for the two additional vertices that provide an
-            // outer row/column for the tile skirt.
-            var rowStride = numLonVertices + 2;
+            var rowStride = numLatVertices;
 
-            // Bottom row. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt.
-            var offset = rowStride + 1,
-                k = 0,
-                i,
-                j;
-            for (i = 0; i < numLonVertices; i += 1) {
-                indices[k] = (offset + i);
-                k += 1;
+            var index = 0,
+                lonIndex,
+                latIndex,
+                vertexIndex;
+
+            // Bottom row, starting at the left and going right.
+            latIndex = 0;
+            for (lonIndex = 0; lonIndex < numLonVertices; lonIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+                index += 1;
             }
 
-            // Rightmost column. Offset by rowStride - 2 to start at the lower right corner, ignoring the tile skirt. Skips
-            // the bottom vertex, which is already included in the bottom row.
-            offset = 2 * rowStride - 2;
-            for (j = 1; j < numLatVertices; j += 1) {
-                indices[k] = (offset + j * rowStride);
-                k += 1
+            // Right column, starting at the bottom and going up.
+            lonIndex = numLonVertices - 1;
+            for (latIndex = 1; latIndex < numLatVertices; latIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+                index += 1
             }
 
-            // Top row. Offset by tileHeight* rowStride + 1 to start at the top left corner, ignoring the tile skirt. Skips
-            // the rightmost vertex, which is already included in the rightmost column.
-            offset = numLatVertices * rowStride + 1;
-            for (i = numLonVertices - 2; i >= 0; i -= 1) {
-                indices[k] = (offset + i);
-                k += 1
+            // Top row, starting on the right and going to the left.
+            latIndex = numLatVertices - 1;
+            for (lonIndex = numLonVertices - 1; lonIndex >= 0; lonIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+                index += 1
             }
 
-            // Leftmost column. Offset by rowStride + 1 to start at the lower left corner, ignoring the tile skirt. Skips
-            // the topmost vertex, which is already included in the top row.
-            offset = rowStride + 1;
-            for (j = numLatVertices - 2; j >= 0; j -= 1) {
-                indices[k] = (offset + j * rowStride);
-                k += 1
+            // Leftmost column, starting at the top and going down.
+            lonIndex = 0;
+            for (latIndex = numLatVertices - 1; latIndex >= 0; latIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+                index += 1
             }
 
             this.outlineIndices = indices;

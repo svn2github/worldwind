@@ -116,9 +116,9 @@ define([
          * Computes a grid of Cartesian points within a specified sector and relative to a specified Cartesian offset.
          *
          * This method is used to compute a collection of points within a sector. It is used by tessellators to
-         * efficiently generate a tile's interior points. The number of points to generate is indicated by the numLat
-         * and numLon parameters, which specify respectively the number of points to generate in the latitudinal and
-         * longitudinal directions. In addition to the specified numLat and numLon points, this method generates an
+         * efficiently generate a tile's interior points. The number of points to generate is indicated by the tileWidth
+         * and tileHeight parameters, which specify respectively the number of points to generate in the latitudinal and
+         * longitudinal directions. In addition to the specified tileWidth and tileHeight points, this method generates an
          * additional row and column of points along the sector's outer edges. These border points have the same
          * latitude and longitude as the points on the sector's outer edges, but use the constant borderElevation
          * instead of values from the array of elevations.
@@ -128,26 +128,26 @@ define([
          * elevations for the border points, which use the constant borderElevation.
          *
          * @param {Sector} sector The sector in which to compute the points.
-         * @param {Number} numLat The number of latitudinal locations at which to compute the points.
-         * @param {Number} numLon The number of longitudinal locations at which to compute the points.
+         * @param {Number} tileWidth The number of latitudinal section a tile is broken into.
+         * @param {Number} tileHeight The number of longitudinal sections a tile is broken into.
          * @param {Number[]} elevations An array of elevations to incorporate in the point calculations. There must be
          * one elevation value in the array for each generated point - ignoring border points - so there must be
-         * numLat x numLon elements in the array. Elevations are in meters.
+         * tileWidth x tileHeight elements in the array. Elevations are in meters.
          * @param {Number} borderElevation The constant elevation assigned to border points, in meters.
          * @param {Vec3} offset The X, Y and Z Cartesian coordinates to subtract from the computed coordinates. This
          * makes the computed coordinates relative to the specified offset.
          * @param {Float32Array} resultPoints A typed array to hold the computed coordinates. It must be at least of
-         * size ((numLat + 2) x (numLon + 2) x stride).
+         * size ((tileWidth + 1) x (tileHeight + 1) x stride).
          * The points are returned in row major order, beginning with the row of minimum latitude.
          * @param {Number} stride The number of floats between successive points in the output array. Specifying a
          * stride of 3 indicates that the points are tightly packed in the output array.
          * @param {Float32Array} resultElevations A typed array to hold the elevation for each computed point. This
-         * elevation has vertical exaggeration applied. It must be at least of size ((numLat + 2) x (numLon + 2).
+         * elevation has vertical exaggeration applied. It must be at least of size ((tileWidth + 1) x (tileHeight + 1).
          * @returns {Float32Array} The specified resultPoints argument.
          * @throws {ArgumentError} if the specified sector, elevations array or results arrays are null or undefined, if
          * the lengths of any of the results arrays are insufficient, or if the specified stride is less than 3.
          */
-        Globe.prototype.computePointsFromPositions = function (sector, numLat, numLon, elevations,
+        Globe.prototype.computePointsFromPositions = function (sector, tileWidth, tileHeight, elevations,
                                                                borderElevation, offset, resultPoints,
                                                                stride, resultElevations) {
             if (!sector) {
@@ -155,17 +155,17 @@ define([
                     "computePointsFromPositions", "missingSector"));
             }
 
-            if (numLat < 1 || numLon < 1) {
+            if (tileWidth < 1 || tileHeight < 1) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Number of latitude or longitude locations is less than one."));
             }
 
-            if (!elevations || elevations.length < numLat * numLon) {
+            if (!elevations || elevations.length < (tileWidth + 1) * (tileHeight + 1)) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Elevations array is null, undefined or insufficient length."));
             }
 
-            if (!resultPoints || resultPoints.length < (numLat + 2) * (numLon + 2) * stride) {
+            if (!resultPoints || resultPoints.length < (tileWidth + 1) * (tileHeight + 1) * stride) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Result points array is null, undefined or insufficient length."));
             }
@@ -175,7 +175,7 @@ define([
                     "Stride is less than 3."));
             }
 
-            if (!resultElevations || resultElevations.length < (numLat + 2) * (numLon + 2)) {
+            if (!resultElevations || resultElevations.length < (tileWidth + 1) * (tileHeight + 1)) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Result elevations array is null, undefined or insufficient length."));
             }
@@ -184,72 +184,59 @@ define([
                 maxLat = sector.maxLatitude * Angle.DEGREES_TO_RADIANS,
                 minLon = sector.minLongitude * Angle.DEGREES_TO_RADIANS,
                 maxLon = sector.maxLongitude * Angle.DEGREES_TO_RADIANS,
-                deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1),
-                deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1),
                 offsetX = offset[0],
                 offsetY = offset[1],
                 offsetZ = offset[2],
-                numLatPoints = numLat + 2,
-                numLonPoints = numLon + 2,
+                numLatPoints = tileHeight + 1,
+                numLonPoints = tileWidth + 1,
                 vertexOffset = 0,
                 elevOffset = 0,
                 lat,
-                lon = minLon,
-                cosLat,
-                sinLat,
+                lon,
                 rpm,
                 elev,
-                cosLon = new Array(numLonPoints),
-                sinLon = new Array(numLonPoints),
-                i, j;
+                cosLon = new Float64Array(numLonPoints),
+                sinLon = new Float64Array(numLonPoints),
+                cosLat = new Float64Array(numLatPoints),
+                sinLat = new Float64Array(numLatPoints),
+                latIndex, lonIndex;
 
             // Iterate over the latitude coordinates in the specified sector and compute the cosine and sine of each longitude
             // value required to compute Cartesian points for the specified sector. This eliminates the need to re-compute the
             // same cosine and sine results for each row of latitude.
-            for (i = 0; i < numLonPoints; i++) {
-                // Explicitly set the first and last row to minLon and maxLon, respectively, rather than using the
-                // accumulated lon value, in order to ensure that the Cartesian points of adjacent sectors match perfectly.
-                if (i <= 1) // Border and first longitude.
-                    lon = minLon;
-                else if (i >= numLon) // Border and last longitude.
-                    lon = maxLon;
-                else
-                    lon += deltaLon;
+            for (lonIndex = 0; lonIndex <= tileWidth; lonIndex += 1) {
+                lon = minLon + (maxLon - minLon) * lonIndex / tileWidth;
 
-                cosLon[i] = Math.cos(lon);
-                sinLon[i] = Math.sin(lon);
+                cosLon[lonIndex] = Math.cos(lon);
+                sinLon[lonIndex] = Math.sin(lon);
+            }
+
+            // Iterate over the longitude coordinates in the specified sector and compute the cosine and sine of each latitude
+            // value required to compute Cartesian points for the specified sector. This eliminates the need to re-compute the
+            // same cosine and sine results for each row of longitude.
+            for (latIndex = 0; latIndex <= tileHeight; latIndex += 1) {
+                lat = minLat + (maxLat - minLat) * latIndex / tileHeight;
+
+                cosLat[latIndex] = Math.cos(lat);
+                sinLat[latIndex] = Math.sin(lat);
             }
 
             // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
             // corresponding to each latitude and longitude.
             lat = minLat;
-            for (j = 0; j < numLatPoints; j++) {
-                // Explicitly set the first and last row to minLat and maxLat, respectively, rather than using the
-                // accumulated lat value, in order to ensure that the Cartesian points of adjacent sectors match perfectly.
-                if (j <= 1) // Border and first latitude.
-                    lat = minLat;
-                else if (j >= numLat) // Border and last latitude.
-                    lat = maxLat;
-                else
-                    lat += deltaLat;
-
+            for (latIndex = 0; latIndex <= tileHeight; latIndex += 1) {
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
-                cosLat = Math.cos(lat);
-                sinLat = Math.sin(lat);
-                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[latIndex] * sinLat[latIndex]);
 
-                for (i = 0; i < numLon + 2; i++) {
-                    if (j == 0 || j == numLat + 1 || i == 0 || i == numLon + 1) {
-                        elev = borderElevation;
-                    } else {
-                        elev = elevations[elevOffset];
-                        ++elevOffset;
-                    }
+                for (lonIndex = 0; lonIndex <= tileWidth; lonIndex += 1) {
+                    elev = elevations[elevOffset];
+                    elevOffset += 1;
+
                     resultElevations[vertexOffset / stride] = elev;
 
-                    resultPoints[vertexOffset] = (rpm + elev) * cosLat * sinLon[i] - offsetX;
-                    resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLat - offsetY;
-                    resultPoints[vertexOffset + 2] = (rpm + elev) * cosLat * cosLon[i] - offsetZ;
+                    resultPoints[vertexOffset] = (rpm + elev) * cosLat[latIndex] * sinLon[lonIndex] - offsetX;
+                    resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLat[latIndex] - offsetY;
+                    resultPoints[vertexOffset + 2] = (rpm + elev) * cosLat[latIndex] * cosLon[lonIndex] - offsetZ;
                     vertexOffset += stride;
                 }
             }

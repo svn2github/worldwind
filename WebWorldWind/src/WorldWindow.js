@@ -235,6 +235,7 @@ define([
             gl.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA);
 
             gl.enable(WebGLRenderingContext.CULL_FACE);
+            gl.frontFace(WebGLRenderingContext.CW);
             gl.enable(WebGLRenderingContext.DEPTH_TEST);
             gl.depthFunc(WebGLRenderingContext.LEQUAL);
         };
