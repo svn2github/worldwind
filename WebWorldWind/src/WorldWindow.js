@@ -68,6 +68,9 @@ define([
             }
 
             var gl = this.canvas.getContext("webgl");
+            if (!gl) {
+                gl = this.canvas.getContext("experimental-webgl");
+            }
 
             /**
              * The number of bits in the depth buffer associated with this World Window.
@@ -197,6 +200,9 @@ define([
             this.drawContext.frameStatistics.beginFrame();
 
             var gl = this.canvas.getContext("webgl");
+            if (!gl) {
+                gl = this.canvas.getContext("experimental-webgl");
+            }
 
             // uncomment to debug WebGL
             //var gl = WebGLDebugUtils.makeDebugContext(this.canvas.getContext("webgl"),

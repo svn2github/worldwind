@@ -457,7 +457,9 @@ define([
                                 elevationModel.absentResourceList.unmarkResourceAbsent(tile.imagePath);
 
                                 // Send an event to request a redraw.
-                                window.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                                var e = document.createEvent('Event');
+                                e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
+                                window.dispatchEvent(e);
                             } else if (contentType == "text/xml") {
                                 elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                                 Logger.log(Logger.LEVEL_WARNING,

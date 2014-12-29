@@ -187,7 +187,9 @@ define([
             this.lookAtPosition.longitude = Angle.normalizedDegreesLongitude(this.lookAtPosition.longitude);
 
             // Send an event to request a redraw.
-            this.worldWindow.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+            var e = document.createEvent('Event');
+            e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
+            this.worldWindow.canvas.dispatchEvent(e);
         };
 
         /**
