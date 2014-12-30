@@ -142,6 +142,7 @@ define([
             if (this.currentTiles.length > 0) {
                 dc.surfaceTileRenderer.renderTiles(dc, this.currentTiles, this.opacity);
                 dc.frameStatistics.incrementImageTileCount(this.currentTiles.length);
+                this.inCurrentFrame = true;
             }
         };
 

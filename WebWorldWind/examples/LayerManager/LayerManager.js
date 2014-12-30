@@ -10,6 +10,11 @@ define(function () {
         this.layerManagerName = layerManagerName;
         this.wwd = worldWindow;
 
+        var layerManger = this;
+        this.wwd.redrawCallbacks.push(function (wwd) {
+            layerManger.update();
+        });
+
         this.update();
     };
 
@@ -59,7 +64,7 @@ define(function () {
 
             // determine the layer's class and set that on the li
             if (layer.enabled) {
-                li.className = 'layerEnabled'
+                li.className = layer.inCurrentFrame ? 'layerVisible' : 'layerEnabled';
             } else {
                 li.className = 'layerDisabled';
             }

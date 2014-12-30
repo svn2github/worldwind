@@ -70,11 +70,10 @@ define([
             this.networkRetrievalEnabled = true;
 
             /**
-             * A collection of app-specified information for this layer. This information is not interpreted by
-             * World Wind.
-             * @type {{}}
+             * Indicates whether elements of this layer were drawn in the most recently generated frame.
+             * @type {boolean}
              */
-            this.userTags = {};
+            this.inCurrentFrame = false;
         };
 
         /**
@@ -90,6 +89,8 @@ define([
          * @param {DrawContext} dc The current draw context.
          */
         Layer.prototype.render = function (dc) {
+            this.inCurrentFrame = false;
+
             if (!this.enabled)
                 return;
 

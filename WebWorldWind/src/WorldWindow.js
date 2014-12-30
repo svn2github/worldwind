@@ -121,6 +121,13 @@ define([
              */
             this.frameStatistics = new FrameStatistics();
 
+            /**
+             * The list of callbacks to call immediately after performing a redraw. The callbacks have a single
+             * argument: this world window, e.g., <code>redrawCallback(WorldWindow);</code>
+             * @type {function[]}
+             */
+            this.redrawCallbacks = [];
+
             // Internal. Intentionally not documented.
             this.gpuResourceCache = new GpuResourceCache();
 
@@ -150,6 +157,10 @@ define([
             try {
                 this.resetDrawContext();
                 this.drawFrame();
+
+                for (var i = 0, len = this.redrawCallbacks.length; i < len; i++) {
+                    this.redrawCallbacks[i] (this);
+                }
             } catch (e) {
                 Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "redraw",
                     "Exception occurred during rendering: " + e.toString());
