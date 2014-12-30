@@ -3,47 +3,69 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
+ * @exports LayerManager
  * @version $Id$
  */
 define(function () {
+    "use strict";
+
+    /**
+     * Constructs a layer manager for a specified {@link WorldWindow}.
+     * @alias LayerManager
+     * @constructor
+     * @classdesc Provides a layer manager to interactively control layer visibility for a World Window.
+     * @param {String} layerManagerName The name of the layer manager div in the HTML document. This layer manager
+     * will populate that element with an unordered list containing list items for each layer in the specified
+     * World Window's layer list. To keep the layer manager in synch with the World Window, the application must call
+     * this layer manager's [update]{@link LayerManager#update} method when the contents of the World Window's layer
+     * list changes. The application should also call [update]{@link LayerManager#update} after each frame in order
+     * to keep the layer visibility indicator in synch with the rendered frame.
+     * @param {WorldWindow} worldWindow The World Window to associated this layer manager with.
+     */
     var LayerManager = function (layerManagerName, worldWindow) {
         this.layerManagerName = layerManagerName;
         this.wwd = worldWindow;
 
+        // Add a redraw callback in order to update the layer visibility state for each frame.
         var layerManger = this;
         this.wwd.redrawCallbacks.push(function (wwd) {
             layerManger.update();
         });
 
+        // Initially populate the layer manager.
         this.update();
     };
 
+    /**
+     * Synchronizes this layer manager with its associated World Window. This method should be called whenever the
+     * World Window's layer list changes as well as after each rendering frame.
+     */
     LayerManager.prototype.update = function () {
         var layerManager = this,
             layerList = this.wwd.layers,
             lm = document.querySelector('#' + this.layerManagerName),
             ul = lm.querySelector('ul');
 
-        // if !ul then create one
+        // If !ul then create one. This occurs the first time this method is called.
         if (!ul) {
             ul = document.createElement('ul');
             lm.appendChild(ul);
         }
 
-        // get li nodes in ul
-        var q = [],
+        // Get all the li nodes in the ul.
+        var q = [], // queue to contain existing li's for reuse.
             li,
             lis = document.querySelectorAll('li');
         for (var i = 0, liLength = lis.length; i < liLength; i++) {
             q.push(lis[i]);
         }
 
-        // for each layer in the layer list
+        // For each layer in the layer list:
         for (var j = 0, llLength = layerList.layers.length; j < llLength; j++) {
             var layer = layerList.layers[j],
                 isNewNode = false;
 
-            // get or create a li element
+            // Get or create an li element.
             if (q.length > 0) {
                 li = q[0];
                 q.splice(0, 1);
@@ -55,14 +77,14 @@ define(function () {
                 isNewNode = true;
             }
 
-            // set the li's text to the layer's display name
+            // Set the li's text to the layer's display name.
             if (li.firstChild) {
                 li.firstChild.nodeValue = layer.displayName;
             } else {
                 li.appendChild(document.createTextNode(layer.displayName));
             }
 
-            // determine the layer's class and set that on the li
+            // Determine the layer's class and set that on the li.
             if (layer.enabled) {
                 li.className = layer.inCurrentFrame ? 'layerVisible' : 'layerEnabled';
             } else {
@@ -74,6 +96,7 @@ define(function () {
             }
         }
 
+        // Remove unused existing li's.
         if (q.length > 0) {
             for (var k = 0, qLength = q.length; k < qLength; k++) {
                 ul.removeChild(q[k]);
@@ -81,12 +104,16 @@ define(function () {
         }
     };
 
+    /**
+     * Event handler for click events on this layer manager's list items.
+     * @param {Event} event The click event that occurred.
+     */
     LayerManager.prototype.onClick = function (event) {
-        var layerName = event.target.firstChild.nodeValue;;
+        var layerName = event.target.firstChild.nodeValue;
 
+        // Update the layer state for each layer in the current layer list.
         for (var i = 0, len = this.wwd.layers.layers.length; i < len; i++) {
             var layer = this.wwd.layers.layers[i];
-
             if (layer.displayName === layerName) {
                 layer.enabled = !layer.enabled;
                 this.update();
