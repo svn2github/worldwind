@@ -85,7 +85,9 @@ define([
                     surfaceImage.retrievalInProgress = false;
 
                     // Send an event to request a redraw.
-                    dc.canvas.dispatchEvent(new CustomEvent(WorldWind.REDRAW_EVENT_TYPE));
+                    var e = document.createEvent('Event');
+                    e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
+                    dc.canvas.dispatchEvent(e);
                 };
                 this.retrievalInProgress = true;
                 image.crossOrigin = 'anonymous';
