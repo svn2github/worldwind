@@ -57,6 +57,7 @@ define([
             this.canvas.addEventListener("webglcontextrestored", handleContextRestored, false);
 
             var thisWindow = this;
+
             function handleContextLost(event) {
                 event.preventDefault();
                 thisWindow.gpuResourceCache.clear();
@@ -161,7 +162,7 @@ define([
                 this.drawFrame();
 
                 for (var i = 0, len = this.redrawCallbacks.length; i < len; i++) {
-                    this.redrawCallbacks[i] (this);
+                    this.redrawCallbacks[i](this);
                 }
             } catch (e) {
                 Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "redraw",
@@ -184,29 +185,29 @@ define([
 
         /* useful stuff to debug WebGL */
         /*
-        function logGLCall(functionName, args) {
-            console.log("gl." + functionName + "(" +
-            WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
-        };
+         function logGLCall(functionName, args) {
+         console.log("gl." + functionName + "(" +
+         WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+         };
 
-        function validateNoneOfTheArgsAreUndefined(functionName, args) {
-            for (var ii = 0; ii < args.length; ++ii) {
-                if (args[ii] === undefined) {
-                    console.error("undefined passed to gl." + functionName + "(" +
-                    WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
-                }
-            }
-        };
+         function validateNoneOfTheArgsAreUndefined(functionName, args) {
+         for (var ii = 0; ii < args.length; ++ii) {
+         if (args[ii] === undefined) {
+         console.error("undefined passed to gl." + functionName + "(" +
+         WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+         }
+         }
+         };
 
-        WorldWindow.prototype.logAndValidate = function logAndValidate(functionName, args) {
-            logGLCall(functionName, args);
-            validateNoneOfTheArgsAreUndefined (functionName, args);
-        };
+         WorldWindow.prototype.logAndValidate = function logAndValidate(functionName, args) {
+         logGLCall(functionName, args);
+         validateNoneOfTheArgsAreUndefined (functionName, args);
+         };
 
-        WorldWindow.prototype.throwOnGLError = function throwOnGLError(err, funcName, args) {
-            throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
-        };
-        */
+         WorldWindow.prototype.throwOnGLError = function throwOnGLError(err, funcName, args) {
+         throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+         };
+         */
 
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.drawFrame = function () {
@@ -323,7 +324,7 @@ define([
          * Adds a specified layer to the end of this world window.
          * @param {Layer} layer The layer to add. May be null or undefined, in which case this world window is not modified.
          */
-        WorldWindow.prototype.addLayer =  function(layer) {
+        WorldWindow.prototype.addLayer = function (layer) {
             this.layers.push(layer);
         };
 
@@ -333,7 +334,7 @@ define([
          * modified. This world window is also not modified if the specified layer does not exist in this world
          * window's layer list.
          */
-        WorldWindow.prototype.removeLayer = function(layer) {
+        WorldWindow.prototype.removeLayer = function (layer) {
             if (!layer)
                 return;
 
@@ -347,6 +348,19 @@ define([
 
             if (index >= 0) {
                 this.layers.splice(index, 1);
+            }
+        };
+
+        /**
+         * Inserts a specified layer at a specified position in this world window's layer list.
+         * @param {number} index The index at which to insert the layer. May be negative to specify the position
+         * from the end of the array.
+         * @param {Layer} layer The layer to insert. This world window's layer list is not changed if the specified
+         * layer is null or undefined.
+         */
+        WorldWindow.prototype.insertLayer = function (index, layer) {
+            if (layer) {
+                this.layers.splice(index, 0, layer);
             }
         };
 
