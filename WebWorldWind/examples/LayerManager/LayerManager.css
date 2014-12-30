@@ -1,3 +1,4 @@
+/* @version $Id$ */
 ul {
     background-color: #584f4d;
     border: none;
@@ -23,7 +24,8 @@ li {
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;}
+    user-select: none;
+}
 
 .layerEnabled {
     background-color: #d7666b;
