@@ -25,7 +25,6 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './cache/GpuResourceCache',
         './shaders/GpuShader',
         './layer/Layer',
-        './layer/LayerList',
         './util/Level',
         './util/LevelSet',
         './geom/Line',
@@ -85,7 +84,6 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               GpuResourceCache,
               GpuShader,
               Layer,
-              LayerList,
               Level,
               LevelSet,
               Line,
@@ -217,7 +215,6 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['GpuResourceCache'] = GpuResourceCache;
         WorldWind['GpuShader'] = GpuShader;
         WorldWind['Layer'] = Layer;
-        WorldWind['LayerList'] = LayerList;
         WorldWind['Level'] = Level;
         WorldWind['LevelSet'] = LevelSet;
         WorldWind['Line'] = Line;

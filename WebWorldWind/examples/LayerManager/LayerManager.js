@@ -61,8 +61,8 @@ define(function () {
         }
 
         // For each layer in the layer list:
-        for (var j = 0, llLength = layerList.layers.length; j < llLength; j++) {
-            var layer = layerList.layers[j],
+        for (var j = 0, llLength = layerList.length; j < llLength; j++) {
+            var layer = layerList[j],
                 isNewNode = false;
 
             // Get or create an li element.
@@ -112,8 +112,8 @@ define(function () {
         var layerName = event.target.firstChild.nodeValue;
 
         // Update the layer state for each layer in the current layer list.
-        for (var i = 0, len = this.wwd.layers.layers.length; i < len; i++) {
-            var layer = this.wwd.layers.layers[i];
+        for (var i = 0, len = this.wwd.layers.length; i < len; i++) {
+            var layer = this.wwd.layers[i];
             if (layer.displayName === layerName) {
                 layer.enabled = !layer.enabled;
                 this.update();

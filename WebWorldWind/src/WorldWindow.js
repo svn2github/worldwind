@@ -13,7 +13,6 @@ define([
         './util/FrameStatistics',
         './globe/Globe',
         './cache/GpuResourceCache',
-        './layer/LayerList',
         './util/Logger',
         './navigate/LookAtNavigator',
         './navigate/NavigatorState',
@@ -28,7 +27,6 @@ define([
               FrameStatistics,
               Globe,
               GpuResourceCache,
-              LayerList,
               Logger,
               LookAtNavigator,
               NavigatorState,
@@ -91,10 +89,14 @@ define([
             this.globe = new Globe(new EarthElevationModel());
 
             /**
-             * The layers to display.
-             * @type {LayerList}
+             * The layers to display in this world window.
+             * This property is read-only. Use [addLayer]{@link WorldWindow#addLayer} or
+             * [insertLayer]{@link WorldWindow#insertLayer} to add layers to this world window.
+             * Use [removeLayer]{@link WorldWindow#removeLayer} to remove layers from this world window.
+             * @type {Layer[]}
+             * @readonly
              */
-            this.layers = new LayerList();
+            this.layers = [];
 
             /**
              * The navigator used to manipulate the globe.
@@ -297,7 +299,7 @@ define([
 
             var beginTime = new Date().getTime(),
                 dc = this.drawContext,
-                layers = this.drawContext.layers.layers,
+                layers = this.drawContext.layers,
                 layer;
 
             for (var i = 0, len = layers.length; i < len; i++) {
@@ -315,6 +317,37 @@ define([
 
             var now = new Date().getTime();
             dc.frameStatistics.layerRenderingTime = now - beginTime;
+        };
+
+        /**
+         * Adds a specified layer to the end of this world window.
+         * @param {Layer} layer The layer to add. May be null or undefined, in which case this world window is not modified.
+         */
+        WorldWindow.prototype.addLayer =  function(layer) {
+            this.layers.push(layer);
+        };
+
+        /**
+         * Removes the first instance of a specified layer from this world window.
+         * @param {Layer} layer The layer to remove. May be null or undefined, in which case this world window is not
+         * modified. This world window is also not modified if the specified layer does not exist in this world
+         * window's layer list.
+         */
+        WorldWindow.prototype.removeLayer = function(layer) {
+            if (!layer)
+                return;
+
+            var index = -1;
+            for (var i = 0, len = this.layers.length; i < len; i++) {
+                if (this.layers[i] == layer) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index >= 0) {
+                this.layers.splice(index, 1);
+            }
         };
 
         return WorldWindow;
