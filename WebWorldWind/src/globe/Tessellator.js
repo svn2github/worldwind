@@ -523,7 +523,8 @@ define([
             var points = tile.points,
                 numPoints = -1;
             if (!points) {
-                numPoints = numLatVertices * numLonVertices;
+                numPoints = numLatVertices * numLonVertices +
+                    2 * (tile.tileWidth + tile.tileHeight); // Account for midpoints between tiles.
                 points = new Float32Array(numPoints * vertexStride);
                 tile.numPoints = numPoints;
                 tile.points = points;

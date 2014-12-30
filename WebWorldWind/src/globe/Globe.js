@@ -165,7 +165,7 @@ define([
                     "Elevations array is null, undefined or insufficient length."));
             }
 
-            if (!resultPoints || resultPoints.length < (tileWidth + 1) * (tileHeight + 1) * stride) {
+            if (!resultPoints || resultPoints.length < (tileWidth + 1) * (tileHeight + 1) + 2 * (tileWidth + tileHeight) * stride) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Globe", "computePointsFromPositions",
                     "Result points array is null, undefined or insufficient length."));
             }
@@ -223,7 +223,6 @@ define([
 
             // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian point
             // corresponding to each latitude and longitude.
-            lat = minLat;
             for (latIndex = 0; latIndex <= tileHeight; latIndex += 1) {
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[latIndex] * sinLat[latIndex]);
@@ -239,6 +238,98 @@ define([
                     resultPoints[vertexOffset + 2] = (rpm + elev) * cosLat[latIndex] * cosLon[lonIndex] - offsetZ;
                     vertexOffset += stride;
                 }
+            }
+
+            // Compute midpoints between latitudes already sampled along left edge at minimum longitude.
+            // This adds tileHeight more points to the grid.
+            for (latIndex = 1; latIndex <= 2 * tileHeight; latIndex += 2) {
+                lat = minLat + (maxLat - minLat) * latIndex / (2 * tileHeight);
+
+                var sinLatMid = Math.sin(lat);
+                var cosLatMid = Math.cos(lat);
+
+                // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLatMid * sinLatMid);
+
+                // Compute data for lon[0].
+                elev = elevations[elevOffset];
+                elevOffset += 1;
+
+                resultElevations[vertexOffset / stride] = elev;
+
+                resultPoints[vertexOffset] = (rpm + elev) * cosLatMid * sinLon[0] - offsetX;
+                resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLatMid - offsetY;
+                resultPoints[vertexOffset + 2] = (rpm + elev) * cosLatMid * cosLon[0] - offsetZ;
+                vertexOffset += stride;
+            }
+
+            // Compute midpoints between latitudes already sampled along right edge at maximum longitude.
+            // This adds tileHeight more points to the grid.
+            for (latIndex = 1; latIndex <= 2 * tileHeight; latIndex += 2) {
+                lat = minLat + (maxLat - minLat) * latIndex / (2 * tileHeight);
+
+                var sinLatMid = Math.sin(lat);
+                var cosLatMid = Math.cos(lat);
+
+                // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLatMid * sinLatMid);
+
+
+                // Compute data for lon[numLonPoints - 1].
+                elev = elevations[elevOffset];
+                elevOffset += 1;
+
+                resultElevations[vertexOffset / stride] = elev;
+
+                resultPoints[vertexOffset] = (rpm + elev) * cosLatMid * sinLon[numLonPoints - 1] - offsetX;
+                resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLatMid - offsetY;
+                resultPoints[vertexOffset + 2] = (rpm + elev) * cosLatMid * cosLon[numLonPoints - 1] - offsetZ;
+                vertexOffset += stride;
+            }
+
+            // Compute midpoints between longitudes already sampled along bottom edge at minimum atitude.
+            // This adds tileWidth more points to the grid.
+            for (lonIndex = 1; lonIndex <= 2 * tileWidth; lonIndex += 2) {
+                lon = minLon + (maxLon - minLon) * lonIndex / (2 * tileWidth);
+
+                var sinLonMid = Math.sin(lon);
+                var cosLonMid = Math.cos(lon);
+
+                // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[0] * sinLat[0]);
+
+                elev = elevations[elevOffset];
+                elevOffset += 1;
+
+                resultElevations[vertexOffset / stride] = elev;
+
+                resultPoints[vertexOffset] = (rpm + elev) * cosLat[0] * sinLonMid - offsetX;
+                resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLat[0] - offsetY;
+                resultPoints[vertexOffset + 2] = (rpm + elev) * cosLatMid[0] * cosLonMid - offsetZ;
+                vertexOffset += stride;
+            }
+
+            // Compute midpoints between longitudes already sampled along top edge at maximum latitude.
+            // This adds tileWidth more points to the grid.
+            for (lonIndex = 1; lonIndex <= 2 * tileWidth; lonIndex += 2) {
+                lon = minLon + (maxLon - minLon) * lonIndex / (2 * tileWidth);
+
+                var sinLonMid = Math.sin(lon);
+                var cosLonMid = Math.cos(lon);
+
+
+                // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
+                rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[numLatPoints - 1] * sinLat[numLatPoints - 1]);
+
+                elev = elevations[elevOffset];
+                elevOffset += 1;
+
+                resultElevations[vertexOffset / stride] = elev;
+
+                resultPoints[vertexOffset] = (rpm + elev) * cosLat[numLatPoints - 1] * sinLonMid - offsetX;
+                resultPoints[vertexOffset + 1] = (rpm * (1.0 - this.eccentricitySquared) + elev) * sinLat[numLatPoints - 1] - offsetY;
+                resultPoints[vertexOffset + 2] = (rpm + elev) * cosLatMid[numLatPoints - 1] * cosLonMid - offsetZ;
+                vertexOffset += stride;
             }
 
             return resultPoints;
