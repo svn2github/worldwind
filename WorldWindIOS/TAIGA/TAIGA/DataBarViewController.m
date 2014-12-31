@@ -133,8 +133,8 @@
 
     [toolbar setItems:[NSArray arrayWithObjects:
 //            fixedSpace,
-            flexibleSpace,
-            gpsPositionItem,
+//            flexibleSpace,
+//            gpsPositionItem,
             flexibleSpace,
             gpsAccuracyItem,
             flexibleSpace,
@@ -187,7 +187,7 @@
     if (heading < 0)
         heading += 360;
 
-    NSString* title = [[NSString alloc] initWithFormat:@"Heading\n%@\u00a0", [formatter formatAngle:heading]];
+    NSString* title = [[NSString alloc] initWithFormat:@"Heading\n%@\u00a0", [formatter formatAngle2:heading]];
     [headingButton setTitle:title forState:UIControlStateNormal];
 }
 

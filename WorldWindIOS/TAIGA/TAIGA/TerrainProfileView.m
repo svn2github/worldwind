@@ -32,7 +32,7 @@
     UILabel* rightLabelView;
     UILabel* noCourseLabel;
     UILabel* aircraftAltitudeLabelView;
-    float* gradientColors;
+    CGFloat* gradientColors;
 }
 
 - (TerrainProfileView*) initWithFrame:(CGRect)frame worldWindView:(WorldWindView*)worldWindView
@@ -46,7 +46,7 @@
     ys = nil;
 
     _opacity = 0.5;
-    gradientColors = malloc((size_t) 24 * sizeof(float));
+    gradientColors = malloc((size_t) 24 * sizeof(CGFloat));
     gradientColors[0] = 0.0;
     gradientColors[1] = 1.0;
     gradientColors[2] = 0.0;

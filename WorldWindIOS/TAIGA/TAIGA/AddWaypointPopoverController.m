@@ -33,7 +33,7 @@ static NSString* AddWaypointActionAdd = @"Add to Route";
     addWaypointController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     [addWaypointController setPreferredContentSize:size];
     [[addWaypointController navigationItem] setTitle:@"Waypoint"];
-    [[addWaypointController navigationItem] setRightBarButtonItem:rightButtonItem];
+//    [[addWaypointController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[addWaypointController tableView] setDataSource:self];
     [[addWaypointController tableView] setDelegate:self];
     [[addWaypointController tableView] setBounces:NO];

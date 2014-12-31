@@ -15,6 +15,7 @@
     NSNumberFormatter* longitudeFormatter;
     NSNumberFormatter* altitudeFormatter;
     NSNumberFormatter* angleFormatter;
+    NSNumberFormatter* angleFormatter2;
     NSNumberFormatter* speedFormatter;
     NSNumberFormatter* distanceFormatterFeet;
     NSNumberFormatter* distanceFormatterMiles;
@@ -33,6 +34,8 @@
 - (NSString*) formatFeetAltitude:(double)meters;
 
 - (NSString*) formatAngle:(double)degrees;
+
+- (NSString*) formatAngle2:(double)degrees;
 
 - (NSString*) formatKnotsSpeed:(double)metersPerSecond;
 

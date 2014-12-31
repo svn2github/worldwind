@@ -45,13 +45,13 @@
 #import "AircraftTrackLayer.h"
 #import "TerrainAltitudeLayer.h"
 #import "LocationTrackingViewController.h"
-#import "WWDAFIFLayer.h"
+//#import "WWDAFIFLayer.h"
 #import "WWBingLayer.h"
 #import "AddWaypointPopoverController.h"
 #import "EditWaypointPopoverController.h"
 #import "UIPopoverController+TAIGAAdditions.h"
 #import "FAASectionalsLayer.h"
-#import "DAFIFLayer.h"
+//#import "DAFIFLayer.h"
 #import "SUALayer.h"
 #import "SUADataViewController.h"
 #import "DataBarViewController.h"
@@ -106,7 +106,7 @@
     PIREPLayer* pirepLayer;
     WeatherCamLayer* weatherCamLayer;
     CompassLayer* compassLayer;
-    WWDAFIFLayer* dafifLayer;
+//    WWDAFIFLayer* dafifLayer;
     SUALayer* suaLayer;
 
     UITapGestureRecognizer* tapGestureRecognizer;
@@ -352,11 +352,11 @@
             [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@",
                                              [faaChartsLayer displayName]] defaultValue:NO]];
     [[[_wwv sceneController] layers] addLayer:faaChartsLayer];
-
-    dafifLayer = [[DAFIFLayer alloc] init];
-    [dafifLayer setEnabled:[Settings                                                                               getBoolForName:
-            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [dafifLayer displayName]] defaultValue:YES]];
-    [[[_wwv sceneController] layers] addLayer:dafifLayer];
+//
+//    dafifLayer = [[DAFIFLayer alloc] init];
+//    [dafifLayer setEnabled:[Settings                                                                               getBoolForName:
+//            [[NSString alloc] initWithFormat:@"gov.nasa.worldwind.taiga.layer.enabled.%@", [dafifLayer displayName]] defaultValue:YES]];
+//    [[[_wwv sceneController] layers] addLayer:dafifLayer];
 
     suaLayer = [[SUALayer alloc] init];
     [suaLayer setEnabled:[Settings                                                                               getBoolForName:

@@ -46,8 +46,8 @@
     speedFormatter = [[NSNumberFormatter alloc] init];
     [speedFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [speedFormatter setMaximumFractionDigits:0];
-    [speedFormatter setPositiveSuffix:@" KTS"];
-    [speedFormatter setNegativeSuffix:@" KTS"];
+    [speedFormatter setPositiveSuffix:@" kts"];
+    [speedFormatter setNegativeSuffix:@" kts"];
 
     distanceFormatterFeet = [[NSNumberFormatter alloc] init];
     [distanceFormatterFeet setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -67,6 +67,11 @@
 - (NSString*) formatAngle:(double)angle
 {
     return [angleFormatter stringFromNumber:[NSNumber numberWithDouble:angle]];
+}
+
+- (NSString*) formatAngle2:(double)angle
+{
+    return [NSString stringWithFormat:@"%03d\u00B0", (int) round(angle)];
 }
 
 - (NSString*) formatDegreesLatitude:(double)latitude

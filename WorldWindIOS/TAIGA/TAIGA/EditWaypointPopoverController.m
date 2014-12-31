@@ -37,7 +37,7 @@ static NSString* EditWaypointActionRemove = @"Remove Waypoint";
     tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     [tableViewController setPreferredContentSize:CGSizeMake(240, 44 * [tableCells count])];
     [[tableViewController navigationItem] setTitle:@"Waypoint"];
-    [[tableViewController navigationItem] setRightBarButtonItem:rightButtonItem];
+//    [[tableViewController navigationItem] setRightBarButtonItem:rightButtonItem];
     [[tableViewController tableView] setDataSource:self];
     [[tableViewController tableView] setDelegate:self];
     [[tableViewController tableView] setBounces:NO];
