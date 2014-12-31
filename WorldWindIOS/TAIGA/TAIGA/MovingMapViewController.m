@@ -887,7 +887,7 @@
             {
                 if ([[[topObject parentLayer] displayName] isEqualToString:@"METAR Weather"])
                     [self showMETARData:pm];
-                else if ([[[topObject parentLayer] displayName] isEqualToString:@"PIREPS"])
+                else if ([[[topObject parentLayer] displayName] isEqualToString:@"PIREPs"])
                     [self showPIREPData:pm];
                 else if ([[[topObject parentLayer] displayName] isEqualToString:@"Weather Cams"])
                     [self showWeatherCam:pm];
