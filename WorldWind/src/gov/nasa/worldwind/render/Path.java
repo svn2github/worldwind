@@ -358,6 +358,15 @@ public class Path extends AbstractShape
         }
     }
 
+    @Override
+    protected SurfaceShape createSurfaceShape()
+    {
+        SurfacePolyline polyline = new SurfacePolyline();
+        polyline.setLocations(this.getPositions());
+
+        return polyline;
+    }
+
     /**
      * PickablePositions associates a range of pick color codes with a Path. The color codes represent the range of pick
      * colors that the Path's position points are drawn in. The color codes represent ARGB colors packed into a 32-bit
