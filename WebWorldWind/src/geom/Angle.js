@@ -5,7 +5,7 @@
 /**
  * @version $Id$
  */
-define(['../util/Logger'], function (Logger) {
+define([], function () {
     "use strict";
     /**
      * Provides constants and functions for working with angles.
@@ -57,7 +57,7 @@ define(['../util/Logger'], function (Logger) {
         },
 
         /**
-         * Normalizes a specified value to be within the range of [-PI/2, Pi/2] radians.
+         * Normalizes a specified value to be within the range of [-Pi/2, Pi/2] radians.
          * @param {Number} radians The value to normalize, in radians.
          * @returns {Number} The specified value normalized to the normal range of latitude.
          */
@@ -68,7 +68,7 @@ define(['../util/Logger'], function (Logger) {
         },
 
         /**
-         * Normalizes a specified value to be within the range of [-PI, Pi] radians.
+         * Normalizes a specified value to be within the range of [-Pi, Pi] radians.
          * @param {Number} radians The value to normalize, in radians.
          * @returns {Number} The specified value normalized to the normal range of longitude.
          */
@@ -180,7 +180,7 @@ define(['../util/Logger'], function (Logger) {
 
             mf = s == 0 ? m : m + s / 60;
 
-            return (sign == -1 ? "-" : "") + d + "\u00B0" + " " + m + "\u2019";
+            return (sign == -1 ? "-" : "") + d + "\u00B0" + " " + mf + "\u2019";
         }
     };
 
