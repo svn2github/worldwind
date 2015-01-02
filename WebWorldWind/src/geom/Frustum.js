@@ -97,16 +97,13 @@ define([
         };
 
         /**
-         * Extracts a frustum from a projection matrix view frustum.
+         * Extracts a frustum from a projection matrix.
          * <p>
-         * This method assumes that this matrix represents a projection matrix. If it does not represent a projection matrix
+         * This method assumes that the specified matrix represents a projection matrix. If it does not represent a projection matrix
          * the results are undefined.
          * <p>
-         * A projection matrix's view frustum is a volume of space that contains everything that is visible in a scene displayed
-         * using the projection matrix. See the Wikipedia [Viewing Frustum page](http://en.wikipedia.org/wiki/Viewing_frustum)
-         * for an illustration of a viewing frustum. In eye coordinates, a viewing frustum originates at the origin and extends
-         * outward along the negative z-axis. The near distance and the far distance used to initialize a projection matrix
-         * identify the minimum and maximum distance, respectively, at which an object in the scene is visible.
+         * A projection matrix's view frustum is a Cartesian volume that contains everything visible in a scene displayed
+         * using that projection matrix.
          *
          * @param {Matrix} matrix The projection matrix to extract the frustum from.
          * @return {Frustum} A new frustum containing the projection matrix's view frustum, in eye coordinates.
@@ -115,7 +112,7 @@ define([
         Frustum.fromProjectionMatrix = function (matrix) {
             if (!matrix) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Frustum", "extractFrustum", "missingMatrix"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Frustum", "fromProjectionMatrix", "missingMatrix"));
             }
 
             var x, y, z, w, d, left, right, top, bottom, near, far;
