@@ -81,17 +81,13 @@ define([
             this.t = new Vec3(0, 0, 1);
 
             /**
-             * The box's radius.
+             * The box's radius. (The half-length of its diagonal.)
              * @type {number}
              * @default sqrt(3)
              */
             this.radius = Math.sqrt(3);
 
-            /**
-             * Working temporary vectors.
-             * For internal use only.
-             * @type {Vec3}
-             */
+            // Internal. Intentionally not documented.
             this.tmp1 = new Vec3(0, 0, 0);
             this.tmp2 = new Vec3(0, 0, 0);
             this.tmp3 = new Vec3(0, 0, 0);
@@ -106,7 +102,7 @@ define([
         BoundingBox.prototype.setToPoints = function (points) {
             if (!points || points.length < 1) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "setToPoint", "missingArray"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "setToPoints", "missingArray"));
             }
 
             // TODO
@@ -119,9 +115,9 @@ define([
         /**
          * Sets this bounding box such that it contains a specified sector on a specified globe with min and max elevation.
          * <p>
-         * - To create a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
+         * To create a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
          * elevations.
-         * - To create a bounding box that contains the terrain surface in this sector, specify the actual minimum and maximum
+         * To create a bounding box that contains the terrain surface in this sector, specify the actual minimum and maximum
          * elevation values associated with the sector, multiplied by the model's vertical exaggeration.
          * @param {Sector} sector The sector for which to create the bounding box.
          * @param {Globe} globe The globe associated with the sector.
@@ -252,7 +248,7 @@ define([
 
             // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume
             // that the axes are defined in this way.
-            
+
             if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {
                 this.swapAxes(this.r, rExtremes, this.s, sExtremes);
             }
@@ -262,7 +258,7 @@ define([
             if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {
                 this.swapAxes(this.r, rExtremes, this.s, sExtremes);
             }
-            
+
             // Compute the box properties from its unit axes and the extremes along each axis.
             var rLen = rExtremes[1] - rExtremes[0],
                 sLen = sExtremes[1] - sExtremes[0],
@@ -270,7 +266,7 @@ define([
                 rSum = rExtremes[1] + rExtremes[0],
                 sSum = sExtremes[1] + sExtremes[0],
                 tSum = tExtremes[1] + tExtremes[0],
-            
+
                 cx = 0.5 * (this.r[0] * rSum + this.s[0] * sSum + this.t[0] * tSum),
                 cy = 0.5 * (this.r[1] * rSum + this.s[1] * sSum + this.t[1] * tSum),
                 cz = 0.5 * (this.r[2] * rSum + this.s[2] * sSum + this.t[2] * tSum),
@@ -292,7 +288,7 @@ define([
         };
 
         /**
-         * Translates this bounding box be a specified translation vector.
+         * Translates this bounding box by a specified translation vector.
          * @param {Vec3} translation The translation vector.
          * @returns {BoundingBox} This bounding box translated by the specified translation vector.
          * @throws {ArgumentError} If the specified translation vector is null or undefined.
@@ -300,12 +296,12 @@ define([
         BoundingBox.prototype.translate = function (translation) {
             if (!translation) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "translation", "missingVector"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "translate", "missingVector"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "translate", "notYetImplemented"));
+            this.bottomCenter.add(translation);
+            this.topCenter.add(translation);
+            this.center.add(translation);
 
             return this;
         };
@@ -324,11 +320,9 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "distanceTo", "missingPoint"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "distanceTo", "notYetImplemented"));
+            var d = this.center.distanceTo(point) - this.radius;
 
-            return 0;
+            return d >= 0 ? d : -d;
         };
 
         /**
@@ -343,11 +337,9 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "effectiveRadius", "missingPlane"));
             }
 
-            // TODO
-            throw new NotYetImplementedError(
-                Logger.logMessage(Logger.LEVEL_SEVERE, "BoundingBox", "effectiveRadius", "notYetImplemented"));
+            var n = plane.normal;
 
-            return 0;
+            return 0.5 * (WWMath.fabs(this.r.dot(n)) + WWMath.fabs(this.s.dot(n)) + WWMath.fabs(this.t.dot(n)));
         };
 
         /**
@@ -388,15 +380,16 @@ define([
             return true;
         };
 
-        BoundingBox.prototype.intersectionPoint = function(plane) {
+        // Internal. Intentionally not documented.
+        BoundingBox.prototype.intersectionPoint = function (plane) {
             var n = plane.normal,
-                effectiveRadius = 0.5 * (Math.abs(this.s.dot(n)) + Math.abs(this.t.dot(n))),
-                intersection = this.intersectsAt(plane, effectiveRadius, this.tmp1, this.tmp2);
+                effectiveRadius = 0.5 * (Math.abs(this.s.dot(n)) + Math.abs(this.t.dot(n)));
 
-            return intersection;
+            return this.intersectsAt(plane, effectiveRadius, this.tmp1, this.tmp2);
         };
 
-        BoundingBox.prototype.intersectsAt = function(plane, effRadius, endPoint1, endPoint2) {
+        // Internal. Intentionally not documented.
+        BoundingBox.prototype.intersectsAt = function (plane, effRadius, endPoint1, endPoint2) {
             // Test the distance from the first end-point.
             var dq1 = plane.dot(endPoint1);
             var bq1 = dq1 <= -effRadius;
@@ -432,16 +425,10 @@ define([
             }
 
             return t;
-
         };
 
-        BoundingBox.prototype.adjustExtremes = function(r,
-                                                        rExtremes, 
-                                                        s, 
-                                                        sExtremes, 
-                                                        t, 
-                                                        tExtremes, 
-                                                        p) {
+        // Internal. Intentionally not documented.
+        BoundingBox.prototype.adjustExtremes = function (r, rExtremes, s, sExtremes, t, tExtremes, p) {
             var pdr = p.dot(r);
             if (rExtremes[0] > pdr) {
                 rExtremes[0] = pdr;
@@ -467,16 +454,14 @@ define([
             }
         };
 
-        BoundingBox.prototype.swapAxes = function(a, 
-                                                  aExtremes, 
-                                                  b, 
-                                                  bExtremes) {
+        // Internal. Intentionally not documented.
+        BoundingBox.prototype.swapAxes = function (a, aExtremes, b, bExtremes) {
             a.swap(b);
 
             var tmp = aExtremes[0];
             aExtremes[0] = bExtremes[0];
             bExtremes[0] = tmp;
-            
+
             tmp = aExtremes[1];
             aExtremes[1] = bExtremes[1];
             bExtremes[1] = tmp;
