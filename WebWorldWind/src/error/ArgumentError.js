@@ -34,5 +34,4 @@ define(['../error/AbstractError'],
         ArgumentError.prototype = Object.create(AbstractError.prototype);
 
         return ArgumentError;
-
     });

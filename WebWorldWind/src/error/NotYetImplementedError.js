@@ -11,7 +11,7 @@ define(['../error/AbstractError'],
         "use strict";
 
         /**
-         * Constructs an not-yet-implemented error with a specified message.
+         * Constructs a not-yet-implemented error with a specified message.
          * @alias NotYetImplementedError
          * @constructor
          * @classdesc Represents an error associated with an operation that is not yet implemented.
@@ -34,5 +34,4 @@ define(['../error/AbstractError'],
         NotYetImplementedError.prototype = Object.create(AbstractError.prototype);
 
         return NotYetImplementedError;
-
     });

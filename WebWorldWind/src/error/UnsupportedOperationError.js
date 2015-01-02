@@ -36,5 +36,4 @@ define(['../error/AbstractError'],
         UnsupportedOperationError.prototype = Object.create(AbstractError.prototype);
 
         return UnsupportedOperationError;
-
     });

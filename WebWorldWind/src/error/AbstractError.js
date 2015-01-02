@@ -10,7 +10,7 @@ define(function () {
     "use strict";
 
     /**
-     * Constructs an argument error with a specified message. This is an abstract class and not meant to be
+     * Constructs an error with a specified message. This is an abstract class and not meant to be
      * instantiated directly.
      * @alias AbstractError
      * @constructor
