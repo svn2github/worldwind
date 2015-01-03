@@ -22,7 +22,7 @@ define([
          * Constructs a Sector from specified minimum and maximum latitudes and longitudes in degrees.
          * @alias Sector
          * @constructor
-         * @classdesc Represents a rectangular region in geographic coordinates.
+         * @classdesc Represents a rectangular region in geographic coordinates in degrees.
          * @param {Number} minLatitude the sector's minimum latitude in degrees.
          * @param {Number} maxLatitude the sector's maximum latitude in degrees.
          * @param {Number} minLongitude the sector's minimum longitude in degrees.
@@ -71,10 +71,9 @@ define([
          * @returns {Sector} This sector, initialized to the values of the specified sector.
          * @throws {ArgumentError} If the specified sector is null or undefined.
          */
-        Sector.prototype.setToSector = function (sector) {
+        Sector.prototype.copy = function (sector) {
             if (!sector) {
-                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "setToSector",
-                    "missingSector"));
+                throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Sector", "copy", "missingSector"));
             }
 
             this.minLatitude = sector.minLatitude;

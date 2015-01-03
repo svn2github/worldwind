@@ -63,8 +63,7 @@ define([
         /**
          * Transforms this plane by a specified matrix.
          * @param {Matrix} matrix The matrix to apply to this plane.
-         * @returns {Plane} This plane with its values set to their original values multiplied the the specified
-         * matrix.
+         * @returns {Plane} This plane transformed by the specified matrix.
          * @throws {ArgumentError} If the specified matrix is null or undefined.
          */
         Plane.prototype.transformByMatrix = function (matrix){
@@ -93,6 +92,9 @@ define([
         Plane.prototype.normalize = function () {
             var magnitude = this.normal.magnitude();
 
+            if (magnitude === 0)
+                return this;
+
             this.normal.divide(magnitude);
             this.distance /= magnitude;
 
@@ -100,26 +102,11 @@ define([
         };
 
         /**
-         * Computes the dot product of this plane with a specified vector.
-         * @param {Vec3} vector The vector to dot with this plane.
-         * @returns {number} The dot product of this plane with the specified vector.
-         * @throws {ArgumentError} If the specified vector is null or undefined.
-         */
-        Plane.prototype.dot = function(vector) {
-            if (!vector) {
-                throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Plane", "dot", "missingVector"));
-            }
-
-            return this.normal.dot(vector) + this.distance;
-        };
-
-        /**
-         * Determines whether an line defined by two endpoints straddles a plane.
+         * Determines whether a specified line segment intersects this plane.
          *
-         * @param {Vec3} endPoint1 The first end point of the line of interest.
-         * @param {Vec3} endPoint2 The second end point of the line of interest.
-         * @returns {boolean} The endpoints straddle the plane.
+         * @param {Vec3} endPoint1 The first end point of the line segment.
+         * @param {Vec3} endPoint2 The second end point of the line segment.
+         * @returns {boolean} <code>true</code> If the line segment intersects this plane, otherwise <code>false</code>.
          */
         Plane.prototype.isIntersecting = function(endPoint1, endPoint2) {
             var distance1 = this.dot(endPoint1),
@@ -129,12 +116,12 @@ define([
         };
 
         /**
-         * Computes the intersection of a line defined by two endpoints and the plane.
+         * Computes the intersection point of this plane with a specified line segment.
          *
-         * @param {Vec3} endPoint1 The first end point of the line of interest.
-         * @param {Vec3} endPoint2 The second end point of the line of interest.
-         * @param {Vec3} result The intersection of the line with the plane.
-         * @returns {boolean} The endpoints straddle the plane.
+         * @param {Vec3} endPoint1 The first end point of the line segment.
+         * @param {Vec3} endPoint2 The second end point of the line segment.
+         * @param {Vec3} result A variable in which to return the intersection point of the line segment with this plane.
+         * @returns {boolean} <code>true</code> If the line segment intersects this plane, otherwise <code>false</code>.
          */
         Plane.prototype.intersectsAt = function (endPoint1, endPoint2, result) {
             // Compute the distance from the end-points.
@@ -142,7 +129,7 @@ define([
                 distance2 = this.dot(endPoint2);
 
             // If both points points lie on the plane, ...
-            if (distance1 == 0 && distance2 == 0) {
+            if (distance1 === 0 && distance2 === 0) {
                 // Choose an arbitrary endpoint as the intersection.
                 result[0] = endPoint1[0];
                 result[1] = endPoint1[1];
@@ -150,7 +137,7 @@ define([
 
                 return true;
             }
-            else if (disance1 == distance2) {
+            else if (distance1 === distance2) {
                 // The intersection is undefined.
                 return false;
             }

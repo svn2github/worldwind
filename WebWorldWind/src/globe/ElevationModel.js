@@ -322,7 +322,7 @@ define([
 
             // Intersect the requested sector with the elevation model's coverage area. This avoids attempting to assemble tiles
             // that are outside the coverage area.
-            this.currentSector.setToSector(sector);
+            this.currentSector.copy(sector);
             this.currentSector.intersection(this.coverageSector);
 
             if (this.currentSector.isEmpty())

@@ -24,7 +24,8 @@ define([
          * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
          * @alias Position
          * @constructor
-         * @classdesc Represents a latitude, longitude, altitude triple.
+         * @classdesc Represents a latitude, longitude, altitude triple, with latitude and longitude in degrees and
+         * altitude in meters.
          * @param {Number} latitude The latitude in degrees.
          * @param {Number} longitude The longitude in degrees.
          * @param {Number} altitude The altitude in meters.
@@ -74,10 +75,10 @@ define([
          * @returns {Position} This position, set to the values of the specified position.
          * @throws {ArgumentError} If the specified position is null or undefined.
          */
-        Position.setToPosition = function (position) {
+        Position.copy = function (position) {
             if (!position instanceof Position) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Position", "fromPosition", "missingPosition"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Position", "copy", "missingPosition"));
             }
 
             this.latitude = position.latitude;
@@ -88,16 +89,16 @@ define([
         };
 
         /**
-         * Indicates whether this position is equivalent to a specified position.
+         * Indicates whether this position is equal to a specified position.
          * @param {Position} position The position to compare with this one.
-         * @returns {boolean} <code>true</code> if this position is equivalent to the specified one, otherwise
+         * @returns {boolean} <code>true</code> if this position is equal to the specified one, otherwise
          * <code>false</code>.
          */
         Position.prototype.equals = function (position) {
             return position
-                && position.latitude == this.latitude
-                && position.longitude == this.longitude
-                && position.altitude == this.altitude;
+                && position.latitude === this.latitude
+                && position.longitude === this.longitude
+                && position.altitude === this.altitude;
         };
 
         /**

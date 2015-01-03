@@ -13,7 +13,7 @@ define([
         "use strict";
 
         /**
-         * Constructs a rectangle.
+         * Constructs a rectangle with a specified origin and size.
          * @alias Rectangle
          * @constructor
          * @classdesc Represents a rectangle in 2D Cartesian coordinates.
@@ -24,17 +24,33 @@ define([
          */
         var Rectangle = function(x, y, width, height) {
 
+            /**
+             * The X coordinate of this rectangle's origin.
+             * @type {Number}
+             */
             this.x = x;
 
+            /**
+             * The Y coordinate of this rectangle's origin.
+             * @type {Number}
+             */
             this.y = y;
 
+            /**
+             * This rectangle's width.
+             * @type {Number}
+             */
             this.width = width;
 
+            /**
+             * This rectangle's height.
+             * @type {Number}
+             */
             this.height = height;
         };
 
         /**
-         * Returns the minimum X value of the rectangle.
+         * Returns the minimum X value of this rectangle.
          * @returns {Number} The rectangle's minimum X value.
          */
         Rectangle.prototype.getMinX = function() {
@@ -42,7 +58,7 @@ define([
         };
 
         /**
-         * Returns the minimum Y value of the rectangle.
+         * Returns the minimum Y value of this rectangle.
          * @returns {Number} The rectangle's minimum Y value.
          */
         Rectangle.prototype.getMinY = function() {
@@ -50,7 +66,7 @@ define([
         };
 
         /**
-         * Returns the maximum X value of the rectangle.
+         * Returns the maximum X value of this rectangle.
          * @returns {Number} The rectangle's maximum X value.
          */
         Rectangle.prototype.getMaxX = function() {
@@ -58,7 +74,7 @@ define([
         };
 
         /**
-         * Returns the maximum Y value of the rectangle.
+         * Returns the maximum Y value of this rectangle.
          * @returns {Number} The rectangle's maximum Y value.
          */
         Rectangle.prototype.getMaxY = function() {

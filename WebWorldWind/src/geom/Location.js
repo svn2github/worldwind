@@ -22,7 +22,7 @@ define([
          * Constructs a location from a specified latitude and longitude in degrees.
          * @alias Location
          * @constructor
-         * @classdesc Represents a latitude, longitude pair.
+         * @classdesc Represents a latitude, longitude pair in degrees.
          * @param {Number} latitude The latitude in degrees.
          * @param {Number} longitude The longitude in degrees.
          */
@@ -62,10 +62,10 @@ define([
          * @returns {Location} This location, set to the values of the specified location.
          * @throws {ArgumentError} If the specified location is null or undefined.
          */
-        Location.prototype.setToLocation = function (location) {
+        Location.prototype.copy = function (location) {
             if (!location) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "fromLocation", "missingLocation"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "copy", "missingLocation"));
             }
 
             this.latitude = location.latitude;
@@ -75,21 +75,23 @@ define([
         };
 
         /**
-         * Indicates whether this location is equivalent to a specified location.
+         * Indicates whether this location is equal to a specified location.
          * @param {Location} location The location to compare this one to.
-         * @returns {boolean} <code>true</code> if this location is equivalent to the specified one, otherwise
+         * @returns {boolean} <code>true</code> if this location is equal to the specified location, otherwise
          * <code>false</code>.
          */
         Location.prototype.equals = function (location) {
             return location
-                && location.latitude == this.latitude && location.longitude == this.longitude;
+                && location.latitude === this.latitude && location.longitude === this.longitude;
         };
 
         /**
          * Compute a location along a path at a specified distance between two specified locations.
-         * @param {String} pathType The type of path to assume. Recognized values are WorldWind.GREAT_CIRCLE,
-         * WorldWind.RHUMB_LINE and WorldWind.LINEAR. If the path type is not recognized then WorldWind.LINEAR is
-         * used.
+         * @param {String} pathType The type of path to assume. Recognized values are
+         * [WorldWind.GREAT_CIRCLE]{@link WorldWind#GREAT_CIRCLE},
+         * [WorldWind.RHUMB_LINE]{@link WorldWind#RHUMB_LINE} and
+         * [WorldWind.LINEAR]{@link WorldWind#INEAR}.
+         * If the path type is not recognized then WorldWind.LINEAR is used.
          * @param {Number} amount The fraction of the path between the two locations at which to compute the new
          * location. This number should be between 0 and 1. If not, it is clamped to the nearest of those values.
          * @param {Location} location1 The starting location.
@@ -106,15 +108,15 @@ define([
 
             if (!result) {
                 throw new ArgumentError(
-                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "greatCircleEndPosition", "missingResult"));
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Location", "interpolateAlongPath", "missingResult"));
             }
 
-            if (pathType && pathType === WorldWind.GREAT_CIRCLE) {
+            if (pathType === WorldWind.GREAT_CIRCLE) {
                 return this.interpolateGreatCircle(amount, location1, location2, result);
             } else if (pathType && pathType === WorldWind.RHUMB_LINE) {
-                // TODO
+                return this.interpolateRhumb(amount, location1, location2, result);
             } else {
-                // TODO
+                return this.interpolateLinear(amount, location1, location2, result);
             }
         };
 
@@ -224,14 +226,15 @@ define([
             // "Haversine formula," taken from http://en.wikipedia.org/wiki/Great-circle_distance#Formul.C3.A6
             a = Math.sin((lat2 - lat1) / 2.0);
             b = Math.sin((lon2 - lon1) / 2.0);
-            c = a * a + +Math.cos(lat1) * Math.cos(lat2) * b * b;
+            c = a * a + Math.cos(lat1) * Math.cos(lat2) * b * b;
             distanceRadians = 2.0 * Math.asin(Math.sqrt(c));
 
             return isNaN(distanceRadians) ? 0 : distanceRadians;
         };
 
         /**
-         * Computes the location on a great circle arc with the given starting location, azimuth, and arc distance.
+         * Computes the location on a great circle path corresponding to a given starting location, azimuth, and
+         * arc distance.
          *
          * @param {Location} location The starting location.
          * @param {Number} greatCircleAzimuthDegrees The azimuth in degrees.
@@ -527,7 +530,7 @@ define([
             dLon = lon2 - lon1;
             dPhi = lat2 - lat1;
 
-            // If lonChange over 180 take shorter rhumb across 180 meridian.
+            // If longitude change is over 180 take shorter path across 180 meridian.
             if (WWMath.fabs(dLon) > Math.PI) {
                 dLon = dLon > 0 ? -(2 * Math.PI - dLon) : (2 * Math.PI + dLon);
             }
@@ -569,7 +572,7 @@ define([
             dLat = lat2 - lat1;
             dLon = lon2 - lon1;
 
-            // If lonChange over 180 take shorter rhumb across 180 meridian.
+            // If lonChange over 180 take shorter path across 180 meridian.
             if (WWMath.fabs(dLon) > Math.PI) {
                 dLon = dLon > 0 ? -(2 * Math.PI - dLon) : (2 * Math.PI + dLon);
             }

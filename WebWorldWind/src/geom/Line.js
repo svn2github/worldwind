@@ -8,15 +8,13 @@
  */
 define([
         '../error/ArgumentError',
-        '../util/Logger',
-        '../geom/Vec3'],
+        '../util/Logger'],
     function (ArgumentError,
-              Logger,
-              Vec3) {
+              Logger) {
         "use strict";
 
         /**
-         * Constructs a line from an origin and direction.
+         * Constructs a line from a specified origin and direction.
          * @alias Line
          * @classdesc Represents a line in Cartesian coordinates.
          * @param {Vec3} origin The line's origin.
@@ -49,12 +47,12 @@ define([
 
         /**
          * Computes a Cartesian point a specified distance along this line.
-         * @param {Number} distance The distance at which to compute the point.
+         * @param {Number} distance The distance from this line's origin at which to compute the point.
          * @param {Vec3} result A pre-allocated {@Link Vec3} instance in which to return the computed point.
-         * @returns {Vec3} The specified result argument.
+         * @returns {Vec3} The specified result argument containing the computed point.
          */
         Line.prototype.pointAt = function (distance, result) {
-            if (!result ) {
+            if (!result) {
                 throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "Line", "pointAt", "missingResult."));
             }
 
