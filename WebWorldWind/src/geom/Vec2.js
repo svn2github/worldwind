@@ -43,9 +43,9 @@ define([
 
         /**
          * Assign the components of a vector.
-         * @param {Number} x X component of vector.
-         * @param {Number} y Y component of vector.
-         * @returns {Vec2} this vector with the specified components assigned.
+         * @param {Number} x The X component of the vector.
+         * @param {Number} y The Y component of the vector.
+         * @returns {Vec2} This vector with the specified components assigned.
          */
         Vec2.prototype.set = function(x, y) {
             this[0] = x;
@@ -57,7 +57,7 @@ define([
         /**
          * Copy a vector.
          * @param vector The vector to copy.
-         * @returns {Vec2} this vector set to the values of the specified vector.
+         * @returns {Vec2} This vector set to the values of the specified vector.
          */
         Vec2.prototype.copy = function(vector) {
             this[0] = vector[0];
@@ -71,12 +71,17 @@ define([
          * @param {Vec2[]} points The points whose average to compute.
          * @param {Vec2} result A pre-allocated Vec2 in which to return the computed average.
          * @returns {Vec2} The result argument set to the average of the specified lists of points.
-         * @throws {ArgumentError} If the specified array of points is null, undefined or empty.
+         * @throws {ArgumentError} If the specified array of points or the result argument is null or undefined.
          */
         Vec2.average = function (points, result) {
             if (!points || points.length < 1) {
                 throw new ArgumentError(
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "average", "missingArray"));
+            }
+
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "Vec2", "average", "missingResult"));
             }
 
             var count = points.length,
@@ -146,7 +151,7 @@ define([
         /**
          * Mix (interpolate) a specified vector with this vector, modifying this vector.
          * @param {Vec2} vector The vector to mix.
-         * @param {number} weight The relative weight of this vector
+         * @param {number} weight The relative weight of this vector.
          * @returns {Vec2} This vector modified to the mix of itself and the specified vector.
          * @throws {ArgumentError} If the specified vector is null or undefined.
          */
@@ -177,7 +182,7 @@ define([
         };
 
         /**
-         * Compute the scalar dot product of this vector and another vector.
+         * Compute the scalar dot product of this vector and a specified vector.
          * @param {Vec2} vector The vector to multiply.
          * @returns {number} The scalar dot product of the vectors.
          * @throws {ArgumentError} If the vector is null or undefined.
@@ -209,7 +214,7 @@ define([
 
         /**
          * Normalize this vector to a unit vector.
-         * @returns {Vec2} this vector, normalized.
+         * @returns {Vec2} This vector, normalized.
          */
         Vec2.prototype.normalize = function () {
             var magnitude = this.magnitude(),
@@ -265,14 +270,14 @@ define([
         /**
          * Swap this vector with that vector.
          * @param {Vec2} that The vector to swap.
-         * @returns {Vec2} this vector.
+         * @returns {Vec2} This vector set to the values of the specified vector.
          */
         Vec2.prototype.swap = function(that) {
             var tmp = this[0];
             this[0] = that[0];
             that[0] = tmp;
 
-            var tmp = this[1];
+            tmp = this[1];
             this[1] = that[1];
             that[1] = tmp;
 
