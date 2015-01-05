@@ -41,7 +41,12 @@ define([
             this.size = this.imageWidth * this.imageHeight;
         };
 
-        // Intentionally not documented.
+        /**
+         * Returns the elevation at a specified location.
+         * @param {number} latitude The location's latitude.
+         * @param {number} longitude The location's longitude.
+         * @returns {Number} The elevation at the specified location.
+         */
         ElevationImage.prototype.elevationAtLocation = function (latitude, longitude) {
             var maxLat = this.sector.maxLatitude,
                 minLon = this.sector.minLongitude,
@@ -64,8 +69,33 @@ define([
             return WWMath.interpolate(yf, WWMath.interpolate(xf, x0y0, x1y0), WWMath.interpolate(xf, x0y1, x1y1));
         };
 
-        // Intentionally not documented.
+        /**
+         * Returns the elevations for a specified sector.
+         * @param {Sector} sector The sector for which to return the elevations.
+         * @param {number} numLat The number of sample points in the longitudinal direction.
+         * @param {number} numLon The number of sample points in the latitudinal direction.
+         * @param {number} verticalExaggeration The vertical exaggeration to apply to the elevations.
+         * @param {Number[]} result An array in which to return the computed elevations.
+         * @throws {ArgumentError} If either the specified sector or result argument is null or undefined, or if the
+         * specified number of sample points in either direction is less than 1.
+         */
         ElevationImage.prototype.elevationsForSector = function (sector, numLat, numLon, verticalExaggeration, result) {
+            if (!sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationImage", "elevationsForSector", "missingSector"));
+            }
+
+            if (numLat < 1 || numLon < 1) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationImage", "elevationsForSector",
+                        "The specified number of sample points is less than 1."));
+            }
+
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationImage", "elevationsForSector", "missingResult"));
+            }
+
             var minLatSelf = this.sector.minLatitude,
                 maxLatSelf = this.sector.maxLatitude,
                 minLonSelf = this.sector.minLongitude,
@@ -139,8 +169,24 @@ define([
             }
         };
 
-        // Intentionally not documented.
+        /**
+         * Returns the minimum and maximum elevations within a specified sector.
+         * @param {Sector} sector The sector of interest.
+         * @param {Number[]} result An array in which to return the minimum and maximum elevations, respectively,
+         * within the sector.
+         * @throws {ArgumentError} If either the specified sector or result argument is null or undefined.
+         */
         ElevationImage.prototype.minAndMaxElevationsForSector = function (sector, result) {
+            if (!sector) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationImage", "minAndMaxElevationsForSector", "missingSector"));
+            }
+
+            if (!result) {
+                throw new ArgumentError(
+                    Logger.logMessage(Logger.LEVEL_SEVERE, "ElevationImage", "minAndMaxElevationsForSector", "missingResult"));
+            }
+
             if (sector.contains(this.sector)) { // The specified sector completely contains this image; return the image min and max.
                 if (result[0] > this.minElevation) {
                     result[0] = this.minElevation;
@@ -199,7 +245,10 @@ define([
             }
         };
 
-        // Intentionally not documented.
+        /**
+         * Determines the minimum and maximum elevation within this elevation image and stores those values within
+         * this object.
+         */
         ElevationImage.prototype.findMinAndMaxElevation = function () {
             if (this.imageData && (this.imageData.length > 0)) {
                 this.minElevation = Number.MAX_VALUE;

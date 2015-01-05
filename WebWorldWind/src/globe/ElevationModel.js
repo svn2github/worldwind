@@ -30,13 +30,13 @@ define([
         "use strict";
 
         /**
-         * Constructs an elevation model. This is an abstract class.
+         * Constructs an elevation model.
          * @alias ElevationModel
          * @constructor
          * @classdesc Represents the elevations for an area, often but not necessarily the whole globe.
          * @param {Sector} coverageSector The sector this elevation model spans.
          * @param {Location} levelZeroDelta The size of top-level tiles, in degrees.
-         * @param {Number} numLevels The number of levels used to represent this elevation models resolution pyramid.
+         * @param {Number} numLevels The number of levels used to represent this elevation model's resolution pyramid.
          * @param {String} retrievalImageFormat The mime type of the elevation data retrieved by this elevation model.
          * @param {String} cachePath A string unique to this elevation model relative to other elevation model used by
          * the application.
@@ -45,7 +45,7 @@ define([
          * @param {Number} tileHeight The number of intervals (cells) in the latitudinal direction of this elevation
          * model's elevation tiles.
          * @throws {ArgumentError} If any argument is null or undefined, if the number of levels specified is less
-         * than one, and if either the tile width or tile height are less than one.
+         * than one, or if either the tile width or tile height are less than one.
          */
         var ElevationModel = function (coverageSector, levelZeroDelta, numLevels, retrievalImageFormat, cachePath,
                                        tileWidth, tileHeight) {
@@ -88,23 +88,28 @@ define([
              * The sector this elevation model spans, as passed to the constructor. This property is intended to be
              * read-only.
              * @type {Sector}
+             * @readonly
              */
             this.coverageSector = coverageSector;
 
             /**
              * The mime type to use when retrieving elevations, as passed to the constructor.
              * This property is intended to be read-only.
+             * @type {String}
+             * @readonly
              */
             this.retrievalImageFormat = retrievalImageFormat;
 
             /** A unique string identifying this elevation model, as passed to the constructor.
              * This property is intended to be read-only.
+             * @type {String}
+             * @readonly
              */
             this.cachePath = cachePath;
 
             /**
              * Indicates this elevation model's display name.
-             * @type {string}
+             * @type {String}
              * @default "Elevations"
              */
             this.displayName = "Elevations";
@@ -112,6 +117,7 @@ define([
             /**
              * Indicates the last time this elevation model changed, in milliseconds since midnight Jan 1, 1970.
              * @type {number}
+             * @readonly
              * @default Date.getTime() at construction
              */
             this.timestamp = new Date().getTime();
@@ -133,6 +139,7 @@ define([
              * The level set created during construction of this elevation model.
              * This property is intended to be read-only.
              * @type {LevelSet}
+             * @readonly
              */
             this.levels = new LevelSet(this.coverageSector, levelZeroDelta, numLevels, tileWidth, tileHeight);
 

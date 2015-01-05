@@ -20,7 +20,7 @@ define([
          * Constructs an elevation tile.
          * @alias ElevationTile
          * @constructor
-         * @classdesc Represents a region of elevations.
+         * @classdesc Represents a region of elevations. Applications typically do not interact with this class.
          * @param {Sector} sector The sector this tile covers.
          * @param {Level} level The level this tile is associated with.
          * @param {Number} row This tile's row in the associated level.

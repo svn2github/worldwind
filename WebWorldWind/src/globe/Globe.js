@@ -33,11 +33,13 @@ define([
          * Constructs an ellipsoidal Globe with default radii for Earth (WGS84).
          * @alias Globe
          * @constructor
-         * @classdesc Represents an ellipsoidal globe. The default values represent Earth.
-         *
+         * @classdesc Represents an ellipsoidal globe. The default configuration represents Earth but may be changed.
+         * To configure for another planet, set the globe's equatorial and polar radii properties and its
+         * eccentricity-squared property.
+         * <p>
          * A globe is used to generate terrain.
-         *
-         * The globe uses a Cartesian coordinate system in which the Y axis points to the north pole,
+         * <p>
+         * A globe uses a Cartesian coordinate system in which the Y axis points to the north pole,
          * the Z axis points to the intersection of the prime meridian and the equator,
          * and the X axis completes a right-handed coordinate system, is in the equatorial plane and 90 degree east of the Z
          * axis. The origin of the coordinate system lies at the center of the globe.
@@ -114,7 +116,7 @@ define([
 
         /**
          * Computes a grid of Cartesian points within a specified sector and relative to a specified Cartesian offset.
-         *
+         * <p>
          * This method is used to compute a collection of points within a sector. It is used by tessellators to
          * efficiently generate a tile's interior points. The number of points to generate is indicated by the tileWidth
          * and tileHeight parameters, which specify respectively the number of points to generate in the latitudinal and
@@ -122,7 +124,7 @@ define([
          * additional row and column of points along the sector's outer edges. These border points have the same
          * latitude and longitude as the points on the sector's outer edges, but use the constant borderElevation
          * instead of values from the array of elevations.
-         *
+         * <p>
          * For each implied position within the sector, an elevation value is specified via an array of elevations. The
          * calculation at each position incorporates the associated elevation. The array of elevations need not supply
          * elevations for the border points, which use the constant borderElevation.
@@ -199,7 +201,8 @@ define([
                 sinLon = new Float64Array(numLonPoints),
                 cosLat = new Float64Array(numLatPoints),
                 sinLat = new Float64Array(numLatPoints),
-                latIndex, lonIndex;
+                latIndex, lonIndex,
+                sinLatMid, cosLatMid, sinLonMid, cosLonMid;
 
             // Iterate over the latitude coordinates in the specified sector and compute the cosine and sine of each longitude
             // value required to compute Cartesian points for the specified sector. This eliminates the need to re-compute the
@@ -245,8 +248,8 @@ define([
             for (latIndex = 1; latIndex <= 2 * tileHeight; latIndex += 2) {
                 lat = minLat + (maxLat - minLat) * latIndex / (2 * tileHeight);
 
-                var sinLatMid = Math.sin(lat);
-                var cosLatMid = Math.cos(lat);
+                sinLatMid = Math.sin(lat);
+                cosLatMid = Math.cos(lat);
 
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLatMid * sinLatMid);
@@ -268,12 +271,11 @@ define([
             for (latIndex = 1; latIndex <= 2 * tileHeight; latIndex += 2) {
                 lat = minLat + (maxLat - minLat) * latIndex / (2 * tileHeight);
 
-                var sinLatMid = Math.sin(lat);
-                var cosLatMid = Math.cos(lat);
+                sinLatMid = Math.sin(lat);
+                cosLatMid = Math.cos(lat);
 
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLatMid * sinLatMid);
-
 
                 // Compute data for lon[numLonPoints - 1].
                 elev = elevations[elevOffset];
@@ -292,8 +294,8 @@ define([
             for (lonIndex = 1; lonIndex <= 2 * tileWidth; lonIndex += 2) {
                 lon = minLon + (maxLon - minLon) * lonIndex / (2 * tileWidth);
 
-                var sinLonMid = Math.sin(lon);
-                var cosLonMid = Math.cos(lon);
+                sinLonMid = Math.sin(lon);
+                cosLonMid = Math.cos(lon);
 
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[0] * sinLat[0]);
@@ -314,9 +316,8 @@ define([
             for (lonIndex = 1; lonIndex <= 2 * tileWidth; lonIndex += 2) {
                 lon = minLon + (maxLon - minLon) * lonIndex / (2 * tileWidth);
 
-                var sinLonMid = Math.sin(lon);
-                var cosLonMid = Math.cos(lon);
-
+                sinLonMid = Math.sin(lon);
+                cosLonMid = Math.cos(lon);
 
                 // Latitude is constant for each row, therefore values depending on only latitude can be computed once per row.
                 rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat[numLatPoints - 1] * sinLat[numLatPoints - 1]);

@@ -14,6 +14,7 @@ define(function () {
      * instantiated directly.
      * @alias AbstractError
      * @constructor
+     * @abstract
      * @classdesc Provides an abstract base class for error classes.
      * @param {String} name The error's name.
      * @param {String} message The message.

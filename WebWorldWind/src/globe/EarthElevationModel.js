@@ -26,7 +26,7 @@ define([
          */
         var EarthElevationModel = function () {
             ElevationModel.call(this,
-                Sector.FULL_SPHERE, new Location(45, 45), 10, "application/bil16", "EarthElevations256", 256, 256);
+                Sector.FULL_SPHERE, new Location(45, 45), 12, "application/bil16", "EarthElevations256", 256, 256);
 
             this.displayName = "Earth Elevation Model";
             this.minElevation = -11000; // Depth of Marianas Trench, in meters

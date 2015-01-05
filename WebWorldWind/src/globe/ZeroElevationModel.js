@@ -9,12 +9,10 @@
 define([
         '../error/ArgumentError',
         '../globe/ElevationModel',
-        '../util/Logger',
-        '../geom/Sector'],
+        '../util/Logger'],
     function (ArgumentError,
               ElevationModel,
-              Logger,
-              Sector) {
+              Logger) {
         "use strict";
 
         /**
@@ -40,6 +38,7 @@ define([
              * since midnight Jan 1, 1970.
              * @type {number}
              * @default Date.getTime() at construction
+             * @readonly
              */
             this.timestamp = new Date().getTime();
 
@@ -47,6 +46,7 @@ define([
              * This elevation model's minimum elevation, which is always zero.
              * @type {number}
              * @default 0
+             * @readonly
              */
             this.minElevation = 0;
 
@@ -54,6 +54,7 @@ define([
              * This elevation model's maximum elevation, which is always zero.
              * @type {number}
              * @default 0
+             * @readonly
              */
             this.maxElevation = 0;
         };
