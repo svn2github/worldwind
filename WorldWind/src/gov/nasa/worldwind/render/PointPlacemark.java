@@ -61,6 +61,10 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected static final String TRANSPARENT_IMAGE_ADDRESS = "images/transparent2x2.png";
 
+    // Label picking needs to add padding around the label to make it easier to pick.
+    protected static final int PICK_Y_OFFSET = -5;
+    protected static final int PICK_Y_SIZE_DELTA = 2;
+
     /** The attributes used if attributes are not specified. */
     protected static final PointPlacemarkAttributes defaultAttributes = new PointPlacemarkAttributes();
 
@@ -751,6 +755,7 @@ public class PointPlacemark extends WWObjectImpl
                 if (this.getLabelText() != null && this.isEnableLabelPicking())
                 {
                     rect = this.getLabelBounds(dc, opm);
+                    rect = new Rectangle(rect.x, rect.y + PICK_Y_OFFSET, rect.width, rect.height + PICK_Y_SIZE_DELTA);
                     if (dc.getPickFrustums().intersectsAny(rect))
                         return true;
                 }
@@ -1071,10 +1076,7 @@ public class PointPlacemark extends WWObjectImpl
             height *= labelScale;
         }
 
-        // Shift the rectangle down half of the descent. Why half? Because empirically that's what aligns the
-        // rectangle with the base of the text.
-        int y = (int) (labelPoint.getY() + bounds.getY() / 2);
-        return new Rectangle((int) labelPoint.x, y, (int) Math.ceil(width), (int) Math.ceil(height));
+        return new Rectangle((int) labelPoint.x, (int) labelPoint.getY(), (int) Math.ceil(width), (int) Math.ceil(height));
     }
 
     /**
@@ -1138,8 +1140,8 @@ public class PointPlacemark extends WWObjectImpl
             pickCandidates.addPickableObject(po);
             gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
 
-            gl.glTranslated(textBounds.getX(), textBounds.getY(), 0);
-            gl.glScaled(textBounds.getWidth(), textBounds.getHeight(), 1);
+            gl.glTranslated(textBounds.getX(), textBounds.getY() + PICK_Y_OFFSET, 0);
+            gl.glScaled(textBounds.getWidth(), textBounds.getHeight() + PICK_Y_SIZE_DELTA, 1);
             gl.glDisable(GL.GL_TEXTURE_2D);
             dc.drawUnitQuad();
         }
