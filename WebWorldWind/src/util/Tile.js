@@ -127,6 +127,15 @@ define([
              */
              this.tileKey = this.level.levelNumber.toString() + "." + this.row.toString() + "." + this.column.toString();
 
+            /**
+             * Describes the tiles in the immediate neighborhood of this tile.
+             * <p>
+             * It is possible that there may be no neighbors in any given direction. This can happen if the tessellator
+             * doesn't generate any tile in that direction. If that is the case, the tile in that direction will be 'undefined'.
+             * @type {{north: undefined, south: undefined, east: undefined, west: undefined}}
+             */
+            this.neighbor = { 'north': undefined, 'south': undefined, 'east': undefined, 'west': undefined };
+
             this.extentTimestamp = undefined;
             this.extentVerticalExaggeration = undefined;
             this.nearestPoint = new Vec3(0, 0, 0); // scratch variable used in mustSubdivide

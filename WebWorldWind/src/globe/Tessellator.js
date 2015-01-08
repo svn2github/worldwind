@@ -99,24 +99,60 @@ define([
 
             this.elevationShadingEnabled = false;
 
-            // was in sharedGeometry
             this.texCoords = undefined;
             this.numTexCoords = undefined;
+            this.texCoordVboCacheKey = 'global_tex_coords';
+
             this.indices = undefined;
             this.numIndices = undefined;
+            this.indicesVboCacheKey = 'global_indices';
+
+            this.indicesNorth = undefined;
+            this.numIndicesNorth = undefined;
+            this.indicesNorthVboCacheKey = 'global_north_indices';
+
+            this.indicesSouth = undefined;
+            this.numIndicesSouth = undefined;
+            this.indicesSouthVboCacheKey = 'global_south_indices';
+
+            this.indicesWest = undefined;
+            this.numIndicesWest = undefined;
+            this.indicesWestVboCacheKey = 'global_west_indices';
+
+            this.indicesEast = undefined;
+            this.numIndicesEast = undefined;
+            this.indicesEastVboCacheKey = 'global_east_indices';
+
+            this.indicesLoresNorth = undefined;
+            this.numIndicesLoresNorth = undefined;
+            this.indicesLoresNorthVboCacheKey = 'global_lores_north_indices';
+
+            this.indicesLoresSouth = undefined;
+            this.numIndicesLoresSouth = undefined;
+            this.indicesLoresSouthVboCacheKey = 'global_lores_south_indices';
+
+            this.indicesLoresWest = undefined;
+            this.numIndicesLoresWest = undefined;
+            this.indicesLoresWestVboCacheKey = 'global_lores_west_indices';
+
+            this.indicesLoresEast = undefined;
+            this.numIndicesLoresEast = undefined;
+            this.indicesLoresEastVboCacheKey = 'global_lores_east_indices';
+
             this.outlineIndices = undefined;
             this.numOutlineIndices = undefined;
+            this.outlineIndicesVboCacheKey = 'global_outline_indices';
+
             this.wireframeIndices = undefined;
             this.numWireframeIndices = undefined;
-
-            this.indicesVboCacheKey = 'global_indices';
             this.wireframeIndicesVboCacheKey = 'global_wireframe_indices';
-            this.outlineIndicesVboCacheKey = 'global_outline_indices';
-            this.texCoordVboCacheKey = 'global_tex_coords';
 
             this.tileElevations = undefined;
 
             this.scratchMatrix = Matrix.fromIdentity();
+
+            this.corners = {};
+            this.tiles = [];
         };
 
         /**
@@ -151,6 +187,9 @@ define([
                 this.createTopLevelTiles();
             }
 
+            this.corners = {};
+            this.tiles = [];
+
             for (var index = 0; index < this.topLevelTiles.length; index += 1) {
                 var tile = this.topLevelTiles[index];
 
@@ -160,6 +199,10 @@ define([
                     this.addTileOrDescendants(dc, tile);
                 }
             }
+
+            this.refineNeighbors(dc);
+
+            this.finishTessellating();
 
             /*
             var terrain = new Terrain();
@@ -245,9 +288,6 @@ define([
                 gl.vertexAttribPointer(this.vertexTexCoordLocation, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(this.vertexTexCoordLocation);
             }
-
-            var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
-            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
         };
 
         /**
@@ -357,13 +397,105 @@ define([
                     Logger.logMessage(Logger.LEVEL_SEVERE, "Tessellator", "renderTile", "missingTile"));
             }
 
-            var gl = dc.currentGlContext;
+            var gl = dc.currentGlContext,
+                gpuResourceCache = dc.gpuResourceCache,
+                prim = WebGLRenderingContext.TRIANGLE_STRIP; // replace TRIANGLE_STRIP with LINE_STRIP to debug borders
+
+            var indicesVbo = gpuResourceCache.resourceForKey(this.indicesVboCacheKey);
+            gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
 
             gl.drawElements(
-                WebGLRenderingContext.TRIANGLE_STRIP,
+                prim,
                 this.numIndices,
                 WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
+
+            var neighbor = terrainTile.neighbor,
+                levelNumber = terrainTile.level.levelNumber;
+
+            if (neighbor.north && neighbor.north.level.levelNumber < levelNumber) {
+                var indicesLoresNorthVbo = gpuResourceCache.resourceForKey(this.indicesLoresNorthVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresNorthVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesLoresNorth,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+            else {
+                var indicesNorthVbo = gpuResourceCache.resourceForKey(this.indicesNorthVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesNorthVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesNorth,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+
+            if (neighbor.south && neighbor.south.level.levelNumber < levelNumber) {
+                var indicesLoresSouthVbo = gpuResourceCache.resourceForKey(this.indicesLoresSouthVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresSouthVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesLoresSouth,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+            else {
+                var indicesSouthVbo = gpuResourceCache.resourceForKey(this.indicesSouthVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesSouthVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesSouth,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+
+            if (neighbor.west && neighbor.west.level.levelNumber < levelNumber) {
+                var indicesLoresWestVbo = gpuResourceCache.resourceForKey(this.indicesLoresWestVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresWestVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesLoresWest,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+            else {
+                var indicesWestVbo = gpuResourceCache.resourceForKey(this.indicesWestVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesWestVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesWest,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+
+            if (neighbor.east && neighbor.east.level.levelNumber < levelNumber) {
+                var indicesLoresEastVbo = gpuResourceCache.resourceForKey(this.indicesLoresEastVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresEastVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesLoresEast,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
+            else {
+                var indicesEastVbo = gpuResourceCache.resourceForKey(this.indicesEastVboCacheKey);
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesEastVbo);
+
+                gl.drawElements(
+                    prim,
+                    this.numIndicesEast,
+                    WebGLRenderingContext.UNSIGNED_SHORT,
+                    0);
+            }
         };
 
         /**
@@ -447,6 +579,10 @@ define([
                 return;
             }
 
+            this.addTileDescendants(dc, tile);
+        };
+
+        Tessellator.prototype.addTileDescendants = function(dc, tile) {
             var nextLevel = tile.level.nextLevel();
             var subTiles = tile.subdivideToCache(nextLevel, this, this.tileCache);
             for (var index = 0; index < subTiles.length; index += 1) {
@@ -465,16 +601,272 @@ define([
                 this.regenerateTileGeometry(dc, tile);
             }
 
-            this.currentTiles.addTile(tile);
+            //this.currentTiles.addTile(tile);
+            // Insert tile at index idx.
+            var idx = this.tiles.length;
+            this.tiles.push(tile);
 
-            if (!this.currentCoverage) {
-                this.currentCoverage = new Sector(tile.sector.minLatitude,
-                    tile.sector.maxLatitude,
-                    tile.sector.minLongitude,
-                    tile.sector.maxLongitude);
+            // Insert tile into corner data collection for later LOD neighbor analysis.
+            var sector = tile.sector;
+
+            // Corners of the tile.
+            var neTileCorner = [sector.maxLatitude, sector.maxLongitude].toString(),
+                seTileCorner = [sector.minLatitude, sector.maxLongitude].toString(),
+                nwTileCorner = [sector.maxLatitude, sector.minLongitude].toString(),
+                swTileCorner = [sector.minLatitude, sector.minLongitude].toString(),
+                corner;
+
+            corner = this.corners[swTileCorner];
+            if (!corner) {
+                this.corners[swTileCorner] = {'sw': idx}; //corner;
             }
             else {
-                this.currentCoverage.union(tile.sector);
+                // assert(!corner.sw, "sw already defined");
+                corner.sw = idx;
+            }
+
+            corner = this.corners[nwTileCorner];
+            if (!corner) {
+                this.corners[nwTileCorner] = {'nw': idx};
+            }
+            else {
+                // assert(!corner.nw, "nw already defined");
+                corner.nw = idx;
+            }
+
+            corner = this.corners[seTileCorner];
+            if (!corner) {
+                this.corners[seTileCorner] = {'se': idx};
+            }
+            else {
+                // assert(!corver.se, "se already defined");
+                corner.se = idx;
+            }
+
+            corner = this.corners[neTileCorner];
+            if (!corner) {
+                this.corners[neTileCorner] = {'ne': idx};
+            }
+            else {
+                //assert(!corner.ne, "ne already defined");
+                corner.ne = idx;
+            }
+        };
+
+        Tessellator.prototype.refineNeighbors = function(dc) {
+            var tileRefinementSet = {};
+
+            for (var idx = 0, len = this.tiles.length; idx < len; idx += 1) {
+                var tile = this.tiles[idx],
+                    levelNumber = tile.level.levelNumber,
+                    sector = tile.sector,
+                    corner,
+                    neighbor,
+                    idx,
+                    len;
+
+                // Corners of the tile.
+                var neTileCorner = [sector.maxLatitude, sector.maxLongitude].toString(),
+                    seTileCorner = [sector.minLatitude, sector.maxLongitude].toString(),
+                    nwTileCorner = [sector.maxLatitude, sector.minLongitude].toString(),
+                    swTileCorner = [sector.minLatitude, sector.minLongitude].toString();
+
+                corner = this.corners[neTileCorner];
+                // assert(corner, "northeast corner not found");
+                if (corner.hasOwnProperty('se')) {
+                    neighbor = corner.se;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+                if (corner.hasOwnProperty('nw')) {
+                    neighbor = corner.nw;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+
+                corner = this.corners[seTileCorner];
+                // assert(corner, "southeast corner not found");
+                if (corner.hasOwnProperty('ne')) {
+                    neighbor = corner.ne;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+                if (corner.hasOwnProperty('sw')) {
+                    neighbor = corner.sw;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+
+                corner = this.corners[nwTileCorner];
+                // assert(corner, "northwest corner not found");
+                if (corner.hasOwnProperty('ne')) {
+                    neighbor = corner.ne;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+                if (corner.hasOwnProperty('sw')) {
+                    neighbor = corner.sw;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+
+                corner = this.corners[swTileCorner];
+                // assert(corner, "southwest corner not found");
+                if (corner.hasOwnProperty('se')) {
+                    neighbor = corner.se;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+                if (corner.hasOwnProperty('nw')) {
+                    neighbor = corner.nw;
+                    if (this.tiles[neighbor].level.levelNumber < levelNumber - 1) {
+                        if (!tileRefinementSet[neighbor]) {
+                            tileRefinementSet[neighbor] = true;
+                        }
+                    }
+                }
+            }
+
+            // Partition tiles into those requiring refinement and those that don't need refinement.
+            var tilesNeedingRefinement = [],
+                tilesNotNeedingRefinement = [];
+            for (idx = 0, len = this.tiles.length; idx < len; idx += 1) {
+                tile = this.tiles[idx];
+                if (tileRefinementSet[idx]) {
+                    tilesNeedingRefinement.push(tile);
+                }
+                else {
+                    tilesNotNeedingRefinement.push(tile);
+                }
+            }
+
+            // When tiles need refinement, recur.
+            if (tilesNeedingRefinement.length > 0) {
+                // Reset refinement state.
+                this.tiles = [];
+                this.corners = {};
+
+                // For tiles that don't need refinement, simply add the tile.
+                for (idx = 0, len = tilesNotNeedingRefinement.length; idx < len; idx += 1) {
+                    tile = tilesNotNeedingRefinement[idx];
+
+                    this.addTile(dc, tile);
+                }
+
+                // For tiles that do need refinement, subdivide the tile and add its descendants.
+                for (idx = 0, len = tilesNeedingRefinement.length; idx < len; idx += 1) {
+                    var tile = tilesNeedingRefinement[idx];
+
+                    this.addTileDescendants(dc, tile);
+                }
+
+                // Recur.
+                this.refineNeighbors(dc);
+            }
+        };
+
+        Tessellator.prototype.finishTessellating = function() {
+            for (var idx = 0, len = this.tiles.length; idx < len; idx += 1) {
+                var tile = this.tiles[idx];
+
+                // Factor tile into coverage.
+                if (!this.currentCoverage) {
+                    this.currentCoverage = new Sector(
+                        tile.sector.minLatitude,
+                        tile.sector.maxLatitude,
+                        tile.sector.minLongitude,
+                        tile.sector.maxLongitude);
+                }
+                else {
+                    this.currentCoverage.union(tile.sector);
+                }
+
+                this.setNeighbors(tile);
+
+                this.currentTiles.addTile(tile);
+            }
+        };
+
+        Tessellator.prototype.setNeighbors = function(tile) {
+            var sector = tile.sector;
+
+            // Corners of the tile.
+            var neTileCorner = [sector.maxLatitude, sector.maxLongitude].toString(),
+                seTileCorner = [sector.minLatitude, sector.maxLongitude].toString(),
+                nwTileCorner = [sector.maxLatitude, sector.minLongitude].toString(),
+                swTileCorner = [sector.minLatitude, sector.minLongitude].toString();
+
+            var neCorner = this.corners[neTileCorner],
+                seCorner = this.corners[seTileCorner],
+                nwCorner = this.corners[nwTileCorner],
+                swCorner = this.corners[swTileCorner];
+
+            var northIdx = -1, // neCorner.hasOwnProperty('se') ? neCorner.se : nwCorner.hasOwnProperty('sw') ? nwCorner.sw : -1,
+                southIdx = -1, // seCorner.hasOwnProperty('ne') ? seCorner.ne : swCorner.hasOwnProperty('nw') ? swCorner.nw : -1,
+                eastIdx = -1, // neCorner.hasOwnProperty('nw') ? neCorner.nw : seCorner.hasOwnProperty('sw') ? seCorner.sw : -1,
+                westIdx = -1; //nwCorner.hasOwnProperty('ne') ? nwCorner.ne : swCorner.hasOwnProperty('se') ? swCorner.se : -1;
+
+            if (neCorner.hasOwnProperty('se')) {
+                northIdx = neCorner.se;
+            }
+            else if (nwCorner.hasOwnProperty('sw')) {
+                northIdx = nwCorner.sw;
+            }
+
+            if (seCorner.hasOwnProperty('ne')) {
+                southIdx = seCorner.ne;
+            }
+            else if (swCorner.hasOwnProperty('nw')) {
+                southIdx = swCorner.nw;
+            }
+
+            if (neCorner.hasOwnProperty('nw')) {
+                eastIdx = neCorner.nw;
+            }
+            else if (seCorner.hasOwnProperty('sw')) {
+                eastIdx = seCorner.sw;
+            }
+
+            if (nwCorner.hasOwnProperty('ne')) {
+                westIdx = nwCorner.ne;
+            }
+            else if (swCorner.hasOwnProperty('se')) {
+                westIdx = swCorner.se;
+            }
+
+            tile.neighbor = {};
+            if (northIdx >= 0) {
+                tile.neighbor.north = this.tiles[northIdx];
+            }
+            if (southIdx >= 0) {
+                tile.neighbor.south = this.tiles[southIdx];
+            }
+            if (eastIdx >= 0) {
+                tile.neighbor.east = this.tiles[eastIdx];
+            }
+            if (westIdx >= 0) {
+                tile.neighbor.west = this.tiles[westIdx];
             }
         };
 
@@ -610,18 +1002,22 @@ define([
         Tessellator.prototype.buildIndices = function (tileWidth, tileHeight) {
             // The number of vertices in each dimension is 1 more than the number of cells.
             var numLatVertices = tileHeight + 1,
-                numLonVertices = tileWidth + 1;
+                numLonVertices = tileWidth + 1,
+                latIndexMid = tileHeight / 2,   // Assumption: tileHeight is even, so that there is a midpoint!
+                lonIndexMid = tileWidth / 2;    // Assumption: tileWidth is even, so that there is a midpoint!
 
             // Each vertex has two indices associated with it: the current vertex index and the index of the row.
             // There are tileHeight rows.
             // There are tileHeight + 2 columns
-            var numIndices = 2 * (numLatVertices - 1) * (numLonVertices + 1);
+            var numIndices = 2 * (numLatVertices - 3) * (numLonVertices - 2) + 2 * (numLatVertices - 3);
             var indices = new Int16Array(numIndices);
 
+            // Inset core by one round of sub-tiles. Full grid is numLatVertices x numLonVertices. This must be used
+            // to address vertices in the core as well.
             var index = 0;
-            for (var latIndex = 0; latIndex < numLatVertices - 1; latIndex += 1) {
+            for (var latIndex = 1; latIndex < numLatVertices - 2; latIndex += 1) {
                 var vertexIndex; // The index of the vertex in the sample grid.
-                for (var lonIndex = 0; lonIndex < numLonVertices; lonIndex += 1) {
+                for (var lonIndex = 1; lonIndex < numLonVertices - 1; lonIndex += 1) {
                     vertexIndex = lonIndex + latIndex * numLonVertices;
 
                     // Create a triangle strip joining each adjacent row of vertices, starting in the top left corner and
@@ -636,12 +1032,332 @@ define([
                 //      one for the end of the current row, and
                 //      one for the beginning of the next row.
                 indices[index] = vertexIndex + numLonVertices;
-                indices[index + 1] = vertexIndex + 1;
+                indices[index + 1] = vertexIndex + 3; // Skip over two border vertices and advance to the next vertex.
                 index += 2;
             }
 
+            // assert(indices.length == numIndices);
             this.indices = indices;
             this.numIndices = numIndices;
+
+            // TODO: parameterize and refactor!!!!!
+            // Software engineering notes: There are patterns being used in the following code that should be abstracted.
+            // However, I suspect that the process of abstracting the patterns will result in as much code created
+            // as gets removed. YMMV. If JavaScript had a meta-programming (a.k.a., macro) facility, that code would be
+            // processed at "compile" time rather than "runtime". But it doesn't have such a facility that I know of.
+            //
+            // Patterns used:
+            //  0) Each tile has four borders: north, south, east, and west.
+            //  1) Counter-clockwise traversal around the outside results in clockwise meshes amendable to back-face elimination.
+            //  2) For each vertex on the exterior, there corresponds a vertex on the interior that creates a diagonal.
+            //  3) Each border construction is broken into three phases:
+            //      a) The starting phase to generate the first half of the border,
+            //      b) The middle phase, where a single vertex reference gets created, and
+            //      c) The ending phase to complete the generation of the border.
+            //  4) Each border is generated in two variants:
+            //      a) one variant that mates with a tile at the same level of detail, and
+            //      b) another variant that mates with a tile at the next lower level of detail.
+            //  5) Borders that mate with the next lower level of detail are constrained to lie on even indices.
+            //  6) Evenness is generated by ANDing the index with a mask that has 1's in all bits except for the LSB,
+            //      which results in clearing the LSB os the index, making it even.
+            //  7) The section that generates lower level LOD borders gives up any attempt to be optimal because of the
+            //      complexity. Instead, correctness was preferred. That said, any performance lost is in the noise,
+            //      since this code only gets run once.
+
+            /*
+             *  The following section of code generates full resolution boundary meshes. These are used to mate
+             *  with neighboring tiles that are at the same level of detail.
+             */
+            // North border.
+            numIndices = 2 * numLonVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            latIndex = numLatVertices - 1;
+            for (lonIndex = numLonVertices - 1; lonIndex > lonIndexMid; lonIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex;
+                indices[index + 1] = vertexIndex - numLonVertices - 1;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            indices[index] = vertexIndex - 1;
+            index += 1;
+
+            for (lonIndex = lonIndexMid - 1; lonIndex >= 0; lonIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex - numLonVertices + 1;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesNorth = indices;
+            this.numIndicesNorth = numIndices;
+
+            // South border.
+            numIndices = 2 * numLonVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            latIndex = 0;
+            for (lonIndex = 0; lonIndex < lonIndexMid; lonIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex;
+                indices[index + 1] = vertexIndex + numLonVertices + 1;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            indices[index] = vertexIndex + 1;
+            index += 1;
+
+            for (lonIndex = lonIndexMid + 1; lonIndex < numLonVertices; lonIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex + numLonVertices - 1;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesSouth = indices;
+            this.numIndicesSouth = numIndices;
+
+            // West border.
+            numIndices = 2 * numLatVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            lonIndex = 0;
+            for (latIndex = numLatVertices - 1; latIndex > latIndexMid; latIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex;
+                indices[index + 1] = vertexIndex - numLonVertices + 1;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            indices[index] = vertexIndex - numLonVertices;
+            index += 1;
+
+            for (latIndex = latIndexMid - 1; latIndex >= 0; latIndex -= 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex + numLonVertices + 1;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesWest = indices;
+            this.numIndicesWest = numIndices;
+
+            // East border.
+            numIndices = 2 * numLatVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            lonIndex = numLonVertices - 1;
+            for (latIndex = 0; latIndex < latIndexMid; latIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex;
+                indices[index + 1] = vertexIndex + numLonVertices - 1;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            indices[index] = vertexIndex + numLonVertices;
+            index += 1;
+
+            for (latIndex = latIndexMid + 1; latIndex < numLatVertices; latIndex += 1) {
+                vertexIndex = lonIndex + latIndex * numLonVertices;
+
+                indices[index] = vertexIndex - numLonVertices - 1;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesEast = indices;
+            this.numIndicesEast = numIndices;
+
+            /*
+             *  The following section of code generates "lores" low resolution boundary meshes. These are used to mate
+             *  with neighboring tiles that are at a lower level of detail. The property of these lower level meshes is that 
+             *  they have half the number of vertices. 
+             *  
+             *  To generate the boundary meshes, force the use of only even boundary vertex indices.
+             */
+            // North border.
+            numIndices = 2 * numLonVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            latIndex = numLatVertices - 1;
+            for (lonIndex = numLonVertices - 1; lonIndex > lonIndexMid; lonIndex -= 1) {
+                // Exterior, rounded up to nearest even index.
+                vertexIndex = ((lonIndex + 1) & ~1) + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Interior diagonal.
+                vertexIndex = (lonIndex - 1) + (latIndex - 1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            vertexIndex = (lonIndexMid & ~1) + latIndex * numLonVertices;
+            indices[index] = vertexIndex;
+            index += 1;
+
+            for (lonIndex = lonIndexMid - 1; lonIndex >= 0; lonIndex -= 1) {
+                // Interior diagonal.
+                vertexIndex = (lonIndex + 1) + (latIndex - 1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Exterior, rounded down to nearest even index.
+                vertexIndex = (lonIndex & ~1) + latIndex * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesLoresNorth = indices;
+            this.numIndicesLoresNorth = numIndices;
+
+            // South border.
+            numIndices = 2 * numLonVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            latIndex = 0;
+            for (lonIndex = 0; lonIndex < lonIndexMid; lonIndex += 1) {
+                // Exterior, rounded down to nearest even vertex.
+                vertexIndex = (lonIndex & ~1) + latIndex * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Interior diagonal.
+                vertexIndex = (lonIndex + 1) + (latIndex + 1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // Insert a single vertical edge in the middle.
+            vertexIndex = lonIndexMid + latIndex * numLonVertices;
+            indices[index] = vertexIndex;
+            index += 1;
+
+            for (lonIndex = lonIndexMid + 1; lonIndex < numLonVertices; lonIndex += 1) {
+                // Interior diagonal.
+                vertexIndex = (lonIndex - 1) + (latIndex + 1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Exterior, rounded up to nearest even index.
+                vertexIndex = ((lonIndex + 1) & ~1) + latIndex * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesLoresSouth = indices;
+            this.numIndicesLoresSouth = numIndices;
+
+            // West border.
+            numIndices = 2 * numLatVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            lonIndex = 0;
+            for (latIndex = numLatVertices - 1; latIndex > latIndexMid; latIndex -= 1) {
+                // Exterior, rounded up to nearest even index.
+                vertexIndex = lonIndex + ((latIndex + 1) & ~1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Interior diagonal.
+                vertexIndex = (lonIndex + 1) + (latIndex - 1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // Insert a single horizontal edge in the middle.
+            vertexIndex = lonIndex + (latIndexMid & ~1) * numLonVertices;
+            indices[index] = vertexIndex;
+            index += 1;
+
+            for (latIndex = latIndexMid - 1; latIndex >= 0; latIndex -= 1) {
+                // Interior diagonal.
+                vertexIndex = (lonIndex + 1) + (latIndex + 1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Exterior, rounded down to nearest even index.
+                vertexIndex = lonIndex + (latIndex & ~1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesLoresWest = indices;
+            this.numIndicesLoresWest = numIndices;
+
+            // East border.
+            numIndices = 2 * numLatVertices - 1;
+            indices = new Int16Array(numIndices);
+
+            index = 0;
+            lonIndex = numLonVertices - 1;
+            for (latIndex = 0; latIndex < latIndexMid; latIndex += 1) {
+                // Exterior, rounded down to nearest even index.
+                vertexIndex = lonIndex + (latIndex & ~1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Interior diagonal.
+                vertexIndex = (lonIndex - 1) + (latIndex + 1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // Insert a single horizontal edge in the middle.
+            vertexIndex = lonIndex + (latIndexMid & ~1) * numLonVertices;
+            indices[index] = vertexIndex;
+            index += 1;
+
+            for (latIndex = latIndexMid + 1; latIndex < numLatVertices; latIndex += 1) {
+                // Interior diagonal.
+                vertexIndex = (lonIndex - 1) + (latIndex - 1) * numLonVertices;
+                indices[index] = vertexIndex;
+
+                // Exterior, rounded up to nearest even index.
+                vertexIndex = lonIndex + ((latIndex + 1) & ~1) * numLonVertices;
+                indices[index + 1] = vertexIndex;
+
+                index += 2;
+            }
+
+            // assert(indices.length == numIndices);
+            this.indicesLoresEast = indices;
+            this.numIndicesLoresEast = numIndices;
         };
 
         Tessellator.prototype.buildWireframeIndices = function (tileWidth, tileHeight) {
@@ -759,7 +1475,79 @@ define([
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                gpuResourceCache.putResource(gl, this.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, this.indices.length * 4);
+                gpuResourceCache.putResource(gl, this.indicesVboCacheKey, indicesVbo, WorldWind.GPU_BUFFER, this.indices.length * 2);
+            }
+
+            var indicesNorthVbo = gpuResourceCache.resourceForKey(this.indicesNorthVboCacheKey);
+            if (!indicesNorthVbo) {
+                indicesNorthVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesNorthVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesNorth, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesNorthVboCacheKey, indicesNorthVbo, WorldWind.GPU_BUFFER, this.indicesNorth.length * 2);
+            }
+
+            var indicesSouthVbo = gpuResourceCache.resourceForKey(this.indicesSouthVboCacheKey);
+            if (!indicesSouthVbo) {
+                indicesSouthVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesSouthVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesSouth, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesSouthVboCacheKey, indicesSouthVbo, WorldWind.GPU_BUFFER, this.indicesSouth.length * 2);
+            }
+
+            var indicesWestVbo = gpuResourceCache.resourceForKey(this.indicesWestVboCacheKey);
+            if (!indicesWestVbo) {
+                indicesWestVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesWestVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesWest, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesWestVboCacheKey, indicesWestVbo, WorldWind.GPU_BUFFER, this.indicesWest.length * 2);
+            }
+
+            var indicesEastVbo = gpuResourceCache.resourceForKey(this.indicesEastVboCacheKey);
+            if (!indicesEastVbo) {
+                indicesEastVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesEastVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesEast, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesEastVboCacheKey, indicesEastVbo, WorldWind.GPU_BUFFER, this.indicesEast.length * 2);
+            }
+
+            var indicesLoresNorthVbo = gpuResourceCache.resourceForKey(this.indicesLoresNorthVboCacheKey);
+            if (!indicesLoresNorthVbo) {
+                indicesLoresNorthVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresNorthVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesLoresNorth, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesLoresNorthVboCacheKey, indicesLoresNorthVbo, WorldWind.GPU_BUFFER, this.indicesLoresNorth.length * 2);
+            }
+
+            var indicesLoresSouthVbo = gpuResourceCache.resourceForKey(this.indicesLoresSouthVboCacheKey);
+            if (!indicesLoresSouthVbo) {
+                indicesLoresSouthVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresSouthVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesLoresSouth, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesLoresSouthVboCacheKey, indicesLoresSouthVbo, WorldWind.GPU_BUFFER, this.indicesLoresSouth.length * 2);
+            }
+
+            var indicesLoresWestVbo = gpuResourceCache.resourceForKey(this.indicesLoresWestVboCacheKey);
+            if (!indicesLoresWestVbo) {
+                indicesLoresWestVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresWestVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesLoresWest, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesLoresWestVboCacheKey, indicesLoresWestVbo, WorldWind.GPU_BUFFER, this.indicesLoresWest.length * 2);
+            }
+
+            var indicesLoresEastVbo = gpuResourceCache.resourceForKey(this.indicesLoresEastVboCacheKey);
+            if (!indicesLoresEastVbo) {
+                indicesLoresEastVbo = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, indicesLoresEastVbo);
+                gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.indicesLoresEast, WebGLRenderingContext.STATIC_DRAW);
+                dc.frameStatistics.incrementVboLoadCount(1);
+                gpuResourceCache.putResource(gl, this.indicesLoresEastVboCacheKey, indicesLoresEastVbo, WorldWind.GPU_BUFFER, this.indicesLoresEast.length * 2);
             }
 
             var outlineIndicesVbo = gpuResourceCache.resourceForKey(this.outlineIndicesVboCacheKey);
@@ -768,7 +1556,7 @@ define([
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, outlineIndicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.outlineIndices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                gpuResourceCache.putResource(gl, this.outlineIndicesVboCacheKey, outlineIndicesVbo, WorldWind.GPU_BUFFER, this.outlineIndices.length * 4);
+                gpuResourceCache.putResource(gl, this.outlineIndicesVboCacheKey, outlineIndicesVbo, WorldWind.GPU_BUFFER, this.outlineIndices.length * 2);
             }
 
             var wireframeIndicesVbo = gpuResourceCache.resourceForKey(this.wireframeIndicesVboCacheKey);
@@ -777,7 +1565,7 @@ define([
                 gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, wireframeIndicesVbo);
                 gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.wireframeIndices, WebGLRenderingContext.STATIC_DRAW);
                 dc.frameStatistics.incrementVboLoadCount(1);
-                gpuResourceCache.putResource(gl, this.wireframeIndicesVboCacheKey, wireframeIndicesVbo, WorldWind.GPU_BUFFER, this.wireframeIndices.length * 4);
+                gpuResourceCache.putResource(gl, this.wireframeIndicesVboCacheKey, wireframeIndicesVbo, WorldWind.GPU_BUFFER, this.wireframeIndices.length * 2);
             }
         };
 
