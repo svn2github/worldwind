@@ -14,6 +14,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './layer/BMNGLandsatLayer',
         './layer/BMNGLayer',
         './layer/BMNGOneImageLayer',
+        './layer/BMNGRestLayer',
         './geom/BoundingBox',
         './util/Color',
         './render/DrawContext',
@@ -26,6 +27,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './shaders/GpuShader',
         './layer/Layer',
         './util/Level',
+        './util/LevelRowColumnUrlBuilder',
         './util/LevelSet',
         './geom/Line',
         './geom/Location',
@@ -73,6 +75,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               BMNGLandsatLayer,
               BMNGLayer,
               BMNGOneImageLayer,
+              BMNGRestLayer,
               BoundingBox,
               Color,
               DrawContext,
@@ -85,6 +88,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               GpuShader,
               Layer,
               Level,
+              LevelRowColumnUrlBuilder,
               LevelSet,
               Line,
               Location,
@@ -204,6 +208,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['BMNGLandsatLayer'] = BMNGLandsatLayer;
         WorldWind['BMNGLayer'] = BMNGLayer;
         WorldWind['BMNGOneImageLayer'] = BMNGOneImageLayer;
+        WorldWind['BMNGRestLayer'] = BMNGRestLayer;
         WorldWind['BoundingBox'] = BoundingBox;
         WorldWind['Color'] = Color;
         WorldWind['DrawContext'] = DrawContext;
@@ -216,6 +221,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['GpuShader'] = GpuShader;
         WorldWind['Layer'] = Layer;
         WorldWind['Level'] = Level;
+        WorldWind['LevelRowColumnUrlBuilder'] = LevelRowColumnUrlBuilder;
         WorldWind['LevelSet'] = LevelSet;
         WorldWind['Line'] = Line;
         WorldWind['Location'] = Location;
