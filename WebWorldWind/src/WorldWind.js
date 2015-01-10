@@ -21,6 +21,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './globe/ElevationModel',
         './util/FrameStatistics',
         './geom/Frustum',
+        './navigate/GestureRecognizer',
         './globe/Globe',
         './shaders/GpuProgram',
         './cache/GpuResourceCache',
@@ -39,6 +40,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './navigate/Navigator',
         './navigate/NavigatorState',
         './error/NotYetImplementedError',
+        './navigate/PanGestureRecognizer',
         './geom/Plane',
         './geom/Position',
         './geom/Rectangle',
@@ -82,6 +84,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               ElevationModel,
               FrameStatistics,
               Frustum,
+              GestureRecognizer,
               Globe,
               GpuProgram,
               GpuResourceCache,
@@ -100,6 +103,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Navigator,
               NavigatorState,
               NotYetImplementedError,
+              PanGestureRecognizer,
               Plane,
               Position,
               Rectangle,
@@ -215,6 +219,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['ElevationModel'] = ElevationModel;
         WorldWind['FrameStatistics'] = FrameStatistics;
         WorldWind['Frustum'] = Frustum;
+        WorldWind['GestureRecognizer'] = GestureRecognizer;
         WorldWind['Globe'] = Globe;
         WorldWind['GpuProgram'] = GpuProgram;
         WorldWind['GpuResourceCache'] = GpuResourceCache;
@@ -233,6 +238,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Navigator'] = Navigator;
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['NotYetImplementedError'] = NotYetImplementedError;
+        WorldWind['PanGestureRecognizer'] = PanGestureRecognizer;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
