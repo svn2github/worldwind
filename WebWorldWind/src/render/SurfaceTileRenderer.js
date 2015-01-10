@@ -117,19 +117,21 @@ define([
             var gl = dc.currentGlContext,
                 program = dc.currentProgram,
                 terrainSector = terrainTile.sector,
-                terrainDeltaLat = terrainSector.deltaLatitude() * Angle.DEGREES_TO_RADIANS,
-                terrainDeltaLon = terrainSector.deltaLongitude() * Angle.DEGREES_TO_RADIANS,
+                terrainDeltaLat = terrainSector.deltaLatitude(),
+                terrainDeltaLon = terrainSector.deltaLongitude(),
                 surfaceSector = surfaceTile.sector,
-                surfaceDeltaLat = surfaceSector.deltaLatitude() * Angle.DEGREES_TO_RADIANS,
-                surfaceDeltaLon = surfaceSector.deltaLongitude() * Angle.DEGREES_TO_RADIANS,
-                sScale = surfaceDeltaLon > 0 ? terrainDeltaLon / surfaceDeltaLon : 1,
-                tScale = surfaceDeltaLat > 0 ? terrainDeltaLat / surfaceDeltaLat : 1,
-                sTrans = -(surfaceSector.minLongitudeRadians() - terrainSector.minLongitudeRadians()) / terrainDeltaLon,
-                tTrans = -(surfaceSector.minLatitudeRadians() - terrainSector.minLatitudeRadians()) / terrainDeltaLat;
+                rawSurfaceDeltaLat = surfaceSector.deltaLatitude(),
+                rawSurfaceDeltaLon = surfaceSector.deltaLongitude(),
+                surfaceDeltaLat = rawSurfaceDeltaLat > 0 ? rawSurfaceDeltaLat : 1,
+                surfaceDeltaLon = rawSurfaceDeltaLon > 0 ? rawSurfaceDeltaLon : 1,
+                sScale = terrainDeltaLon / surfaceDeltaLon,
+                tScale = terrainDeltaLat / surfaceDeltaLat,
+                sTrans = -(surfaceSector.minLongitude - terrainSector.minLongitude) / surfaceDeltaLon,
+                tTrans = -(surfaceSector.minLatitude - terrainSector.minLatitude) / surfaceDeltaLat;
 
             this.texMaskMatrix.set(
-                sScale, 0, 0, sScale * sTrans,
-                0, tScale, 0, tScale * tTrans,
+                sScale, 0, 0, sTrans,
+                0, tScale, 0, tTrans,
                 0, 0, 1, 0,
                 0, 0, 0, 1
             );
