@@ -9,18 +9,22 @@
 define([
         '../geom/Angle',
         '../geom/Frustum',
+        '../navigate/GestureRecognizer',
         '../util/Logger',
         '../geom/Matrix',
         '../navigate/Navigator',
+        '../navigate/PanGestureRecognizer',
         '../geom/Position',
         '../geom/Vec2',
         '../util/WWMath'
     ],
     function (Angle,
               Frustum,
+              GestureRecognizer,
               Logger,
               Matrix,
               Navigator,
+              PanGestureRecognizer,
               Position,
               Vec2,
               WWMath) {
@@ -47,28 +51,43 @@ define([
              */
             this.range = 10e6; // TODO: Compute initial range to fit globe in viewport.
 
-            // Internal. Intentionally not documented.
-            this.mouseButton = -1;
-
-            // Internal. Intentionally not documented.
-            this.mousePoint = new Vec2(0, 0);
-
-            // Internal. Intentionally not documented.
-            this.mouseDelta = new Vec2(0, 0);
-
-            // Internal. Intentionally not documented.
-            this.wheelDelta = 0;
-
-            // Register mouse event listeners on the global window object. Though this navigator ignores mouse gestures
-            // initiated outside of the WorldWindow's canvas, listening on the global window enables this navigator to
-            // track mouse movement and button releases that occur outside of the canvas.
             var self = this;
-            var mouseEventListener = function (event) {
-                self.handleMouseEvent(event);
-            };
-            window.addEventListener("mousedown", mouseEventListener, false);
-            window.addEventListener("mouseup", mouseEventListener, false);
-            window.addEventListener("mousemove", mouseEventListener, false);
+
+            /**
+             * A gesture recognizer configured to look for primary-mouse drag gestures or touch drag gestures and
+             * initiate navigator panning while the gesture is occurring.
+             * @type {PanGestureRecognizer}
+             * @protected
+             */
+            this.panGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
+            this.panGestureRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handlePan(gestureRecognizer);
+            });
+
+            /**
+             * A gesture recognizer configured to look for secondary-mouse drag gestures and initiate navigator rotation
+             * while the gesture is occurring.
+             * @type {PanGestureRecognizer}
+             * @protected
+             */
+            this.mouseRotationGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
+            this.mouseRotationGestureRecognizer.buttons = 4; // secondary mouse button
+            this.mouseRotationGestureRecognizer.minimumNumberOfTouches = Number.MAX_VALUE; // disable touch gestures
+            this.mouseRotationGestureRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handleMouseRotation(gestureRecognizer);
+            });
+
+            /**
+             * A gesture recognizer configured to look for auxiliary-mouse drag gestures and initiate navigator zooming
+             * while the gesture is occurring.
+             * @type {PanGestureRecognizer}
+             */
+            this.mouseZoomGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
+            this.mouseZoomGestureRecognizer.buttons = 2; // auxiliary mouse button
+            this.mouseZoomGestureRecognizer.minimumNumberOfTouches = Number.MAX_VALUE; // disable touch gestures
+            this.mouseZoomGestureRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handleMouseZoom(gestureRecognizer);
+            });
 
             // Register wheel event listeners on the WorldWindow's canvas.
             worldWindow.canvas.addEventListener("wheel", function (event) {
@@ -97,176 +116,145 @@ define([
         };
 
         /**
-         * Recognizes mouse gestures initiated on the WorldWindow's canvas. Upon recognizing a gesture this delegates
-         * the task of responding to that gesture to one of this navigator's handleMouse* functions, and cancels the
-         * default actions associated with the corresponding events.
+         * Performs navigator panning in response to the user input identified by the specified gesture recognizer.
          *
-         * @param {MouseEvent} event A mouse event associated with the WorldWindow.
+         * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
-        LookAtNavigator.prototype.handleMouseEvent = function (event) {
-            if (event.type == "mousedown") {
-                if (this.mouseButton < 0 && event.target == this.worldWindow.canvas) { // mouse pressed in WorldWindow canvas
-                    this.mouseButton = event.button;
-                    this.mousePoint.set(event.screenX, event.screenY);
-                    this.mouseDelta.set(0, 0);
-                    event.preventDefault();
-                }
-            } else if (event.type == "mouseup") {
-                if (this.mouseButton == event.button) {
-                    this.mouseButton = -1;
-                    event.preventDefault();
-                }
-            } else if (event.type == "mousemove") {
-                if (this.mouseButton >= 0) {
-                    this.mouseDelta.set(event.screenX - this.mousePoint[0], event.screenY - this.mousePoint[1]);
-                    this.mousePoint.set(event.screenX, event.screenY);
-                    event.preventDefault();
+        LookAtNavigator.prototype.handlePan = function (gestureRecognizer) {
+            var state = gestureRecognizer.state,
+                viewport = this.worldWindow.viewport,
+                globe = this.worldWindow.globe,
+                globeRadius = WWMath.max(globe.equatorialRadius, globe.polarRadius),
+                distance,
+                metersPerPixel,
+                forwardPixels, sidePixels,
+                forwardMeters, sideMeters,
+                forwardDegrees, sideDegrees,
+                sinHeading, cosHeading;
 
-                    if (this.mouseButton == 0) { // primary button is down
-                        this.handleMousePan();
-                    } else if (this.mouseButton == 1) { // auxiliary button is down
-                        this.handleMouseZoom();
-                    } else if (this.mouseButton == 2) { // secondary button is down
-                        this.handleMouseRotate();
-                    }
-                }
-            } else {
-                Logger.logMessage(Logger.LEVEL_WARNING, "LookAtNavigator", "handleMouseEvent",
-                    "Unrecognized event type: " + event.type);
+            if (state == GestureRecognizer.CHANGED) {
+                // Compute the current translation in screen coordinates.
+                forwardPixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
+                sidePixels = gestureRecognizer.translation[0] - gestureRecognizer.previousTranslation[0];
+
+                // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
+                // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
+                // a surface that is 'range' meters away form the eye point.
+                distance = WWMath.max(1, this.range);
+                metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
+                forwardMeters = forwardPixels * metersPerPixel;
+                sideMeters = -sidePixels * metersPerPixel;
+
+                // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context
+                // to perform this conversion.
+                forwardDegrees = (forwardMeters / globeRadius) * Angle.RADIANS_TO_DEGREES;
+                sideDegrees = (sideMeters / globeRadius) * Angle.RADIANS_TO_DEGREES;
+
+                // Apply the change in latitude and longitude to this navigator, relative to the current heading. Limit
+                // the new latitude to the range (-90, 90) in order to stop the forward movement at the pole. Panning
+                // over the pole requires a corresponding change in heading, which has not been implemented here in
+                // favor of simplicity.
+                sinHeading = Math.sin(this.heading * Angle.DEGREES_TO_RADIANS);
+                cosHeading = Math.cos(this.heading * Angle.DEGREES_TO_RADIANS);
+                this.lookAtPosition.latitude += forwardDegrees * cosHeading - sideDegrees * sinHeading;
+                this.lookAtPosition.longitude += forwardDegrees * sinHeading + sideDegrees * cosHeading;
+                this.lookAtPosition.latitude = WWMath.clamp(this.lookAtPosition.latitude, -90, 90);
+                this.lookAtPosition.longitude = Angle.normalizedDegreesLongitude(this.lookAtPosition.longitude);
+
+                // Send an event to request a redraw.
+                this.sendRedrawEvent();
             }
         };
 
         /**
-         * Translates mouse pan gestures to changes in this navigator's properties.
+         * Performs navigator rotation in response to the user input identified by the specified gesture recognizer.
+         *
+         * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
-        LookAtNavigator.prototype.handleMousePan = function () {
-            var viewport,
-                distance,
-                globe,
-                globeRadius,
-                metersPerPixel,
-                forwardMeters,
-                forwardDegrees,
-                sideMeters,
-                sideDegrees,
-                sinHeading,
-                cosHeading,
-                latDegrees,
-                lonDegrees;
+        LookAtNavigator.prototype.handleMouseRotation = function (gestureRecognizer) {
+            var state = gestureRecognizer.state,
+                viewport = this.worldWindow.viewport,
+                headingPixels, tiltPixels,
+                headingDegrees, tiltDegrees;
 
-            // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
-            // metric for converting to meters. This assumes that the gesture is intended for an object that is 'range'
-            // meters away form the eye position.
-            viewport = this.worldWindow.viewport;
-            distance = WWMath.max(1, this.range);
-            metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
-            forwardMeters = this.mouseDelta[1] * metersPerPixel;
-            sideMeters = -this.mouseDelta[0] * metersPerPixel;
+            if (state == GestureRecognizer.CHANGED) {
+                // Compute the current translation in screen coordinates.
+                headingPixels = gestureRecognizer.translation[0] - gestureRecognizer.previousTranslation[0];
+                tiltPixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
 
-            // Convert the translation from meters to arc degrees. The globe's radius provides the necessary context to
-            // perform this conversion.
-            globe = this.worldWindow.globe;
-            globeRadius = WWMath.max(globe.equatorialRadius, globe.polarRadius);
-            forwardDegrees = (forwardMeters / globeRadius) * Angle.RADIANS_TO_DEGREES;
-            sideDegrees = (sideMeters / globeRadius) * Angle.RADIANS_TO_DEGREES;
+                // Convert the translation from screen coordinates to degrees. Use the viewport dimensions as a metric
+                // for converting the gesture translation to a fraction of an angle.
+                headingDegrees = 180 * headingPixels / viewport.width;
+                tiltDegrees = 90 * tiltPixels / viewport.height;
 
-            // Convert the translation from arc degrees to change in latitude and longitude relative to the current
-            // heading. The resultant translation in latitude and longitude is defined in the equirectangular coordinate
-            // system.
-            sinHeading = Math.sin(this.heading * Angle.DEGREES_TO_RADIANS);
-            cosHeading = Math.cos(this.heading * Angle.DEGREES_TO_RADIANS);
-            latDegrees = forwardDegrees * cosHeading - sideDegrees * sinHeading;
-            lonDegrees = forwardDegrees * sinHeading + sideDegrees * cosHeading;
+                // Apply the change in heading and tilt to this navigator's corresponding properties. Limit the new tilt
+                // to the range (0, 90) in order to prevent the navigator from achieving an upside down orientation.
+                this.heading += headingDegrees;
+                this.tilt += tiltDegrees;
+                this.heading = Angle.normalizedDegreesLongitude(this.heading);// TODO: normalizedDegrees
+                this.tilt = WWMath.clamp(this.tilt, 0, 90);
 
-            // Apply the change in latitude and longitude to this navigator's properties. Limit the new latitude to the
-            // range (-90, 90) in order to stop the forward movement at the pole. Panning over the pole requires a
-            // corresponding change in heading, which has not been implemented here in favor of simplicity.
-            this.lookAtPosition.latitude += latDegrees;
-            this.lookAtPosition.longitude += lonDegrees;
-            this.lookAtPosition.latitude = WWMath.clamp(this.lookAtPosition.latitude, -90, 90);
-            this.lookAtPosition.longitude = Angle.normalizedDegreesLongitude(this.lookAtPosition.longitude);
-
-            // Send an event to request a redraw.
-            var e = document.createEvent('Event');
-            e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
-            this.worldWindow.canvas.dispatchEvent(e);
+                // Send an event to request a redraw.
+                this.sendRedrawEvent();
+            }
         };
 
         /**
-         * Translates mouse rotation gestures to changes in this navigator's properties.
+         * Performs navigator zooming in response to the user input identified by the specified gesture recognizer.
+         *
+         * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
-        LookAtNavigator.prototype.handleMouseRotate = function () {
-            var viewport,
-                headingDegrees,
-                tiltDegrees;
-
-            // Convert the translation from screen coordinates to degrees. Use the viewport dimensions as a metric for
-            // converting the gesture translation to a fraction of an angle.
-            viewport = this.worldWindow.viewport;
-            headingDegrees = 180 * this.mouseDelta[0] / viewport.width;
-            tiltDegrees = 90 * this.mouseDelta[1] / viewport.height;
-
-            // Apply the change in heading and tilt to this navigator's corresponding properties. Limit the new tilt to
-            // the range (0, 90) in order to prevent the navigator from achieving an upside down orientation.
-            this.heading += headingDegrees;
-            this.tilt += tiltDegrees;
-            this.heading = Angle.normalizedDegreesLongitude(this.heading);// TODO: normalizedDegrees
-            this.tilt = WWMath.clamp(this.tilt, 0, 90);
-
-            // Send an event to request a redraw.
-            var e = document.createEvent('Event');
-            e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
-            this.worldWindow.canvas.dispatchEvent(e);
-        };
-
-        /**
-         * Translates mouse zoom gestures to changes in this navigator's properties.
-         */
-        LookAtNavigator.prototype.handleMouseZoom = function () {
-            var viewport,
+        LookAtNavigator.prototype.handleMouseZoom = function (gestureRecognizer) {
+            var state = gestureRecognizer.state,
+                viewport = this.worldWindow.viewport,
+                pixels,
                 distance,
                 metersPerPixel,
                 meters;
 
-            // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
-            // metric for converting to meters. This assumes that the gesture is intended for an object that is 'range'
-            // meters away form the eye position.
-            viewport = this.worldWindow.viewport;
-            distance = WWMath.max(1, this.range);
-            metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
-            meters = 2.0 * this.mouseDelta[1] * metersPerPixel;
+            if (state == GestureRecognizer.CHANGED) {
+                // Compute the current translation in screen coordinates.
+                pixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
 
-            // Apply the change in range to this navigator's properties. Limit the new range to positive values in order
-            // to prevent degenerating to a first-person navigator when range is zero.
-            this.range += meters;
-            this.range = WWMath.clamp(this.range, 1, Number.MAX_VALUE);
+                // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
+                // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
+                // a surface that is 'range' meters away form the eye point.
+                distance = WWMath.max(1, this.range);
+                metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
+                meters = 2.0 * pixels * metersPerPixel;
 
-            // Send an event to request a redraw.
-            var e = document.createEvent('Event');
-            e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
-            this.worldWindow.canvas.dispatchEvent(e);
+                // Apply the change in range to this navigator's properties. Limit the new range to positive values in
+                // order to prevent degenerating to a first-person navigator when range is zero.
+                this.range += meters;
+                this.range = WWMath.clamp(this.range, 1, Number.MAX_VALUE);
+
+                // Send an event to request a redraw.
+                this.sendRedrawEvent();
+            }
         };
 
         /**
-         * Recognizes wheel gestures initiated on the WorldWindow's canvas. Upon recognizing a gesture this delegates
-         * the task of responding to that gesture to one of this navigator's handleWheel* functions, and cancels the
-         * default actions associated with the corresponding events.
+         * Recognizes wheel gestures indicating navigation. Upon recognizing a gesture this delegates the task of
+         * responding to that gesture to one of this navigator's handleWheel* functions, and cancels the default actions
+         * associated with the corresponding events.
          *
          * @param {WheelEvent} event A wheel event associated with the WorldWindow.
          */
         LookAtNavigator.prototype.handleWheelEvent = function (event) {
+            var wheelDelta;
+
             if (event.type == "wheel") {
                 // Convert the wheel delta value from its current units to screen coordinates. The default wheel unit
                 // is DOM_DELTA_PIXEL.
-                this.wheelDelta = event.deltaY;
+                wheelDelta = event.deltaY;
                 if (event.deltaMode == WheelEvent.DOM_DELTA_LINE) {
-                    this.wheelDelta *= 10;
+                    wheelDelta *= 10;
                 } else if (event.deltaMode == WheelEvent.DOM_DELTA_PAGE) {
-                    this.wheelDelta *= 100;
+                    wheelDelta *= 100;
                 }
 
                 event.preventDefault();
-                this.handleWheelZoom();
+                this.handleWheelZoom(wheelDelta);
             } else {
                 Logger.logMessage(Logger.LEVEL_WARNING, "LookAtNavigator", "handleWheelEvent",
                     "Unrecognized event type: " + event.type);
@@ -276,19 +264,19 @@ define([
         /**
          * Translates wheel zoom gestures to changes in this navigator's properties.
          */
-        LookAtNavigator.prototype.handleWheelZoom = function () {
+        LookAtNavigator.prototype.handleWheelZoom = function (wheelDelta) {
             var viewport,
                 distance,
                 metersPerPixel,
                 meters;
 
             // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
-            // metric for converting to meters. This assumes that the gesture is intended for an object that is 'range'
-            // meters away form the eye position.
+            // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
+            // a surface that is 'range' meters away form the eye point.
             viewport = this.worldWindow.viewport;
             distance = WWMath.max(1, this.range);
             metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
-            meters = 0.5 * this.wheelDelta * metersPerPixel;
+            meters = 0.5 * wheelDelta * metersPerPixel;
 
             // Apply the change in range to this navigator's properties. Limit the new range to positive values in order
             // to prevent degenerating to a first-person navigator when range is zero.
@@ -296,6 +284,13 @@ define([
             this.range = WWMath.clamp(this.range, 1, Number.MAX_VALUE);
 
             // Send an event to request a redraw.
+            this.sendRedrawEvent();
+        };
+
+        /**
+         * Sends a redraw event to this navigator's world window.
+         */
+        LookAtNavigator.prototype.sendRedrawEvent = function () {
             var e = document.createEvent('Event');
             e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
             this.worldWindow.canvas.dispatchEvent(e);
