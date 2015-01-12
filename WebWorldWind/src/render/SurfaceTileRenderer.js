@@ -42,6 +42,8 @@ define([
             // Scratch values to avoid constantly recreating these matrices.
             this.texMaskMatrix = Matrix.fromIdentity();
             this.texSamplerMatrix = Matrix.fromIdentity();
+
+            this.uvToTexelMatrix = Matrix.fromIdentity();
         };
 
         /**
@@ -129,12 +131,41 @@ define([
                 sTrans = -(surfaceSector.minLongitude - terrainSector.minLongitude) / surfaceDeltaLon,
                 tTrans = -(surfaceSector.minLatitude - terrainSector.minLatitude) / surfaceDeltaLat;
 
+            // Texels occur in discrete units and have discrete locations. For a texture map of linear size N,
+            //      the first texel extends from 0 to 1, and
+            //      the last texel extends from N-1 to N.
+            // We want to map UV coordinates to the middle of texel so that it is sampled correctly. Therefore,
+            //      UV = 0  => texel center at 0.5, and
+            //      UV = 1  => texel center at N - 0.5.
+            // So the offset of UV to texel is 0.5 / N, and
+            // the scale of UV to texel is (N - 1) / N.
+            var cache = dc.gpuResourceCache,
+                texture = cache.resourceForKey(surfaceTile.imagePath);
+
+            if (!texture) {
+                texture = cache.resourceForKey(surfaceTile.fallbackTile.imagePath);
+            }
+
+            var width = texture.imageWidth * sScale,
+                height = texture.imageHeight * tScale;
+
+            this.uvToTexelMatrix.set(
+                (width - 1) / width, 0, 0, 0.5 / width,
+                0, (height - 1) / height, 0, 0.5 / height,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            );
+
             this.texMaskMatrix.set(
                 sScale, 0, 0, sTrans,
                 0, tScale, 0, tTrans,
                 0, 0, 1, 0,
                 0, 0, 0, 1
             );
+
+            // TODO: factor uvToTexelMatrix directly into texMaskMatrix
+            this.texMaskMatrix.multiplyMatrix(this.uvToTexelMatrix);
+
             this.texSamplerMatrix.setToUnitYFlip();
             surfaceTile.applyInternalTransform(dc, this.texSamplerMatrix);
             this.texSamplerMatrix.multiplyMatrix(this.texMaskMatrix);
