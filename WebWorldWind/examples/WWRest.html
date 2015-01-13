@@ -1,0 +1,58 @@
+<!--@version $Id: Example003.html 2648 2015-01-12 19:50:32Z tgaskins $-->
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>World Wind REST Example</title>
+    <style>
+        body {
+            font-family: 'Oswald', 'Futura', sans-serif;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #page {
+            margin: 0px auto 0px auto;
+        }
+
+        #divLayerManager {
+            float: left;
+            width: 300px;
+            height: 600px;
+            margin: 5px;
+            border: 2px solid #000066;
+        }
+
+        #divWorldWindow {
+            float: left;
+            width: 700px;
+            height: 600px;
+            margin: 5px;
+            border: 2px solid #000066;
+        }
+
+        @media only screen and (max-device-width: 1050px) {
+            #divLayerManager {
+                float: left;
+                width: 250px;
+                height: 600px;
+                margin: 5px;
+                border: 2px solid #000066;
+            }
+        }
+    </style>
+    <link href="LayerManager/LayerManager.css" type="text/css" rel="stylesheet"/>
+    <script data-main="WWRest" src="../thirdparty/require.js"></script>
+</head>
+<body>
+<div id="page">
+    <div id="divLayerManager">
+    </div>
+    <div id="divWorldWindow">
+        <canvas id="canvasOne" width="700" height="600">
+            Your browser does not support HTML5 Canvas.
+        </canvas>
+    </div>
+</div>
+</body>
+</html>
