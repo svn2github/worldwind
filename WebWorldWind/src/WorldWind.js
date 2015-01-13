@@ -18,6 +18,8 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/BoundingBox',
         './util/Color',
         './render/DrawContext',
+        './globe/EarthElevationModel',
+        './globe/EarthRestElevationModel',
         './globe/ElevationModel',
         './util/FrameStatistics',
         './geom/Frustum',
@@ -82,6 +84,8 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               BoundingBox,
               Color,
               DrawContext,
+              EarthElevationModel,
+              EarthRestElevationModel,
               ElevationModel,
               FrameStatistics,
               Frustum,
@@ -218,6 +222,8 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['BoundingBox'] = BoundingBox;
         WorldWind['Color'] = Color;
         WorldWind['DrawContext'] = DrawContext;
+        WorldWind['EarthElevationModel'] = EarthElevationModel;
+        WorldWind['EarthRestElevationModel'] = EarthRestElevationModel;
         WorldWind['ElevationModel'] = ElevationModel;
         WorldWind['FrameStatistics'] = FrameStatistics;
         WorldWind['Frustum'] = Frustum;

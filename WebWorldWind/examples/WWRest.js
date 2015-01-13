@@ -18,6 +18,10 @@ requirejs(['../src/WorldWind',
         wwd.addLayer(new WorldWind.BMNGRestLayer(null, "../data/Earth/BMNG256-200404", "Blue Marble"));
         wwd.addLayer(new WorldWind.LandsatRestLayer(null, "../data/Earth/LandSat", "LandSat"));
         wwd.addLayer(new WorldWind.BingWMSLayer());
+
+        wwd.globe.elevationModel = new WorldWind.EarthRestElevationModel(null, "../data/Earth/EarthElevations2",
+            "Earth Elevations");
+
         wwd.redraw();
 
         var layerManger = new LayerManager('divLayerManager', wwd);

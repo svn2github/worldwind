@@ -39,7 +39,7 @@ define([
                 if (mimeType === "image/jpeg")
                     return "jpg";
 
-                if (mimeType === "application/bil")
+                if (mimeType === "application/bil16")
                     return "bil";
 
                 return null;

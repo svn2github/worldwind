@@ -458,7 +458,9 @@ define([
                         var contentType = xhr.getResponseHeader("content-type");
 
                         if (xhr.status === 200) {
-                            if (contentType == elevationModel.retrievalImageFormat) {
+                            if (contentType === elevationModel.retrievalImageFormat
+                            || contentType === "text/plain"
+                            || contentType === "application/octet-stream") {
                                 Logger.log(Logger.LEVEL_INFO, "Elevations retrieval succeeded: " + url);
                                 elevationModel.loadElevationImage(tile, xhr);
                                 elevationModel.absentResourceList.unmarkResourceAbsent(tile.imagePath);
@@ -467,7 +469,7 @@ define([
                                 var e = document.createEvent('Event');
                                 e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
                                 window.dispatchEvent(e);
-                            } else if (contentType == "text/xml") {
+                            } else if (contentType === "text/xml") {
                                 elevationModel.absentResourceList.markResourceAbsent(tile.imagePath);
                                 Logger.log(Logger.LEVEL_WARNING,
                                     "Elevations retrieval failed (" + xhr.statusText + "): " + url + ".\n "
