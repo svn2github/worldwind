@@ -83,6 +83,13 @@ define([
 
             /**
              *
+             * @type {Array}
+             * @protected
+             */
+            this.touches = [];
+
+            /**
+             *
              * @type {Vec2}
              * @protected
              */
@@ -244,6 +251,11 @@ define([
                 return;
             }
 
+            // Ignore mouse events when one or more touches are active.
+            if (this.touches.length > 0) {
+                return;
+            }
+
             if (event.type == "mousedown") {
                 if ((this.mouseButtons & buttonBit) == 0 && this.target == event.target) {
                     this.mouseButtons |= buttonBit;
@@ -319,7 +331,7 @@ define([
                 return;
             }
 
-            this.updateTouchCentroid(event);
+            this.updateTouches(event);
 
             if (event.type == "touchstart") {
                 this.touchStart(event);
@@ -335,25 +347,28 @@ define([
             }
         };
 
-        GestureRecognizer.prototype.updateTouchCentroid = function (event) {
-            var previousCentroid = new Vec2(0, 0),
-                touches = event.targetTouches,
-                count = touches.length,
+        GestureRecognizer.prototype.updateTouches = function (event) {
+            var previousCentroid = new Vec2(this.touchCentroid[0], this.touchCentroid[1]),
+                targetTouches = event.targetTouches,
+                numTouches = targetTouches.length,
                 touch;
 
-            previousCentroid.copy(this.touchCentroid);
+            this.touches = [];
             this.touchCentroid.set(0, 0);
 
-            if (count > 0) {
-                for (var i = 0; i < count; i++) {
-                    touch = touches.item(i);
+            if (numTouches > 0) {
+                for (var i = 0; i < numTouches; i++) {
+                    touch = targetTouches.item(i);
+                    this.touches.push(touch);
                     this.touchCentroid[0] += touch.screenX;
                     this.touchCentroid[1] += touch.screenY;
                 }
 
-                this.touchCentroid[0] /= count;
-                this.touchCentroid[1] /= count;
+                this.touchCentroid[0] /= numTouches;
+                this.touchCentroid[1] /= numTouches;
             }
+
+            // TODO: Capture the common pattern in tuochstart and touchend/touchcancel
 
             if (event.type == "touchstart") {
                 if (event.targetTouches.length == event.changedTouches.length) { // first touch down

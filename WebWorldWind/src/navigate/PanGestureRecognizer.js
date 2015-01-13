@@ -161,6 +161,8 @@ define([
             }
         };
 
+        // TODO: Capture the common pattern in touchEnd and touchCancel
+
         /**
          *
          * @param event
