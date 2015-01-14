@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 /**
- * @exports TouchPanGestureRecognizer
+ * @exports PanGestureRecognizer
  * @version $Id$
  */
 define([
@@ -24,8 +24,6 @@ define([
          */
         var PanGestureRecognizer = function (target) {
             GestureRecognizer.call(this, target);
-            GestureRecognizer.registerMouseEventListeners(this, target);
-            GestureRecognizer.registerTouchEventListeners(this, target);
 
             /**
              *
@@ -53,15 +51,17 @@ define([
 
             /**
              *
-             * @type {Vec2}
+             * @type {number}
+             * @protected
              */
-            this.previousTranslation = new Vec2(0, 0);
+            this.threshold = 5;
 
             /**
              *
              * @type {Vec2}
+             * @protected
              */
-            this.startPoint = new Vec2(0, 0);
+            this.beginPoint = new Vec2(0, 0);
         };
 
         PanGestureRecognizer.prototype = Object.create(GestureRecognizer.prototype);
@@ -70,8 +70,16 @@ define([
             GestureRecognizer.prototype.reset.call(this);
 
             this.translation.set(0, 0);
-            this.previousTranslation.set(0, 0);
-            this.startPoint.set(0, 0);
+            this.beginPoint.set(0, 0);
+        };
+
+        /**
+         *
+         * @param event
+         * @returns {boolean}
+         */
+        PanGestureRecognizer.prototype.shouldBeginWithMouseEvent = function (event) {
+            return this.buttons == this.activeButtons;
         };
 
         /**
@@ -81,8 +89,8 @@ define([
         PanGestureRecognizer.prototype.mouseDown = function (event) {
             var buttonBit = (1 << event.button);
 
-            if (this.mouseButtons == buttonBit) {
-                this.startPoint.set(event.screenX, event.screenY);
+            if (this.activeButtons == buttonBit) {
+                this.beginPoint.set(event.screenX, event.screenY);
             }
         };
 
@@ -91,15 +99,12 @@ define([
          * @param event
          */
         PanGestureRecognizer.prototype.mouseMove = function (event) {
-            var threshold = 5;
-
-            this.previousTranslation.copy(this.translation);
             this.translation.set(event.screenX, event.screenY);
-            this.translation.subtract(this.startPoint);
+            this.translation.subtract(this.beginPoint);
 
             if (this.state == GestureRecognizer.POSSIBLE) {
-                if (this.translation.magnitude() > threshold) {
-                    if (this.buttons == this.mouseButtons) {
+                if (this.translation.magnitude() > this.threshold) {
+                    if (this.shouldBeginWithMouseEvent(event)) {
                         this.transitionToState(GestureRecognizer.BEGAN, event);
                     } else {
                         this.transitionToState(GestureRecognizer.FAILED, event);
@@ -115,7 +120,7 @@ define([
          * @param event
          */
         PanGestureRecognizer.prototype.mouseUp = function (event) {
-            if (this.mouseButtons == 0) {
+            if (this.activeButtons == 0) {
                 if (this.state == GestureRecognizer.BEGAN || this.state == GestureRecognizer.CHANGED) {
                     this.transitionToState(GestureRecognizer.ENDED, event);
                     this.reset();
@@ -128,10 +133,20 @@ define([
         /**
          *
          * @param event
+         * @returns {boolean}
+         */
+        PanGestureRecognizer.prototype.shouldBeginWithTouchEvent = function (event) {
+            return this.activeTouches.length >= this.minimumNumberOfTouches
+                && this.activeTouches.length <= this.maximumNumberOfTouches;
+        };
+
+        /**
+         *
+         * @param event
          */
         PanGestureRecognizer.prototype.touchStart = function (event) {
             if (event.targetTouches.length == event.changedTouches.length) {
-                this.startPoint.copy(this.touchCentroid);
+                this.beginPoint.copy(this.touchCentroid);
             }
         };
 
@@ -140,17 +155,13 @@ define([
          * @param event
          */
         PanGestureRecognizer.prototype.touchMove = function (event) {
-            var threshold = 5;
-
-            this.previousTranslation.copy(this.translation);
             this.translation.copy(this.touchCentroid);
             this.translation.add(this.touchCentroidOffset);
-            this.translation.subtract(this.startPoint);
+            this.translation.subtract(this.beginPoint);
 
             if (this.state == GestureRecognizer.POSSIBLE) {
-                if (this.translation.magnitude() > threshold) {
-                    if (this.minimumNumberOfTouches <= event.targetTouches.length &&
-                        this.maximumNumberOfTouches >= event.targetTouches.length) {
+                if (this.translation.magnitude() > this.threshold) {
+                    if (this.shouldBeginWithTouchEvent(event)) {
                         this.transitionToState(GestureRecognizer.BEGAN, event);
                     } else {
                         this.transitionToState(GestureRecognizer.FAILED, event);

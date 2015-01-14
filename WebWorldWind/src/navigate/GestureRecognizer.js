@@ -46,25 +46,11 @@ define([
             this.enabled = true;
 
             /**
-             *
-             * @type {boolean}
-             */
-            this.cancelsEvents = true;
-
-            /**
              * The listeners associated with this gesture recognizer. Applications must not modify this object.
              * @type {Array}
              * @protected
              */
             this.listeners = [];
-
-            /**
-             *
-             * @type {Array}
-             * @protected
-             */
-            this.cancelStates = [GestureRecognizer.BEGAN, GestureRecognizer.CHANGED, GestureRecognizer.ENDED,
-                GestureRecognizer.RECOGNIZED];
 
             /**
              *
@@ -79,14 +65,14 @@ define([
              * @type {number}
              * @protected
              */
-            this.mouseButtons = 0;
+            this.activeButtons = 0;
 
             /**
              *
              * @type {Array}
              * @protected
              */
-            this.touches = [];
+            this.activeTouches = [];
 
             /**
              *
@@ -98,8 +84,12 @@ define([
             /**
              *
              * @type {Vec2}
+             * @protected
              */
             this.touchCentroidOffset = new Vec2(0, 0);
+
+            GestureRecognizer.registerMouseEventListeners(this, target);
+            GestureRecognizer.registerTouchEventListeners(this, target);
         };
 
         /**
@@ -198,17 +188,10 @@ define([
          * @param event
          */
         GestureRecognizer.prototype.transitionToState = function (state, event) {
-            var cancel = this.cancelStates.indexOf(state) != -1,
-                notify = this.notifyStates.indexOf(state) != -1;
+            var notify = this.notifyStates.indexOf(state) != -1;
 
             // Set this gesture recognizer's state property to the new state.
             this.state = state;
-
-            // When the new state cancels its associated events and this gesture recognizer is configured to cancel
-            // events, prevent the associated event's default action.
-            if (cancel && this.cancelsEvents && event) {
-                event.preventDefault();
-            }
 
             // When the new state generates notifications, call the gesture listeners associated with this recognizer.
             if (notify) {
@@ -252,28 +235,37 @@ define([
             }
 
             // Ignore mouse events when one or more touches are active.
-            if (this.touches.length > 0) {
+            if (this.activeTouches.length > 0) {
                 return;
             }
 
             if (event.type == "mousedown") {
-                if ((this.mouseButtons & buttonBit) == 0 && this.target == event.target) {
-                    this.mouseButtons |= buttonBit;
+                if ((this.activeButtons & buttonBit) == 0 && this.target == event.target) {
+                    this.activeButtons |= buttonBit;
                     this.mouseDown(event);
                 }
             } else if (event.type == "mousemove") {
-                if (this.mouseButtons != 0) {
+                if (this.activeButtons != 0) {
                     this.mouseMove(event);
                 }
             } else if (event.type == "mouseup") {
-                if ((this.mouseButtons & buttonBit) != 0) {
-                    this.mouseButtons &= ~buttonBit;
+                if ((this.activeButtons & buttonBit) != 0) {
+                    this.activeButtons &= ~buttonBit;
                     this.mouseUp(event);
                 }
             } else {
                 Logger.logMessage(Logger.LEVEL_WARNING, "GestureRecognizer", "handleMouseEvent",
                     "Unrecognized event type: " + event.type);
             }
+        };
+
+        /**
+         *
+         * @param event
+         * @returns {boolean}
+         */
+        GestureRecognizer.prototype.shouldBeginWithMouseEvent = function (event) {
+            return false;
         };
 
         /**
@@ -348,43 +340,65 @@ define([
         };
 
         GestureRecognizer.prototype.updateTouches = function (event) {
-            var previousCentroid = new Vec2(this.touchCentroid[0], this.touchCentroid[1]),
-                targetTouches = event.targetTouches,
-                numTouches = targetTouches.length,
-                touch;
+            var targetTouches = event.targetTouches,
+                changedTouches = event.changedTouches,
+                touch,
+                previousCentroid = new Vec2(this.touchCentroid[0], this.touchCentroid[1]);
 
-            this.touches = [];
+            this.activeTouches.length = 0; // clear the list of active touches
             this.touchCentroid.set(0, 0);
 
-            if (numTouches > 0) {
-                for (var i = 0; i < numTouches; i++) {
-                    touch = targetTouches.item(i);
-                    this.touches.push(touch);
-                    this.touchCentroid[0] += touch.screenX;
-                    this.touchCentroid[1] += touch.screenY;
-                }
-
-                this.touchCentroid[0] /= numTouches;
-                this.touchCentroid[1] /= numTouches;
+            for (var i = 0, count = targetTouches.length; i < count; i++) {
+                touch = targetTouches.item(i);
+                this.activeTouches.push(touch);
+                this.touchCentroid[0] += touch.screenX / count;
+                this.touchCentroid[1] += touch.screenY / count;
             }
 
-            // TODO: Capture the common pattern in tuochstart and touchend/touchcancel
+            // TODO: Capture the common pattern in touchstart and touchend/touchcancel
 
             if (event.type == "touchstart") {
-                if (event.targetTouches.length == event.changedTouches.length) { // first touch down
+                if (targetTouches.length == changedTouches.length) { // first touch down
                     this.touchCentroidOffset.set(0, 0);
                 } else { // added touches
                     this.touchCentroidOffset.add(previousCentroid);
                     this.touchCentroidOffset.subtract(this.touchCentroid);
                 }
             } else if (event.type == "touchend" || event.type == "touchcancel") {
-                if (event.targetTouches.length == 0) { // last touch up
+                if (targetTouches.length == 0) { // last touch up
                     this.touchCentroidOffset.set(0, 0);
                 } else { // removed touches
                     this.touchCentroidOffset.add(previousCentroid);
                     this.touchCentroidOffset.subtract(this.touchCentroid);
                 }
             }
+        };
+
+        /**
+         *
+         * @param identifier
+         */
+        GestureRecognizer.prototype.touchWithIdentifier = function (identifier) {
+            var touch;
+
+            for (var i = 0, count = this.activeTouches.length; i < count; i++) {
+                touch = this.activeTouches[i];
+
+                if (touch.identifier == identifier) {
+                    return touch;
+                }
+            }
+
+            return null;
+        };
+
+        /**
+         *
+         * @param event
+         * @returns {boolean}
+         */
+        GestureRecognizer.prototype.shouldBeginWithTouchEvent = function (event) {
+            return false;
         };
 
         /**

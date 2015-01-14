@@ -14,6 +14,7 @@ define([
         '../geom/Matrix',
         '../navigate/Navigator',
         '../navigate/PanGestureRecognizer',
+        '../navigate/PinchGestureRecognizer',
         '../geom/Position',
         '../geom/Vec2',
         '../util/WWMath'
@@ -25,6 +26,7 @@ define([
               Matrix,
               Navigator,
               PanGestureRecognizer,
+              PinchGestureRecognizer,
               Position,
               Vec2,
               WWMath) {
@@ -54,50 +56,60 @@ define([
             var self = this;
 
             /**
-             * A gesture recognizer configured to look for primary-mouse drag gestures or touch drag gestures and
-             * initiate navigator panning while the gesture is occurring.
+             * A gesture recognizer configured to look for touch drag gestures with any number of fingers and
+             * primary-mouse drag gestures, which initiates navigator panning while the gesture is occurring.
              * @type {PanGestureRecognizer}
              * @protected
              */
-            this.panGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
-            this.panGestureRecognizer.addGestureListener(function (gestureRecognizer) {
+            this.panRecognizer = new PanGestureRecognizer(worldWindow.canvas);
+            this.panRecognizer.addGestureListener(function (gestureRecognizer) {
                 self.handlePan(gestureRecognizer);
             });
 
             /**
-             * A gesture recognizer configured to look for secondary-mouse drag gestures and initiate navigator rotation
-             * while the gesture is occurring.
+             * A gesture recognizer configured to look for secondary-mouse drag gestures, which initiates navigator
+             * rotation while the gesture is occurring.
              * @type {PanGestureRecognizer}
              * @protected
              */
-            this.mouseRotationGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
-            this.mouseRotationGestureRecognizer.buttons = 4; // secondary mouse button
-            this.mouseRotationGestureRecognizer.minimumNumberOfTouches = Number.MAX_VALUE; // disable touch gestures
-            this.mouseRotationGestureRecognizer.addGestureListener(function (gestureRecognizer) {
-                self.handleMouseRotation(gestureRecognizer);
+            this.secondaryPanRecognizer = new PanGestureRecognizer(worldWindow.canvas);
+            this.secondaryPanRecognizer.buttons = 4; // secondary mouse button
+            this.secondaryPanRecognizer.minimumNumberOfTouches = Number.MAX_VALUE; // disable touch gestures
+            this.secondaryPanRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handleSecondaryPan(gestureRecognizer);
             });
 
             /**
-             * A gesture recognizer configured to look for auxiliary-mouse drag gestures and initiate navigator zooming
-             * while the gesture is occurring.
-             * @type {PanGestureRecognizer}
+             * A gesture recognizer configured to look for pinch gestures with two fingers, which initiates navigator
+             * zooming while the gesture is occurring.
+             *
+             * @type {PinchGestureRecognizer}
              */
-            this.mouseZoomGestureRecognizer = new PanGestureRecognizer(worldWindow.canvas);
-            this.mouseZoomGestureRecognizer.buttons = 2; // auxiliary mouse button
-            this.mouseZoomGestureRecognizer.minimumNumberOfTouches = Number.MAX_VALUE; // disable touch gestures
-            this.mouseZoomGestureRecognizer.addGestureListener(function (gestureRecognizer) {
-                self.handleMouseZoom(gestureRecognizer);
+            this.pinchRecognizer = new PinchGestureRecognizer(worldWindow.canvas);
+            this.pinchRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handlePinch(gestureRecognizer);
             });
+
+            this.lastPanTranslation = new Vec2(0, 0);
+            this.beginHeading = 0;
+            this.beginTilt = 0;
+            this.beginRange = 0;
 
             // Register wheel event listeners on the WorldWindow's canvas.
             worldWindow.canvas.addEventListener("wheel", function (event) {
                 self.handleWheelEvent(event);
             }, false);
 
-            // Prevent the browser's default context menu from appearing when the WorldWindow's canvas is right-clicked.
-            worldWindow.canvas.addEventListener("contextmenu", function (event) {
+            // Prevent the browser's default actions for touches on the WorldWindow's canvas, and prevent the context
+            // menu from appearing when the WorldWindow's canvas is right-clicked.
+            var preventDefaultListener = function (event) {
                 event.preventDefault();
-            }, false);
+            };
+            worldWindow.canvas.addEventListener("touchstart", preventDefaultListener, false);
+            worldWindow.canvas.addEventListener("touchmove", preventDefaultListener, false);
+            worldWindow.canvas.addEventListener("touchend", preventDefaultListener, false);
+            worldWindow.canvas.addEventListener("touchcancel", preventDefaultListener, false);
+            worldWindow.canvas.addEventListener("contextmenu", preventDefaultListener, false);
         };
 
         LookAtNavigator.prototype = Object.create(Navigator.prototype);
@@ -116,7 +128,8 @@ define([
         };
 
         /**
-         * Performs navigator panning in response to the user input identified by the specified gesture recognizer.
+         * Performs navigation changes in response to pan gestures using the primary mouse button or any number of
+         * touches.
          *
          * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
@@ -132,10 +145,13 @@ define([
                 forwardDegrees, sideDegrees,
                 sinHeading, cosHeading;
 
-            if (state == GestureRecognizer.CHANGED) {
+            if (state == GestureRecognizer.BEGAN) {
+                this.lastPanTranslation.set(0, 0);
+            } else if (state == GestureRecognizer.CHANGED) {
                 // Compute the current translation in screen coordinates.
-                forwardPixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
-                sidePixels = gestureRecognizer.translation[0] - gestureRecognizer.previousTranslation[0];
+                forwardPixels = gestureRecognizer.translation[1] - this.lastPanTranslation[1];
+                sidePixels = gestureRecognizer.translation[0] - this.lastPanTranslation[0];
+                this.lastPanTranslation.copy(gestureRecognizer.translation);
 
                 // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
                 // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
@@ -167,20 +183,23 @@ define([
         };
 
         /**
-         * Performs navigator rotation in response to the user input identified by the specified gesture recognizer.
+         * Performs navigation changes in response to pan gestures using the secondary mouse button.
          *
          * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
-        LookAtNavigator.prototype.handleMouseRotation = function (gestureRecognizer) {
+        LookAtNavigator.prototype.handleSecondaryPan = function (gestureRecognizer) {
             var state = gestureRecognizer.state,
                 viewport = this.worldWindow.viewport,
                 headingPixels, tiltPixels,
                 headingDegrees, tiltDegrees;
 
-            if (state == GestureRecognizer.CHANGED) {
+            if (state == GestureRecognizer.BEGAN) {
+                this.beginHeading = this.heading;
+                this.beginTilt = this.tilt;
+            } if (state == GestureRecognizer.CHANGED) {
                 // Compute the current translation in screen coordinates.
-                headingPixels = gestureRecognizer.translation[0] - gestureRecognizer.previousTranslation[0];
-                tiltPixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
+                headingPixels = gestureRecognizer.translation[0];
+                tiltPixels = gestureRecognizer.translation[1];
 
                 // Convert the translation from screen coordinates to degrees. Use the viewport dimensions as a metric
                 // for converting the gesture translation to a fraction of an angle.
@@ -189,9 +208,9 @@ define([
 
                 // Apply the change in heading and tilt to this navigator's corresponding properties. Limit the new tilt
                 // to the range (0, 90) in order to prevent the navigator from achieving an upside down orientation.
-                this.heading += headingDegrees;
-                this.tilt += tiltDegrees;
-                this.heading = Angle.normalizedDegreesLongitude(this.heading);// TODO: normalizedDegrees
+                this.heading = this.beginHeading + headingDegrees;
+                this.tilt = this.beginTilt + tiltDegrees;
+                this.heading = Angle.normalizedDegreesLongitude(this.heading); // TODO: normalizedDegrees
                 this.tilt = WWMath.clamp(this.tilt, 0, 90);
 
                 // Send an event to request a redraw.
@@ -200,36 +219,25 @@ define([
         };
 
         /**
-         * Performs navigator zooming in response to the user input identified by the specified gesture recognizer.
+         * Performs navigation changes in response to pinch gestures using two fingers.
          *
          * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
-        LookAtNavigator.prototype.handleMouseZoom = function (gestureRecognizer) {
+        LookAtNavigator.prototype.handlePinch = function (gestureRecognizer) {
             var state = gestureRecognizer.state,
-                viewport = this.worldWindow.viewport,
-                pixels,
-                distance,
-                metersPerPixel,
-                meters;
+                scale = gestureRecognizer.scale;
 
-            if (state == GestureRecognizer.CHANGED) {
-                // Compute the current translation in screen coordinates.
-                pixels = gestureRecognizer.translation[1] - gestureRecognizer.previousTranslation[1];
+            if (state == GestureRecognizer.BEGAN) {
+                this.beginRange = this.range;
+            } else if (state == GestureRecognizer.CHANGED) {
+                if (scale != 0) {
+                    // Apply the change in pinch scale to this navigator's range, relative to the range when the gesture
+                    // began.
+                    this.range = this.beginRange / scale;
 
-                // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
-                // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
-                // a surface that is 'range' meters away form the eye point.
-                distance = WWMath.max(1, this.range);
-                metersPerPixel = WWMath.perspectivePixelSize(viewport, distance);
-                meters = 2.0 * pixels * metersPerPixel;
-
-                // Apply the change in range to this navigator's properties. Limit the new range to positive values in
-                // order to prevent degenerating to a first-person navigator when range is zero.
-                this.range += meters;
-                this.range = WWMath.clamp(this.range, 1, Number.MAX_VALUE);
-
-                // Send an event to request a redraw.
-                this.sendRedrawEvent();
+                    // Send an event to request a redraw.
+                    this.sendRedrawEvent();
+                }
             }
         };
 
