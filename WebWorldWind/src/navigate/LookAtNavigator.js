@@ -16,6 +16,7 @@ define([
         '../navigate/PanGestureRecognizer',
         '../navigate/PinchGestureRecognizer',
         '../geom/Position',
+        '../navigate/RotationGestureRecognizer',
         '../geom/Vec2',
         '../util/WWMath'
     ],
@@ -28,6 +29,7 @@ define([
               PanGestureRecognizer,
               PinchGestureRecognizer,
               Position,
+              RotationGestureRecognizer,
               Vec2,
               WWMath) {
         "use strict";
@@ -80,14 +82,25 @@ define([
             });
 
             /**
-             * A gesture recognizer configured to look for pinch gestures with two fingers, which initiates navigator
-             * zooming while the gesture is occurring.
-             *
+             * A gesture recognizer configured to look for two finger pinch gestures, which initiates navigator zooming
+             * while the gesture is occurring.
              * @type {PinchGestureRecognizer}
+             * @protected
              */
             this.pinchRecognizer = new PinchGestureRecognizer(worldWindow.canvas);
             this.pinchRecognizer.addGestureListener(function (gestureRecognizer) {
                 self.handlePinch(gestureRecognizer);
+            });
+
+            /**
+             * A gesture recognizer configured to look for two finger rotation gestures, which initiates navigator
+             * rotation while the gesture is occurring.
+             * @type {RotationGestureRecognizer}
+             * @protected
+             */
+            this.rotationRecognizer = new RotationGestureRecognizer(worldWindow.canvas);
+            this.rotationRecognizer.addGestureListener(function (gestureRecognizer) {
+                self.handleRotation(gestureRecognizer);
             });
 
             this.lastPanTranslation = new Vec2(0, 0);
@@ -210,7 +223,7 @@ define([
                 // to the range (0, 90) in order to prevent the navigator from achieving an upside down orientation.
                 this.heading = this.beginHeading + headingDegrees;
                 this.tilt = this.beginTilt + tiltDegrees;
-                this.heading = Angle.normalizedDegreesLongitude(this.heading); // TODO: normalizedDegrees
+                this.heading = Angle.normalizedDegrees(this.heading);
                 this.tilt = WWMath.clamp(this.tilt, 0, 90);
 
                 // Send an event to request a redraw.
@@ -219,7 +232,7 @@ define([
         };
 
         /**
-         * Performs navigation changes in response to pinch gestures using two fingers.
+         * Performs navigation changes in response to two finger pinch gestures.
          *
          * @param gestureRecognizer The gesture recognizer that identified the gesture.
          */
@@ -232,12 +245,36 @@ define([
             } else if (state == GestureRecognizer.CHANGED) {
                 if (scale != 0) {
                     // Apply the change in pinch scale to this navigator's range, relative to the range when the gesture
-                    // began.
+                    // began. Limit the new range to positive values in order to prevent degenerating to a first-person
+                    // navigator when range is zero.
                     this.range = this.beginRange / scale;
+                    this.range = WWMath.clamp(this.range, 1, Number.MAX_VALUE);
 
                     // Send an event to request a redraw.
                     this.sendRedrawEvent();
                 }
+            }
+        };
+
+        /**
+         * Performs navigation changes in response to two finger rotation gestures.
+         *
+         * @param gestureRecognizer The gesture recognizer that identified the gesture.
+         */
+        LookAtNavigator.prototype.handleRotation = function (gestureRecognizer) {
+            var state = gestureRecognizer.state,
+                rotation = gestureRecognizer.rotation;
+
+            if (state == GestureRecognizer.BEGAN) {
+                this.beginHeading = this.heading;
+            } else if (state == GestureRecognizer.CHANGED) {
+                // Apply the change in pinch scale to this navigator's heading, relative to the heading when the gesture
+                // began.
+                this.heading = this.beginHeading - rotation;
+                this.heading = Angle.normalizedDegrees(this.heading);
+
+                // Send an event to request a redraw.
+                this.sendRedrawEvent();
             }
         };
 

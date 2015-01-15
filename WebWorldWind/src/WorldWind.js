@@ -50,6 +50,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Rectangle',
         './render/Renderable',
         './layer/RenderableLayer',
+        './navigate/RotationGestureRecognizer',
         './geom/Sector',
         './layer/ShowTessellationLayer',
         './shapes/SurfaceImage',
@@ -117,6 +118,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Rectangle,
               Renderable,
               RenderableLayer,
+              RotationGestureRecognizer,
               Sector,
               ShowTessellationLayer,
               SurfaceImage,
@@ -256,6 +258,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Rectangle'] = Rectangle;
         WorldWind['Renderable'] = Renderable;
         WorldWind['RenderableLayer'] = RenderableLayer;
+        WorldWind['RotationGestureRecognizer'] = RotationGestureRecognizer;
         WorldWind['Sector'] = Sector;
         WorldWind['ShowTessellationLayer'] = ShowTessellationLayer;
         WorldWind['SurfaceImage'] = SurfaceImage;
