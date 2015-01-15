@@ -35,6 +35,17 @@ define([], function () {
         HALF_PI: Math.PI / 2,
 
         /**
+         * Normalizes a specified value to be within the range of [-180, 180] degrees.
+         * @param {Number} degrees The value to normalize, in degrees.
+         * @returns {Number} The specified value normalized to [-180, 180] degrees.
+         */
+        normalizedDegrees: function (degrees) {
+            var angle = degrees % 360;
+
+            return angle > 180 ? angle - 360 : angle < -180 ? 360 + angle : angle;
+        },
+
+        /**
          * Normalizes a specified value to be within the range of [-90, 90] degrees.
          * @param {Number} degrees The value to normalize, in degrees.
          * @returns {Number} The specified value normalized to the normal range of latitude.
@@ -54,6 +65,17 @@ define([], function () {
             var lon = degrees % 360;
 
             return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
+        },
+
+        /**
+         * Normalizes a specified value to be within the range of [-Pi, Pi] radians.
+         * @param {Number} radians The value to normalize, in radians.
+         * @returns {Number} The specified value normalized to [-Pi, Pi] radians.
+         */
+        normalizedRadians: function (radians) {
+            var angle = radians % this.TWO_PI;
+
+            return angle > Math.PI ? angle - this.TWO_PI : angle < -Math.PI ? this.TWO_PI + angle : angle;
         },
 
         /**
