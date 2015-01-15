@@ -44,6 +44,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './navigate/NavigatorState',
         './error/NotYetImplementedError',
         './navigate/PanGestureRecognizer',
+        './navigate/PinchGestureRecognizer',
         './geom/Plane',
         './geom/Position',
         './geom/Rectangle',
@@ -110,6 +111,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               NavigatorState,
               NotYetImplementedError,
               PanGestureRecognizer,
+              PinchGestureRecognizer,
               Plane,
               Position,
               Rectangle,
@@ -248,6 +250,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['NotYetImplementedError'] = NotYetImplementedError;
         WorldWind['PanGestureRecognizer'] = PanGestureRecognizer;
+        WorldWind['PinchGestureRecognizer'] = PinchGestureRecognizer;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
