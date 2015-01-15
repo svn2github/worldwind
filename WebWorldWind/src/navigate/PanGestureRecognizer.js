@@ -43,11 +43,6 @@ define([
              */
             this.maximumNumberOfTouches = Number.MAX_VALUE;
 
-            /**
-             *
-             * @type {Vec2}
-             */
-            this.translation = new Vec2(0, 0);
 
             /**
              *
@@ -55,6 +50,12 @@ define([
              * @protected
              */
             this.threshold = 5;
+
+            /**
+             *
+             * @type {Vec2}
+             */
+            this.translation = new Vec2(0, 0);
 
             /**
              *

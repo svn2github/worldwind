@@ -16,7 +16,7 @@ define([
          * Constructs a pinch gesture recognizer.
          * @alias PinchGestureRecognizer
          * @constructor
-         * @classdesc A concrete gesture recognizer subclass that looks for two-finger pinch gestures.
+         * @classdesc A concrete gesture recognizer subclass that looks for two finger pinch gestures.
          */
         var PinchGestureRecognizer = function (target) {
             GestureRecognizer.call(this, target);
@@ -46,21 +46,21 @@ define([
              * @type {number}
              * @protected
              */
-            this.beginDistance = 0;
+            this.distance = 0;
 
             /**
              *
              * @type {number}
              * @protected
              */
-            this.distance = 0;
+            this.beginDistance = 0;
 
             /**
              *
              * @type {Array}
              * @protected
              */
-            this.pinchTouches = [];
+            this.touchIdentifiers = [];
         };
 
         PinchGestureRecognizer.prototype = Object.create(GestureRecognizer.prototype);
@@ -73,9 +73,9 @@ define([
 
             this.scale = 1;
             this.scaleOffset = 1;
-            this.beginDistance = 0;
             this.distance = 0;
-            this.pinchTouches = [];
+            this.beginDistance = 0;
+            this.touchIdentifiers = [];
         };
 
         /**
@@ -91,15 +91,15 @@ define([
          *
          * @returns {number}
          */
-        PinchGestureRecognizer.prototype.pinchDistance = function () {
+        PinchGestureRecognizer.prototype.touchDistance = function () {
             var touchA, touchB,
                 dx, dy;
 
-            if (this.pinchTouches.length < 2) {
+            if (this.touchIdentifiers.length < 2) {
                 return 0;
             } else {
-                touchA = this.touchWithIdentifier(this.pinchTouches[0]);
-                touchB = this.touchWithIdentifier(this.pinchTouches[1]);
+                touchA = this.touchWithIdentifier(this.touchIdentifiers[0]);
+                touchB = this.touchWithIdentifier(this.touchIdentifiers[1]);
                 dx = touchA.screenX - touchB.screenX;
                 dy = touchA.screenY - touchB.screenY;
 
@@ -114,13 +114,13 @@ define([
         PinchGestureRecognizer.prototype.touchStart = function (event) {
             var touchesDown = event.changedTouches;
 
-            if (this.pinchTouches.length < 2) {
-                for (var i = 0; i < touchesDown.length && this.pinchTouches.length < 2; i++) {
-                    this.pinchTouches.push(touchesDown.item(i).identifier);
+            if (this.touchIdentifiers.length < 2) {
+                for (var i = 0; i < touchesDown.length && this.touchIdentifiers.length < 2; i++) {
+                    this.touchIdentifiers.push(touchesDown.item(i).identifier);
                 }
 
-                if (this.pinchTouches.length == 2) {
-                    this.beginDistance = this.pinchDistance();
+                if (this.touchIdentifiers.length == 2) {
+                    this.beginDistance = this.touchDistance();
                     this.scaleOffset = this.scale;
                 }
             }
@@ -131,13 +131,13 @@ define([
          * @param event
          */
         PinchGestureRecognizer.prototype.touchMove = function (event) {
-            if (this.pinchTouches.length == 2) {
-                this.distance = this.pinchDistance();
+            if (this.touchIdentifiers.length == 2) {
+                this.distance = this.touchDistance();
                 this.scale = this.scaleOffset * (this.distance / this.beginDistance);
             }
 
             if (this.state == GestureRecognizer.POSSIBLE) {
-                if (this.pinchTouches.length == 2) {
+                if (this.touchIdentifiers.length == 2) {
                     if (this.shouldBeginWithTouchEvent(event)) {
                         this.transitionToState(GestureRecognizer.BEGAN, event);
                     }
@@ -193,9 +193,9 @@ define([
 
 
         PinchGestureRecognizer.prototype.removeTouch = function (identifier) {
-            for (var i = 0, count = this.pinchTouches.length; i < count; i++) {
-                if (this.pinchTouches[i] == identifier) {
-                    this.pinchTouches.splice(i, 1);
+            for (var i = 0, count = this.touchIdentifiers.length; i < count; i++) {
+                if (this.touchIdentifiers[i] == identifier) {
+                    this.touchIdentifiers.splice(i, 1);
                     break;
                 }
             }
