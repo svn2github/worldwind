@@ -170,8 +170,7 @@ define([
              * @returns {Number} The remainder after dividing the number by the modulus: <code>number % modulus</code>.
              */
             fmod: function (number, modulus) {
-                // TODO: Verify that javascript's modulo operator produces same values as Java's fmod function.
-                return number % modulus;
+                return modulus === 0 ? 0 : number - Math.floor(number / modulus) * modulus;
             },
 
             /**

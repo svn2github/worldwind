@@ -16,7 +16,8 @@ define([
         '../util/Logger',
         '../cache/MemoryCache',
         '../geom/Sector',
-        '../util/Tile'],
+        '../util/Tile',
+        '../util/WWMath'],
     function (AbsentResourceList,
               Angle,
               ArgumentError,
@@ -26,7 +27,8 @@ define([
               Logger,
               MemoryCache,
               Sector,
-              Tile) {
+              Tile,
+              WWMath) {
         "use strict";
 
         /**
@@ -134,6 +136,14 @@ define([
              * @type {number}
              */
             this.maxElevation = 0;
+
+            /**
+             * Indicates whether the data associated with the elevation model is point data. A value of <code>false</code>
+             * indicates that the data is area data (pixel is area).
+             * @type {boolean}
+             * @default true
+             */
+            this.pixelIsPoint = true;
 
             /**
              * The level set created during construction of this elevation model.
@@ -281,9 +291,20 @@ define([
                         "The specified number of latitudinal or longitudinal positions is less than one."));
             }
 
-            var level = this.levels.levelForTexelSize(targetResolution);
+            var level = this.levels.levelForTexelSize(targetResolution),
+                texelSize = level.texelSize * Angle.RADIANS_TO_DEGREES,
+                expandedSector = sector;
 
-            this.assembleTiles(level, sector, true);
+            if (!this.pixelIsPoint) {
+                // Expand the sector in order to capture tiles adjacent to those required for pixel-is-point.
+                expandedSector = new Sector(
+                    Math.max(-90, sector.minLatitude - 2 * texelSize),
+                    Math.min(90, sector.maxLatitude + 2 * texelSize),
+                    Math.max(-180, sector.minLongitude - 2 * texelSize),
+                    Math.min(180, sector.maxLongitude + 2 * texelSize));
+            }
+
+            this.assembleTiles(level, expandedSector, true);
             if (this.currentTiles.length === 0) {
                 return 0; // Sector is outside the elevation model's coverage area. Do not modify the results array.
             }
@@ -294,6 +315,18 @@ define([
                 return tileA.level.levelNumber - tileB.level.levelNumber;
             });
 
+            if (this.pixelIsPoint) {
+                return this.sectorElevationsFromPointElevations(sector, numLatitude, numLongitude, targetResolution,
+                    verticalExaggeration, result);
+            } else {
+                return this.sectorElevationsFromAreaElevations(sector, numLatitude, numLongitude, targetResolution,
+                    verticalExaggeration, result);
+            }
+        };
+
+        ElevationModel.prototype.sectorElevationsFromPointElevations = function (sector, numLatitude, numLongitude,
+                                                                                 targetResolution, verticalExaggeration,
+                                                                                 result) {
             var maxResolution = 0,
                 resolution;
 
@@ -314,6 +347,78 @@ define([
             }
 
             return maxResolution;
+        };
+
+        ElevationModel.prototype.sectorElevationsFromAreaElevations = function (sector, numLatitude, numLongitude,
+                                                                                targetResolution, verticalExaggeration,
+                                                                                result) {
+            // For each lat/lon in sector
+            //  Compute the lat/lon of the four surrounding area pixels.
+            //  Look up the area elevations in the current-tiles list.
+            //  Interpolate the point elevation from those four area elevations.
+
+            var deltaLat = sector.deltaLatitude() / (numLatitude > 1 ? numLatitude - 1 : 1),
+                deltaLon = sector.deltaLongitude() / (numLongitude > 1 ? numLongitude - 1 : 1),
+                lat, lon,
+                level = this.levels.levelForTexelSize(targetResolution),
+                texelSize = level.texelSize * Angle.RADIANS_TO_DEGREES,
+                index = 0,
+                swElevation = [], seElevation = [], neElevation = [], nwElevation = [];
+
+            for (var j = 0; j < numLatitude; j++) {
+                if (j === 0) {
+                    lat = sector.minLatitude;
+                } else if (j === numLatitude - 1) {
+                    lat = sector.maxLatitude;
+                } else {
+                    lat = sector.minLatitude + j * deltaLat;
+                }
+
+                for (var i = 0; i < numLongitude; i++) {
+                    if (i === 0) {
+                        lon = sector.minLongitude;
+                    } else if (i === numLongitude - 1) {
+                        lon = sector.maxLongitude;
+                    } else {
+                        lon = sector.minLongitude + i * deltaLon;
+                    }
+
+                    var minLat = Math.max(-90, lat - WWMath.fmod(WWMath.fabs(lat), texelSize)),
+                        minLon = Math.max(-180, lon - WWMath.fmod(WWMath.fabs(lon), texelSize)),
+                        maxLat = Math.min(90, minLat + texelSize),
+                        maxLon = Math.min(180, minLon + texelSize),
+                        sw = this.elevationFromAreaData(lat, lon, swElevation),
+                        se = this.elevationFromAreaData(minLat, maxLon, seElevation),
+                        ne = this.elevationFromAreaData(maxLat, maxLon, neElevation),
+                        nw = this.elevationFromAreaData(maxLat, minLon, nwElevation),
+                        yf = WWMath.fabs(lat - minLat) / WWMath.fabs(maxLat - minLat),
+                        xf = WWMath.fabs(lon - minLon) / WWMath.fabs(maxLon - minLon);
+
+                    if (sw && se && ne && nw) {
+                        result[index] = WWMath.interpolate(yf,
+                            WWMath.interpolate(xf, swElevation[0], seElevation[0]),
+                            WWMath.interpolate(xf, nwElevation[0], neElevation[0]));
+                    }
+
+                    index++;
+                }
+            }
+
+            return level.texelSize; // TODO: return the actual achieved
+        };
+
+        ElevationModel.prototype.elevationFromAreaData = function (lat, lon, result) {
+            for (var i = this.currentTiles.length - 1; i >= 0; i--) {
+                var tile = this.currentTiles[i],
+                    image = tile.image();
+
+                if (tile.sector.containsLocation(lat, lon) && image) {
+                    result[0] = image.elevationAtLocation(lat, lon);
+                    return true;
+                }
+            }
+
+            return false;
         };
 
         // Intentionally not documented.
@@ -459,8 +564,8 @@ define([
 
                         if (xhr.status === 200) {
                             if (contentType === elevationModel.retrievalImageFormat
-                            || contentType === "text/plain"
-                            || contentType === "application/octet-stream") {
+                                || contentType === "text/plain"
+                                || contentType === "application/octet-stream") {
                                 Logger.log(Logger.LEVEL_INFO, "Elevations retrieval succeeded: " + url);
                                 elevationModel.loadElevationImage(tile, xhr);
                                 elevationModel.absentResourceList.unmarkResourceAbsent(tile.imagePath);
