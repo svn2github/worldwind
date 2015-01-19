@@ -146,6 +146,17 @@ define([
              * @type {boolean}
              */
             this.pickingMode = false;
+
+            /**
+             * A "virtual" canvas for creating texture maps of SVG text.
+             * @type {Canvas}
+             */
+            this.canvas2D = null;
+
+            /**
+             * A 2D context derived from the "virtual" canvas.
+             */
+            this.ctx2D = null;
         };
 
         /**

@@ -226,6 +226,10 @@ define([
 
             this.drawContext.currentGlContext = gl;
 
+            // Create a virtual canvas for creating texture maps of SVG text and other SVG 2D renderings.
+            this.drawContext.canvas2D = document.createElement("canvas");
+            this.drawContext.ctx2D = this.drawContext.canvas2D.getContext("2d");
+
             this.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
             try {

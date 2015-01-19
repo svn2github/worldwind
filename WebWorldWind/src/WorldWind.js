@@ -45,6 +45,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './error/NotYetImplementedError',
         './navigate/PanGestureRecognizer',
         './navigate/PinchGestureRecognizer',
+        './layer/PlacenameLayer',
         './geom/Plane',
         './geom/Position',
         './geom/Rectangle',
@@ -67,6 +68,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './layer/TiledImageLayer',
         './util/TileFactory',
         './error/UnsupportedOperationError',
+        './render/UserFacingText',
         './geom/Vec2',
         './geom/Vec3',
         './util/WmsUrlBuilder',
@@ -113,6 +115,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               NotYetImplementedError,
               PanGestureRecognizer,
               PinchGestureRecognizer,
+              PlacenameLayer,
               Plane,
               Position,
               Rectangle,
@@ -135,6 +138,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               TiledImageLayer,
               TileFactory,
               UnsupportedOperationError,
+              UserFacingText,
               Vec2,
               Vec3,
               WmsUrlBuilder,
@@ -253,6 +257,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['NotYetImplementedError'] = NotYetImplementedError;
         WorldWind['PanGestureRecognizer'] = PanGestureRecognizer;
         WorldWind['PinchGestureRecognizer'] = PinchGestureRecognizer;
+        WorldWind['PlacenameLayer'] = PlacenameLayer;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;
         WorldWind['Rectangle'] = Rectangle;
@@ -275,6 +280,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['TiledImageLayer'] = TiledImageLayer;
         WorldWind['TileFactory'] = TileFactory;
         WorldWind['UnsupportedOperationError'] = UnsupportedOperationError;
+        WorldWind['UserFaceingText'] = UserFacingText;
         WorldWind['Vec2'] = Vec2;
         WorldWind['Vec3'] = Vec3;
         WorldWind['WmsUrlBuilder'] = WmsUrlBuilder;
