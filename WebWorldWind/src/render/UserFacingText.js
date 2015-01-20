@@ -117,13 +117,22 @@ define([
             }
     
             this.applyState(dc);
-    
+
+            // Query previous depth test enabled state and then disable it.
+            var isDepthTestEnabled = gl.isEnabled(WebGLRenderingContext.DEPTH_TEST);
+            gl.disable(WebGLRenderingContext.DEPTH_TEST);
+
             gl.drawElements(
                 WebGLRenderingContext.TRIANGLE_STRIP,
                 this.numIndices,
                 WebGLRenderingContext.UNSIGNED_SHORT,
                 0);
-    
+
+            // Restore depth test enable state.
+            if (isDepthTestEnabled) {
+                gl.enable(WebGLRenderingContext.DEPTH_TEST);
+            }
+
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
             gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
     
@@ -155,9 +164,6 @@ define([
 
             program.loadModelviewProjection(gl, this.mvpMatrix);
             program.loadTexSamplerMatrix(gl, this.texSamplerMatrix);
-    
-            gl.disable(WebGLRenderingContext.CULL_FACE);
-            gl.disable(WebGLRenderingContext.DEPTH_TEST);
         };
     
         UserFacingText.prototype.createTexture = function(dc) {
@@ -215,8 +221,8 @@ define([
             if (!vbo) {
                 points = new Float32Array([
                     0.0, 0.0, 0.0,
-                    1.0, 0.0, 0.0,
                     0.0, 1.0, 0.0,
+                    1.0, 0.0, 0.0,
                     1.0, 1.0, 0.0
                 ]);
                 vbo = gl.createBuffer();
@@ -239,8 +245,8 @@ define([
             if (!vbo) {
                 texCoords = new Float32Array([
                     0.0, 0.0,
-                    1.0, 0.0,
                     0.0, 1.0,
+                    1.0, 0.0,
                     1.0, 1.0
                 ]);
                 vbo = gl.createBuffer();
