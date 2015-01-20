@@ -12,7 +12,7 @@ define([
         '../util/Logger',
         '../geom/Matrix',
         '../error/NotYetImplementedError',
-        '../render/renderable',
+        '../render/Renderable',
         '../shaders/UserFacingTextProgram',
         '../geom/Vec3'
     ],
