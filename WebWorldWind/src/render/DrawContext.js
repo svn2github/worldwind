@@ -20,9 +20,7 @@ define([
         '../geom/Position',
         '../geom/Rectangle',
         '../geom/Sector',
-        '../render/SurfaceTileRenderer',
-        '../globe/Terrain',
-        '../globe/Tessellator'
+        '../render/SurfaceTileRenderer'
     ],
     function (ArgumentError,
               Color,
@@ -37,9 +35,7 @@ define([
               Position,
               Rectangle,
               Sector,
-              SurfaceTileRenderer,
-              Terrain,
-              Tessellator) {
+              SurfaceTileRenderer) {
         "use strict";
 
         /**
@@ -157,6 +153,8 @@ define([
              * A 2D context derived from the "virtual" canvas.
              */
             this.ctx2D = null;
+
+            this.orderedRenderables = [];
         };
 
         /**
@@ -167,6 +165,8 @@ define([
             this.timestamp = new Date().getTime();
             if (this.timestamp === oldTimeStamp)
                 ++this.timestamp;
+
+            this.orderedRenderables = []; // clears the ordered renderables array
         };
 
         /**
@@ -234,6 +234,61 @@ define([
             }
 
             return program;
+        };
+
+        DrawContext.prototype.addOrderedRenderable = function (orderedRenderable) {
+            if (orderedRenderable) {
+                orderedRenderable.insertionTime = Date.now();
+                this.orderedRenderables.push(orderedRenderable);
+            }
+        };
+
+        DrawContext.prototype.addOrderedRenderableToBack = function (orderedRenderable) {
+            if (orderedRenderable) {
+                orderedRenderable.insertionTime = Date.now();
+                orderedRenderable.eyeDistance = Number.MAX_VALUE;
+                this.orderedRenderables.push(orderedRenderable);
+            }
+        };
+
+        DrawContext.prototype.peekOrderedRenderable = function () {
+            if (this.orderedRenderables.length > 0) {
+                return this.orderedRenderables[this.orderedRenderables.length - 1];
+            } else {
+                return null;
+            }
+        };
+
+        DrawContext.prototype.popOrderedRenderable = function () {
+            if (this.orderedRenderables.length > 0) {
+                return this.orderedRenderables.pop();
+            } else {
+                return null;
+            }
+        };
+
+        DrawContext.prototype.sortOrderedRenderables = function () {
+            this.orderedRenderables.sort(function(orA, orB) {
+                var eA = orA.eyeDistance,
+                    eB = orB.eyeDistance;
+
+                if (eA < eB) { // orA is closer to the eye than orB; sort orA before orB
+                    return -1;
+                } else if (eA > eB) { // orA is farther from the eye than orB; sort orB before orA
+                    return 1;
+                } else { // orA and orB are the same distance from the eye; sort them based on insertion time
+                    var tA = orA.insertionTime,
+                        tB = orB.insertionTime;
+
+                    if (tA > tB) {
+                        return -1;
+                    } else if (tA < tB) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
         };
 
         return DrawContext;
