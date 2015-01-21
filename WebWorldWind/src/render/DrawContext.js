@@ -236,6 +236,11 @@ define([
             return program;
         };
 
+        /**
+         * Adds an ordered renderable to this draw context's ordered renderable list.
+         * @param {OrderedRenderable} orderedRenderable The ordered renderable to add. May be null, in which case the
+         * current ordered renderable list remains unchanged.
+         */
         DrawContext.prototype.addOrderedRenderable = function (orderedRenderable) {
             if (orderedRenderable) {
                 orderedRenderable.insertionTime = Date.now();
@@ -243,6 +248,11 @@ define([
             }
         };
 
+        /**
+         * Adds an ordered renderable to the end of this draw context's ordered renderable list.
+         * @param {OrderedRenderable} orderedRenderable The ordered renderable to add. May be null, in which case the
+         * current ordered renderable list remains unchanged.
+         */
         DrawContext.prototype.addOrderedRenderableToBack = function (orderedRenderable) {
             if (orderedRenderable) {
                 orderedRenderable.insertionTime = Date.now();
@@ -251,6 +261,11 @@ define([
             }
         };
 
+        /**
+         * Returns the ordered renderable at the head of the ordered renderable list without removing it from the list.
+         * @returns {OrderedRenderable} The first ordered renderable in this draw context's ordered renderable list, or
+         * null if the ordered renderable list is empty.
+         */
         DrawContext.prototype.peekOrderedRenderable = function () {
             if (this.orderedRenderables.length > 0) {
                 return this.orderedRenderables[this.orderedRenderables.length - 1];
@@ -259,6 +274,11 @@ define([
             }
         };
 
+        /**
+         * Returns the ordered renderable at the head of the ordered renderable list and removes it from the list.
+         * @returns {OrderedRenderable} The first ordered renderable in this draw context's ordered renderable list, or
+         * null if the ordered renderable list is empty.
+         */
         DrawContext.prototype.popOrderedRenderable = function () {
             if (this.orderedRenderables.length > 0) {
                 return this.orderedRenderables.pop();
@@ -267,7 +287,14 @@ define([
             }
         };
 
+        /**
+         * Sorts the ordered renderable list from nearest to the eye point to farthest from the eye point.
+         */
         DrawContext.prototype.sortOrderedRenderables = function () {
+            // Sort the ordered renderables by eye distance from front to back and then by insertion time. The ordered
+            // renderable peek and pop access the back of the ordered renderable list, thereby causing ordered renderables to
+            // be processed from back to front.
+
             this.orderedRenderables.sort(function(orA, orB) {
                 var eA = orA.eyeDistance,
                     eB = orB.eyeDistance;

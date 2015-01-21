@@ -19,8 +19,7 @@ define([
         './geom/Rectangle',
         './geom/Sector',
         './globe/Terrain',
-        './globe/Tessellator',
-        './globe/ZeroElevationModel'],
+        './globe/Tessellator'],
     function (ArgumentError,
               DrawContext,
               EarthElevationModel,
@@ -33,8 +32,7 @@ define([
               Rectangle,
               Sector,
               Terrain,
-              Tessellator,
-              ZeroElevationModel) {
+              Tessellator) {
         "use strict";
 
         /**
@@ -137,8 +135,6 @@ define([
             // Internal. Intentionally not documented.
             this.drawContext = new DrawContext();
             this.drawContext.canvas = this.canvas;
-
-            var thisWindow = this;
 
             // Set up to handle redraw requests sent to the canvas. Imagery uses this target because images are
             // generally specific to the WebGL context associated with the canvas.
@@ -281,6 +277,7 @@ define([
         // Internal function. Intentionally not documented.
         WorldWindow.prototype.doDraw = function (dc) {
             this.drawLayers();
+            this.drawOrderedRenderables();
         };
 
         // Internal function. Intentionally not documented.
@@ -366,6 +363,30 @@ define([
             if (layer) {
                 this.layers.splice(index, 0, layer);
             }
+        };
+
+        // Internal function. Intentionally not documented.
+        WorldWindow.prototype.drawOrderedRenderables = function () {
+            var beginTime = Date.now(),
+                dc = this.drawContext,
+                or;
+
+            dc.sortOrderedRenderables();
+            dc.orderedRenderingMode = true;
+
+            while (or = dc.popOrderedRenderable()) {
+                try {
+                    or.render(dc);
+                } catch (e) {
+                    Logger.logMessage(Logger.LEVEL_WARNING, WorldWindow, drawOrderedRenderables,
+                        "Error while rendering a shape:" + e.message);
+                    // Keep going. Render the rest of the ordered renderables.
+                }
+            }
+
+            dc.orderedRenderingMode = false;
+
+            dc.frameStatistics.orderedRenderingTime = Date.now() - beginTime;
         };
 
         return WorldWindow;
