@@ -387,7 +387,7 @@ define([
                         minLon = Math.max(-180, lon - WWMath.fmod(WWMath.fabs(lon), texelSize)),
                         maxLat = Math.min(90, minLat + texelSize),
                         maxLon = Math.min(180, minLon + texelSize),
-                        sw = this.elevationFromAreaData(lat, lon, swElevation),
+                        sw = this.elevationFromAreaData(minLat, minLon, swElevation),
                         se = this.elevationFromAreaData(minLat, maxLon, seElevation),
                         ne = this.elevationFromAreaData(maxLat, maxLon, neElevation),
                         nw = this.elevationFromAreaData(maxLat, minLon, nwElevation),
