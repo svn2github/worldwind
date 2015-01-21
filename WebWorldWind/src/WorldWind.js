@@ -201,6 +201,28 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
             LINEAR: "linear",
 
             /**
+             * Indicates that the associated parameters are fractional values of the virtual rectangle's width or
+             * height in the range [0, 1], where 0 indicates the rectangle's origin and 1 indicates the corner
+             * opposite its origin.
+             * @constant
+             */
+            OFFSET_FRACTION: "fraction",
+
+            /**
+             * Indicates that the associated parameters are in units of pixels relative to the virtual rectangle's
+             * corner opposite its origin corner.
+             * @constant
+             */
+            OFFSET_INSET_PIXELS: "insetPixels",
+
+            /**
+             * Indicates that the associated parameters are in units of pixels relative to the virtual rectangle's
+             * origin.
+             * @constant
+             */
+            OFFSET_PIXELS: "pixels",
+
+            /**
              * The event name of World Wind redraw events.
              */
             REDRAW_EVENT_TYPE: "WorldWindRedraw",
