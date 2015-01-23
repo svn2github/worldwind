@@ -8,10 +8,12 @@
  */
 define([
         '../error/ArgumentError',
-        '../util/Logger'
+        '../util/Logger',
+        '../util/WWMath'
     ],
     function (ArgumentError,
-              Logger) {
+              Logger,
+              WWMath) {
         "use strict";
 
         /**
@@ -40,7 +42,8 @@ define([
 
             this.size = image.width * image.height * 4;
 
-            // TODO: Deal with non-power-of-two textures.
+            var isPowerOfTwo = (WWMath.isPowerOfTwo(this.imageWidth) && WWMath.isPowerOfTwo(this.imageHeight));
+
             this.originalImageWidth = this.imageWidth;
             this.originalImageHeight = this.imageHeight;
 
@@ -48,16 +51,22 @@ define([
 
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, textureId);
             gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER,
-                WebGLRenderingContext.LINEAR_MIPMAP_LINEAR);
+                isPowerOfTwo ? WebGLRenderingContext.LINEAR_MIPMAP_LINEAR : WebGLRenderingContext.LINEAR);
             gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER,
                 WebGLRenderingContext.LINEAR);
             gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S,
                 WebGLRenderingContext.CLAMP_TO_EDGE);
             gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T,
                 WebGLRenderingContext.CLAMP_TO_EDGE);
+
+            gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
             gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
                 WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, image);
-            gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D);
+            gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+
+            if (isPowerOfTwo) {
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D);
+            }
 
             this.textureId = textureId;
         };

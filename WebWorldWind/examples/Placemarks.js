@@ -23,7 +23,7 @@ requirejs(['../src/WorldWind',
             placemarkLayer = new WorldWind.RenderableLayer();
 
         placemarkAttributes.imageScale = 1;
-        placemarkAttributes.imagePath = "http://worldwindserver.net/webworldwind/images/AppIconPad64.png";
+        placemarkAttributes.imagePath = "http://worldwindserver.net/webworldwind/images/pushpins/plain-yellow.png";
         placemark.attributes = placemarkAttributes;
         placemarkLayer.addRenderable(placemark);
         wwd.addLayer(placemarkLayer);

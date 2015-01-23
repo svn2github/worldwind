@@ -493,6 +493,16 @@ define([
                     maxY = Math.max(Math.max(y1, y2), Math.max(y3, y4));
 
                 return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            },
+
+            /**
+             * Indicates whether a specified value is a power of two.
+             * @param {Number} value The value to test.
+             * @returns {boolean} <code>true</code> if the specified value is a power of two,
+             * otherwise <code>false</code>.
+             */
+            isPowerOfTwo: function (value) {
+                return value != 0 && (value & (value - 1)) === 0;
             }
         };
 
