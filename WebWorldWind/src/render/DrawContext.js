@@ -13,14 +13,16 @@ define([
         '../globe/Globe',
         '../shaders/GpuProgram',
         '../cache/GpuResourceCache',
-        '../navigate/NavigatorState',
         '../layer/Layer',
         '../util/Logger',
         '../geom/Matrix',
+        '../navigate/NavigatorState',
+        '../pick/PickedObjectList',
         '../geom/Position',
         '../geom/Rectangle',
         '../geom/Sector',
-        '../render/SurfaceTileRenderer'
+        '../render/SurfaceTileRenderer',
+        '../geom/Vec2'
     ],
     function (ArgumentError,
               Color,
@@ -28,14 +30,16 @@ define([
               Globe,
               GpuProgram,
               GpuResourceCache,
-              NavigatorState,
               Layer,
               Logger,
               Matrix,
+              NavigatorState,
+              PickedObjectList,
               Position,
               Rectangle,
               Sector,
-              SurfaceTileRenderer) {
+              SurfaceTileRenderer,
+              Vec2) {
         "use strict";
 
         /**
@@ -144,6 +148,30 @@ define([
             this.pickingMode = false;
 
             /**
+             * The current pick point, in screen coordinates.
+             * @type {Vec2}
+             */
+            this.pickPoint = null;
+
+            /**
+             * A number used to generate unique pick colors.
+             * @type {number}
+             */
+            this.uniquePickNumber = 0;
+
+            /**
+             * The objects at the current pick point.
+             * @type {PickedObjectList}
+             */
+            this.objectsAtPickPoint = new PickedObjectList();
+
+            /**
+             * Indicates whether this draw context is in ordered rendering mode.
+             * @type {boolean}
+             */
+            this.orderedRenderingMode = false;
+
+            /**
              * A "virtual" canvas for creating texture maps of SVG text.
              * @type {Canvas}
              */
@@ -154,7 +182,17 @@ define([
              */
             this.ctx2D = null;
 
+            /**
+             * The list of ordered renderables.
+             * @type {Array}
+             */
             this.orderedRenderables = [];
+
+            /**
+             * A string used to identify this draw context's unit quad VBO in the GPU resource cache.
+             * @type {string}
+             */
+            this.unitQuadKey = "DrawContextUnitQuadKey";
         };
 
         /**
@@ -167,6 +205,9 @@ define([
                 ++this.timestamp;
 
             this.orderedRenderables = []; // clears the ordered renderables array
+            this.uniquePickNumber = 0;
+            this.clearColorInt = Color.makeColorIntFromColor(this.clearColor);
+            this.objectsAtPickPoint.clear();
         };
 
         /**
@@ -295,7 +336,7 @@ define([
             // renderable peek and pop access the back of the ordered renderable list, thereby causing ordered renderables to
             // be processed from back to front.
 
-            this.orderedRenderables.sort(function(orA, orB) {
+            this.orderedRenderables.sort(function (orA, orB) {
                 var eA = orA.eyeDistance,
                     eB = orB.eyeDistance;
 
@@ -316,6 +357,90 @@ define([
                     }
                 }
             });
+        };
+
+        /**
+         * Reads the color from the frame buffer at a specified point. Used during picking to identify the item most
+         * recently affecting the pixel at the specified point.
+         * @param {Vec2} pickPoint The current pick point.
+         * @returns {number} A number identifying the color at the pick point. The number contains the R, G, B and
+         * alpha values, each in the range [0, 255]. See [Color.makeColorInt]{@link Color#makeColorIntFromBytes}.
+         */
+        DrawContext.prototype.readPickColor = function (pickPoint) {
+            var glPickPoint = this.navigatorState.convertPointToViewport(pickPoint, new Vec2(0, 0, 0)),
+                colorBytes = new Uint8Array(4),
+                colorInt;
+
+            this.currentGlContext.readPixels(glPickPoint.x, glPickPoint.y, 1, 1, WebGLRenderingContext.RGBA,
+                WebGLRenderingContext.UNSIGNED_BYTE, colorBytes);
+
+            colorInt = Color.makeColorIntFromBytes(colorBytes[0], colorBytes[1], colorBytes[2], colorBytes[3]);
+
+            return colorInt != this.clearColorInt ? colorInt : 0;
+        };
+
+        /**
+         * Adds an object to the current picked-object list. The list identifies objects that are at the pick point
+         * but not necessarily the top-most object.
+         * @param  {PickedObject} pickedObject The object to add.
+         */
+        DrawContext.prototype.addPickedObject = function (pickedObject) {
+            if (pickedObject) {
+                this.objectsAtPickPoint.add(pickedObject);
+            }
+        };
+
+        /**
+         * Computes a unique color to use as a pick color.
+         * @returns {number} A unique color expressed as a number.
+         */
+        DrawContext.prototype.uniquePickColor = function () {
+            ++this.uniquePickNumber;
+
+            if (this.uniquePickNumber >= 0xffffff) { // we have run out of pick colors
+                this.uniquePickNumber = 1;
+            }
+
+            var pickColor = this.uniquePickNumber << 8 | 0xff; // add alpha of 255
+
+            if (pickColor === this.clearColorInt) {
+                pickColor = ++this.uniquePickNumber << 8 | 0xff; // skip the clear color
+            }
+
+            return pickColor;
+        };
+
+        /**
+         * Returns the VBO ID of a buffer containing a unit quadrilateral expressed as four vertices at (0, 1), (0, 0),
+         * (1, 1) and (1, 0). The four vertices are in the order required by a triangle strip. The buffer is created
+         * on first use and cached. Subsequent calls to this method return the cached buffer.
+         * @returns {Object} The VBO ID identifying the vertex buffer.
+         */
+        DrawContext.prototype.unitQuadBuffer = function () {
+            var vboId = this.gpuResourceCache.resourceForKey(this.unitQuadKey);
+
+            if (!vboId) {
+                var gl = this.currentGlContext,
+                    points = new Float32Array(8);
+
+                points[0] = 0; // upper left corner
+                points[1] = 1;
+                points[2] = 0; // lower left corner
+                points[3] = 0;
+                points[4] = 1; // upper right corner
+                points[5] = 1;
+                points[6] = 1; // lower right corner
+                points[7] = 0;
+
+                vboId = gl.createBuffer();
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vboId);
+                gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, points, WebGLRenderingContext.STATIC_DRAW);
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
+
+                this.gpuResourceCache.putResource(gl, this.unitQuadKey, vboId, WorldWind.GPU_BUFFER, points.length * 4);
+            }
+
+            return vboId;
         };
 
         return DrawContext;

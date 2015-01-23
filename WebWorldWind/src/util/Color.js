@@ -22,7 +22,7 @@ define([
          * @param {Number} blue The blue component, a number between 0 and 1.
          * @param {Number} alpha The alpha component, a number between 0 and 1.
          */
-        var Color = function(red, green, blue, alpha) {
+        var Color = function (red, green, blue, alpha) {
 
             /**
              * This color's red component.
@@ -137,6 +137,27 @@ define([
             array[3] = a;
 
             return array;
+        };
+
+        /**
+         * Converts a color expressed in bytes to a number.
+         * @param {Number} r The color's red component in the range [0, 255).
+         * @param {Number} g The color's green component in the range [0, 255).
+         * @param {Number} b The color's blue component in the range [0, 255).
+         * @param {Number} a The color's alpha component in the range [0, 255).
+         * @returns {number} A number representing the specified color components.
+         */
+        Color.makeColorIntFromBytes = function (r, g, b, a) {
+            return r << 24 | g << 16 | b << 8 | a;
+        };
+
+        /**
+         * Converts a color to a number.
+         * @param {Color} color The color to convert.
+         * @returns {number} A number representing the specified color.
+         */
+        Color.makeColorIntFromColor = function (color) {
+            return Color.makeColorIntFromBytes(color.red * 255, color.green * 255, color.blue * 255, color.alpha * 255);
         };
 
         return Color;

@@ -9,11 +9,13 @@
 define([
         '../error/ArgumentError',
         '../util/Logger',
-        '../cache/MemoryCache'
+        '../cache/MemoryCache',
+        '../render/Texture'
     ],
     function (ArgumentError,
               Logger,
-              MemoryCache) {
+              MemoryCache,
+              Texture) {
         "use strict";
 
         /**
@@ -41,6 +43,8 @@ define([
 
             this.entries = new MemoryCache(capacity, lowWater);
             this.entries.addCacheListener(this);
+
+            this.currentRetrievals = {};
         };
 
         /**
@@ -238,6 +242,45 @@ define([
          */
         GpuResourceCache.prototype.clear = function () {
             this.entries.clear();
+        };
+
+        /**
+         * Retrieves an image at a specified URL and adds it to this cache when it arrives. A redraw event is
+         * generated when the image arrives and is added to this cache.
+         * @param {WebGLRenderingContext} gl The current WebGL context.
+         * @param {String} imageUrl The URL of the image.
+         */
+        GpuResourceCache.prototype.retrieveTexture = function (gl, imageUrl) {
+            if (!imageUrl || this.currentRetrievals[imageUrl]) {
+                return;
+            }
+
+            var cache = this,
+                image = new Image();
+
+            image.onload = function () {
+                Logger.log(Logger.LEVEL_INFO, "Image retrieval succeeded: " + imageUrl);
+
+                var texture = new Texture(gl, image);
+
+                cache.putResource(gl, imageUrl, texture, WorldWind.GPU_TEXTURE, texture.size);
+
+                delete cache.currentRetrievals[imageUrl];
+
+                // Send an event to request a redraw.
+                var e = document.createEvent('Event');
+                e.initEvent(WorldWind.REDRAW_EVENT_TYPE, true, true);
+                window.dispatchEvent(e);
+            };
+
+            image.onerror = function () {
+                delete cache.currentRetrievals[imageUrl];
+                Logger.log(Logger.LEVEL_WARNING, "Image retrieval failed: " + imageUrl);
+            };
+
+            this.currentRetrievals[imageUrl] = imageUrl;
+            image.crossOrigin = 'anonymous';
+            image.src = imageUrl;
         };
 
         return GpuResourceCache;

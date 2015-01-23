@@ -49,7 +49,7 @@ define([
              * @default 0.5, 0.5, fractional
              */
             this.imageOffset = (attributes && attributes.imageOffset) ? attributes.imageOffset
-                : new Offset(0.5, 0.5);
+                : new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
 
             /**
              * Indicates the amount to scale the placemark's image.

@@ -10,6 +10,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './geom/Angle',
         './error/ArgumentError',
         './shaders/BasicProgram',
+        './shaders/BasicTextureProgram',
         './layer/BingWMSLayer',
         './layer/BMNGLandsatLayer',
         './layer/BMNGLayer',
@@ -43,8 +44,14 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './navigate/Navigator',
         './navigate/NavigatorState',
         './error/NotYetImplementedError',
+        './util/Offset',
         './gesture/PanGestureRecognizer',
+        './pick/PickedObject',
+        './pick/PickedObjectList',
+        './pick/PickSupport',
         './gesture/PinchGestureRecognizer',
+        './shapes/Placemark',
+        './shapes/PlacemarkAttributes',
         './layer/PlacenameLayer',
         './geom/Plane',
         './geom/Position',
@@ -80,6 +87,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Angle,
               ArgumentError,
               BasicProgram,
+              BasicTextureProgram,
               BingWMSLayer,
               BMNGLandsatLayer,
               BMNGLayer,
@@ -113,8 +121,14 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               Navigator,
               NavigatorState,
               NotYetImplementedError,
+              Offset,
               PanGestureRecognizer,
+              PickedObject,
+              PickedObjectList,
+              PickSupport,
               PinchGestureRecognizer,
+              Placemark,
+              PlacemarkAttributes,
               PlacenameLayer,
               Plane,
               Position,
@@ -244,6 +258,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Angle'] = Angle;
         WorldWind['ArgumentError'] = ArgumentError;
         WorldWind['BasicProgram'] = BasicProgram;
+        WorldWind['BasicTextureProgram'] = BasicTextureProgram;
         WorldWind['BingWMSLayer'] = BingWMSLayer;
         WorldWind['BMNGLandsatLayer'] = BMNGLandsatLayer;
         WorldWind['BMNGLayer'] = BMNGLayer;
@@ -277,8 +292,14 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['Navigator'] = Navigator;
         WorldWind['NavigatorState'] = NavigatorState;
         WorldWind['NotYetImplementedError'] = NotYetImplementedError;
+        WorldWind['Offset'] = Offset;
         WorldWind['PanGestureRecognizer'] = PanGestureRecognizer;
+        WorldWind['PickedObject'] = PickedObject;
+        WorldWind['PickedObjectList'] = PickedObjectList;
+        WorldWind['PickSupport'] = PickSupport;
         WorldWind['PinchGestureRecognizer'] = PinchGestureRecognizer;
+        WorldWind['Placemark'] = Placemark;
+        WorldWind['PlacemarkAttributes'] = PlacemarkAttributes;
         WorldWind['PlacenameLayer'] = PlacenameLayer;
         WorldWind['Plane'] = Plane;
         WorldWind['Position'] = Position;

@@ -41,6 +41,8 @@ define([
             this.size = image.width * image.height * 4;
 
             // TODO: Deal with non-power-of-two textures.
+            this.originalImageWidth = this.imageWidth;
+            this.originalImageHeight = this.imageHeight;
 
             var textureId = gl.createTexture();
 

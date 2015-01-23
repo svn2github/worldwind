@@ -22,7 +22,7 @@ define([
          * @param {Number} width The rectangle's width.
          * @param {Number} height The rectangle's height.
          */
-        var Rectangle = function(x, y, width, height) {
+        var Rectangle = function (x, y, width, height) {
 
             /**
              * The X coordinate of this rectangle's origin.
@@ -53,7 +53,7 @@ define([
          * Returns the minimum X value of this rectangle.
          * @returns {Number} The rectangle's minimum X value.
          */
-        Rectangle.prototype.getMinX = function() {
+        Rectangle.prototype.getMinX = function () {
             return this.x;
         };
 
@@ -61,7 +61,7 @@ define([
          * Returns the minimum Y value of this rectangle.
          * @returns {Number} The rectangle's minimum Y value.
          */
-        Rectangle.prototype.getMinY = function() {
+        Rectangle.prototype.getMinY = function () {
             return this.y;
         };
 
@@ -69,7 +69,7 @@ define([
          * Returns the maximum X value of this rectangle.
          * @returns {Number} The rectangle's maximum X value.
          */
-        Rectangle.prototype.getMaxX = function() {
+        Rectangle.prototype.getMaxX = function () {
             return this.x + this.width;
         };
 
@@ -77,8 +77,42 @@ define([
          * Returns the maximum Y value of this rectangle.
          * @returns {Number} The rectangle's maximum Y value.
          */
-        Rectangle.prototype.getMaxY = function() {
+        Rectangle.prototype.getMaxY = function () {
             return this.y + this.height;
+        };
+
+        /**
+         * Indicates whether this rectangle contains a specified point.
+         * @param {Vec2} point The point to test.
+         * @returns {boolean} <code>true</code> if this rectangle contains the specified point, otherwise
+         * <code>false</code>.
+         */
+        Rectangle.prototype.containsPoint = function (point) {
+            return point[0] >= this.x && point[0] <= (this.x + this.width)
+                && point[1] >= this.y && point[1] <= (this.y + this.height);
+        };
+        /**
+         *
+         * Indicates whether this rectangle intersects a specified one.
+         * @param {Rectangle} that The rectangle to test.
+         * @returns {boolean} <code>true</code> if this triangle and the specified one intersect,
+         * otherwise <code>false</code>.
+         */
+        Rectangle.prototype.intersects = function (that) {
+            if ((that.x + that.width) < this.x)
+                return false;
+
+            if (that.x > (this.x + this.width))
+                return false;
+
+            if ((that.y + that.height) < this.y)
+                return false;
+
+            //noinspection RedundantIfStatementJS
+            if (that.y > (this.y + this.height))
+                return false;
+
+            return true;
         };
 
         return Rectangle;

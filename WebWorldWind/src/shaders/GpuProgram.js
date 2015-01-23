@@ -254,6 +254,17 @@ define([
         };
 
         /**
+         * Loads a specified integer value to a specified uniform location.
+         *
+         * @param {WebGLRenderingContext} gl The current WebGL context.
+         * @param {Number} value The value to load.
+         * @param {WebGLUniformLocation} location The uniform location to store the value to.
+         */
+        GpuProgram.loadUniformInteger = function (gl, value, location) {
+            gl.uniform1i(location, value);
+        };
+
+        /**
          * Loads a specified pick color to a specified uniform location.
          *
          * @param {WebGLRenderingContext} gl The current WebGL context.

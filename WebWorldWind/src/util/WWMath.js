@@ -460,6 +460,39 @@ define([
                 // Return the maximum of the x and y pixel sizes. These two sizes are usually equivalent but we select the maximum
                 // in order to correctly handle the case where the x and y pixel sizes differ.
                 return WWMath.max(xPixelSize, yPixelSize);
+            },
+
+            /**
+             * Computes the bounding rectangle for a unit quadrilateral after applying a transformation matrix to that
+             * quadrilateral.
+             * @param {Matrix} transformMatrix The matrix to apply to the unit quadrilateral.
+             * @returns {Rectangle} The computed bounding rectangle.
+             */
+            boundingRectForUnitQuad: function (transformMatrix) {
+                if (!transformMatrix) {
+                    throw new ArgumentError(Logger.logMessage(Logger.LEVEL_SEVERE, "WWMath", "boundingRectForUnitQuad",
+                        "missingMatrix"));
+                }
+
+                var m = transformMatrix,
+                // transform of (0, 0)
+                    x1 = m[3],
+                    y1 = m[7],
+                // transform of (1, 0)
+                    x2 = m[0] + m[3],
+                    y2 = m[4] + m[7],
+                // transform of (0, 1)
+                    x3 = m[1] + m[3],
+                    y3 = m[5] + m[7],
+                // transform of (1, 1)
+                    x4 = m[0] + m[1] + m[3],
+                    y4 = m[4] + m[5] + m[7],
+                    minX = Math.min(Math.min(x1, x2), Math.min(x3, x4)),
+                    maxX = Math.max(Math.max(x1, x2), Math.max(x3, x4)),
+                    minY = Math.min(Math.min(y1, y2), Math.min(y3, y4)),
+                    maxY = Math.max(Math.max(y1, y2), Math.max(y3, y4));
+
+                return new Rectangle(minX, minY, maxX - minX, maxY - minY);
             }
         };
 
