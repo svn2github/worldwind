@@ -7,7 +7,7 @@
  * @version $Id$
  */
 define([
-        '../navigate/GestureRecognizer'
+        '../gesture/GestureRecognizer'
     ],
     function (GestureRecognizer) {
         "use strict";

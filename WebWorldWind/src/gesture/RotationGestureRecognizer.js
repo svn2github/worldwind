@@ -8,7 +8,7 @@
  */
 define([
         '../geom/Angle',
-        '../navigate/GestureRecognizer',
+        '../gesture/GestureRecognizer',
         '../geom/Vec2'
     ],
     function (Angle,

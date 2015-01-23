@@ -9,14 +9,14 @@
 define([
         '../geom/Angle',
         '../geom/Frustum',
-        '../navigate/GestureRecognizer',
+        '../gesture/GestureRecognizer',
         '../util/Logger',
         '../geom/Matrix',
         '../navigate/Navigator',
-        '../navigate/PanGestureRecognizer',
-        '../navigate/PinchGestureRecognizer',
+        '../gesture/PanGestureRecognizer',
+        '../gesture/PinchGestureRecognizer',
         '../geom/Position',
-        '../navigate/RotationGestureRecognizer',
+        '../gesture/RotationGestureRecognizer',
         '../geom/Vec2',
         '../util/WWMath'
     ],

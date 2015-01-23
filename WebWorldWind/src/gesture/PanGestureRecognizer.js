@@ -7,7 +7,7 @@
  * @version $Id$
  */
 define([
-        '../navigate/GestureRecognizer',
+        '../gesture/GestureRecognizer',
         '../geom/Vec2'
     ],
     function (GestureRecognizer,
