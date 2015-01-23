@@ -270,6 +270,8 @@ define([
             var gl = dc.currentGlContext,
                 gpuResourceCache = dc.gpuResourceCache;
 
+            gl.frontFace(WebGLRenderingContext.CW);
+
             // Keep track of the program's attribute locations. The tessellator does not know which program the caller has
             // bound, and therefore must look up the location of attributes by name.
             this.vertexPointLocation = program.attributeLocation(gl, "vertexPoint");
@@ -302,6 +304,8 @@ define([
             }
 
             var gl = dc.currentGlContext;
+
+            gl.frontFace(WebGLRenderingContext.CCW);
 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
             gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, null);
