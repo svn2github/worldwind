@@ -129,6 +129,8 @@ define([
             this[0] -= subtrahend[0];
             this[1] -= subtrahend[1];
             this[2] -= subtrahend[2];
+
+            return this;
         };
 
         /**

@@ -122,6 +122,8 @@ define([
         Vec2.prototype.subtract = function (subtrahend) {
             this[0] -= subtrahend[0];
             this[1] -= subtrahend[1];
+
+            return this;
         };
 
         /**
