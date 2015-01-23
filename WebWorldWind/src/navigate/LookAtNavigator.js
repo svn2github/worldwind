@@ -43,6 +43,9 @@ define([
          */
         var LookAtNavigator = function (worldWindow) {
             Navigator.call(this, worldWindow);
+
+            var self = this;
+
             /**
              * The geographic position this navigator is directed towards.
              * @type {Position}
@@ -55,10 +58,8 @@ define([
              */
             this.range = 10e6; // TODO: Compute initial range to fit globe in viewport.
 
-            var self = this;
-
             /**
-             * A gesture recognizer configured to look for touch drag gestures with any number of fingers and
+             * A gesture recognizer configured to look for touch drag gestures with any number of touches or
              * primary-mouse drag gestures, which initiates navigator panning while the gesture is occurring.
              * @type {PanGestureRecognizer}
              * @protected
@@ -103,6 +104,16 @@ define([
                 self.handleRotation(gestureRecognizer);
             });
 
+            // Establish the dependencies between gesture recognizers. The pan, pinch and rotate gesture may recognize
+            // simultaneously with each other.
+            this.panRecognizer.recognizeWith(this.pinchRecognizer);
+            this.panRecognizer.recognizeWith(this.rotationRecognizer);
+            this.pinchRecognizer.recognizeWith(this.panRecognizer);
+            this.pinchRecognizer.recognizeWith(this.rotationRecognizer);
+            this.rotationRecognizer.recognizeWith(this.panRecognizer);
+            this.rotationRecognizer.recognizeWith(this.pinchRecognizer);
+
+            // Internal. Intentionally not documented.
             this.lastPanTranslation = new Vec2(0, 0);
             this.beginHeading = 0;
             this.beginTilt = 0;
@@ -148,6 +159,7 @@ define([
          */
         LookAtNavigator.prototype.handlePan = function (gestureRecognizer) {
             var state = gestureRecognizer.state,
+                translation = gestureRecognizer.translationInElement(this.worldWindow.canvas),
                 viewport = this.worldWindow.viewport,
                 globe = this.worldWindow.globe,
                 globeRadius = WWMath.max(globe.equatorialRadius, globe.polarRadius),
@@ -159,12 +171,13 @@ define([
                 sinHeading, cosHeading;
 
             if (state == GestureRecognizer.BEGAN) {
-                this.lastPanTranslation.set(0, 0);
+                this.lastPanTranslation = new Vec2(0, 0);
+                this.lastPanTranslation.copy(translation);
             } else if (state == GestureRecognizer.CHANGED) {
                 // Compute the current translation in screen coordinates.
-                forwardPixels = gestureRecognizer.translation[1] - this.lastPanTranslation[1];
-                sidePixels = gestureRecognizer.translation[0] - this.lastPanTranslation[0];
-                this.lastPanTranslation.copy(gestureRecognizer.translation);
+                forwardPixels = translation[1] - this.lastPanTranslation[1];
+                sidePixels = translation[0] - this.lastPanTranslation[0];
+                this.lastPanTranslation.copy(translation);
 
                 // Convert the translation from screen coordinates to meters. Use this navigator's range as a distance
                 // metric for converting screen pixels to meters. This assumes that the gesture is intended to translate
@@ -202,6 +215,7 @@ define([
          */
         LookAtNavigator.prototype.handleSecondaryPan = function (gestureRecognizer) {
             var state = gestureRecognizer.state,
+                translation = gestureRecognizer.translationInElement(this.worldWindow.canvas),
                 viewport = this.worldWindow.viewport,
                 headingPixels, tiltPixels,
                 headingDegrees, tiltDegrees;
@@ -211,8 +225,8 @@ define([
                 this.beginTilt = this.tilt;
             } if (state == GestureRecognizer.CHANGED) {
                 // Compute the current translation in screen coordinates.
-                headingPixels = gestureRecognizer.translation[0];
-                tiltPixels = gestureRecognizer.translation[1];
+                headingPixels = translation[0];
+                tiltPixels = translation[1];
 
                 // Convert the translation from screen coordinates to degrees. Use the viewport dimensions as a metric
                 // for converting the gesture translation to a fraction of an angle.
@@ -268,8 +282,8 @@ define([
             if (state == GestureRecognizer.BEGAN) {
                 this.beginHeading = this.heading;
             } else if (state == GestureRecognizer.CHANGED) {
-                // Apply the change in pinch scale to this navigator's heading, relative to the heading when the gesture
-                // began.
+                // Apply the change in gesture rotation o this navigator's heading, relative to the heading when the
+                // gesture began.
                 this.heading = this.beginHeading - rotation;
                 this.heading = Angle.normalizedDegrees(this.heading);
 

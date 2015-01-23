@@ -43,7 +43,7 @@ define([
              * @type {number}
              * @protected
              */
-            this.threshold = 5;
+            this.threshold = 10;
 
             /**
              *
@@ -64,14 +64,13 @@ define([
              * @type {Array}
              * @protected
              */
-            this.touchIdentifiers = [];
-
+            this.touchIds = [];
         };
 
         RotationGestureRecognizer.prototype = Object.create(GestureRecognizer.prototype);
 
         /**
-         *
+         * @protected
          */
         RotationGestureRecognizer.prototype.reset = function () {
             GestureRecognizer.prototype.reset.call(this);
@@ -80,58 +79,28 @@ define([
             this.rotationOffset = 0;
             this.slope.set(0, 0);
             this.beginSlope.set(0, 0);
-            this.touchIdentifiers = [];
+            this.touchIds = [];
         };
 
         /**
          *
          * @param event
-         * @returns {boolean}
-         */
-        RotationGestureRecognizer.prototype.shouldBeginWithTouchEvent = function (event) {
-            return Math.abs(this.slope[0] - this.beginSlope[0]) > this.threshold
-                || Math.abs(this.slope[1] - this.beginSlope[1]) > this.threshold;
-        };
-
-        /**
-         *
-         * @param result
-         */
-        RotationGestureRecognizer.prototype.touchSlope = function (result) {
-            var touchA, touchB,
-                dx, dy;
-
-            if (this.touchIdentifiers.length < 2) {
-                result.set(0, 0);
-            } else {
-                touchA = this.touchWithIdentifier(this.touchIdentifiers[0]);
-                touchB = this.touchWithIdentifier(this.touchIdentifiers[1]);
-                dx = touchA.screenX - touchB.screenX;
-                dy = touchA.screenY - touchB.screenY;
-                result.set(dx, dy);
-            }
-        };
-
-        RotationGestureRecognizer.prototype.angleForSlope = function (slope) {
-            var radians = Math.atan2(slope[1], slope[0]);
-
-            return radians * Angle.RADIANS_TO_DEGREES;
-        };
-
-        /**
-         *
-         * @param event
+         * @protected
          */
         RotationGestureRecognizer.prototype.touchStart = function (event) {
-            var touchesDown = event.changedTouches;
+            GestureRecognizer.prototype.touchStart.call(this, event);
 
-            if (this.touchIdentifiers.length < 2) {
-                for (var i = 0; i < touchesDown.length && this.touchIdentifiers.length < 2; i++) {
-                    this.touchIdentifiers.push(touchesDown.item(i).identifier);
+            if (this.touchIds.length < 2) {
+                var touchesDown = event.changedTouches;
+                for (var i = 0; i < touchesDown.length && this.touchIds.length < 2; i++) {
+                    this.touchIds.push(touchesDown.item(i).identifier);
                 }
 
-                if (this.touchIdentifiers.length == 2) {
-                    this.touchSlope(this.beginSlope);
+                if (this.touchIds.length == 2) {
+                    var index0 = this.indexOfTouch(this.touchIds[0]),
+                        index1 = this.indexOfTouch(this.touchIds[1]);
+                    this.slope = this.touchSlope(index0, index1);
+                    this.beginSlope = this.slope;
                     this.rotationOffset = this.rotation;
                 }
             }
@@ -140,48 +109,41 @@ define([
         /**
          *
          * @param event
+         * @protected
          */
         RotationGestureRecognizer.prototype.touchMove = function (event) {
-            var angle, beginAngle;
+            GestureRecognizer.prototype.touchMove.call(this, event);
 
-            if (this.touchIdentifiers.length == 2) {
-                this.touchSlope(this.slope);
-                angle = this.angleForSlope(this.slope);
-                beginAngle = this.angleForSlope(this.beginSlope);
-                this.rotation = this.rotationOffset + (angle - beginAngle);
-                this.rotation = Angle.normalizedDegrees(this.rotation);
-            }
+            if (this.touchIds.length == 2) {
+                var index0 = this.indexOfTouch(this.touchIds[0]),
+                    index1 = this.indexOfTouch(this.touchIds[1]);
+                this.slope = this.touchSlope(index0, index1);
+                this.rotation = this.computeRotation();
 
-            if (this.state == GestureRecognizer.POSSIBLE) {
-                if (this.touchIdentifiers.length == 2) {
-                    if (this.shouldBeginWithTouchEvent(event)) {
-                        this.transitionToState(GestureRecognizer.BEGAN, event);
+                if (this.state == GestureRecognizer.POSSIBLE) {
+                    if (this.shouldRecognizeTouches()) {
+                        this.transitionToState(GestureRecognizer.BEGAN);
                     }
+                } else if (this.state == GestureRecognizer.BEGAN || this.state == GestureRecognizer.CHANGED) {
+                    this.transitionToState(GestureRecognizer.CHANGED);
                 }
-            } else if (this.state == GestureRecognizer.BEGAN || this.state == GestureRecognizer.CHANGED) {
-                this.transitionToState(GestureRecognizer.CHANGED, event);
             }
         };
-
-        // TODO: Capture the common pattern in touchEnd and touchCancel
 
         /**
          *
          * @param event
+         * @protected
          */
         RotationGestureRecognizer.prototype.touchEnd = function (event) {
-            var touchesUp = event.changedTouches;
+            GestureRecognizer.prototype.touchEnd.call(this, event);
 
-            for (var i = 0, count = touchesUp.length; i < count; i++) {
-                this.removeTouch(touchesUp.item(i).identifier);
-            }
+            // Remove touch identifier entries for the touches that ended or cancelled.
+            this.removeTouchIds(event.changedTouches);
 
-            if (event.targetTouches.length == 0) {
+            if (event.targetTouches.length == 0) { // last touches ended
                 if (this.state == GestureRecognizer.BEGAN || this.state == GestureRecognizer.CHANGED) {
-                    this.transitionToState(GestureRecognizer.ENDED, event);
-                    this.reset();
-                } else if (this.state == GestureRecognizer.FAILED) {
-                    this.reset();
+                    this.transitionToState(GestureRecognizer.ENDED);
                 }
             }
         };
@@ -189,31 +151,79 @@ define([
         /**
          *
          * @param event
+         * @protected
          */
         RotationGestureRecognizer.prototype.touchCancel = function (event) {
-            var touchesUp = event.changedTouches;
+            GestureRecognizer.prototype.touchCancel.call(this, event);
 
-            for (var i = 0, count = touchesUp.length; i < count; i++) {
-                this.removeTouch(touchesUp.item(i).identifier);
-            }
+            // Remove touch identifier entries for the touches that ended or cancelled.
+            this.removeTouchIds(event.changedTouches);
 
-            if (event.targetTouches.length == 0) {
+            if (event.targetTouches.length == 0) { // last touches cancelled
                 if (this.state == GestureRecognizer.BEGAN || this.state == GestureRecognizer.CHANGED) {
-                    this.transitionToState(GestureRecognizer.CANCELLED, event);
-                    this.reset();
-                } else if (this.state == GestureRecognizer.FAILED) {
-                    this.reset();
+                    this.transitionToState(GestureRecognizer.CANCELLED);
                 }
             }
         };
 
-        RotationGestureRecognizer.prototype.removeTouch = function (identifier) {
-            for (var i = 0, count = this.touchIdentifiers.length; i < count; i++) {
-                if (this.touchIdentifiers[i] == identifier) {
-                    this.touchIdentifiers.splice(i, 1);
-                    break;
+        /**
+         *
+         * @param touchList
+         * @protected
+         */
+        RotationGestureRecognizer.prototype.removeTouchIds = function (touchList) {
+            for (var i = 0, count = touchList.length; i < count; i++) {
+                var index = this.touchIds.indexOf(touchList.item(i).identifier);
+                if (index != -1) {
+                    this.touchIds.splice(index, 1);
                 }
             }
+        };
+
+        /**
+         *
+         * @returns {boolean}
+         * @protected
+         */
+        RotationGestureRecognizer.prototype.shouldRecognizeTouches = function () {
+            return Math.abs(this.slope[0] - this.beginSlope[0]) > this.threshold
+                || Math.abs(this.slope[1] - this.beginSlope[1]) > this.threshold;
+        };
+
+        /**
+         *
+         * @param indexA
+         * @param indexB
+         * @returns {number}
+         * @protected
+         */
+        RotationGestureRecognizer.prototype.touchSlope = function (indexA, indexB) {
+            var pointA = this.touches[indexA].clientLocation,
+                pointB = this.touches[indexB].clientLocation;
+            return new Vec2(pointA[0] - pointB[0], pointA[1] - pointB[1]);
+        };
+
+        /**
+         *
+         * @param slope
+         * @returns {number}
+         * @protected
+         */
+        RotationGestureRecognizer.prototype.angleForSlope = function (slope) {
+            var radians = Math.atan2(slope[1], slope[0]);
+            return radians * Angle.RADIANS_TO_DEGREES;
+        };
+
+        /**
+         *
+         * @returns {number}
+         * @protected
+         */
+        RotationGestureRecognizer.prototype.computeRotation = function () {
+            var angle = this.angleForSlope(this.slope),
+                beginAngle = this.angleForSlope(this.beginSlope),
+                rotation = angle - beginAngle + this.rotationOffset;
+            return Angle.normalizedDegrees(rotation);
         };
 
         return RotationGestureRecognizer;
