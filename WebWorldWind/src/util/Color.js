@@ -124,6 +124,12 @@ define([
         Color.DARK_GRAY = new Color(0.25, 0.25, 0.25, 1);
 
         /**
+         * A fully transparent color.
+         * @type {Color}
+         */
+        Color.TRANSPARENT = new Color(0, 0, 0, 0);
+
+        /**
          * Returns this color's components premultiplied by this color's alpha component.
          * @param {Float32Array} array A pre-allocated array in which to return the color components.
          * @returns {Float32Array} This colors premultiplied components as an array, in the order RGBA.
