@@ -86,6 +86,7 @@ define(function () {
 
         messageTable: { // KEEP THIS TABLE IN ALPHABETICAL ORDER
             abstractInvocation: "The function called is abstract and must be overridden in a subclass.",
+            indexOutOfRange: "The specified index is out of range.",
             invalidViewport: "The specified viewport's width or height is zero or negative.",
             missingArray: "The specified array is null, undefined or of insufficient length.",
             missingColor: "The specified color is null or undefined.",
