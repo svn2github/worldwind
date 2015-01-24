@@ -189,6 +189,12 @@ define([
             this.orderedRenderables = [];
 
             /**
+             * Provides ordinal IDs to ordered renderables.
+             * @type {number}
+             */
+            this.orderedRenderablesCounter = 0;
+
+            /**
              * A string used to identify this draw context's unit quad VBO in the GPU resource cache.
              * @type {string}
              */
@@ -205,6 +211,7 @@ define([
                 ++this.timestamp;
 
             this.orderedRenderables = []; // clears the ordered renderables array
+            this.orderedRenderablesCounter = 0;
             this.uniquePickNumber = 0;
             this.clearColorInt = Color.makeColorIntFromColor(this.clearColor);
             this.objectsAtPickPoint.clear();
@@ -284,7 +291,7 @@ define([
          */
         DrawContext.prototype.addOrderedRenderable = function (orderedRenderable) {
             if (orderedRenderable) {
-                orderedRenderable.insertionTime = Date.now();
+                orderedRenderable.insertionOrder = this.orderedRenderablesCounter++;
                 this.orderedRenderables.push(orderedRenderable);
             }
         };
@@ -296,7 +303,7 @@ define([
          */
         DrawContext.prototype.addOrderedRenderableToBack = function (orderedRenderable) {
             if (orderedRenderable) {
-                orderedRenderable.insertionTime = Date.now();
+                orderedRenderable.insertionOrder = this.orderedRenderablesCounter++;
                 orderedRenderable.eyeDistance = Number.MAX_VALUE;
                 this.orderedRenderables.push(orderedRenderable);
             }
@@ -345,8 +352,8 @@ define([
                 } else if (eA > eB) { // orA is farther from the eye than orB; sort orB before orA
                     return 1;
                 } else { // orA and orB are the same distance from the eye; sort them based on insertion time
-                    var tA = orA.insertionTime,
-                        tB = orB.insertionTime;
+                    var tA = orA.insertionOrder,
+                        tB = orB.insertionOrder;
 
                     if (tA > tB) {
                         return -1;
