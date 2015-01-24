@@ -299,9 +299,9 @@ define([
             // Draw any subsequent placemarks in the ordered renderable queue, removing each from the queue as it's
             // processed. This avoids the overhead of setting up and tearing down OpenGL state for each placemark.
 
-            var or = dc.peekOrderedRenderable();
+            var or;
 
-            while (or && or.doDrawOrderedPlacemark) {
+            while ((or = dc.peekOrderedRenderable()) && or.doDrawOrderedPlacemark) {
                 dc.popOrderedRenderable(); // remove it from the queue
 
                 try {

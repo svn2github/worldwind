@@ -18,14 +18,49 @@ requirejs(['../src/WorldWind',
         wwd.addLayer(new WorldWind.BMNGLandsatLayer());
         wwd.addLayer(new WorldWind.BingWMSLayer());
 
-        var placemark = new WorldWind.Placemark(new WorldWind.Position(46, -123, 1e3)),
+        var images = [
+            "plain-black.png",
+            "plain-blue.png",
+            "plain-brown.png",
+            "plain-gray.png",
+            "plain-green.png",
+            "plain-orange.png",
+            "plain-purple.png",
+            "plain-red.png",
+            "plain-teal.png",
+            "plain-white.png",
+            "plain-yellow.png",
+            "castshadow-black.png",
+            "castshadow-blue.png",
+            "castshadow-brown.png",
+            "castshadow-gray.png",
+            "castshadow-green.png",
+            "castshadow-orange.png",
+            "castshadow-purple.png",
+            "castshadow-red.png",
+            "castshadow-teal.png",
+            "castshadow-white.png"
+        ];
+
+        var pinLibrary =  "http://worldwindserver.net/webworldwind/images/pushpins/",
+            placemark,
             placemarkAttributes = new WorldWind.PlacemarkAttributes(null),
-            placemarkLayer = new WorldWind.RenderableLayer();
+            placemarkLayer = new WorldWind.RenderableLayer(),
+            latitude = 46,
+            longitude = -122;
 
         placemarkAttributes.imageScale = 1;
-        placemarkAttributes.imagePath = "http://worldwindserver.net/webworldwind/images/pushpins/plain-yellow.png";
-        placemark.attributes = placemarkAttributes;
-        placemarkLayer.addRenderable(placemark);
+        placemarkAttributes.imageColor = WorldWind.Color.WHITE;
+
+        for (var i = 0, len = images.length; i < len; i++) {
+            placemark = new WorldWind.Placemark(new WorldWind.Position(latitude, longitude + i, 1e3));
+            placemarkAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
+            placemarkAttributes.imagePath = pinLibrary + images[i];
+            placemark.attributes = placemarkAttributes;
+            placemarkLayer.addRenderable(placemark);
+        }
+
+        placemarkLayer.displayName = "Placemarks";
         wwd.addLayer(placemarkLayer);
 
         wwd.redraw();
