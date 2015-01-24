@@ -1086,7 +1086,7 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
 //            SpatialReference t_srs = new SpatialReference(t_srs_wkt);
 
                 // check if image fully contains the ROI, in this case we do not need mask
-                if (null == this.area || null == this.srs || !this.area.contains(new GDAL.Area(this.srs, roiSector)))
+                // if (null == this.area || null == this.srs || !this.area.contains(new GDAL.Area(this.srs, roiSector)))
                 {
                     maskDS = this.createMaskDataset(roiWidth, roiHeight, roiSector);
                 }
