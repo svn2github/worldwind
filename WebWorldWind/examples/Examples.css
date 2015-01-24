@@ -1,0 +1,36 @@
+/* @version $Id$ */
+body {
+    font-family: 'Oswald', 'Futura', sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+
+#page {
+    margin: 0px auto 0px auto;
+}
+
+#divLayerManager {
+    float: left;
+    width: 300px;
+    height: 600px;
+    margin: 5px;
+    border: 2px solid #000066;
+}
+
+#divWorldWindow {
+    float: left;
+    width: 700px;
+    height: 600px;
+    margin: 5px;
+    border: 2px solid #000066;
+}
+
+@media only screen and (max-device-width: 1050px) {
+    #divLayerManager {
+        float: left;
+        width: 250px;
+        height: 600px;
+        margin: 5px;
+        border: 2px solid #000066;
+    }
+}
