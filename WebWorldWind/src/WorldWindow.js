@@ -59,6 +59,10 @@ define([
             function handleContextLost(event) {
                 event.preventDefault();
                 thisWindow.gpuResourceCache.clear();
+
+                if (thisWindow.pickingFrameBuffer) {
+                    thisWindow.pickingFrameBuffer = null;
+                }
             }
 
             function handleContextRestored(event) {
@@ -136,6 +140,9 @@ define([
             this.drawContext = new DrawContext();
             this.drawContext.canvas = this.canvas;
 
+            // Internal. Intentionally not documented.
+            this.pickingFrameBuffer = null;
+
             // Set up to handle redraw requests sent to the canvas. Imagery uses this target because images are
             // generally specific to the WebGL context associated with the canvas.
             this.canvas.addEventListener(WorldWind.REDRAW_EVENT_TYPE, function (event) {
@@ -164,6 +171,46 @@ define([
                 Logger.logMessage(Logger.LEVEL_SEVERE, "WorldWindow", "redraw",
                     "Exception occurred during rendering: " + e.toString());
             }
+        };
+
+        /**
+         * Request the World Wind objects at a point in the receiver's local coordinate system.
+         *
+         * If the point intersects the terrain, the returned list contains an object identifying the associated geographic
+         * position. This returns an empty list when nothing in the World Wind scene intersects the specified point.
+         *
+         * @param pickPoint The point to examine in this World Window's local coordinate system.
+         * @returns {PickedObjectList} A list of picked World Wind objects at the specified pick point.
+         */
+        WorldWindow.prototype.pick = function (pickPoint) {
+            this.resetDrawContext();
+            this.drawContext.pickingMode = true;
+            this.drawContext.pickPoint = pickPoint;
+            this.drawContext.pickTerrainOnly = false;
+            this.drawFrame();
+
+            return this.drawContext.objectsAtPickPoint;
+        };
+
+        /**
+         * Requests the position of the World Wind terrain at a point in the receiver's local coordinate system.
+         *
+         * If the point intersects the terrain, the returned list contains a single object identifying the associated geographic
+         * position. Otherwise this returns an empty list.
+         *
+         * @param pickPoint The point to examine in this World Window's local coordinate system.
+         *
+         * @returns {PickedObjectList} A list containing the picked World Wind terrain position at the specified point,
+         * or an empty list if the point does not intersect the terrain.
+         */
+        WorldWindow.prototype.pickTerrain = function (pickPoint) {
+            this.resetDrawContext();
+            this.drawContext.pickingMode = true;
+            this.drawContext.pickPoint = pickPoint;
+            this.drawContext.pickTerrainOnly = true;
+            this.drawFrame();
+
+            return this.drawContext.objectsAtPickPoint;
         };
 
         // Internal. Intentionally not documented.
@@ -228,13 +275,28 @@ define([
 
             this.viewport = new Rectangle(0, 0, this.canvas.width, this.canvas.height);
 
+            if (!this.pickingFrameBuffer) {
+                this.createPickBuffer(gl);
+            }
+
+            if (this.drawContext.pickingMode) {
+                gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.pickingFrameBuffer);
+            }
+
             try {
                 this.beginFrame(this.drawContext, this.viewport);
                 this.createTerrain(this.drawContext);
                 this.clearFrame(this.drawContext);
-                this.doDraw(this.drawContext);
+                if (this.drawContext.pickingMode) {
+                    this.doPick(this.drawContext);
+                } else {
+                    this.doDraw(this.drawContext);
+                }
             } finally {
                 this.endFrame(this.drawContext);
+                if (this.drawContext.pickingMode) {
+                    gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+                }
                 this.drawContext.frameStatistics.endFrame();
             }
         };
@@ -245,8 +307,10 @@ define([
 
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
-            gl.enable(WebGLRenderingContext.BLEND);
-            gl.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA);
+            if (!dc.pickingMode) {
+                gl.enable(WebGLRenderingContext.BLEND);
+                gl.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA);
+            }
 
             gl.enable(WebGLRenderingContext.CULL_FACE);
             gl.enable(WebGLRenderingContext.DEPTH_TEST);
@@ -280,6 +344,18 @@ define([
         };
 
         // Internal function. Intentionally not documented.
+        WorldWindow.prototype.doPick = function (dc) {
+            dc.terrain.pick(dc);
+
+            if (!dc.pickTerrainOnly) {
+                this.drawLayers();
+                this.drawOrderedRenderables();
+            }
+
+            this.resolveTopPick();
+        };
+
+        // Internal function. Intentionally not documented.
         WorldWindow.prototype.createTerrain = function (dc) {
             // TODO: Implement Tessellator to return a Terrain rather than synthesizing this copy here.
             dc.terrain = new Terrain(); // TODO: have Tessellator.tessellate() return a filled out one of these
@@ -298,7 +374,7 @@ define([
         WorldWindow.prototype.drawLayers = function () {
             // Draw all the layers attached to this WorldWindow.
 
-            var beginTime = new Date().getTime(),
+            var beginTime = Date.now(),
                 dc = this.drawContext,
                 layers = this.drawContext.layers,
                 layer;
@@ -316,7 +392,7 @@ define([
                 }
             }
 
-            var now = new Date().getTime();
+            var now = Date.now();
             dc.frameStatistics.layerRenderingTime = now - beginTime;
         };
 
@@ -377,7 +453,7 @@ define([
                 try {
                     or.render(dc);
                 } catch (e) {
-                    Logger.logMessage(Logger.LEVEL_WARNING, WorldWindow, drawOrderedRenderables,
+                    Logger.logMessage(Logger.LEVEL_WARNING, "WorldWindow", "drawOrderedRenderables",
                         "Error while rendering a shape:" + e.message);
                     // Keep going. Render the rest of the ordered renderables.
                 }
@@ -386,6 +462,61 @@ define([
             dc.orderedRenderingMode = false;
 
             dc.frameStatistics.orderedRenderingTime = Date.now() - beginTime;
+        };
+
+        // Internal function. Intentionally not documented.
+        WorldWindow.prototype.createPickBuffer = function (gl) {
+            var pickingTexture = gl.createTexture();
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, pickingTexture);
+            gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0, WebGLRenderingContext.RGBA,
+                this.viewport.width, this.viewport.height, 0, WebGLRenderingContext.RGBA,
+                WebGLRenderingContext.UNSIGNED_BYTE, null);
+            gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER,
+                WebGLRenderingContext.LINEAR);
+
+            var pickingDepthBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, pickingDepthBuffer);
+            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGLRenderingContext.DEPTH_COMPONENT16,
+                this.viewport.width, this.viewport.height);
+
+            this.pickingFrameBuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.pickingFrameBuffer);
+            gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0,
+                WebGLRenderingContext.TEXTURE_2D, pickingTexture, 0);
+            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT,
+                WebGLRenderingContext.RENDERBUFFER, pickingDepthBuffer);
+
+            var e = gl.checkFramebufferStatus(WebGLRenderingContext.FRAMEBUFFER);
+            if (e != WebGLRenderingContext.FRAMEBUFFER_COMPLETE) {
+                Logger.logMessage(Logger.LEVEL_WARNING, "WorldWindow", "createPickBuffer",
+                    "Error creating pick buffer: " + gl.checkFramebufferStatus());
+            }
+
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, null);
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, null);
+            gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+        };
+
+        // Internal function. Intentionally not documented.
+        WorldWindow.prototype.resolveTopPick = function () {
+            // Make a last reading to determine what's on top.
+
+            var pickedObjects = this.drawContext.objectsAtPickPoint;
+            if (pickedObjects.objects.length === 1) {
+                pickedObjects.objects[0].isOnTop = true;
+            } else if (pickedObjects.objects.length > 1) {
+                var pickColor = this.drawContext.readPickColor(this.drawContext.pickPoint);
+                if (pickColor) {
+                    // Find the picked object with the top color code and set its isOnTop flag.
+                    for (var i = 0, len = pickedObjects.objects.length; i < len; i++) {
+                        var po = pickedObjects.objects[i];
+                        if (po.color.equals(pickColor)) {
+                            po.isOnTop = true;
+                            break;
+                        }
+                    }
+                }
+            }
         };
 
         return WorldWindow;

@@ -17,7 +17,7 @@ define([],
          * @classdesc Provides methods to assist in picking.
          */
         var PickSupport = function () {
-            this.pickableObjects = [];
+            this.pickableObjects = {};
         };
 
         /**
@@ -25,21 +25,21 @@ define([],
          * @param {PickedObject} pickableObject The object to add.
          */
         PickSupport.prototype.addPickableObject = function (pickableObject) {
-            this.pickableObjects[pickableObject.colorCode] = pickableObject;
+            this.pickableObjects[pickableObject.color.toByteString()] = pickableObject;
         };
 
         // Internal. Intentionally not documented.
         PickSupport.prototype.topObject = function (dc, pickPoint) {
-            if (this.pickableObjects.length === 0) {
+            if (Object.keys(this.pickableObjects).length === 0) {
                 return null;
             }
 
-            var colorCode = dc.readPickColor(pickPoint);
-            if (colorCode === 0) { // getPickColor returns 0 if the pick point selects the clear color
+            var color = dc.readPickColor(pickPoint);
+            if (!color) { // getPickColor returns null if the pick point selects the clear color
                 return null;
             }
 
-            return this.pickableObjects[colorCode];
+            return this.pickableObjects[color.toByteString()];
         };
 
         /**

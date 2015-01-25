@@ -15,8 +15,8 @@ requirejs(['../src/WorldWind',
         WorldWind.Logger.setLoggingLevel(WorldWind.Logger.LEVEL_WARNING);
 
         var wwd = new WorldWind.WorldWindow("canvasOne");
-        wwd.addLayer(new WorldWind.BMNGLandsatLayer());
-        wwd.addLayer(new WorldWind.BingWMSLayer());
+        //wwd.addLayer(new WorldWind.BMNGLandsatLayer());
+        //wwd.addLayer(new WorldWind.BingWMSLayer());
 
         var images = [
             "plain-black.png",
@@ -66,4 +66,14 @@ requirejs(['../src/WorldWind',
         wwd.redraw();
 
         var layerManger = new LayerManager('divLayerManager', wwd);
+
+        var onTimeout = function () {
+            var pickList = wwd.pick(new WorldWind.Vec2(190, 216));
+            for (var i = 0, len = pickList.objects.length; i < len; i++) {
+                console.log(pickList.objects[i].userObject.attributes.imagePath);
+            }
+
+            window.setTimeout(onTimeout, 2000);
+        };
+        window.setTimeout(onTimeout, 2000);
     });

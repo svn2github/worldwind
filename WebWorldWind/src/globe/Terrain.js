@@ -190,5 +190,8 @@ define([
             }
         };
 
+        Terrain.prototype.pick = function (dc) { // TODO
+        };
+
         return Terrain;
     });

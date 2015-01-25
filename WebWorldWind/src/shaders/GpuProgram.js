@@ -243,6 +243,18 @@ define([
         };
 
         /**
+         * Loads a specified pick color to a specified uniform location.
+         *
+         * @param {WebGLRenderingContext} gl The current WebGL context.
+         * @param {Color} color The color to load.
+         * @param {WebGLUniformLocation} location The uniform location to store the color to.
+         */
+        GpuProgram.loadUniformPickColor = function (gl, color, location) {
+            gl.uniform4f(location, color.red, color.green, color.blue, color.alpha);
+
+        };
+
+        /**
          * Loads a specified floating-point value to a specified uniform location.
          *
          * @param {WebGLRenderingContext} gl The current WebGL context.
@@ -262,23 +274,6 @@ define([
          */
         GpuProgram.loadUniformInteger = function (gl, value, location) {
             gl.uniform1i(location, value);
-        };
-
-        /**
-         * Loads a specified pick color to a specified uniform location.
-         *
-         * @param {WebGLRenderingContext} gl The current WebGL context.
-         * @param {Number} color The color to load.
-         * @param {WebGLUniformLocation} location The uniform location to store the color to.
-         */
-        GpuProgram.loadUniformPickColor = function (gl, color, location) {
-            var r = ((color >> 24) & 0xff) / 255.0,
-                g = ((color >> 16) & 0xff) / 255.0,
-                b = ((color >> 8) & 0xff) / 255.0,
-                a = (color & 0xff) / 255;
-
-            gl.uniform4f(location, r, g, b, a);
-
         };
 
         return GpuProgram;

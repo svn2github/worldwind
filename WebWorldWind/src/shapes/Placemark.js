@@ -334,7 +334,7 @@ define([
 
             // Turn off texturing if in picking mode.
             if (dc.pickingMode) {
-                program.loadTextureEnabled(false);
+                program.loadTextureEnabled(gl, false);
             }
 
             // Suppress depth-buffer writes.
@@ -377,7 +377,7 @@ define([
             program.loadTextureMatrix(gl, this.texCoordMatrix);
 
             // Set the pick color for picking or the color, opacity and texture if not picking.
-            if (dc.pickEnabled) {
+            if (dc.pickingMode) {
                 color = dc.uniquePickColor();
                 Placemark.pickSupport.addPickableObject(this.createPickedObject(dc, color));
                 program.loadPickColor(gl, color);
@@ -386,7 +386,7 @@ define([
                 program.loadOpacity(gl, this.layer.opacity);
 
                 if (!this.activeTexture) {
-                    program.loadTextureEnabled(gl, false); // TODO: is this clause necessary?
+                    //program.loadTextureEnabled(gl, false); // TODO: is this clause necessary?
                 } else if (Placemark.currentTexture != this.activeTexture) { // avoid unnecessary texture state changes
                     textureBound = this.activeTexture.bind(dc); // returns false if active texture is null or cannot be bound
                     program.loadTextureEnabled(gl, textureBound);
@@ -399,9 +399,9 @@ define([
         };
 
         // Internal. Intentionally not documented.
-        Placemark.prototype.createPickedObject = function (dc, colorCode) {
-            return new PickedObject(colorCode, dc.pickPoint, this.pickDelegate ? this.pickDelegate : this,
-                this.position, this.layer);
+        Placemark.prototype.createPickedObject = function (dc, color) {
+            return new PickedObject(color, dc.pickPoint, this.pickDelegate ? this.pickDelegate : this,
+                this.position, this.layer, false);
         };
 
         return Placemark;

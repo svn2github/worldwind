@@ -154,10 +154,17 @@ define([
             this.pickPoint = null;
 
             /**
-             * A number used to generate unique pick colors.
-             * @type {number}
+             * If <code>true</code>, indicates that only terrain is picked, otherwise terrain and pickable shapes are
+             * pick candidates.
+             * @type {boolean}
              */
-            this.uniquePickNumber = 0;
+            this.pickTerrainOnly = false;
+
+            /**
+             * A unique color variable to use during picking.
+             * @type {Color}
+             */
+            this.pickColor = new Color(0, 0, 0, 1);
 
             /**
              * The objects at the current pick point.
@@ -206,14 +213,14 @@ define([
          */
         DrawContext.prototype.reset = function () {
             var oldTimeStamp = this.timestamp;
-            this.timestamp = new Date().getTime();
+            this.timestamp = Date.now();
             if (this.timestamp === oldTimeStamp)
                 ++this.timestamp;
 
             this.orderedRenderables = []; // clears the ordered renderables array
             this.orderedRenderablesCounter = 0;
-            this.uniquePickNumber = 0;
-            this.clearColorInt = Color.makeColorIntFromColor(this.clearColor);
+            this.pickColor = new Color(0, 0, 0, 1);
+            this.pickingMode = false;
             this.objectsAtPickPoint.clear();
         };
 
@@ -375,15 +382,16 @@ define([
          */
         DrawContext.prototype.readPickColor = function (pickPoint) {
             var glPickPoint = this.navigatorState.convertPointToViewport(pickPoint, new Vec2(0, 0, 0)),
-                colorBytes = new Uint8Array(4),
-                colorInt;
+                colorBytes = new Uint8Array(4);
 
-            this.currentGlContext.readPixels(glPickPoint.x, glPickPoint.y, 1, 1, WebGLRenderingContext.RGBA,
+            this.currentGlContext.readPixels(glPickPoint[0], glPickPoint[1], 1, 1, WebGLRenderingContext.RGBA,
                 WebGLRenderingContext.UNSIGNED_BYTE, colorBytes);
 
-            colorInt = Color.makeColorIntFromBytes(colorBytes[0], colorBytes[1], colorBytes[2], colorBytes[3]);
+            if (this.clearColor.equalsBytes(colorBytes)) {
+                return null;
+            }
 
-            return colorInt != this.clearColorInt ? colorInt : 0;
+            return Color.colorFromBytes(colorBytes);
         };
 
         /**
@@ -399,22 +407,12 @@ define([
 
         /**
          * Computes a unique color to use as a pick color.
-         * @returns {number} A unique color expressed as a number.
+         * @returns {Color} A unique color.
          */
         DrawContext.prototype.uniquePickColor = function () {
-            ++this.uniquePickNumber;
+            var color = this.pickColor.nextColor();
 
-            if (this.uniquePickNumber >= 0xffffff) { // we have run out of pick colors
-                this.uniquePickNumber = 1;
-            }
-
-            var pickColor = this.uniquePickNumber << 8 | 0xff; // add alpha of 255
-
-            if (pickColor === this.clearColorInt) {
-                pickColor = ++this.uniquePickNumber << 8 | 0xff; // skip the clear color
-            }
-
-            return pickColor;
+            return color.equals(this.clearColor) ? color.nextColor() : color;
         };
 
         /**

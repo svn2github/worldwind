@@ -145,6 +145,10 @@ define([
             return array;
         };
 
+        Color.colorFromBytes = function (bytes) {
+            return new Color(bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, bytes[3] / 255);
+        };
+
         /**
          * Converts a color expressed in bytes to a number.
          * @param {Number} r The color's red component in the range [0, 255).
@@ -153,8 +157,8 @@ define([
          * @param {Number} a The color's alpha component in the range [0, 255).
          * @returns {number} A number representing the specified color components.
          */
-        Color.makeColorIntFromBytes = function (r, g, b, a) {
-            return r << 24 | g << 16 | b << 8 | a;
+        Color.makeColorIntFromBytes = function (r, g, b) {
+            return r << 16 | g << 8 | b;
         };
 
         /**
@@ -163,7 +167,79 @@ define([
          * @returns {number} A number representing the specified color.
          */
         Color.makeColorIntFromColor = function (color) {
-            return Color.makeColorIntFromBytes(color.red * 255, color.green * 255, color.blue * 255, color.alpha * 255);
+            return Color.makeColorIntFromBytes(Math.round(color.red * 255), Math.round(color.green * 255), Math.round(color.blue * 255));
+        };
+
+        /**
+         * Computes and sets this color to the next higher RBG color. If the color overflows, this color is set to
+         * (1 / 255, 0, 0, *), where * indicates the current alpha value.
+         * @returns {Color} This color, set to the next possible color.
+         */
+        Color.prototype.nextColor = function () {
+            var rb = Math.round(this.red * 255),
+                gb = Math.round(this.green * 255),
+                bb = Math.round(this.blue * 255);
+
+            if (rb < 255) {
+                this.red = (rb + 1) / 255;
+            } else if (gb < 255) {
+                this.green = (gb + 1) / 255;
+            } else if (bb < 255) {
+                this.blue = (bb + 1) / 255;
+            } else {
+                this.red = 1 / 255;
+                this.green = 0;
+                this.blue = 0;
+            }
+
+            return this;
+        };
+
+        /**
+         * Indicates whether this color is equal to a specified color after converting the floating-point component
+         * values of each color to byte values.
+         * @param {Color} color The color to test,
+         * @returns {boolean} <code>true</code> if the colors are equal, otherwise false.
+         */
+        Color.prototype.equals = function (color) {
+            var rbA = Math.round(this.red * 255),
+                gbA = Math.round(this.green * 255),
+                bbA = Math.round(this.blue * 255),
+                abA = Math.round(this.alpha * 255),
+                rbB = Math.round(color.red * 255),
+                gbB = Math.round(color.green * 255),
+                bbB = Math.round(color.blue * 255),
+                abB = Math.round(color.alpha * 255);
+
+            return rbA === rbB && gbA === gbB && bbA === bbB && abA === abB
+        };
+
+        /**
+         * Indicates whether this color is equal to another color expressed as an array of bytes.
+         * @param {Uint8Array} bytes The red, green, blue and alpha color components.
+         * @returns {boolean} <code>true</code> if the colors are equal, otherwise false.
+         */
+        Color.prototype.equalsBytes = function (bytes) {
+            var rb = Math.round(this.red * 255),
+                gb = Math.round(this.green * 255),
+                bb = Math.round(this.blue * 255),
+                ab = Math.round(this.alpha * 255);
+
+            return rb === bytes[0] && gb === bytes[1] && bb === bytes[2] && ab === bytes[3];
+        };
+
+        /**
+         * Returns a string representation of this color, indicating the byte values corresponding to this color's
+         * floating-point component values.
+         * @returns {string}
+         */
+        Color.prototype.toByteString = function () {
+            var rb = Math.round(this.red * 255),
+                gb = Math.round(this.green * 255),
+                bb = Math.round(this.blue * 255),
+                ab = Math.round(this.alpha * 255);
+
+            return "(" + rb + "," + gb + "," + bb + "," + ab + ")";
         };
 
         return Color;
