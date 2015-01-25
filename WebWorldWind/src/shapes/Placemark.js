@@ -288,7 +288,9 @@ define([
 
             try {
                 this.doDrawOrderedPlacemark(dc);
-                this.drawBatchOrderedPlacemarks(dc);
+                if (!dc.pickingMode) {
+                    this.drawBatchOrderedPlacemarks(dc);
+                }
             } finally {
                 this.endDrawing(dc);
             }

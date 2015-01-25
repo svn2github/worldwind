@@ -19,7 +19,8 @@ define([
         './geom/Rectangle',
         './geom/Sector',
         './globe/Terrain',
-        './globe/Tessellator'],
+        './globe/Tessellator',
+        './geom/Vec2'],
     function (ArgumentError,
               DrawContext,
               EarthElevationModel,
@@ -32,7 +33,8 @@ define([
               Rectangle,
               Sector,
               Terrain,
-              Tessellator) {
+              Tessellator,
+              Vec2) {
         "use strict";
 
         /**
@@ -154,6 +156,20 @@ define([
             window.addEventListener(WorldWind.REDRAW_EVENT_TYPE, function (event) {
                 thisWindow.redraw();
             }, false);
+        };
+
+        /**
+         * Converts window coordinates to coordinates relative to this World Window's canvas.
+         * @param {Number} x The X coordinate to convert.
+         * @param {Number} y The Y coordinate to convert.
+         * @returns {Vec2} The converted coordinates.
+         */
+        WorldWindow.prototype.canvasCoordinates = function (x, y) {
+            var bbox = this.canvas.getBoundingClientRect(),
+                xc = x - bbox.left * (this.canvas.width / bbox.width),
+                yc = y - bbox.top * (this.canvas.height / bbox.height);
+
+            return new Vec2(xc, yc);
         };
 
         /**
