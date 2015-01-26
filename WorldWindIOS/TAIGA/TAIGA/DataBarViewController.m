@@ -132,9 +132,9 @@
     fixedSpace.width = 10;
 
     [toolbar setItems:[NSArray arrayWithObjects:
-//            fixedSpace,
-//            flexibleSpace,
-//            gpsPositionItem,
+            fixedSpace,
+            flexibleSpace,
+            gpsPositionItem,
             flexibleSpace,
             gpsAccuracyItem,
             flexibleSpace,
@@ -170,9 +170,11 @@
 - (void) updateGPSView
 {
     // Insert non-breaking spaces between the lat/lon/alt values.
-    NSString* title = [[NSString alloc] initWithFormat:@"GPS\n%@\u00a0%@\u00a0%@",
-                                                       [formatter formatDegreesLatitude:currentLocation.coordinate.latitude],
-                                                       [formatter formatDegreesLongitude:currentLocation.coordinate.longitude],
+//    NSString* title = [[NSString alloc] initWithFormat:@"GPS\n%@\u00a0%@\u00a0%@",
+//                                                       [formatter formatDegreesLatitude:currentLocation.coordinate.latitude],
+//                                                       [formatter formatDegreesLongitude:currentLocation.coordinate.longitude],
+//                                                       [formatter formatMetersAltitude:currentLocation.altitude]];
+    NSString* title = [[NSString alloc] initWithFormat:@"Altitude\n%@",
                                                        [formatter formatMetersAltitude:currentLocation.altitude]];
     [gpsPositionButton setTitle:title forState:UIControlStateNormal];
 
@@ -194,7 +196,7 @@
 - (void) updateSpeedView
 {
     NSString* title = [[NSString alloc] initWithFormat:@"Ground Speed\n%@\u00a0",
-                                                       [formatter formatKnotsSpeed:currentLocation.speed]];
+                                                       [formatter formatKnotsSpeed:fabs(currentLocation.speed)]];
     [speedButton setTitle:title forState:UIControlStateNormal];
 }
 
