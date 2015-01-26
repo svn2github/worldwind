@@ -124,7 +124,7 @@ define([
         Color.DARK_GRAY = new Color(0.25, 0.25, 0.25, 1);
 
         /**
-         * A fully transparent color.
+         * A transparent color.
          * @type {Color}
          */
         Color.TRANSPARENT = new Color(0, 0, 0, 0);
@@ -240,6 +240,31 @@ define([
                 ab = Math.round(this.alpha * 255);
 
             return "(" + rb + "," + gb + "," + bb + "," + ab + ")";
+            return Color.makeColorIntFromBytes(color.red * 255, color.green * 255, color.blue * 255, color.alpha * 255);
+        };
+
+        /**
+         * Create a hex color string that CSS and SVG can use. Optionally, inhibit capturing alpha,
+         * because some uses don't like a four-component color specification.
+         * @param isUsingAlpha Enable the use of an alpha component.
+         * @returns {string} A color string suitable for CSS and SVG.
+         */
+        Color.prototype.toHexString = function(isUsingAlpha) {
+            // Use Math.ceil() to get 0.75 to map to 0xc0. This is important is the display is dithering.
+            var redHex = Math.ceil(this.red * 255).toString(16),
+                greenHex = Math.ceil(this.green * 255).toString(16),
+                blueHex = Math.ceil(this.blue * 255).toString(16),
+                alphaHex = Math.ceil(this.alpha * 255).toString(16);
+
+            var result = "#";
+            result += (redHex.length < 2) ? ('0' + redHex) : redHex;
+            result += (greenHex.length < 2) ? ('0' + greenHex) : greenHex;
+            result += (blueHex.length < 2) ? ('0' + blueHex) : blueHex;
+            if (isUsingAlpha) {
+                result += (alphaHex.length < 2) ? ('0' + alphaHex) : alphaHex;
+            }
+
+            return result;
         };
 
         return Color;

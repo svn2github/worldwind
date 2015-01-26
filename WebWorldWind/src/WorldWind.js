@@ -22,6 +22,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         './globe/EarthElevationModel',
         './globe/EarthRestElevationModel',
         './globe/ElevationModel',
+        './util/Font',
         './util/FrameStatistics',
         './geom/Frustum',
         './gesture/GestureRecognizer',
@@ -99,6 +100,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
               EarthElevationModel,
               EarthRestElevationModel,
               ElevationModel,
+              Font,
               FrameStatistics,
               Frustum,
               GestureRecognizer,
@@ -270,6 +272,7 @@ define([ // PLEASE KEEP ALL THIS IN ALPHABETICAL ORDER BY MODULE NAME (not direc
         WorldWind['EarthElevationModel'] = EarthElevationModel;
         WorldWind['EarthRestElevationModel'] = EarthRestElevationModel;
         WorldWind['ElevationModel'] = ElevationModel;
+        WorldWind['Font'] = Font;
         WorldWind['FrameStatistics'] = FrameStatistics;
         WorldWind['Frustum'] = Frustum;
         WorldWind['GestureRecognizer'] = GestureRecognizer;

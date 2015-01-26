@@ -21,21 +21,21 @@ requirejs(['../src/WorldWind'], function () {
     var peaks =
             [
                 {
-                    'name': "Denali", // Mount McKinley
+                    'name': "Mount McKinley\n(Denali)", // Mount McKinley
                     'state': "Alaska",
                     'elevation': 6194,
                     'latitude': 63.0690,
                     'longitude': -151.0063
                 },
                 {
-                    'name': "Mauna Kea",
+                    'name': "Mauna\nKea",
                     'state': "Hawaii",
                     'elevation': 4205,
                     'latitude': 19.8207,
                     'longitude': -155.4680
                 },
                 {
-                    'name': "Mount Rainier",
+                    'name': "Mount\nRainier",
                     'state': "Washington",
                     'elevation': 4394,
                     'latitude': 46.8529,
@@ -77,7 +77,7 @@ requirejs(['../src/WorldWind'], function () {
                     'longitude': -147.7525
                 },
                 {
-                    'name': "Mount Whitney",
+                    'name': "Mount\nWhitney",
                     'state': "California",
                     'elevation': 4421,
                     'latitude': 36.5786,
@@ -210,7 +210,7 @@ requirejs(['../src/WorldWind'], function () {
                     'longitude': -139.9808
                 },
                 {
-                    'name': "Mount Hood",
+                    'name': "Mount\nHood",
                     'state': "Oregon",
                     'elevation': 3429,
                     'latitude': 45.3735,
@@ -923,6 +923,15 @@ requirejs(['../src/WorldWind'], function () {
     var placenameLayer = new WorldWind.PlacenameLayer();
     wwd.addLayer(placenameLayer);
 
+    var font = new WorldWind.Font(48);
+    font.family = WorldWind.Font.families.monospace;
+    font.variant = WorldWind.Font.variants.default;
+    font.horizontalAlignment = WorldWind.Font.horizontalAlignments.center;
+    font.verticalAlignment = WorldWind.Font.verticalAlignments.bottom;
+    font.weight = WorldWind.Font.weights.normal;
+    font.color = WorldWind.Color.BLACK;
+    font.backgroundColor = WorldWind.Color.WHITE;
+
     for (var idx = 0, len = peaks.length; idx < len; idx += 1) {
         var peak = peaks[idx];
 
@@ -931,7 +940,8 @@ requirejs(['../src/WorldWind'], function () {
         if (!states.hasOwnProperty(state)) {
             var text = new WorldWind.UserFaceingText(
                 peak.name,
-                new WorldWind.Position(peak.latitude, peak.longitude, peak.elevation + 1000)
+                new WorldWind.Position(peak.latitude, peak.longitude, peak.elevation + 1000),
+                font
             );
             placenameLayer.addPlacename(text);
             states[peak.state] = true;
