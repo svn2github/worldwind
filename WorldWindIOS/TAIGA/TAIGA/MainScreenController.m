@@ -33,6 +33,7 @@
     WeatherScreenController* weatherScreenController;
     ChartsScreenController* chartsScreenController;
     SettingsScreenController* settingsScreenController;
+    UIViewController* currentScreenController;
 
     NSTimer* dataInstallationCheckTimer;
     BOOL dataInstallationInProgress;
@@ -139,7 +140,7 @@
             flexibleSpace,
             settingsButton,
             flexibleSpace,
-            nil]];
+                    nil]];
 
     [modeBar setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin];
     [self.view addSubview:modeBar];
@@ -152,16 +153,25 @@
 
 - (void) handleWeather
 {
-    [self swapScreenController:weatherScreenController button:weatherButton];
+    if (currentScreenController == weatherScreenController)
+        [self handleMovingMap];
+    else
+        [self swapScreenController:weatherScreenController button:weatherButton];
 }
 
 - (void) handleCharts
 {
-    [self swapScreenController:chartsScreenController button:chartsButton];
+    if (currentScreenController == chartsScreenController)
+        [self handleMovingMap];
+    else
+        [self swapScreenController:chartsScreenController button:chartsButton];
 }
 
 - (void) handleSettings
 {
+    if (currentScreenController == settingsScreenController)
+        [self handleMovingMap];
+    else
     [self swapScreenController:settingsScreenController button:settingsButton];
 }
 
@@ -188,6 +198,8 @@
     [((ButtonWithImageAndText*) [settingsButton customView]) highlight:NO];
 
     [((ButtonWithImageAndText*) [button customView]) highlight:YES];
+
+    currentScreenController = screenController;
 }
 
 - (void) setupInstalledDataTimer
@@ -209,8 +221,7 @@
         dataInstallationInProgress = YES;
     }
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^
-    {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         @try
         {
             NSString* zipPath = [self determineDataFile];
@@ -221,10 +232,9 @@
             NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:zipPath];
             NSError* error = nil;
             [fileCoordinator coordinateReadingItemAtURL:fileURL options:0
-                                                  error:&error byAccessor:^void (NSURL* url)
-            {
-                [self doInstallPreparedData:[url path]];
-            }];
+                                                  error:&error byAccessor:^void(NSURL* url) {
+                        [self doInstallPreparedData:[url path]];
+                    }];
 
             if (error != nil)
             {
