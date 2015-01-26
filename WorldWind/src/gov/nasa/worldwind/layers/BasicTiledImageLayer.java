@@ -117,6 +117,10 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         if (params.getValue(AVKey.TRANSPARENCY_COLORS) != null)
             this.setValue(AVKey.TRANSPARENCY_COLORS, params.getValue(AVKey.TRANSPARENCY_COLORS));
 
+        b = (Boolean) params.getValue(AVKey.DELETE_CACHE_ON_EXIT);
+        if (b != null)
+            this.setValue(AVKey.DELETE_CACHE_ON_EXIT, true);
+
         this.setValue(AVKey.CONSTRUCTION_PARAMETERS, params.copy());
 
         // If any resources should be retrieved for this Layer, start a task to retrieve those resources, and initialize

@@ -120,6 +120,10 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         if (s != null)
             this.loadExtremeElevations(s);
 
+        b = (Boolean) params.getValue(AVKey.DELETE_CACHE_ON_EXIT);
+        if (b != null)
+            this.setValue(AVKey.DELETE_CACHE_ON_EXIT, true);
+
         // Set some fallback values if not already set.
         setFallbacks(params);
 
